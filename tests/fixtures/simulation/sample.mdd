@@ -1,0 +1,7 @@
+! Program Version,EnergyPlus, Version 24.1.0-69c052275a
+! Output:Meter Objects (Alarm)
+Output:Meter,Electricity:Facility,hourly; !- [J]
+Output:Meter,NaturalGas:Facility,hourly; !- [J]
+Output:Meter,DistrictHeating:Facility,hourly; !- [J]
+Output:Meter,DistrictCooling:Facility,hourly; !- [J]
+Output:Meter,InteriorLights:Electricity,hourly; !- [J]

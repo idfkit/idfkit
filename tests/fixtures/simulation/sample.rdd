@@ -1,0 +1,9 @@
+! Program Version,EnergyPlus, Version 24.1.0-69c052275a
+! Output:Variable Objects (Alarm)
+Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- [C]
+Output:Variable,*,Site Outdoor Air Wetbulb Temperature,hourly; !- [C]
+Output:Variable,*,Zone Mean Air Temperature,hourly; !- [C]
+Output:Variable,*,Zone Air System Sensible Heating Rate,hourly; !- [W]
+Output:Variable,*,Zone Air System Sensible Cooling Rate,hourly; !- [W]
+Output:Variable,*,Zone Ideal Loads Supply Air Total Heating Energy,hourly; !- [J]
+Output:Variable,*,Zone People Occupant Count,hourly; !- []

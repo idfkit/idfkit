@@ -901,6 +901,9 @@ version = "0.1.0"
 source = { editable = "." }
 
 [package.optional-dependencies]
+dataframes = [
+    { name = "pandas" },
+]
 weather = [
     { name = "openpyxl" },
 ]
@@ -928,8 +931,11 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "openpyxl", marker = "extra == 'weather'", specifier = ">=3.1.0" }]
-provides-extras = ["weather"]
+requires-dist = [
+    { name = "openpyxl", marker = "extra == 'weather'", specifier = ">=3.1.0" },
+    { name = "pandas", marker = "extra == 'dataframes'", specifier = ">=1.5" },
+]
+provides-extras = ["weather", "dataframes"]
 
 [package.metadata.requires-dev]
 benchmark = [

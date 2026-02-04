@@ -29,6 +29,7 @@ Documentation = "https://samuelduchesne.github.io/idfkit/"
 
 [project.optional-dependencies]
 weather = ["openpyxl>=3.1.0"]
+dataframes = ["pandas>=1.5"]
 
 [dependency-groups]
 dev = [

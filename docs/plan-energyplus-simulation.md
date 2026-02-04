@@ -1745,28 +1745,46 @@ def _import_pandas() -> Any:
 - `src/idfkit/exceptions.py` — added `EnergyPlusNotFoundError`, `SimulationError`
 - `src/idfkit/__init__.py` — added new exception exports
 
-### Phase 2: Output Parsing and Variable Discovery
+### Phase 2: Output Parsing and Variable Discovery ✅ COMPLETED
 
 **Scope**: Parse simulation outputs, discover available variables, add them to models.
 
-- SQL output parser (using `sqlite3`)
-- RDD/MDD parser and `OutputVariableIndex`
-- `TimeSeriesResult` data class
-- ESO parser (as fallback when SQL is unavailable)
-- CSV parser (for ReadVarsESO output)
-- HTML table parser
-- `to_dataframe()` methods (optional pandas)
+- ✅ RDD/MDD parser with `OutputVariable` and `OutputMeter` frozen dataclasses, regex-based line parsing, `parse_rdd()`/`parse_mdd()` functions and `_file()` variants
+- ✅ `OutputVariableIndex` frozen dataclass with `from_simulation()`, `from_files()`, `search()` (case-insensitive regex), `filter_by_units()`, and `add_all_to_model()` with optional `filter_pattern`
+- ✅ SQL output parser (`SQLResult`) with `sqlite3`, read-only mode, context manager, `get_timeseries()` (filters warmup, handles Hour=24 rollover), `get_tabular_data()`, `list_variables()`, `list_reports()`, `query()`
+- ✅ `TimeSeriesResult` frozen dataclass with `to_dataframe()` (optional pandas via `dataframes` extra)
+- ✅ `TabularRow` and `VariableInfo` frozen dataclasses for structured SQL results
+- ✅ CSV parser (`CSVResult`) with header regex extraction of key_value, variable_name, units, frequency; `from_file()`/`from_string()` classmethods and `get_column()` lookup
+- ✅ Lazy cached properties on `SimulationResult`: `.sql`, `.variables`, `.csv` following existing `.errors` pattern with sentinel-based caching
+- ✅ Updated `__init__.py` exports: `OutputVariable`, `OutputMeter`, `OutputVariableIndex`, `SQLResult`, `TimeSeriesResult`, `TabularRow`, `VariableInfo`, `CSVResult`, `CSVColumn`
+- ✅ Unit tests (84 new tests) covering all parsers, index operations, model injection, and lazy property caching
 
-**New files**:
-- `src/idfkit/sim/outputs.py`
-- `src/idfkit/sim/parsers/__init__.py`
-- `src/idfkit/sim/parsers/sql.py`
-- `src/idfkit/sim/parsers/eso.py`
-- `src/idfkit/sim/parsers/csv.py`
-- `src/idfkit/sim/parsers/html.py`
-- `src/idfkit/sim/parsers/eio.py`
-- `tests/test_sim_outputs.py`
-- `tests/test_sim_parsers.py`
+**Deviations from original plan**:
+- Package named `idfkit.simulation` (not `idfkit.sim`) — consistent with Phase 1
+- ESO, HTML, and EIO parsers deferred — SQL covers the same data more reliably
+- `OutputVariableIndex` is a frozen dataclass (not a regular class) for consistency
+- `add_all_to_model()` uses empty Key_Value (equivalent to `"*"`) to avoid `DuplicateObjectError` when multiple Output:Variable objects share the same key
+- `pandas` added as optional dependency under `[project.optional-dependencies] dataframes`
+
+**Files created**:
+- `src/idfkit/simulation/parsers/rdd.py`
+- `src/idfkit/simulation/outputs.py`
+- `src/idfkit/simulation/parsers/sql.py`
+- `src/idfkit/simulation/parsers/csv.py`
+- `tests/test_simulation_rdd_parser.py`
+- `tests/test_simulation_outputs.py`
+- `tests/test_simulation_sql_parser.py`
+- `tests/test_simulation_csv_parser.py`
+- `tests/test_simulation_result.py`
+- `tests/fixtures/simulation/sample.rdd`
+- `tests/fixtures/simulation/sample.mdd`
+- `tests/fixtures/simulation/sample.csv`
+
+**Files modified**:
+- `src/idfkit/simulation/result.py` — added `_cached_sql`, `_cached_variables`, `_cached_csv` fields and `.sql`, `.variables`, `.csv` lazy properties
+- `src/idfkit/simulation/__init__.py` — added 9 new exports to `__all__`
+- `pyproject.toml` — added `dataframes` optional dependency
+- `uv.lock` — updated for new optional dependency
 
 ### Phase 3: Parallel Execution and Caching
 

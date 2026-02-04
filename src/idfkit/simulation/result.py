@@ -8,8 +8,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from .parsers.err import ErrorReport
+
+if TYPE_CHECKING:
+    from .outputs import OutputVariableIndex
+    from .parsers.csv import CSVResult
+    from .parsers.sql import SQLResult
+
+# Sentinel for "not yet computed" (distinct from None = "computed, no file found")
+_UNSET: Any = object()
 
 
 @dataclass(slots=True)
@@ -34,6 +43,9 @@ class SimulationResult:
     runtime_seconds: float
     output_prefix: str = "eplus"
     _cached_errors: ErrorReport | None = field(default=None, init=False, repr=False)
+    _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
+    _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
+    _cached_csv: Any = field(default=_UNSET, init=False, repr=False)
 
     @property
     def errors(self) -> ErrorReport:
@@ -49,6 +61,69 @@ class SimulationResult:
         report = ErrorReport.from_file(err) if err is not None else ErrorReport.from_string("")
         object.__setattr__(self, "_cached_errors", report)
         return report
+
+    @property
+    def sql(self) -> SQLResult | None:
+        """Parsed SQL output database (lazily cached).
+
+        Returns:
+            An SQLResult for querying time-series and tabular data,
+            or None if no .sql file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_sql")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = self.sql_path
+        if path is None:
+            object.__setattr__(self, "_cached_sql", None)
+            return None
+        from .parsers.sql import SQLResult as _SQLResult
+
+        result: SQLResult = _SQLResult(path)
+        object.__setattr__(self, "_cached_sql", result)
+        return result
+
+    @property
+    def variables(self) -> OutputVariableIndex | None:
+        """Output variable/meter index from .rdd/.mdd files (lazily cached).
+
+        Returns:
+            An OutputVariableIndex for searching and injecting output
+            variables, or None if no .rdd file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_variables")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        rdd = self.rdd_path
+        if rdd is None:
+            object.__setattr__(self, "_cached_variables", None)
+            return None
+        from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+        result: OutputVariableIndex = _OutputVariableIndex.from_files(rdd, self.mdd_path)
+        object.__setattr__(self, "_cached_variables", result)
+        return result
+
+    @property
+    def csv(self) -> CSVResult | None:
+        """Parsed CSV output (lazily cached).
+
+        Returns:
+            A CSVResult with extracted column metadata and values,
+            or None if no .csv file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_csv")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = self.csv_path
+        if path is None:
+            object.__setattr__(self, "_cached_csv", None)
+            return None
+        from .parsers.csv import CSVResult as _CSVResult
+
+        result: CSVResult = _CSVResult.from_file(path)
+        object.__setattr__(self, "_cached_csv", result)
+        return result
 
     @property
     def sql_path(self) -> Path | None:
