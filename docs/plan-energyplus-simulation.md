@@ -1797,37 +1797,51 @@ def _import_pandas() -> Any:
 - `src/idfkit/sim/plotting/plotly.py`
 - `tests/test_sim_plotting.py`
 
-### Phase 6: Weather File and Design Day Browser
+### Phase 6: Weather File and Design Day Browser ✅ COMPLETED
 
 **Scope**: Searchable weather station index, EPW/DDY download, design day injection.
 
-- `WeatherStation` dataclass and bundled station index (stations.csv.gz)
-- `StationIndex` with fuzzy text search, lat/lon proximity search, and filtering
-- `geocode()` via Nominatim (free, no API key)
-- `nearest_to_address()` combining geocoding with spatial search
-- Haversine distance with bounding-box pre-filter
-- `WeatherDownloader` with platform-appropriate cache directory
-- `DesignDayManager` with DDY parsing and classified design day types
-- `apply_ashrae_sizing()` convenience function with ASHRAE 90.1 and general presets
-- `NoDesignDaysError` with nearest-station suggestions
-- Index build script (developer tooling, not shipped)
-- Unit tests with fixture station data and mock DDY files
+- ✅ `WeatherStation` frozen dataclass with `display_name`, `dataset_variant`, `to_dict()`/`from_dict()` serialization
+- ✅ `StationIndex` with fuzzy text search, lat/lon proximity search, `filter()`, `get_by_wmo()`, and `countries` property
+- ✅ `StationIndex.load()` — instant, loads bundled gzip JSON index (55k stations, ~930KB), no network or openpyxl needed
+- ✅ `StationIndex.check_for_updates()` — HEAD requests to compare `Last-Modified` headers against stored values
+- ✅ `StationIndex.refresh()` — re-downloads Excel indexes, rebuilds and caches compressed index (requires openpyxl)
+- ✅ `geocode()` via Nominatim (free, no API key, 1 req/sec rate limit); raises `GeocodingError` on failure (always returns `tuple[float, float]`)
+- ✅ Haversine distance (`haversine_km()`) with bounding-box pre-filter in `nearest()`
+- ✅ `WeatherDownloader` with platform-appropriate cache directory and ZIP extraction
+- ✅ `DesignDayManager` with DDY parsing via `load_idf()`, 20 annual `DesignDayType` enum values (heating, cooling DB/WB/enthalpy, dehumidification, humidification, heating wind, coldest-month wind), plus `monthly` property for 96 monthly design days
+- ✅ `apply_ashrae_sizing()` convenience function with ASHRAE 90.1 and general presets
+- ✅ `apply_to_model()` with `include_enthalpy` and `include_wind` parameters
+- ✅ Build script (`scripts/build_weather_index.py`) and `make weather-index` target for regenerating the bundled index
+- ✅ Getting started notebook updated with weather module examples (Part 4)
+- ✅ Unit tests with fixture station data, mock DDY files, and mocked network calls
 
-**New files**:
+**Deviations from original plan**:
+- Bundled index uses gzip-compressed JSON (`stations.json.gz`, ~930KB) instead of `stations.csv.gz` (~300KB) — JSON allows storing `Last-Modified` metadata for staleness checking
+- `openpyxl` only needed for `StationIndex.refresh()`, not for `StationIndex.load()` (bundled index is self-contained)
+- `geocode()` raises `GeocodingError` instead of returning `None` — enables `index.nearest(*geocode(address))` splat pattern
+- `nearest_to_address()` is implemented as composable `geocode()` + `nearest()` rather than a single method on `StationIndex`
+- `NoDesignDaysError` deferred — empty DDY files return an empty `all_design_days` list
+- Download module named `download.py` (not `downloader.py`)
+
+**Files created**:
 - `src/idfkit/weather/__init__.py`
 - `src/idfkit/weather/station.py`
 - `src/idfkit/weather/index.py`
-- `src/idfkit/weather/downloader.py`
+- `src/idfkit/weather/download.py`
 - `src/idfkit/weather/designday.py`
 - `src/idfkit/weather/geocode.py`
 - `src/idfkit/weather/spatial.py`
-- `src/idfkit/weather/_data/stations.csv.gz`
-- `scripts/build_station_index.py`
+- `src/idfkit/weather/data/stations.json.gz` — bundled pre-compiled index (55,120 stations)
+- `scripts/build_weather_index.py` — maintainer build script for regenerating the bundled index
+- `tests/test_weather_station.py`
+- `tests/test_weather_spatial.py`
 - `tests/test_weather_index.py`
-- `tests/test_weather_search.py`
-- `tests/test_weather_designday.py`
 - `tests/test_weather_geocode.py`
 - `tests/test_weather_download.py`
+- `tests/test_weather_designday.py`
+- `tests/fixtures/weather/sample.ddy`
+- `tests/fixtures/weather/empty.ddy`
 
 ---
 

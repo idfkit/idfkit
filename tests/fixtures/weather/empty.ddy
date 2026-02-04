@@ -1,0 +1,10 @@
+
+ Version,
+    25.2;
+
+ Site:Location,
+    Remote Station,              !- Name
+    65.00,                       !- Latitude {deg}
+    25.00,                       !- Longitude {deg}
+    2.00,                        !- Time Zone {hr}
+    50.00;                       !- Elevation {m}
