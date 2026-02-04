@@ -10,7 +10,7 @@ import pytest
 from idfkit import load_epjson, load_idf
 from idfkit.epjson_parser import get_epjson_version, parse_epjson
 from idfkit.epjson_parser import load_epjson as raw_load_epjson
-from idfkit.exceptions import SchemaNotFoundError, VersionNotFoundError
+from idfkit.exceptions import VersionNotFoundError
 from idfkit.idf_parser import get_idf_version, iter_idf_objects, parse_idf
 
 # ---------------------------------------------------------------------------
@@ -192,9 +192,8 @@ class TestEpJSONParserVersionDetection:
         data = {"Version": {"Version 1": {"version_identifier": "9.2.0"}}}
         filepath = tmp_path / "v9.epJSON"
         filepath.write_text(json.dumps(data))
-        # This will fail on schema lookup since v9.2.0 is not bundled
-        with pytest.raises(SchemaNotFoundError):
-            parse_epjson(filepath)
+        doc = parse_epjson(filepath)
+        assert doc.version == (9, 2, 0)
 
     def test_version_detection_missing(self, tmp_path: Path) -> None:
         filepath = tmp_path / "no_version.epJSON"
