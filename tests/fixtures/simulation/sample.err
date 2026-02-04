@@ -1,0 +1,12 @@
+Program Version,EnergyPlus, Version 24.1.0-xxxxxxxxxxxx
+   ** Warning ** Weather file location will be used rather than entered (IDF) Location object.
+   ** ~~~   ** ..Location object=CHICAGO_IL_USA TMY2-94846
+   ** ~~~   ** ..Weather File Location=Chicago Ohare Intl Ap IL USA TMY3 WMO#=725300
+   ** ~~~   ** ..due to location differences, Alarm inactive differences=[.20] degrees
+   ** Warning ** GetHTSurfaceData: Surfaces with interface to Ground found but no "Ground Temperatures" were input.
+   ** ~~~   ** Found first in surface=ZN001:FLR001
+   ** ~~~   ** Defaults, of 18.0C will be used for this surface.
+   ************* Testing Individual Branch Coverage
+   ************* All Coverage Checks Passed
+   ************* Warmup Converged in 6 iterations
+   ************* EnergyPlus Completed Successfully-- 2 Warning; 0 Severe Errors

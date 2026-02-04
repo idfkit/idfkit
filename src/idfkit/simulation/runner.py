@@ -1,0 +1,243 @@
+"""EnergyPlus simulation runner.
+
+Executes EnergyPlus as a subprocess and returns structured results.
+"""
+
+from __future__ import annotations
+
+import shutil
+import subprocess
+import tempfile
+import time
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from ..exceptions import SimulationError
+from .config import EnergyPlusConfig, find_energyplus
+from .result import SimulationResult
+
+if TYPE_CHECKING:
+    from ..document import IDFDocument
+
+
+def simulate(
+    model: IDFDocument,
+    weather: str | Path,
+    *,
+    output_dir: str | Path | None = None,
+    energyplus: EnergyPlusConfig | None = None,
+    expand_objects: bool = True,
+    annual: bool = False,
+    design_day: bool = False,
+    output_prefix: str = "eplus",
+    output_suffix: str = "C",
+    readvars: bool = False,
+    timeout: float = 3600.0,
+    extra_args: list[str] | None = None,
+) -> SimulationResult:
+    """Run an EnergyPlus simulation.
+
+    Creates an isolated run directory, writes the model, and executes
+    EnergyPlus as a subprocess. The caller's model is not mutated.
+
+    Args:
+        model: The EnergyPlus model to simulate.
+        weather: Path to the weather file (.epw).
+        output_dir: Directory for output files (default: auto temp dir).
+        energyplus: Pre-configured EnergyPlus installation. If None,
+            uses :func:`find_energyplus` for auto-discovery.
+        expand_objects: Run ExpandObjects before simulation.
+        annual: Run annual simulation (``-a`` flag).
+        design_day: Run design-day-only simulation (``-D`` flag).
+        output_prefix: Prefix for output files (default "eplus").
+        output_suffix: Unit suffix, "C" or "F" (default "C").
+        readvars: Run ReadVarsESO after simulation (``-r`` flag).
+        timeout: Maximum runtime in seconds (default 3600).
+        extra_args: Additional command-line arguments.
+
+    Returns:
+        SimulationResult with paths to output files.
+
+    Raises:
+        SimulationError: On timeout, OS error, or missing weather file.
+        EnergyPlusNotFoundError: If EnergyPlus cannot be found.
+    """
+    config = _resolve_config(energyplus)
+    weather_path = Path(weather).resolve()
+
+    if not weather_path.is_file():
+        msg = f"Weather file not found: {weather_path}"
+        raise SimulationError(msg)
+
+    # Copy model to avoid mutation
+    sim_model = model.copy()
+    _ensure_sql_output(sim_model)
+
+    run_dir = _prepare_run_directory(output_dir, weather_path)
+    idf_path = run_dir / "in.idf"
+
+    from ..writers import write_idf
+
+    write_idf(sim_model, idf_path)
+
+    cmd = _build_command(
+        config=config,
+        idf_path=idf_path,
+        weather_path=run_dir / weather_path.name,
+        output_dir=run_dir,
+        output_prefix=output_prefix,
+        output_suffix=output_suffix,
+        expand_objects=expand_objects,
+        annual=annual,
+        design_day=design_day,
+        readvars=readvars,
+        extra_args=extra_args,
+    )
+
+    start = time.monotonic()
+    try:
+        proc = subprocess.run(  # noqa: S603
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(run_dir),
+        )
+        elapsed = time.monotonic() - start
+        return SimulationResult(
+            run_dir=run_dir,
+            success=proc.returncode == 0,
+            exit_code=proc.returncode,
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            runtime_seconds=elapsed,
+            output_prefix=output_prefix,
+        )
+    except subprocess.TimeoutExpired as exc:
+        elapsed = time.monotonic() - start
+        msg = f"Simulation timed out after {timeout} seconds"
+        raise SimulationError(
+            msg,
+            exit_code=None,
+            stderr=str(exc.stderr) if exc.stderr else None,
+        ) from exc
+    except OSError as exc:
+        msg = f"Failed to start EnergyPlus: {exc}"
+        raise SimulationError(
+            msg,
+            exit_code=None,
+            stderr=None,
+        ) from exc
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:
+    """Resolve EnergyPlus config, auto-discovering if needed.
+
+    Args:
+        energyplus: Optional pre-configured config.
+
+    Returns:
+        Validated EnergyPlusConfig.
+    """
+    if energyplus is not None:
+        return energyplus
+    return find_energyplus()
+
+
+def _ensure_sql_output(model: IDFDocument) -> None:
+    """Add Output:SQLite to the model if not already present.
+
+    Args:
+        model: The model to modify in place.
+    """
+    if "Output:SQLite" not in model:
+        model.add("Output:SQLite", "SimpleAndTabular")
+
+
+def _prepare_run_directory(output_dir: str | Path | None, weather_path: Path) -> Path:
+    """Create and populate the simulation run directory.
+
+    Args:
+        output_dir: Explicit output directory, or None for a temp dir.
+        weather_path: Path to the weather file to copy.
+
+    Returns:
+        Path to the run directory.
+    """
+    if output_dir is not None:
+        run_dir = Path(output_dir).resolve()
+        run_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        run_dir = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+
+    # Copy weather file into run dir
+    dest = run_dir / weather_path.name
+    if not dest.exists():
+        shutil.copy2(weather_path, dest)
+
+    return run_dir
+
+
+def _build_command(
+    *,
+    config: EnergyPlusConfig,
+    idf_path: Path,
+    weather_path: Path,
+    output_dir: Path,
+    output_prefix: str,
+    output_suffix: str,
+    expand_objects: bool,
+    annual: bool,
+    design_day: bool,
+    readvars: bool,
+    extra_args: list[str] | None,
+) -> list[str]:
+    """Build the EnergyPlus command-line invocation.
+
+    Args:
+        config: EnergyPlus configuration.
+        idf_path: Path to the IDF file.
+        weather_path: Path to the weather file in the run dir.
+        output_dir: Output directory path.
+        output_prefix: Output file prefix.
+        output_suffix: Unit suffix ("C" or "F").
+        expand_objects: Whether to run ExpandObjects.
+        annual: Whether to run annual simulation.
+        design_day: Whether to run design-day-only simulation.
+        readvars: Whether to run ReadVarsESO.
+        extra_args: Additional arguments.
+
+    Returns:
+        Command as a list of strings.
+    """
+    cmd: list[str] = [
+        str(config.executable),
+        "-w",
+        str(weather_path),
+        "-d",
+        str(output_dir),
+        "-p",
+        output_prefix,
+        "-s",
+        output_suffix,
+    ]
+
+    if expand_objects:
+        cmd.append("-x")
+    if annual:
+        cmd.append("-a")
+    if design_day:
+        cmd.append("-D")
+    if readvars:
+        cmd.append("-r")
+    if extra_args:
+        cmd.extend(extra_args)
+
+    cmd.append(str(idf_path))
+
+    return cmd

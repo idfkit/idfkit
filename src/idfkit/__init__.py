@@ -33,9 +33,11 @@ from .epjson_parser import parse_epjson
 # Exceptions
 from .exceptions import (
     DuplicateObjectError,
+    EnergyPlusNotFoundError,
     IdfKitError,
     ParseError,
     SchemaNotFoundError,
+    SimulationError,
     UnknownObjectTypeError,
     ValidationFailedError,
     VersionNotFoundError,
@@ -134,6 +136,7 @@ __all__ = [
     "LATEST_VERSION",
     "MINIMUM_VERSION",
     "DuplicateObjectError",
+    "EnergyPlusNotFoundError",
     "EpJSONSchema",
     "IDFCollection",
     "IDFDocument",
@@ -145,6 +148,7 @@ __all__ = [
     "ReferenceGraph",
     "SchemaManager",
     "SchemaNotFoundError",
+    "SimulationError",
     "UnknownObjectTypeError",
     "ValidationError",
     "ValidationFailedError",

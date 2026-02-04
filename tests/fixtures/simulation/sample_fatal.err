@@ -1,0 +1,8 @@
+Program Version,EnergyPlus, Version 24.1.0-xxxxxxxxxxxx
+   ** Severe  ** GetSurfaceData: Some Coverage Checks Resulted in Errors.
+   ** ~~~   ** ...Number of Coverage Errors=2
+   ** Severe  ** GetSurfaceData: Surface WALL-1SOUTH has 0 vertices which is less than minimum of 3.
+   ** ~~~   ** ...The surface will NOT be entered.
+   **  Fatal  ** GetSurfaceData: Errors too severe, program terminates.
+   ...Summary of Errors that Coverage Checks Caught
+   ************* EnergyPlus Terminated -- Fatal Error(s) Detected. 2 Severe Errors; 0 Warning
