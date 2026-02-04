@@ -44,6 +44,8 @@ dev = [
 benchmark = [
     "eppy>=0.5.63",
     "matplotlib>=3.7.0",
+    "opyplus>=2.0.7",
+    "energyplus-idd-idf-utilities>=0.88",
 ]
 
 [build-system]
@@ -108,6 +110,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905"]
 
 [tool.ruff.format]
 preview = true
