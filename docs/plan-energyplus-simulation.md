@@ -7,6 +7,12 @@ O(1) lookups and minimal memory overhead. This plan proposes extending IDFkit wi
 simulation execution, output variable discovery, result retrieval, and visualization -- while
 avoiding the pitfalls that plague existing packages (eppy, honeybee-energy, opyplus, etc.).
 
+In addition, finding the right weather file and injecting design day conditions into a model is
+a persistent pain point across the EnergyPlus ecosystem. This plan includes a comprehensive
+weather file and design day browser built on the climate.onebuilding.org TMYx dataset (17,300+
+stations worldwide), with fuzzy search, lat/lon proximity search, and free address geocoding --
+eliminating one of the most tedious manual steps in the simulation workflow.
+
 The design prioritizes:
 
 1. **No admin rights required** -- works with user-level EnergyPlus installations
@@ -15,6 +21,8 @@ The design prioritizes:
 4. **Pluggable** -- file system backends, plotting backends, and result formats are all swappable
 5. **Minimal dependencies** -- core simulation requires only the standard library; extras unlock
    pandas, plotting, and cloud storage
+6. **Weather made easy** -- searchable station index, automatic EPW/DDY download, and one-line
+   design day injection into IDF models
 
 ---
 
@@ -75,13 +83,22 @@ idfkit (existing)           idfkit.sim (new)
 │ write_idf()      │         │ OutputVariableIndex  (RDD/MDD parsing)  │
 │ write_epjson()   │         │ ResultsPlotter       (visualization)     │
 └─────────────────┘         └──────────────────────────────────────────┘
-                                      │
-                            ┌─────────┴──────────┐
-                            │  idfkit.sim.fs      │
-                            │  (file system       │
-                            │   abstraction)      │
-                            └─────────────────────┘
-                             LocalFS / S3FS / ...
+         │                            │
+         │                  ┌─────────┴──────────┐
+         │                  │  idfkit.sim.fs      │
+         │                  │  (file system       │
+         │                  │   abstraction)      │
+         │                  └─────────────────────┘
+         │                   LocalFS / S3FS / ...
+         │
+         │                  idfkit.weather (new)
+         │                  ┌──────────────────────────────────────────┐
+         └─────────────────>│ WeatherStation       (station metadata)   │
+                            │ StationIndex         (search & browse)    │
+                            │ DesignDayManager     (DDY parsing/inject) │
+                            │ WeatherDownloader    (EPW/DDY fetching)   │
+                            └──────────────────────────────────────────┘
+                              climate.onebuilding.org (17,300+ stations)
 ```
 
 ### 2.1 Module Layout
@@ -110,6 +127,16 @@ src/idfkit/
 │       ├── __init__.py          # PlotBackend protocol
 │       ├── matplotlib.py        # matplotlib backend (optional)
 │       └── plotly.py            # plotly backend (optional)
+├── weather/
+│   ├── __init__.py              # Public API: search(), nearest(), download()
+│   ├── station.py               # WeatherStation dataclass
+│   ├── index.py                 # StationIndex: search, filter, spatial queries
+│   ├── downloader.py            # EPW/DDY download from climate.onebuilding.org
+│   ├── designday.py             # DDY parser and model injection
+│   ├── geocode.py               # Free address-to-coordinates via Nominatim
+│   ├── spatial.py               # Haversine distance and nearest-neighbor search
+│   └── _data/
+│       └── stations.csv.gz      # Bundled station index (~300KB compressed)
 ```
 
 ---
@@ -830,11 +857,806 @@ def plot_comfort_hours(result: SimulationResult, backend: PlotBackend | None = N
 
 ---
 
-## 9. Dependency Strategy
+## 9. Weather File and Design Day Browser
 
-### 9.1 Core (Zero Extra Dependencies)
+### 9.1 The Problem
 
-The `idfkit.sim` core module should work with **only the standard library**:
+Finding the right weather file is one of the most tedious steps in an EnergyPlus workflow:
+
+- **Manual downloading**: Users must navigate climate.onebuilding.org's directory hierarchy
+  (WMO Region > Country > State) to find a station, then download a ZIP, extract the EPW, and
+  place it in the right directory.
+- **Station selection**: With 17,300+ stations worldwide, users often don't know which station
+  is closest to their building site. They resort to manual map browsing or guesswork.
+- **Design day injection**: After downloading a DDY file, users must manually open it, identify
+  the right design day objects (heating 99.6%? cooling 1%?), and copy them into their IDF model.
+  This is error-prone and poorly documented across existing packages.
+- **Year-range confusion**: climate.onebuilding.org offers multiple TMYx variants per station
+  (full period, 2004-2018, 2007-2021, 2009-2023). Users rarely know which to choose.
+
+No existing Python package solves this end-to-end.
+
+### 9.2 Data Source: climate.onebuilding.org
+
+climate.onebuilding.org provides the most comprehensive free collection of EnergyPlus weather
+files, organized by WMO (World Meteorological Organization) regions:
+
+| Region | Coverage | Stations |
+|--------|----------|----------|
+| WMO Region 1 | Africa | 1,382 |
+| WMO Region 2 | Asia | 3,167 |
+| WMO Region 3 | South America | 1,143 |
+| WMO Region 4 | North & Central America | 4,327 |
+| WMO Region 5 | Southwest Pacific | 1,396 |
+| WMO Region 6 | Europe | 3,999 |
+| WMO Region 7 | Antarctica | 109 |
+| **Total** | **250+ countries** | **17,300+** |
+
+Each station is distributed as a ZIP archive containing:
+
+| File | Purpose |
+|------|---------|
+| `.epw` | EnergyPlus weather data (8,760 hourly records) |
+| `.ddy` | ASHRAE design day conditions (`SizingPeriod:DesignDay` objects) |
+| `.stat` | Climate statistics (ASHRAE climate zone, monthly summaries) |
+| `.clm` | ESP-r weather format |
+| `.wea` | Daysim daylighting format |
+| `.rain` | Hourly precipitation data |
+| `.pvsyst` | PV solar design format |
+
+Up to **four TMYx variants** exist per station:
+
+| Variant | Suffix | Best for |
+|---------|--------|----------|
+| Full period | `_TMYx` | Longest statistical basis |
+| 2004-2018 | `_TMYx.2004-2018` | Legacy comparisons |
+| 2007-2021 | `_TMYx.2007-2021` | Recent climate, ASHRAE 2021 alignment |
+| 2009-2023 | `_TMYx.2009-2023` | Most current climate conditions |
+
+### 9.3 File Naming Convention
+
+climate.onebuilding.org uses a structured naming scheme that encodes location metadata:
+
+```
+{Country}_{State}_{Location}.{Facility}.{WMO}_{Dataset}.{YearRange}.zip
+
+USA_CA_Los.Angeles.Intl.AP.722950_TMYx.2009-2023.zip
+^^^  ^^  ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^ ^^^^^^^^^
+ |   |         |           |        |       |
+ |   |         |           |        |       +-- Year range (optional)
+ |   |         |           |        +---------- Dataset type
+ |   |         |           +------------------- WMO station number (6 digits)
+ |   |         +------------------------------- Location + facility (dot-separated)
+ |   +----------------------------------------- State/Province abbreviation
+ +---------------------------------------------- ISO 3166 country code
+```
+
+This naming convention is parsed during index construction to extract searchable metadata
+without downloading the actual EPW files.
+
+### 9.4 Bundled Station Index
+
+The site does not provide a single REST API or consolidated station list. Station metadata is
+spread across per-region XLSX spreadsheets and KML map files. To enable offline search, IDFkit
+bundles a **pre-built station index** as a compressed CSV:
+
+```
+src/idfkit/weather/_data/stations.csv.gz  (~300KB compressed, ~2MB uncompressed)
+```
+
+#### Index Schema
+
+| Column | Type | Example | Source |
+|--------|------|---------|--------|
+| `wmo` | str | `722950` | Filename |
+| `name` | str | `Los Angeles Intl AP` | Filename (dots replaced with spaces) |
+| `country` | str | `USA` | Filename |
+| `state` | str | `CA` | Filename |
+| `latitude` | float | `33.938` | EPW header or XLSX |
+| `longitude` | float | `-118.389` | EPW header or XLSX |
+| `elevation` | float | `30.0` | EPW header or XLSX |
+| `timezone` | float | `-8.0` | EPW header or XLSX |
+| `wmo_region` | int | `4` | Directory path |
+| `climate_zone` | str | `3B` | STAT file |
+| `datasets` | str | `TMYx,TMYx.2007-2021,TMYx.2009-2023` | Directory listing |
+| `url_template` | str | `WMO_Region_4_.../USA_CA_Los.Angeles.Intl.AP.722950_{dataset}.zip` | Directory path |
+
+#### Index Build Process
+
+A one-time script (not shipped to users) builds the index by:
+
+1. Downloading the per-region XLSX spreadsheets from climate.onebuilding.org/sources/
+2. Parsing station metadata (WMO, name, lat, lon, elevation, timezone)
+3. Cross-referencing with directory listings to determine available datasets per station
+4. Extracting ASHRAE climate zones from STAT file summaries where available
+5. Compressing the merged CSV with gzip
+
+The index is regenerated periodically (quarterly or when new TMYx datasets are released) and
+committed to the repository. Users get the latest index with each IDFkit release.
+
+### 9.5 WeatherStation Data Model
+
+```python
+@dataclass(frozen=True)
+class WeatherStation:
+    """Metadata for a single weather station from climate.onebuilding.org."""
+
+    wmo: str                           # WMO station number (e.g., "722950")
+    name: str                          # Station name (e.g., "Los Angeles Intl AP")
+    country: str                       # ISO country code (e.g., "USA")
+    state: str                         # State/province abbreviation (e.g., "CA")
+    latitude: float                    # Decimal degrees, N positive
+    longitude: float                   # Decimal degrees, E positive
+    elevation: float                   # Meters above sea level
+    timezone: float                    # Hours from GMT (e.g., -8.0)
+    wmo_region: int                    # WMO region number (1-7)
+    climate_zone: str | None           # ASHRAE climate zone (e.g., "3B")
+    datasets: tuple[str, ...]          # Available dataset variants
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable station identifier."""
+        parts = [self.name]
+        if self.state:
+            parts.append(self.state)
+        parts.append(self.country)
+        return ", ".join(parts)
+
+    @property
+    def latest_tmyx(self) -> str | None:
+        """The most recent TMYx year-range variant available."""
+        # Prefer the most recent year range
+        for suffix in ("TMYx.2009-2023", "TMYx.2007-2021", "TMYx.2004-2018", "TMYx"):
+            if suffix in self.datasets:
+                return suffix
+        return None
+
+    def download_url(self, dataset: str | None = None) -> str:
+        """Construct the full download URL for a specific dataset variant."""
+        ...
+```
+
+### 9.6 Station Index and Search
+
+```python
+class StationIndex:
+    """Searchable index of 17,300+ weather stations worldwide."""
+
+    def __init__(self, stations: list[WeatherStation]) -> None:
+        self._stations = stations
+        self._by_wmo: dict[str, WeatherStation] = {s.wmo: s for s in stations}
+        # Precompute radians for spatial queries
+        self._coords_rad: list[tuple[float, float]] = [
+            (math.radians(s.latitude), math.radians(s.longitude))
+            for s in stations
+        ]
+
+    @classmethod
+    def load(cls) -> StationIndex:
+        """Load the bundled station index (lazy singleton)."""
+        ...
+
+    # --- Exact Lookups ---
+
+    def get(self, wmo: str) -> WeatherStation | None:
+        """Look up a station by WMO number."""
+        return self._by_wmo.get(wmo)
+
+    # --- Fuzzy Text Search ---
+
+    def search(
+        self,
+        query: str,
+        *,
+        limit: int = 10,
+        country: str | None = None,
+        climate_zone: str | None = None,
+    ) -> list[SearchResult]:
+        """Fuzzy search stations by name, city, state, or WMO number.
+
+        Uses a multi-signal scoring approach:
+        1. Exact WMO match (highest priority)
+        2. Exact substring match on name (high priority)
+        3. Token-level fuzzy matching (medium priority)
+        4. Country/climate_zone filters applied as hard constraints
+        """
+        ...
+
+    # --- Spatial Search ---
+
+    def nearest(
+        self,
+        latitude: float,
+        longitude: float,
+        *,
+        limit: int = 5,
+        max_distance_km: float | None = None,
+        country: str | None = None,
+    ) -> list[SpatialResult]:
+        """Find the nearest stations to a given coordinate.
+
+        Uses the Haversine formula for great-circle distance.
+        Returns results sorted by distance, closest first.
+        """
+        ...
+
+    def nearest_to_address(
+        self,
+        address: str,
+        *,
+        limit: int = 5,
+        max_distance_km: float | None = None,
+    ) -> list[SpatialResult]:
+        """Geocode an address and find the nearest stations.
+
+        Uses the free Nominatim (OpenStreetMap) geocoding API.
+        No API key required. Rate limited to 1 request/second.
+        """
+        ...
+
+    # --- Filtering ---
+
+    def filter(
+        self,
+        *,
+        country: str | None = None,
+        state: str | None = None,
+        climate_zone: str | None = None,
+        wmo_region: int | None = None,
+        latitude_range: tuple[float, float] | None = None,
+        longitude_range: tuple[float, float] | None = None,
+    ) -> list[WeatherStation]:
+        """Filter stations by metadata criteria."""
+        ...
+
+    @property
+    def countries(self) -> list[str]:
+        """List all unique country codes."""
+        ...
+
+    @property
+    def climate_zones(self) -> list[str]:
+        """List all unique ASHRAE climate zones."""
+        ...
+```
+
+#### Search Result Types
+
+```python
+@dataclass(frozen=True)
+class SearchResult:
+    """A text search result with relevance score."""
+    station: WeatherStation
+    score: float              # 0.0 to 1.0, higher is better
+    match_field: str          # Which field matched: "wmo", "name", "state", "country"
+
+@dataclass(frozen=True)
+class SpatialResult:
+    """A spatial proximity result with distance."""
+    station: WeatherStation
+    distance_km: float        # Great-circle distance in kilometers
+```
+
+### 9.7 Fuzzy Search Implementation
+
+The fuzzy search must work without heavy NLP dependencies. The approach uses a multi-signal
+scoring function built on standard library primitives:
+
+```python
+def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> float:
+    """Score a station against a search query. Returns 0.0-1.0."""
+    name_lower = station.name.lower()
+    score = 0.0
+
+    # Signal 1: Exact WMO match (strongest signal)
+    if query == station.wmo:
+        return 1.0
+
+    # Signal 2: Full query is a substring of the station name
+    if query in name_lower:
+        score = max(score, 0.85 + 0.1 * (len(query) / len(name_lower)))
+
+    # Signal 3: All query tokens appear in the station name
+    name_tokens = set(name_lower.split())
+    if all(any(t.startswith(qt) for t in name_tokens) for qt in tokens):
+        coverage = sum(len(qt) for qt in tokens) / max(len(name_lower), 1)
+        score = max(score, 0.6 + 0.3 * coverage)
+
+    # Signal 4: Partial token overlap (prefix matching)
+    matching_tokens = sum(
+        1 for qt in tokens
+        if any(t.startswith(qt) for t in name_tokens)
+    )
+    if matching_tokens > 0:
+        ratio = matching_tokens / len(tokens)
+        score = max(score, 0.3 * ratio)
+
+    # Signal 5: State or country code match (bonus)
+    if query == station.state.lower() or query == station.country.lower():
+        score = max(score, 0.5)
+
+    return score
+```
+
+This avoids external dependencies like `rapidfuzz` or `thefuzz` while still providing useful
+results for common queries like "chicago", "los angeles", "heathrow", or "4A" (climate zone).
+
+### 9.8 Spatial Search Implementation
+
+#### Haversine Distance (Zero Dependencies)
+
+```python
+import math
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance between two points in kilometers.
+
+    All arguments in decimal degrees.
+    Accuracy: <0.5% error, sufficient for station-to-site distance.
+    """
+    lat1_r, lon1_r = math.radians(lat1), math.radians(lon1)
+    lat2_r, lon2_r = math.radians(lat2), math.radians(lon2)
+    dlat = lat2_r - lat1_r
+    dlon = lon2_r - lon1_r
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1_r) * math.cos(lat2_r) * math.sin(dlon / 2) ** 2
+    return 6371.0 * 2.0 * math.asin(math.sqrt(a))
+```
+
+#### Nearest-Neighbor Strategy
+
+For 17,300 stations, a brute-force scan with Haversine takes ~5-10ms in pure Python -- fast
+enough for interactive use. No spatial indexing is required.
+
+If performance becomes a concern (e.g., batch geocoding thousands of building sites), an
+optional optimization path is available:
+
+1. **Bounding-box pre-filter**: Before computing Haversine, exclude stations whose latitude or
+   longitude differs by more than `max_distance_km / 111` degrees (1 degree latitude ~ 111 km).
+   This reduces the candidate set by ~95% for a 200 km radius.
+2. **Precomputed radians**: Store `(lat_rad, lon_rad)` tuples at index load time to avoid
+   repeated `math.radians()` calls.
+3. **Optional scipy integration**: If `scipy` is available, use `scipy.spatial.cKDTree` for
+   O(log N) nearest-neighbor queries on Cartesian-projected coordinates.
+
+The brute-force approach is the default. The bounding-box pre-filter is always applied. The
+scipy path is used opportunistically when the package is already installed.
+
+### 9.9 Free Address Geocoding
+
+#### Nominatim (OpenStreetMap) Integration
+
+Nominatim provides free geocoding (address to lat/lon) with no API key. The only requirements
+are a descriptive `User-Agent` header and a rate limit of 1 request per second.
+
+```python
+import urllib.request
+import urllib.parse
+import json
+import time
+
+_NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+_USER_AGENT = "idfkit/{version} (https://github.com/samuelduchesne/idfkit)"
+_last_request_time: float = 0.0
+
+def geocode(address: str) -> tuple[float, float] | None:
+    """Convert an address string to (latitude, longitude) using Nominatim.
+
+    Free, no API key required. Rate limited to 1 request/second per
+    Nominatim usage policy.
+
+    Returns None if the address could not be geocoded.
+    """
+    global _last_request_time
+
+    # Enforce rate limit
+    elapsed = time.monotonic() - _last_request_time
+    if elapsed < 1.0:
+        time.sleep(1.0 - elapsed)
+
+    params = urllib.parse.urlencode({
+        "q": address,
+        "format": "json",
+        "limit": "1",
+    })
+    url = f"{_NOMINATIM_URL}?{params}"
+
+    req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            _last_request_time = time.monotonic()
+            data = json.loads(resp.read())
+            if data:
+                return float(data[0]["lat"]), float(data[0]["lon"])
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, IndexError):
+        pass
+    return None
+```
+
+Key design points:
+
+- **Zero dependencies**: uses only `urllib.request` and `json` from the standard library
+- **Rate limiting**: enforced client-side with `time.monotonic()` to comply with Nominatim's
+  1 req/sec policy
+- **Graceful failure**: returns `None` on network errors, no exceptions propagated
+- **No caching needed**: the typical use case is a single geocode call followed by spatial search
+
+#### Integration with Station Search
+
+```python
+# User searches by address -- internally geocodes then finds nearest stations
+results = index.nearest_to_address("350 Fifth Avenue, New York, NY")
+for r in results:
+    print(f"  {r.station.display_name} ({r.distance_km:.0f} km)")
+```
+
+Output:
+```
+  New York J F Kennedy Intl AP, NY, USA (18 km)
+  New York La Guardia AP, NY, USA (10 km)
+  Newark Liberty Intl AP, NJ, USA (22 km)
+  Teterboro AP, NJ, USA (29 km)
+  White Plains Westchester Co AP, NY, USA (42 km)
+```
+
+### 9.10 Weather File Download
+
+```python
+class WeatherDownloader:
+    """Download EPW, DDY, and related files from climate.onebuilding.org."""
+
+    BASE_URL = "https://climate.onebuilding.org"
+
+    def __init__(self, cache_dir: Path | None = None) -> None:
+        """Initialize the downloader.
+
+        Args:
+            cache_dir: Directory for caching downloaded files. Defaults to
+                       ~/.cache/idfkit/weather/ (XDG_CACHE_HOME on Linux,
+                       ~/Library/Caches/idfkit/weather/ on macOS,
+                       %LOCALAPPDATA%/idfkit/cache/weather/ on Windows).
+        """
+        self._cache_dir = cache_dir or _default_cache_dir()
+
+    def download(
+        self,
+        station: WeatherStation,
+        *,
+        dataset: str | None = None,
+        extract: bool = True,
+    ) -> WeatherFiles:
+        """Download weather files for a station.
+
+        Args:
+            station: The weather station to download files for.
+            dataset: TMYx variant (e.g., "TMYx.2009-2023"). Defaults to
+                     the most recent available variant.
+            extract: If True, extract EPW and DDY from the ZIP. If False,
+                     return the path to the ZIP file.
+
+        Returns:
+            WeatherFiles container with paths to downloaded files.
+        """
+        ...
+
+    def get_epw(
+        self,
+        station: WeatherStation,
+        dataset: str | None = None,
+    ) -> Path:
+        """Download and return the path to the EPW file."""
+        files = self.download(station, dataset=dataset)
+        return files.epw
+
+    def get_ddy(
+        self,
+        station: WeatherStation,
+        dataset: str | None = None,
+    ) -> Path:
+        """Download and return the path to the DDY file."""
+        files = self.download(station, dataset=dataset)
+        return files.ddy
+
+    def clear_cache(self) -> None:
+        """Remove all cached weather files."""
+        ...
+
+
+@dataclass(frozen=True)
+class WeatherFiles:
+    """Paths to downloaded weather-related files."""
+    epw: Path
+    ddy: Path
+    stat: Path | None
+    zip_path: Path
+    station: WeatherStation
+    dataset: str
+```
+
+#### Caching Strategy
+
+Downloaded files are cached in a platform-appropriate directory:
+
+| Platform | Default Cache Directory |
+|----------|----------------------|
+| Linux | `~/.cache/idfkit/weather/` (or `$XDG_CACHE_HOME/idfkit/weather/`) |
+| macOS | `~/Library/Caches/idfkit/weather/` |
+| Windows | `%LOCALAPPDATA%\idfkit\cache\weather\` |
+
+Cache layout:
+
+```
+~/.cache/idfkit/weather/
+├── 722950/                                    # WMO station number
+│   ├── TMYx.2009-2023/                        # Dataset variant
+│   │   ├── USA_CA_Los.Angeles.Intl.AP.722950_TMYx.2009-2023.epw
+│   │   ├── USA_CA_Los.Angeles.Intl.AP.722950_TMYx.2009-2023.ddy
+│   │   └── USA_CA_Los.Angeles.Intl.AP.722950_TMYx.2009-2023.stat
+│   └── TMYx.2007-2021/
+│       └── ...
+```
+
+Files are never re-downloaded if they already exist in the cache. The cache can be cleared
+programmatically or by deleting the directory.
+
+### 9.11 Design Day Parsing and Model Injection
+
+This is the highest-value convenience feature: automatically extracting the right
+`SizingPeriod:DesignDay` objects from a DDY file and injecting them into an IDF model.
+
+#### DDY File Structure
+
+A DDY file is a valid IDF-syntax file containing:
+1. A `Site:Location` object (matching the EPW station metadata)
+2. Typically **14-15** `SizingPeriod:DesignDay` objects covering:
+   - Heating design days (99.6% and 99% annual conditions)
+   - Cooling dry-bulb design days (0.4%, 1%, 2% annual conditions)
+   - Cooling wet-bulb (evaporation) design days (0.4%, 1%, 2%)
+   - Dehumidification design days (0.4%, 1%, 2%)
+   - Wind speed design days (coldest month 0.4%, 1%)
+   - Humidification design days (99.6%, 99%)
+
+#### Design Day Categories
+
+Each design day name in the DDY file follows ASHRAE naming conventions. IDFkit parses these
+names to classify design days:
+
+```python
+class DesignDayType(Enum):
+    """Classification of ASHRAE design day conditions."""
+    HEATING_99_6 = "heating_99.6"           # Heating dry-bulb 99.6%
+    HEATING_99 = "heating_99"               # Heating dry-bulb 99%
+    COOLING_DB_0_4 = "cooling_db_0.4"       # Cooling dry-bulb/MCWB 0.4%
+    COOLING_DB_1 = "cooling_db_1"           # Cooling dry-bulb/MCWB 1%
+    COOLING_DB_2 = "cooling_db_2"           # Cooling dry-bulb/MCWB 2%
+    COOLING_WB_0_4 = "cooling_wb_0.4"       # Evaporation wet-bulb/MDB 0.4%
+    COOLING_WB_1 = "cooling_wb_1"           # Evaporation wet-bulb/MDB 1%
+    COOLING_WB_2 = "cooling_wb_2"           # Evaporation wet-bulb/MDB 2%
+    DEHUMID_0_4 = "dehumid_0.4"             # Dehumidification DP/MDB 0.4%
+    DEHUMID_1 = "dehumid_1"                 # Dehumidification DP/MDB 1%
+    DEHUMID_2 = "dehumid_2"                 # Dehumidification DP/MDB 2%
+    HUMIDIFICATION_99_6 = "humidif_99.6"    # Humidification DP/MCDB 99.6%
+    HUMIDIFICATION_99 = "humidif_99"        # Humidification DP/MCDB 99%
+    WIND_0_4 = "wind_0.4"                   # Coldest month WS/MDB 0.4%
+    WIND_1 = "wind_1"                       # Coldest month WS/MDB 1%
+```
+
+#### DesignDayManager API
+
+```python
+class DesignDayManager:
+    """Parse DDY files and inject design day conditions into IDF models."""
+
+    def __init__(self, ddy_path: Path) -> None:
+        """Parse a DDY file into classified design day objects."""
+        self._path = ddy_path
+        self._design_days: dict[DesignDayType, IDFObject] = {}
+        self._location: IDFObject | None = None
+        self._parse()
+
+    @classmethod
+    def from_station(
+        cls,
+        station: WeatherStation,
+        dataset: str | None = None,
+    ) -> DesignDayManager:
+        """Download the DDY file for a station and parse it."""
+        downloader = WeatherDownloader()
+        ddy_path = downloader.get_ddy(station, dataset=dataset)
+        return cls(ddy_path)
+
+    @property
+    def all_design_days(self) -> list[IDFObject]:
+        """All parsed SizingPeriod:DesignDay objects."""
+        return list(self._design_days.values())
+
+    def get(self, dd_type: DesignDayType) -> IDFObject | None:
+        """Get a specific design day by type."""
+        return self._design_days.get(dd_type)
+
+    @property
+    def heating(self) -> list[IDFObject]:
+        """All heating design days."""
+        return [dd for t, dd in self._design_days.items()
+                if t.value.startswith("heating")]
+
+    @property
+    def cooling(self) -> list[IDFObject]:
+        """All cooling design days (dry-bulb, wet-bulb, and dehumidification)."""
+        return [dd for t, dd in self._design_days.items()
+                if t.value.startswith("cooling") or t.value.startswith("dehumid")]
+
+    def apply_to_model(
+        self,
+        model: IDFDocument,
+        *,
+        heating: Literal["99.6%", "99%", "both"] = "99.6%",
+        cooling: Literal["0.4%", "1%", "2%", "all"] = "1%",
+        include_wet_bulb: bool = False,
+        include_dehumidification: bool = False,
+        include_wind: bool = False,
+        update_location: bool = True,
+        replace_existing: bool = True,
+    ) -> list[str]:
+        """Inject design day objects into an IDF model.
+
+        This is the primary convenience method. It selects the appropriate
+        design days based on common ASHRAE sizing practices and adds them
+        to the model.
+
+        Args:
+            model: The IDFDocument to modify.
+            heating: Which heating design day to use.
+            cooling: Which cooling dry-bulb percentile to use.
+            include_wet_bulb: Also add evaporation wet-bulb cooling days.
+            include_dehumidification: Also add dehumidification cooling days.
+            include_wind: Also add wind-speed design days.
+            update_location: Also update the Site:Location object in the model
+                             to match the DDY station metadata.
+            replace_existing: Remove existing SizingPeriod:DesignDay objects
+                              before adding new ones.
+
+        Returns:
+            List of design day names that were added to the model.
+        """
+        ...
+
+    def summary(self) -> str:
+        """Human-readable summary of all design days in the DDY file."""
+        ...
+```
+
+#### Common Presets
+
+For users who don't want to think about percentile selection:
+
+```python
+def apply_ashrae_sizing(
+    model: IDFDocument,
+    station: WeatherStation,
+    *,
+    standard: Literal["90.1", "general"] = "general",
+    dataset: str | None = None,
+) -> list[str]:
+    """Apply standard ASHRAE sizing design days to a model.
+
+    Presets:
+    - "90.1": Heating 99.6% + Cooling 1% DB + Cooling 1% WB
+              (per ASHRAE Standard 90.1 requirements)
+    - "general": Heating 99.6% + Cooling 0.4% DB
+              (conservative general practice)
+    """
+    ddm = DesignDayManager.from_station(station, dataset=dataset)
+
+    if standard == "90.1":
+        return ddm.apply_to_model(
+            model,
+            heating="99.6%",
+            cooling="1%",
+            include_wet_bulb=True,
+        )
+    else:  # "general"
+        return ddm.apply_to_model(
+            model,
+            heating="99.6%",
+            cooling="0.4%",
+        )
+```
+
+### 9.12 End-to-End Weather Workflow
+
+```python
+from idfkit import load_idf
+from idfkit.weather import StationIndex, WeatherDownloader, apply_ashrae_sizing
+
+model = load_idf("office.idf")
+index = StationIndex.load()
+
+# --- Search by name ---
+results = index.search("chicago ohare")
+station = results[0].station
+print(f"{station.display_name} (WMO {station.wmo}, climate zone {station.climate_zone})")
+# Chicago Ohare Intl AP, IL, USA (WMO 725300, climate zone 5A)
+
+# --- Search by address (free, no API key) ---
+results = index.nearest_to_address("Willis Tower, Chicago, IL")
+for r in results[:3]:
+    print(f"  {r.station.display_name} — {r.distance_km:.0f} km")
+# Chicago Ohare Intl AP, IL, USA — 25 km
+# Chicago Midway AP, IL, USA — 12 km
+# Chicago Aurora Muni AP, IL, USA — 55 km
+
+# --- Search by coordinates ---
+results = index.nearest(41.8781, -87.6298, limit=3)
+
+# --- Filter by ASHRAE climate zone ---
+zone_4a = index.filter(climate_zone="4A", country="USA")
+print(f"{len(zone_4a)} stations in ASHRAE zone 4A (USA)")
+
+# --- Download weather files ---
+downloader = WeatherDownloader()
+weather_files = downloader.download(station, dataset="TMYx.2009-2023")
+print(f"EPW: {weather_files.epw}")
+print(f"DDY: {weather_files.ddy}")
+
+# --- Apply design days to model (one line!) ---
+added = apply_ashrae_sizing(model, station, standard="90.1")
+print(f"Added {len(added)} design days: {added}")
+# Added 3 design days: ['Chicago Ohare Intl AP Ann Htg 99.6% Condns DB',
+#                        'Chicago Ohare Intl AP Ann Clg 1% Condns DB=>MWB',
+#                        'Chicago Ohare Intl AP Ann Clg 1% Condns WB=>MDB']
+
+# --- Or fine-grained control ---
+from idfkit.weather import DesignDayManager
+ddm = DesignDayManager(weather_files.ddy)
+print(ddm.summary())
+ddm.apply_to_model(
+    model,
+    heating="both",
+    cooling="all",
+    include_dehumidification=True,
+    include_wet_bulb=True,
+)
+
+# --- Simulate with the downloaded EPW ---
+from idfkit.sim import simulate
+result = simulate(model, weather_files.epw)
+```
+
+### 9.13 Handling Missing Design Days
+
+Some DDY files contain only a `Site:Location` object and no `SizingPeriod:DesignDay` objects.
+This occurs when the station's WMO number is absent from the ASHRAE design conditions lookup
+table (common for smaller or newer stations).
+
+When this happens, `DesignDayManager` raises a descriptive error:
+
+```python
+class NoDesignDaysError(IdfKitError):
+    """Raised when a DDY file contains no SizingPeriod:DesignDay objects."""
+
+    def __init__(self, station: WeatherStation) -> None:
+        nearby = StationIndex.load().nearest(
+            station.latitude, station.longitude, limit=3
+        )
+        nearby_with_ddy = [r for r in nearby if r.station.wmo != station.wmo]
+        suggestions = "\n".join(
+            f"  - {r.station.display_name} (WMO {r.station.wmo}, {r.distance_km:.0f} km)"
+            for r in nearby_with_ddy[:3]
+        )
+        super().__init__(
+            f"DDY file for {station.display_name} (WMO {station.wmo}) contains no "
+            f"SizingPeriod:DesignDay objects. This station may lack ASHRAE design "
+            f"conditions data.\n\nNearest stations that may have design days:\n{suggestions}"
+        )
+```
+
+---
+
+## 10. Dependency Strategy
+
+### 10.1 Core (Zero Extra Dependencies)
+
+The `idfkit.sim` and `idfkit.weather` core modules should work with **only the standard library**:
 
 - `subprocess` for execution
 - `sqlite3` for SQL output parsing
@@ -844,8 +1666,13 @@ The `idfkit.sim` core module should work with **only the standard library**:
 - `re` for RDD/MDD parsing
 - `datetime` for timestamps
 - `hashlib` for simulation caching
+- `urllib.request` for weather file downloads and Nominatim geocoding
+- `zipfile` for extracting EPW/DDY from downloaded archives
+- `gzip` / `csv` for loading the bundled station index
+- `math` for Haversine distance calculations
+- `time` for Nominatim rate limiting
 
-### 9.2 Optional Extras
+### 10.2 Optional Extras
 
 ```toml
 # pyproject.toml
@@ -859,7 +1686,7 @@ cloud = ["boto3>=1.26"]         # Alias for s3
 all = ["pandas>=1.5", "matplotlib>=3.5", "plotly>=5.0", "boto3>=1.26"]
 ```
 
-### 9.3 Lazy Imports
+### 10.3 Lazy Imports
 
 All optional dependencies use lazy imports with clear error messages:
 
@@ -877,7 +1704,7 @@ def _import_pandas() -> Any:
 
 ---
 
-## 10. Implementation Phases
+## 11. Implementation Phases
 
 ### Phase 1: Core Simulation (Foundation)
 
@@ -970,24 +1797,68 @@ def _import_pandas() -> Any:
 - `src/idfkit/sim/plotting/plotly.py`
 - `tests/test_sim_plotting.py`
 
+### Phase 6: Weather File and Design Day Browser
+
+**Scope**: Searchable weather station index, EPW/DDY download, design day injection.
+
+- `WeatherStation` dataclass and bundled station index (stations.csv.gz)
+- `StationIndex` with fuzzy text search, lat/lon proximity search, and filtering
+- `geocode()` via Nominatim (free, no API key)
+- `nearest_to_address()` combining geocoding with spatial search
+- Haversine distance with bounding-box pre-filter
+- `WeatherDownloader` with platform-appropriate cache directory
+- `DesignDayManager` with DDY parsing and classified design day types
+- `apply_ashrae_sizing()` convenience function with ASHRAE 90.1 and general presets
+- `NoDesignDaysError` with nearest-station suggestions
+- Index build script (developer tooling, not shipped)
+- Unit tests with fixture station data and mock DDY files
+
+**New files**:
+- `src/idfkit/weather/__init__.py`
+- `src/idfkit/weather/station.py`
+- `src/idfkit/weather/index.py`
+- `src/idfkit/weather/downloader.py`
+- `src/idfkit/weather/designday.py`
+- `src/idfkit/weather/geocode.py`
+- `src/idfkit/weather/spatial.py`
+- `src/idfkit/weather/_data/stations.csv.gz`
+- `scripts/build_station_index.py`
+- `tests/test_weather_index.py`
+- `tests/test_weather_search.py`
+- `tests/test_weather_designday.py`
+- `tests/test_weather_geocode.py`
+- `tests/test_weather_download.py`
+
 ---
 
-## 11. End-to-End Usage Example
+## 12. End-to-End Usage Example
 
 ```python
 from idfkit import load_idf
 from idfkit.sim import simulate, find_energyplus, OutputVariableIndex
+from idfkit.weather import StationIndex, apply_ashrae_sizing, WeatherDownloader
 
-# Load and configure
+# Load model and find EnergyPlus
 model = load_idf("office.idf")
 eplus = find_energyplus()  # auto-discovers installation
 
-# Step 1: Discovery run to find available outputs
-discovery = simulate(model, "weather.epw", design_day=True, energyplus=eplus)
-index = OutputVariableIndex.from_simulation(discovery)
+# Step 1: Find the right weather station
+index = StationIndex.load()
+results = index.nearest_to_address("350 Fifth Avenue, New York, NY")
+station = results[0].station
+print(f"Using: {station.display_name} ({station.distance_km:.0f} km)")
 
-# Step 2: Search and add outputs
-for var in index.search("Temperature"):
+# Step 2: Download weather files and apply design days
+downloader = WeatherDownloader()
+weather = downloader.download(station)
+apply_ashrae_sizing(model, station, standard="90.1")
+
+# Step 3: Discovery run to find available outputs
+discovery = simulate(model, weather.epw, design_day=True, energyplus=eplus)
+var_index = OutputVariableIndex.from_simulation(discovery)
+
+# Step 4: Search and add outputs
+for var in var_index.search("Temperature"):
     print(f"  {var.name} [{var.units}]")
 
 model.add("Output:Variable", Key_Value="*",
@@ -996,10 +1867,10 @@ model.add("Output:Variable", Key_Value="*",
 model.add("Output:Meter", Key_Name="Electricity:Facility",
           Reporting_Frequency="Monthly")
 
-# Step 3: Full simulation
-result = simulate(model, "weather.epw", annual=True, energyplus=eplus)
+# Step 5: Full simulation
+result = simulate(model, weather.epw, annual=True, energyplus=eplus)
 
-# Step 4: Check for errors
+# Step 6: Check for errors
 if result.errors.has_fatal:
     for err in result.errors.fatal:
         print(f"FATAL: {err}")
@@ -1007,15 +1878,15 @@ if result.errors.has_fatal:
 
 print(f"Warnings: {len(result.errors.warnings)}")
 
-# Step 5: Query results
+# Step 7: Query results
 ts = result.sql.get_timeseries("Zone Mean Air Temperature", "THERMAL ZONE 1")
 print(f"Min: {min(ts.values):.1f} {ts.units}")
 print(f"Max: {max(ts.values):.1f} {ts.units}")
 
-# Step 6: Plot (if matplotlib/plotly available)
+# Step 8: Plot (if matplotlib/plotly available)
 ts.plot()
 
-# Step 7: Export to DataFrame (if pandas available)
+# Step 9: Export to DataFrame (if pandas available)
 df = ts.to_dataframe()
 df.to_csv("zone_temperatures.csv")
 ```
@@ -1049,9 +1920,9 @@ for job, result in zip(jobs, results):
 
 ---
 
-## 12. Testing Strategy
+## 13. Testing Strategy
 
-### 12.1 Unit Tests (No EnergyPlus Required)
+### 13.1 Unit Tests (No EnergyPlus Required)
 
 Most tests should run without an EnergyPlus installation:
 
@@ -1063,8 +1934,14 @@ Most tests should run without an EnergyPlus installation:
 - **Simulation directory preparation**: verify file layout without running EnergyPlus
 - **Caching**: verify hash computation and directory management
 - **FileSystem protocol**: test LocalFileSystem against temp directories
+- **Station index loading**: test CSV parsing, field types, and index construction
+- **Fuzzy search**: test scoring against known station names, WMO numbers, partial matches
+- **Spatial search**: test Haversine distance against known lat/lon pairs
+- **DDY parsing**: test design day classification from fixture DDY files
+- **Design day injection**: test `apply_to_model()` against a fixture IDF document
+- **Geocoding**: mock Nominatim HTTP responses to test parsing without network calls
 
-### 12.2 Integration Tests (EnergyPlus Required)
+### 13.2 Integration Tests (EnergyPlus Required)
 
 Marked with `@pytest.mark.integration` and skipped when EnergyPlus is not available:
 
@@ -1085,7 +1962,7 @@ Integration tests cover:
 - SQL query results
 - Parallel simulation correctness
 
-### 12.3 Test Fixtures
+### 13.3 Test Fixtures
 
 Pre-built fixture files checked into the repository:
 
@@ -1099,11 +1976,18 @@ tests/fixtures/sim/
 ├── sample.eso            # Known ESO file
 ├── sample.csv            # Known CSV output
 └── minimal.idf           # Minimal valid IDF for integration tests
+
+tests/fixtures/weather/
+├── sample_stations.csv   # Small subset of station index for search tests
+├── sample.ddy            # DDY file with all 14 design day types
+├── empty.ddy             # DDY file with only Site:Location (no design days)
+├── nominatim_response.json  # Mock Nominatim API response
+└── sample.epw            # Minimal EPW file (header only, for metadata parsing)
 ```
 
 ---
 
-## 13. Risks and Mitigations
+## 14. Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
@@ -1114,10 +1998,15 @@ tests/fixtures/sim/
 | Large ESO files (>1GB) | Memory exhaustion | Stream-parse ESO files; prefer SQL output |
 | Weather file not found | Simulation fails cryptically | Validate weather file existence before launching subprocess |
 | EnergyPlus hangs (infinite loop) | Process never returns | `timeout` parameter on `subprocess.run`; default 1-hour timeout |
+| climate.onebuilding.org unavailable | Cannot download weather files | Local cache survives outages; bundled station index works offline for search; clear error message |
+| Nominatim rate limiting / downtime | Address geocoding fails | Graceful `None` return; users can fall back to manual lat/lon; 1 req/sec throttle prevents bans |
+| DDY file has no design days | Cannot size HVAC equipment | `NoDesignDaysError` suggests nearby stations with design day data |
+| Station index becomes stale | New stations or datasets missing | Quarterly regeneration; users can also pass custom station data |
+| Bundled stations.csv.gz adds package size | ~300KB compressed added to wheel | Acceptable trade-off for offline search; smaller than a single EPW file |
 
 ---
 
-## 14. Open Questions
+## 15. Open Questions
 
 1. **Should IDFkit bundle a minimal weather file for testing?** EPW files are ~1.5MB each. A
    design-day-only DDY file would be smaller but requires `ExpandObjects`.
@@ -1137,3 +2026,23 @@ tests/fixtures/sim/
 5. **Should version transition be automatic?** If the model version doesn't match the installed
    EnergyPlus version, should IDFkit automatically run the transition executables? This is
    convenient but potentially surprising. A warning + opt-in flag may be best.
+
+6. **Should the station index include non-TMYx datasets?** climate.onebuilding.org also hosts
+   TMY3 (USA), CWEC (Canada), CSWD (China), ISHRAE (India), and other country-specific datasets.
+   Including them would expand coverage but increase index size and complicate the dataset
+   selection UI. A phased approach (TMYx first, others later) may be best.
+
+7. **Should IDFkit parse EPW hourly data?** Packages like opyplus parse full EPW files into
+   DataFrames. IDFkit could offer this as a convenience, but it overlaps with dedicated packages
+   like `pvlib` and `ladybug`. Parsing only the EPW header (location, design conditions) is
+   likely sufficient for the weather browser use case.
+
+8. **Should the weather cache have a size limit or TTL?** If a user downloads weather files for
+   many stations, the cache could grow large. A configurable maximum size with LRU eviction would
+   prevent unbounded growth, but adds complexity. Given that each ZIP is ~2-5MB and most users
+   work with a handful of stations, an unbounded cache with manual `clear_cache()` may suffice.
+
+9. **Should `nearest_to_address()` support batch geocoding?** For parametric studies across
+   many building sites, batch geocoding would be useful. However, Nominatim's 1 req/sec limit
+   makes this slow. A bulk CSV import of pre-geocoded sites (lat/lon columns) would be more
+   practical for batch workflows.
