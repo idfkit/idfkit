@@ -86,7 +86,7 @@ def generate_test_idf(
     num_materials: int = NUM_MATERIALS,
     num_surfaces: int = NUM_SURFACES,
 ) -> str:
-    """Generate a realistic V9.2 IDF file for benchmarking."""
+    """Generate a realistic V9.3 IDF file for benchmarking."""
     lines: list[str] = []
     lines.append(f"Version, {ENERGYPLUS_VERSION_STR};")
     lines.append("")
@@ -363,7 +363,7 @@ def benchmark_iddidf(idf_path: str) -> dict[str, dict[str, float]]:
     results: dict[str, dict[str, float]] = {}
     idf_processor = IDFProcessor()
 
-    # Pre-load the V9.2 IDD for write support
+    # Pre-load the V9.3 IDD for write support
     idd_processor = IDDProcessor()
     idd_path = _get_idd_path()
     idd_structure = idd_processor.process_file_given_file_path(str(idd_path))
@@ -405,109 +405,157 @@ def benchmark_iddidf(idf_path: str) -> dict[str, dict[str, float]]:
 # Chart generation
 # ---------------------------------------------------------------------------
 
+# The operation shown on the README hero chart.
+HERO_OPERATION = "Get single object by name"
 
-def generate_chart(
+# Slug used for per-operation chart filenames.
+_OP_SLUGS: dict[str, str] = {
+    "Load IDF file": "load_idf",
+    "Get all objects by type": "get_by_type",
+    "Get single object by name": "get_by_name",
+    "Add 100 objects": "add_objects",
+    "Modify fields (all zones)": "modify_fields",
+    "Write IDF to string": "write_idf",
+}
+
+
+def _draw_operation(
+    ax: object,
+    op: str,
+    all_results: dict[str, dict[str, dict[str, float]]],
+    *,
+    show_title: bool = True,
+) -> None:
+    """Draw a single horizontal bar chart on *ax* for one operation.
+
+    Bars are sorted fastest (top) to slowest (bottom).
+    """
+    import matplotlib.ticker as ticker
+
+    tools = [TOOL_IDFKIT, TOOL_EPPY, TOOL_OPYPLUS, TOOL_IDDIDF]
+
+    # Collect times for tools that support this operation
+    entries: list[tuple[str, float, str]] = []
+    for tool in tools:
+        tool_results = all_results.get(tool, {})
+        if op in tool_results:
+            entries.append((tool, tool_results[op]["min"], COLORS[tool]))
+
+    # Sort fastest to slowest (ascending time, top = fastest)
+    entries.sort(key=lambda e: e[1])
+
+    tool_names = [e[0] for e in entries]
+    times = [e[1] for e in entries]
+    bar_colors = [e[2] for e in entries]
+
+    max_t = max(times) if times else 1
+    idfkit_t = all_results[TOOL_IDFKIT][op]["min"]
+
+    # Compute speedup vs slowest for title
+    slowest = max(times)
+    speedup = slowest / idfkit_t if idfkit_t > 0 else float("inf")
+
+    bars = ax.barh(
+        tool_names,
+        times,
+        color=bar_colors,
+        height=0.6,
+        edgecolor="white",
+        linewidth=0.5,
+    )
+
+    # Add time labels on bars
+    for bar, t in zip(bars, times):
+        label = _format_time(t)
+        x_pos = bar.get_width()
+        if x_pos < max_t * 0.3:
+            ax.text(
+                x_pos + max_t * 0.02,
+                bar.get_y() + bar.get_height() / 2,
+                label,
+                va="center",
+                ha="left",
+                fontsize=9,
+                fontweight="bold",
+                color="#333",
+            )
+        else:
+            ax.text(
+                x_pos - max_t * 0.02,
+                bar.get_y() + bar.get_height() / 2,
+                label,
+                va="center",
+                ha="right",
+                fontsize=9,
+                fontweight="bold",
+                color="white",
+            )
+
+    if show_title:
+        title = f"{op}  ({speedup:.0f}x)" if speedup > 1.05 else op
+        ax.set_title(title, fontsize=11, fontweight="bold", loc="left", pad=8)
+    ax.set_xlim(0, max_t * 1.18)
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: _format_time(x)))
+    ax.tick_params(axis="x", labelsize=9)
+    ax.tick_params(axis="y", labelsize=9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.invert_yaxis()
+
+
+def generate_hero_chart(
     all_results: dict[str, dict[str, dict[str, float]]],
     output_path: Path,
 ) -> None:
-    """Generate horizontal bar charts comparing all tools."""
+    """Generate the single-operation hero chart for the README."""
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    import matplotlib.ticker as ticker
 
-    # Use all operations from idfkit (the superset)
-    operations = list(all_results[TOOL_IDFKIT].keys())
-    tools = [TOOL_IDFKIT, TOOL_EPPY, TOOL_OPYPLUS, TOOL_IDDIDF]
+    fig, ax = plt.subplots(figsize=(10, 2.8), constrained_layout=True)
+    _draw_operation(ax, HERO_OPERATION, all_results, show_title=False)
 
-    fig, axes = plt.subplots(
-        len(operations),
-        1,
-        figsize=(10, 2.0 * len(operations) + 1.2),
-        constrained_layout=True,
-    )
-    if len(operations) == 1:
-        axes = [axes]
-
-    for idx, (ax, op) in enumerate(zip(axes, operations)):
-        # Collect times for tools that support this operation
-        tool_names = []
-        times = []
-        bar_colors = []
-        for tool in reversed(tools):  # reversed so idfkit is at the top
-            tool_results = all_results.get(tool, {})
-            if op in tool_results:
-                tool_names.append(tool)
-                times.append(tool_results[op]["min"])
-                bar_colors.append(COLORS[tool])
-
-        max_t = max(times) if times else 1
-        idfkit_t = all_results[TOOL_IDFKIT][op]["min"]
-
-        # Compute speedup vs slowest for title
-        slowest = max(times)
-        speedup = slowest / idfkit_t if idfkit_t > 0 else float("inf")
-
-        bars = ax.barh(
-            tool_names,
-            times,
-            color=bar_colors,
-            height=0.6,
-            edgecolor="white",
-            linewidth=0.5,
-        )
-
-        # Add time labels on bars
-        for bar, t in zip(bars, times):
-            label = _format_time(t)
-            x_pos = bar.get_width()
-            if x_pos < max_t * 0.3:
-                ax.text(
-                    x_pos + max_t * 0.02,
-                    bar.get_y() + bar.get_height() / 2,
-                    label,
-                    va="center",
-                    ha="left",
-                    fontsize=9,
-                    fontweight="bold",
-                    color="#333",
-                )
-            else:
-                ax.text(
-                    x_pos - max_t * 0.02,
-                    bar.get_y() + bar.get_height() / 2,
-                    label,
-                    va="center",
-                    ha="right",
-                    fontsize=9,
-                    fontweight="bold",
-                    color="white",
-                )
-
-        title = f"{op}  ({speedup:.1f}x)" if speedup > 1.05 else op
-        ax.set_title(title, fontsize=11, fontweight="bold", loc="left", pad=8)
-        ax.set_xlim(0, max_t * 1.18)
-        ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: _format_time(x)))
-        ax.tick_params(axis="x", labelsize=9)
-        ax.tick_params(axis="y", labelsize=9)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.invert_yaxis()
+    # Compute speedup for the title
+    idfkit_t = all_results[TOOL_IDFKIT][HERO_OPERATION]["min"]
+    slowest = max(r[HERO_OPERATION]["min"] for r in all_results.values() if HERO_OPERATION in r)
+    speedup = slowest / idfkit_t if idfkit_t > 0 else float("inf")
+    speedup_str = f"  ({speedup:.0f}x)" if speedup > 1.05 else ""
 
     fig.suptitle(
-        f"idfkit vs eppy vs opyplus vs energyplus-idd-idf-utilities\n"
-        f"EnergyPlus V{ENERGYPLUS_VERSION_STR} - "
-        f"{NUM_ZONES} zones, {NUM_MATERIALS} materials, "
-        f"{NUM_SURFACES} surfaces ({_total_objects()} total objects)",
+        f"{HERO_OPERATION}{speedup_str}\nEnergyPlus V{ENERGYPLUS_VERSION_STR} - {_total_objects()} objects",
         fontsize=12,
         fontweight="bold",
-        y=1.02,
+        y=1.06,
     )
 
     fig.savefig(str(output_path), dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-    print(f"Chart saved to {output_path}")
+    print(f"Hero chart saved to {output_path}")
+
+
+def generate_operation_charts(
+    all_results: dict[str, dict[str, dict[str, float]]],
+    output_dir: Path,
+) -> None:
+    """Generate one chart per operation for the docs benchmarks page."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    operations = list(all_results[TOOL_IDFKIT].keys())
+
+    for op in operations:
+        slug = _OP_SLUGS.get(op, op.lower().replace(" ", "_"))
+        out = output_dir / f"benchmark_{slug}.png"
+
+        fig, ax = plt.subplots(figsize=(10, 2.8), constrained_layout=True)
+        _draw_operation(ax, op, all_results)
+
+        fig.savefig(str(out), dpi=150, bbox_inches="tight", facecolor="white")
+        plt.close(fig)
+        print(f"  {out}")
 
 
 def _total_objects() -> int:
@@ -611,10 +659,16 @@ def main() -> None:
             json.dump(output, f, indent=2)
         print(f"\nResults saved to {RESULTS_FILE}")
 
-        # Generate chart
-        chart_path = Path(__file__).parent.parent / "docs" / "assets" / "benchmark.png"
-        chart_path.parent.mkdir(parents=True, exist_ok=True)
-        generate_chart(all_results, chart_path)
+        # Generate charts
+        assets_dir = Path(__file__).parent.parent / "docs" / "assets"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+
+        # Hero chart for README (single operation)
+        generate_hero_chart(all_results, assets_dir / "benchmark.png")
+
+        # Per-operation charts for docs benchmarks page
+        print("Per-operation charts:")
+        generate_operation_charts(all_results, assets_dir)
 
     finally:
         os.unlink(idf_path)
