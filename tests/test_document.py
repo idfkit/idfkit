@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from idfkit import IDFDocument
+from idfkit.exceptions import DuplicateObjectError
 from idfkit.objects import IDFCollection, IDFObject
 
 
@@ -17,10 +20,11 @@ class TestIDFDocumentInit:
         doc = IDFDocument(version=(24, 1, 0))
         assert doc.version == (24, 1, 0)
 
-    def test_filepath(self) -> None:
-        doc = IDFDocument(filepath="/tmp/test.idf")
+    def test_filepath(self, tmp_path: Path) -> None:
+        p = tmp_path / "test.idf"
+        doc = IDFDocument(filepath=str(p))
         assert doc.filepath is not None
-        assert str(doc.filepath) == "/tmp/test.idf"
+        assert str(doc.filepath) == str(p)
 
     def test_filepath_none(self) -> None:
         doc = IDFDocument()
@@ -147,7 +151,7 @@ class TestIDFDocumentObjectManipulation:
     def test_copyidfobject_without_new_name(self, empty_doc: IDFDocument) -> None:
         obj = empty_doc.add("Zone", "Original")
         # Without a new name, it should raise DuplicateObjectError
-        with pytest.raises(Exception):
+        with pytest.raises(DuplicateObjectError):
             empty_doc.copyidfobject(obj)
 
     def test_getobject(self, simple_doc: IDFDocument) -> None:
@@ -212,7 +216,10 @@ class TestIDFDocumentSchedules:
         empty_doc.add(
             "People",
             "TestPeople",
-            {"zone_or_zonelist_or_space_or_spacelist_name": "TestZone", "number_of_people_schedule_name": "UsedSchedule"},
+            {
+                "zone_or_zonelist_or_space_or_spacelist_name": "TestZone",
+                "number_of_people_schedule_name": "UsedSchedule",
+            },
         )
         used = empty_doc.get_used_schedules()
         assert "USEDSCHEDULE" in used

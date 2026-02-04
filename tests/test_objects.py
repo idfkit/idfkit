@@ -7,7 +7,6 @@ import pytest
 from idfkit.exceptions import DuplicateObjectError
 from idfkit.objects import IDFCollection, IDFObject, to_idf_name, to_python_name
 
-
 # ---------------------------------------------------------------------------
 # Name conversion helpers
 # ---------------------------------------------------------------------------
@@ -57,6 +56,13 @@ class TestIDFObject:
         obj.Name = "Updated"
         assert obj.Name == "Updated"
         assert obj.name == "Updated"
+
+    def test_name_setter_case_insensitive(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="Original")
+        obj.NAME = "ViaUpper"
+        assert obj.name == "ViaUpper"
+        obj.NaMe = "ViaMixed"
+        assert obj.name == "ViaMixed"
 
     def test_key_property(self) -> None:
         obj = IDFObject(obj_type="Zone", name="MyZone")
