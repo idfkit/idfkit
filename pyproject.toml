@@ -41,6 +41,12 @@ dev = [
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
 ]
+benchmark = [
+    "eppy>=0.5.63",
+    "matplotlib>=3.7.0",
+    "opyplus>=2.0.7",
+    "energyplus-idd-idf-utilities>=0.88",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -52,6 +58,7 @@ packages = ["src/idfkit"]
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
+exclude = ["benchmarks", "src/idfkit/schemas", ".venv", "**/node_modules", "**/__pycache__"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -103,6 +110,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905"]
 
 [tool.ruff.format]
 preview = true

@@ -5,9 +5,20 @@
 [![codecov](https://codecov.io/gh/samuelduchesne/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/samuelduchesne/idfkit)
 [![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://github.com/samuelduchesne/idfkit/blob/main/LICENSE)
 
-This is a template repository for Python projects that use uv for their dependency management.
+A fast, modern EnergyPlus IDF/epJSON parser with O(1) lookups and reference tracking.
 
 **[Documentation](https://samuelduchesne.github.io/idfkit/)** | **[GitHub](https://github.com/samuelduchesne/idfkit/)**
+
+## Performance
+
+idfkit is designed from the ground up for speed. On a **1,700-object IDF**,
+looking up a single object by name is **over 750x faster** than eppy and opyplus
+thanks to O(1) dict-based indexing:
+
+![benchmark chart](docs/assets/benchmark.png)
+
+See [full benchmark results](https://samuelduchesne.github.io/idfkit/benchmarks/)
+for all six operations (load, query, add, modify, write) across four tools.
 
 ## Installation
 

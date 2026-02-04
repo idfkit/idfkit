@@ -10,6 +10,7 @@ copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>
 nav:
   - Home: index.md
   - Getting Started: getting_started.ipynb
+  - Benchmarks: benchmarks.md
   - API Reference: modules.md
 plugins:
   - search
