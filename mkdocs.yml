@@ -9,6 +9,7 @@ copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>
 
 nav:
   - Home: index.md
+  - Getting Started: getting_started.ipynb
   - API Reference: modules.md
 plugins:
   - search
@@ -16,6 +17,9 @@ plugins:
       handlers:
         python:
           paths: ["src"]
+  - mkdocs-jupyter:
+      include_source: true
+      execute: false
 theme:
   name: material
   features:
