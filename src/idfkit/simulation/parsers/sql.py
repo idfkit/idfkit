@@ -11,7 +11,7 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 # EnergyPlus uses a fixed reference year for timestamps. 2017 is the canonical
 # non-leap year used by convention.
@@ -104,28 +104,53 @@ class VariableInfo:
     variable_type: str
 
 
-def _make_timestamp(month: int, day: int, hour: int, minute: int) -> datetime:
+@dataclass(frozen=True, slots=True)
+class EnvironmentInfo:
+    """Metadata about a simulation environment period.
+
+    Attributes:
+        index: The environment period index in the database.
+        name: The environment name (e.g. ``"RUN PERIOD 1"``).
+        environment_type: The type integer (1 = DesignDay, 2 = DesignRunPeriod,
+            3 = WeatherFileRunPeriod).
+    """
+
+    index: int
+    name: str
+    environment_type: int
+
+
+# EnergyPlus EnvironmentType values in the EnvironmentPeriods table.
+_SIZING_ENV_TYPES = (1, 2)  # DesignDay, DesignRunPeriod
+_ANNUAL_ENV_TYPE = 3  # WeatherFileRunPeriod
+
+# Accepted string values for the ``environment`` parameter.
+Environment = Literal["sizing", "annual"]
+
+
+def _make_timestamp(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
     """Build a datetime from EnergyPlus time components.
 
     EnergyPlus stores Hour=24 to mean midnight of the next day. This function
     handles that edge case, rolling over to the next day at hour 0.
 
     Args:
+        year: Year value from the database (or ``_REFERENCE_YEAR`` fallback).
         month: Month (1-12).
         day: Day of month.
         hour: Hour (0-24, where 24 means next day hour 0).
         minute: Minute (0-59).
 
     Returns:
-        A datetime with reference year 2017.
+        A datetime for the given time components.
     """
     if hour == 24:
-        dt = datetime(_REFERENCE_YEAR, month, day, 0, minute)
+        dt = datetime(year, month, day, 0, minute)
         from datetime import timedelta
 
         dt += timedelta(days=1)
         return dt
-    return datetime(_REFERENCE_YEAR, month, day, hour, minute)
+    return datetime(year, month, day, hour, minute)
 
 
 # Mapping from EnergyPlus ReportingFrequency string to a readable label
@@ -175,6 +200,7 @@ class SQLResult:
         variable_name: str,
         key_value: str = "*",
         frequency: str | None = None,
+        environment: Environment | None = "annual",
     ) -> TimeSeriesResult:
         """Retrieve a time series for a variable.
 
@@ -183,12 +209,16 @@ class SQLResult:
             key_value: The key value (e.g. zone name). Use ``"*"`` for
                 environment-level variables.
             frequency: Optional frequency filter (e.g. ``"Hourly"``).
+            environment: Filter by environment type. ``"annual"`` (default)
+                returns only weather-file run period data, ``"sizing"`` returns
+                only design-day data, and ``None`` returns all data.
 
         Returns:
             A TimeSeriesResult with timestamps and values.
 
         Raises:
             KeyError: If the variable is not found in the database.
+            ValueError: If *environment* is not a recognized value.
         """
         cur = self._conn.cursor()
 
@@ -224,21 +254,39 @@ class SQLResult:
         raw_freq: str = str(freq_row[0]) if freq_row else ""
         freq: str = _FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
 
-        # Retrieve time-series data, filtering out warmup periods
-        cur.execute(
-            "SELECT t.Month, t.Day, t.Hour, t.Minute, rd.Value "
+        # Retrieve time-series data, filtering out warmup periods.
+        # COALESCE handles EnergyPlus versions where WarmupFlag is NULL.
+        ts_query = (
+            "SELECT t.Year, t.Month, t.Day, t.Hour, t.Minute, rd.Value "
             "FROM ReportData rd "
             "JOIN Time t ON rd.TimeIndex = t.TimeIndex "
-            "WHERE rd.ReportDataDictionaryIndex = ? "
-            "AND t.WarmupFlag = 0 "
-            "ORDER BY t.TimeIndex",
-            (rdd_index,),
         )
+        ts_params: list[object] = [rdd_index]
+        conditions = [
+            "rd.ReportDataDictionaryIndex = ?",
+            "COALESCE(t.WarmupFlag, 0) = 0",
+        ]
+
+        if environment is not None:
+            ts_query += "JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
+            if environment == "sizing":
+                conditions.append(f"ep.EnvironmentType IN ({', '.join('?' for _ in _SIZING_ENV_TYPES)})")
+                ts_params.extend(_SIZING_ENV_TYPES)
+            elif environment == "annual":
+                conditions.append("ep.EnvironmentType = ?")
+                ts_params.append(_ANNUAL_ENV_TYPE)
+            else:
+                msg = f"environment must be 'sizing', 'annual', or None, got {environment!r}"
+                raise ValueError(msg)
+
+        ts_query += "WHERE " + " AND ".join(conditions) + " ORDER BY t.TimeIndex"
+        cur.execute(ts_query, ts_params)
 
         timestamps: list[datetime] = []
         values: list[float] = []
-        for month, day, hour, minute, value in cur.fetchall():
-            timestamps.append(_make_timestamp(month, day, hour, minute))
+        for year, month, day, hour, minute, value in cur.fetchall():
+            ref_year = year if year and year > 0 else _REFERENCE_YEAR
+            timestamps.append(_make_timestamp(ref_year, month, day, hour, minute))
             values.append(float(value))
 
         return TimeSeriesResult(
@@ -305,7 +353,7 @@ class SQLResult:
             List of VariableInfo entries describing each variable.
         """
         cur = self._conn.cursor()
-        cur.execute("SELECT Name, KeyValue, ReportingFrequency, Units, IsMeter, VariableType FROM ReportDataDictionary")
+        cur.execute("SELECT Name, KeyValue, ReportingFrequency, Units, IsMeter, Type FROM ReportDataDictionary")
 
         return [
             VariableInfo(
@@ -318,6 +366,20 @@ class SQLResult:
             )
             for row in cur.fetchall()
         ]
+
+    def list_environments(self) -> list[EnvironmentInfo]:
+        """List all environment periods in the database.
+
+        Returns:
+            List of EnvironmentInfo entries describing each period (e.g.
+            design days and run periods).
+        """
+        cur = self._conn.cursor()
+        cur.execute(
+            "SELECT EnvironmentPeriodIndex, EnvironmentName, EnvironmentType "
+            "FROM EnvironmentPeriods ORDER BY EnvironmentPeriodIndex"
+        )
+        return [EnvironmentInfo(index=row[0], name=str(row[1]), environment_type=row[2]) for row in cur.fetchall()]
 
     def list_reports(self) -> list[str]:
         """List all available tabular report names.
@@ -334,6 +396,7 @@ class SQLResult:
         variable_name: str,
         key_value: str = "*",
         frequency: str | None = None,
+        environment: Environment | None = "annual",
     ) -> Any:
         """Retrieve a time series as a pandas DataFrame.
 
@@ -344,6 +407,8 @@ class SQLResult:
             variable_name: The output variable name.
             key_value: The key value. Use ``"*"`` for environment-level variables.
             frequency: Optional frequency filter.
+            environment: Filter by environment type (``"annual"`` by default,
+                ``"sizing"``, or ``None`` for all).
 
         Returns:
             A pandas DataFrame with a ``timestamp`` index.
@@ -352,7 +417,7 @@ class SQLResult:
             ImportError: If pandas is not installed.
             KeyError: If the variable is not found.
         """
-        ts = self.get_timeseries(variable_name, key_value, frequency)
+        ts = self.get_timeseries(variable_name, key_value, frequency, environment)
         return ts.to_dataframe()
 
     def query(self, sql: str, parameters: tuple[object, ...] = ()) -> list[tuple[object, ...]]:

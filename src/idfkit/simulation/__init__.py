@@ -20,7 +20,7 @@ from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
 from .parsers.rdd import OutputMeter, OutputVariable
-from .parsers.sql import SQLResult, TabularRow, TimeSeriesResult, VariableInfo
+from .parsers.sql import EnvironmentInfo, SQLResult, TabularRow, TimeSeriesResult, VariableInfo
 from .result import SimulationResult
 from .runner import simulate
 
@@ -28,6 +28,7 @@ __all__ = [
     "CSVColumn",
     "CSVResult",
     "EnergyPlusConfig",
+    "EnvironmentInfo",
     "ErrorMessage",
     "ErrorReport",
     "OutputMeter",

@@ -23,7 +23,7 @@ def _create_minimal_sql(path: Path) -> None:
     cur.execute(
         "CREATE TABLE ReportDataDictionary ("
         "  ReportDataDictionaryIndex INTEGER PRIMARY KEY,"
-        "  IsMeter INTEGER, VariableType TEXT, IndexGroup TEXT,"
+        "  IsMeter INTEGER, Type TEXT, IndexGroup TEXT,"
         "  TimestepType TEXT, KeyValue TEXT, Name TEXT,"
         "  ReportingFrequency TEXT, ScheduleName TEXT, Units TEXT)"
     )
@@ -32,7 +32,7 @@ def _create_minimal_sql(path: Path) -> None:
         "  TimeIndex INTEGER PRIMARY KEY, Year INTEGER, Month INTEGER,"
         "  Day INTEGER, Hour INTEGER, Minute INTEGER, Dst INTEGER,"
         "  Interval INTEGER, IntervalType INTEGER, SimulationDays INTEGER,"
-        "  DayType TEXT, WarmupFlag INTEGER, Environment TEXT)"
+        "  DayType TEXT, EnvironmentPeriodIndex INTEGER, WarmupFlag INTEGER)"
     )
     cur.execute(
         "CREATE TABLE ReportData ("
@@ -46,11 +46,17 @@ def _create_minimal_sql(path: Path) -> None:
         "  ColumnName TEXT, Units TEXT, Value TEXT)"
     )
     cur.execute(
+        "CREATE TABLE EnvironmentPeriods ("
+        "  EnvironmentPeriodIndex INTEGER PRIMARY KEY,"
+        "  SimulationIndex INTEGER, EnvironmentName TEXT, EnvironmentType INTEGER)"
+    )
+    cur.execute(
         "INSERT INTO ReportDataDictionary VALUES "
         "(1, 0, 'Zone', 'Facility', 'Zone', '*', "
         "'Site Outdoor Air Drybulb Temperature', 'Hourly', '', 'C')"
     )
-    cur.execute("INSERT INTO Time VALUES (1, 2017, 1, 1, 1, 0, 0, 60, 1, 1, 'Monday', 0, 'Test')")
+    cur.execute("INSERT INTO EnvironmentPeriods VALUES (1, 1, 'RUN PERIOD 1', 3)")
+    cur.execute("INSERT INTO Time VALUES (1, 2017, 1, 1, 1, 0, 0, 60, 1, 1, 'Monday', 1, 0)")
     cur.execute("INSERT INTO ReportData VALUES (1, 1, 1, -5.0)")
     conn.commit()
     conn.close()
