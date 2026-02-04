@@ -1706,26 +1706,44 @@ def _import_pandas() -> Any:
 
 ## 11. Implementation Phases
 
-### Phase 1: Core Simulation (Foundation)
+### Phase 1: Core Simulation (Foundation) ✅ COMPLETED
 
 **Scope**: Discover EnergyPlus, run simulations, parse errors, return structured results.
 
-- `EnergyPlusConfig` with full discovery chain
-- `simulate()` function with subprocess execution
-- `SimulationResult` with lazy-loaded error parsing
-- Automatic `Output:SQLite` injection
-- Simulation directory isolation
-- Basic `.err` file parsing
-- Unit tests with mocked EnergyPlus (test file structure, not actual simulation)
+- ✅ `EnergyPlusConfig` frozen dataclass with `from_path()` constructor and `weather_dir`, `schema_path`, `expand_objects_exe` properties
+- ✅ `find_energyplus()` with layered discovery: explicit path → `ENERGYPLUS_DIR` env var → `shutil.which` → platform-specific dirs (newest version first)
+- ✅ `simulate()` function with subprocess execution, model copy to avoid mutation, isolated run directories
+- ✅ `SimulationResult` dataclass with lazy-cached `errors` property and path accessors (`sql_path`, `err_path`, `eso_path`, `csv_path`, `html_path`, `rdd_path`, `mdd_path`)
+- ✅ `SimulationResult.from_directory()` for reconstructing results from existing output dirs
+- ✅ Automatic `Output:SQLite` injection via `_ensure_sql_output()`
+- ✅ Simulation directory isolation with `_prepare_run_directory()` (temp dir or explicit)
+- ✅ `.err` file parser with `ErrorMessage` and `ErrorReport` frozen dataclasses, severity classification (Fatal/Severe/Warning/Info), continuation line grouping, warmup convergence and completion detection
+- ✅ `EnergyPlusNotFoundError` and `SimulationError` exceptions with actionable error messages
+- ✅ Unit tests (50 tests) with mocked subprocess, covering err parser, config discovery, and simulation runner
 
-**New files**:
-- `src/idfkit/sim/__init__.py`
-- `src/idfkit/sim/config.py`
-- `src/idfkit/sim/runner.py`
-- `src/idfkit/sim/result.py`
-- `src/idfkit/sim/parsers/err.py`
-- `tests/test_sim_config.py`
-- `tests/test_sim_runner.py`
+**Deviations from original plan**:
+- Package named `idfkit.simulation` (not `idfkit.sim`) for clarity
+- `EnergyPlusConfig` uses `from_path()` classmethod instead of `find()` on the config class; `find_energyplus()` is a standalone function
+- `ErrorReport` uses structured `ErrorMessage` dataclasses (with `severity`, `message`, `details` tuple) instead of plain string lists
+- Version extraction supports both directory name patterns and IDD header fallback
+- `_build_command` uses short flags (`-w`, `-d`, `-p`, `-s`, `-x`, `-a`, `-D`, `-r`) matching EnergyPlus CLI conventions
+
+**Files created**:
+- `src/idfkit/simulation/__init__.py`
+- `src/idfkit/simulation/config.py`
+- `src/idfkit/simulation/runner.py`
+- `src/idfkit/simulation/result.py`
+- `src/idfkit/simulation/parsers/__init__.py`
+- `src/idfkit/simulation/parsers/err.py`
+- `tests/test_simulation_config.py`
+- `tests/test_simulation_err_parser.py`
+- `tests/test_simulation_runner.py`
+- `tests/fixtures/simulation/sample.err`
+- `tests/fixtures/simulation/sample_fatal.err`
+
+**Files modified**:
+- `src/idfkit/exceptions.py` — added `EnergyPlusNotFoundError`, `SimulationError`
+- `src/idfkit/__init__.py` — added new exception exports
 
 ### Phase 2: Output Parsing and Variable Discovery
 
