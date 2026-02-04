@@ -58,7 +58,7 @@ packages = ["src/idfkit"]
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
-exclude = ["benchmarks", "src/idfkit/schemas"]
+exclude = ["benchmarks", "src/idfkit/schemas", ".venv", "**/node_modules", "**/__pycache__"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
