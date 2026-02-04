@@ -10,8 +10,18 @@ copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>
 nav:
   - Home: index.md
   - Getting Started: getting_started.ipynb
+  - Migrating from eppy: migration.md
   - Benchmarks: benchmarks.md
-  - API Reference: modules.md
+  - API Reference:
+    - Document: api/document.md
+    - Objects: api/objects.md
+    - I/O: api/io.md
+    - Schema: api/schema.md
+    - Validation: api/validation.md
+    - Geometry: api/geometry.md
+    - References: api/references.md
+    - Exceptions: api/exceptions.md
+    - Versions: api/versions.md
 plugins:
   - search
   - mkdocstrings:
