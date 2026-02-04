@@ -167,6 +167,8 @@ class IDFObject:
         """Set field value by attribute name."""
         if key.startswith("_"):
             object.__setattr__(self, key, value)
+        elif key.lower() == "name":
+            object.__setattr__(self, "_name", value)
         else:
             # Normalize key to python style
             python_key = to_python_name(key)
