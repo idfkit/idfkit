@@ -13,8 +13,10 @@ from idfkit.objects import IDFCollection, IDFObject
 
 class TestIDFDocumentInit:
     def test_default_version(self) -> None:
+        from idfkit.versions import LATEST_VERSION
+
         doc = IDFDocument()
-        assert doc.version == (23, 2, 0)
+        assert doc.version == LATEST_VERSION
 
     def test_custom_version(self) -> None:
         doc = IDFDocument(version=(24, 1, 0))

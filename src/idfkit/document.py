@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
+from .versions import LATEST_VERSION
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema
@@ -118,7 +119,7 @@ class IDFDocument:
             schema: EpJSONSchema for validation
             filepath: Source file path
         """
-        self.version = version or (23, 2, 0)
+        self.version = version or LATEST_VERSION
         self.filepath = Path(filepath) if filepath else None
         self._schema = schema
         self._collections: dict[str, IDFCollection] = {}

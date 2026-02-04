@@ -57,6 +57,16 @@ from .schema import EpJSONSchema, SchemaManager, get_schema, get_schema_manager
 # Validation
 from .validation import ValidationError, ValidationResult, validate_document
 
+# Version registry
+from .versions import (
+    ENERGYPLUS_VERSIONS,
+    LATEST_VERSION,
+    MINIMUM_VERSION,
+    find_closest_version,
+    is_supported_version,
+    version_string,
+)
+
 # Writing functions
 from .writers import write_epjson, write_idf
 
@@ -101,12 +111,12 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
     return parse_epjson(Path(path), version=version)
 
 
-def new_document(version: tuple[int, int, int] = (24, 1, 0)) -> IDFDocument:
+def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
     """
     Create a new empty IDFDocument.
 
     Args:
-        version: EnergyPlus version (default: 24.1.0)
+        version: EnergyPlus version (default: latest supported version)
 
     Returns:
         Empty IDFDocument with schema loaded
@@ -120,19 +130,18 @@ def new_document(version: tuple[int, int, int] = (24, 1, 0)) -> IDFDocument:
 
 
 __all__ = [
+    "ENERGYPLUS_VERSIONS",
+    "LATEST_VERSION",
+    "MINIMUM_VERSION",
     "DuplicateObjectError",
-    # Schema
     "EpJSONSchema",
     "IDFCollection",
-    # Core classes
     "IDFDocument",
     "IDFObject",
     "IDFParser",
-    # Exceptions
     "IdfKitError",
     "ParseError",
     "Polygon3D",
-    # References
     "ReferenceGraph",
     "SchemaManager",
     "SchemaNotFoundError",
@@ -140,24 +149,21 @@ __all__ = [
     "ValidationError",
     "ValidationFailedError",
     "ValidationResult",
-    # Geometry
     "Vector3D",
     "VersionNotFoundError",
-    # Version
     "__version__",
+    "find_closest_version",
     "get_idf_version",
     "get_schema",
     "get_schema_manager",
+    "is_supported_version",
     "load_epjson",
-    # High-level functions
     "load_idf",
     "new_document",
     "parse_epjson",
-    # Parsing
     "parse_idf",
-    # Validation
     "validate_document",
+    "version_string",
     "write_epjson",
-    # Writing
     "write_idf",
 ]

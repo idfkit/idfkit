@@ -172,7 +172,7 @@ class TestSchemaManager:
     def test_get_schema_not_found(self) -> None:
         manager = SchemaManager()
         with pytest.raises(SchemaNotFoundError):
-            manager.get_schema((99, 99, 99))
+            manager.get_schema((1, 0, 0))
 
     def test_get_available_versions(self) -> None:
         manager = SchemaManager()

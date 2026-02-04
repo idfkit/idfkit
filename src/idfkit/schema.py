@@ -2,11 +2,13 @@
 EpJSON Schema loader and manager.
 
 Handles loading and caching of Energy+.schema.epJSON files
-for different EnergyPlus versions.
+for different EnergyPlus versions. Supports both uncompressed
+and gzip-compressed schema files.
 """
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 from functools import lru_cache
@@ -14,6 +16,11 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from .exceptions import SchemaNotFoundError
+from .versions import (
+    ENERGYPLUS_VERSIONS,
+    find_closest_version,
+    version_dirname,
+)
 
 
 class EpJSONSchema:
@@ -192,13 +199,29 @@ class EpJSONSchema:
         return len(self._properties)
 
 
+_SCHEMA_FILENAME = "Energy+.schema.epJSON"
+_SCHEMA_FILENAME_GZ = "Energy+.schema.epJSON.gz"
+
+
+def load_schema_json(path: Path) -> dict[str, Any]:
+    """Load a schema JSON file, handling both plain and gzip-compressed files."""
+    if path.suffix == ".gz" or path.name.endswith(".epJSON.gz"):
+        with gzip.open(path, "rt", encoding="utf-8") as f:
+            return json.load(f)
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 class SchemaManager:
     """
     Manages loading and caching of EpJSON schemas for different versions.
 
-    Searches for schemas in:
-    1. Bundled schemas directory (shipped with archetypal)
-    2. EnergyPlus installation directories
+    Searches for schemas in the following order:
+    1. Bundled schemas directory (shipped with idfkit) - both .gz and plain
+    2. User cache directory (~/.idfkit/schemas/)
+    3. EnergyPlus installation directories
+
+    Supports gzip-compressed schema files (.epJSON.gz) to reduce package size.
     """
 
     # Common EnergyPlus installation paths by platform
@@ -212,25 +235,47 @@ class SchemaManager:
         ],
     }
 
-    def __init__(self, bundled_schema_dir: Path | None = None):
+    def __init__(
+        self,
+        bundled_schema_dir: Path | None = None,
+        cache_dir: Path | None = None,
+    ):
         """
         Initialize the schema manager.
 
         Args:
             bundled_schema_dir: Path to directory with bundled schema files.
-                               If None, uses default location.
+                               If None, uses default location next to this file.
+            cache_dir: Path to user cache directory for downloaded schemas.
+                       If None, uses ~/.idfkit/schemas/.
         """
         if bundled_schema_dir is None:
-            # Default: schemas directory next to this file
             bundled_schema_dir = Path(__file__).parent / "schemas"
 
+        if cache_dir is None:
+            cache_dir = Path.home() / ".idfkit" / "schemas"
+
         self._bundled_dir = bundled_schema_dir
+        self._cache_dir = cache_dir
         self._cache: dict[tuple[int, int, int], EpJSONSchema] = {}
+
+    @property
+    def bundled_dir(self) -> Path:
+        """Path to the bundled schemas directory."""
+        return self._bundled_dir
+
+    @property
+    def cache_dir(self) -> Path:
+        """Path to the user cache directory for schemas."""
+        return self._cache_dir
 
     @lru_cache(maxsize=8)  # noqa: B019
     def get_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
         """
         Load and return schema for a specific version.
+
+        If the exact version is not found, attempts to find the closest
+        supported version that is <= the requested version.
 
         Args:
             version: EnergyPlus version tuple (major, minor, patch)
@@ -244,53 +289,77 @@ class SchemaManager:
         if version in self._cache:
             return self._cache[version]
 
+        # Try exact version first
         schema_path = self._find_schema_file(version)
-        with open(schema_path, encoding="utf-8") as f:
-            data = json.load(f)
+        if schema_path is None:
+            # Try closest supported version
+            closest = find_closest_version(version)
+            if closest is not None and closest != version:
+                schema_path = self._find_schema_file(closest)
+
+        if schema_path is None:
+            searched = self._get_searched_paths(version)
+            raise SchemaNotFoundError(version, searched)
+
+        data = load_schema_json(schema_path)
 
         schema = EpJSONSchema(version, data)
         self._cache[version] = schema
         return schema
 
-    def _find_schema_file(self, version: tuple[int, int, int]) -> Path:
+    def _find_schema_file(self, version: tuple[int, int, int]) -> Path | None:
         """
         Find the schema file for a version.
 
-        Searches in bundled directory first, then EnergyPlus installations.
+        Searches bundled directory first (both compressed and plain),
+        then user cache, then EnergyPlus installations.
         """
-        searched: list[str] = []
-
         # Try bundled schemas first
-        bundled_paths = self._get_bundled_paths(version)
-        for path in bundled_paths:
-            searched.append(str(path))
+        for path in self._get_bundled_paths(version):
+            if path.exists():
+                return path
+
+        # Try user cache
+        for path in self._get_cache_paths(version):
             if path.exists():
                 return path
 
         # Try EnergyPlus installation
-        install_paths = self._get_install_paths(version)
-        for path in install_paths:
-            searched.append(str(path))
+        for path in self._get_install_paths(version):
             if path.exists():
                 return path
 
-        raise SchemaNotFoundError(version, searched)
+        return None
+
+    def _get_searched_paths(self, version: tuple[int, int, int]) -> list[str]:
+        """Get all paths that would be searched for a version (for error messages)."""
+        paths: list[str] = []
+        for p in self._get_bundled_paths(version):
+            paths.append(str(p))
+        for p in self._get_cache_paths(version):
+            paths.append(str(p))
+        for p in self._get_install_paths(version):
+            paths.append(str(p))
+        return paths
 
     def _get_bundled_paths(self, version: tuple[int, int, int]) -> list[Path]:
         """Get potential bundled schema paths for a version."""
         paths: list[Path] = []
-        v = version
+        dirname = version_dirname(version)
 
-        # Various naming conventions
-        patterns = [
-            "Energy+.schema.epJSON",  # Direct in version dir
-            f"V{v[0]}-{v[1]}-{v[2]}/Energy+.schema.epJSON",
-            f"v{v[0]}.{v[1]}.{v[2]}/Energy+.schema.epJSON",
-            f"v{v[0]}_{v[1]}_{v[2]}/Energy+.schema.epJSON",
-        ]
+        # Compressed first (preferred for bundled), then plain
+        paths.append(self._bundled_dir / dirname / _SCHEMA_FILENAME_GZ)
+        paths.append(self._bundled_dir / dirname / _SCHEMA_FILENAME)
 
-        for pattern in patterns:
-            paths.append(self._bundled_dir / pattern)
+        return paths
+
+    def _get_cache_paths(self, version: tuple[int, int, int]) -> list[Path]:
+        """Get potential user cache schema paths for a version."""
+        paths: list[Path] = []
+        dirname = version_dirname(version)
+
+        paths.append(self._cache_dir / dirname / _SCHEMA_FILENAME_GZ)
+        paths.append(self._cache_dir / dirname / _SCHEMA_FILENAME)
 
         return paths
 
@@ -314,12 +383,16 @@ class SchemaManager:
         for base_pattern in base_patterns:
             for v_fmt in version_formats:
                 base_path = Path(base_pattern.format(v=v_fmt))
-                paths.append(base_path / "Energy+.schema.epJSON")
+                paths.append(base_path / _SCHEMA_FILENAME)
 
         return paths
 
     def get_available_versions(self) -> list[tuple[int, int, int]]:  # noqa: C901
-        """Get list of versions with available schemas."""
+        """
+        Get list of versions with available schemas.
+
+        Checks bundled schemas, user cache, and installed EnergyPlus versions.
+        """
         versions: set[tuple[int, int, int]] = set()
 
         # Check bundled
@@ -327,7 +400,15 @@ class SchemaManager:
             for item in self._bundled_dir.iterdir():
                 if item.is_dir():
                     version = self._parse_version_from_dirname(item.name)
-                    if version:
+                    if version and self._dir_has_schema(item):
+                        versions.add(version)
+
+        # Check user cache
+        if self._cache_dir.exists():
+            for item in self._cache_dir.iterdir():
+                if item.is_dir():
+                    version = self._parse_version_from_dirname(item.name)
+                    if version and self._dir_has_schema(item):
                         versions.add(version)
 
         # Check installed EnergyPlus versions
@@ -344,11 +425,16 @@ class SchemaManager:
                     if item.is_dir() and "EnergyPlus" in item.name:
                         version = self._parse_version_from_dirname(item.name)
                         if version:
-                            schema_path = item / "Energy+.schema.epJSON"
+                            schema_path = item / _SCHEMA_FILENAME
                             if schema_path.exists():
                                 versions.add(version)
 
         return sorted(versions)
+
+    @staticmethod
+    def _dir_has_schema(directory: Path) -> bool:
+        """Check if a directory contains a schema file (plain or compressed)."""
+        return (directory / _SCHEMA_FILENAME).exists() or (directory / _SCHEMA_FILENAME_GZ).exists()
 
     @staticmethod
     def _parse_version_from_dirname(dirname: str) -> tuple[int, int, int] | None:
@@ -368,6 +454,14 @@ class SchemaManager:
         """Clear the schema cache."""
         self._cache.clear()
         self.get_schema.cache_clear()
+
+    def get_supported_versions(self) -> list[tuple[int, int, int]]:
+        """Get list of all EnergyPlus versions that idfkit supports.
+
+        This returns all versions in the registry, regardless of whether
+        schema files are currently available locally.
+        """
+        return list(ENERGYPLUS_VERSIONS)
 
 
 # Global schema manager instance

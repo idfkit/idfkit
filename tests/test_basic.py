@@ -51,7 +51,7 @@ def test_add_object():
     """Test adding objects to a document."""
     from idfkit import new_document
 
-    model = new_document()
+    model = new_document(version=(24, 1, 0))
     zone = model.add("Zone", "MyZone", {"x_origin": 10.0})
 
     assert zone.name == "MyZone"
@@ -93,7 +93,7 @@ def test_write_idf():
     """Test writing IDF content."""
     from idfkit import new_document, write_idf
 
-    model = new_document()
+    model = new_document(version=(24, 1, 0))
     model.add("Zone", "MyZone", {"x_origin": 0})
 
     output = write_idf(model, None)
