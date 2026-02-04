@@ -1,485 +1,593 @@
-# Evaluation: IDFkit as a VS Code Backend for IDF Model Development
+# Evaluation: IDFkit Developer Experience in VS Code
 
 ## Executive Summary
 
-IDFkit has the architectural foundation to power a VS Code extension that
-provides live validation, auto-completion, hover documentation, and reference
-navigation for EnergyPlus IDF and epJSON files. Its schema-driven design,
-O(1) lookup indexes, and on-demand validation system map directly onto Language
-Server Protocol (LSP) capabilities. This document evaluates each feature area,
-identifies what IDFkit already provides, and describes what would need to be
-built.
+When Python developers use IDFkit in VS Code, they get no auto-completion for
+object fields, no type checking on field values, and no discoverability for the
+`doc.zones`-style attribute shortcuts. This is because IDFkit relies heavily on
+`__getattr__`/`__setattr__` for dynamic attribute access, making all field
+interactions opaque to static analysis tools like Pyright/Pylance.
+
+The primary challenge — **determining the necessary attributes for a specific
+IDF object** — is a direct consequence of this design. A developer writing
+`model.add("BuildingSurface:Detailed", "Wall_South", ...)` has no way to
+discover the 14+ required and optional keyword arguments without consulting
+external documentation. VS Code's IntelliSense is silent.
+
+This document evaluates the problem, measures its scope, and proposes concrete
+solutions that range from zero-code improvements to schema-driven code
+generation.
 
 ---
 
-## 1. The Core Problem: Determining Required Attributes
+## 1. The Problem: Dynamic Access Defeats Static Analysis
 
-EnergyPlus models contain up to **847 distinct object types** organized across
-**59 groups**, with a total of **12,652 fields**. A user editing an IDF file by
-hand faces several challenges:
+### 1.1 What the developer experiences today
 
-- **Which fields exist?** A `BuildingSurface:Detailed` object has 14+ fixed
-  fields plus extensible vertex groups. A `Material` object has 8 fields, 5 of
-  which are required. Without the IDD reference open in a separate window,
-  users must guess or memorize field names.
-- **Which fields are required?** The schema marks required fields per object
-  type (e.g., `roughness`, `thickness`, `conductivity`, `density`,
-  `specific_heat` for `Material`), but IDF files give no visual indication of
-  which fields can be omitted.
-- **What values are valid?** Fields carry type constraints (`number`,
-  `string`, `integer`), enumerations (e.g., `Rough`, `Smooth`,
-  `MediumRough` for roughness), numeric ranges (`exclusiveMinimum: 0.0`,
-  `maximum: 0.99999`), units (`W/m-K`, `m`, `kg/m3`), and special sentinel
-  values like `Autocalculate` or `Autosize`.
-- **What do fields reference?** Reference fields like `zone_name` or
-  `construction_name` must point to names defined by other objects in the
-  model. A typo produces a simulation error that can be hard to trace.
-
-IDFkit already stores all of this information in its `EpJSONSchema` class and
-can answer every one of these questions programmatically.
-
----
-
-## 2. IDFkit Capabilities Mapped to VS Code Features
-
-### 2.1 Auto-Completion
-
-| What users need | IDFkit API that provides it |
-|---|---|
-| Complete object type names while typing | `schema.object_types` — returns all 847 type names |
-| Complete field names within an object | `schema.get_field_names(obj_type)` — ordered field list |
-| Complete enum values for a field | `schema.get_field_schema(obj_type, field)["enum"]` |
-| Complete reference targets (e.g., zone names) | `schema.get_field_object_list()` to find the list name, `schema.get_types_providing_reference()` to find source types, then enumerate matching names from the document |
-| Show default values in completion items | `schema.get_field_default(obj_type, field)` |
-| Show units alongside completions | Field schema `"units"` key (covers 4,692 of 12,652 fields) |
-| Suggest `Autocalculate`/`Autosize` where valid | `"anyOf"` entries in field schema |
-
-**Coverage assessment:** IDFkit exposes all metadata needed for full
-auto-completion. The schema contains descriptions (`note`) for 6,055 fields
-that can populate completion item documentation. The `legacy_idd.fields` array
-preserves canonical field ordering for positional IDF completion.
-
-**Gap:** IDFkit does not currently expose a dedicated "list all valid names for
-an object_list reference" convenience method. This would require iterating the
-document's collections filtered by `schema.get_types_providing_reference()`.
-This is straightforward to add.
-
-### 2.2 Live Validation (Diagnostics)
-
-| Validation check | IDFkit implementation | LSP Diagnostic |
-|---|---|---|
-| Required fields missing | `validate_document(check_required=True)` → code `E001` | Error severity |
-| Type mismatch | `validate_document(check_types=True)` → code `E003` | Error severity |
-| Enum value not allowed | code `E004` | Error severity |
-| Value below minimum | code `E005` / `E006` | Error severity |
-| Value above maximum | code `E007` / `E008` | Error severity |
-| Dangling reference | code `E009` | Error severity |
-| anyOf type mismatch | code `E002` | Error severity |
-| Unknown object type | code `W002` | Warning severity |
-| Unknown field name | code `W003` | Warning severity |
-| No schema available | code `W001` | Warning severity |
-
-**Coverage assessment:** IDFkit's validation system already produces structured
-`ValidationError` objects with severity levels, object/field locations, and
-machine-readable codes. These map one-to-one onto LSP `Diagnostic` objects.
-The `validate_document` function supports selective validation via
-`object_types` parameter, enabling incremental validation of only the objects
-that changed.
-
-**Gap:** Validation currently operates on in-memory `IDFDocument` objects. A
-VS Code integration would need an incremental parsing layer that re-parses only
-the modified text region and updates the document model. The current IDF parser
-uses a single-pass regex over the full file content. For files under 10 MB (the
-vast majority of IDF models), re-parsing the full file on each keystroke
-debounce (~40 ms for a 1,700-object model) is fast enough. For larger models,
-an incremental parser would be beneficial.
-
-**Gap:** Line/column position mapping. IDFkit's parser does not currently track
-source positions (line number, column) for parsed objects and fields. The LSP
-requires diagnostics to carry exact text ranges. The IDF parser would need to
-record byte offsets or line:column pairs during tokenization so that validation
-errors can be mapped back to editor positions.
-
-### 2.3 Hover Information
-
-| Hover target | Information IDFkit can provide |
-|---|---|
-| Object type keyword | `schema.get_object_memo(obj_type)` — description, plus `schema.get_required_fields(obj_type)` to show required fields |
-| Field name | `schema.get_field_schema(obj_type, field)["note"]` — description (available for 6,055 of 12,652 fields), plus type, units, default, constraints |
-| Field value (reference) | Resolve reference target: show the referenced object's type, name, and summary fields |
-| Enum value | Show the full enum list with current value highlighted |
-| Numeric value | Show units and valid range |
-
-**Coverage assessment:** The schema metadata is rich enough for informative
-hover tooltips. The `note` field provides EnergyPlus documentation inline. The
-`units` field allows display like `Thickness: 0.1 m` rather than just `0.1`.
-
-**Gap:** Same source-position tracking gap as validation — the hover handler
-needs to know which object type and field the cursor is on.
-
-### 2.4 Go to Definition / Find References
-
-| Navigation action | IDFkit support |
-|---|---|
-| Go to definition of a referenced object | `doc.getobject(obj_type, name)` — O(1) lookup. Requires source position of the target object. |
-| Find all references to an object | `doc.references.get_referencing(name)` — O(1) lookup. Returns all objects that reference a given name. |
-| Find all references from an object | `doc.references.get_references(obj)` — O(1) lookup. Returns all names an object references. |
-| Peek references inline | Same as above, rendered as peek results |
-
-**Coverage assessment:** IDFkit's `ReferenceGraph` provides exactly the
-dependency tracking needed for reference navigation. The graph is built
-automatically during parsing with no additional cost.
-
-**Gap:** Source position tracking is again the missing piece. Each `IDFObject`
-would need to store its source location (byte offset or line range) so that
-the extension can navigate to the correct position in the file.
-
-### 2.5 Document Symbols / Outline
-
-| Symbol type | IDFkit source |
-|---|---|
-| Object types as sections | `doc.collections.keys()` |
-| Individual objects as children | `collection._items` with `.name` and `.obj_type` |
-| Field names within objects | `obj.field_order` or `obj.data.keys()` |
-
-**Coverage assessment:** The hierarchical structure of IDFDocument → collections
-→ objects → fields maps naturally to LSP `DocumentSymbol` trees. Groups are
-available from the schema (`"group"` key on each object type definition in 59
-categories).
-
-### 2.6 Code Actions and Quick Fixes
-
-IDFkit's validation errors carry enough information to power quick fixes:
-
-| Validation error | Possible quick fix |
-|---|---|
-| `E001` Required field missing | Insert field with default value (available via `get_field_default`) |
-| `E004` Invalid enum value | Offer all valid enum values as replacements |
-| `E009` Dangling reference | Offer existing object names from the referenced object-list as replacements |
-| `W003` Unknown field | Offer closest matching field name (fuzzy match against `get_field_names`) |
-
-### 2.7 Snippet Generation
-
-IDFkit can generate complete object templates:
+Consider a typical IDFkit workflow in VS Code:
 
 ```python
-schema = get_schema((24, 1, 0))
-fields = schema.get_all_field_names("Material")
-required = schema.get_required_fields("Material")
-# Generate: Material, ${1:Name}, ${2:Roughness}, ${3:Thickness}, ...
+from idfkit import new_document
+
+model = new_document(version=(24, 1, 0))
+
+# (1) No auto-complete for "zones" — Pyright doesn't know this attribute exists
+zones = model.zones
+
+# (2) No auto-complete for field names — zone.x_| shows nothing
+zone = model["Zone"]["Office"]
+x = zone.x_origin  # Pyright infers: Any
+
+# (3) No type checking — this typo is silently accepted, returns None
+y = zone.y_origni  # No error, returns None at runtime
+
+# (4) No field discovery for add() — what kwargs does Material accept?
+model.add("Material", "Concrete", roughness="MediumRough", ...)  # guessing
 ```
 
-For each field, the snippet can include:
-- Placeholder with default value or required marker
-- Tab stop ordering matching canonical field order
-- Enum choices as dropdown selections (VS Code snippet choice syntax)
+At every step, Pylance/Pyright sees `Any` and offers no help.
 
-### 2.8 Format Conversion
+### 1.2 Where the type information is lost
 
-IDFkit's bidirectional IDF ↔ epJSON conversion (`convert_idf_to_epjson`,
-`convert_epjson_to_idf`) can power VS Code commands:
+There are six specific code patterns in IDFkit where static type information
+is lost. Each one maps to a different user frustration:
 
-- "Convert to epJSON" / "Convert to IDF" via command palette
-- Side-by-side preview of alternate format
-- Automatic format detection and appropriate parser selection
+#### Pattern 1: `IDFObject.__getattr__` — Field reads return `Any`
+
+**Location:** `src/idfkit/objects.py:143-164`
+
+```python
+def __getattr__(self, key: str) -> Any:
+    # Tries multiple name forms, returns None if not found
+```
+
+**User impact:** `zone.x_origin`, `zone.roughness`, `zone.anything_at_all`
+all have type `Any`. No field name completions, no type narrowing, no error
+on misspelled field names.
+
+#### Pattern 2: `IDFObject.__setattr__` — Field writes accept anything
+
+**Location:** `src/idfkit/objects.py:166-175`
+
+```python
+def __setattr__(self, key: str, value: Any) -> None:
+    python_key = to_python_name(key)
+    self._data[python_key] = value
+```
+
+**User impact:** `zone.thickness = "not a number"` is silently accepted.
+No type checking on assignment. No error on assigning to nonexistent fields.
+
+#### Pattern 3: `IDFDocument.__getattr__` — Collection shortcuts are invisible
+
+**Location:** `src/idfkit/document.py:161-183`
+
+```python
+def __getattr__(self, name: str) -> IDFCollection:
+    obj_type = _PYTHON_TO_IDF.get(name)
+    if obj_type:
+        return self[obj_type]
+```
+
+**User impact:** `model.zones`, `model.materials`, `model.building_surfaces`
+and 45 other convenience attributes are completely invisible to Pylance. No
+auto-completion when typing `model.zo...`. Pyright may even flag them as
+errors in strict mode.
+
+#### Pattern 4: `IDFDocument.add()` — kwargs are untyped
+
+**Location:** `src/idfkit/document.py:244-294`
+
+```python
+def add(self, obj_type: str, name: str, data: dict[str, Any] | None = None,
+        **kwargs: Any) -> IDFObject:
+```
+
+**User impact:** This is the primary pain point. When writing:
+```python
+model.add("Material", "Concrete_200mm",
+    roughness="MediumRough",
+    thickness=0.2,
+    # ... what other fields exist? Are they required? What types?
+)
+```
+VS Code shows no parameter hints for the available fields. The developer must
+consult the EnergyPlus IDD reference, the idfkit docs, or the schema
+introspection API to discover that `conductivity`, `density`, and
+`specific_heat` are required.
+
+#### Pattern 5: `IDFObject.__getitem__` — Index access returns `Any`
+
+**Location:** `src/idfkit/objects.py:177-186`
+
+```python
+def __getitem__(self, key: str | int) -> Any:
+```
+
+**User impact:** `zone[0]` is always `str` (the name), but Pyright sees `Any`.
+`zone["x_origin"]` also returns `Any`.
+
+#### Pattern 6: `IDFObject.get_field_idd()` — Schema access returns untyped dict
+
+**Location:** `src/idfkit/objects.py:224-229`
+
+```python
+def get_field_idd(self, field_name: str) -> dict[str, Any] | None:
+```
+
+**User impact:** The schema information *is* accessible at runtime via this
+method, but the returned dict is untyped — the developer doesn't get
+completion for keys like `"type"`, `"enum"`, `"default"`, `"units"`, etc.
 
 ---
 
-## 3. Architecture Options
+## 2. Scale of the Problem
 
-### 3.1 Option A: Python Language Server (pygls)
-
-Build a Language Server in Python using `pygls` (Python Language Server
-framework) with IDFkit as the core library.
-
-```
-VS Code Extension (TypeScript)
-  ↕ LSP (JSON-RPC over stdio/tcp)
-Python Language Server (pygls)
-  ↕ API calls
-IDFkit (parsing, schema, validation)
-```
-
-**Advantages:**
-- Direct use of IDFkit's Python API with no serialization boundary
-- Full access to all schema metadata, validation, and reference graph
-- `pygls` handles LSP protocol boilerplate
-- Python ecosystem for future ML-based suggestions
-
-**Disadvantages:**
-- Requires Python runtime on user's machine (can bundle with extension)
-- Higher memory footprint than native TypeScript
-- Startup latency for Python interpreter
-
-**Effort estimate:** The VS Code extension TypeScript shell is minimal
-(activation, language client configuration). The bulk of work is in the
-Python language server:
-1. IDF text document parsing with source positions
-2. LSP handler implementations (completion, diagnostics, hover, etc.)
-3. Incremental document update handling
-4. File watcher for multi-file models
-
-### 3.2 Option B: TypeScript Extension with IDFkit as Subprocess
-
-Run IDFkit as a subprocess, communicating via JSON:
-
-```
-VS Code Extension (TypeScript)
-  ↕ JSON over stdin/stdout
-IDFkit CLI (Python subprocess)
-```
-
-**Advantages:**
-- Decoupled architecture; extension and IDFkit evolve independently
-- Can cache schema data in TypeScript for faster completions
-
-**Disadvantages:**
-- Serialization overhead for every interaction
-- Must define and maintain a JSON protocol
-- Harder to provide responsive real-time features
-
-### 3.3 Option C: Compile Schema to JSON Schema for Native VS Code
-
-Since epJSON files are JSON, VS Code's built-in JSON language support can
-validate them using JSON Schema. IDFkit's schema files *are* JSON Schema
-(with EnergyPlus extensions).
-
-```
-VS Code Settings (jsonValidation)
-  → Energy+.schema.epJSON → Built-in JSON validation
-```
-
-**Advantages:**
-- Zero additional code for basic epJSON validation
-- Built-in completion for field names and enum values in epJSON files
-- No Python dependency
-
-**Disadvantages:**
-- Only works for epJSON, not IDF text format
-- No reference resolution or cross-object validation
-- No hover documentation from `note` fields
-- No Go to Definition
-- Limited to JSON Schema capabilities (no extensible field validation)
-
-### 3.4 Recommendation
-
-**Option A (Python Language Server)** is the strongest approach. It provides
-the richest feature set with the least duplication. IDFkit's existing API
-already covers 80%+ of the data access patterns needed; the main work is in
-the LSP integration layer and source-position tracking.
-
-Option C can be offered as a lightweight complement for epJSON users who don't
-need the full feature set.
-
----
-
-## 4. What IDFkit Already Provides vs. What Must Be Built
-
-### Already provided by IDFkit
-
-| Capability | Module | Key API |
-|---|---|---|
-| IDF parsing | `idf_parser.py` | `parse_idf()` |
-| epJSON parsing | `epjson_parser.py` | `parse_epjson()` |
-| Schema loading (16 versions) | `schema.py` | `SchemaManager.get_schema()` |
-| All 847 object type definitions | `schema.py` | `EpJSONSchema.object_types` |
-| Field names, types, defaults | `schema.py` | `get_field_names()`, `get_field_type()`, `get_field_default()` |
-| Required fields | `schema.py` | `get_required_fields()` |
-| Enum values | `schema.py` | `get_field_schema()["enum"]` |
-| Field descriptions | `schema.py` | `get_field_schema()["note"]` |
-| Object descriptions | `schema.py` | `get_object_memo()` |
-| Units metadata | `schema.py` | `get_field_schema()["units"]` |
-| Numeric range constraints | `schema.py` | `get_field_schema()["minimum"]`, etc. |
-| Reference resolution | `references.py` | `ReferenceGraph.get_referencing()` |
-| Dependency tracking | `references.py` | `ReferenceGraph.get_references()` |
-| Dangling reference detection | `references.py` | `get_dangling_references()` |
-| Type validation | `validation.py` | `validate_document(check_types=True)` |
-| Range validation | `validation.py` | `validate_document(check_ranges=True)` |
-| Required field validation | `validation.py` | `validate_document(check_required=True)` |
-| Reference integrity validation | `validation.py` | `validate_document(check_references=True)` |
-| Format conversion | `writers.py` | `write_idf()`, `write_epjson()` |
-| Version management | `versions.py` | 16 supported versions with schema fallback |
-| Object groups | Schema data | `"group"` key on each object type |
-
-### Must be built for VS Code integration
-
-| Capability | Description | Difficulty |
-|---|---|---|
-| Source position tracking | Record line:column ranges during IDF parsing for each object and field | Medium |
-| LSP server shell | `pygls`-based server with document sync, lifecycle management | Medium |
-| Completion provider | Map schema metadata to LSP `CompletionItem` objects | Low-Medium |
-| Diagnostics provider | Map `ValidationError` objects to LSP `Diagnostic` objects with positions | Low |
-| Hover provider | Compose hover content from schema notes, types, units, constraints | Low |
-| Definition provider | Navigate to referenced object's source position | Low (once positions tracked) |
-| References provider | Map `ReferenceGraph` results to source positions | Low (once positions tracked) |
-| Document symbol provider | Build symbol tree from document collections | Low |
-| Code action provider | Generate quick fixes from validation error codes | Medium |
-| Snippet generation | Generate object templates from schema metadata | Low |
-| IDF syntax highlighting | TextMate grammar for IDF file format | Low |
-| Extension packaging | VS Code extension manifest, Python bundling, activation | Medium |
-| Incremental document updates | Re-parse modified regions without full file re-parse | Medium-High |
-| Multi-file support | Handle `##include` directives and file references | Medium |
-
----
-
-## 5. Schema Metadata Depth
-
-The EnergyPlus schema (v24.1) contains metadata that enables extremely
-detailed editor assistance:
+The EnergyPlus v24.1 schema defines:
 
 | Metric | Count |
 |---|---|
 | Object types | 847 |
-| Object groups | 59 |
-| Total fields | 12,652 |
-| Fields with descriptions (`note`) | 6,055 (47.9%) |
+| Total fields across all object types | 12,652 |
+| Fields with descriptions | 6,055 (47.9%) |
 | Fields with default values | 3,764 (29.7%) |
 | Fields with enum constraints | 1,505 (11.9%) |
 | Fields with units | 4,692 (37.1%) |
-| Unique field metadata keys | 20 (type, enum, minimum, maximum, exclusiveMinimum, exclusiveMaximum, default, note, units, ip-units, object_list, reference, data_type, external_list, anyOf, items, maxItems, minItems, retaincase, unitsBasedOnField) |
+| Required fields (across all types) | Varies per type (e.g., Material has 5) |
+| Convenience attributes on IDFDocument | 48 (in `_PYTHON_TO_IDF` mapping) |
 
-This metadata density means nearly every field can receive meaningful editor
-assistance:
-- Almost half of all fields have inline documentation
-- Nearly 30% have default values that can pre-populate completions
-- Over a third have units that can be shown in hover/completion detail
-- Nearly 12% have enum constraints for dropdown-style completion
+All 12,652 fields and 48 convenience attributes are currently invisible to
+VS Code's type system. A developer working with even 10-20 common object types
+must memorize or look up hundreds of field names.
 
 ---
 
-## 6. Performance Considerations
+## 3. Proposed Solutions
 
-IDFkit's performance characteristics are favorable for real-time editor use:
+The solutions below are ordered from least to most invasive. They can be
+adopted incrementally.
 
-| Operation | Latency | Notes |
-|---|---|---|
-| Full IDF parse (1,700 objects) | ~40 ms | Fast enough for debounced re-parse on edit |
-| Object lookup by name | ~0.3 μs | O(1), negligible for completion/hover |
-| Schema load (first time) | ~200 ms | One-time cost per session, cached afterward |
-| Validation (full document) | ~50 ms | Can be limited to `object_types` for incremental |
-| Reference graph query | O(1) | Pre-built during parsing |
+### 3.1 Solution A: Explicit properties on `IDFDocument` for common collections
 
-For a typical editing workflow with 500 ms debounce on keystrokes, a full
-re-parse + validation cycle completes well within the budget for models up to
-~5,000 objects. Larger models (10,000+ objects) would benefit from incremental
-parsing.
+**What:** Replace the `__getattr__` lookup for the 48 entries in
+`_PYTHON_TO_IDF` with explicit `@property` declarations.
+
+**Before:**
+```python
+# In __getattr__, invisible to Pyright:
+_PYTHON_TO_IDF = {"zones": "Zone", "materials": "Material", ...}
+```
+
+**After:**
+```python
+@property
+def zones(self) -> IDFCollection:
+    """Collection of Zone objects."""
+    return self["Zone"]
+
+@property
+def materials(self) -> IDFCollection:
+    """Collection of Material objects."""
+    return self["Material"]
+
+@property
+def building_surfaces(self) -> IDFCollection:
+    """Collection of BuildingSurface:Detailed objects."""
+    return self["BuildingSurface:Detailed"]
+
+# ... for all 48 entries
+```
+
+**Impact:**
+- `model.zones` auto-completes in VS Code immediately
+- `model.zo` triggers suggestion list showing `zones`
+- Docstrings appear in hover
+- The `__getattr__` fallback remains for dynamic/uncommon types
+- No runtime behavior change
+
+**Effort:** Low. The 48 properties can be generated from the existing
+`_PYTHON_TO_IDF` dict with a script. The `__getattr__` fallback stays for
+backward compatibility and for the remaining ~800 object types.
+
+**Limitation:** The returned `IDFCollection` is still generic — its objects
+are `IDFObject` with no field-specific types.
+
+### 3.2 Solution B: `TypedDict` classes for common object types
+
+**What:** Define `TypedDict` classes for the most common object types and use
+them in `add()` overloads.
+
+```python
+from typing import TypedDict
+
+class ZoneFields(TypedDict, total=False):
+    x_origin: float
+    y_origin: float
+    z_origin: float
+    direction_of_relative_north: float
+    type: int
+    multiplier: int
+    ceiling_height: float | str
+    volume: float | str
+    floor_area: float | str
+
+class MaterialFields(TypedDict, total=False):
+    roughness: str  # Literal["Rough", "MediumRough", ...] for stricter checking
+    thickness: float
+    conductivity: float
+    density: float
+    specific_heat: float
+    thermal_absorptance: float
+    solar_absorptance: float
+    visible_absorptance: float
+```
+
+These can be used in overloaded signatures for `add()`:
+
+```python
+from typing import overload, Literal
+
+@overload
+def add(self, obj_type: Literal["Zone"], name: str,
+        data: ZoneFields | None = None, **kwargs: Unpack[ZoneFields]) -> IDFObject: ...
+@overload
+def add(self, obj_type: Literal["Material"], name: str,
+        data: MaterialFields | None = None, **kwargs: Unpack[MaterialFields]) -> IDFObject: ...
+@overload
+def add(self, obj_type: str, name: str,
+        data: dict[str, Any] | None = None, **kwargs: Any) -> IDFObject: ...
+```
+
+**Impact:**
+- `model.add("Material", "Concrete", |)` shows `roughness`, `thickness`, etc.
+  in the completion list with correct types
+- Type errors like `thickness="not a number"` are caught statically
+- The generic `str` overload preserves backward compatibility for all 847 types
+
+**Effort:** Medium. The `TypedDict` classes can be auto-generated from the
+schema. The overloads must cover the most common types (perhaps 20-30). A
+code generation script reading the bundled schema can produce all of them.
+
+**Limitation:** `@overload` with `Literal` string discrimination works with
+Pyright but produces long type stubs. Covering all 847 types this way is
+impractical in source code — a `.pyi` stub file is more appropriate.
+
+### 3.3 Solution C: Generated `.pyi` type stubs from schema
+
+**What:** Use the EnergyPlus schema to generate a comprehensive `.pyi` stub
+file that provides type information to Pyright without changing any runtime
+code.
+
+**Generated `src/idfkit/document.pyi`:**
+```python
+class IDFDocument:
+    @property
+    def zones(self) -> IDFCollection: ...
+    @property
+    def materials(self) -> IDFCollection: ...
+    @property
+    def building_surfaces(self) -> IDFCollection: ...
+    # ... all 48 convenience properties
+
+    @overload
+    def add(self, obj_type: Literal["Zone"], name: str, data: ZoneFields | None = ...,
+            *, x_origin: float = ..., y_origin: float = ..., ...) -> IDFObject: ...
+    @overload
+    def add(self, obj_type: Literal["Material"], name: str, data: MaterialFields | None = ...,
+            *, roughness: str = ..., thickness: float = ..., ...) -> IDFObject: ...
+    # ... overloads for top N object types
+    @overload
+    def add(self, obj_type: str, name: str, data: dict[str, Any] | None = ...,
+            **kwargs: Any) -> IDFObject: ...
+```
+
+**Generated `src/idfkit/objects.pyi`:**
+```python
+class IDFObject:
+    @property
+    def name(self) -> str: ...
+    @property
+    def obj_type(self) -> str: ...
+    @property
+    def data(self) -> dict[str, Any]: ...
+    @property
+    def fieldnames(self) -> list[str]: ...
+    @property
+    def fieldvalues(self) -> list[Any]: ...
+    def get_field_idd(self, field_name: str) -> FieldSchema | None: ...
+    # __getattr__ return type stays Any — but typed wrapper classes help
+```
+
+**Impact:**
+- All 48 document properties auto-complete
+- `add()` calls for common types get full field completion and type checking
+- Zero runtime changes — stubs only affect static analysis
+- Can be regenerated whenever the schema changes
+
+**Effort:** Medium. Requires a code generation script (which can live in
+a `scripts/` or `tools/` directory). The script reads the schema and writes
+`.pyi` files. Must be re-run when the schema version or API changes.
+
+### 3.4 Solution D: Schema-informed `FieldSchema` TypedDict
+
+**What:** Type the schema introspection return values so developers using
+`get_field_idd()` get completion for schema keys.
+
+```python
+class FieldSchema(TypedDict, total=False):
+    type: str
+    enum: list[str]
+    default: float | int | str
+    minimum: float
+    maximum: float
+    exclusiveMinimum: float
+    exclusiveMaximum: float
+    note: str
+    units: str
+    ip_units: str  # "ip-units" in the JSON, mapped for Python
+    object_list: list[str]
+    data_type: str
+    anyOf: list[dict[str, Any]]
+    reference: list[str]
+```
+
+**Before:**
+```python
+field_info = zone.get_field_idd("x_origin")  # dict[str, Any] | None
+field_info["type"]  # Any
+```
+
+**After:**
+```python
+field_info = zone.get_field_idd("x_origin")  # FieldSchema | None
+field_info["type"]  # str — with auto-complete for "type", "enum", etc.
+```
+
+**Impact:** Improves the "expert" workflow where developers introspect the
+schema programmatically (as shown in the getting_started notebook Section 3.4).
+
+**Effort:** Low. One `TypedDict` class plus updating the return type annotation
+on `get_field_idd()` and `get_field_schema()`.
+
+### 3.5 Solution E: Runtime helper for field discovery
+
+**What:** Add a method to `IDFObject` or `EpJSONSchema` that returns a
+structured summary of an object type's fields, designed for interactive
+exploration in notebooks and the REPL.
+
+```python
+# Possible API
+schema.describe("Material")
+# Output:
+# Material (Surface Construction Elements)
+#   * roughness        : str   enum=[Rough, MediumRough, ...]
+#   * thickness        : float units=m, >0
+#   * conductivity     : float units=W/m-K, >0
+#   * density          : float units=kg/m3, >0
+#   * specific_heat    : float units=J/kg-K, >=100
+#     thermal_absorptance: float default=0.9, (0, 0.99999]
+#     solar_absorptance  : float default=0.7, [0, 1]
+#     visible_absorptance: float default=0.7, [0, 1]
+#   (* = required)
+
+# Or as structured data:
+schema.get_fields_summary("Material")
+# Returns list of FieldInfo dataclasses with name, type, required, default, etc.
+```
+
+**Impact:** Directly addresses the primary challenge. Even without static
+typing, developers can quickly discover what fields an object type needs. Works
+in Jupyter notebooks (the getting_started notebook already uses schema
+introspection, but the output requires manual assembly).
+
+**Effort:** Low-medium. A formatting/presentation layer over existing schema
+APIs.
 
 ---
 
-## 7. Comparison with Existing IDF Editing Tools
+## 4. Recommendation: Incremental Adoption Path
 
-| Feature | Text editor (current) | IDF Editor (EnergyPlus) | Proposed IDFkit + VS Code |
-|---|---|---|---|
-| Syntax highlighting | No | Custom | Yes (TextMate grammar) |
-| Auto-completion for object types | No | Dropdown | Yes (fuzzy, filtered) |
-| Auto-completion for field names | No | Table columns | Yes (contextual, ordered) |
-| Auto-completion for enum values | No | Dropdown | Yes (with descriptions) |
-| Auto-completion for references | No | Dropdown | Yes (live from model) |
-| Live validation | No | On save | Yes (on keystroke, debounced) |
-| Required field indicators | No | Bold columns | Yes (diagnostics + squiggles) |
-| Hover documentation | No | Tooltip | Yes (rich markdown) |
-| Go to referenced object | No | No | Yes (Ctrl+Click) |
-| Find all references | No | No | Yes (Shift+F12) |
-| Rename with reference update | No | No | Yes (F2, via `doc.rename()`) |
-| Multi-file support | No | No | Possible |
-| Version control integration | No | No | Yes (VS Code built-in) |
-| Format conversion | External tool | No | Yes (command palette) |
-| Extensibility (plugins) | No | No | Yes (VS Code extension API) |
+These solutions build on each other and can be adopted in phases:
 
----
+### Phase 1: Quick wins (no code generation required)
 
-## 8. Addressing the Primary Challenge
+1. **Explicit properties on IDFDocument** (Solution A) — Replace the 48
+   `_PYTHON_TO_IDF` entries with `@property` methods. This immediately enables
+   auto-completion for `model.zones`, `model.materials`, etc. Keep the
+   `__getattr__` fallback for dynamic access.
 
-The primary challenge stated is **"the difficulty in determining the necessary
-attributes for a specific IDF object."** IDFkit addresses this at multiple
-levels:
+2. **`FieldSchema` TypedDict** (Solution D) — Type the return value of
+   `get_field_idd()` and `get_field_schema()`. Small change, immediate benefit
+   for schema introspection workflows.
 
-### Level 1: Discovery — "What fields does this object have?"
-`schema.get_all_field_names("Material")` returns the ordered list:
-`["Name", "Roughness", "Thickness", "Conductivity", "Density", "Specific Heat", "Thermal Absorptance", "Solar Absorptance", "Visible Absorptance"]`
+3. **`describe()` helper** (Solution E) — Add a human-readable field summary
+   method. Helps notebook users and REPL exploration.
 
-In VS Code, this becomes: type `Material,` then press Ctrl+Space to see all
-fields with types and defaults.
+### Phase 2: Schema-driven code generation
 
-### Level 2: Obligation — "Which fields must I fill in?"
-`schema.get_required_fields("Material")` returns:
-`["roughness", "thickness", "conductivity", "density", "specific_heat"]`
+4. **TypedDict classes for top 20-30 object types** (Solution B) — Generate
+   `TypedDict` classes for `Zone`, `Material`, `Construction`,
+   `BuildingSurface:Detailed`, `People`, `Lights`, etc. Use `@overload` on
+   `add()` for these types.
 
-In VS Code, required fields are visually distinct in completion lists and
-generate error diagnostics if omitted.
+5. **Full `.pyi` stub generation** (Solution C) — Build a script that reads the
+   schema and generates complete type stubs. Regenerate per EnergyPlus version.
+   Ship as part of the package so Pylance picks them up automatically.
 
-### Level 3: Constraint — "What values are valid?"
-`schema.get_field_schema("Material", "roughness")["enum"]` returns:
-`["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"]`
+### Phase 3: Advanced type narrowing
 
-In VS Code, typing the roughness field value triggers enum completion with
-all valid choices.
+6. **Generic `IDFCollection[T]`** — Parameterize `IDFCollection` so that
+   `model.zones` returns `IDFCollection[ZoneObject]` where `ZoneObject` is a
+   protocol or typed class with known fields. This provides end-to-end type
+   flow: `model.zones["Office"].x_origin` would infer `float`.
 
-### Level 4: Context — "What does this field mean?"
-`schema.get_field_schema("Zone", "ceiling_height")["note"]` returns:
-`"If this field is 0.0, negative or autocalculate, then the average height
-of the zone is automatically calculated..."`
-
-In VS Code, hovering over the field shows this documentation plus the units
-(`m`), default (`Autocalculate`), and valid types.
-
-### Level 5: Relationships — "What objects reference this one?"
-`doc.references.get_referencing("MyZone")` returns all surfaces, people,
-lights, equipment, and HVAC objects that reference that zone.
-
-In VS Code, right-click a zone name → "Find All References" shows every
-object in the model that depends on it.
+7. **Pyright plugin** (if supported in the future) — Custom type narrowing
+   could resolve `model.add("Zone", ...)` to the correct `TypedDict` without
+   requiring explicit overloads for all 847 types.
 
 ---
 
-## 9. Implementation Roadmap
+## 5. Detailed Analysis: What Each Solution Enables
 
-### Phase 1: Foundation
-- Add source position tracking to IDF parser (line/column for each object
-  and field)
-- Create `pygls`-based language server skeleton
-- Implement `textDocument/completion` for object types and field names
-- Implement `textDocument/publishDiagnostics` from validation results
-- Create TextMate grammar for IDF syntax highlighting
-
-### Phase 2: Rich Editing
-- Implement `textDocument/hover` with schema documentation
-- Implement `textDocument/definition` and `textDocument/references`
-- Implement `textDocument/documentSymbol` for outline view
-- Add enum value completion and reference target completion
-- Add snippet generation for new objects
-
-### Phase 3: Advanced Features
-- Implement code actions (quick fixes) for validation errors
-- Add rename support (`textDocument/rename`) using `doc.rename()`
-- Add format conversion commands
-- Implement workspace-level features (multi-file models)
-- Add semantic tokens for richer syntax coloring (object types, references,
-  numeric values with units)
-
-### Phase 4: Quality of Life
-- Incremental parsing for large models
-- Configuration for EnergyPlus version selection
-- Status bar showing model statistics (object count, validation status)
-- Problems panel integration with filtering by error code
-- Breadcrumb navigation (Group → Object Type → Object Name → Field)
+| User action | Today | Phase 1 | Phase 2 | Phase 3 |
+|---|---|---|---|---|
+| `model.zo` → auto-complete to `zones` | No | Yes | Yes | Yes |
+| `model.zones` → recognized by Pyright | No | Yes | Yes | Yes |
+| `model.add("Zone", ...)` → field hints | No | No | Yes (top types) | Yes (all types) |
+| `model.add("Material", ..., thickness=)` → type check | No | No | Yes | Yes |
+| `zone.x_origin` → inferred as `float` | No | No | No | Yes |
+| `zone.x_origni` → flagged as typo | No | No | No | Yes |
+| `schema.get_field_schema(...)["type"]` → auto-complete | No | Yes | Yes | Yes |
+| `schema.describe("Material")` → field summary | No | Yes | Yes | Yes |
 
 ---
 
-## 10. Conclusion
+## 6. Technical Considerations
 
-IDFkit provides a strong foundation for VS Code integration. Its schema system
-contains the full depth of EnergyPlus object/field metadata needed for
-auto-completion, validation, hover documentation, and reference navigation. Its
-O(1) lookup architecture ensures responsive editor performance. The main
-engineering work lies in:
+### 6.1 Maintaining `__getattr__` for backward compatibility
 
-1. **Source position tracking** — augmenting the parser to record where each
-   object and field lives in the source text
-2. **LSP integration** — connecting IDFkit's existing APIs to Language Server
-   Protocol handlers via `pygls`
-3. **IDF grammar** — a TextMate grammar for basic syntax highlighting
+All solutions preserve the existing `__getattr__` fallback. Explicit
+properties take precedence over `__getattr__` in Python's MRO, so adding
+properties is non-breaking. The 48 convenience attributes become static
+while the remaining ~800 object types still work dynamically.
 
-The library already solves the hardest problems (schema interpretation,
-reference graph construction, validation logic). The VS Code integration layer
-is primarily a translation between IDFkit's data model and the LSP protocol.
+### 6.2 Code generation vs. hand-written stubs
+
+With 847 object types and 12,652 fields, hand-writing type information is
+impractical. A code generation script that reads the bundled EnergyPlus schema
+is the correct approach. The script should:
+
+- Read `schemas/V{version}/Energy+.schema.epJSON.gz`
+- Extract field names, types, defaults, required flags
+- Map EnergyPlus types to Python types: `"number"` → `float`,
+  `"integer"` → `int`, `"string"` → `str`
+- Handle `anyOf` fields (e.g., `float | Literal["Autocalculate"]`)
+- Handle `enum` fields as `Literal` unions
+- Generate `.pyi` stubs or inline TypedDict classes
+
+### 6.3 Handling 847 object types in overloads
+
+Python's `@overload` is not designed for 847 variants. Practical options:
+
+- **Top-N overloads in source code:** Cover the 20-30 most common types
+  (`Zone`, `Material`, `Construction`, `BuildingSurface:Detailed`, `People`,
+  `Lights`, `ElectricEquipment`, `Schedule:Compact`, etc.) with explicit
+  overloads. A final `str` overload catches everything else.
+
+- **Full coverage in `.pyi` stubs:** Stubs can be larger without runtime cost.
+  Generate an overload per object type in the stub file.
+
+- **Alternative: builder pattern:** Instead of overloading `add()`, provide
+  typed builder methods:
+  ```python
+  model.add_zone("Office", x_origin=0.0, y_origin=0.0)
+  model.add_material("Concrete", roughness="MediumRough", thickness=0.2, ...)
+  ```
+  This gives complete type safety but adds API surface. Could be generated
+  for top-N types.
+
+### 6.4 The `__slots__` constraint
+
+`IDFObject` uses `__slots__`, which means properties must be defined on the
+class, not on instances. This is compatible with all proposed solutions —
+properties and TypedDicts are class-level constructs.
+
+### 6.5 Versioning
+
+The EnergyPlus schema changes between versions (new object types, new fields,
+deprecated fields). Type stubs should be generated per schema version. Since
+IDFkit supports 16 versions, the stubs could either:
+
+- Target the latest version only (simplest, covers most users)
+- Ship version-specific stubs selected by configuration
+- Generate a union type covering all versions (most complete but noisier)
+
+The pragmatic choice is to generate stubs for the latest version and document
+that earlier versions may have fewer/different fields.
+
+---
+
+## 7. Impact on Existing Notebook and Test Workflows
+
+### 7.1 Getting started notebook
+
+The getting_started notebook (`docs/getting_started.ipynb`) demonstrates
+patterns that would immediately benefit:
+
+**Cell 7 — Adding objects with kwargs:**
+```python
+model.add("Building", "My Office Building", {
+    "north_axis": 0,
+    "terrain": "City",
+    ...
+})
+```
+With Solution B, VS Code would auto-complete the dict keys and validate types.
+
+**Cell 9 — Attribute access on document:**
+```python
+zones = model.zones  # Currently invisible to Pylance
+```
+With Solution A, this auto-completes and type-checks.
+
+**Cell 11 — Field access on objects:**
+```python
+office.x_origin  # Currently Any
+```
+With Solution C (Phase 3), this would be `float`.
+
+**Cell 53 — Schema introspection:**
+```python
+field_names = schema.get_field_names("Zone")
+required = schema.get_required_fields("Zone")
+```
+With Solution D, the schema return types are fully typed.
+
+### 7.2 Test suite
+
+The test suite (`tests/`) uses the same patterns. Adding type stubs would
+enable Pyright to catch type errors in tests themselves, improving code quality
+of both the library and user code.
+
+---
+
+## 8. Conclusion
+
+IDFkit's runtime design is sound — dynamic attribute access provides a clean
+API for working with 847 object types without boilerplate. But this dynamism
+comes at the cost of VS Code discoverability, which is the primary obstacle
+for new users and the root cause of the stated challenge.
+
+The most impactful first step is **Solution A: explicit properties on
+IDFDocument**. It is a small, non-breaking change that immediately makes 48
+collection shortcuts visible to auto-complete. Combined with **Solution D
+(typed schema returns)** and **Solution E (describe helper)**, this addresses
+the field discovery problem through both static analysis and runtime
+introspection.
+
+For deeper type safety, **schema-driven code generation** (Solutions B and C)
+can produce TypedDicts and `.pyi` stubs that give `add()` calls full parameter
+completion for the most common object types. This is where the richness of the
+EnergyPlus schema (12,652 typed fields with defaults, enums, ranges, and
+descriptions) becomes a direct asset — every field definition in the schema
+translates to a typed parameter hint in VS Code.
