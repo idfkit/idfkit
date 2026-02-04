@@ -1,7 +1,7 @@
 site_name: idfkit
 repo_url: https://github.com/samuelduchesne/idfkit
 site_url: https://samuelduchesne.github.io/idfkit
-site_description: This is a template repository for Python projects that use uv for their dependency management.
+site_description: A fast, modern EnergyPlus IDF/epJSON parser for Python with O(1) lookups and reference tracking.
 site_author: Samuel Letellier-Duchesne
 edit_uri: edit/main/docs/
 repo_name: samuelduchesne/idfkit
@@ -9,13 +9,13 @@ copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - API Reference: modules.md
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
-          paths: ["src/idfkit"]
+          paths: ["src"]
 theme:
   name: material
   features:

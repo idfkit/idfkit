@@ -5,4 +5,4 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/samuelduchesne/idfkit)](https://img.shields.io/github/commit-activity/m/samuelduchesne/idfkit)
 [![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://img.shields.io/github/license/samuelduchesne/idfkit)
 
-This is a template repository for Python projects that use uv for their dependency management.
+A fast, modern EnergyPlus IDF/epJSON parser for Python with O(1) lookups and reference tracking.

@@ -1,1 +1,3 @@
-::: idfkit.foo
+# API Reference
+
+::: idfkit
