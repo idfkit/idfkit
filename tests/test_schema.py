@@ -7,7 +7,6 @@ import pytest
 from idfkit.exceptions import SchemaNotFoundError
 from idfkit.schema import EpJSONSchema, SchemaManager, get_schema, get_schema_manager
 
-
 # ---------------------------------------------------------------------------
 # EpJSONSchema
 # ---------------------------------------------------------------------------
