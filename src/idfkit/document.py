@@ -270,7 +270,10 @@ class IDFDocument:
         ref_fields: frozenset[str] | None = None
         if self._schema:
             obj_schema = self._schema.get_object_schema(obj_type)
-            field_order = self._schema.get_field_names(obj_type)
+            if self._schema.has_name(obj_type):
+                field_order = self._schema.get_field_names(obj_type)
+            else:
+                field_order = self._schema.get_all_field_names(obj_type)
             ref_fields = self._compute_ref_fields(self._schema, obj_type)
 
         # Create object

@@ -121,13 +121,21 @@ class IDFWriter:
         obj_type = obj.obj_type
         schema = self._doc.schema
 
+        # Determine if this object type has a name field
+        obj_has_name = True
+        if schema:
+            obj_has_name = schema.has_name(obj_type)
+
         # Get field order from schema or use data keys
         if obj.field_order:
-            field_names: list[str] = ["name", *list(obj.field_order)]
+            if obj_has_name:
+                field_names: list[str] = ["name", *list(obj.field_order)]
+            else:
+                field_names = list(obj.field_order)
         elif schema:
             field_names = schema.get_all_field_names(obj_type)
         else:
-            field_names = ["name", *list(obj.data.keys())]
+            field_names = ["name", *list(obj.data.keys())] if obj_has_name else list(obj.data.keys())
 
         # Get field values and comments
         values: list[str] = []

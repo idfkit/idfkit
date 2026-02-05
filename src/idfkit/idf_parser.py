@@ -172,6 +172,9 @@ class IDFParser:
         schema: EpJSONSchema | None,
     ) -> None:
         """Parse all objects from content into document."""
+        # Strip comments before matching to prevent phantom objects
+        # (e.g. "!- X,Y,Z Origin" matching "X," as an object type)
+        content = _COMMENT_PATTERN.sub(b"", content)
         for match in _OBJECT_PATTERN.finditer(content):
             try:
                 obj = self._parse_object(match, schema)
@@ -194,38 +197,30 @@ class IDFParser:
         if obj_type.upper() == "VERSION":
             return None
 
+        # Skip unknown object types (filters phantom objects from non-EnergyPlus text)
+        if schema and schema.get_object_schema(obj_type) is None:
+            return None
+
         # Split and clean fields
         fields = self._parse_fields(fields_raw)
-
         if not fields:
             return None
 
-        # First field is the name
-        name = fields[0] if fields else ""
-
-        # Get field ordering from schema
-        field_names: list[str] | None = None
+        # Get schema info
         obj_schema: dict[str, Any] | None = None
+        field_names: list[str] | None = None
+        has_name = True  # default for no-schema fallback
+
         if schema:
-            field_names = schema.get_field_names(obj_type)
             obj_schema = schema.get_object_schema(obj_type)
+            has_name = schema.has_name(obj_type)
+            field_names = schema.get_field_names(obj_type) if has_name else schema.get_all_field_names(obj_type)
+
+        # Name handling: named objects use fields[0] as name, nameless use ""
+        name, remaining_fields = (fields[0], fields[1:]) if has_name else ("", fields)
 
         # Build data dict
-        data: dict[str, Any] = {}
-        remaining_fields = fields[1:]  # Skip name
-
-        if field_names:
-            # Use schema field ordering
-            for i, value in enumerate(remaining_fields):
-                if i < len(field_names):
-                    field_name = field_names[i]
-                    if value:  # Only store non-empty values
-                        data[field_name] = self._coerce_value(obj_type, field_name, value, schema)
-        else:
-            # No schema - use generic field names
-            for i, value in enumerate(remaining_fields):
-                if value:
-                    data[f"field_{i + 1}"] = value
+        data = self._build_data_dict(obj_type, remaining_fields, field_names, schema)
 
         return IDFObject(
             obj_type=obj_type,
@@ -234,6 +229,55 @@ class IDFParser:
             schema=obj_schema,
             field_order=field_names,
         )
+
+    def _build_data_dict(
+        self,
+        obj_type: str,
+        remaining_fields: list[str],
+        field_names: list[str] | None,
+        schema: EpJSONSchema | None,
+    ) -> dict[str, Any]:
+        """Build the data dict from parsed fields using schema field ordering."""
+        data: dict[str, Any] = {}
+
+        if field_names:
+            for i, value in enumerate(remaining_fields):
+                if i < len(field_names):
+                    field_name = field_names[i]
+                    if value:  # Only store non-empty values
+                        data[field_name] = self._coerce_value(obj_type, field_name, value, schema)
+            self._parse_extensible_fields(obj_type, remaining_fields, field_names, data, schema)
+        else:
+            for i, value in enumerate(remaining_fields):
+                if value:
+                    data[f"field_{i + 1}"] = value
+
+        return data
+
+    def _parse_extensible_fields(
+        self,
+        obj_type: str,
+        remaining_fields: list[str],
+        field_names: list[str],
+        data: dict[str, Any],
+        schema: EpJSONSchema | None,
+    ) -> None:
+        """Parse extensible fields (e.g. vertices) beyond the schema-defined field count."""
+        extra_start = len(field_names)
+        if not schema or not schema.is_extensible(obj_type) or extra_start >= len(remaining_fields):
+            return
+
+        ext_size = int(schema.get_extensible_size(obj_type) or 1)
+        ext_names = schema.get_extensible_field_names(obj_type)
+        extra = remaining_fields[extra_start:]
+        for group_idx in range(0, len(extra), ext_size):
+            group = extra[group_idx : group_idx + ext_size]
+            suffix = "" if group_idx == 0 else f"_{group_idx // ext_size + 1}"
+            for j, value in enumerate(group):
+                if j < len(ext_names) and value:
+                    ext_field = f"{ext_names[j]}{suffix}"
+                    data[ext_field] = self._coerce_value(obj_type, ext_names[j], value, schema)
+                    field_names.append(ext_field)  # extend field_order
 
     def _parse_fields(self, fields_raw: str) -> list[str]:
         """Parse and clean field values from raw string."""

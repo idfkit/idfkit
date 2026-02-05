@@ -138,6 +138,16 @@ class EpJSONSchema:
         """Get the type of a field ('number', 'string', 'integer', 'array')."""
         field_schema = self.get_field_schema(obj_type, field_name)
         if not field_schema:
+            # Fall back to legacy_idd field_info for extensible fields
+            obj_schema = self.get_object_schema(obj_type)
+            if obj_schema:
+                field_info = obj_schema.get("legacy_idd", {}).get("field_info", {}).get(field_name)
+                if field_info:
+                    ft = field_info.get("field_type")
+                    if ft == "n":
+                        return "number"
+                    if ft == "a":
+                        return "string"
             return None
 
         # Handle anyOf (e.g., number OR "Autocalculate")
@@ -170,6 +180,21 @@ class EpJSONSchema:
         if obj_schema:
             return obj_schema.get("memo")
         return None
+
+    def has_name(self, obj_type: str) -> bool:
+        """Check if an object type has a name field (first IDF field is a name)."""
+        obj_schema = self.get_object_schema(obj_type)
+        if not obj_schema:
+            return True  # Default: assume named (backward compat)
+        return "name" in obj_schema
+
+    def get_extensible_field_names(self, obj_type: str) -> list[str]:
+        """Get extensible field names from legacy_idd.extensibles."""
+        obj_schema = self.get_object_schema(obj_type)
+        if not obj_schema:
+            return []
+        legacy = obj_schema.get("legacy_idd", {})
+        return legacy.get("extensibles", [])
 
     def is_extensible(self, obj_type: str) -> bool:
         """Check if an object type has extensible fields."""
