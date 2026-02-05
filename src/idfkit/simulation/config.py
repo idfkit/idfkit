@@ -270,6 +270,7 @@ def _platform_search_dirs() -> list[Path]:
     if system == "Linux":
         # User-level first, then system-level
         home = Path.home()
+        dirs.append(home / ".local")  # Common pip/user install location
         dirs.append(home / "EnergyPlus")
         dirs.append(Path("/usr/local"))
         dirs.append(Path("/opt"))

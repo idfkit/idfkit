@@ -244,7 +244,7 @@ class IDFDocument:
     def add(
         self,
         obj_type: str,
-        name: str,
+        name: str = "",
         data: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> IDFObject:
@@ -253,7 +253,8 @@ class IDFDocument:
 
         Args:
             obj_type: Object type (e.g., "Zone")
-            name: Object name
+            name: Object name (optional for object types without a name field,
+                such as Timestep, SimulationControl, GlobalGeometryRules)
             data: Field data as dict
             **kwargs: Additional field values
 

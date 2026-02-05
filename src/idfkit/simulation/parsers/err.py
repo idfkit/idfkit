@@ -69,6 +69,16 @@ class ErrorReport:
         return len(self.severe) > 0
 
     @property
+    def fatal_count(self) -> int:
+        """Number of fatal errors."""
+        return len(self.fatal)
+
+    @property
+    def severe_count(self) -> int:
+        """Number of severe errors."""
+        return len(self.severe)
+
+    @property
     def error_count(self) -> int:
         """Total number of fatal + severe errors."""
         return len(self.fatal) + len(self.severe)
