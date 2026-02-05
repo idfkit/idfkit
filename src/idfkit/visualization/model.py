@@ -152,43 +152,6 @@ def _get_go() -> Any:
 # ---------------------------------------------------------------------------
 
 
-def _extract_coords(surface: IDFObject) -> Polygon3D | None:
-    """Extract vertex coordinates from a surface, supporting both field naming schemes.
-
-    The epJSON schema names vertices ``vertex_x_coordinate``,
-    ``vertex_x_coordinate_2``, ... while programmatic creation typically
-    uses ``vertex_1_x_coordinate``, ``vertex_2_x_coordinate``, ...
-    This helper tries both conventions.
-    """
-    # Try the canonical get_surface_coords first (vertex_1_x_coordinate style)
-    result = get_surface_coords(surface)
-    if result is not None:
-        return result
-
-    # Fall back to schema naming (vertex_x_coordinate, vertex_x_coordinate_2, ...)
-    vertices: list[Vector3D] = []
-    # First vertex has no suffix number
-    x = getattr(surface, "vertex_x_coordinate", None)
-    y = getattr(surface, "vertex_y_coordinate", None)
-    z = getattr(surface, "vertex_z_coordinate", None)
-    if x is not None and y is not None and z is not None:
-        vertices.append(Vector3D(float(x), float(y), float(z)))
-
-    i = 2
-    while True:
-        x = getattr(surface, f"vertex_x_coordinate_{i}", None)
-        y = getattr(surface, f"vertex_y_coordinate_{i}", None)
-        z = getattr(surface, f"vertex_z_coordinate_{i}", None)
-        if x is None or y is None or z is None:
-            break
-        vertices.append(Vector3D(float(x), float(y), float(z)))
-        i += 1
-
-    if len(vertices) < 3:
-        return None
-    return Polygon3D(vertices)
-
-
 def _to_world_coords(polygon: Polygon3D, zone: IDFObject) -> Polygon3D:
     """Transform polygon from zone-relative to world coordinates."""
     origin = get_zone_origin(zone)
@@ -226,7 +189,7 @@ def _resolve_surfaces(  # noqa: C901
         if zone_name.upper() not in include:
             continue
 
-        coords = _extract_coords(surface)
+        coords = get_surface_coords(surface)
         if coords is None:
             continue
 
@@ -260,7 +223,7 @@ def _resolve_surfaces(  # noqa: C901
         if parent_zone.upper() not in include:
             continue
 
-        coords = _extract_coords(surface)
+        coords = get_surface_coords(surface)
         if coords is None:
             continue
 
@@ -284,7 +247,7 @@ def _resolve_surfaces(  # noqa: C901
     # Process shading surfaces
     for shading_type in ("Shading:Site:Detailed", "Shading:Building:Detailed", "Shading:Zone:Detailed"):
         for surface in doc[shading_type]:
-            coords = _extract_coords(surface)
+            coords = get_surface_coords(surface)
             if coords is None:
                 continue
 
