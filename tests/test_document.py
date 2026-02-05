@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from idfkit import IDFDocument
-from idfkit.exceptions import DuplicateObjectError
+from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 
 
@@ -215,6 +215,7 @@ class TestIDFDocumentSchedules:
         empty_doc.add("Schedule:Constant", "UsedSchedule", {"hourly_value": 1.0})
         empty_doc.add("Schedule:Constant", "UnusedSchedule", {"hourly_value": 0.5})
         empty_doc.add("Zone", "TestZone")
+        # Using validate=False since we're only testing reference tracking, not full People validity
         empty_doc.add(
             "People",
             "TestPeople",
@@ -222,6 +223,7 @@ class TestIDFDocumentSchedules:
                 "zone_or_zonelist_or_space_or_spacelist_name": "TestZone",
                 "number_of_people_schedule_name": "UsedSchedule",
             },
+            validate=False,
         )
         used = empty_doc.get_used_schedules()
         assert "USEDSCHEDULE" in used
@@ -448,3 +450,67 @@ class TestGetIddGroupDict:
         assert isinstance(groups, dict)
         # BuildingSurface:Detailed should be grouped under "BuildingSurface"
         assert "BuildingSurface" in groups
+
+
+class TestAddWithValidation:
+    def test_add_valid_object_with_validation(self, empty_doc: IDFDocument) -> None:
+        # Valid Zone object should succeed
+        obj = empty_doc.add("Zone", "TestZone", x_origin=0.0, validate=True)
+        assert obj.name == "TestZone"
+        assert len(empty_doc["Zone"]) == 1
+
+    def test_add_object_with_unknown_field_warns(self, empty_doc: IDFDocument) -> None:
+        # Unknown field should raise ValidationFailedError
+        with pytest.raises(ValidationFailedError) as exc_info:
+            empty_doc.add("Zone", "TestZone", fake_field=123, validate=True)
+
+        # Check the error message mentions the unknown field
+        assert "fake_field" in str(exc_info.value)
+
+    def test_add_without_validation_allows_unknown_field(self, empty_doc: IDFDocument) -> None:
+        # With validate=False, unknown fields are silently accepted
+        obj = empty_doc.add("Zone", "TestZone", fake_field=123, validate=False)
+        assert obj.name == "TestZone"
+        assert obj.data.get("fake_field") == 123
+
+    def test_add_material_missing_required_field(self, empty_doc: IDFDocument) -> None:
+        # Material requires roughness, thickness, conductivity, density, specific_heat
+        with pytest.raises(ValidationFailedError) as exc_info:
+            empty_doc.add("Material", "TestMaterial", roughness="MediumSmooth", validate=True)
+
+        # Should report missing required fields
+        assert "Required field" in str(exc_info.value) or "missing" in str(exc_info.value).lower()
+
+    def test_add_material_with_all_required_fields(self, empty_doc: IDFDocument) -> None:
+        # Material with all required fields should succeed
+        obj = empty_doc.add(
+            "Material",
+            "TestMaterial",
+            roughness="MediumSmooth",
+            thickness=0.1,
+            conductivity=1.0,
+            density=2000.0,
+            specific_heat=1000.0,
+            validate=True,
+        )
+        assert obj.name == "TestMaterial"
+        assert len(empty_doc["Material"]) == 1
+
+    def test_add_with_invalid_enum_value(self, empty_doc: IDFDocument) -> None:
+        # Invalid enum value should raise ValidationFailedError
+        with pytest.raises(ValidationFailedError):
+            empty_doc.add(
+                "Material",
+                "TestMaterial",
+                roughness="InvalidRoughness",
+                thickness=0.1,
+                conductivity=1.0,
+                density=2000.0,
+                specific_heat=1000.0,
+                validate=True,
+            )
+
+    def test_validation_default_is_true(self, empty_doc: IDFDocument) -> None:
+        # By default, validation is enabled to catch errors early
+        with pytest.raises(ValidationFailedError):
+            empty_doc.add("Zone", "TestZone", unknown_param=42)

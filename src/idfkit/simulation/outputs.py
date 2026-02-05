@@ -140,18 +140,22 @@ class OutputVariableIndex:
                 # Use empty name to avoid DuplicateObjectError when multiple
                 # variables share the same key (e.g. "*"). EnergyPlus treats
                 # empty Key_Value the same as "*".
+                # validate=False for bulk performance
                 model.add(
                     "Output:Variable",
                     "",
                     variable_name=item.name,
                     reporting_frequency=frequency,
+                    validate=False,
                 )
                 count += 1
             else:
+                # validate=False for bulk performance
                 model.add(
                     "Output:Meter",
                     item.name,
                     reporting_frequency=frequency,
+                    validate=False,
                 )
                 count += 1
         return count

@@ -49,6 +49,9 @@ from .geometry import Polygon3D, Vector3D
 
 # Parsing functions
 from .idf_parser import IDFParser, get_idf_version, parse_idf
+
+# Introspection
+from .introspection import FieldDescription, ObjectDescription
 from .objects import IDFCollection, IDFObject
 
 # Reference graph
@@ -58,7 +61,12 @@ from .references import ReferenceGraph
 from .schema import EpJSONSchema, SchemaManager, get_schema, get_schema_manager
 
 # Validation
-from .validation import ValidationError, ValidationResult, validate_document
+from .validation import (
+    ValidationError,
+    ValidationResult,
+    validate_document,
+    validate_object,
+)
 
 # Version registry
 from .versions import (
@@ -139,12 +147,14 @@ __all__ = [
     "DuplicateObjectError",
     "EnergyPlusNotFoundError",
     "EpJSONSchema",
+    "FieldDescription",
     "IDFCollection",
     "IDFDocument",
     "IDFObject",
     "IDFParser",
     "IdfKitError",
     "NoDesignDaysError",
+    "ObjectDescription",
     "ParseError",
     "Polygon3D",
     "ReferenceGraph",
@@ -169,6 +179,7 @@ __all__ = [
     "parse_epjson",
     "parse_idf",
     "validate_document",
+    "validate_object",
     "version_string",
     "write_epjson",
     "write_idf",

@@ -131,6 +131,8 @@ class TestValidateDocument:
 class TestValidateReferences:
     def test_dangling_reference_detected(self, empty_doc: IDFDocument) -> None:
         """Add a People object that references a non-existent zone."""
+        # Using validate=False since we're testing document-level reference validation,
+        # not add-time validation
         empty_doc.add(
             "People",
             "TestPeople",
@@ -138,6 +140,7 @@ class TestValidateReferences:
                 "zone_or_zonelist_or_space_or_spacelist_name": "NonexistentZone",
                 "number_of_people_schedule_name": "NonexistentSchedule",
             },
+            validate=False,
         )
         result = validate_document(empty_doc, check_references=True)
         # Should find dangling references

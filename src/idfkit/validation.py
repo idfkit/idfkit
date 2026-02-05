@@ -169,12 +169,49 @@ def validate_document(  # noqa: C901
     return ValidationResult(errors, warnings, info)
 
 
+def validate_object(
+    obj: IDFObject,
+    schema: EpJSONSchema,
+    *,
+    check_required: bool = True,
+    check_types: bool = True,
+    check_ranges: bool = True,
+    check_unknown: bool = True,
+) -> list[ValidationError]:
+    """
+    Validate a single object against schema.
+
+    This is a public API for validating individual objects, useful for
+    checking objects at creation time with the validate=True option.
+
+    Args:
+        obj: The IDFObject to validate
+        schema: The EpJSON schema to validate against
+        check_required: Check that required fields are present
+        check_types: Check that field values match expected types
+        check_ranges: Check that numeric values are within bounds
+        check_unknown: Check for unknown fields (not in schema)
+
+    Returns:
+        List of ValidationError objects describing any issues found
+    """
+    return _validate_object(
+        obj,
+        schema,
+        check_required=check_required,
+        check_types=check_types,
+        check_ranges=check_ranges,
+        check_unknown=check_unknown,
+    )
+
+
 def _validate_object(  # noqa: C901
     obj: IDFObject,
     schema: EpJSONSchema,
     check_required: bool = True,
     check_types: bool = True,
     check_ranges: bool = True,
+    check_unknown: bool = True,
 ) -> list[ValidationError]:
     """Validate a single object against schema."""
     errors: list[ValidationError] = []
@@ -223,7 +260,7 @@ def _validate_object(  # noqa: C901
         field_schema = properties.get(field_name)
         if not field_schema:
             # Unknown field - could be extensible or error
-            if not schema.is_extensible(obj_type):
+            if check_unknown and not schema.is_extensible(obj_type):
                 errors.append(
                     ValidationError(
                         severity=Severity.WARNING,

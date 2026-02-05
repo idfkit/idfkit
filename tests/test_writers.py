@@ -129,7 +129,8 @@ class TestIDFValueFormatting:
 
     def test_string_field_written(self) -> None:
         doc = new_document()
-        doc.add("Material", "Mat1", {"roughness": "MediumSmooth"})
+        # Using validate=False since we're only testing IDF output formatting
+        doc.add("Material", "Mat1", {"roughness": "MediumSmooth"}, validate=False)
         output = write_idf(doc, None)
         assert output is not None
         assert "MediumSmooth" in output
@@ -143,7 +144,8 @@ class TestIDFValueFormatting:
 class TestEpJSONValueFormatting:
     def test_autosize_normalized(self) -> None:
         doc = new_document()
-        doc.add("Zone", "Z1", {"x_origin": "autosize"})
+        # Using validate=False since we're testing value normalization, not schema validity
+        doc.add("Zone", "Z1", {"x_origin": "autosize"}, validate=False)
         output = write_epjson(doc, None)
         assert output is not None
         data = json.loads(output)
@@ -152,7 +154,8 @@ class TestEpJSONValueFormatting:
 
     def test_yes_no_normalized(self) -> None:
         doc = new_document()
-        doc.add("Zone", "Z1", {"x_origin": "yes"})
+        # Using validate=False since we're testing value normalization, not schema validity
+        doc.add("Zone", "Z1", {"x_origin": "yes"}, validate=False)
         output = write_epjson(doc, None)
         assert output is not None
         data = json.loads(output)

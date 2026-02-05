@@ -40,6 +40,42 @@ for obj in model.get_referencing("Office"):
     print(f"  {obj.obj_type}: {obj.name}")
 ```
 
+## Discover Available Fields
+
+Not sure what fields an object type has? Use `describe()` to see all available fields:
+
+```python
+# See all fields for a Zone
+print(model.describe("Zone"))
+# === Zone ===
+# ...
+# Fields (9):
+#   direction_of_relative_north (number) [deg] default=0
+#   x_origin (number) [m] default=0
+#   ...
+
+# See required fields for a Material
+desc = model.describe("Material")
+print(f"Required: {desc.required_fields}")
+# Required: ['roughness', 'thickness', 'conductivity', 'density', 'specific_heat']
+```
+
+In REPL/Jupyter, use tab completion to explore object fields:
+
+```python
+zone = model["Zone"]["Office"]
+zone.<TAB>  # Shows: x_origin, y_origin, z_origin, multiplier, ...
+```
+
+Validation is enabled by default, so typos are caught immediately:
+
+```python
+model.add("Zone", "Office", x_orgin=0)  # Raises: unknown field 'x_orgin'
+
+# Disable validation for bulk operations where performance matters
+model.add("Zone", "Office", x_origin=0, validate=False)
+```
+
 ## Create a New Model
 
 ```python

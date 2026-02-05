@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -86,10 +87,10 @@ class DanglingReferenceError(IdfKitError):
 class ValidationFailedError(IdfKitError):
     """Raised when validation fails."""
 
-    def __init__(self, errors: list[object]) -> None:
-        self.errors = errors
+    def __init__(self, errors: Sequence[object]) -> None:
+        self.errors = list(errors)
         msg = f"Validation failed with {len(errors)} error(s):\n"
-        for i, err in enumerate(errors[:5], 1):
+        for i, err in enumerate(list(errors)[:5], 1):
             msg += f"  {i}. {err}\n"
         if len(errors) > 5:
             msg += f"  ... and {len(errors) - 5} more errors"

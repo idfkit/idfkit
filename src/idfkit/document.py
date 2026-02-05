@@ -14,8 +14,11 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from .exceptions import ValidationFailedError
+from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
+from .validation import validate_object
 from .versions import LATEST_VERSION
 
 if TYPE_CHECKING:
@@ -252,6 +255,41 @@ class IDFDocument:
             groups[group].append(obj_type)
         return groups
 
+    def describe(self, obj_type: str) -> ObjectDescription:
+        """
+        Get detailed field information for an object type.
+
+        Returns a description of the object type including all fields,
+        their types, defaults, constraints, and whether they are required.
+
+        This is useful for discovering what fields are available when
+        creating new objects.
+
+        Args:
+            obj_type: Object type name (e.g., "Zone", "Material")
+
+        Returns:
+            ObjectDescription with detailed field information
+
+        Raises:
+            ValueError: If no schema is loaded
+            KeyError: If the object type is not found in the schema
+
+        Example:
+            >>> model = new_document()
+            >>> print(model.describe("Zone"))
+            === Zone ===
+            ...
+            Fields (9):
+              direction_of_relative_north (number) [deg] default=0
+              x_origin (number) [m] default=0
+              ...
+        """
+        if self._schema is None:
+            msg = "No schema loaded - cannot describe object types"
+            raise ValueError(msg)
+        return describe_object_type(self._schema, obj_type)
+
     # -------------------------------------------------------------------------
     # Object Manipulation
     # -------------------------------------------------------------------------
@@ -261,6 +299,8 @@ class IDFDocument:
         obj_type: str,
         name: str = "",
         data: dict[str, Any] | None = None,
+        *,
+        validate: bool = True,
         **kwargs: Any,
     ) -> IDFObject:
         """
@@ -271,10 +311,24 @@ class IDFDocument:
             name: Object name (optional for object types without a name field,
                 such as Timestep, SimulationControl, GlobalGeometryRules)
             data: Field data as dict
+            validate: If True (default), validate the object against schema before adding.
+                Raises ValidationFailedError if validation fails. Set to False for
+                bulk operations where performance matters.
             **kwargs: Additional field values
 
         Returns:
             The created IDFObject
+
+        Raises:
+            ValidationFailedError: If validation fails (unknown fields, missing
+                required fields, invalid values)
+
+        Example:
+            # Standard usage (validates by default)
+            model.add("Zone", "Office", x_origin=0)
+
+            # Disable validation for bulk operations
+            model.add("Zone", "Office", x_origin=0, validate=False)
         """
         # Merge data and kwargs
         field_data = dict(data) if data else {}
@@ -302,6 +356,12 @@ class IDFDocument:
             field_order=field_order,
             ref_fields=ref_fields,
         )
+
+        # Validate if requested
+        if validate and self._schema:
+            errors = validate_object(obj, self._schema)
+            if errors:
+                raise ValidationFailedError(errors)
 
         # Add to collection
         self[obj_type].add(obj)

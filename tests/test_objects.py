@@ -243,6 +243,43 @@ class TestIDFObject:
         obj = IDFObject(obj_type="Zone", name="MyZone", document=None)
         assert obj.theidf is None
 
+    def test_dir_includes_public_methods(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        attrs = dir(obj)
+        # Check that core public attributes are included
+        assert "obj_type" in attrs
+        assert "name" in attrs
+        assert "data" in attrs
+        assert "key" in attrs
+        assert "Name" in attrs
+        assert "fieldnames" in attrs
+        assert "fieldvalues" in attrs
+        assert "theidf" in attrs
+        assert "to_dict" in attrs
+        assert "get" in attrs
+        assert "copy" in attrs
+        assert "get_field_idd" in attrs
+
+    def test_dir_includes_data_keys(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="MyZone", data={"x_origin": 5.0, "y_origin": 10.0})
+        attrs = dir(obj)
+        assert "x_origin" in attrs
+        assert "y_origin" in attrs
+
+    def test_dir_includes_field_order(self) -> None:
+        obj = IDFObject(
+            obj_type="Zone",
+            name="MyZone",
+            data={"x_origin": 5.0},
+            field_order=["direction_of_relative_north", "x_origin", "y_origin", "z_origin"],
+        )
+        attrs = dir(obj)
+        # Should include all fields from field_order, not just data keys
+        assert "direction_of_relative_north" in attrs
+        assert "x_origin" in attrs
+        assert "y_origin" in attrs
+        assert "z_origin" in attrs
+
 
 # ---------------------------------------------------------------------------
 # IDFCollection

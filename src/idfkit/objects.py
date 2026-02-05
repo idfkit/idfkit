@@ -276,6 +276,34 @@ class IDFObject:
             ref_fields=self._ref_fields,
         )
 
+    def __dir__(self) -> list[str]:
+        """Return attributes for tab completion (includes schema field names)."""
+        attrs = [
+            "obj_type",
+            "name",
+            "data",
+            "key",
+            "Name",
+            "fieldnames",
+            "fieldvalues",
+            "theidf",
+            "schema_dict",
+            "field_order",
+            "to_dict",
+            "get",
+            "copy",
+            "get_field_idd",
+            "getfieldidd",
+            "getfieldidd_item",
+        ]
+        field_order = object.__getattribute__(self, "_field_order")
+        if field_order:
+            attrs.extend(field_order)
+        else:
+            data = object.__getattribute__(self, "_data")
+            attrs.extend(data.keys())
+        return attrs
+
 
 class IDFCollection:
     """
