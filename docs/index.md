@@ -15,23 +15,23 @@ formats.
 
 ## Key Features
 
-- **O(1) object lookups** -- collections are indexed by name, so
+- **O(1) object lookups** — Collections are indexed by name, so
   `doc["Zone"]["Office"]` is a dict lookup, not a linear scan.
-- **Automatic reference tracking** -- a live reference graph keeps track of
+- **Automatic reference tracking** — A live reference graph keeps track of
   every cross-object reference. Renaming an object updates every field that
   pointed to the old name.
-- **IDF + epJSON** -- read and write both formats; convert between them in a
+- **IDF + epJSON** — Read and write both formats; convert between them in a
   single call.
-- **Schema-driven validation** -- validate documents against the official
+- **Schema-driven validation** — Validate documents against the official
   EnergyPlus epJSON schema with detailed error messages.
-- **Built-in 3D geometry** -- `Vector3D` and `Polygon3D` classes for surface
+- **Built-in 3D geometry** — `Vector3D` and `Polygon3D` classes for surface
   area, zone volume, and coordinate transforms without external dependencies.
-- **Memory-efficient** -- slot-based objects and gzip-compressed schema bundles
-  keep the footprint small.
-- **Broad version support** -- bundled schemas for every EnergyPlus release
+- **EnergyPlus simulation** — Run simulations as subprocesses with structured
+  result parsing, batch processing, and content-addressed caching.
+- **Weather data** — Search 55,000+ weather stations, download EPW/DDY files,
+  and apply ASHRAE design day conditions.
+- **Broad version support** — Bundled schemas for every EnergyPlus release
   from v8.9 through v25.2.
-- **eppy compatibility layer** -- methods like `idfobjects`, `newidfobject`,
-  and `getsurfaces` work out of the box so migration can be gradual.
 
 ## Installation
 
@@ -68,11 +68,90 @@ for obj in doc.get_referencing("Office"):
 write_idf(doc, "out.idf")
 ```
 
-## What's Next
+## Run Simulations
+
+```python
+from idfkit.simulation import simulate
+
+result = simulate(doc, "weather.epw", design_day=True)
+
+# Query results
+ts = result.sql.get_timeseries(
+    variable_name="Zone Mean Air Temperature",
+    key_value="Office",
+)
+print(f"Max temp: {max(ts.values):.1f}°C")
+```
+
+## Find Weather Stations
+
+```python
+from idfkit.weather import StationIndex, geocode
+
+index = StationIndex.load()
+results = index.nearest(*geocode("Chicago, IL"))
+print(results[0].station.display_name)
+```
+
+## Documentation
+
+<div class="grid cards" markdown>
+
+-   :material-rocket-launch:{ .lg .middle } **Get Started**
+
+    ---
+
+    Installation, quick start guide, and interactive tutorial.
+
+    [:octicons-arrow-right-24: Get Started](getting-started/installation.md)
+
+-   :material-school:{ .lg .middle } **Concepts**
+
+    ---
+
+    Architecture decisions, caching strategy, and design principles.
+
+    [:octicons-arrow-right-24: Concepts](concepts/simulation-architecture.md)
+
+-   :material-play-circle:{ .lg .middle } **Simulation**
+
+    ---
+
+    Run EnergyPlus, parse results, batch processing, and caching.
+
+    [:octicons-arrow-right-24: Simulation Guide](simulation/index.md)
+
+-   :material-weather-cloudy:{ .lg .middle } **Weather**
+
+    ---
+
+    Station search, downloads, design days, and geocoding.
+
+    [:octicons-arrow-right-24: Weather Guide](weather/index.md)
+
+-   :material-flask:{ .lg .middle } **Examples**
+
+    ---
+
+    Parametric studies, sizing workflows, and cloud simulations.
+
+    [:octicons-arrow-right-24: Examples](examples/parametric-study.ipynb)
+
+-   :material-api:{ .lg .middle } **API Reference**
+
+    ---
+
+    Complete API documentation for all modules.
+
+    [:octicons-arrow-right-24: API Reference](api/document.md)
+
+</div>
+
+## More Resources
 
 | Page | Description |
 |------|-------------|
-| [Getting Started](getting_started.ipynb) | Interactive notebook walking through basic, advanced, and expert usage. |
-| [Migrating from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs. |
-| [Benchmarks](benchmarks.md) | Performance comparison against eppy and other EnergyPlus toolkits. |
-| [API Reference](api/document.md) | Full module-by-module API documentation. |
+| [Core Tutorial](getting-started/core-tutorial.ipynb) | Interactive notebook covering basic, advanced, and expert usage |
+| [Migrating from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
+| [Benchmarks](benchmarks.md) | Performance comparison against eppy and other tools |
+| [Troubleshooting](troubleshooting/errors.md) | Common errors and solutions |
