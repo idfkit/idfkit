@@ -57,6 +57,8 @@ nav:
       - Validation: api/validation.md
       - Geometry: api/geometry.md
       - References: api/references.md
+      - Thermal: api/thermal.md
+      - Visualization: api/visualization.md
       - Exceptions: api/exceptions.md
       - Versions: api/versions.md
     - Simulation:

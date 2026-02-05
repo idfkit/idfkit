@@ -304,6 +304,30 @@ class IDFObject:
             attrs.extend(data.keys())
         return attrs
 
+    def _repr_svg_(self) -> str | None:
+        """Return SVG representation for Jupyter/IPython display.
+
+        Currently supports Construction objects, rendering a cross-section
+        diagram showing layer sequence, thicknesses, and thermal properties.
+
+        Returns:
+            SVG string for Construction objects, None for other types.
+        """
+        if self._type != "Construction":
+            return None
+
+        if self._document is None:
+            # Need document to resolve material references
+            return None
+
+        try:
+            from .visualization.svg import construction_to_svg
+
+            return construction_to_svg(self)
+        except Exception:
+            # Fail gracefully - fall back to text repr
+            return None
+
 
 class IDFCollection:
     """

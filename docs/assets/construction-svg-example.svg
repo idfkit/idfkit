@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200">
+<defs>
+    <!-- Air gap pattern (diagonal lines) -->
+    <pattern id="air-gap-pattern" patternUnits="userSpaceOnUse" width="8" height="8">
+      <rect width="8" height="8" fill="#add8e6"/>
+      <line x1="0" y1="8" x2="8" y2="0" stroke="#87ceeb" stroke-width="1"/>
+    </pattern>
+    <!-- No-mass pattern (dotted) -->
+    <pattern id="nomass-pattern" patternUnits="userSpaceOnUse" width="6" height="6">
+      <rect width="6" height="6" fill="#e6e6fa"/>
+      <circle cx="3" cy="3" r="1" fill="#9370db"/>
+    </pattern>
+    <!-- Glass pattern (vertical lines) -->
+    <pattern id="glass-pattern" patternUnits="userSpaceOnUse" width="4" height="4">
+      <rect width="4" height="4" fill="#87ceeb"/>
+      <line x1="2" y1="0" x2="2" y2="4" stroke="#4682b4" stroke-width="0.5" opacity="0.5"/>
+    </pattern>
+  </defs>
+<style>
+    .title { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; }
+    .subtitle { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #666; }
+    .layer-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; }
+    .layer-sublabel { font-family: system-ui, -apple-system, sans-serif; font-size: 9px; fill: #666; }
+    .side-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; fill: #666; }
+    .layer-rect { stroke: #333; stroke-width: 1; }
+    .low-e-indicator { fill: none; stroke: #ff6600; stroke-width: 2; }
+  </style>
+<rect width="600" height="200" fill="#ffffff" />
+<g class="header">
+<text x="20" y="25" class="title">ExteriorWall</text>
+<text x="580" y="25" text-anchor="end" class="subtitle">U=0.56 W/m²·K  R=1.80 m²·K/W</text>
+</g>
+<g class="layer" data-index="0">
+<rect x="20.0" y="50.0" width="176.8" height="90.0" fill="#b22222" class="layer-rect" />
+</g>
+<g class="layer" data-index="1">
+<rect x="196.8" y="50.0" width="88.4" height="90.0" fill="#ffd700" class="layer-rect" />
+</g>
+<g class="layer" data-index="2">
+<rect x="285.2" y="50.0" width="265.2" height="90.0" fill="#808080" class="layer-rect" />
+</g>
+<g class="layer" data-index="3">
+<rect x="550.4" y="50.0" width="29.6" height="90.0" fill="#f5f5dc" class="layer-rect" />
+</g>
+<g class="side-labels">
+    <text x="15" y="95.0"
+          text-anchor="end" dominant-baseline="middle" class="side-label"
+          transform="rotate(-90, 15, 95.0)">OUT</text>
+    <text x="585" y="95.0"
+          text-anchor="start" dominant-baseline="middle" class="side-label"
+          transform="rotate(90, 585, 95.0)">IN</text>
+  </g>
+<g class="footer">
+<text x="108.4" y="155" text-anchor="middle" class="layer-label">Brick</text>
+<text x="108.4" y="168" text-anchor="middle" class="layer-sublabel">0.100m</text>
+<text x="241.0" y="155" text-anchor="middle" class="layer-label">Insulation</text>
+<text x="241.0" y="168" text-anchor="middle" class="layer-sublabel">0.050m</text>
+<text x="417.8" y="155" text-anchor="middle" class="layer-label">Concrete</text>
+<text x="417.8" y="168" text-anchor="middle" class="layer-sublabel">0.150m</text>
+<text x="565.2" y="155" text-anchor="middle" class="layer-label">Gy..</text>
+<text x="565.2" y="168" text-anchor="middle" class="layer-sublabel">0.013m</text>
+</g>
+</svg>
