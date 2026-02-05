@@ -12,7 +12,7 @@ def _make_station(**kwargs: object) -> WeatherStation:
         "country": "USA",
         "state": "IL",
         "city": "Chicago.Ohare.Intl.AP",
-        "wmo": 725300,
+        "wmo": "725300",
         "source": "SRC-TMYx",
         "latitude": 41.98,
         "longitude": -87.92,
@@ -46,7 +46,7 @@ class TestWeatherStation:
     def test_frozen(self) -> None:
         s = _make_station()
         with pytest.raises(AttributeError):
-            s.wmo = 999999  # type: ignore[misc]
+            s.wmo = "999999"  # type: ignore[misc]
 
 
 class TestSerialization:
@@ -88,9 +88,9 @@ class TestSerialization:
             "url": "https://example.com/test.zip",
         }
         s = WeatherStation.from_dict(d)  # type: ignore[arg-type]
-        assert isinstance(s.wmo, int)
+        assert isinstance(s.wmo, str)
         assert isinstance(s.latitude, float)
-        assert s.wmo == 725300
+        assert s.wmo == "725300"
         assert s.latitude == 41.98
 
 

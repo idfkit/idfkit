@@ -194,13 +194,15 @@ def _run_job(
             cache=cache,
             fs=fs,
         )
-    except SimulationError:
+    except SimulationError as exc:
+        # Use the job's output_dir if specified, otherwise indicate failure with None-ish path
+        failed_run_dir = Path(job.output_dir) if job.output_dir is not None else Path("/dev/null")
         return SimulationResult(
-            run_dir=Path("."),
+            run_dir=failed_run_dir,
             success=False,
-            exit_code=None,
+            exit_code=exc.exit_code,
             stdout="",
-            stderr="",
+            stderr=exc.stderr or "",
             runtime_seconds=0.0,
             output_prefix=job.output_prefix,
         )

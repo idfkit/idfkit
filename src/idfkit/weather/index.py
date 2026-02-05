@@ -134,7 +134,7 @@ def _parse_excel(path: Path) -> list[WeatherStation]:
                 country=str(country or ""),
                 state=str(state or ""),
                 city=str(city or ""),
-                wmo=int(wmo) if wmo is not None and str(wmo).isdigit() else 0,
+                wmo=str(int(wmo)) if wmo is not None and str(wmo).replace(".", "").isdigit() else "",
                 source=str(source or ""),
                 latitude=float(lat),
                 longitude=float(lon),
@@ -204,8 +204,8 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
     name_lower = station.city.lower().replace(".", " ").replace("-", " ")
     display_lower = station.display_name.lower()
 
-    # Signal 1: Exact WMO match
-    if query.isdigit() and int(query) == station.wmo:
+    # Signal 1: Exact WMO match (compare as strings, stripping leading zeros for flexibility)
+    if query.isdigit() and query.lstrip("0") == station.wmo.lstrip("0"):
         return 1.0, "wmo"
 
     # Signal 2: Full query is a substring of the display name
@@ -265,12 +265,12 @@ class StationIndex:
     __slots__ = ("_by_wmo", "_last_modified", "_stations")
 
     _stations: list[WeatherStation]
-    _by_wmo: dict[int, list[WeatherStation]]
+    _by_wmo: dict[str, list[WeatherStation]]
     _last_modified: dict[str, str]
 
     def __init__(self, stations: list[WeatherStation]) -> None:
         self._stations = stations
-        self._by_wmo: dict[int, list[WeatherStation]] = {}
+        self._by_wmo: dict[str, list[WeatherStation]] = {}
         for s in stations:
             self._by_wmo.setdefault(s.wmo, []).append(s)
         self._last_modified: dict[str, str] = {}
@@ -372,8 +372,11 @@ class StationIndex:
 
     # --- Exact lookups ------------------------------------------------------
 
-    def get_by_wmo(self, wmo: int) -> list[WeatherStation]:
+    def get_by_wmo(self, wmo: str) -> list[WeatherStation]:
         """Look up stations by WMO number.
+
+        Args:
+            wmo: WMO station number as a string (e.g. ``"722950"``).
 
         Returns a list because a single WMO number can correspond to
         multiple stations or dataset variants.

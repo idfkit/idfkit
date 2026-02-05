@@ -299,6 +299,8 @@ def _build_command(
         output_prefix,
         "-s",
         output_suffix,
+        "-i",
+        str(config.idd_path),
     ]
 
     if expand_objects:

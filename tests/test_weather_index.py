@@ -22,7 +22,7 @@ def _fixture_stations() -> list[WeatherStation]:
             country="USA",
             state="IL",
             city="Chicago.Ohare.Intl.AP",
-            wmo=725300,
+            wmo="725300",
             source="SRC-TMYx",
             latitude=41.98,
             longitude=-87.92,
@@ -34,7 +34,7 @@ def _fixture_stations() -> list[WeatherStation]:
             country="USA",
             state="IL",
             city="Chicago.Midway.AP",
-            wmo=725340,
+            wmo="725340",
             source="SRC-TMYx",
             latitude=41.79,
             longitude=-87.75,
@@ -46,7 +46,7 @@ def _fixture_stations() -> list[WeatherStation]:
             country="USA",
             state="NY",
             city="New.York.J.F.Kennedy.Intl.AP",
-            wmo=744860,
+            wmo="744860",
             source="SRC-TMYx",
             latitude=40.64,
             longitude=-73.76,
@@ -58,7 +58,7 @@ def _fixture_stations() -> list[WeatherStation]:
             country="GBR",
             state="",
             city="London.Heathrow.AP",
-            wmo=37720,
+            wmo="37720",
             source="SRC-TMYx",
             latitude=51.48,
             longitude=-0.45,
@@ -70,7 +70,7 @@ def _fixture_stations() -> list[WeatherStation]:
             country="FRA",
             state="",
             city="Paris.Orly.AP",
-            wmo=71490,
+            wmo="71490",
             source="SRC-TMYx",
             latitude=48.73,
             longitude=2.40,
@@ -88,13 +88,13 @@ class TestStationIndex:
 
     def test_get_by_wmo(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
-        results = idx.get_by_wmo(725300)
+        results = idx.get_by_wmo("725300")
         assert len(results) == 1
         assert results[0].city == "Chicago.Ohare.Intl.AP"
 
     def test_get_by_wmo_missing(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
-        assert idx.get_by_wmo(999999) == []
+        assert idx.get_by_wmo("999999") == []
 
 
 class TestSearch:
@@ -102,7 +102,7 @@ class TestSearch:
         idx = StationIndex.from_stations(_fixture_stations())
         results = idx.search("725300")
         assert len(results) >= 1
-        assert results[0].station.wmo == 725300
+        assert results[0].station.wmo == "725300"
         assert results[0].score == 1.0
         assert results[0].match_field == "wmo"
 
@@ -117,7 +117,7 @@ class TestSearch:
         idx = StationIndex.from_stations(_fixture_stations())
         results = idx.search("chicago midway")
         assert len(results) >= 1
-        assert results[0].station.wmo == 725340
+        assert results[0].station.wmo == "725340"
 
     def test_country_filter(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
@@ -141,8 +141,8 @@ class TestNearest:
         results = idx.nearest(41.88, -87.63, limit=3)
         assert len(results) == 3
         # Midway is closer to downtown than O'Hare
-        assert results[0].station.wmo == 725340  # Midway
-        assert results[1].station.wmo == 725300  # O'Hare
+        assert results[0].station.wmo == "725340"  # Midway
+        assert results[1].station.wmo == "725300"  # O'Hare
         # Distance should be reasonable
         assert results[0].distance_km < 30.0
 
@@ -180,7 +180,7 @@ class TestFilter:
         idx = StationIndex.from_stations(_fixture_stations())
         results = idx.filter(country="USA", state="NY")
         assert len(results) == 1
-        assert results[0].wmo == 744860
+        assert results[0].wmo == "744860"
 
     def test_countries(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
