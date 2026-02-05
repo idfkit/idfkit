@@ -2,7 +2,8 @@
 Visualization utilities for EnergyPlus models.
 
 This module provides SVG diagram generation for construction assemblies,
-showing layer sequence, thicknesses, and thermal properties.
+showing layer sequence, thicknesses, and thermal properties, as well as
+interactive 3D building model visualization using plotly.
 
 Example:
     >>> from idfkit import load_idf
@@ -21,10 +22,17 @@ In Jupyter notebooks, constructions display automatically as SVG:
 
 from __future__ import annotations
 
+from .model import ColorBy, ModelViewConfig, view_exploded, view_floor_plan, view_model, view_normals
 from .svg import SVGConfig, construction_to_svg, generate_construction_svg
 
 __all__ = [
+    "ColorBy",
+    "ModelViewConfig",
     "SVGConfig",
     "construction_to_svg",
     "generate_construction_svg",
+    "view_exploded",
+    "view_floor_plan",
+    "view_model",
+    "view_normals",
 ]

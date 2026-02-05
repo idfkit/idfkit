@@ -230,6 +230,122 @@ The `_repr_svg_()` method returns:
 - SVG string for Construction objects with a parent document
 - `None` for non-Construction objects or objects without a document reference
 
+---
+
+## 3D Model Visualization
+
+The `idfkit.visualization` module also provides interactive 3D building
+model viewers using **plotly**. These are useful for model QA and geometry
+exploration in Jupyter notebooks.
+
+> Requires the `plotly` extra: `pip install idfkit[plotly]`
+
+### Quick Start
+
+```python
+from idfkit import load_idf
+from idfkit.visualization import view_model
+
+model = load_idf("building.idf")
+fig = view_model(model)
+fig.show()
+```
+
+### Available Views
+
+#### `view_model(doc, *, config, title, zones)`
+
+Interactive 3D building viewer with orbit, pan, and zoom controls.
+
+```python
+from idfkit.visualization import view_model, ModelViewConfig, ColorBy
+
+fig = view_model(model, config=ModelViewConfig(color_by=ColorBy.SURFACE_TYPE))
+```
+
+#### `view_floor_plan(doc, *, config, title, z_cut, zones)`
+
+2D top-down floor plan projection. Shows floor polygons; optionally slices
+walls at a given Z height.
+
+```python
+from idfkit.visualization import view_floor_plan
+
+fig = view_floor_plan(model, z_cut=1.0)
+```
+
+#### `view_exploded(doc, *, config, title, separation, zones)`
+
+Pulls zones apart to reveal internal partitions and inter-zone surfaces.
+
+```python
+from idfkit.visualization import view_exploded
+
+fig = view_exploded(model, separation=5.0)
+```
+
+#### `view_normals(doc, *, config, title, arrow_length, zones)`
+
+Displays surface normal arrows for orientation QA. Useful for checking
+that surfaces face the correct direction.
+
+```python
+from idfkit.visualization import view_normals
+
+fig = view_normals(model, arrow_length=1.5)
+```
+
+### Configuration
+
+Use `ModelViewConfig` to customize the 3D view appearance:
+
+```python
+from idfkit.visualization import ModelViewConfig, ColorBy
+
+config = ModelViewConfig(
+    width=1200,
+    height=800,
+    color_by=ColorBy.BOUNDARY_CONDITION,
+    show_fenestration=True,
+    show_edges=True,
+    show_labels=True,
+    opacity=0.9,
+)
+```
+
+#### ModelViewConfig Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `width` | 1000 | Figure width in pixels |
+| `height` | 700 | Figure height in pixels |
+| `color_by` | `ColorBy.ZONE` | Coloring strategy |
+| `show_fenestration` | `True` | Show windows and doors |
+| `show_edges` | `True` | Show wireframe edges |
+| `show_labels` | `True` | Show zone name labels |
+| `opacity` | 0.85 | Surface opacity (0-1) |
+| `fenestration_opacity` | 0.4 | Window/door opacity (0-1) |
+| `background_color` | `#f8f9fa` | Plot background color |
+| `edge_color` | `rgba(40,40,40,0.6)` | Wireframe edge color |
+| `edge_width` | 1.5 | Wireframe edge width |
+
+#### ColorBy Options
+
+| Value | Description |
+|-------|-------------|
+| `ColorBy.ZONE` | Color surfaces by thermal zone |
+| `ColorBy.SURFACE_TYPE` | Wall / Floor / Roof / Ceiling |
+| `ColorBy.BOUNDARY_CONDITION` | Outdoors / Ground / Surface / Adiabatic |
+| `ColorBy.CONSTRUCTION` | By construction name |
+
+### Filtering by Zone
+
+All view functions accept a `zones` parameter to display only specific zones:
+
+```python
+fig = view_model(model, zones=["Zone1", "Zone2"])
+```
+
 ## See Also
 
 - [Thermal Properties](thermal.md) — R-value, U-value, SHGC calculations
