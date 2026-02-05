@@ -156,7 +156,7 @@ def _ensure_sql_output(model: IDFDocument) -> None:
         model: The model to modify in place.
     """
     if "Output:SQLite" not in model:
-        model.add("Output:SQLite", "SimpleAndTabular")
+        model.add("Output:SQLite", "", data={"option_type": "SimpleAndTabular"})
 
 
 def _prepare_run_directory(output_dir: str | Path | None, weather_path: Path) -> Path:
