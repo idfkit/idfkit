@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import InMemoryFileSystem
 
 from idfkit import new_document
 from idfkit.exceptions import SimulationError
@@ -232,3 +233,30 @@ class TestSimulate:
         simulate(model, weather_file, energyplus=mock_config)
         # Original model should not have Output:SQLite
         assert "Output:SQLite" not in model
+
+    def test_fs_requires_output_dir(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        fs = InMemoryFileSystem()
+        model = new_document()
+        with pytest.raises(ValueError, match="output_dir is required"):
+            simulate(model, weather_file, energyplus=mock_config, fs=fs)
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_simulate_with_fs_uploads_results(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        fs = InMemoryFileSystem()
+        model = new_document()
+        result = simulate(
+            model,
+            weather_file,
+            energyplus=mock_config,
+            output_dir="remote/output",
+            fs=fs,
+        )
+        assert result.success
+        assert result.fs is fs
+        assert result.run_dir == Path("remote/output")
+        # Verify files were uploaded — at minimum in.idf and weather should be there
+        uploaded = [k for k in fs._files if k.startswith("remote/output/")]
+        assert len(uploaded) > 0

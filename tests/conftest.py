@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import json
 from pathlib import Path
 
@@ -11,6 +12,59 @@ from idfkit import IDFDocument, new_document
 from idfkit.objects import IDFObject
 from idfkit.references import ReferenceGraph
 from idfkit.schema import EpJSONSchema, get_schema
+
+
+class InMemoryFileSystem:
+    """Dict-backed file system for testing.
+
+    Satisfies the :class:`~idfkit.simulation.fs.FileSystem` protocol.
+    """
+
+    def __init__(self) -> None:
+        self._files: dict[str, bytes] = {}
+
+    def _norm(self, path: str | Path) -> str:
+        return str(path).replace("\\", "/").strip("/")
+
+    def read_bytes(self, path: str | Path) -> bytes:
+        key = self._norm(path)
+        if key not in self._files:
+            msg = f"File not found: {key}"
+            raise FileNotFoundError(msg)
+        return self._files[key]
+
+    def write_bytes(self, path: str | Path, data: bytes) -> None:
+        self._files[self._norm(path)] = data
+
+    def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
+        return self.read_bytes(path).decode(encoding)
+
+    def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
+        self.write_bytes(path, text.encode(encoding))
+
+    def exists(self, path: str | Path) -> bool:
+        return self._norm(path) in self._files
+
+    def makedirs(self, path: str | Path, *, exist_ok: bool = False) -> None:
+        pass  # no-op
+
+    def copy(self, src: str | Path, dst: str | Path) -> None:
+        self._files[self._norm(dst)] = self._files[self._norm(src)]
+
+    def glob(self, path: str | Path, pattern: str) -> list[str]:
+        prefix = self._norm(path) + "/"
+        matches: list[str] = []
+        for key in self._files:
+            if key.startswith(prefix):
+                relative = key[len(prefix) :]
+                if fnmatch.fnmatch(relative, pattern):
+                    matches.append(key)
+        return matches
+
+    def remove(self, path: str | Path) -> None:
+        key = self._norm(path)
+        if key in self._files:
+            del self._files[key]
 
 
 @pytest.fixture

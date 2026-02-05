@@ -23,6 +23,7 @@ from .runner import simulate
 if TYPE_CHECKING:
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
+    from .fs import FileSystem
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +100,7 @@ def simulate_batch(
     max_workers: int | None = None,
     cache: SimulationCache | None = None,
     progress: Callable[..., None] | None = None,
+    fs: FileSystem | None = None,
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations in parallel.
 
@@ -117,6 +119,8 @@ def simulate_batch(
         progress: Optional callback invoked after each job completes.
             Called as ``progress(completed=N, total=M, label=label,
             success=bool)``.
+        fs: Optional file system backend passed through to each
+            :func:`simulate` call.
 
     Returns:
         A :class:`BatchResult` with results in the same order as *jobs*.
@@ -138,7 +142,7 @@ def simulate_batch(
     start = time.monotonic()
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_index = {executor.submit(_run_job, job, energyplus, cache): idx for idx, job in enumerate(jobs)}
+        future_to_index = {executor.submit(_run_job, job, energyplus, cache, fs): idx for idx, job in enumerate(jobs)}
 
         for future in as_completed(future_to_index):
             idx = future_to_index[future]
@@ -170,6 +174,7 @@ def _run_job(
     job: SimulationJob,
     energyplus: EnergyPlusConfig | None,
     cache: SimulationCache | None,
+    fs: FileSystem | None,
 ) -> SimulationResult:
     """Execute a single simulation job, catching SimulationError."""
     try:
@@ -187,6 +192,7 @@ def _run_job(
             timeout=job.timeout,
             extra_args=list(job.extra_args) if job.extra_args else None,
             cache=cache,
+            fs=fs,
         )
     except SimulationError:
         return SimulationResult(

@@ -19,6 +19,7 @@ from .result import SimulationResult
 if TYPE_CHECKING:
     from ..document import IDFDocument
     from .cache import CacheKey, SimulationCache
+    from .fs import FileSystem
 
 
 def simulate(
@@ -36,6 +37,7 @@ def simulate(
     timeout: float = 3600.0,
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
+    fs: FileSystem | None = None,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation.
 
@@ -57,6 +59,9 @@ def simulate(
         timeout: Maximum runtime in seconds (default 3600).
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
+        fs: Optional file system backend. When provided, ``output_dir``
+            is required and EnergyPlus runs locally in a temp directory;
+            results are uploaded to ``output_dir`` via *fs* after execution.
 
     Returns:
         SimulationResult with paths to output files.
@@ -65,6 +70,10 @@ def simulate(
         SimulationError: On timeout, OS error, or missing weather file.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
     """
+    if fs is not None and output_dir is None:
+        msg = "output_dir is required when using a file system backend"
+        raise ValueError(msg)
+
     config = _resolve_config(energyplus)
     weather_path = Path(weather).resolve()
 
@@ -91,7 +100,9 @@ def simulate(
     sim_model = model.copy()
     _ensure_sql_output(sim_model)
 
-    run_dir = _prepare_run_directory(output_dir, weather_path)
+    # When using a remote fs, always run locally in a temp dir
+    local_output_dir = None if fs is not None else output_dir
+    run_dir = _prepare_run_directory(local_output_dir, weather_path)
     idf_path = run_dir / "in.idf"
 
     from ..writers import write_idf
@@ -138,15 +149,30 @@ def simulate(
         ) from exc
     else:
         elapsed = time.monotonic() - start
-        result = SimulationResult(
-            run_dir=run_dir,
-            success=proc.returncode == 0,
-            exit_code=proc.returncode,
-            stdout=proc.stdout,
-            stderr=proc.stderr,
-            runtime_seconds=elapsed,
-            output_prefix=output_prefix,
-        )
+
+        if fs is not None:
+            remote_dir = Path(str(output_dir))
+            _upload_results(run_dir, remote_dir, fs)
+            result = SimulationResult(
+                run_dir=remote_dir,
+                success=proc.returncode == 0,
+                exit_code=proc.returncode,
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+                runtime_seconds=elapsed,
+                output_prefix=output_prefix,
+                fs=fs,
+            )
+        else:
+            result = SimulationResult(
+                run_dir=run_dir,
+                success=proc.returncode == 0,
+                exit_code=proc.returncode,
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+                runtime_seconds=elapsed,
+                output_prefix=output_prefix,
+            )
         if cache is not None and cache_key is not None and result.success:
             cache.put(cache_key, result)
         return result
@@ -155,6 +181,20 @@ def simulate(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem) -> None:
+    """Upload all output files from a local directory to a remote file system.
+
+    Args:
+        local_dir: Local directory containing simulation outputs.
+        remote_dir: Remote directory path for the file system.
+        fs: File system backend to upload to.
+    """
+    for p in local_dir.iterdir():
+        if p.is_file():
+            remote_path = str(remote_dir / p.name)
+            fs.write_bytes(remote_path, p.read_bytes())
 
 
 def _resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:

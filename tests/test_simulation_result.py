@@ -7,6 +7,7 @@ import sqlite3
 from pathlib import Path
 
 import pytest
+from conftest import InMemoryFileSystem
 
 from idfkit.simulation.outputs import OutputVariableIndex
 from idfkit.simulation.parsers.csv import CSVResult
@@ -184,3 +185,94 @@ class TestFromDirectory:
         assert result.sql is not None
         assert result.variables is not None
         assert result.csv is not None
+
+
+# ---------------------------------------------------------------------------
+# FileSystem integration tests
+# ---------------------------------------------------------------------------
+
+
+def _populate_memory_fs(fs: InMemoryFileSystem, run_dir: str, tmp_path: Path) -> None:
+    """Load fixture files into an InMemoryFileSystem."""
+    fixtures = Path(__file__).parent / "fixtures" / "simulation"
+    for name, fixture_name in [
+        ("eplusout.rdd", "sample.rdd"),
+        ("eplusout.mdd", "sample.mdd"),
+        ("eplusout.csv", "sample.csv"),
+        ("eplusout.err", "sample.err"),
+    ]:
+        data = (fixtures / fixture_name).read_bytes()
+        fs.write_bytes(f"{run_dir}/{name}", data)
+
+    # SQL needs a real local file — write it to the fs as raw bytes
+    sql_path = tmp_path / "temp.sql"
+    _create_minimal_sql(sql_path)
+    fs.write_bytes(f"{run_dir}/{name}", sql_path.read_bytes())
+    fs.write_bytes(f"{run_dir}/eplusout.sql", sql_path.read_bytes())
+
+
+class TestFsIntegration:
+    """Tests for SimulationResult with an InMemoryFileSystem backend."""
+
+    @pytest.fixture
+    def mem_fs(self, tmp_path: Path) -> tuple[InMemoryFileSystem, str]:
+        fs = InMemoryFileSystem()
+        run_dir = "output/sim1"
+        _populate_memory_fs(fs, run_dir, tmp_path)
+        return fs, run_dir
+
+    def test_from_directory_with_fs(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        assert result.fs is fs
+        assert result.run_dir == Path(run_dir)
+
+    def test_errors_via_fs(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        report = result.errors
+        assert report is not None
+        # The sample.err fixture should parse without errors
+        assert report.raw_text != ""
+
+    def test_csv_via_fs(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        csv = result.csv
+        assert csv is not None
+        assert isinstance(csv, CSVResult)
+        assert len(csv.columns) == 2
+
+    def test_variables_via_fs(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        variables = result.variables
+        assert variables is not None
+        assert isinstance(variables, OutputVariableIndex)
+        assert len(variables.variables) == 7
+        assert len(variables.meters) == 5
+
+    def test_sql_via_fs_downloads_to_temp(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        sql = result.sql
+        assert sql is not None
+        assert isinstance(sql, SQLResult)
+        ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+        assert len(ts.values) == 1
+        assert ts.values[0] == -5.0
+
+    def test_find_output_file_via_fs(self, mem_fs: tuple[InMemoryFileSystem, str]) -> None:
+        fs, run_dir = mem_fs
+        result = SimulationResult.from_directory(run_dir, fs=fs)
+        assert result.err_path is not None
+        assert result.csv_path is not None
+        assert result.rdd_path is not None
+        assert result.mdd_path is not None
+        assert result.sql_path is not None
+
+    def test_find_output_file_via_fs_none_when_missing(self) -> None:
+        fs = InMemoryFileSystem()
+        result = SimulationResult.from_directory("empty/dir", fs=fs)
+        assert result.err_path is None
+        assert result.csv_path is None

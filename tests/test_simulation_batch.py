@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conftest import InMemoryFileSystem
 
 from idfkit import new_document
 from idfkit.simulation.batch import BatchResult, SimulationJob, simulate_batch
@@ -248,3 +249,15 @@ class TestSimulateBatch:
         job = SimulationJob(model=new_document(), weather=weather_file)
         result = simulate_batch([job], energyplus=mock_config)
         assert result.total_runtime_seconds >= 0
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_batch_passes_fs_to_simulate(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """When fs is passed to simulate_batch, results should carry the fs."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        fs = InMemoryFileSystem()
+        job = SimulationJob(model=new_document(), weather=weather_file, output_dir="remote/batch/0")
+        result = simulate_batch([job], energyplus=mock_config, fs=fs, max_workers=1)
+        assert result[0].success
+        assert result[0].fs is fs

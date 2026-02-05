@@ -18,6 +18,7 @@ from __future__ import annotations
 from .batch import BatchResult, SimulationJob, simulate_batch
 from .cache import CacheKey, SimulationCache
 from .config import EnergyPlusConfig, find_energyplus
+from .fs import FileSystem, LocalFileSystem, S3FileSystem
 from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
@@ -35,9 +36,12 @@ __all__ = [
     "EnvironmentInfo",
     "ErrorMessage",
     "ErrorReport",
+    "FileSystem",
+    "LocalFileSystem",
     "OutputMeter",
     "OutputVariable",
     "OutputVariableIndex",
+    "S3FileSystem",
     "SQLResult",
     "SimulationCache",
     "SimulationJob",

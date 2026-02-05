@@ -6,6 +6,7 @@ after a simulation run.
 
 from __future__ import annotations
 
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -13,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 from .parsers.err import ErrorReport
 
 if TYPE_CHECKING:
+    from .fs import FileSystem
     from .outputs import OutputVariableIndex
     from .parsers.csv import CSVResult
     from .parsers.sql import SQLResult
@@ -33,6 +35,7 @@ class SimulationResult:
         stderr: Captured standard error.
         runtime_seconds: Wall-clock execution time in seconds.
         output_prefix: Output file prefix (default "eplus").
+        fs: Optional file system backend for reading output files.
     """
 
     run_dir: Path
@@ -42,6 +45,7 @@ class SimulationResult:
     stderr: str
     runtime_seconds: float
     output_prefix: str = "eplus"
+    fs: FileSystem | None = field(default=None, repr=False)
     _cached_errors: ErrorReport | None = field(default=None, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -58,7 +62,13 @@ class SimulationResult:
         if cached is not None:
             return cached
         err = self.err_path
-        report = ErrorReport.from_file(err) if err is not None else ErrorReport.from_string("")
+        if err is None:
+            report = ErrorReport.from_string("")
+        elif self.fs is not None:
+            text = self.fs.read_text(str(err), encoding="latin-1")
+            report = ErrorReport.from_string(text)
+        else:
+            report = ErrorReport.from_file(err)
         object.__setattr__(self, "_cached_errors", report)
         return report
 
@@ -79,7 +89,14 @@ class SimulationResult:
             return None
         from .parsers.sql import SQLResult as _SQLResult
 
-        result: SQLResult = _SQLResult(path)
+        if self.fs is not None:
+            # sqlite3 requires a local file — download to a temp file
+            data = self.fs.read_bytes(str(path))
+            with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
+                tmp_file.write(data)
+            result: SQLResult = _SQLResult(Path(tmp_file.name))
+        else:
+            result = _SQLResult(path)
         object.__setattr__(self, "_cached_sql", result)
         return result
 
@@ -98,9 +115,21 @@ class SimulationResult:
         if rdd is None:
             object.__setattr__(self, "_cached_variables", None)
             return None
-        from .outputs import OutputVariableIndex as _OutputVariableIndex
 
-        result: OutputVariableIndex = _OutputVariableIndex.from_files(rdd, self.mdd_path)
+        if self.fs is not None:
+            from .parsers.rdd import parse_mdd, parse_rdd
+
+            rdd_text = self.fs.read_text(str(rdd), encoding="latin-1")
+            variables = parse_rdd(rdd_text)
+            mdd = self.mdd_path
+            meters = parse_mdd(self.fs.read_text(str(mdd), encoding="latin-1")) if mdd is not None else ()
+            from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+            result: OutputVariableIndex = _OutputVariableIndex(variables=variables, meters=meters)
+        else:
+            from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+            result = _OutputVariableIndex.from_files(rdd, self.mdd_path)
         object.__setattr__(self, "_cached_variables", result)
         return result
 
@@ -121,7 +150,11 @@ class SimulationResult:
             return None
         from .parsers.csv import CSVResult as _CSVResult
 
-        result: CSVResult = _CSVResult.from_file(path)
+        if self.fs is not None:
+            text = self.fs.read_text(str(path), encoding="latin-1")
+            result: CSVResult = _CSVResult.from_string(text)
+        else:
+            result = _CSVResult.from_file(path)
         object.__setattr__(self, "_cached_csv", result)
         return result
 
@@ -172,8 +205,18 @@ class SimulationResult:
         Returns:
             Path to the file, or None if not found.
         """
-        # Primary: prefixed name
         primary = self.run_dir / f"{self.output_prefix}out{suffix}"
+
+        if self.fs is not None:
+            if self.fs.exists(str(primary)):
+                return primary
+            # Fallback: glob for matching files
+            matches = self.fs.glob(str(self.run_dir), f"*{suffix}")
+            if matches:
+                return Path(matches[0])
+            return None
+
+        # Local path-based lookup
         if primary.is_file():
             return primary
 
@@ -185,7 +228,13 @@ class SimulationResult:
         return None
 
     @classmethod
-    def from_directory(cls, path: str | Path, *, output_prefix: str = "eplus") -> SimulationResult:
+    def from_directory(
+        cls,
+        path: str | Path,
+        *,
+        output_prefix: str = "eplus",
+        fs: FileSystem | None = None,
+    ) -> SimulationResult:
         """Reconstruct a SimulationResult from an existing output directory.
 
         Useful for inspecting results from a previous simulation run.
@@ -193,11 +242,12 @@ class SimulationResult:
         Args:
             path: Path to the simulation output directory.
             output_prefix: Output file prefix used during the run.
+            fs: Optional file system backend for reading output files.
 
         Returns:
             SimulationResult pointing to the existing output.
         """
-        run_dir = Path(path).resolve()
+        run_dir = Path(path) if fs is not None else Path(path).resolve()
         return cls(
             run_dir=run_dir,
             success=True,
@@ -206,4 +256,5 @@ class SimulationResult:
             stderr="",
             runtime_seconds=0.0,
             output_prefix=output_prefix,
+            fs=fs,
         )
