@@ -240,7 +240,8 @@ class IDFParser:
         """Build the data dict from parsed fields using schema field ordering."""
         data: dict[str, Any] = {}
 
-        if field_names:
+        if field_names is not None:
+            # Schema-based: map fields by name, then parse extensibles
             for i, value in enumerate(remaining_fields):
                 if i < len(field_names):
                     field_name = field_names[i]
@@ -248,6 +249,7 @@ class IDFParser:
                         data[field_name] = self._coerce_value(obj_type, field_name, value, schema)
             self._parse_extensible_fields(obj_type, remaining_fields, field_names, data, schema)
         else:
+            # No schema — use generic field names
             for i, value in enumerate(remaining_fields):
                 if value:
                     data[f"field_{i + 1}"] = value

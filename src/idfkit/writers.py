@@ -152,6 +152,11 @@ class IDFWriter:
                 comment = field_name.replace("_", " ").title()
                 comments.append(comment)
 
+        # Trim trailing empty fields (avoids EnergyPlus interpreting them as blank values)
+        while len(values) > 1 and values[-1] == "":
+            values.pop()
+            comments.pop()
+
         # Build output
         lines.append(f"{obj_type},")
 
