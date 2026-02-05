@@ -107,7 +107,7 @@ see SQL-related errors:
 ```python
 # Verify SQL output is present
 if "Output:SQLite" not in model:
-    model.add("Output:SQLite", "", option_type="SimpleAndTabular")
+    model.add("Output:SQLite", option_type="SimpleAndTabular")
 ```
 
 ### Version Mismatch
@@ -216,10 +216,9 @@ If `get_timeseries()` returns `None`:
 
 3. Verify the output was requested:
    ```python
-   # Add output request
+   # Add output request (name is optional for Output:Variable)
    model.add(
        "Output:Variable",
-       "",
        key_value="*",
        variable_name="Zone Mean Air Temperature",
        reporting_frequency="Hourly",
