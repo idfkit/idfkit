@@ -14,7 +14,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from ..exceptions import SimulationError
 from .result import SimulationResult
@@ -39,7 +39,7 @@ class SimulationJob:
         annual: Run annual simulation.
         design_day: Run design-day-only simulation.
         output_prefix: Prefix for output files.
-        output_suffix: Unit suffix (``"C"`` or ``"F"``).
+        output_suffix: Output file naming suffix (``"C"``, ``"L"``, or ``"D"``).
         readvars: Run ReadVarsESO after simulation.
         timeout: Maximum runtime in seconds.
         extra_args: Additional command-line arguments.
@@ -53,7 +53,7 @@ class SimulationJob:
     annual: bool = False
     design_day: bool = False
     output_prefix: str = "eplus"
-    output_suffix: str = "C"
+    output_suffix: Literal["C", "L", "D"] = "C"
     readvars: bool = False
     timeout: float = 3600.0
     extra_args: tuple[str, ...] | None = None

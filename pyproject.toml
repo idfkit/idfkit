@@ -28,11 +28,27 @@ Repository = "https://github.com/samuelduchesne/idfkit"
 Documentation = "https://samuelduchesne.github.io/idfkit/"
 
 [project.optional-dependencies]
+# Core simulation requires no extras
+sim = []
+# Weather station index refresh (bundled index loads without this)
 weather = ["openpyxl>=3.1.0"]
-dataframes = ["pandas>=1.5"]
+# DataFrame result conversion
+pandas = ["pandas>=1.5"]
+dataframes = ["pandas>=1.5"]  # Alias for backwards compatibility
+# Cloud storage backends
 s3 = ["boto3>=1.26"]
+cloud = ["boto3>=1.26"]  # Alias for s3
+# Plotting backends
 plot = ["matplotlib>=3.5"]
 plotly = ["plotly>=5.0"]
+# Everything
+all = [
+    "openpyxl>=3.1.0",
+    "pandas>=1.5",
+    "matplotlib>=3.5",
+    "plotly>=5.0",
+    "boto3>=1.26",
+]
 
 [dependency-groups]
 dev = [

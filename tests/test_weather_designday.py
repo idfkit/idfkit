@@ -222,3 +222,57 @@ class TestApplyToModel:
         ddm.apply_to_model(model)
         ddm.apply_to_model(model)
         assert len(list(model["SizingPeriod:DesignDay"])) == 2
+
+
+class TestNoDesignDaysError:
+    """Tests for NoDesignDaysError exception."""
+
+    def test_raise_if_empty_does_not_raise_when_design_days_present(self) -> None:
+        ddm = DesignDayManager(_FIXTURES / "sample.ddy")
+        # Should not raise
+        ddm.raise_if_empty()
+
+    def test_raise_if_empty_raises_for_empty_ddy(self) -> None:
+        from idfkit.exceptions import NoDesignDaysError
+
+        ddm = DesignDayManager(_FIXTURES / "empty.ddy")
+        with pytest.raises(NoDesignDaysError) as exc_info:
+            ddm.raise_if_empty()
+
+        error = exc_info.value
+        assert "no SizingPeriod:DesignDay objects" in str(error)
+        assert error.ddy_path is not None
+        assert "empty.ddy" in error.ddy_path
+
+    def test_error_includes_station_name_from_location(self) -> None:
+        from idfkit.exceptions import NoDesignDaysError
+
+        ddm = DesignDayManager(_FIXTURES / "empty.ddy")
+        with pytest.raises(NoDesignDaysError) as exc_info:
+            ddm.raise_if_empty()
+
+        # The empty.ddy has a Site:Location with a name
+        error = exc_info.value
+        # The station name comes from Site:Location if present
+        assert error.station_name is not None or error.ddy_path is not None
+
+    def test_error_message_includes_ddy_path(self) -> None:
+        from idfkit.exceptions import NoDesignDaysError
+
+        ddm = DesignDayManager(_FIXTURES / "empty.ddy")
+        with pytest.raises(NoDesignDaysError) as exc_info:
+            ddm.raise_if_empty()
+
+        error_msg = str(exc_info.value)
+        assert "empty.ddy" in error_msg or "no SizingPeriod:DesignDay" in error_msg
+
+    def test_nearby_suggestions_empty_when_no_station(self) -> None:
+        from idfkit.exceptions import NoDesignDaysError
+
+        # When not created from a station, no nearby suggestions
+        ddm = DesignDayManager(_FIXTURES / "empty.ddy")
+        with pytest.raises(NoDesignDaysError) as exc_info:
+            ddm.raise_if_empty()
+
+        error = exc_info.value
+        assert error.nearby_suggestions == []

@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from ..exceptions import SimulationError
 from .config import EnergyPlusConfig, find_energyplus
@@ -32,7 +32,7 @@ def simulate(
     annual: bool = False,
     design_day: bool = False,
     output_prefix: str = "eplus",
-    output_suffix: str = "C",
+    output_suffix: Literal["C", "L", "D"] = "C",
     readvars: bool = False,
     timeout: float = 3600.0,
     extra_args: list[str] | None = None,
@@ -54,14 +54,26 @@ def simulate(
         annual: Run annual simulation (``-a`` flag).
         design_day: Run design-day-only simulation (``-D`` flag).
         output_prefix: Prefix for output files (default "eplus").
-        output_suffix: Unit suffix, "C" or "F" (default "C").
+        output_suffix: Output file naming suffix: ``"C"`` for combined table
+            files (default), ``"L"`` for legacy separate table files, or
+            ``"D"`` for timestamped separate files.
         readvars: Run ReadVarsESO after simulation (``-r`` flag).
         timeout: Maximum runtime in seconds (default 3600).
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
-        fs: Optional file system backend. When provided, ``output_dir``
-            is required and EnergyPlus runs locally in a temp directory;
-            results are uploaded to ``output_dir`` via *fs* after execution.
+        fs: Optional file system backend for storing results on remote
+            storage (e.g., S3). When provided, ``output_dir`` is required
+            and specifies the remote destination path. EnergyPlus runs
+            locally in a temp directory; results are then uploaded to
+            ``output_dir`` via *fs* after execution.
+
+            .. note::
+
+                The ``fs`` parameter handles **output storage only**.
+                The ``weather`` file must be a local path — remote weather
+                files are not automatically downloaded. For cloud workflows,
+                download weather files first using :class:`~idfkit.weather.WeatherDownloader`
+                or pre-stage them locally before calling ``simulate()``.
 
     Returns:
         SimulationResult with paths to output files.
@@ -252,7 +264,7 @@ def _build_command(
     weather_path: Path,
     output_dir: Path,
     output_prefix: str,
-    output_suffix: str,
+    output_suffix: Literal["C", "L", "D"],
     expand_objects: bool,
     annual: bool,
     design_day: bool,
@@ -267,7 +279,7 @@ def _build_command(
         weather_path: Path to the weather file in the run dir.
         output_dir: Output directory path.
         output_prefix: Output file prefix.
-        output_suffix: Unit suffix ("C" or "F").
+        output_suffix: Output file naming suffix ("C", "L", or "D").
         expand_objects: Whether to run ExpandObjects.
         annual: Whether to run annual simulation.
         design_day: Whether to run design-day-only simulation.

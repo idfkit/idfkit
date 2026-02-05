@@ -15,7 +15,7 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
@@ -69,7 +69,7 @@ class SimulationCache:
         expand_objects: bool = True,
         annual: bool = False,
         design_day: bool = False,
-        output_suffix: str = "C",
+        output_suffix: Literal["C", "L", "D"] = "C",
         extra_args: list[str] | tuple[str, ...] | None = None,
     ) -> CacheKey:
         """Compute a deterministic cache key for a simulation invocation.
@@ -84,7 +84,7 @@ class SimulationCache:
             expand_objects: Whether ExpandObjects will run.
             annual: Whether annual simulation is used.
             design_day: Whether design-day-only simulation is used.
-            output_suffix: Unit suffix (``"C"`` or ``"F"``).
+            output_suffix: Output file naming suffix (``"C"``, ``"L"``, or ``"D"``).
             extra_args: Additional command-line arguments.
 
         Returns:

@@ -33,6 +33,7 @@ upstream Excel indexes and rebuild the local cache.
 
 from __future__ import annotations
 
+from ..exceptions import NoDesignDaysError
 from .designday import DesignDayManager, DesignDayType, apply_ashrae_sizing
 from .download import WeatherDownloader, WeatherFiles
 from .geocode import GeocodingError, geocode
@@ -43,6 +44,7 @@ __all__ = [
     "DesignDayManager",
     "DesignDayType",
     "GeocodingError",
+    "NoDesignDaysError",
     "SearchResult",
     "SpatialResult",
     "StationIndex",

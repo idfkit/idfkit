@@ -134,3 +134,42 @@ class SimulationError(IdfKitError):
             trimmed = stderr.strip()[:500]
             msg += f"\nstderr: {trimmed}"
         super().__init__(msg)
+
+
+class NoDesignDaysError(IdfKitError):
+    """Raised when a DDY file contains no SizingPeriod:DesignDay objects.
+
+    This typically occurs for weather stations that lack ASHRAE design
+    conditions data in the climate.onebuilding.org database.
+
+    Attributes:
+        station_name: Display name of the station (if available).
+        ddy_path: Path to the DDY file that was parsed.
+        nearby_suggestions: List of nearby stations that may have design days.
+    """
+
+    def __init__(
+        self,
+        station_name: str | None = None,
+        ddy_path: str | None = None,
+        nearby_suggestions: list[str] | None = None,
+    ) -> None:
+        self.station_name = station_name
+        self.ddy_path = ddy_path
+        self.nearby_suggestions = nearby_suggestions or []
+
+        if station_name:
+            msg = f"DDY file for '{station_name}' contains no SizingPeriod:DesignDay objects."
+        elif ddy_path:
+            msg = f"DDY file '{ddy_path}' contains no SizingPeriod:DesignDay objects."
+        else:
+            msg = "DDY file contains no SizingPeriod:DesignDay objects."
+
+        msg += "\nThis station may lack ASHRAE design conditions data."
+
+        if self.nearby_suggestions:
+            msg += "\n\nNearby stations that may have design days:"
+            for suggestion in self.nearby_suggestions[:5]:
+                msg += f"\n  - {suggestion}"
+
+        super().__init__(msg)

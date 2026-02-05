@@ -12,6 +12,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from ..exceptions import NoDesignDaysError
 from ..versions import LATEST_VERSION
 
 if TYPE_CHECKING:
@@ -122,12 +123,14 @@ class DesignDayManager:
             across versions).
     """
 
-    __slots__ = ("_all_objects", "_design_days", "_doc", "_location", "_path")
+    __slots__ = ("_all_objects", "_design_days", "_doc", "_location", "_path", "_station")
 
     def __init__(
         self,
         ddy_path: Path | str,
         version: tuple[int, int, int] | None = None,
+        *,
+        station: WeatherStation | None = None,
     ) -> None:
         from ..idf_parser import parse_idf
 
@@ -136,6 +139,7 @@ class DesignDayManager:
         self._design_days: dict[DesignDayType, IDFObject] = {}
         self._all_objects: list[IDFObject] = []
         self._location: IDFObject | None = None
+        self._station: WeatherStation | None = station
         self._parse()
 
     def _parse(self) -> None:
@@ -177,7 +181,7 @@ class DesignDayManager:
         _ = dataset  # reserved for future dataset selection
         downloader = WeatherDownloader()
         ddy_path = downloader.get_ddy(station)
-        return cls(ddy_path, version=version)
+        return cls(ddy_path, version=version, station=station)
 
     # --- Accessors ----------------------------------------------------------
 
@@ -219,6 +223,54 @@ class DesignDayManager:
     def location(self) -> IDFObject | None:
         """The ``Site:Location`` object from the DDY file, if present."""
         return self._location
+
+    def raise_if_empty(self) -> None:
+        """Raise :exc:`NoDesignDaysError` if this DDY has no design days.
+
+        When constructed via :meth:`from_station`, the error message includes
+        suggestions for nearby stations that may have design day data.
+
+        Raises:
+            NoDesignDaysError: If ``all_design_days`` is empty.
+        """
+        if self._all_objects:
+            return
+
+        station_name: str | None = None
+        nearby: list[str] = []
+
+        # Extract station name from Site:Location if available
+        if self._location is not None:
+            station_name = self._location.name
+        elif self._station is not None:
+            station_name = self._station.display_name
+
+        # Find nearby stations if we have coordinates
+        if self._station is not None:
+            from .index import StationIndex
+
+            try:
+                index = StationIndex.load()
+                results = index.nearest(
+                    self._station.latitude,
+                    self._station.longitude,
+                    limit=6,
+                )
+                for r in results:
+                    # Skip the current station
+                    if r.station.wmo == self._station.wmo:
+                        continue
+                    nearby.append(f"{r.station.display_name} (WMO {r.station.wmo}, {r.distance_km:.0f} km)")
+                    if len(nearby) >= 5:
+                        break
+            except Exception:  # noqa: S110 - Don't let suggestion lookup break the error
+                pass
+
+        raise NoDesignDaysError(
+            station_name=station_name,
+            ddy_path=str(self._path),
+            nearby_suggestions=nearby,
+        )
 
     # --- Injection ----------------------------------------------------------
 
@@ -377,8 +429,14 @@ def apply_ashrae_sizing(
 
     Returns:
         List of design day names that were added.
+
+    Raises:
+        NoDesignDaysError: If the station's DDY file contains no design days.
+            The exception includes suggestions for nearby stations that may
+            have design day data.
     """
     ddm = DesignDayManager.from_station(station, version=version)
+    ddm.raise_if_empty()
     if standard == "90.1":
         return ddm.apply_to_model(model, heating="99.6%", cooling="1%", include_wet_bulb=True)
     return ddm.apply_to_model(model, heating="99.6%", cooling="0.4%")
