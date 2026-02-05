@@ -59,6 +59,36 @@ class TimeSeriesResult:
             {"timestamp": list(self.timestamps), self.variable_name: list(self.values)}
         ).set_index("timestamp")
 
+    def plot(self, *, backend: Any = None, title: str | None = None) -> Any:
+        """Plot this time series as a line chart.
+
+        Auto-detects the plotting backend if not provided. Requires matplotlib
+        or plotly to be installed.
+
+        Args:
+            backend: A PlotBackend instance. If not provided, auto-detects.
+            title: Optional plot title. Defaults to ``"key_value: variable_name"``.
+
+        Returns:
+            A figure object from the backend.
+
+        Raises:
+            ImportError: If no plotting backend is available.
+        """
+        if backend is None:
+            from ..plotting import get_default_backend
+
+            backend = get_default_backend()
+        plot_title = title or f"{self.key_value}: {self.variable_name}"
+        return backend.line(
+            list(self.timestamps),
+            list(self.values),
+            title=plot_title,
+            xlabel="Time",
+            ylabel=f"{self.variable_name} ({self.units})",
+            label=self.key_value,
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class TabularRow:

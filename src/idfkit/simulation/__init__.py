@@ -24,6 +24,13 @@ from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
 from .parsers.rdd import OutputMeter, OutputVariable
 from .parsers.sql import EnvironmentInfo, SQLResult, TabularRow, TimeSeriesResult, VariableInfo
+from .plotting import (
+    PlotBackend,
+    get_default_backend,
+    plot_comfort_hours,
+    plot_energy_balance,
+    plot_temperature_profile,
+)
 from .result import SimulationResult
 from .runner import simulate
 
@@ -41,6 +48,7 @@ __all__ = [
     "OutputMeter",
     "OutputVariable",
     "OutputVariableIndex",
+    "PlotBackend",
     "S3FileSystem",
     "SQLResult",
     "SimulationCache",
@@ -50,6 +58,10 @@ __all__ = [
     "TimeSeriesResult",
     "VariableInfo",
     "find_energyplus",
+    "get_default_backend",
+    "plot_comfort_hours",
+    "plot_energy_balance",
+    "plot_temperature_profile",
     "simulate",
     "simulate_batch",
 ]

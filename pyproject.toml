@@ -31,6 +31,8 @@ Documentation = "https://samuelduchesne.github.io/idfkit/"
 weather = ["openpyxl>=3.1.0"]
 dataframes = ["pandas>=1.5"]
 s3 = ["boto3>=1.26"]
+plot = ["matplotlib>=3.5"]
+plotly = ["plotly>=5.0"]
 
 [dependency-groups]
 dev = [
