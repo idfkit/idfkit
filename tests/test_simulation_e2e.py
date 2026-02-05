@@ -1,8 +1,17 @@
 """End-to-end simulation tests with a real EnergyPlus installation.
 
-These tests require EnergyPlus to be installed and are skipped when it
-is not available. They exercise the full workflow: load IDF → modify
-model → simulate → query results.
+These tests require EnergyPlus to be installed and are marked with
+``@pytest.mark.integration``. They are skipped when EnergyPlus is not
+available. They exercise the full workflow: load IDF → modify model →
+simulate → query results.
+
+Run integration tests explicitly with::
+
+    pytest -m integration tests/test_simulation_e2e.py
+
+Skip integration tests with::
+
+    pytest -m "not integration"
 """
 
 from __future__ import annotations
@@ -12,22 +21,24 @@ from pathlib import Path
 import pytest
 
 from idfkit import load_idf
+from idfkit.exceptions import EnergyPlusNotFoundError
 from idfkit.simulation import SimulationResult, find_energyplus
 from idfkit.simulation.config import EnergyPlusConfig
+
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
-EPLUS_DIR = Path.home() / ".local" / "EnergyPlus-24.1.0-9d7789a3ac-Linux-Ubuntu22.04-x86_64"
 
 
 @pytest.fixture(scope="module")
 def energyplus() -> EnergyPlusConfig:
     """Discover EnergyPlus or skip the entire module."""
     try:
-        return find_energyplus(path=str(EPLUS_DIR))
-    except Exception:
+        return find_energyplus()
+    except EnergyPlusNotFoundError:
         pytest.skip("EnergyPlus not installed")
         raise  # unreachable, keeps type checker happy
 

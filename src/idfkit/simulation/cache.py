@@ -180,8 +180,8 @@ class SimulationCache:
             meta_path = tmp_dir / self._META_FILE
             meta_path.write_text(json.dumps(meta), encoding="utf-8")
 
-            # Atomic rename
-            os.rename(tmp_dir, target_dir)
+            # Atomic move — shutil.move handles cross-device moves safely
+            shutil.move(str(tmp_dir), str(target_dir))
         except OSError:
             # Another thread/process beat us — clean up
             shutil.rmtree(tmp_dir, ignore_errors=True)

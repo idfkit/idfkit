@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -11,7 +12,8 @@ from urllib.error import URLError
 _NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 _USER_AGENT = "idfkit (https://github.com/samuelduchesne/idfkit)"
 
-# Module-level state for rate limiting (1 request per second).
+# Thread-safe rate limiting (1 request per second).
+_rate_limit_lock = threading.Lock()
 _last_request_time: float = 0.0
 
 
@@ -25,6 +27,9 @@ def geocode(address: str) -> tuple[float, float]:
     Uses the free OpenStreetMap Nominatim geocoding service.  No API key is
     required.  Requests are rate-limited to one per second in compliance with
     Nominatim usage policy.
+
+    This function is thread-safe. Concurrent calls from multiple threads will
+    be serialized to respect the rate limit.
 
     Compose with :meth:`~idfkit.weather.index.StationIndex.nearest` for
     address-based weather station lookup::
@@ -45,10 +50,13 @@ def geocode(address: str) -> tuple[float, float]:
     """
     global _last_request_time
 
-    # Enforce rate limit
-    elapsed = time.monotonic() - _last_request_time
-    if elapsed < 1.0:
-        time.sleep(1.0 - elapsed)
+    # Thread-safe rate limiting
+    with _rate_limit_lock:
+        elapsed = time.monotonic() - _last_request_time
+        if elapsed < 1.0:
+            time.sleep(1.0 - elapsed)
+        # Update timestamp while still holding the lock to prevent races
+        _last_request_time = time.monotonic()
 
     params = urllib.parse.urlencode({"q": address, "format": "json", "limit": "1"})
     url = f"{_NOMINATIM_URL}?{params}"
@@ -56,7 +64,6 @@ def geocode(address: str) -> tuple[float, float]:
     req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
-            _last_request_time = time.monotonic()
             data = json.loads(resp.read())
             if data:
                 return float(data[0]["lat"]), float(data[0]["lon"])

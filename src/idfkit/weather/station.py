@@ -18,7 +18,8 @@ class WeatherStation:
         state: State or province abbreviation (e.g. ``"CA"``).
         city: City or station name as it appears in the index
             (e.g. ``"Marina.Muni.AP"``).
-        wmo: WMO station number.
+        wmo: WMO station number as a string to preserve leading zeros
+            (e.g. ``"722950"`` or ``"012345"``).
         source: Dataset source identifier (e.g. ``"SRC-TMYx"``).
         latitude: Decimal degrees, north positive.
         longitude: Decimal degrees, east positive.
@@ -30,7 +31,7 @@ class WeatherStation:
     country: str
     state: str
     city: str
-    wmo: int
+    wmo: str
     source: str
     latitude: float
     longitude: float
@@ -38,7 +39,7 @@ class WeatherStation:
     elevation: float
     url: str
 
-    def to_dict(self) -> dict[str, str | int | float]:
+    def to_dict(self) -> dict[str, str | float]:
         """Serialize to a plain dictionary for JSON storage."""
         return {
             "country": self.country,
@@ -54,13 +55,13 @@ class WeatherStation:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, str | int | float]) -> WeatherStation:
+    def from_dict(cls, data: dict[str, str | float]) -> WeatherStation:
         """Deserialize from a plain dictionary."""
         return cls(
             country=str(data["country"]),
             state=str(data["state"]),
             city=str(data["city"]),
-            wmo=int(data["wmo"]),
+            wmo=str(data["wmo"]),
             source=str(data["source"]),
             latitude=float(data["latitude"]),
             longitude=float(data["longitude"]),

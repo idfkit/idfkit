@@ -9,6 +9,15 @@ This sub-package provides tools for:
   EnergyPlus models.
 * **Geocoding** addresses to coordinates via the free Nominatim API.
 
+Station Index
+-------------
+
+The bundled index contains **~55,000 dataset entries** representing
+**~17,300 unique physical weather stations** worldwide. The difference
+is because each station may have multiple TMYx year-range variants
+(e.g., ``TMYx.2007-2021``, ``TMYx.2009-2023``), each stored as a
+separate entry with its own download URL.
+
 Quick start::
 
     from idfkit.weather import StationIndex, WeatherDownloader, apply_ashrae_sizing
