@@ -7,10 +7,13 @@ using Through:, For:, Until:, and Interpolate: keywords.
 from __future__ import annotations
 
 import re
+import weakref
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from typing import TYPE_CHECKING
 
+from idfkit.schedules.day_types import get_applicable_day_types
+from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values
 from idfkit.schedules.types import (
     DAY_TYPE_ALL_OTHER_DAYS,
     DAY_TYPE_ALLDAYS,
@@ -28,7 +31,6 @@ from idfkit.schedules.types import (
     DAY_TYPE_WEEKDAYS,
     DAY_TYPE_WEEKENDS,
     DAY_TYPE_WINTER_DESIGN,
-    WEEKDAY_TO_DAY_TYPE,
     CompactDayRule,
     CompactPeriod,
     DayType,
@@ -66,6 +68,12 @@ _DAY_TYPE_MAP = {
     "customday2": DAY_TYPE_CUSTOM_DAY_2,
     "allotherdays": DAY_TYPE_ALL_OTHER_DAYS,
 }
+
+# Cache for parse_compact results, keyed by IDFObject identity.
+# IDFObject.__hash__ uses id(self) so WeakKeyDictionary works correctly.
+_parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[list[CompactPeriod], Interpolation]] = (
+    weakref.WeakKeyDictionary()
+)
 
 
 @dataclass
@@ -112,7 +120,7 @@ def _process_until(state: _ParseState, match: re.Match[str], obj: IDFObject) -> 
     second = int(match.group(3)) if match.group(3) else 0
 
     # Handle "24:00" as end of day
-    until_time = time(23, 59, 59, 999999) if hour == 24 else time(hour, minute, second)
+    until_time = END_OF_DAY if hour == 24 else time(hour, minute, second)
 
     # Next field should be the value
     state.field_index += 1
@@ -145,6 +153,9 @@ def _finalize_parse_state(state: _ParseState) -> None:
 def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
     """Parse a Schedule:Compact object into structured data.
 
+    Results are cached per object identity (the cache uses a WeakKeyDictionary
+    so entries are automatically cleaned up when the object is garbage-collected).
+
     Args:
         obj: The Schedule:Compact object.
 
@@ -154,6 +165,10 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
     Raises:
         ValueError: If the schedule syntax is invalid.
     """
+    cached = _parse_cache.get(obj)
+    if cached is not None:
+        return cached
+
     state = _ParseState(
         periods=[],
         interpolation=Interpolation.NO,
@@ -184,7 +199,9 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         state.field_index += 1
 
     _finalize_parse_state(state)
-    return state.periods, state.interpolation
+    result = state.periods, state.interpolation
+    _parse_cache[obj] = result
+    return result
 
 
 def _get_extensible_field(obj: IDFObject, index: int) -> str | None:
@@ -267,7 +284,7 @@ def evaluate_compact(
         return 0.0
 
     # Get applicable day types for this date
-    applicable_types = _get_applicable_day_types(
+    applicable_types = get_applicable_day_types(
         d, day_type, holidays or set(), custom_day_1 or set(), custom_day_2 or set()
     )
 
@@ -277,7 +294,7 @@ def evaluate_compact(
         return 0.0
 
     # Evaluate the time-value pairs
-    return _evaluate_time_values(rule.time_values, current_time, interpolation)
+    return evaluate_time_values(rule.time_values, current_time, interpolation)
 
 
 def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPeriod | None:
@@ -301,73 +318,6 @@ def _find_period_for_date(periods: list[CompactPeriod], d: date) -> CompactPerio
     return periods[-1] if periods else None
 
 
-def _get_applicable_day_types(
-    d: date,
-    day_type: DayType,
-    holidays: set[date],
-    custom_day_1: set[date],
-    custom_day_2: set[date],
-) -> set[str]:
-    """Get all day types that apply to a date.
-
-    Args:
-        d: The date.
-        day_type: Override day type.
-        holidays: Set of holiday dates.
-        custom_day_1: Set of CustomDay1 dates.
-        custom_day_2: Set of CustomDay2 dates.
-
-    Returns:
-        Set of applicable day type strings.
-    """
-    types: set[str] = set()
-
-    # Handle explicit override
-    if day_type == DayType.SUMMER_DESIGN:
-        types.add(DAY_TYPE_SUMMER_DESIGN)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    elif day_type == DayType.WINTER_DESIGN:
-        types.add(DAY_TYPE_WINTER_DESIGN)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    elif day_type == DayType.HOLIDAY:
-        types.add(DAY_TYPE_HOLIDAY)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    elif day_type == DayType.CUSTOM_DAY_1:
-        types.add(DAY_TYPE_CUSTOM_DAY_1)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-    elif day_type == DayType.CUSTOM_DAY_2:
-        types.add(DAY_TYPE_CUSTOM_DAY_2)
-        types.add(DAY_TYPE_ALLDAYS)
-        return types
-
-    # Check special days
-    if d in custom_day_2:
-        types.add(DAY_TYPE_CUSTOM_DAY_2)
-    if d in custom_day_1:
-        types.add(DAY_TYPE_CUSTOM_DAY_1)
-    if d in holidays:
-        types.add(DAY_TYPE_HOLIDAY)
-
-    # Add weekday type
-    weekday = d.weekday()
-    types.add(WEEKDAY_TO_DAY_TYPE[weekday])
-
-    # Add group types
-    if weekday < 5:  # Monday-Friday
-        types.add(DAY_TYPE_WEEKDAYS)
-    else:  # Saturday-Sunday
-        types.add(DAY_TYPE_WEEKENDS)
-
-    types.add(DAY_TYPE_ALLDAYS)
-    types.add(DAY_TYPE_ALL_OTHER_DAYS)
-
-    return types
-
-
 def _find_matching_rule(rules: list[CompactDayRule], applicable_types: set[str]) -> CompactDayRule | None:
     """Find the first rule that matches the applicable day types.
 
@@ -382,28 +332,10 @@ def _find_matching_rule(rules: list[CompactDayRule], applicable_types: set[str])
     Returns:
         The first matching rule, or None.
     """
-    # Priority order for matching (more specific first)
-    priority_order = [
-        DAY_TYPE_SUMMER_DESIGN,
-        DAY_TYPE_WINTER_DESIGN,
-        DAY_TYPE_CUSTOM_DAY_2,
-        DAY_TYPE_CUSTOM_DAY_1,
-        DAY_TYPE_HOLIDAY,
-        DAY_TYPE_SUNDAY,
-        DAY_TYPE_MONDAY,
-        DAY_TYPE_TUESDAY,
-        DAY_TYPE_WEDNESDAY,
-        DAY_TYPE_THURSDAY,
-        DAY_TYPE_FRIDAY,
-        DAY_TYPE_SATURDAY,
-        DAY_TYPE_WEEKDAYS,
-        DAY_TYPE_WEEKENDS,
-        DAY_TYPE_ALLDAYS,
-        DAY_TYPE_ALL_OTHER_DAYS,
-    ]
+    from idfkit.schedules.day_types import DAY_TYPE_PRIORITY
 
     # For each priority level, check if any rule matches
-    for priority_type in priority_order:
+    for priority_type in DAY_TYPE_PRIORITY:
         if priority_type not in applicable_types:
             continue
 
@@ -417,55 +349,3 @@ def _find_matching_rule(rules: list[CompactDayRule], applicable_types: set[str])
             return rule
 
     return None
-
-
-def _time_to_minutes(t: time) -> float:
-    """Convert a time to minutes from midnight."""
-    return t.hour * 60 + t.minute + t.second / 60 + t.microsecond / 60_000_000
-
-
-def _evaluate_time_values(
-    time_values: list[TimeValue],
-    current_time: time,
-    interpolation: Interpolation,
-) -> float:
-    """Evaluate time-value pairs at a given time.
-
-    Args:
-        time_values: List of TimeValue pairs (must be sorted by time).
-        current_time: Time to evaluate.
-        interpolation: Interpolation mode.
-
-    Returns:
-        The schedule value at the given time.
-    """
-    if not time_values:
-        return 0.0
-
-    current_minutes = _time_to_minutes(current_time)
-
-    # Find the interval containing current_time
-    prev_value = 0.0
-    prev_minutes = 0.0
-
-    for tv in time_values:
-        until_minutes = _time_to_minutes(tv.until_time)
-
-        # "Until: HH:MM" means value applies for times < HH:MM
-        # At exactly HH:MM, we transition to the next interval
-        if current_minutes < until_minutes:
-            # Linear interpolation when enabled and interval is valid
-            should_interpolate = (
-                interpolation in (Interpolation.AVERAGE, Interpolation.LINEAR) and until_minutes > prev_minutes
-            )
-            if should_interpolate:
-                fraction = (current_minutes - prev_minutes) / (until_minutes - prev_minutes)
-                return prev_value + fraction * (tv.value - prev_value)
-            # Step function: return the value for this interval
-            return tv.value
-
-        prev_value = tv.value
-        prev_minutes = until_minutes
-
-    # Past all intervals, return last value
-    return time_values[-1].value

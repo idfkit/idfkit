@@ -14,6 +14,8 @@ from idfkit.schedules.evaluate import values
 from idfkit.schedules.types import DayTypeInput, InterpolationInput
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
     from idfkit.document import IDFDocument
     from idfkit.objects import IDFObject
     from idfkit.simulation.fs import FileSystem
@@ -30,7 +32,7 @@ def to_series(
     interpolation: InterpolationInput | None = None,
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
-) -> Any:  # Returns pd.Series but typed as Any for optional dependency
+) -> Any:  # pd.Series — typed as Any for optional dependency
     """Convert a schedule to a pandas Series with DatetimeIndex.
 
     Args:
@@ -52,7 +54,7 @@ def to_series(
         ImportError: If pandas is not installed.
     """
     try:
-        import pandas  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+        import pandas
     except ImportError:
         msg = "pandas is required for to_series(). Install with: pip install idfkit[dataframes]"
         raise ImportError(msg) from None
@@ -154,7 +156,7 @@ def plot_schedule(
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
     **plot_kwargs: Any,
-) -> Any:  # Returns matplotlib Axes
+) -> Axes:
     """Plot a schedule as a time series.
 
     Args:
@@ -201,7 +203,7 @@ def plot_week(
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
     **plot_kwargs: Any,
-) -> Any:  # Returns matplotlib Axes
+) -> Axes:
     """Plot a schedule for a single week.
 
     Args:
@@ -250,7 +252,7 @@ def plot_day(
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
     **plot_kwargs: Any,
-) -> Any:  # Returns matplotlib Axes
+) -> Axes:
     """Plot a schedule for a single day.
 
     Args:

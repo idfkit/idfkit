@@ -5,6 +5,7 @@ Handles Schedule:File objects which read values from external CSV files.
 
 from __future__ import annotations
 
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -151,6 +152,11 @@ def _read_schedule_file(
             except ValueError:
                 # Skip non-numeric values
                 continue
+        else:
+            warnings.warn(
+                f"Schedule:File row has {len(cols)} columns, but column {column} was requested",
+                stacklevel=2,
+            )
 
     return values
 

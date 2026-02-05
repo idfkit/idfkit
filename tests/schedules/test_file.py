@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -265,3 +266,46 @@ class TestGetScheduleFileValues:
 
         result = get_schedule_file_values(obj, fs, Path("/base"))
         assert result == [0.0, 0.5, 1.0]
+
+
+class TestOutOfBoundsColumn:
+    """Tests for out-of-bounds column warning."""
+
+    def test_column_exceeds_row_width(self) -> None:
+        """Test that requesting a column beyond row width triggers a warning."""
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "Column Number": 3,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        # Only 2 columns, but requesting column 3
+        fs.read_text.return_value = "0.0,0.5\n1.0,1.5"
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            result = _read_schedule_file(obj, fs, Path("test.csv"))
+            assert len(result) == 0  # No values extracted
+            assert len(w) == 2  # One warning per row
+            assert "column 3" in str(w[0].message).lower()
+
+
+class TestEmptyFile:
+    """Tests for empty file handling."""
+
+    def test_empty_file_returns_empty_list(self) -> None:
+        """Test that an empty file returns an empty list."""
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = ""
+
+        result = _read_schedule_file(obj, fs, Path("empty.csv"))
+        assert result == []

@@ -10,6 +10,7 @@ import re
 from datetime import datetime, time
 from typing import TYPE_CHECKING
 
+from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, time_to_minutes
 from idfkit.schedules.types import Interpolation, TimeValue
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ def _parse_time(time_str: str) -> time:
 
     # Handle "24:00" as end of day
     if time_str.startswith("24"):
-        return time(23, 59, 59, 999999)
+        return END_OF_DAY
 
     # Try various formats
     # HH:MM:SS
@@ -52,11 +53,6 @@ def _parse_time(time_str: str) -> time:
 
     msg = f"Cannot parse time: {time_str!r}"
     raise ValueError(msg)
-
-
-def _time_to_minutes(t: time) -> float:
-    """Convert a time to minutes from midnight."""
-    return t.hour * 60 + t.minute + t.second / 60 + t.microsecond / 60_000_000
 
 
 def evaluate_constant(obj: IDFObject, dt: datetime) -> float:
@@ -115,7 +111,7 @@ def evaluate_day_interval(
         The schedule value at the given time.
     """
     time_values = _parse_interval_time_values(obj)
-    return _evaluate_time_values(time_values, dt.time(), interpolation)
+    return evaluate_time_values(time_values, dt.time(), interpolation)
 
 
 def evaluate_day_list(
@@ -160,7 +156,7 @@ def evaluate_day_list(
         current_minutes += minutes_per_item
         # Cap at end of day
         if current_minutes >= 1440:
-            until_time = time(23, 59, 59, 999999)
+            until_time = END_OF_DAY
         else:
             hours = current_minutes // 60
             mins = current_minutes % 60
@@ -175,7 +171,7 @@ def evaluate_day_list(
     if not time_values:
         return 0.0
 
-    return _evaluate_time_values(time_values, dt.time(), interpolation)
+    return evaluate_time_values(time_values, dt.time(), interpolation)
 
 
 def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
@@ -186,11 +182,15 @@ def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
 
     Returns:
         List of TimeValue pairs.
+
+    Raises:
+        ValueError: If times are not in ascending order.
     """
     time_values: list[TimeValue] = []
 
     # Fields are: Time 1, Value Until Time 1, Time 2, Value Until Time 2, ...
     # Maximum 144 intervals (one per 10 minutes)
+    prev_minutes = -1.0
     for i in range(1, 145):
         time_field = f"Time {i}"
         value_field = f"Value Until Time {i}"
@@ -204,56 +204,16 @@ def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
             break
 
         until_time = _parse_time(str(time_str))
+        current_minutes = time_to_minutes(until_time)
+
+        if current_minutes <= prev_minutes:
+            msg = f"Times must be in ascending order: {time_str!r} <= previous"
+            raise ValueError(msg)
+        prev_minutes = current_minutes
+
         time_values.append(TimeValue(until_time=until_time, value=float(value)))
 
     return time_values
-
-
-def _evaluate_time_values(
-    time_values: list[TimeValue],
-    current_time: time,
-    interpolation: Interpolation,
-) -> float:
-    """Evaluate a list of time-value pairs at a given time.
-
-    Args:
-        time_values: List of TimeValue pairs (must be sorted by time).
-        current_time: Time to evaluate.
-        interpolation: Interpolation mode.
-
-    Returns:
-        The schedule value at the given time.
-    """
-    if not time_values:
-        return 0.0
-
-    current_minutes = _time_to_minutes(current_time)
-
-    # Find the interval containing current_time
-    prev_value = 0.0
-    prev_minutes = 0.0
-
-    for tv in time_values:
-        until_minutes = _time_to_minutes(tv.until_time)
-
-        # "Until: HH:MM" means value applies for times < HH:MM
-        # At exactly HH:MM, we transition to the next interval
-        if current_minutes < until_minutes:
-            # Linear interpolation when enabled and interval is valid
-            should_interpolate = (
-                interpolation in (Interpolation.AVERAGE, Interpolation.LINEAR) and until_minutes > prev_minutes
-            )
-            if should_interpolate:
-                fraction = (current_minutes - prev_minutes) / (until_minutes - prev_minutes)
-                return prev_value + fraction * (tv.value - prev_value)
-            # Step function: return the value for this interval
-            return tv.value
-
-        prev_value = tv.value
-        prev_minutes = until_minutes
-
-    # Past all intervals, return last value
-    return time_values[-1].value
 
 
 def get_day_values(

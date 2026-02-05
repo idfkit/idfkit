@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from datetime import date
 from unittest.mock import MagicMock
 
@@ -251,3 +252,32 @@ class TestGetSpecialDaysByType:
         custom = get_special_days_by_type(doc, 2024, "CustomDay1")
         assert date(2024, 6, 15) in custom
         assert date(2024, 12, 25) not in custom
+
+
+class TestMalformedDateWarning:
+    """Tests for warning on malformed date specs."""
+
+    def test_malformed_date_spec_triggers_warning(self) -> None:
+        """Test that a malformed date spec produces a warning, not silent skip."""
+        doc = MagicMock()
+
+        holiday_obj = MagicMock()
+        holiday_obj.name = "Bad Holiday"
+        holiday_obj.get.side_effect = lambda f: {
+            "Start Date": "totally invalid date",
+            "Duration": 1,
+            "Special Day Type": "Holiday",
+        }.get(f)
+
+        holiday_list = [holiday_obj]
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter(holiday_list)
+        collection.__len__ = lambda self: len(holiday_list)
+        doc.__getitem__.return_value = collection
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            result = extract_special_days(doc, 2024)
+            assert len(result) == 0  # Malformed entry skipped
+            assert len(w) == 1
+            assert "cannot parse date" in str(w[0].message).lower()

@@ -5,9 +5,33 @@
 [![codecov](https://codecov.io/gh/samuelduchesne/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/samuelduchesne/idfkit)
 [![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://github.com/samuelduchesne/idfkit/blob/main/LICENSE)
 
-A fast, modern EnergyPlus IDF/epJSON parser with O(1) lookups and reference tracking.
+**A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
-**[Documentation](https://samuelduchesne.github.io/idfkit/)** | **[GitHub](https://github.com/samuelduchesne/idfkit/)**
+idfkit lets you load, create, query, and modify EnergyPlus models with an
+intuitive Python API. It is designed as a drop-in replacement for
+[eppy](https://github.com/santoshphilip/eppy) with better performance,
+built-in reference tracking, and native support for both IDF and epJSON
+formats.
+
+## Key Features
+
+- **O(1) object lookups** — Collections are indexed by name, so
+  `doc["Zone"]["Office"]` is a dict lookup, not a linear scan.
+- **Automatic reference tracking** — A live reference graph keeps track of
+  every cross-object reference. Renaming an object updates every field that
+  pointed to the old name.
+- **IDF + epJSON** — Read and write both formats; convert between them in a
+  single call.
+- **Schema-driven validation** — Validate documents against the official
+  EnergyPlus epJSON schema with detailed error messages.
+- **Built-in 3D geometry** — `Vector3D` and `Polygon3D` classes for surface
+  area, zone volume, and coordinate transforms without external dependencies.
+- **EnergyPlus simulation** — Run simulations as subprocesses with structured
+  result parsing, batch processing, and content-addressed caching.
+- **Weather data** — Search 55,000+ weather stations, download EPW/DDY files,
+  and apply ASHRAE design day conditions.
+- **Broad version support** — Bundled schemas for every EnergyPlus release
+  from v8.9 through v25.2.
 
 ## Performance
 
@@ -32,85 +56,91 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add idfkit
 ```
 
-## Usage
+### Optional extras
+
+| Extra | Install command | What it adds |
+|-------|----------------|--------------|
+| `weather` | `pip install idfkit[weather]` | Refresh weather station indexes from source (openpyxl) |
+| `dataframes` | `pip install idfkit[dataframes]` | DataFrame result conversion (pandas) |
+| `s3` | `pip install idfkit[s3]` | S3 cloud storage backend (boto3) |
+| `plot` | `pip install idfkit[plot]` | Matplotlib plotting |
+| `plotly` | `pip install idfkit[plotly]` | Plotly interactive charts |
+| `all` | `pip install idfkit[all]` | Everything above |
+
+## Quick Example
 
 ```python
-import idfkit
+from idfkit import load_idf, write_idf
 
-# TODO: Add usage examples
+# Load an existing IDF file
+doc = load_idf("in.idf")
+
+# Query objects with O(1) lookups
+zone = doc["Zone"]["Office"]
+print(zone.x_origin, zone.y_origin)
+
+# Modify a field
+zone.x_origin = 10.0
+
+# See what references the zone
+for obj in doc.get_referencing("Office"):
+    print(obj.obj_type, obj.name)
+
+# Write back to IDF (or epJSON)
+write_idf(doc, "out.idf")
 ```
+
+## Simulation
+
+```python
+from idfkit.simulation import simulate
+
+result = simulate(doc, "weather.epw", design_day=True)
+
+# Query results
+ts = result.sql.get_timeseries(
+    variable_name="Zone Mean Air Temperature",
+    key_value="Office",
+)
+print(f"Max temp: {max(ts.values):.1f}°C")
+```
+
+## Weather
+
+```python
+from idfkit.weather import StationIndex, geocode
+
+index = StationIndex.load()
+results = index.nearest(*geocode("Chicago, IL"))
+print(results[0].station.display_name)
+```
+
+## Documentation
+
+Full documentation is available at
+**[samuelduchesne.github.io/idfkit](https://samuelduchesne.github.io/idfkit/)**.
+
+Key sections:
+
+- [Getting Started](https://samuelduchesne.github.io/idfkit/getting-started/installation/) — Installation, quick start, interactive tutorial
+- [Simulation Guide](https://samuelduchesne.github.io/idfkit/simulation/) — Run EnergyPlus, parse results, batch processing
+- [Weather Guide](https://samuelduchesne.github.io/idfkit/weather/) — Station search, downloads, design days
+- [API Reference](https://samuelduchesne.github.io/idfkit/api/document/) — Complete API documentation
+- [Migrating from eppy](https://samuelduchesne.github.io/idfkit/migration/) — Side-by-side comparison
 
 ## Development
-
-This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/samuelduchesne/idfkit.git
-cd idfkit
-
-# Install dependencies and pre-commit hooks
-make install
-```
-
-> **Note:** Run `git init -b main` first if you're starting from a cookiecutter template.
-
-### Commands
 
 ```bash
 make install    # Install dependencies and pre-commit hooks
 make check      # Run linting, formatting, and type checks
 make test       # Run tests with coverage
 make docs       # Serve documentation locally
-make docs-test  # Test documentation build
 ```
-
-### First-time setup for new projects
-
-If you just created this project from the cookiecutter template:
-
-1. Create a GitHub repository with the same name
-2. Push your code:
-
-   ```bash
-   git init -b main
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin git@github.com:samuelduchesne/idfkit.git
-   git push -u origin main
-   ```
-
-3. Install dependencies: `make install`
-4. Fix formatting and commit:
-
-   ```bash
-   git add .
-   uv run pre-commit run -a
-   git add .
-   git commit -m "Apply formatting"
-   git push
-   ```
-
-For detailed setup instructions, see the [cookiecutter-gi tutorial](https://samuelduchesne.github.io/cookiecutter-gi/tutorial/).
-
-
-## Releasing
-
-1. Bump the version: `uv version --bump <major|minor|patch>`
-2. Commit and push
-3. Create a [new release](https://github.com/samuelduchesne/idfkit/releases/new) on GitHub with a tag matching the version (e.g., `1.0.0`)
-
-The GitHub Action will automatically publish to PyPI. See the [publishing guide](https://samuelduchesne.github.io/cookiecutter-gi/features/publishing/) for initial setup.
-
-> **First release?** After the workflow completes, enable GitHub Pages: go to `Settings > Pages` and select the `gh-pages` branch.
-
 
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
----
+## License
 
-*Built with [cookiecutter-gi](https://github.com/samuelduchesne/cookiecutter-gi)*
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.

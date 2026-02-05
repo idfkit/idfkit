@@ -10,11 +10,12 @@ import pytest
 from idfkit.schedules.compact import (
     _find_matching_rule,
     _find_period_for_date,
-    _get_applicable_day_types,
+    _parse_cache,
     _parse_day_types,
     evaluate_compact,
     parse_compact,
 )
+from idfkit.schedules.day_types import get_applicable_day_types
 from idfkit.schedules.types import (
     DAY_TYPE_ALLDAYS,
     DAY_TYPE_HOLIDAY,
@@ -168,7 +169,7 @@ class TestGetApplicableDayTypes:
 
     def test_weekday(self) -> None:
         """Test applicable types for a weekday."""
-        types = _get_applicable_day_types(
+        types = get_applicable_day_types(
             date(2024, 1, 8),  # Monday
             DayType.NORMAL,
             set(),
@@ -183,7 +184,7 @@ class TestGetApplicableDayTypes:
 
     def test_weekend(self) -> None:
         """Test applicable types for a weekend day."""
-        types = _get_applicable_day_types(
+        types = get_applicable_day_types(
             date(2024, 1, 6),  # Saturday
             DayType.NORMAL,
             set(),
@@ -198,7 +199,7 @@ class TestGetApplicableDayTypes:
 
     def test_holiday(self) -> None:
         """Test applicable types for a holiday."""
-        types = _get_applicable_day_types(
+        types = get_applicable_day_types(
             date(2024, 12, 25),
             DayType.NORMAL,
             {date(2024, 12, 25)},  # Christmas
@@ -211,7 +212,7 @@ class TestGetApplicableDayTypes:
 
     def test_design_day_override(self) -> None:
         """Test design day override."""
-        types = _get_applicable_day_types(
+        types = get_applicable_day_types(
             date(2024, 7, 15),
             DayType.SUMMER_DESIGN,
             set(),
@@ -329,3 +330,88 @@ class TestEvaluateCompact:
         )
         # No SummerDesignDay rule, so should return 0 (no matching rule)
         assert result == 0.0
+
+
+class TestParseCompactCaching:
+    """Tests for parse_compact caching."""
+
+    def test_second_call_uses_cache(self) -> None:
+        """Test that calling parse_compact twice returns cached result."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Compact"
+
+        fields = {
+            "Field 1": "Through: 12/31",
+            "Field 2": "For: AllDays",
+            "Field 3": "Until: 24:00",
+            "Field 4": "1.0",
+        }
+
+        call_count = 0
+
+        def get_field(name: str) -> str | None:
+            nonlocal call_count
+            call_count += 1
+            return fields.get(name)
+
+        obj.get.side_effect = get_field
+
+        # Clear cache to ensure clean state
+        _parse_cache.clear()
+
+        # First call
+        result1 = parse_compact(obj)
+        calls_after_first = call_count
+
+        # Second call should use cache — no additional get() calls
+        result2 = parse_compact(obj)
+        assert call_count == calls_after_first  # No new calls
+        assert result1 is result2  # Same object (not just equal)
+
+        # Clean up
+        _parse_cache.clear()
+
+
+class TestBoundaryTimes:
+    """Tests for boundary time evaluation."""
+
+    @pytest.fixture
+    def boundary_schedule(self) -> MagicMock:
+        """Create a schedule with boundary values at 00:00, 08:00, and 24:00."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Compact"
+
+        fields = {
+            "Field 1": "Through: 12/31",
+            "Field 2": "For: AllDays",
+            "Field 3": "Until: 08:00",
+            "Field 4": "0.0",
+            "Field 5": "Until: 18:00",
+            "Field 6": "1.0",
+            "Field 7": "Until: 24:00",
+            "Field 8": "0.5",
+        }
+
+        def get_field(name: str) -> str | None:
+            return fields.get(name)
+
+        obj.get.side_effect = get_field
+        return obj
+
+    def test_at_midnight(self, boundary_schedule: MagicMock) -> None:
+        """Test evaluation at 00:00."""
+        _parse_cache.clear()
+        result = evaluate_compact(boundary_schedule, datetime(2024, 1, 1, 0, 0))
+        assert result == 0.0
+
+    def test_at_exact_0800(self, boundary_schedule: MagicMock) -> None:
+        """Test evaluation at exactly 08:00 transitions to next interval."""
+        _parse_cache.clear()
+        result = evaluate_compact(boundary_schedule, datetime(2024, 1, 1, 8, 0))
+        assert result == 1.0
+
+    def test_at_2359(self, boundary_schedule: MagicMock) -> None:
+        """Test evaluation just before 24:00."""
+        _parse_cache.clear()
+        result = evaluate_compact(boundary_schedule, datetime(2024, 1, 1, 23, 59))
+        assert result == 0.5

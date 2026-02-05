@@ -236,3 +236,59 @@ class TestIntegration:
         # 5 weekdays * 10 occupied hours = 50 hours
         total_occupied = sum(result)
         assert total_occupied == 50.0
+
+
+class TestMalformedScheduleError:
+    """Tests for MalformedScheduleError behavior."""
+
+    def test_malformed_schedule_raises_error(self) -> None:
+        """Test that a malformed day schedule raises MalformedScheduleError."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Interval"
+
+        def get_field(field: str) -> str | float | None:
+            # Return non-numeric value for a numeric field
+            fields: dict[str, str | float] = {
+                "Time 1": "08:00",
+                "Value Until Time 1": "not_a_number",
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        with pytest.raises(MalformedScheduleError):
+            evaluate(obj, datetime(2024, 1, 1, 12, 0))
+
+    def test_schedule_reference_error_not_wrapped(self) -> None:
+        """Test ScheduleReferenceError passes through, not wrapped in MalformedScheduleError."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Daily"
+        del obj._document
+
+        with pytest.raises(ScheduleReferenceError, match="Document required"):
+            evaluate(obj, datetime(2024, 1, 1, 12, 0))
+
+
+class TestLeapYearValues:
+    """Tests for leap year value counts."""
+
+    def test_leap_year_value_count(self) -> None:
+        """Test that a leap year produces 8784 hourly values."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Constant"
+        obj.get.return_value = 1.0
+        del obj._document
+
+        result = values(obj, year=2024)
+        assert len(result) == 8784  # 366 days * 24 hours
+
+    def test_non_leap_year_value_count(self) -> None:
+        """Test that a non-leap year produces 8760 hourly values."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Constant"
+        obj.get.return_value = 1.0
+        del obj._document
+
+        result = values(obj, year=2023)
+        assert len(result) == 8760  # 365 days * 24 hours

@@ -14,6 +14,8 @@ from idfkit.schedules.types import (
     Interpolation,
     SpecialDay,
     TimeValue,
+    parse_day_type,
+    parse_interpolation,
 )
 
 
@@ -162,3 +164,53 @@ class TestWeekdayMapping:
         assert WEEKDAY_TO_DAY_TYPE[4] == "Friday"
         assert WEEKDAY_TO_DAY_TYPE[5] == "Saturday"
         assert WEEKDAY_TO_DAY_TYPE[6] == "Sunday"
+
+
+class TestParseDayType:
+    """Tests for parse_day_type function."""
+
+    def test_none_returns_normal(self) -> None:
+        """Test None returns NORMAL."""
+        assert parse_day_type(None) == DayType.NORMAL
+
+    def test_enum_passthrough(self) -> None:
+        """Test DayType enum passes through."""
+        assert parse_day_type(DayType.SUMMER_DESIGN) == DayType.SUMMER_DESIGN
+
+    def test_string_literals(self) -> None:
+        """Test string literal inputs."""
+        assert parse_day_type("normal") == DayType.NORMAL
+        assert parse_day_type("summer") == DayType.SUMMER_DESIGN
+        assert parse_day_type("winter") == DayType.WINTER_DESIGN
+        assert parse_day_type("holiday") == DayType.HOLIDAY
+        assert parse_day_type("customday1") == DayType.CUSTOM_DAY_1
+        assert parse_day_type("customday2") == DayType.CUSTOM_DAY_2
+
+    def test_invalid_string_raises_key_error(self) -> None:
+        """Test invalid string raises KeyError."""
+        with pytest.raises(KeyError):
+            parse_day_type("invalid")  # type: ignore[arg-type]
+
+
+class TestParseInterpolation:
+    """Tests for parse_interpolation function."""
+
+    def test_none_returns_no(self) -> None:
+        """Test None returns NO."""
+        assert parse_interpolation(None) == Interpolation.NO
+
+    def test_enum_passthrough(self) -> None:
+        """Test Interpolation enum passes through."""
+        assert parse_interpolation(Interpolation.AVERAGE) == Interpolation.AVERAGE
+
+    def test_string_literals(self) -> None:
+        """Test string literal inputs."""
+        assert parse_interpolation("no") == Interpolation.NO
+        assert parse_interpolation("step") == Interpolation.NO
+        assert parse_interpolation("average") == Interpolation.AVERAGE
+        assert parse_interpolation("linear") == Interpolation.LINEAR
+
+    def test_invalid_string_raises_key_error(self) -> None:
+        """Test invalid string raises KeyError."""
+        with pytest.raises(KeyError):
+            parse_interpolation("invalid")  # type: ignore[arg-type]

@@ -47,7 +47,10 @@ from __future__ import annotations
 import fnmatch
 import shutil
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from types_boto3_s3 import S3Client
 
 
 @runtime_checkable
@@ -234,9 +237,10 @@ class S3FileSystem:
         except ImportError:
             msg = "boto3 is required for S3FileSystem. Install it with: pip install idfkit[s3]"
             raise ImportError(msg) from None
+        _boto3: Any = boto3
         self._bucket = bucket
         self._prefix = prefix.strip("/")
-        self._client: Any = boto3.client("s3", **boto_kwargs)  # pyright: ignore[reportUnknownMemberType]
+        self._client: S3Client = _boto3.client("s3", **boto_kwargs)
 
     def _key(self, path: str | Path) -> str:
         """Build an S3 key by prepending the configured prefix.
@@ -295,7 +299,9 @@ class S3FileSystem:
         matches: list[str] = []
         for page in paginator.paginate(Bucket=self._bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
-                key: str = obj["Key"]
+                key = obj.get("Key", "")
+                if not key:
+                    continue
                 # Match only the filename portion against the pattern
                 name = key[len(prefix) :]
                 if fnmatch.fnmatch(name, pattern):

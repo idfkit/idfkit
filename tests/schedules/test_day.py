@@ -9,13 +9,13 @@ import pytest
 
 from idfkit.schedules.day import (
     _parse_time,
-    _time_to_minutes,
     evaluate_constant,
     evaluate_day_hourly,
     evaluate_day_interval,
     evaluate_day_list,
     get_day_values,
 )
+from idfkit.schedules.time_utils import time_to_minutes
 from idfkit.schedules.types import Interpolation
 
 
@@ -62,19 +62,19 @@ class TestTimeToMinutes:
 
     def test_midnight(self) -> None:
         """Test midnight conversion."""
-        assert _time_to_minutes(time(0, 0)) == 0.0
+        assert time_to_minutes(time(0, 0)) == 0.0
 
     def test_noon(self) -> None:
         """Test noon conversion."""
-        assert _time_to_minutes(time(12, 0)) == 720.0
+        assert time_to_minutes(time(12, 0)) == 720.0
 
     def test_with_minutes(self) -> None:
         """Test time with minutes."""
-        assert _time_to_minutes(time(8, 30)) == 510.0
+        assert time_to_minutes(time(8, 30)) == 510.0
 
     def test_with_seconds(self) -> None:
         """Test time with seconds."""
-        assert _time_to_minutes(time(8, 0, 30)) == 480.5
+        assert time_to_minutes(time(8, 0, 30)) == 480.5
 
 
 class TestEvaluateConstant:
@@ -235,3 +235,86 @@ class TestGetDayValues:
 
         with pytest.raises(ValueError, match="Unsupported day schedule type"):
             get_day_values(obj)
+
+
+class TestTimeOrdering:
+    """Tests for time ordering validation in interval schedules."""
+
+    def test_descending_times_raises_value_error(self) -> None:
+        """Test that descending times raise ValueError."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Interval"
+
+        def get_field(field: str) -> str | float | None:
+            fields = {
+                "Time 1": "18:00",
+                "Value Until Time 1": 1.0,
+                "Time 2": "08:00",  # Descending — invalid
+                "Value Until Time 2": 0.0,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+
+        with pytest.raises(ValueError, match="ascending order"):
+            evaluate_day_interval(obj, datetime(2024, 1, 1, 12, 0))
+
+
+class TestMidnightBoundary:
+    """Tests for midnight boundary behavior."""
+
+    def test_evaluation_at_2359(self) -> None:
+        """Test evaluation just before midnight."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Interval"
+
+        def get_field(field: str) -> str | float | None:
+            fields = {
+                "Time 1": "08:00",
+                "Value Until Time 1": 0.0,
+                "Time 2": "18:00",
+                "Value Until Time 2": 1.0,
+                "Time 3": "24:00",
+                "Value Until Time 3": 0.5,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+
+        # At 23:59 should be in the third interval (value 0.5)
+        result = evaluate_day_interval(obj, datetime(2024, 1, 1, 23, 59))
+        assert result == 0.5
+
+    def test_evaluation_at_0000(self) -> None:
+        """Test evaluation at midnight (start of day)."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Interval"
+
+        def get_field(field: str) -> str | float | None:
+            fields = {
+                "Time 1": "08:00",
+                "Value Until Time 1": 0.0,
+                "Time 2": "24:00",
+                "Value Until Time 2": 1.0,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+
+        # At 00:00 should be in the first interval (value 0.0)
+        result = evaluate_day_interval(obj, datetime(2024, 1, 1, 0, 0))
+        assert result == 0.0
+
+
+class TestLeapYear:
+    """Tests for leap year behavior."""
+
+    def test_feb_29_evaluation(self) -> None:
+        """Test evaluation on Feb 29 in a leap year."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Constant"
+        obj.get.return_value = 0.75
+
+        # Feb 29, 2024 (leap year)
+        result = evaluate_constant(obj, datetime(2024, 2, 29, 12, 0))
+        assert result == 0.75

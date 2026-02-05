@@ -160,6 +160,8 @@ def evaluate(
         msg = f"Unsupported schedule type: {schedule_type}"
         raise UnsupportedScheduleType(msg)
 
+    except ScheduleEvaluationError:
+        raise
     except (ValueError, KeyError) as e:
         msg = f"Error evaluating {schedule_type}: {e}"
         raise MalformedScheduleError(msg) from e

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import calendar
 import re
+import warnings
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
@@ -221,7 +222,10 @@ def extract_special_days(doc: IDFDocument, year: int) -> list[SpecialDay]:
         try:
             start_date = _parse_date_spec(str(start_spec), year)
         except ValueError:
-            # Skip malformed date specifications
+            warnings.warn(
+                f"Skipping RunPeriodControl:SpecialDays {name!r}: cannot parse date {str(start_spec)!r}",
+                stacklevel=2,
+            )
             continue
 
         # Get duration (default is 1 day)
