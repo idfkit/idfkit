@@ -323,6 +323,32 @@ class TestSurfaceGeometryUtils:
         poly = get_surface_coords(surface)
         assert poly is None
 
+    def test_get_surface_coords_schema_naming(self) -> None:
+        """Test epJSON schema naming: vertex_x_coordinate, vertex_x_coordinate_2, ..."""
+        surface = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="SchemaWall",
+            data={
+                "number_of_vertices": 4,
+                "vertex_x_coordinate": 0.0,
+                "vertex_y_coordinate": 0.0,
+                "vertex_z_coordinate": 3.0,
+                "vertex_x_coordinate_2": 0.0,
+                "vertex_y_coordinate_2": 0.0,
+                "vertex_z_coordinate_2": 0.0,
+                "vertex_x_coordinate_3": 10.0,
+                "vertex_y_coordinate_3": 0.0,
+                "vertex_z_coordinate_3": 0.0,
+                "vertex_x_coordinate_4": 10.0,
+                "vertex_y_coordinate_4": 0.0,
+                "vertex_z_coordinate_4": 3.0,
+            },
+        )
+        poly = get_surface_coords(surface)
+        assert poly is not None
+        assert poly.num_vertices == 4
+        assert _close(poly.area, 30.0)
+
     def test_set_surface_coords(self) -> None:
         surface = IDFObject(obj_type="BuildingSurface:Detailed", name="Wall", data={})
         poly = Polygon3D([

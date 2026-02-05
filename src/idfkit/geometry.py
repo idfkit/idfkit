@@ -212,37 +212,57 @@ def get_surface_coords(surface: IDFObject) -> Polygon3D | None:
     Extract coordinates from a surface object.
 
     Works with BuildingSurface:Detailed, FenestrationSurface:Detailed, etc.
-    """
-    vertices: list[Vector3D] = []
+    Supports both field naming conventions:
 
-    # Try to get number of vertices
+    - Classic/programmatic: ``vertex_1_x_coordinate``, ``vertex_2_x_coordinate``, ...
+    - epJSON schema: ``vertex_x_coordinate``, ``vertex_x_coordinate_2``, ...
+    """
+    vertices = _get_vertices_classic(surface)
+    if not vertices:
+        vertices = _get_vertices_schema(surface)
+    if len(vertices) < 3:
+        return None
+    return Polygon3D(vertices)
+
+
+def _get_vertices_classic(surface: IDFObject) -> list[Vector3D]:
+    """Extract vertices using ``vertex_{i}_x_coordinate`` naming."""
     num_verts = getattr(surface, "number_of_vertices", None)
     if num_verts is None:
-        # Count vertex fields
         i = 1
-        while True:
-            x = getattr(surface, f"vertex_{i}_x_coordinate", None)
-            if x is None:
-                break
+        while getattr(surface, f"vertex_{i}_x_coordinate", None) is not None:
             i += 1
         num_verts = i - 1
 
-    if num_verts == 0:
-        return None
-
-    # Extract vertices
+    vertices: list[Vector3D] = []
     for i in range(1, int(num_verts) + 1):
         x = getattr(surface, f"vertex_{i}_x_coordinate", None)
         y = getattr(surface, f"vertex_{i}_y_coordinate", None)
         z = getattr(surface, f"vertex_{i}_z_coordinate", None)
-
         if x is not None and y is not None and z is not None:
             vertices.append(Vector3D(float(x), float(y), float(z)))
+    return vertices
 
-    if len(vertices) < 3:
-        return None
 
-    return Polygon3D(vertices)
+def _get_vertices_schema(surface: IDFObject) -> list[Vector3D]:
+    """Extract vertices using ``vertex_x_coordinate``, ``vertex_x_coordinate_2`` naming."""
+    vertices: list[Vector3D] = []
+    x = getattr(surface, "vertex_x_coordinate", None)
+    y = getattr(surface, "vertex_y_coordinate", None)
+    z = getattr(surface, "vertex_z_coordinate", None)
+    if x is not None and y is not None and z is not None:
+        vertices.append(Vector3D(float(x), float(y), float(z)))
+
+    i = 2
+    while True:
+        x = getattr(surface, f"vertex_x_coordinate_{i}", None)
+        y = getattr(surface, f"vertex_y_coordinate_{i}", None)
+        z = getattr(surface, f"vertex_z_coordinate_{i}", None)
+        if x is None or y is None or z is None:
+            break
+        vertices.append(Vector3D(float(x), float(y), float(z)))
+        i += 1
+    return vertices
 
 
 def set_surface_coords(surface: IDFObject, polygon: Polygon3D) -> None:
