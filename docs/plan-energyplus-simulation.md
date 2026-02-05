@@ -1821,36 +1821,62 @@ def _import_pandas() -> Any:
 - `src/idfkit/simulation/runner.py` — added `cache` parameter, cache lookup/store logic, moved result construction to `else` block (TRY300)
 - `src/idfkit/simulation/__init__.py` — added 5 new exports to `__all__`
 
-### Phase 4: File System Abstraction
+### Phase 4: File System Abstraction ✅ COMPLETED
 
 **Scope**: Support non-local file systems for cloud workflows.
 
-- `FileSystem` protocol
-- `LocalFileSystem` implementation
-- `S3FileSystem` implementation (optional boto3)
-- Integration with `simulate()` and `SimulationResult.from_directory()`
+- ✅ `FileSystem` protocol with 9 methods: `read_bytes`, `write_bytes`, `read_text`, `write_text`, `exists`, `makedirs`, `copy`, `glob`, `remove`
+- ✅ `LocalFileSystem` implementation backed by `pathlib` and `shutil`
+- ✅ `S3FileSystem` implementation with `boto3` (optional `[s3]` extra)
+  - Key prefix support for bucket namespacing
+  - Proper S3 semantics (`makedirs` is no-op, paginated `glob` via `list_objects_v2`)
+- ✅ `@runtime_checkable` protocol for duck typing
+- ✅ Updated `__init__.py` exports: `FileSystem`, `LocalFileSystem`, `S3FileSystem`
+- ✅ Unit tests in `test_simulation_fs.py`
 
-**New files**:
-- `src/idfkit/sim/fs/__init__.py`
-- `src/idfkit/sim/fs/local.py`
-- `src/idfkit/sim/fs/s3.py`
-- `tests/test_sim_fs.py`
+**Deviations from original plan**:
+- Single `fs.py` file instead of `fs/` subpackage — simpler for 3 small classes
+- Package named `idfkit.simulation` (not `idfkit.sim`) — consistent with Phases 1-3
 
-### Phase 5: Visualization
+**Files created**:
+- `src/idfkit/simulation/fs.py`
+- `tests/test_simulation_fs.py`
+
+**Files modified**:
+- `src/idfkit/simulation/__init__.py` — added 3 new exports to `__all__`
+- `pyproject.toml` — added `s3` optional dependency
+
+### Phase 5: Visualization ✅ COMPLETED
 
 **Scope**: Pluggable plotting with common EnergyPlus visualizations.
 
-- `PlotBackend` protocol
-- matplotlib backend
-- plotly backend
-- Pre-built visualization functions (energy balance, temperature profiles, comfort heatmaps)
-- Auto-detection of available backends
+- ✅ `PlotBackend` protocol with 5 methods: `line`, `multi_line`, `heatmap`, `bar`, `stacked_bar`
+- ✅ `MatplotlibBackend` implementation with lazy matplotlib import
+- ✅ `PlotlyBackend` implementation with lazy plotly import
+- ✅ `get_default_backend()` auto-detection (tries matplotlib first, then plotly)
+- ✅ Three high-level visualization functions in `visualizations.py`:
+  - `plot_energy_balance()` — bar chart from AnnualBuildingUtilityPerformanceSummary
+  - `plot_temperature_profile()` — multi-line zone temperatures over time
+  - `plot_comfort_hours()` — heatmap of comfort percentage by zone and month
+- ✅ `@runtime_checkable` protocol for duck typing
+- ✅ Updated `__init__.py` exports: `PlotBackend`, `get_default_backend`, `plot_energy_balance`, `plot_temperature_profile`, `plot_comfort_hours`
+- ✅ Unit tests in `test_simulation_plotting.py`
 
-**New files**:
-- `src/idfkit/sim/plotting/__init__.py`
-- `src/idfkit/sim/plotting/matplotlib.py`
-- `src/idfkit/sim/plotting/plotly.py`
-- `tests/test_sim_plotting.py`
+**Deviations from original plan**:
+- Package named `idfkit.simulation` (not `idfkit.sim`) — consistent with Phases 1-4
+- Added `stacked_bar` method to protocol (useful for multi-fuel energy breakdown)
+- Visualization functions accept `SQLResult` directly (not `SimulationResult`) for flexibility
+
+**Files created**:
+- `src/idfkit/simulation/plotting/__init__.py`
+- `src/idfkit/simulation/plotting/matplotlib.py`
+- `src/idfkit/simulation/plotting/plotly.py`
+- `src/idfkit/simulation/plotting/visualizations.py`
+- `tests/test_simulation_plotting.py`
+
+**Files modified**:
+- `src/idfkit/simulation/__init__.py` — added 5 new exports to `__all__`
+- `pyproject.toml` — added `plot` and `plotly` optional dependencies
 
 ### Phase 6: Weather File and Design Day Browser ✅ COMPLETED
 
