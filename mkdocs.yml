@@ -9,19 +9,74 @@ copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>
 
 nav:
   - Home: index.md
-  - Getting Started: getting_started.ipynb
-  - Migrating from eppy: migration.md
-  - Benchmarks: benchmarks.md
+
+  - Get Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Core Tutorial: getting-started/core-tutorial.ipynb
+    - Migrating from eppy: migration.md
+
+  - Concepts:
+    - Simulation Architecture: concepts/simulation-architecture.md
+    - Weather Data Pipeline: concepts/weather-pipeline.md
+    - Caching Strategy: concepts/caching.md
+    - Cloud & Remote Storage: concepts/cloud-storage.md
+
+  - Simulation:
+    - Overview: simulation/index.md
+    - Running Simulations: simulation/running.md
+    - Parsing Results: simulation/results.md
+    - SQL Output Queries: simulation/sql-queries.md
+    - Batch Processing: simulation/batch.md
+    - Caching: simulation/caching.md
+    - Plotting: simulation/plotting.md
+    - Output Discovery: simulation/output-discovery.md
+    - Error Handling: simulation/errors.md
+
+  - Weather:
+    - Overview: weather/index.md
+    - Station Search: weather/station-search.md
+    - Weather Downloads: weather/downloads.md
+    - Design Days: weather/design-days.md
+    - Geocoding: weather/geocoding.md
+
+  - Examples:
+    - Parametric Study: examples/parametric-study.ipynb
+    - Design Day Sizing: examples/sizing-workflow.ipynb
+    - Cloud Simulations (S3): examples/cloud-simulations.md
+
   - API Reference:
-    - Document: api/document.md
-    - Objects: api/objects.md
-    - I/O: api/io.md
-    - Schema: api/schema.md
-    - Validation: api/validation.md
-    - Geometry: api/geometry.md
-    - References: api/references.md
-    - Exceptions: api/exceptions.md
-    - Versions: api/versions.md
+    - Core:
+      - Document: api/document.md
+      - Objects: api/objects.md
+      - I/O: api/io.md
+      - Schema: api/schema.md
+      - Validation: api/validation.md
+      - Geometry: api/geometry.md
+      - References: api/references.md
+      - Exceptions: api/exceptions.md
+      - Versions: api/versions.md
+    - Simulation:
+      - Overview: api/simulation/index.md
+      - Runner: api/simulation/runner.md
+      - Results: api/simulation/results.md
+      - SQL: api/simulation/sql.md
+      - Batch: api/simulation/batch.md
+      - Cache: api/simulation/cache.md
+      - Plotting: api/simulation/plotting.md
+      - File Systems: api/simulation/fs.md
+    - Weather:
+      - Overview: api/weather/index.md
+      - Station: api/weather/station.md
+      - Download: api/weather/download.md
+      - Design Days: api/weather/designday.md
+
+  - Troubleshooting:
+    - Common Errors: troubleshooting/errors.md
+    - EnergyPlus Issues: troubleshooting/energyplus.md
+
+  - Benchmarks: benchmarks.md
+
 plugins:
   - search
   - mkdocstrings:
@@ -31,10 +86,16 @@ plugins:
   - mkdocs-jupyter:
       include_source: true
       execute: false
+
 theme:
   name: material
   features:
     - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - content.code.copy
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -65,3 +126,14 @@ markdown_extensions:
       permalink: true
   - pymdownx.arithmatex:
       generic: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
