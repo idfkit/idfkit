@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import shutil
+import time
 import zipfile
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -52,17 +54,47 @@ class WeatherDownloader:
 
     Args:
         cache_dir: Override the default cache directory.
+        max_age: Maximum age of cached files before re-downloading.
+            Can be a :class:`~datetime.timedelta` or a number of seconds.
+            If ``None`` (default), cached files never expire.
+
+    Note:
+        The cache has no size limit. For CI/CD environments with limited disk
+        space, consider using :meth:`clear_cache` periodically or setting
+        a ``max_age`` to force re-downloads of stale files.
     """
 
-    __slots__ = ("_cache_dir",)
+    __slots__ = ("_cache_dir", "_max_age_seconds")
 
-    def __init__(self, cache_dir: Path | None = None) -> None:
+    def __init__(
+        self,
+        cache_dir: Path | None = None,
+        max_age: timedelta | float | None = None,
+    ) -> None:
         self._cache_dir = cache_dir or default_cache_dir()
+        if max_age is None:
+            self._max_age_seconds: float | None = None
+        elif isinstance(max_age, timedelta):
+            self._max_age_seconds = max_age.total_seconds()
+        else:
+            self._max_age_seconds = float(max_age)
+
+    def _is_stale(self, path: Path) -> bool:
+        """Check if a cached file is older than max_age."""
+        if self._max_age_seconds is None:
+            return False
+        if not path.exists():
+            return True
+        age = time.time() - path.stat().st_mtime
+        return age > self._max_age_seconds
 
     def download(self, station: WeatherStation) -> WeatherFiles:
         """Download and extract weather files for *station*.
 
-        If the files are already cached, no network request is made.
+        If the files are already cached and not stale, no network request is made.
+
+        Args:
+            station: The weather station to download files for.
 
         Returns:
             A :class:`WeatherFiles` with paths to the extracted files.
@@ -76,8 +108,8 @@ class WeatherDownloader:
         station_dir = self._cache_dir / "files" / str(station.wmo) / stem
         zip_path = station_dir / zip_filename
 
-        # Download if not already cached
-        if not zip_path.exists():
+        # Download if not cached or if stale
+        if not zip_path.exists() or self._is_stale(zip_path):
             station_dir.mkdir(parents=True, exist_ok=True)
             try:
                 req = Request(station.url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
@@ -87,9 +119,9 @@ class WeatherDownloader:
                 msg = f"Failed to download weather data from {station.url}: {exc}"
                 raise RuntimeError(msg) from exc
 
-        # Extract if EPW doesn't already exist
+        # Extract if EPW doesn't already exist or if we just downloaded a fresh ZIP
         epw_path = self._find_file(station_dir, ".epw")
-        if epw_path is None:
+        if epw_path is None or self._is_stale(epw_path):
             try:
                 with zipfile.ZipFile(zip_path) as zf:
                     zf.extractall(station_dir)
@@ -126,7 +158,11 @@ class WeatherDownloader:
         return self.download(station).ddy
 
     def clear_cache(self) -> None:
-        """Remove all cached weather files."""
+        """Remove all cached weather files.
+
+        This removes the entire ``files/`` subdirectory within the cache,
+        which contains all downloaded ZIP archives and extracted files.
+        """
         files_dir = self._cache_dir / "files"
         if files_dir.exists():
             shutil.rmtree(files_dir)

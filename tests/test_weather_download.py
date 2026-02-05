@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import io
+import time
 import zipfile
+from datetime import timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -18,7 +20,7 @@ def _make_station() -> WeatherStation:
         country="USA",
         state="IL",
         city="Chicago.Ohare.Intl.AP",
-        wmo=725300,
+        wmo="725300",
         source="SRC-TMYx",
         latitude=41.98,
         longitude=-87.92,
@@ -112,3 +114,93 @@ class TestWeatherDownloader:
 
         with pytest.raises(RuntimeError, match="Failed to download"):
             downloader.download(station)
+
+
+class TestWeatherDownloaderMaxAge:
+    """Tests for cache max_age functionality."""
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_max_age_with_timedelta(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        downloader = WeatherDownloader(cache_dir=tmp_path, max_age=timedelta(days=30))
+        station = _make_station()
+
+        # First download
+        files = downloader.download(station)
+        assert files.epw.exists()
+        assert mock_urlopen.call_count == 1
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_max_age_with_seconds(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        # max_age=3600 means 1 hour
+        downloader = WeatherDownloader(cache_dir=tmp_path, max_age=3600.0)
+        station = _make_station()
+
+        files = downloader.download(station)
+        assert files.epw.exists()
+
+    @patch("idfkit.weather.download.urlopen")
+    @patch("idfkit.weather.download.time")
+    def test_stale_cache_redownloads(self, mock_time: MagicMock, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        # Set up time mock: current time is way in the future
+        mock_time.time.return_value = time.time() + 86400 * 60  # 60 days in future
+
+        # max_age=30 days
+        downloader = WeatherDownloader(cache_dir=tmp_path, max_age=timedelta(days=30))
+        station = _make_station()
+
+        # First download (fresh)
+        downloader.download(station)
+        assert mock_urlopen.call_count == 1
+
+        # Second download - file is "stale" due to mocked time
+        downloader.download(station)
+        assert mock_urlopen.call_count == 2  # Should redownload
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_fresh_cache_no_redownload(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        # max_age=30 days
+        downloader = WeatherDownloader(cache_dir=tmp_path, max_age=timedelta(days=30))
+        station = _make_station()
+
+        # First download
+        downloader.download(station)
+        assert mock_urlopen.call_count == 1
+
+        # Second download immediately after - should be cached
+        downloader.download(station)
+        assert mock_urlopen.call_count == 1  # No redownload
+
+    def test_none_max_age_never_expires(self, tmp_path: Path) -> None:
+        downloader = WeatherDownloader(cache_dir=tmp_path, max_age=None)
+        # Create an old file
+        files_dir = tmp_path / "files" / "test"
+        files_dir.mkdir(parents=True)
+        test_file = files_dir / "old.zip"
+        test_file.write_text("test")
+
+        # Even though file is "old", _is_stale returns False with max_age=None
+        assert not downloader._is_stale(test_file)

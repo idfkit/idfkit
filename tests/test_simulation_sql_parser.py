@@ -1,4 +1,24 @@
-"""Tests for the SQL parser."""
+"""Tests for the SQL parser.
+
+The SQL parser tests use a programmatically-generated SQLite fixture rather than
+a pre-built binary file. This approach is preferred because:
+
+1. **Self-documenting**: The fixture code shows exactly what schema and data are
+   being tested, making test failures easier to understand.
+2. **Fresh state**: Each test gets a clean database, avoiding state pollution.
+3. **Version control friendly**: No binary files that are hard to review in PRs.
+4. **Schema evolution**: Easy to update when EnergyPlus output schema changes.
+
+The fixture creates a minimal EnergyPlus-schema database with:
+- ReportDataDictionary: Variable and meter definitions
+- Time: Timestamp entries with warmup/sizing/annual periods
+- EnvironmentPeriods: Design day and run period definitions
+- ReportData: Time-series values
+- TabularDataWithStrings: Tabular report data
+
+This mirrors the real EnergyPlus SQLite output structure documented at:
+https://bigladdersoftware.com/epx/docs/latest/output-details-and-examples/output-sql.html
+"""
 
 from __future__ import annotations
 
@@ -13,7 +33,15 @@ from idfkit.simulation.parsers.sql import EnvironmentInfo, SQLResult, TabularRow
 
 @pytest.fixture()
 def sql_db(tmp_path: Path) -> Path:
-    """Create a minimal EnergyPlus-schema SQLite database for testing."""
+    """Create a minimal EnergyPlus-schema SQLite database for testing.
+
+    This fixture creates a database with:
+    - 3 variables (2 zone temps, 1 meter)
+    - 2 environment periods (design day + annual)
+    - 6 time entries (1 warmup, 1 sizing, 4 annual including Hour=24 edge case)
+    - 11 data points
+    - 3 tabular data rows
+    """
     db_path = tmp_path / "eplusout.sql"
     conn = sqlite3.connect(str(db_path))
     cur = conn.cursor()

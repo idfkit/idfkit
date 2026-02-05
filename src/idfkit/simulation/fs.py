@@ -4,6 +4,42 @@ Provides a :class:`FileSystem` protocol so that simulation results can be
 stored on and read from non-local backends (e.g. S3 for cloud workflows).
 EnergyPlus itself always runs locally; the abstraction covers pre/post I/O
 and result reading.
+
+Cloud Workflow Example
+----------------------
+
+For cloud-based parametric simulations (AWS Batch, Kubernetes, etc.), the
+typical workflow is:
+
+1. **Local preparation**: Create simulation jobs with S3 output paths
+2. **Cloud execution**: Workers run simulations locally, upload results to S3
+3. **Result collection**: Collect results from S3 from any machine
+
+Example::
+
+    from idfkit import load_idf
+    from idfkit.simulation import simulate, SimulationResult, S3FileSystem
+
+    # Create an S3-backed filesystem
+    fs = S3FileSystem(bucket="my-simulations", prefix="batch-42/")
+
+    # Run simulation locally, results uploaded to S3
+    model = load_idf("building.idf")
+    result = simulate(model, "weather.epw", output_dir="run-001", fs=fs)
+
+    # The result.run_dir now points to the S3 location
+    print(result.run_dir)  # "run-001"
+
+    # Query results (transparently reads from S3)
+    if result.sql is not None:
+        ts = result.sql.get_timeseries("Zone Mean Air Temperature", "ZONE 1")
+        print(f"Max temp: {max(ts.values):.1f} C")
+
+    # Later, reconstruct results from S3 (from any machine)
+    result = SimulationResult.from_directory("run-001", fs=fs)
+
+The :class:`FileSystem` protocol can also be implemented for other backends
+(Azure Blob Storage, GCS, etc.) by implementing the required methods.
 """
 
 from __future__ import annotations
@@ -158,11 +194,38 @@ class S3FileSystem:
 
     Requires the ``boto3`` package (install via ``pip install idfkit[s3]``).
 
+    This backend enables cloud-native simulation workflows where results are
+    stored directly in S3 for later retrieval. EnergyPlus runs locally in a
+    temporary directory, then results are uploaded to S3 after completion.
+
     Args:
         bucket: S3 bucket name.
-        prefix: Optional key prefix prepended to all paths.
+        prefix: Optional key prefix prepended to all paths. Use this to
+            namespace simulations (e.g., ``"project-x/batch-42/"``).
         **boto_kwargs: Additional keyword arguments passed to
-            ``boto3.client("s3", ...)``.
+            ``boto3.client("s3", ...)``. Common options include:
+
+            - ``region_name``: AWS region (e.g., ``"us-east-1"``)
+            - ``endpoint_url``: Custom endpoint for S3-compatible services
+              (MinIO, LocalStack, etc.)
+            - ``aws_access_key_id``, ``aws_secret_access_key``: Explicit
+              credentials (normally use IAM roles or environment variables)
+
+    Example::
+
+        # Basic usage
+        fs = S3FileSystem(bucket="my-bucket", prefix="simulations/")
+
+        # With MinIO (S3-compatible)
+        fs = S3FileSystem(
+            bucket="local-bucket",
+            endpoint_url="http://localhost:9000",
+            aws_access_key_id="minioadmin",
+            aws_secret_access_key="minioadmin",
+        )
+
+        # Use with simulate()
+        result = simulate(model, weather, output_dir="run-001", fs=fs)
     """
 
     def __init__(self, bucket: str, prefix: str = "", **boto_kwargs: Any) -> None:

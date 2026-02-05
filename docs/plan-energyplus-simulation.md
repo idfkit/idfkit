@@ -75,7 +75,7 @@ require it.
 ## 2. Architecture Overview
 
 ```
-idfkit (existing)           idfkit.sim (new)
+idfkit (existing)           idfkit.simulation (new)
 ┌─────────────────┐         ┌──────────────────────────────────────────┐
 │ IDFDocument      │         │ EnergyPlusConfig    (discovery)          │
 │ IDFObject        │────────>│ Simulator           (execution)          │
@@ -85,7 +85,7 @@ idfkit (existing)           idfkit.sim (new)
 └─────────────────┘         └──────────────────────────────────────────┘
          │                            │
          │                  ┌─────────┴──────────┐
-         │                  │  idfkit.sim.fs      │
+         │                  │  idfkit.simulation.fs│
          │                  │  (file system       │
          │                  │   abstraction)      │
          │                  └─────────────────────┘
@@ -1618,7 +1618,7 @@ ddm.apply_to_model(
 )
 
 # --- Simulate with the downloaded EPW ---
-from idfkit.sim import simulate
+from idfkit.simulation import simulate
 result = simulate(model, weather_files.epw)
 ```
 
@@ -1656,7 +1656,7 @@ class NoDesignDaysError(IdfKitError):
 
 ### 10.1 Core (Zero Extra Dependencies)
 
-The `idfkit.sim` and `idfkit.weather` core modules should work with **only the standard library**:
+The `idfkit.simulation` and `idfkit.weather` core modules should work with **only the standard library**:
 
 - `subprocess` for execution
 - `sqlite3` for SQL output parsing
@@ -1930,7 +1930,7 @@ def _import_pandas() -> Any:
 
 ```python
 from idfkit import load_idf
-from idfkit.sim import simulate, find_energyplus, OutputVariableIndex
+from idfkit.simulation import simulate, find_energyplus, OutputVariableIndex
 from idfkit.weather import StationIndex, apply_ashrae_sizing, WeatherDownloader
 
 # Load model and find EnergyPlus
@@ -1989,7 +1989,7 @@ df.to_csv("zone_temperatures.csv")
 ### Batch Simulation Example
 
 ```python
-from idfkit.sim import simulate_batch, SimulationJob
+from idfkit.simulation import simulate_batch, SimulationJob
 
 # Parametric study: vary infiltration rate
 jobs = []
