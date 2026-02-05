@@ -14,7 +14,7 @@ class TestSVGGeneration:
     """Tests for SVG diagram generation."""
 
     @pytest.fixture
-    def opaque_construction(self):
+    def opaque_construction(self) -> IDFObject:
         """Create an opaque wall construction."""
         doc = new_document(version=(24, 1, 0))
 
@@ -65,7 +65,7 @@ class TestSVGGeneration:
         return doc["Construction"]["ExteriorWall"]
 
     @pytest.fixture
-    def glazing_construction(self):
+    def glazing_construction(self) -> IDFObject:
         """Create a glazing construction."""
         doc = new_document(version=(24, 1, 0))
 
@@ -118,43 +118,43 @@ class TestSVGGeneration:
 
         return doc["Construction"]["DoubleGlazing"]
 
-    def test_construction_to_svg_returns_string(self, opaque_construction) -> None:
+    def test_construction_to_svg_returns_string(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
         assert isinstance(svg, str)
         assert svg.startswith("<svg")
         assert svg.endswith("</svg>")
 
-    def test_svg_contains_construction_name(self, opaque_construction) -> None:
+    def test_svg_contains_construction_name(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
         assert "ExteriorWall" in svg
 
-    def test_svg_contains_layer_names(self, opaque_construction) -> None:
+    def test_svg_contains_layer_names(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
         assert "Brick" in svg
         assert "Insulation" in svg
         # Gypsum Board is truncated to "Gypsu.." due to narrow layer width
         assert "Gypsu" in svg
 
-    def test_svg_contains_thermal_properties(self, opaque_construction) -> None:
+    def test_svg_contains_thermal_properties(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
         assert "U =" in svg or "U=" in svg
         assert "R =" in svg or "R=" in svg
 
-    def test_svg_contains_outside_inside_labels(self, opaque_construction) -> None:
+    def test_svg_contains_outside_inside_labels(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
         # Labels can be "OUT/IN" or "EXT/INT" depending on design
         assert "OUT" in svg or "EXT" in svg
         assert "IN" in svg or "INT" in svg
 
-    def test_glazing_svg_contains_shgc(self, glazing_construction) -> None:
+    def test_glazing_svg_contains_shgc(self, glazing_construction: IDFObject) -> None:
         svg = construction_to_svg(glazing_construction)
         assert "SHGC" in svg  # May be "SHGC=" or "SHGC ="
 
-    def test_glazing_svg_contains_gas_type(self, glazing_construction) -> None:
+    def test_glazing_svg_contains_gas_type(self, glazing_construction: IDFObject) -> None:
         svg = construction_to_svg(glazing_construction)
         assert "Argon" in svg
 
-    def test_generate_construction_svg_with_custom_config(self, opaque_construction) -> None:
+    def test_generate_construction_svg_with_custom_config(self, opaque_construction: IDFObject) -> None:
         props = get_thermal_properties(opaque_construction)
         config = SVGConfig(width=800, height=300)
         svg = generate_construction_svg(props, config)
@@ -162,7 +162,7 @@ class TestSVGGeneration:
         assert 'width="800"' in svg
         assert 'height="300"' in svg
 
-    def test_svg_valid_xml_structure(self, opaque_construction) -> None:
+    def test_svg_valid_xml_structure(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
 
         # Check basic XML structure
@@ -213,7 +213,7 @@ class TestIDFObjectReprSVG:
     """Tests for IDFObject._repr_svg_() method."""
 
     @pytest.fixture
-    def wall_construction(self):
+    def wall_construction(self) -> IDFObject:
         """Create a wall construction."""
         doc = new_document(version=(24, 1, 0))
 
@@ -237,7 +237,7 @@ class TestIDFObjectReprSVG:
 
         return doc["Construction"]["MassWall"]
 
-    def test_repr_svg_returns_string_for_construction(self, wall_construction) -> None:
+    def test_repr_svg_returns_string_for_construction(self, wall_construction: IDFObject) -> None:
         svg = wall_construction._repr_svg_()
         assert svg is not None
         assert isinstance(svg, str)

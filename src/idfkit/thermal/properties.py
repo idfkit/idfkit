@@ -15,6 +15,30 @@ from .gas import typical_gap_r_value
 if TYPE_CHECKING:
     from ..objects import IDFObject
 
+# Construction layer field names in order (outside to inside)
+_LAYER_FIELDS = (
+    "outside_layer",
+    "layer_2",
+    "layer_3",
+    "layer_4",
+    "layer_5",
+    "layer_6",
+    "layer_7",
+    "layer_8",
+    "layer_9",
+    "layer_10",
+)
+
+# Material types to search when resolving layer references
+_MATERIAL_TYPES = (
+    "Material",
+    "Material:NoMass",
+    "Material:AirGap",
+    "WindowMaterial:Glazing",
+    "WindowMaterial:Gas",
+    "WindowMaterial:SimpleGlazingSystem",
+)
+
 # Standard surface film resistances (m²·K/W)
 # From ASHRAE Fundamentals, Chapter 26
 FILM_RESISTANCE = {
@@ -53,8 +77,10 @@ class LayerThermalProperties:
         gas_type: Gas type if is_gas (Air, Argon, Krypton, Xenon)
         solar_transmittance: Solar transmittance at normal incidence (glazing only)
         solar_reflectance_front: Front-side solar reflectance (glazing only)
+        visible_transmittance: Visible transmittance at normal incidence (glazing only)
         emissivity_front: Front-side infrared emissivity (glazing only)
         emissivity_back: Back-side infrared emissivity (glazing only)
+        shgc: Solar heat gain coefficient (SimpleGlazingSystem only)
     """
 
     name: str
@@ -67,8 +93,10 @@ class LayerThermalProperties:
     gas_type: str | None = None
     solar_transmittance: float | None = None
     solar_reflectance_front: float | None = None
+    visible_transmittance: float | None = None
     emissivity_front: float | None = None
     emissivity_back: float | None = None
+    shgc: float | None = None
 
 
 @dataclass
@@ -96,6 +124,21 @@ class ConstructionThermalProperties:
     visible_transmittance: float | None = None
 
 
+def _get_material_by_name(construction: IDFObject, material_name: str) -> IDFObject | None:
+    """Get material object by name from the document."""
+    document = construction.theidf
+    if document is None:
+        return None
+
+    for mat_type in _MATERIAL_TYPES:
+        if mat_type in document.collections:
+            mat = document.collections[mat_type].get(material_name)
+            if mat is not None:
+                return mat
+
+    return None
+
+
 def _get_material_layer(
     construction: IDFObject,
     material_name: str,
@@ -109,28 +152,10 @@ def _get_material_layer(
     Returns:
         LayerThermalProperties or None if material not found
     """
-    # Get the document from the construction object using public property
-    document = construction.theidf
-    if document is None:
+    mat = _get_material_by_name(construction, material_name)
+    if mat is None:
         return None
-
-    # Try each material type
-    material_types = [
-        "Material",
-        "Material:NoMass",
-        "Material:AirGap",
-        "WindowMaterial:Glazing",
-        "WindowMaterial:Gas",
-        "WindowMaterial:SimpleGlazingSystem",
-    ]
-
-    for mat_type in material_types:
-        if mat_type in document.collections:
-            mat = document.collections[mat_type].get(material_name)
-            if mat is not None:
-                return _extract_layer_properties(mat)
-
-    return None
+    return _extract_layer_properties(mat)
 
 
 def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
@@ -156,7 +181,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
             r_value=r_value,
         )
 
-    elif mat_type == "Material:NoMass":
+    if mat_type == "Material:NoMass":
         r_value = material.thermal_resistance or 0.0
         return LayerThermalProperties(
             name=material.name,
@@ -164,7 +189,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
             r_value=r_value,
         )
 
-    elif mat_type == "Material:AirGap":
+    if mat_type == "Material:AirGap":
         r_value = material.thermal_resistance or 0.0
         return LayerThermalProperties(
             name=material.name,
@@ -174,7 +199,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
             gas_type="Air",
         )
 
-    elif mat_type == "WindowMaterial:Glazing":
+    if mat_type == "WindowMaterial:Glazing":
         thickness = material.thickness or 0.006  # Default 6mm
         conductivity = material.conductivity or GLASS_CONDUCTIVITY
         r_value = thickness / conductivity if conductivity > 0 else 0.0
@@ -182,6 +207,7 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         # Get optical properties
         solar_trans = material.solar_transmittance_at_normal_incidence
         solar_refl_front = material.front_side_solar_reflectance_at_normal_incidence
+        vis_trans = material.visible_transmittance_at_normal_incidence
         emiss_front = material.front_side_infrared_hemispherical_emissivity or 0.84
         emiss_back = material.back_side_infrared_hemispherical_emissivity or 0.84
 
@@ -194,11 +220,12 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
             is_glazing=True,
             solar_transmittance=solar_trans,
             solar_reflectance_front=solar_refl_front,
+            visible_transmittance=vis_trans,
             emissivity_front=emiss_front,
             emissivity_back=emiss_back,
         )
 
-    elif mat_type == "WindowMaterial:Gas":
+    if mat_type == "WindowMaterial:Gas":
         thickness = material.thickness or 0.012  # Default 12mm
         gas_type = material.gas_type or "Air"
 
@@ -214,17 +241,17 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
             gas_type=gas_type,
         )
 
-    elif mat_type == "WindowMaterial:SimpleGlazingSystem":
-        # SimpleGlazingSystem provides U-factor directly
+    if mat_type == "WindowMaterial:SimpleGlazingSystem":
+        # SimpleGlazingSystem provides U-factor directly (includes films)
         u_factor = material.u_factor or 2.0
-        # R-value is inverse of U-factor (but this includes films)
-        # We'll handle this specially in the construction calculation
+        r_value = 1.0 / u_factor if u_factor > 0 else 0.0
         return LayerThermalProperties(
             name=material.name,
             obj_type=mat_type,
-            r_value=1.0 / u_factor if u_factor > 0 else 0.0,
+            r_value=r_value,
             is_glazing=True,
-            solar_transmittance=material.solar_heat_gain_coefficient,
+            shgc=material.solar_heat_gain_coefficient,
+            visible_transmittance=material.visible_transmittance,
         )
 
     # Unknown material type
@@ -246,21 +273,7 @@ def get_construction_layers(construction: IDFObject) -> list[LayerThermalPropert
     """
     layers: list[LayerThermalProperties] = []
 
-    # Layer field names in order
-    layer_fields = [
-        "outside_layer",
-        "layer_2",
-        "layer_3",
-        "layer_4",
-        "layer_5",
-        "layer_6",
-        "layer_7",
-        "layer_8",
-        "layer_9",
-        "layer_10",
-    ]
-
-    for field_name in layer_fields:
+    for field_name in _LAYER_FIELDS:
         material_name = getattr(construction, field_name, None)
         if material_name:
             layer = _get_material_layer(construction, material_name)
@@ -270,11 +283,18 @@ def get_construction_layers(construction: IDFObject) -> list[LayerThermalPropert
     return layers
 
 
+def _nfrc_film_resistance() -> float:
+    """Total NFRC film resistance (exterior + interior) in m²·K/W."""
+    return 1.0 / NFRC_FILM_COEFFICIENTS["exterior"] + 1.0 / NFRC_FILM_COEFFICIENTS["interior"]
+
+
 def calculate_r_value(construction: IDFObject, include_films: bool = True) -> float:
     """Calculate R-value for a construction assembly.
 
     For opaque constructions, sums the thermal resistance of all layers.
-    For glazing constructions with SimpleGlazingSystem, returns the provided value.
+    For glazing constructions with SimpleGlazingSystem, the stored R-value
+    includes films; when ``include_films=False`` the NFRC film resistances
+    are subtracted.
 
     Args:
         construction: Construction IDFObject
@@ -290,8 +310,10 @@ def calculate_r_value(construction: IDFObject, include_films: bool = True) -> fl
 
     # Check for SimpleGlazingSystem
     if len(layers) == 1 and layers[0].obj_type == "WindowMaterial:SimpleGlazingSystem":
-        # R-value already includes films
-        return layers[0].r_value
+        # r_value already includes films (1 / U-factor)
+        if include_films:
+            return layers[0].r_value
+        return max(0.0, layers[0].r_value - _nfrc_film_resistance())
 
     # Sum layer resistances
     r_total = sum(layer.r_value for layer in layers)
@@ -349,7 +371,7 @@ def calculate_shgc(construction: IDFObject) -> float | None:
 
     # Check for SimpleGlazingSystem - SHGC is provided directly
     if len(layers) == 1 and layers[0].obj_type == "WindowMaterial:SimpleGlazingSystem":
-        return layers[0].solar_transmittance
+        return layers[0].shgc
 
     # Check if this is a glazing construction
     glazing_layers = [layer for layer in layers if layer.is_glazing]
@@ -397,77 +419,20 @@ def calculate_visible_transmittance(construction: IDFObject) -> float | None:
     if not layers:
         return None
 
-    # Check for SimpleGlazingSystem
+    # Check for SimpleGlazingSystem - VT is provided directly
     if len(layers) == 1 and layers[0].obj_type == "WindowMaterial:SimpleGlazingSystem":
-        material = _get_material_from_construction(construction, 0)
-        if material:
-            return material.visible_transmittance
-        return None
+        return layers[0].visible_transmittance
 
     # Product of individual visible transmittances
     vt = 1.0
     has_glazing = False
 
     for layer in layers:
-        if layer.is_glazing:
+        if layer.is_glazing and layer.visible_transmittance is not None:
             has_glazing = True
-            # Get the original material to access visible_transmittance
-            material = _get_material_by_name(construction, layer.name)
-            if material and hasattr(material, "visible_transmittance_at_normal_incidence"):
-                vt_layer = material.visible_transmittance_at_normal_incidence
-                if vt_layer is not None:
-                    vt *= vt_layer
+            vt *= layer.visible_transmittance
 
     return vt if has_glazing else None
-
-
-def _get_material_from_construction(construction: IDFObject, layer_index: int) -> IDFObject | None:
-    """Get material object from construction by layer index."""
-    layer_fields = [
-        "outside_layer",
-        "layer_2",
-        "layer_3",
-        "layer_4",
-        "layer_5",
-        "layer_6",
-        "layer_7",
-        "layer_8",
-        "layer_9",
-        "layer_10",
-    ]
-
-    if layer_index >= len(layer_fields):
-        return None
-
-    material_name = getattr(construction, layer_fields[layer_index], None)
-    if not material_name:
-        return None
-
-    return _get_material_by_name(construction, material_name)
-
-
-def _get_material_by_name(construction: IDFObject, material_name: str) -> IDFObject | None:
-    """Get material object by name from the document."""
-    document = construction.theidf
-    if document is None:
-        return None
-
-    material_types = [
-        "Material",
-        "Material:NoMass",
-        "Material:AirGap",
-        "WindowMaterial:Glazing",
-        "WindowMaterial:Gas",
-        "WindowMaterial:SimpleGlazingSystem",
-    ]
-
-    for mat_type in material_types:
-        if mat_type in document.collections:
-            mat = document.collections[mat_type].get(material_name)
-            if mat is not None:
-                return mat
-
-    return None
 
 
 def get_thermal_properties(construction: IDFObject) -> ConstructionThermalProperties:

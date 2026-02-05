@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ..thermal.properties import ConstructionThermalProperties, LayerThermalProperties
 
 
-@dataclass
+@dataclass(frozen=True)
 class SVGConfig:
     """Configuration for SVG construction diagrams.
 
@@ -298,9 +298,9 @@ def _get_pattern_svg(pattern_id: str) -> str:
       <line x1="0" y1="4" x2="4" y2="0" stroke="#909498" stroke-width="0.6"/>
     </pattern>""",
         PATTERN_IDS["glass"]: f"""
-    <pattern id="{PATTERN_IDS["glass"]}" patternUnits="userSpaceOnUse" width="6" height="100%">
-      <rect width="6" height="100%" fill="{GLAZING_COLORS["WindowMaterial:Glazing"]}"/>
-      <line x1="1.5" y1="0" x2="1.5" y2="100%" stroke="#8ab4d0" stroke-width="0.5" opacity="0.4"/>
+    <pattern id="{PATTERN_IDS["glass"]}" patternUnits="userSpaceOnUse" width="6" height="200">
+      <rect width="6" height="200" fill="{GLAZING_COLORS["WindowMaterial:Glazing"]}"/>
+      <line x1="1.5" y1="0" x2="1.5" y2="200" stroke="#8ab4d0" stroke-width="0.5" opacity="0.4"/>
     </pattern>""",
         PATTERN_IDS["air-gap"]: f"""
     <pattern id="{PATTERN_IDS["air-gap"]}" patternUnits="userSpaceOnUse" width="12" height="12">

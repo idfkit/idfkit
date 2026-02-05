@@ -166,7 +166,6 @@ def gas_gap_resistance(
     delta_t: float = 15.0,
     emissivity_1: float = 0.84,
     emissivity_2: float = 0.84,
-    height: float = 1.0,
     tilt: float = 90.0,
 ) -> float:
     """Calculate thermal resistance of a gas-filled gap.
@@ -181,7 +180,6 @@ def gas_gap_resistance(
         delta_t: Temperature difference across gap in K (default: 15K)
         emissivity_1: Emissivity of surface 1 (default: 0.84 for clear glass)
         emissivity_2: Emissivity of surface 2 (default: 0.84 for clear glass)
-        height: Gap height in meters (default: 1.0m)
         tilt: Tilt angle from horizontal in degrees (default: 90° vertical)
 
     Returns:
@@ -219,8 +217,6 @@ def gas_gap_resistance(
         nu = max(1.0, 0.0673838 * ra**0.333)
     else:
         # More horizontal - use different correlation
-        # Note: aspect ratio (height/thickness) could be used for more accurate correlations
-        _ = height / thickness  # Unused but kept for reference
         nu = max(1.0, 0.0605 * ra**0.333 * (1 + (0.104 * ra**0.293) / (1 + (6310 / ra) ** 1.36)))
 
     # Convective resistance
