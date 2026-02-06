@@ -130,10 +130,56 @@ def _run_subprocess(
         ) from exc
 
 
+def _check_process_exit_code(
+    proc: subprocess.CompletedProcess[str],
+    *,
+    label: str,
+) -> None:
+    """Raise if the subprocess exited with a non-zero code.
+
+    The Slab and Basement preprocessors (Fortran) always exit with code 0
+    even on errors (using Fortran ``STOP`` statements).  A non-zero exit
+    code therefore indicates an abnormal termination such as a crash
+    (e.g. SIGSEGV, exit code 139).
+    """
+    if proc.returncode != 0:
+        msg = f"{label} crashed with exit code {proc.returncode}"
+        raise ExpandObjectsError(
+            msg,
+            preprocessor=label,
+            exit_code=proc.returncode,
+            stderr=proc.stderr.strip() if proc.stderr else None,
+        )
+
+
 def _require_file(path: Path, *, label: str, proc: subprocess.CompletedProcess[str]) -> None:
     """Raise :class:`ExpandObjectsError` if *path* does not exist."""
     if not path.is_file():
         msg = f"{label} did not produce {path.name}"
+        raise ExpandObjectsError(
+            msg,
+            preprocessor=label,
+            exit_code=proc.returncode,
+            stderr=proc.stderr.strip() if proc.stderr else None,
+        )
+
+
+def _check_output_not_empty(
+    path: Path,
+    *,
+    label: str,
+    proc: subprocess.CompletedProcess[str],
+) -> None:
+    """Raise if the output file is empty, indicating a silent computation failure.
+
+    The Slab and Basement preprocessors may exit with code 0 but produce
+    an empty output file when the solver fails to converge or encounters
+    an unrecoverable numerical error.  In these cases no
+    ``Output:PreprocessorMessage`` is written, making the empty file the
+    only reliable signal.
+    """
+    if path.stat().st_size == 0:
+        msg = f"{label} produced an empty output file ({path.name}), indicating a computation failure"
         raise ExpandObjectsError(
             msg,
             preprocessor=label,
@@ -341,8 +387,10 @@ def run_slab_preprocessor(
 
     # Step 3: Run the Slab preprocessor
     proc = _run_subprocess(slab_exe, cwd=run_dir, timeout=timeout, label="Slab")
+    _check_process_exit_code(proc, label="Slab")
     slab_output = run_dir / "SLABSurfaceTemps.TXT"
     _require_file(slab_output, label="Slab", proc=proc)
+    _check_output_not_empty(slab_output, label="Slab", proc=proc)
     _check_for_fatal_preprocessor_message(slab_output, label="Slab", proc=proc)
 
     # Step 4: Append slab results to expanded.idf and parse
@@ -422,8 +470,10 @@ def run_basement_preprocessor(
 
     # Step 3: Run the Basement preprocessor
     proc = _run_subprocess(basement_exe, cwd=run_dir, timeout=timeout, label="Basement")
+    _check_process_exit_code(proc, label="Basement")
     basement_output = run_dir / "EPObjects.TXT"
     _require_file(basement_output, label="Basement", proc=proc)
+    _check_output_not_empty(basement_output, label="Basement", proc=proc)
     _check_for_fatal_preprocessor_message(basement_output, label="Basement", proc=proc)
 
     # Step 4: Append basement results to expanded.idf and parse

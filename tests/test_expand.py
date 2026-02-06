@@ -14,6 +14,8 @@ from idfkit.objects import IDFObject
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.expand import (
     _check_for_fatal_preprocessor_message,
+    _check_output_not_empty,
+    _check_process_exit_code,
     _has_basement_objects,
     _has_slab_objects,
     _needs_expansion,
@@ -364,6 +366,65 @@ class TestCheckForFatalPreprocessorMessage:
         assert exc_info.value.exit_code == 1
 
 
+class TestCheckProcessExitCode:
+    def test_no_raise_on_zero(self) -> None:
+        proc = MagicMock()
+        proc.returncode = 0
+        proc.stderr = ""
+        _check_process_exit_code(proc, label="Slab")
+
+    def test_raises_on_sigsegv(self) -> None:
+        proc = MagicMock()
+        proc.returncode = 139
+        proc.stderr = "Segmentation fault\n"
+        with pytest.raises(ExpandObjectsError, match="crashed with exit code 139") as exc_info:
+            _check_process_exit_code(proc, label="Slab")
+        assert exc_info.value.preprocessor == "Slab"
+        assert exc_info.value.exit_code == 139
+        assert "Segmentation fault" in str(exc_info.value.stderr)
+
+    def test_raises_on_nonzero(self) -> None:
+        proc = MagicMock()
+        proc.returncode = 1
+        proc.stderr = ""
+        with pytest.raises(ExpandObjectsError, match="crashed with exit code 1") as exc_info:
+            _check_process_exit_code(proc, label="Basement")
+        assert exc_info.value.preprocessor == "Basement"
+        assert exc_info.value.exit_code == 1
+
+
+class TestCheckOutputNotEmpty:
+    def test_no_raise_on_nonempty(self, tmp_path: Path) -> None:
+        output = tmp_path / "SLABSurfaceTemps.TXT"
+        output.write_text("SurfaceProperty:OtherSideCoefficients,\n  surfPropOthSdCoefSlabAverage;\n")
+        proc = MagicMock()
+        proc.returncode = 0
+        proc.stderr = ""
+        _check_output_not_empty(output, label="Slab", proc=proc)
+
+    def test_raises_on_empty_file(self, tmp_path: Path) -> None:
+        output = tmp_path / "EPObjects.TXT"
+        output.write_text("")
+        proc = MagicMock()
+        proc.returncode = 0
+        proc.stderr = "1-D solution has not converged\n"
+        with pytest.raises(ExpandObjectsError, match="empty output file") as exc_info:
+            _check_output_not_empty(output, label="Basement", proc=proc)
+        assert exc_info.value.preprocessor == "Basement"
+        assert exc_info.value.exit_code == 0
+        assert "1-D solution has not converged" in str(exc_info.value.stderr)
+
+    def test_preserves_exit_code(self, tmp_path: Path) -> None:
+        output = tmp_path / "SLABSurfaceTemps.TXT"
+        output.write_text("")
+        proc = MagicMock()
+        proc.returncode = 139
+        proc.stderr = ""
+        with pytest.raises(ExpandObjectsError) as exc_info:
+            _check_output_not_empty(output, label="Slab", proc=proc)
+        assert exc_info.value.exit_code == 139
+
+
 class TestSlabFatalMessage:
     """Verify run_slab_preprocessor detects fatal preprocessor messages."""
 
@@ -592,6 +653,63 @@ class TestRunSlabPreprocessor:
         assert (run_dirs[0] / "in.epw").is_file()
         assert (run_dirs[0] / "in.epw").read_text() == "LOCATION,Chicago\n"
 
+    def test_raises_on_slab_crash(self, mock_config: EnergyPlusConfig) -> None:
+        """Slab SIGSEGV (exit code 139) with empty output files is caught."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "GHTIn.idf").write_text("! input\n")
+            elif exe_name == "Slab":
+                # Simulate SIGSEGV: empty output file, non-zero exit code
+                (cwd / "SLABSurfaceTemps.TXT").write_text("")
+            result = MagicMock()
+            result.returncode = 0 if exe_name == "ExpandObjects" else 139
+            result.stdout = ""
+            result.stderr = "Segmentation fault\n" if exe_name == "Slab" else ""
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="crashed with exit code 139") as exc_info,
+        ):
+            run_slab_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Slab"
+        assert exc_info.value.exit_code == 139
+
+    def test_raises_on_empty_slab_output(self, mock_config: EnergyPlusConfig) -> None:
+        """Slab solver failure producing empty output file is caught."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "GHTIn.idf").write_text("! input\n")
+            elif exe_name == "Slab":
+                # Solver failure: exit code 0, but empty output
+                (cwd / "SLABSurfaceTemps.TXT").write_text("")
+            result = MagicMock()
+            result.returncode = 0
+            result.stdout = ""
+            result.stderr = ""
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="empty output file") as exc_info,
+        ):
+            run_slab_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Slab"
+
 
 # ---------------------------------------------------------------------------
 # run_basement_preprocessor tests
@@ -694,6 +812,63 @@ class TestRunBasementPreprocessor:
 
         with pytest.raises(ExpandObjectsError, match="Weather file not found"):
             run_basement_preprocessor(doc, energyplus=mock_config, weather=tmp_path / "nonexistent.epw")
+
+    def test_raises_on_basement_crash(self, mock_config: EnergyPlusConfig) -> None:
+        """Basement crash (non-zero exit code) is caught."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_basement_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "BasementGHTIn.idf").write_text("! input\n")
+            elif exe_name == "Basement":
+                (cwd / "EPObjects.TXT").write_text("")
+            result = MagicMock()
+            result.returncode = 0 if exe_name == "ExpandObjects" else 134
+            result.stdout = ""
+            result.stderr = "Aborted\n" if exe_name == "Basement" else ""
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="crashed with exit code 134") as exc_info,
+        ):
+            run_basement_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Basement"
+        assert exc_info.value.exit_code == 134
+
+    def test_raises_on_empty_basement_output(self, mock_config: EnergyPlusConfig) -> None:
+        """Basement solver non-convergence producing empty EPObjects.TXT is caught."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_basement_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "BasementGHTIn.idf").write_text("! input\n")
+            elif exe_name == "Basement":
+                # Solver non-convergence: exit 0, empty output
+                (cwd / "EPObjects.TXT").write_text("")
+            result = MagicMock()
+            result.returncode = 0
+            result.stdout = "1-D solution has not converged\nIYR=MAXYR-1, PROGRAM TERMINATED\n"
+            result.stderr = ""
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="empty output file") as exc_info,
+        ):
+            run_basement_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Basement"
+        assert exc_info.value.exit_code == 0
 
     def test_raises_when_basement_exe_missing(self, tmp_path: Path) -> None:
         exe = tmp_path / "energyplus"
