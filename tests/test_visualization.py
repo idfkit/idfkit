@@ -359,12 +359,12 @@ class TestThemeSupport:
         doc.add("Construction", "Wall", {"outside_layer": "Concrete"})
         return doc["Construction"]["Wall"]
 
-    def test_default_theme_is_light(self) -> None:
-        assert SVGConfig().theme == "light"
+    def test_default_theme_is_auto(self) -> None:
+        assert SVGConfig().theme == "auto"
 
-    def test_light_theme_svg_class(self, opaque_construction: IDFObject) -> None:
+    def test_default_theme_svg_class(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
-        assert 'class="idfkit-theme-light"' in svg
+        assert 'class="idfkit-theme-auto"' in svg
 
     def test_light_theme_css_variables(self, opaque_construction: IDFObject) -> None:
         svg = construction_to_svg(opaque_construction)
