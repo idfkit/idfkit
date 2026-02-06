@@ -40,7 +40,7 @@ from __future__ import annotations
 from .batch import BatchResult, SimulationJob, simulate_batch
 from .cache import CacheKey, SimulationCache
 from .config import EnergyPlusConfig, find_energyplus
-from .expand import expand_objects
+from .expand import expand_objects, run_basement_preprocessor, run_slab_preprocessor
 from .fs import FileSystem, LocalFileSystem, S3FileSystem
 from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
@@ -86,6 +86,8 @@ __all__ = [
     "plot_comfort_hours",
     "plot_energy_balance",
     "plot_temperature_profile",
+    "run_basement_preprocessor",
+    "run_slab_preprocessor",
     "simulate",
     "simulate_batch",
 ]

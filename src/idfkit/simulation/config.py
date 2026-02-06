@@ -52,6 +52,37 @@ class EnergyPlusConfig:
         p = self.install_dir / name
         return p if p.is_file() else None
 
+    @property
+    def _preprocess_dir(self) -> Path:
+        """Path to the PreProcess/GrndTempCalc directory."""
+        return self.install_dir / "PreProcess" / "GrndTempCalc"
+
+    @property
+    def slab_exe(self) -> Path | None:
+        """Path to the Slab ground heat-transfer preprocessor, if present."""
+        name = "Slab.exe" if platform.system() == "Windows" else "Slab"
+        p = self._preprocess_dir / name
+        return p if p.is_file() else None
+
+    @property
+    def slab_idd(self) -> Path | None:
+        """Path to SlabGHT.idd, if present."""
+        p = self._preprocess_dir / "SlabGHT.idd"
+        return p if p.is_file() else None
+
+    @property
+    def basement_exe(self) -> Path | None:
+        """Path to the Basement ground heat-transfer preprocessor, if present."""
+        name = "Basement.exe" if platform.system() == "Windows" else "Basement"
+        p = self._preprocess_dir / name
+        return p if p.is_file() else None
+
+    @property
+    def basement_idd(self) -> Path | None:
+        """Path to BasementGHT.idd, if present."""
+        p = self._preprocess_dir / "BasementGHT.idd"
+        return p if p.is_file() else None
+
     @classmethod
     def from_path(cls, path: str | Path) -> EnergyPlusConfig:
         """Create config from an explicit installation path.
