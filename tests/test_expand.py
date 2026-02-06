@@ -13,6 +13,7 @@ from idfkit.exceptions import ExpandObjectsError
 from idfkit.objects import IDFObject
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.expand import (
+    _check_for_fatal_preprocessor_message,
     _has_basement_objects,
     _has_slab_objects,
     _needs_expansion,
@@ -307,6 +308,127 @@ class TestHasBasementObjects:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})
         assert _has_basement_objects(doc) is False
+
+
+# ---------------------------------------------------------------------------
+# Fatal preprocessor message detection tests
+# ---------------------------------------------------------------------------
+
+
+class TestCheckForFatalPreprocessorMessage:
+    def _make_proc(self, returncode: int = 0) -> MagicMock:
+        proc = MagicMock()
+        proc.returncode = returncode
+        proc.stderr = "STOP GroundTempCalc Terminated--Error(s) Detected.\n"
+        return proc
+
+    def test_raises_on_fatal_single_line(self, tmp_path: Path) -> None:
+        output = tmp_path / "SLABSurfaceTemps.TXT"
+        output.write_text(" Output:PreprocessorMessage,GroundTempCalc - Slab,Fatal,\nNo in.epw file found;\n")
+        with pytest.raises(ExpandObjectsError, match="fatal error") as exc_info:
+            _check_for_fatal_preprocessor_message(output, label="Slab", proc=self._make_proc())
+        assert exc_info.value.preprocessor == "Slab"
+        assert exc_info.value.exit_code == 0
+        assert "No in.epw file found" in str(exc_info.value.stderr)
+
+    def test_raises_on_fatal_inline(self, tmp_path: Path) -> None:
+        output = tmp_path / "EPObjects.TXT"
+        output.write_text("Output:PreprocessorMessage,GroundTempCalc - Basement,Fatal,No in.epw file found;\n")
+        with pytest.raises(ExpandObjectsError, match="fatal error") as exc_info:
+            _check_for_fatal_preprocessor_message(output, label="Basement", proc=self._make_proc())
+        assert exc_info.value.preprocessor == "Basement"
+
+    def test_no_raise_on_severe_warning(self, tmp_path: Path) -> None:
+        output = tmp_path / "SLABSurfaceTemps.TXT"
+        output.write_text(
+            " Output:PreprocessorMessage,GroundTempCalc - Slab,Severe,\n"
+            "The calculated ground temperature exceeds -100 C;\n\n"
+            "SurfaceProperty:OtherSideCoefficients,\n"
+            "  surfPropOthSdCoefSlabAverage;\n"
+        )
+        # Should NOT raise — Severe is a warning, not a fatal error
+        _check_for_fatal_preprocessor_message(output, label="Slab", proc=self._make_proc())
+
+    def test_no_raise_on_clean_output(self, tmp_path: Path) -> None:
+        output = tmp_path / "SLABSurfaceTemps.TXT"
+        output.write_text(
+            "! This is clean output\nSurfaceProperty:OtherSideCoefficients,\n  surfPropOthSdCoefSlabAverage;\n"
+        )
+        _check_for_fatal_preprocessor_message(output, label="Slab", proc=self._make_proc())
+
+    def test_preserves_exit_code(self, tmp_path: Path) -> None:
+        output = tmp_path / "EPObjects.TXT"
+        output.write_text("Output:PreprocessorMessage,GroundTempCalc - Basement,Fatal,Bad input;\n")
+        with pytest.raises(ExpandObjectsError) as exc_info:
+            _check_for_fatal_preprocessor_message(output, label="Basement", proc=self._make_proc(returncode=1))
+        assert exc_info.value.exit_code == 1
+
+
+class TestSlabFatalMessage:
+    """Verify run_slab_preprocessor detects fatal preprocessor messages."""
+
+    def test_raises_on_slab_fatal(self, mock_config: EnergyPlusConfig) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_slab_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "GHTIn.idf").write_text("! input\n")
+            elif exe_name == "Slab":
+                # Slab exits 0 but writes a Fatal message
+                (cwd / "SLABSurfaceTemps.TXT").write_text(
+                    " Output:PreprocessorMessage,GroundTempCalc - Slab,Fatal,\nNo in.epw file found;\n"
+                )
+            result = MagicMock()
+            result.returncode = 0
+            result.stdout = ""
+            result.stderr = "STOP GroundTempCalc Terminated--Error(s) Detected.\n"
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
+        ):
+            run_slab_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Slab"
+        assert exc_info.value.exit_code == 0
+
+
+class TestBasementFatalMessage:
+    """Verify run_basement_preprocessor detects fatal preprocessor messages."""
+
+    def test_raises_on_basement_fatal(self, mock_config: EnergyPlusConfig) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "", {"run_basement_preprocessor": "Yes"}, validate=False)
+
+        def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
+            cwd = Path(str(kwargs.get("cwd", "")))
+            exe_name = Path(cmd[0]).name
+            if exe_name == "ExpandObjects":
+                (cwd / "expanded.idf").write_text("Version, 24.1;\n")
+                (cwd / "BasementGHTIn.idf").write_text("! input\n")
+            elif exe_name == "Basement":
+                (cwd / "EPObjects.TXT").write_text(
+                    "Output:PreprocessorMessage,GroundTempCalc - Basement,Fatal,No in.epw file found;\n"
+                )
+            result = MagicMock()
+            result.returncode = 0
+            result.stdout = ""
+            result.stderr = "STOP GroundTempCalc Terminated--Error(s) Detected.\n"
+            return result
+
+        with (
+            patch("idfkit.simulation.expand.subprocess.run", side_effect=fake_run),
+            pytest.raises(ExpandObjectsError, match="fatal error") as exc_info,
+        ):
+            run_basement_preprocessor(doc, energyplus=mock_config)
+        assert exc_info.value.preprocessor == "Basement"
+        assert exc_info.value.exit_code == 0
 
 
 # ---------------------------------------------------------------------------

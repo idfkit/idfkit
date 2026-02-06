@@ -23,6 +23,7 @@ Example::
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -138,6 +139,42 @@ def _require_file(path: Path, *, label: str, proc: subprocess.CompletedProcess[s
             preprocessor=label,
             exit_code=proc.returncode,
             stderr=proc.stderr.strip() if proc.stderr else None,
+        )
+
+
+_FATAL_PREPROC_RE = re.compile(
+    r"Output:PreprocessorMessage\s*,"  # object type
+    r"\s*([^,]+)\s*,"  # preprocessor name
+    r"\s*Fatal\s*,"  # severity
+    r"\s*\n?\s*([^;]+);",  # message (may start on the next line)
+)
+
+
+def _check_for_fatal_preprocessor_message(
+    output_path: Path,
+    *,
+    label: str,
+    proc: subprocess.CompletedProcess[str],
+) -> None:
+    """Raise if a preprocessor output file contains a *Fatal* message.
+
+    EnergyPlus preprocessors (Slab, Basement) report errors via
+    ``Output:PreprocessorMessage`` objects written to their output files.
+    The process may still exit with code 0, so a non-zero exit code alone
+    is not a reliable indicator of failure.  A *Fatal* severity means the
+    preprocessor could not produce valid results.
+    """
+    text = output_path.read_text(encoding="latin-1")
+    match = _FATAL_PREPROC_RE.search(text)
+    if match:
+        source = match.group(1).strip()
+        message = match.group(2).strip()
+        msg = f"{label} reported a fatal error: {message}"
+        raise ExpandObjectsError(
+            msg,
+            preprocessor=label,
+            exit_code=proc.returncode,
+            stderr=f"{source}: {message}",
         )
 
 
@@ -304,7 +341,9 @@ def run_slab_preprocessor(
 
     # Step 3: Run the Slab preprocessor
     proc = _run_subprocess(slab_exe, cwd=run_dir, timeout=timeout, label="Slab")
-    _require_file(run_dir / "SLABSurfaceTemps.TXT", label="Slab", proc=proc)
+    slab_output = run_dir / "SLABSurfaceTemps.TXT"
+    _require_file(slab_output, label="Slab", proc=proc)
+    _check_for_fatal_preprocessor_message(slab_output, label="Slab", proc=proc)
 
     # Step 4: Append slab results to expanded.idf and parse
     _append_file(run_dir / "expanded.idf", run_dir / "SLABSurfaceTemps.TXT")
@@ -383,7 +422,9 @@ def run_basement_preprocessor(
 
     # Step 3: Run the Basement preprocessor
     proc = _run_subprocess(basement_exe, cwd=run_dir, timeout=timeout, label="Basement")
-    _require_file(run_dir / "EPObjects.TXT", label="Basement", proc=proc)
+    basement_output = run_dir / "EPObjects.TXT"
+    _require_file(basement_output, label="Basement", proc=proc)
+    _check_for_fatal_preprocessor_message(basement_output, label="Basement", proc=proc)
 
     # Step 4: Append basement results to expanded.idf and parse
     _append_file(run_dir / "expanded.idf", run_dir / "EPObjects.TXT")
