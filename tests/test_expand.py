@@ -20,6 +20,7 @@ from idfkit.simulation.expand import (
     _has_slab_objects,
     _needs_expansion,
     expand_objects,
+    needs_ground_heat_preprocessing,
     run_basement_preprocessor,
     run_preprocessing,
     run_slab_preprocessor,
@@ -312,6 +313,39 @@ class TestHasBasementObjects:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})
         assert _has_basement_objects(doc) is False
+
+
+# ---------------------------------------------------------------------------
+# needs_ground_heat_preprocessing tests
+# ---------------------------------------------------------------------------
+
+
+class TestNeedsGroundHeatPreprocessing:
+    def test_true_for_slab_objects(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        assert needs_ground_heat_preprocessing(doc) is True
+
+    def test_true_for_basement_objects(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        assert needs_ground_heat_preprocessing(doc) is True
+
+    def test_true_for_both_slab_and_basement(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        assert needs_ground_heat_preprocessing(doc) is True
+
+    def test_false_for_plain_model(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Office", {"x_origin": 0.0})
+        assert needs_ground_heat_preprocessing(doc) is False
+
+    def test_false_for_hvac_template_only(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "Test", {"zone_name": "Office"}, validate=False)
+        assert needs_ground_heat_preprocessing(doc) is False
 
 
 # ---------------------------------------------------------------------------

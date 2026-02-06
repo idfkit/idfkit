@@ -72,7 +72,7 @@ its error semantics differ from the Fortran preprocessors.
 
 The :func:`~idfkit.simulation.runner.simulate` function automatically
 detects ground heat-transfer objects and runs the preprocessing pipeline
-before simulation.  It invokes :func:`_run_preprocessing`, which runs
+before simulation.  It invokes :func:`run_preprocessing`, which runs
 ExpandObjects once, then checks which preprocessor input files were
 produced (``GHTIn.idf`` and/or ``BasementGHTIn.idf``) and runs the
 corresponding solver.  This means users do not need to call the
@@ -332,6 +332,13 @@ def _parse_expanded(run_dir: Path) -> IDFDocument:
     from ..idf_parser import parse_idf
 
     return parse_idf(run_dir / "expanded.idf")
+
+
+def _append_file(target: Path, source: Path) -> None:
+    """Append the contents of *source* to *target*."""
+    with open(target, "a", encoding="latin-1") as dst, open(source, encoding="latin-1") as src:
+        dst.write("\n")
+        dst.write(src.read())
 
 
 # ---------------------------------------------------------------------------
@@ -636,10 +643,3 @@ def run_basement_preprocessor(
         return _parse_expanded(run_dir)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
-
-
-def _append_file(target: Path, source: Path) -> None:
-    """Append the contents of *source* to *target*."""
-    with open(target, "a", encoding="latin-1") as dst, open(source, encoding="latin-1") as src:
-        dst.write("\n")
-        dst.write(src.read())

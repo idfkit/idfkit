@@ -125,7 +125,7 @@ def simulate(
     _ensure_sql_output(sim_model)
 
     # Auto-preprocess ground heat-transfer objects when needed.
-    sim_model, ep_expand = _maybe_preprocess(model, sim_model, config, weather_path, expand_objects, timeout)
+    sim_model, ep_expand = _maybe_preprocess(model, sim_model, config, weather_path, expand_objects)
 
     # When using a remote fs, always run locally in a temp dir
     local_output_dir = None if fs is not None else output_dir
@@ -216,7 +216,6 @@ def _maybe_preprocess(
     config: EnergyPlusConfig,
     weather_path: Path,
     expand_objects: bool,
-    timeout: float,
 ) -> tuple[IDFDocument, bool]:
     """Run ground heat-transfer preprocessing if needed.
 
@@ -226,6 +225,10 @@ def _maybe_preprocess(
     pipeline (ExpandObjects + Slab/Basement) ourselves and disable the
     ``-x`` flag.
 
+    Preprocessing uses the default timeout from
+    :func:`~idfkit.simulation.expand.run_preprocessing` (120 s per
+    subprocess), independent of the simulation timeout.
+
     Args:
         original: The original (unmutated) model, used for GHT detection.
         sim_model: The working copy of the model (may already have
@@ -233,7 +236,6 @@ def _maybe_preprocess(
         config: EnergyPlus configuration.
         weather_path: Resolved path to the weather file.
         expand_objects: Whether the caller requested expansion.
-        timeout: Maximum runtime in seconds for each subprocess.
 
     Returns:
         A ``(model, ep_expand)`` tuple where *model* is either the
@@ -251,7 +253,6 @@ def _maybe_preprocess(
             sim_model,
             energyplus=config,
             weather=weather_path,
-            timeout=timeout,
         )
         return preprocessed, False  # Already expanded by preprocessing
 
