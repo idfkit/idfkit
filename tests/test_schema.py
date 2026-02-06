@@ -123,6 +123,15 @@ class TestEpJSONSchema:
         types = schema.get_types_providing_reference("SomeUnknownList")
         assert isinstance(types, list)
 
+    def test_get_group(self, schema: EpJSONSchema) -> None:
+        assert schema.get_group("Zone") == "Thermal Zones and Surfaces"
+
+    def test_get_group_hvac_template(self, schema: EpJSONSchema) -> None:
+        assert schema.get_group("HVACTemplate:Zone:IdealLoadsAirSystem") == "HVAC Templates"
+
+    def test_get_group_missing(self, schema: EpJSONSchema) -> None:
+        assert schema.get_group("FakeType") is None
+
     def test_get_object_memo(self, schema: EpJSONSchema) -> None:
         memo = schema.get_object_memo("Zone")
         # May be None or a string depending on schema

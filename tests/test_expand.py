@@ -9,8 +9,9 @@ import pytest
 
 from idfkit import IDFDocument, new_document
 from idfkit.exceptions import ExpandObjectsError
+from idfkit.objects import IDFObject
 from idfkit.simulation.config import EnergyPlusConfig
-from idfkit.simulation.expand import expand_objects
+from idfkit.simulation.expand import _needs_expansion, expand_objects
 
 
 @pytest.fixture
@@ -253,3 +254,48 @@ def test_expand_objects_skips_subprocess_when_nothing_to_expand() -> None:
     assert result["Zone"]["Office"].name == "Office"
     # Verify it's a copy, not the same object
     assert result is not doc
+
+
+def test_needs_expansion_uses_schema_group(model_with_hvac_template: IDFDocument) -> None:
+    """_needs_expansion checks the schema group field, not just the prefix."""
+    # model_with_hvac_template has a schema loaded (new_document gives one)
+    assert model_with_hvac_template.schema is not None
+    assert _needs_expansion(model_with_hvac_template) is True
+
+
+def test_needs_expansion_detects_ground_heat_transfer() -> None:
+    """Schema-based detection works for GroundHeatTransfer objects too."""
+    doc = new_document(version=(24, 1, 0))
+    doc.add("GroundHeatTransfer:Control", "", {"name": "test", "run_basement_preprocessor": "No"}, validate=False)
+    assert _needs_expansion(doc) is True
+
+
+def test_needs_expansion_false_for_plain_model() -> None:
+    """A plain model with only Zone objects does not need expansion."""
+    doc = new_document(version=(24, 1, 0))
+    doc.add("Zone", "Office", {"x_origin": 0.0})
+    assert _needs_expansion(doc) is False
+
+
+def test_needs_expansion_falls_back_to_prefix_without_schema() -> None:
+    """Without a schema, fall back to prefix matching."""
+    doc = IDFDocument(version=(24, 1, 0), schema=None)
+    obj = IDFObject(
+        obj_type="HVACTemplate:Zone:IdealLoadsAirSystem",
+        name="Test",
+        data={"zone_name": "Office"},
+    )
+    doc.addidfobject(obj)
+
+    assert doc.schema is None
+    assert _needs_expansion(doc) is True
+
+
+def test_needs_expansion_prefix_fallback_negative() -> None:
+    """Prefix fallback returns False for non-expandable objects."""
+    doc = IDFDocument(version=(24, 1, 0), schema=None)
+    obj = IDFObject(obj_type="Zone", name="Office", data={})
+    doc.addidfobject(obj)
+
+    assert doc.schema is None
+    assert _needs_expansion(doc) is False

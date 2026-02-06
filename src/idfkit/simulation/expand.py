@@ -32,15 +32,29 @@ if TYPE_CHECKING:
     from ..document import IDFDocument
 
 
+_EXPANDABLE_GROUPS = frozenset({
+    "HVAC Templates",
+    "Detailed Ground Heat Transfer",
+})
+"""Schema group names whose objects are handled by the ExpandObjects preprocessor."""
+
 _EXPANDABLE_PREFIXES = (
     "HVACTemplate:",
     "GroundHeatTransfer:",
 )
-"""Object-type prefixes that the ExpandObjects preprocessor acts on."""
+"""Fallback prefixes used when the document has no schema loaded."""
 
 
 def _needs_expansion(model: IDFDocument) -> bool:
-    """Return ``True`` if *model* contains any object types handled by ExpandObjects."""
+    """Return ``True`` if *model* contains any object types handled by ExpandObjects.
+
+    When a schema is available the check is driven by the schema's ``group``
+    field, which is authoritative and version-aware.  When no schema is loaded
+    we fall back to object-type prefix matching.
+    """
+    schema = model.schema
+    if schema is not None:
+        return any(schema.get_group(obj_type) in _EXPANDABLE_GROUPS for obj_type in model)
     return any(obj_type.startswith(_EXPANDABLE_PREFIXES) for obj_type in model)
 
 

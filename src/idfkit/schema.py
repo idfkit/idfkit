@@ -174,6 +174,13 @@ class EpJSONSchema:
         """Get object types that provide names for a reference list."""
         return self._reference_lists.get(ref_list, [])
 
+    def get_group(self, obj_type: str) -> str | None:
+        """Get the group name for an object type (e.g. ``"Thermal Zones and Surfaces"``)."""
+        obj_schema = self.get_object_schema(obj_type)
+        if obj_schema:
+            return obj_schema.get("group")
+        return None
+
     def get_object_memo(self, obj_type: str) -> str | None:
         """Get the memo/description for an object type."""
         obj_schema = self.get_object_schema(obj_type)
