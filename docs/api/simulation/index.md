@@ -9,6 +9,9 @@ The simulation module provides EnergyPlus execution and result parsing.
 | [`simulate()`](runner.md) | Run a single simulation |
 | [`simulate_batch()`](batch.md) | Run multiple simulations in parallel |
 | [`find_energyplus()`](runner.md) | Discover EnergyPlus installation |
+| [`expand_objects()`](expand.md) | Expand `HVACTemplate:*` objects |
+| [`run_slab_preprocessor()`](expand.md) | Run the Slab ground heat-transfer preprocessor |
+| [`run_basement_preprocessor()`](expand.md) | Run the Basement ground heat-transfer preprocessor |
 | [`SimulationResult`](results.md) | Simulation result container |
 | [`SimulationJob`](batch.md) | Job specification for batch runs |
 | [`BatchResult`](batch.md) | Aggregated batch results |

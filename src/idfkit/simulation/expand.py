@@ -2,12 +2,12 @@
 
 Three preprocessors are supported:
 
-* **ExpandObjects** converts ``HVACTemplate:*`` objects into detailed
+* **ExpandObjects** (C++) converts ``HVACTemplate:*`` objects into detailed
   low-level HVAC equivalents.
-* **Slab** computes monthly ground surface temperatures for slab-on-grade
-  foundations (``GroundHeatTransfer:Slab:*``).
-* **Basement** computes ground temperatures around basement walls and
-  floors (``GroundHeatTransfer:Basement:*``).
+* **Slab** (Fortran) computes monthly ground surface temperatures for
+  slab-on-grade foundations (``GroundHeatTransfer:Slab:*``).
+* **Basement** (Fortran) computes ground temperatures around basement walls
+  and floors (``GroundHeatTransfer:Basement:*``).
 
 Example::
 
@@ -19,6 +19,62 @@ Example::
 
     model_with_slab = load_idf("building_with_slab.idf")
     expanded = run_slab_preprocessor(model_with_slab)
+
+Design rationale
+----------------
+
+**Why three separate functions instead of one?**
+
+Each preprocessor has distinct inputs (IDD files, weather data), different
+output files, and independent failure modes.  Keeping them separate lets
+callers run only what they need -- most models use at most one of the
+three -- and avoids hiding long-running ground heat-transfer solvers behind
+a simple ``expand()`` call.
+
+**Detection: schema groups with prefix fallback**
+
+Whether a model *needs* a given preprocessor is determined by querying the
+EpJSON schema's ``group`` field (e.g. ``"HVAC Templates"``,
+``"Detailed Ground Heat Transfer"``).  This is more robust than name-prefix
+matching alone because it is authoritative.  When no schema is loaded, we
+fall back to prefix matching (``HVACTemplate:``, ``GroundHeatTransfer:Slab:``).
+Slab and Basement objects share the same group, so detection combines group
+membership with a prefix filter to distinguish between the two.
+
+**Four-layer error detection for Slab & Basement**
+
+The Fortran-based Slab and Basement preprocessors have several quirks that
+a single ``returncode != 0`` check cannot cover.  In testing we observed:
+
+1. *Non-zero exit codes only from crashes* -- both preprocessors always exit
+   with code 0, even on fatal input errors.  A non-zero code (e.g. 139 for
+   SIGSEGV) means an abnormal termination such as a segfault.
+2. *Fatal errors reported in output files* -- input validation errors are
+   written as ``Output:PreprocessorMessage`` IDF objects with
+   ``Fatal`` severity, while the process still exits 0.
+3. *Silent solver failures* -- if the iterative 3-D solver fails to converge
+   (e.g. from extreme material properties), the process exits 0 and the
+   output file exists but is **empty** (0 bytes).  No
+   ``Output:PreprocessorMessage`` is written.
+
+To catch all of these, each preprocessor run passes through four checks in
+order::
+
+    _check_process_exit_code   →  catches crashes (SIGSEGV, etc.)
+    _require_file              →  catches missing output file
+    _check_output_not_empty    →  catches silent solver failures
+    _check_for_fatal_preprocessor_message  →  catches IDF-level Fatal errors
+
+ExpandObjects (C++) does not use the exit-code or empty-file checks because
+its error semantics differ from the Fortran preprocessors.
+
+**File handling mirrors the simulation runner**
+
+The same care taken in :func:`~idfkit.simulation.runner.simulate` --
+copying ``Energy+.idd`` to the run directory, isolating work in a temp
+directory, cleaning up afterward -- is applied here.  Each preprocessor
+also requires its own IDD (``SlabGHT.idd``, ``BasementGHT.idd``) and
+expects a weather file named ``in.epw`` in its working directory.
 """
 
 from __future__ import annotations

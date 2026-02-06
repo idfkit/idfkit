@@ -175,7 +175,29 @@ class EpJSONSchema:
         return self._reference_lists.get(ref_list, [])
 
     def get_group(self, obj_type: str) -> str | None:
-        """Get the group name for an object type (e.g. ``"Thermal Zones and Surfaces"``)."""
+        """Get the IDD group name for an object type.
+
+        Every object type in the EnergyPlus schema belongs to a group
+        (e.g. ``"Thermal Zones and Surfaces"``, ``"HVAC Templates"``,
+        ``"Detailed Ground Heat Transfer"``).  This method returns the
+        group string, which is useful for classifying objects without
+        relying on naming conventions.
+
+        Args:
+            obj_type: Case-sensitive EnergyPlus object type
+                (e.g. ``"Zone"``, ``"HVACTemplate:Zone:IdealLoadsAirSystem"``).
+
+        Returns:
+            The group name, or ``None`` if *obj_type* is not in the schema.
+
+        Example::
+
+            schema = get_schema((24, 1, 0))
+            schema.get_group("Zone")
+            # "Thermal Zones and Surfaces"
+            schema.get_group("HVACTemplate:Zone:IdealLoadsAirSystem")
+            # "HVAC Templates"
+        """
         obj_schema = self.get_object_schema(obj_type)
         if obj_schema:
             return obj_schema.get("group")
