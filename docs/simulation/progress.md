@@ -118,27 +118,26 @@ The `"tqdm"` shorthand:
 
 ### Customising the tqdm bar
 
-For more control over the bar appearance, use `tqdm_progress()` directly:
+For more control over the bar appearance, use the `tqdm_progress()` context
+manager directly:
 
 ```python
 from idfkit.simulation import simulate
 from idfkit.simulation.progress_bars import tqdm_progress
 
-cb, close = tqdm_progress(
+with tqdm_progress(
     desc="Annual run",
     bar_format="{l_bar}{bar:30}| {n:.0f}% [{elapsed}<{remaining}]",
     leave=False,           # Remove bar after completion
     position=1,            # For nested bars
-)
-try:
+) as cb:
     result = simulate(model, "weather.epw", annual=True, on_progress=cb)
-finally:
-    close()
 ```
 
-`tqdm_progress()` returns a `(callback, close)` pair.  All keyword arguments
-are forwarded to `tqdm.tqdm`, so you have full control over colours, file
-output, miniters, etc.
+`tqdm_progress()` is a context manager that yields a callback.  The bar is
+automatically closed when the `with` block exits (even on exception).  All
+keyword arguments are forwarded to `tqdm.tqdm`, so you have full control
+over colours, file output, miniters, etc.
 
 ## Building Your Own Progress Indicator
 
@@ -674,7 +673,7 @@ def on_progress(event: SimulationProgress) -> None:
 |------|-------------|
 | `SimulationProgress` | Frozen dataclass for progress events |
 | `ProgressParser` | Stateful EnergyPlus stdout line parser |
-| `tqdm_progress()` | Factory returning a `(callback, close)` pair for customised tqdm bars |
+| `tqdm_progress()` | Context manager yielding a callback for customised tqdm bars |
 
 ## See Also
 

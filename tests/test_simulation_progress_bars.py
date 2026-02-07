@@ -1,4 +1,4 @@
-"""Tests for the built-in tqdm progress bar factory and resolve_on_progress."""
+"""Tests for the built-in tqdm progress bar context manager and resolve_on_progress."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from idfkit import new_document
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.progress import SimulationProgress
 from idfkit.simulation.progress_bars import resolve_on_progress, tqdm_progress
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -62,7 +61,7 @@ class TestResolveOnProgress:
         assert cleanup is None
 
     def test_lambda_returned_directly(self) -> None:
-        fn = lambda e: None  # noqa: E731
+        fn = lambda e: None
         cb, cleanup = resolve_on_progress(fn)
         assert cb is fn
         assert cleanup is None
@@ -80,6 +79,18 @@ class TestResolveOnProgress:
         assert callable(cb)
         assert callable(cleanup)
 
+    @patch("idfkit.simulation.progress_bars._import_tqdm")
+    def test_tqdm_cleanup_closes_bar(self, mock_import: MagicMock) -> None:
+        mock_tqdm_cls = MagicMock()
+        mock_bar = MagicMock()
+        mock_tqdm_cls.return_value = mock_bar
+        mock_import.return_value = mock_tqdm_cls
+
+        _cb, cleanup = resolve_on_progress("tqdm")
+        assert cleanup is not None
+        cleanup()
+        mock_bar.close.assert_called_once()
+
     def test_invalid_string_raises(self) -> None:
         with pytest.raises(ValueError, match="on_progress must be 'tqdm'"):
             resolve_on_progress("invalid")
@@ -90,23 +101,22 @@ class TestResolveOnProgress:
 
 
 # ---------------------------------------------------------------------------
-# tqdm_progress
+# tqdm_progress (context manager)
 # ---------------------------------------------------------------------------
 
 
 class TestTqdmProgress:
-    """Tests for tqdm_progress factory."""
+    """Tests for tqdm_progress context manager."""
 
     @patch("idfkit.simulation.progress_bars._import_tqdm")
-    def test_returns_callback_and_close(self, mock_import: MagicMock) -> None:
+    def test_yields_callable(self, mock_import: MagicMock) -> None:
         mock_tqdm_cls = MagicMock()
         mock_bar = MagicMock()
         mock_tqdm_cls.return_value = mock_bar
         mock_import.return_value = mock_tqdm_cls
 
-        cb, close = tqdm_progress()
-        assert callable(cb)
-        assert callable(close)
+        with tqdm_progress() as cb:
+            assert callable(cb)
 
     @patch("idfkit.simulation.progress_bars._import_tqdm")
     def test_callback_updates_bar_with_percent(self, mock_import: MagicMock) -> None:
@@ -115,43 +125,52 @@ class TestTqdmProgress:
         mock_tqdm_cls.return_value = mock_bar
         mock_import.return_value = mock_tqdm_cls
 
-        cb, close = tqdm_progress()
+        with tqdm_progress() as cb:
+            event = SimulationProgress(phase="simulating", message="test", percent=42.5)
+            cb(event)
 
-        event = SimulationProgress(phase="simulating", message="test", percent=42.5)
-        cb(event)
-
-        assert mock_bar.n == 42.5
-        mock_bar.set_postfix_str.assert_called_with("simulating", refresh=False)
-        mock_bar.refresh.assert_called()
+            assert mock_bar.n == 42.5
+            mock_bar.set_postfix_str.assert_called_with("simulating", refresh=False)
+            mock_bar.refresh.assert_called()
 
     @patch("idfkit.simulation.progress_bars._import_tqdm")
     def test_callback_handles_none_percent(self, mock_import: MagicMock) -> None:
         mock_tqdm_cls = MagicMock()
         mock_bar = MagicMock()
-        mock_bar.n = 0  # initial value
+        mock_bar.n = 0
         mock_tqdm_cls.return_value = mock_bar
         mock_import.return_value = mock_tqdm_cls
 
-        cb, close = tqdm_progress()
+        with tqdm_progress() as cb:
+            event = SimulationProgress(phase="warmup", message="Warming up {1}", percent=None)
+            cb(event)
 
-        event = SimulationProgress(phase="warmup", message="Warming up {1}", percent=None)
-        cb(event)
-
-        # n should not change when percent is None
-        assert mock_bar.n == 0
-        mock_bar.set_postfix_str.assert_called_with("warmup", refresh=False)
+            assert mock_bar.n == 0
+            mock_bar.set_postfix_str.assert_called_with("warmup", refresh=False)
 
     @patch("idfkit.simulation.progress_bars._import_tqdm")
-    def test_close_finalises_bar(self, mock_import: MagicMock) -> None:
+    def test_bar_closed_on_exit(self, mock_import: MagicMock) -> None:
         mock_tqdm_cls = MagicMock()
         mock_bar = MagicMock()
         mock_tqdm_cls.return_value = mock_bar
         mock_import.return_value = mock_tqdm_cls
 
-        cb, close = tqdm_progress()
-        close()
+        with tqdm_progress():
+            pass
 
         assert mock_bar.n == 100
+        mock_bar.close.assert_called_once()
+
+    @patch("idfkit.simulation.progress_bars._import_tqdm")
+    def test_bar_closed_on_exception(self, mock_import: MagicMock) -> None:
+        mock_tqdm_cls = MagicMock()
+        mock_bar = MagicMock()
+        mock_tqdm_cls.return_value = mock_bar
+        mock_import.return_value = mock_tqdm_cls
+
+        with pytest.raises(RuntimeError), tqdm_progress():
+            raise RuntimeError("boom")
+
         mock_bar.close.assert_called_once()
 
     @patch("idfkit.simulation.progress_bars._import_tqdm")
@@ -161,15 +180,19 @@ class TestTqdmProgress:
         mock_tqdm_cls.return_value = mock_bar
         mock_import.return_value = mock_tqdm_cls
 
-        tqdm_progress(desc="My Run")
+        with tqdm_progress(desc="My Run"):
+            pass
 
         call_kwargs = mock_tqdm_cls.call_args[1]
         assert call_kwargs["desc"] == "My Run"
 
     def test_import_error_without_tqdm(self) -> None:
-        with patch.dict("sys.modules", {"tqdm": None, "tqdm.auto": None}):
-            with pytest.raises(ImportError, match="pip install idfkit\\[progress\\]"):
-                tqdm_progress()
+        with (
+            patch.dict("sys.modules", {"tqdm": None, "tqdm.auto": None}),
+            pytest.raises(ImportError, match="pip install idfkit\\[progress\\]"),
+            tqdm_progress(),
+        ):
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +230,6 @@ class TestSimulateWithTqdm:
         result = simulate(model, weather_file, energyplus=mock_config, on_progress="tqdm")
 
         assert result.success
-        # tqdm bar should be created and closed
         mock_tqdm_cls.assert_called_once()
         mock_bar.close.assert_called_once()
 
@@ -235,5 +257,4 @@ class TestSimulateWithTqdm:
         with pytest.raises(SimulationError):
             simulate(model, weather_file, energyplus=mock_config, on_progress="tqdm")
 
-        # Bar should still be cleaned up
         mock_bar.close.assert_called_once()

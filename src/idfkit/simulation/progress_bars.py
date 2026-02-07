@@ -1,6 +1,6 @@
 """Built-in progress bar factories for simulation callbacks.
 
-Provides :func:`tqdm_progress` which returns a ready-to-use
+Provides :func:`tqdm_progress`, a context manager that yields a ready-to-use
 ``on_progress`` callback powered by `tqdm <https://tqdm.github.io/>`_.
 Install the optional dependency with::
 
@@ -12,12 +12,14 @@ to accept ``on_progress="tqdm"`` as a convenience shorthand.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from typing import Any
 
 from .progress import SimulationProgress
 
 
+@contextmanager
 def tqdm_progress(
     *,
     desc: str = "Simulating",
@@ -26,12 +28,11 @@ def tqdm_progress(
     position: int | None = None,
     file: Any = None,
     **tqdm_kwargs: Any,
-) -> tuple[Callable[[SimulationProgress], None], Callable[[], None]]:
-    """Create a tqdm-based ``on_progress`` callback.
+) -> Generator[Callable[[SimulationProgress], None]]:
+    """Context manager that yields a tqdm-based ``on_progress`` callback.
 
-    Returns a ``(callback, close)`` pair.  Pass *callback* as the
-    ``on_progress`` argument; call *close* after the simulation finishes
-    to finalise the bar.
+    The progress bar is automatically closed when the context exits,
+    even if an exception is raised.
 
     Args:
         desc: Progress bar description (left label).
@@ -42,8 +43,8 @@ def tqdm_progress(
         file: Output stream (default: ``sys.stderr``).
         **tqdm_kwargs: Extra keyword arguments forwarded to :class:`tqdm.tqdm`.
 
-    Returns:
-        A ``(callback, close)`` tuple.
+    Yields:
+        A callback suitable for the ``on_progress`` parameter.
 
     Raises:
         ImportError: If tqdm is not installed.
@@ -53,11 +54,8 @@ def tqdm_progress(
         from idfkit.simulation import simulate
         from idfkit.simulation.progress_bars import tqdm_progress
 
-        cb, close = tqdm_progress(desc="Annual run")
-        try:
+        with tqdm_progress(desc="Annual run") as cb:
             result = simulate(model, "weather.epw", annual=True, on_progress=cb)
-        finally:
-            close()
     """
     tqdm_cls = _import_tqdm()
     bar = tqdm_cls(
@@ -77,18 +75,20 @@ def tqdm_progress(
         bar.set_postfix_str(event.phase, refresh=False)
         bar.refresh()
 
-    def _close() -> None:
+    try:
+        yield _callback
+    finally:
         bar.n = 100
         bar.refresh()
         bar.close()
-
-    return _callback, _close
 
 
 def resolve_on_progress(
     on_progress: Callable[[SimulationProgress], Any] | str | None,
 ) -> tuple[Callable[[SimulationProgress], Any] | None, Callable[[], None] | None]:
     """Resolve an ``on_progress`` value into a concrete callback.
+
+    Used internally by runners.  Users should not call this directly.
 
     Accepts:
     - ``None`` -- no progress tracking.
@@ -111,8 +111,15 @@ def resolve_on_progress(
         if on_progress != "tqdm":
             msg = f"on_progress must be 'tqdm', a callable, or None -- got {on_progress!r}"
             raise ValueError(msg)
-        cb, close = tqdm_progress()
-        return cb, close
+        # Manually enter the context manager so runners can clean up
+        # in their own try/finally without requiring `with` syntax.
+        cm = tqdm_progress()
+        cb = cm.__enter__()
+
+        def _cleanup() -> None:
+            cm.__exit__(None, None, None)
+
+        return cb, _cleanup
 
     if callable(on_progress):
         return on_progress, None
