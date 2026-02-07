@@ -147,6 +147,103 @@ async def run_with_timeout():
         print("Simulation cancelled after 120s")
 ```
 
+## Parametric Study
+
+Create model variants and analyze results — the async equivalent of the
+pattern shown in [Batch Processing](batch.md#parametric-studies):
+
+```python
+import asyncio
+from idfkit.simulation import async_simulate_batch, SimulationJob
+
+async def main():
+    # Create variants
+    jobs = []
+    for insulation in [0.05, 0.10, 0.15, 0.20]:
+        variant = model.copy()
+        variant["Material"]["Insulation"].thickness = insulation
+        jobs.append(SimulationJob(
+            model=variant,
+            weather="weather.epw",
+            label=f"insulation-{insulation}m",
+            design_day=True,
+        ))
+
+    # Run all variants
+    batch = await async_simulate_batch(jobs, max_concurrent=4)
+
+    # Analyze results
+    for job, result in zip(jobs, batch):
+        if result.success:
+            ts = result.sql.get_timeseries(
+                "Zone Mean Air Temperature",
+                "ZONE 1",
+            )
+            print(f"{job.label}: Max temp {max(ts.values):.1f}°C")
+
+asyncio.run(main())
+```
+
+## Running Simulations Alongside Other Async Work
+
+A key benefit of the async API is running simulations concurrently with
+other I/O-bound tasks — database queries, HTTP requests, file uploads —
+without blocking:
+
+```python
+import asyncio
+from idfkit.simulation import async_simulate
+
+async def fetch_weather_data(station_id: str) -> dict:
+    """Fetch weather metadata from a remote API."""
+    ...
+
+async def main():
+    # Run a simulation and an API call concurrently
+    sim_task = async_simulate(model, "weather.epw", design_day=True)
+    api_task = fetch_weather_data("725300")
+
+    result, weather_meta = await asyncio.gather(sim_task, api_task)
+
+    print(f"Simulation: {result.runtime_seconds:.1f}s")
+    print(f"Weather station: {weather_meta}")
+
+asyncio.run(main())
+```
+
+## Collecting Streaming Results
+
+The streaming API yields events in completion order.  To collect and
+reorder results for analysis:
+
+```python
+import asyncio
+from idfkit.simulation import async_simulate_batch_stream, SimulationJob
+
+async def main():
+    jobs = [
+        SimulationJob(model=variant, weather="weather.epw", label=f"case-{i}")
+        for i, variant in enumerate(variants)
+    ]
+
+    # Collect events and reorder by original index
+    results = [None] * len(jobs)
+    async for event in async_simulate_batch_stream(jobs, max_concurrent=4):
+        results[event.index] = event.result
+        pct = event.completed / event.total * 100
+        print(f"[{pct:3.0f}%] {event.label}: {'OK' if event.result.success else 'FAIL'}")
+
+    # Results are now in submission order
+    for i, result in enumerate(results):
+        if result.success:
+            ts = result.sql.get_timeseries(
+                "Zone Mean Air Temperature", "ZONE 1"
+            )
+            print(f"Case {i}: max temp {max(ts.values):.1f}°C")
+
+asyncio.run(main())
+```
+
 ## Caching and Cloud Storage
 
 All async functions accept the same `cache` and `fs` parameters as their
