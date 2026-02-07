@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Literal
 
 from ..exceptions import SimulationError
 from .progress import SimulationProgress
+from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 from .runner import simulate
 
@@ -102,13 +103,13 @@ def simulate_batch(
     cache: SimulationCache | None = None,
     progress: Callable[..., None] | None = None,
     fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], None] | None = None,
+    on_progress: Callable[[SimulationProgress], None] | Literal["tqdm"] | None = None,
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations in parallel.
 
     Uses :class:`~concurrent.futures.ThreadPoolExecutor` to dispatch
     simulations concurrently.  Individual job failures are captured as
-    failed :class:`SimulationResult` entries — the batch never raises
+    failed :class:`SimulationResult` entries -- the batch never raises
     due to a single job failing.
 
     Args:
@@ -127,7 +128,8 @@ def simulate_batch(
             :class:`~idfkit.simulation.progress.SimulationProgress` events
             during each individual simulation.  Events include
             ``job_index`` and ``job_label`` to identify which batch job
-            they belong to.
+            they belong to.  Pass ``"tqdm"`` to use a built-in tqdm
+            progress bar (requires ``pip install idfkit[progress]``).
 
     Returns:
         A :class:`BatchResult` with results in the same order as *jobs*.
@@ -139,6 +141,8 @@ def simulate_batch(
         msg = "jobs must not be empty"
         raise ValueError(msg)
 
+    progress_cb, progress_cleanup = resolve_on_progress(on_progress)
+
     if max_workers is None:
         max_workers = min(len(jobs), os.cpu_count() or 1)
 
@@ -148,25 +152,30 @@ def simulate_batch(
 
     start = time.monotonic()
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_index = {
-            executor.submit(_run_job, idx, job, energyplus, cache, fs, on_progress): idx for idx, job in enumerate(jobs)
-        }
+    try:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_index = {
+                executor.submit(_run_job, idx, job, energyplus, cache, fs, progress_cb): idx
+                for idx, job in enumerate(jobs)
+            }
 
-        for future in as_completed(future_to_index):
-            idx = future_to_index[future]
-            job = jobs[idx]
-            result = future.result()  # _run_job never raises
-            results[idx] = result
-            completed_count += 1
+            for future in as_completed(future_to_index):
+                idx = future_to_index[future]
+                job = jobs[idx]
+                result = future.result()  # _run_job never raises
+                results[idx] = result
+                completed_count += 1
 
-            if progress is not None:
-                progress(
-                    completed=completed_count,
-                    total=total,
-                    label=job.label,
-                    success=result.success,
-                )
+                if progress is not None:
+                    progress(
+                        completed=completed_count,
+                        total=total,
+                        label=job.label,
+                        success=result.success,
+                    )
+    finally:
+        if progress_cleanup is not None:
+            progress_cleanup()
 
     elapsed = time.monotonic() - start
 

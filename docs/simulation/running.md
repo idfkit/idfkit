@@ -121,7 +121,7 @@ def simulate(
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], None] | None = None,
+    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
 ) -> SimulationResult:
 ```
 
@@ -150,7 +150,7 @@ def simulate(
 | `extra_args` | `None` | Additional command-line arguments |
 | `cache` | `None` | Simulation cache for result reuse |
 | `fs` | `None` | File system backend for cloud storage |
-| `on_progress` | `None` | Callback for real-time progress updates |
+| `on_progress` | `None` | Callback or `"tqdm"` for real-time progress updates |
 
 ## EnergyPlus Discovery
 

@@ -10,7 +10,7 @@ import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from ..exceptions import SimulationError
 from ._common import (
@@ -22,6 +22,7 @@ from ._common import (
     upload_results,
 )
 from .progress import ProgressParser, SimulationProgress
+from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
@@ -46,7 +47,7 @@ def simulate(
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], None] | None = None,
+    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation.
 
@@ -96,7 +97,9 @@ def simulate(
         on_progress: Optional callback invoked with a
             :class:`~idfkit.simulation.progress.SimulationProgress` event
             each time EnergyPlus emits a progress line (warmup iterations,
-            simulation day changes, post-processing steps, etc.).
+            simulation day changes, post-processing steps, etc.).  Pass
+            ``"tqdm"`` to use a built-in tqdm progress bar (requires
+            ``pip install idfkit[progress]``).
 
     Returns:
         SimulationResult with paths to output files.
@@ -110,6 +113,8 @@ def simulate(
     if fs is not None and output_dir is None:
         msg = "output_dir is required when using a file system backend"
         raise ValueError(msg)
+
+    progress_cb, progress_cleanup = resolve_on_progress(on_progress)
 
     config = resolve_config(energyplus)
     weather_path = Path(weather).resolve()
@@ -165,10 +170,14 @@ def simulate(
 
     start = time.monotonic()
 
-    if on_progress is not None:
-        stdout, stderr, returncode = _run_with_progress(cmd, run_dir, timeout, start, on_progress)
-    else:
-        stdout, stderr, returncode = _run_simple(cmd, run_dir, timeout, start)
+    try:
+        if progress_cb is not None:
+            stdout, stderr, returncode = _run_with_progress(cmd, run_dir, timeout, start, progress_cb)
+        else:
+            stdout, stderr, returncode = _run_simple(cmd, run_dir, timeout, start)
+    finally:
+        if progress_cleanup is not None:
+            progress_cleanup()
 
     elapsed = time.monotonic() - start
 

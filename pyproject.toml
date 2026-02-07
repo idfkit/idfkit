@@ -41,6 +41,8 @@ cloud = ["boto3>=1.26"]  # Alias for s3
 # Plotting backends
 plot = ["matplotlib>=3.5"]
 plotly = ["plotly>=5.0"]
+# Built-in tqdm progress bars for simulations
+progress = ["tqdm>=4.60"]
 # Everything
 all = [
     "openpyxl>=3.1.0",
@@ -48,6 +50,7 @@ all = [
     "matplotlib>=3.5",
     "plotly>=5.0",
     "boto3>=1.26",
+    "tqdm>=4.60",
 ]
 
 [dependency-groups]

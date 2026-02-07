@@ -63,6 +63,7 @@ from .plotting import (
     plot_temperature_profile,
 )
 from .progress import ProgressParser, SimulationProgress
+from .progress_bars import tqdm_progress
 from .result import SimulationResult
 from .runner import simulate
 
@@ -107,4 +108,5 @@ __all__ = [
     "run_slab_preprocessor",
     "simulate",
     "simulate_batch",
+    "tqdm_progress",
 ]

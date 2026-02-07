@@ -42,6 +42,7 @@ from ._common import (
     upload_results,
 )
 from .progress import ProgressParser, SimulationProgress
+from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
@@ -67,7 +68,7 @@ async def async_simulate(
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], Any] | None = None,
+    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation without blocking the event loop.
 
@@ -103,7 +104,9 @@ async def async_simulate(
         on_progress: Optional callback invoked with a
             :class:`~idfkit.simulation.progress.SimulationProgress` event
             each time EnergyPlus emits a progress line.  Both synchronous
-            and async callables are accepted — async callables are awaited.
+            and async callables are accepted -- async callables are awaited.
+            Pass ``"tqdm"`` to use a built-in tqdm progress bar (requires
+            ``pip install idfkit[progress]``).
 
     Returns:
         SimulationResult with paths to output files.
@@ -116,6 +119,8 @@ async def async_simulate(
     if fs is not None and output_dir is None:
         msg = "output_dir is required when using a file system backend"
         raise ValueError(msg)
+
+    progress_cb, progress_cleanup = resolve_on_progress(on_progress)
 
     config = resolve_config(energyplus)
     weather_path = Path(weather).resolve()
@@ -174,10 +179,14 @@ async def async_simulate(
 
     start = time.monotonic()
 
-    if on_progress is not None:
-        stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, on_progress)
-    else:
-        stdout, stderr, returncode = await _run_simple(cmd, run_dir, timeout)
+    try:
+        if progress_cb is not None:
+            stdout, stderr, returncode = await _run_with_progress(cmd, run_dir, timeout, progress_cb)
+        else:
+            stdout, stderr, returncode = await _run_simple(cmd, run_dir, timeout)
+    finally:
+        if progress_cleanup is not None:
+            progress_cleanup()
 
     elapsed = time.monotonic() - start
 

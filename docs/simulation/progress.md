@@ -2,16 +2,32 @@
 
 The `on_progress` callback provides real-time visibility into what EnergyPlus
 is doing during a simulation.  It fires for warmup iterations, simulation day
-changes, post-processing steps, and completion — enabling progress bars, live
+changes, post-processing steps, and completion -- enabling progress bars, live
 logs, and remote monitoring.
 
 ## Quick Start
 
+The fastest way to get a progress bar is the built-in tqdm integration:
+
+```bash
+pip install idfkit[progress]    # installs tqdm
+```
+
 ```python
 from idfkit import load_idf
-from idfkit.simulation import simulate, SimulationProgress
+from idfkit.simulation import simulate
 
 model = load_idf("building.idf")
+result = simulate(model, "weather.epw", annual=True, on_progress="tqdm")
+```
+
+That's it.  A tqdm progress bar appears in your terminal (or Jupyter notebook)
+and is automatically closed when the simulation finishes -- even on error.
+
+For full control, pass any callable instead:
+
+```python
+from idfkit.simulation import simulate, SimulationProgress
 
 def on_progress(event: SimulationProgress) -> None:
     if event.percent is not None:
@@ -38,6 +54,17 @@ Output:
 [100.0%] complete: EnergyPlus Completed Successfully.
 ```
 
+## `on_progress` Parameter
+
+All simulation functions accept `on_progress`:
+
+| Value | Behavior |
+|-------|----------|
+| `None` (default) | No progress tracking.  Zero overhead -- uses the original `subprocess.run()` / `communicate()` code path. |
+| `"tqdm"` | Built-in tqdm progress bar.  Auto-detects terminal vs Jupyter.  Requires `pip install idfkit[progress]`. |
+| Any `Callable[[SimulationProgress], None]` | Your custom callback, called once per progress line. |
+| Any `async Callable` (async runner only) | Async callback, awaited by the runner. |
+
 ## SimulationProgress
 
 Each callback invocation receives a `SimulationProgress` event:
@@ -46,7 +73,7 @@ Each callback invocation receives a `SimulationProgress` event:
 |-------|------|-------------|
 | `phase` | `str` | `"initializing"`, `"warmup"`, `"simulating"`, `"postprocessing"`, or `"complete"` |
 | `message` | `str` | Raw EnergyPlus stdout line (stripped) |
-| `percent` | `float \| None` | Estimated 0–100 completion, or `None` when indeterminate |
+| `percent` | `float \| None` | Estimated 0-100 completion, or `None` when indeterminate |
 | `environment` | `str \| None` | Current simulation environment name |
 | `warmup_day` | `int \| None` | Current warmup iteration (1-based) |
 | `sim_day` | `int \| None` | Current day-of-year (1-based) |
@@ -74,55 +101,54 @@ When the period cannot be determined (design-day runs, custom periods without
 date ranges), `percent` is `None`.  Your progress indicator should handle this
 with a spinner or indeterminate bar.
 
-## Async Callbacks
+## Built-in tqdm Progress Bar
 
-`async_simulate()` accepts both sync and async callables:
-
-```python
-import asyncio
-from idfkit.simulation import async_simulate, SimulationProgress
-
-async def on_progress(event: SimulationProgress) -> None:
-    """Async callback — awaited by the runner."""
-    await websocket.send_json({
-        "phase": event.phase,
-        "percent": event.percent,
-        "message": event.message,
-    })
-
-async def main():
-    result = await async_simulate(model, "weather.epw", on_progress=on_progress)
-```
-
-Synchronous callbacks also work in the async runner and are called directly
-without awaiting:
+### One-liner
 
 ```python
-# This works too — no need to make it async for simple logging
-result = await async_simulate(model, "weather.epw", on_progress=lambda e: print(e.phase))
+result = simulate(model, "weather.epw", annual=True, on_progress="tqdm")
 ```
 
-## Progress Bars
+The `"tqdm"` shorthand:
 
-### tqdm (Console)
+- Creates a tqdm bar with sensible defaults (percentage, elapsed, ETA)
+- Uses `tqdm.auto` so it works in terminals, Jupyter notebooks, and IPython
+- Automatically closes the bar when the simulation finishes (including on error)
+- Requires `pip install idfkit[progress]` -- raises a clear `ImportError` if missing
+
+### Customising the tqdm bar
+
+For more control over the bar appearance, use `tqdm_progress()` directly:
 
 ```python
-from tqdm import tqdm
-from idfkit.simulation import simulate, SimulationProgress
+from idfkit.simulation import simulate
+from idfkit.simulation.progress_bars import tqdm_progress
 
-bar = tqdm(total=100, desc="Simulating", unit="%", bar_format="{l_bar}{bar}| {n:.0f}/{total}%")
-
-def on_progress(event: SimulationProgress) -> None:
-    if event.percent is not None:
-        bar.n = event.percent
-        bar.refresh()
-    bar.set_postfix_str(event.phase)
-
-result = simulate(model, "weather.epw", annual=True, on_progress=on_progress)
-bar.close()
+cb, close = tqdm_progress(
+    desc="Annual run",
+    bar_format="{l_bar}{bar:30}| {n:.0f}% [{elapsed}<{remaining}]",
+    leave=False,           # Remove bar after completion
+    position=1,            # For nested bars
+)
+try:
+    result = simulate(model, "weather.epw", annual=True, on_progress=cb)
+finally:
+    close()
 ```
+
+`tqdm_progress()` returns a `(callback, close)` pair.  All keyword arguments
+are forwarded to `tqdm.tqdm`, so you have full control over colours, file
+output, miniters, etc.
+
+## Building Your Own Progress Indicator
+
+The examples below show how to build custom `on_progress` callbacks for
+different use cases.  Each example is a self-contained recipe you can adapt.
 
 ### rich (Console)
+
+[rich](https://rich.readthedocs.io/) provides beautiful terminal output with
+spinners, colours, and multi-column layouts.
 
 ```python
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
@@ -146,6 +172,33 @@ with Progress(
     result = simulate(model, "weather.epw", annual=True, on_progress=on_progress)
 ```
 
+**Batch with rich** -- multiple bars, one per concurrent job:
+
+```python
+from rich.progress import Progress
+from idfkit.simulation import simulate_batch, SimulationJob, SimulationProgress
+import threading
+
+lock = threading.Lock()
+
+with Progress() as progress:
+    tasks = {}  # job_index -> task_id
+
+    def on_progress(event: SimulationProgress) -> None:
+        with lock:
+            if event.job_index not in tasks:
+                tasks[event.job_index] = progress.add_task(
+                    event.job_label or f"Job {event.job_index}",
+                    total=100,
+                )
+            task_id = tasks[event.job_index]
+        if event.percent is not None:
+            progress.update(task_id, completed=event.percent)
+        progress.update(task_id, description=f"{event.job_label}: {event.phase}")
+
+    batch = simulate_batch(jobs, on_progress=on_progress, max_workers=4)
+```
+
 ### Jupyter (ipywidgets)
 
 ```python
@@ -167,12 +220,17 @@ bar.value = 100
 label.value = "Done!"
 ```
 
-## Live Logging
+!!! tip
+    The `"tqdm"` shorthand also works in Jupyter -- `tqdm.auto` renders
+    as a native Jupyter widget automatically.
 
 ### Structured Logging
 
+Emit structured log entries for observability platforms (Datadog, ELK, etc.):
+
 ```python
 import logging
+import json
 from idfkit.simulation import simulate, SimulationProgress
 
 logger = logging.getLogger("simulation")
@@ -209,12 +267,12 @@ def on_progress(event: SimulationProgress) -> None:
 result = simulate(model, "weather.epw", on_progress=on_progress)
 ```
 
-## WebSocket Forwarding
+### WebSocket Forwarding
 
-Forward progress events to a web client for real-time dashboards:
+Forward progress events to a web client for real-time dashboards.
+Use an async callback so WebSocket sends don't block the event loop:
 
 ```python
-import asyncio
 import json
 from idfkit.simulation import async_simulate, SimulationProgress
 
@@ -238,7 +296,9 @@ async def run_with_websocket(model, weather, websocket):
     return result
 ```
 
-### FastAPI Example
+### FastAPI + WebSocket
+
+A complete FastAPI endpoint that streams progress to a browser:
 
 ```python
 from fastapi import FastAPI, WebSocket
@@ -275,6 +335,130 @@ async def simulate_ws(websocket: WebSocket):
     await websocket.close()
 ```
 
+**JavaScript client:**
+
+```javascript
+const ws = new WebSocket("ws://localhost:8000/ws/simulate");
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.phase === "done") {
+        console.log(`Simulation ${data.success ? "succeeded" : "failed"}`);
+    } else {
+        updateProgressBar(data.percent);
+        updateStatusText(`${data.phase}: ${data.message}`);
+    }
+};
+ws.send(JSON.stringify({ idf_path: "building.idf", weather_path: "weather.epw" }));
+```
+
+### Server-Sent Events (SSE)
+
+For one-way streaming without WebSocket overhead (ideal for dashboards):
+
+```python
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from idfkit import load_idf
+from idfkit.simulation import async_simulate, SimulationProgress
+import asyncio
+import json
+
+app = FastAPI()
+
+@app.get("/api/simulate/stream")
+async def simulate_stream(idf_path: str, weather_path: str):
+    queue: asyncio.Queue[str] = asyncio.Queue()
+
+    async def on_progress(event: SimulationProgress) -> None:
+        data = json.dumps({
+            "phase": event.phase,
+            "percent": event.percent,
+            "message": event.message,
+        })
+        await queue.put(f"data: {data}\n\n")
+
+    async def generate():
+        model = load_idf(idf_path)
+        task = asyncio.create_task(
+            async_simulate(model, weather_path, on_progress=on_progress)
+        )
+        while not task.done():
+            try:
+                chunk = await asyncio.wait_for(queue.get(), timeout=0.5)
+                yield chunk
+            except asyncio.TimeoutError:
+                yield ": keepalive\n\n"
+        result = await task
+        yield f"data: {json.dumps({'phase': 'done', 'success': result.success})}\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+```
+
+### Cloud Logging (AWS CloudWatch / GCP Cloud Logging)
+
+For cloud-deployed simulations, forward events to your cloud logging service:
+
+```python
+import json
+import logging
+from dataclasses import asdict
+from idfkit.simulation import simulate, SimulationProgress
+
+# Configure for JSON-structured cloud logging
+logger = logging.getLogger("energyplus.progress")
+
+def on_progress(event: SimulationProgress) -> None:
+    # asdict() makes SimulationProgress JSON-serializable
+    logger.info(json.dumps(asdict(event)))
+
+result = simulate(model, "weather.epw", on_progress=on_progress)
+```
+
+**With a message queue (Redis, RabbitMQ, SQS):**
+
+```python
+from dataclasses import asdict
+import json
+from idfkit.simulation import simulate, SimulationProgress
+
+def make_queue_callback(queue_client, channel: str):
+    """Create a callback that publishes events to a message queue."""
+    def on_progress(event: SimulationProgress) -> None:
+        queue_client.publish(channel, json.dumps(asdict(event)))
+    return on_progress
+
+cb = make_queue_callback(redis_client, "sim:progress:run-001")
+result = simulate(model, "weather.epw", on_progress=cb)
+```
+
+## Async Callbacks
+
+`async_simulate()` accepts both sync and async callables:
+
+```python
+import asyncio
+from idfkit.simulation import async_simulate, SimulationProgress
+
+async def on_progress(event: SimulationProgress) -> None:
+    """Async callback -- awaited by the runner."""
+    await websocket.send_json({
+        "phase": event.phase,
+        "percent": event.percent,
+        "message": event.message,
+    })
+
+async def main():
+    result = await async_simulate(model, "weather.epw", on_progress=on_progress)
+```
+
+Synchronous callbacks also work in the async runner and are called directly
+without awaiting:
+
+```python
+# This works too -- no need to make it async for simple logging
+result = await async_simulate(model, "weather.epw", on_progress=lambda e: print(e.phase))
+```
+
 ## Batch Progress
 
 In batch mode, `on_progress` fires for every simulation in the batch.
@@ -284,7 +468,7 @@ belong to.
 ### Dual Progress Tracking
 
 Use `on_progress` for intra-simulation progress and `progress` for
-job-level completion — they are independent and complementary:
+job-level completion -- they are independent and complementary:
 
 ```python
 from idfkit.simulation import simulate_batch, SimulationJob, SimulationProgress
@@ -312,7 +496,17 @@ batch = simulate_batch(
 )
 ```
 
-### Batch Progress Bar with tqdm
+### Batch with tqdm shorthand
+
+```python
+# Same "tqdm" shorthand works for batches -- events from all
+# concurrent jobs update a single shared progress bar.
+batch = simulate_batch(jobs, on_progress="tqdm", max_workers=4)
+```
+
+### Batch Progress Bar with tqdm (manual)
+
+For dual bars (overall + per-job), build them manually:
 
 ```python
 from tqdm import tqdm
@@ -385,7 +579,7 @@ asyncio.run(main())
 ## Using ProgressParser Directly
 
 The `ProgressParser` class can be used independently to parse EnergyPlus
-stdout output — useful for custom integrations or when processing log files
+stdout output -- useful for custom integrations or when processing log files
 from previous simulation runs:
 
 ```python
@@ -408,7 +602,7 @@ return `None` and never raise exceptions.
 ## Cloud Execution
 
 When using the `fs` parameter for remote storage, progress callbacks fire
-during the local EnergyPlus execution — before results are uploaded.  This
+during the local EnergyPlus execution -- before results are uploaded.  This
 works identically to local execution:
 
 ```python
@@ -447,6 +641,9 @@ def on_progress(event: SimulationProgress) -> None:
   original `subprocess.run()` / `proc.communicate()` code paths are used
   with no performance impact.
 
+- **Automatic cleanup**: When using `on_progress="tqdm"`, the progress bar
+  is always closed -- even if the simulation raises an exception.
+
 - **Callback exceptions**: If your callback raises an exception, the
   simulation is killed and `SimulationError` is raised.
 
@@ -456,7 +653,7 @@ def on_progress(event: SimulationProgress) -> None:
   lock or thread-safe data structures).
 
 - **Indeterminate phases**: During warmup and post-processing, `percent`
-  is `None`. Your progress indicator should handle this gracefully —
+  is `None`. Your progress indicator should handle this gracefully --
   show a spinner or simply log the phase name.
 
 ## API Reference
@@ -465,21 +662,22 @@ def on_progress(event: SimulationProgress) -> None:
 
 | Function | `on_progress` Support |
 |----------|----------------------|
-| `simulate()` | Sync callback |
-| `async_simulate()` | Sync or async callback |
-| `simulate_batch()` | Sync callback (with `job_index`/`job_label`) |
-| `async_simulate_batch()` | Sync or async callback (with `job_index`/`job_label`) |
-| `async_simulate_batch_stream()` | Sync or async callback (with `job_index`/`job_label`) |
+| `simulate()` | `"tqdm"`, sync callback, or `None` |
+| `async_simulate()` | `"tqdm"`, sync/async callback, or `None` |
+| `simulate_batch()` | `"tqdm"`, sync callback, or `None` (with `job_index`/`job_label`) |
+| `async_simulate_batch()` | `"tqdm"`, sync/async callback, or `None` (with `job_index`/`job_label`) |
+| `async_simulate_batch_stream()` | `"tqdm"`, sync/async callback, or `None` (with `job_index`/`job_label`) |
 
-### Classes
+### Classes / Factories
 
-| Class | Description |
-|-------|-------------|
+| Name | Description |
+|------|-------------|
 | `SimulationProgress` | Frozen dataclass for progress events |
 | `ProgressParser` | Stateful EnergyPlus stdout line parser |
+| `tqdm_progress()` | Factory returning a `(callback, close)` pair for customised tqdm bars |
 
 ## See Also
 
-- [Running Simulations](running.md) — Full `simulate()` parameter reference
-- [Async Simulation](async.md) — Non-blocking execution guide
-- [Batch Processing](batch.md) — Parallel execution guide
+- [Running Simulations](running.md) -- Full `simulate()` parameter reference
+- [Async Simulation](async.md) -- Non-blocking execution guide
+- [Batch Processing](batch.md) -- Parallel execution guide
