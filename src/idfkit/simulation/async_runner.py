@@ -140,6 +140,7 @@ async def async_simulate(
                 annual=annual,
                 design_day=design_day,
                 output_suffix=output_suffix,
+                readvars=readvars,
                 extra_args=extra_args,
             )
             cached = cache.get(cache_key)

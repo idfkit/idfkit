@@ -70,6 +70,7 @@ class SimulationCache:
         annual: bool = False,
         design_day: bool = False,
         output_suffix: Literal["C", "L", "D"] = "C",
+        readvars: bool = False,
         extra_args: list[str] | tuple[str, ...] | None = None,
     ) -> CacheKey:
         """Compute a deterministic cache key for a simulation invocation.
@@ -85,6 +86,7 @@ class SimulationCache:
             annual: Whether annual simulation is used.
             design_day: Whether design-day-only simulation is used.
             output_suffix: Output file naming suffix (``"C"``, ``"L"``, or ``"D"``).
+            readvars: Whether ReadVarsESO post-processing will run.
             extra_args: Additional command-line arguments.
 
         Returns:
@@ -106,6 +108,7 @@ class SimulationCache:
                 "annual": annual,
                 "design_day": design_day,
                 "output_suffix": output_suffix,
+                "readvars": readvars,
                 "extra_args": list(extra_args) if extra_args else [],
             },
             sort_keys=True,
@@ -132,19 +135,23 @@ class SimulationCache:
         if not meta_path.is_file():
             return None
 
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
 
-        from .result import SimulationResult
+            from .result import SimulationResult
 
-        return SimulationResult(
-            run_dir=entry_dir,
-            success=meta["success"],
-            exit_code=meta["exit_code"],
-            stdout="",
-            stderr="",
-            runtime_seconds=meta["runtime_seconds"],
-            output_prefix=meta["output_prefix"],
-        )
+            return SimulationResult(
+                run_dir=entry_dir,
+                success=meta["success"],
+                exit_code=meta["exit_code"],
+                stdout="",
+                stderr="",
+                runtime_seconds=meta["runtime_seconds"],
+                output_prefix=meta["output_prefix"],
+            )
+        except (json.JSONDecodeError, KeyError, OSError):
+            # Corrupted or incomplete cache entry — treat as a miss.
+            return None
 
     def put(self, key: CacheKey, result: SimulationResult) -> None:
         """Store a successful simulation result in the cache.

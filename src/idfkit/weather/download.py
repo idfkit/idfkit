@@ -119,9 +119,15 @@ class WeatherDownloader:
                 msg = f"Failed to download weather data from {station.url}: {exc}"
                 raise RuntimeError(msg) from exc
 
-        # Extract if EPW doesn't already exist or if we just downloaded a fresh ZIP
+        # Extract if EPW doesn't already exist or if the ZIP is newer than
+        # the EPW (i.e. we just re-downloaded).  We compare against the ZIP's
+        # mtime rather than calling ``_is_stale(epw_path)`` because
+        # ``zipfile.extractall`` preserves archive-internal timestamps, so the
+        # extracted EPW's mtime can be arbitrarily old and would always appear
+        # stale.
         epw_path = self._find_file(station_dir, ".epw")
-        if epw_path is None or self._is_stale(epw_path):
+        needs_extract = epw_path is None or (zip_path.exists() and epw_path.stat().st_mtime < zip_path.stat().st_mtime)
+        if needs_extract:
             try:
                 with zipfile.ZipFile(zip_path) as zf:
                     zf.extractall(station_dir)

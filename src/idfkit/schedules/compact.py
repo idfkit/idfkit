@@ -71,9 +71,10 @@ _DAY_TYPE_MAP = {
 
 # Cache for parse_compact results, keyed by IDFObject identity.
 # IDFObject.__hash__ uses id(self) so WeakKeyDictionary works correctly.
-_parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[list[CompactPeriod], Interpolation]] = (
-    weakref.WeakKeyDictionary()
-)
+# Each entry stores (result_tuple, mutation_version) so that stale
+# results are discarded when the object is mutated.
+_ParseResult = tuple[list[CompactPeriod], Interpolation]
+_parse_cache: weakref.WeakKeyDictionary[IDFObject, tuple[_ParseResult, int]] = weakref.WeakKeyDictionary()
 
 
 @dataclass
@@ -167,7 +168,9 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
     """
     cached = _parse_cache.get(obj)
     if cached is not None:
-        return cached
+        result, version = cached
+        if version == obj.mutation_version:
+            return result
 
     state = _ParseState(
         periods=[],
@@ -199,8 +202,8 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         state.field_index += 1
 
     _finalize_parse_state(state)
-    result = state.periods, state.interpolation
-    _parse_cache[obj] = result
+    result: _ParseResult = (state.periods, state.interpolation)
+    _parse_cache[obj] = (result, obj.mutation_version)
     return result
 
 
