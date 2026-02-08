@@ -50,6 +50,7 @@ print(f"Found EnergyPlus {config.version[0]}.{config.version[1]}")
 | [`async_simulate()`](async.md) | Non-blocking single simulation |
 | [`async_simulate_batch()`](async.md#async-batch-processing) | Non-blocking parallel simulations |
 | [`async_simulate_batch_stream()`](async.md#streaming-progress) | Streaming progress via async generator |
+| [`SimulationProgress`](progress.md) | Real-time progress tracking via callbacks |
 | [`SimulationCache`](caching.md) | Content-addressed result caching |
 | [`OutputVariableIndex`](output-discovery.md) | Discover available output variables |
 | [`ErrorReport`](errors.md) | Parse error and warning messages |
