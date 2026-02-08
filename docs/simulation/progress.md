@@ -61,7 +61,7 @@ All simulation functions accept `on_progress`:
 | Value | Behavior |
 |-------|----------|
 | `None` (default) | No progress tracking.  Zero overhead -- uses the original `subprocess.run()` / `communicate()` code path. |
-| `"tqdm"` | Built-in tqdm progress bar.  Auto-detects terminal vs Jupyter.  Requires `pip install idfkit[progress]`. |
+| `"tqdm"` | Built-in tqdm progress bar.  Auto-detects terminal vs Jupyter.  Requires `pip install idfkit[progress]`.  Supported by `simulate()` and `async_simulate()` only -- batch runners require a custom callback (see [Batch Progress](#batch-progress)). |
 | Any `Callable[[SimulationProgress], None]` | Your custom callback, called once per progress line. |
 | Any `async Callable` (async runner only) | Async callback, awaited by the runner. |
 
@@ -495,17 +495,11 @@ batch = simulate_batch(
 )
 ```
 
-### Batch with tqdm shorthand
+### Batch Progress Bar with tqdm
 
-```python
-# Same "tqdm" shorthand works for batches -- events from all
-# concurrent jobs update a single shared progress bar.
-batch = simulate_batch(jobs, on_progress="tqdm", max_workers=4)
-```
-
-### Batch Progress Bar with tqdm (manual)
-
-For dual bars (overall + per-job), build them manually:
+For batch simulations, the `"tqdm"` shorthand is **not supported** because a
+single progress bar cannot meaningfully represent multiple concurrent jobs.
+Instead, build per-job bars manually:
 
 ```python
 from tqdm import tqdm
@@ -641,7 +635,8 @@ def on_progress(event: SimulationProgress) -> None:
   with no performance impact.
 
 - **Automatic cleanup**: When using `on_progress="tqdm"`, the progress bar
-  is always closed -- even if the simulation raises an exception.
+  is always closed -- even if the simulation raises an exception.  On error,
+  the bar preserves its last reported value instead of jumping to 100%.
 
 - **Callback exceptions**: If your callback raises an exception, the
   simulation is killed and `SimulationError` is raised.
@@ -663,9 +658,9 @@ def on_progress(event: SimulationProgress) -> None:
 |----------|----------------------|
 | `simulate()` | `"tqdm"`, sync callback, or `None` |
 | `async_simulate()` | `"tqdm"`, sync/async callback, or `None` |
-| `simulate_batch()` | `"tqdm"`, sync callback, or `None` (with `job_index`/`job_label`) |
-| `async_simulate_batch()` | `"tqdm"`, sync/async callback, or `None` (with `job_index`/`job_label`) |
-| `async_simulate_batch_stream()` | `"tqdm"`, sync/async callback, or `None` (with `job_index`/`job_label`) |
+| `simulate_batch()` | Sync callback or `None` (events include `job_index`/`job_label`) |
+| `async_simulate_batch()` | Sync/async callback or `None` (events include `job_index`/`job_label`) |
+| `async_simulate_batch_stream()` | Sync/async callback or `None` (events include `job_index`/`job_label`) |
 
 ### Classes / Factories
 
