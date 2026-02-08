@@ -51,7 +51,7 @@ class IDFObject:
         _field_order: Ordered list of field names from schema
     """
 
-    __slots__ = ("_data", "_document", "_field_order", "_name", "_ref_fields", "_schema", "_type")
+    __slots__ = ("_data", "_document", "_field_order", "_name", "_ref_fields", "_schema", "_type", "_version")
 
     _type: str
     _name: str
@@ -78,11 +78,21 @@ class IDFObject:
         object.__setattr__(self, "_document", document)
         object.__setattr__(self, "_field_order", field_order)
         object.__setattr__(self, "_ref_fields", ref_fields)
+        object.__setattr__(self, "_version", 0)
 
     @property
     def obj_type(self) -> str:
         """The IDF object type (e.g., 'Zone', 'Material')."""
         return self._type
+
+    @property
+    def mutation_version(self) -> int:
+        """Monotonically increasing counter bumped on every field write.
+
+        Useful for caches that need to detect whether an object has been
+        modified since a cached value was computed.
+        """
+        return self._version
 
     @property
     def data(self) -> dict[str, Any]:
@@ -221,6 +231,7 @@ class IDFObject:
         if old == value:
             return
         object.__setattr__(self, "_name", value)
+        object.__setattr__(self, "_version", self._version + 1)
         doc = self._document
         if doc is not None:
             doc.notify_name_change(self, old, value)
@@ -236,6 +247,7 @@ class IDFObject:
                 doc.notify_reference_change(self, python_key, old, value)
         else:
             self._data[python_key] = value
+        object.__setattr__(self, "_version", self._version + 1)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""

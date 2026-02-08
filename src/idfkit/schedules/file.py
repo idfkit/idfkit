@@ -57,12 +57,25 @@ class ScheduleFileCache:
             List of schedule values from the file.
         """
         file_path = self._resolve_path(obj, base_path)
-        cache_key = str(file_path)
+        cache_key = self._make_cache_key(obj, file_path)
 
         if cache_key not in self._cache:
             self._cache[cache_key] = _read_schedule_file(obj, fs, file_path)
 
         return self._cache[cache_key]
+
+    @staticmethod
+    def _make_cache_key(obj: IDFObject, file_path: Path) -> str:
+        """Build a cache key that includes file path and parsing parameters.
+
+        Two Schedule:File objects pointing to the same CSV but using
+        different columns, row offsets, or separators must not share
+        cached values.
+        """
+        column = obj.get("Column Number")
+        rows_to_skip = obj.get("Rows to Skip at Top")
+        separator = obj.get("Column Separator")
+        return f"{file_path}|col={column}|skip={rows_to_skip}|sep={separator}"
 
     def _resolve_path(self, obj: IDFObject, base_path: Path | str | None) -> Path:
         """Resolve the file path from the Schedule:File object.
@@ -94,12 +107,16 @@ class ScheduleFileCache:
         self._cache.clear()
 
     def invalidate(self, path: str | Path) -> None:
-        """Invalidate a specific cache entry.
+        """Invalidate all cache entries whose key starts with *path*.
 
         Args:
-            path: Path to invalidate.
+            path: File path to invalidate.  All entries for this file
+                (regardless of column / separator settings) are removed.
         """
-        self._cache.pop(str(path), None)
+        prefix = str(path) + "|"
+        keys_to_remove = [k for k in self._cache if k.startswith(prefix)]
+        for k in keys_to_remove:
+            del self._cache[k]
 
 
 # Global cache instance

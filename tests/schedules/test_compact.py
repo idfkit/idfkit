@@ -339,6 +339,7 @@ class TestParseCompactCaching:
         """Test that calling parse_compact twice returns cached result."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Compact"
+        obj.mutation_version = 0
 
         fields = {
             "Field 1": "Through: 12/31",
