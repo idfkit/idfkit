@@ -139,10 +139,14 @@ class EpJSONParser:
 
             # Get schema info for this type
             obj_schema: dict[str, Any] | None = None
-            field_names: list[str] | None = None
+            base_field_names: list[str] | None = None
+            has_name = True
             if schema:
                 obj_schema = schema.get_object_schema(obj_type)
-                field_names = schema.get_field_names(obj_type)
+                has_name = schema.has_name(obj_type)
+                base_field_names = (
+                    schema.get_field_names(obj_type) if has_name else schema.get_all_field_names(obj_type)
+                )
 
             # epJSON format: {"ObjectType": {"obj_name": {fields...}, ...}}
             objects_dict = cast(dict[str, Any], objects)
@@ -150,17 +154,60 @@ class EpJSONParser:
                 if not isinstance(fields, dict):
                     continue
 
-                # Create object
+                # Nameless objects: use empty string instead of epJSON dict key
+                name = obj_name if has_name else ""
+
+                # Create per-object field_order copy so extensible fields can be added
                 fields_dict = cast(dict[str, Any], fields)
+                field_order = self._build_field_order(obj_type, base_field_names, fields_dict, schema)
+
                 obj = IDFObject(
                     obj_type=obj_type,
-                    name=obj_name,
+                    name=name,
                     data=dict(fields_dict),  # Copy the fields dict
                     schema=obj_schema,
-                    field_order=field_names,
+                    field_order=field_order,
                 )
 
                 doc.addidfobject(obj)
+
+    def _build_field_order(
+        self,
+        obj_type: str,
+        base_field_names: list[str] | None,
+        fields_dict: dict[str, Any],
+        schema: EpJSONSchema | None,
+    ) -> list[str] | None:
+        """Build field_order including extensible fields present in the data."""
+        if base_field_names is None:
+            return None
+
+        # Start with a copy of the base schema field names
+        field_order = list(base_field_names)
+        base_set = set(base_field_names)
+
+        # Find extensible fields in the data that aren't in the base field list
+        if schema and schema.is_extensible(obj_type):
+            ext_names = schema.get_extensible_field_names(obj_type)
+
+            if ext_names:
+                # Collect extensible fields from data, grouped and ordered
+                group_idx = 0
+                while True:
+                    suffix = "" if group_idx == 0 else f"_{group_idx + 1}"
+                    group_fields = [f"{name}{suffix}" for name in ext_names]
+
+                    # Check if any field from this group exists in the data
+                    if not any(f in fields_dict for f in group_fields):
+                        break
+
+                    for f in group_fields:
+                        if f not in base_set:
+                            field_order.append(f)
+
+                    group_idx += 1
+
+        return field_order
 
 
 def load_epjson(filepath: Path | str) -> dict[str, Any]:
