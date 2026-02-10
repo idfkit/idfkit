@@ -258,11 +258,196 @@ class IDFObject:
         value = getattr(self, key)
         return value if value is not None else default
 
+    # -----------------------------------------------------------------
+    # eppy compatibility: cross-referencing
+    # -----------------------------------------------------------------
+
+    def get_referenced_object(self, field_name: str) -> IDFObject | None:
+        """Follow a reference field and return the referenced object.
+
+        Given a field that contains the *name* of another object (e.g.
+        ``construction_name``), look up and return the actual
+        :class:`IDFObject` that it points to.
+
+        This mirrors ``epbunch.get_referenced_object(fieldname)`` in eppy.
+
+        Args:
+            field_name: The field whose value is the name of the target
+                object (e.g. ``"zone_name"``, ``"construction_name"``).
+
+        Returns:
+            The referenced :class:`IDFObject`, or ``None`` if the field is
+            empty, the document is not attached, or the target cannot be
+            found.
+        """
+        doc = self._document
+        if doc is None:
+            return None
+
+        # Resolve the field value
+        value = getattr(self, field_name)
+        if not value or not isinstance(value, str):
+            return None
+
+        # Use schema to find which object types could provide this name
+        schema = doc.schema
+        if schema is not None:
+            python_key = to_python_name(field_name)
+            object_lists = schema.get_field_object_list(self._type, python_key)
+            if object_lists:
+                for obj_list in object_lists:
+                    provider_types = schema.get_types_providing_reference(obj_list)
+                    for ptype in provider_types:
+                        found = doc.getobject(ptype, value)
+                        if found is not None:
+                            return found
+
+        # Fallback: scan all collections for an object with this name
+        for collection in doc.collections.values():
+            result = collection.get(value)
+            if result is not None:
+                return result
+
+        return None
+
+    def getreferingobjs(
+        self,
+        iddgroups: list[str] | None = None,
+        fields: list[str] | None = None,
+    ) -> list[IDFObject]:
+        """Find all objects that reference this object by name.
+
+        This mirrors ``epbunch.getreferingobjs()`` in eppy.
+
+        Args:
+            iddgroups: Optional list of IDD group names to restrict the
+                search to (e.g. ``["Thermal Zones and Surfaces"]``).
+            fields: Optional list of field names to restrict the search to.
+
+        Returns:
+            List of :class:`IDFObject` instances that reference this
+            object's name.
+        """
+        doc = self._document
+        if doc is None or not self._name:
+            return []
+
+        refs_with_fields = doc.references.get_referencing_with_fields(self._name)
+        if not refs_with_fields:
+            return []
+
+        # Determine if we need to filter by group
+        group_filter: set[str] | None = None
+        if iddgroups is not None and doc.schema is not None:
+            group_filter = set()
+            for obj_type in doc.schema.object_types:
+                grp = doc.schema.get_group(obj_type)
+                if grp and grp in iddgroups:
+                    group_filter.add(obj_type)
+
+        results: list[IDFObject] = []
+        seen: set[int] = set()
+        for obj, field_name in refs_with_fields:
+            # Dedup by identity
+            obj_id = id(obj)
+            if obj_id in seen:
+                continue
+
+            # Filter by field name
+            if fields is not None and field_name not in fields:
+                continue
+
+            # Filter by IDD group
+            if group_filter is not None and obj.obj_type not in group_filter:
+                continue
+
+            seen.add(obj_id)
+            results.append(obj)
+
+        return results
+
+    # -----------------------------------------------------------------
+    # eppy compatibility: range checking
+    # -----------------------------------------------------------------
+
+    def getrange(self, field_name: str) -> dict[str, Any]:
+        """Return the valid range constraints for *field_name* from the schema.
+
+        Mirrors ``epbunch.getrange(fieldname)`` in eppy.
+
+        Returns a dict which may contain keys ``minimum``,
+        ``exclusiveMinimum``, ``maximum``, ``exclusiveMaximum``, and
+        ``type``.
+        """
+        result: dict[str, Any] = {}
+        field_idd = self.get_field_idd(to_python_name(field_name))
+        if not field_idd:
+            return result
+
+        for key in ("minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "type"):
+            if key in field_idd:
+                result[key] = field_idd[key]
+
+        # Also check inside anyOf
+        if "anyOf" in field_idd:
+            for sub in field_idd["anyOf"]:
+                for key in ("minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum"):
+                    if key in sub and key not in result:
+                        result[key] = sub[key]
+
+        return result
+
+    def checkrange(self, field_name: str) -> bool:
+        """Validate that the current value of *field_name* is within range.
+
+        Mirrors ``epbunch.checkrange(fieldname)`` in eppy.
+
+        Returns:
+            ``True`` if the value is within the valid range.
+
+        Raises:
+            RangeError: If the value is outside the valid range.
+        """
+        from .exceptions import RangeError
+
+        value = getattr(self, field_name)
+        if value is None or not isinstance(value, (int, float)):
+            return True
+
+        constraints = self.getrange(field_name)
+        if not constraints:
+            return True
+
+        if "minimum" in constraints and value < constraints["minimum"]:
+            msg = f"Value {value} for '{field_name}' is below minimum {constraints['minimum']}"
+            raise RangeError(self._type, self._name, field_name, msg)
+
+        if "exclusiveMinimum" in constraints and value <= constraints["exclusiveMinimum"]:
+            msg = f"Value {value} for '{field_name}' must be > {constraints['exclusiveMinimum']}"
+            raise RangeError(self._type, self._name, field_name, msg)
+
+        if "maximum" in constraints and value > constraints["maximum"]:
+            msg = f"Value {value} for '{field_name}' is above maximum {constraints['maximum']}"
+            raise RangeError(self._type, self._name, field_name, msg)
+
+        if "exclusiveMaximum" in constraints and value >= constraints["exclusiveMaximum"]:
+            msg = f"Value {value} for '{field_name}' must be < {constraints['exclusiveMaximum']}"
+            raise RangeError(self._type, self._name, field_name, msg)
+
+        return True
+
+    # -----------------------------------------------------------------
+    # Schema introspection
+    # -----------------------------------------------------------------
+
     def get_field_idd(self, field_name: str) -> dict[str, Any] | None:
         """Get IDD/schema info for a field (eppy compatibility)."""
         if not self._schema:
             return None
-        inner = self._schema.get("patternProperties", {}).get(".*", {})
+        pattern_props: dict[str, Any] = self._schema.get("patternProperties", {})
+        # The pattern key varies (e.g. ".*", "^.*\\S.*$") - get the first one
+        default: dict[str, Any] = {}
+        inner: dict[str, Any] = next(iter(pattern_props.values()), default) if pattern_props else default
         return inner.get("properties", {}).get(to_python_name(field_name))
 
     def getfieldidd(self, field_name: str) -> dict[str, Any] | None:
@@ -305,8 +490,12 @@ class IDFObject:
             "get",
             "copy",
             "get_field_idd",
+            "get_referenced_object",
             "getfieldidd",
             "getfieldidd_item",
+            "getrange",
+            "checkrange",
+            "getreferingobjs",
         ]
         field_order = object.__getattribute__(self, "_field_order")
         if field_order:

@@ -2,36 +2,50 @@
 Writers for IDF and epJSON formats.
 
 Provides serialization of IDFDocument to both formats.
+
+The :func:`write_idf` function accepts an *output_type* parameter that
+mirrors eppy's ``idf.outputtype`` options:
+
+- ``"standard"`` (default): field comments included (``!- Field Name``).
+- ``"nocomment"``: no field comments, one field per line.
+- ``"compressed"``: entire object on a single line (minimal whitespace).
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 if TYPE_CHECKING:
     from .document import IDFDocument
     from .objects import IDFObject
+
+OutputType = Literal["standard", "nocomment", "compressed"]
 
 
 def write_idf(
     doc: IDFDocument,
     filepath: Path | str | None = None,
     encoding: str = "latin-1",
+    output_type: OutputType = "standard",
 ) -> str | None:
     """
     Write document to IDF format.
 
     Args:
-        doc: The document to write
-        filepath: Output path (if None, returns string)
-        encoding: Output encoding
+        doc: The document to write.
+        filepath: Output path (if ``None``, returns a string).
+        encoding: Output encoding.
+        output_type: Output formatting mode — ``"standard"`` (with
+            comments), ``"nocomment"`` (no comments), or
+            ``"compressed"`` (single-line objects).  Mirrors eppy's
+            ``idf.outputtype``.
 
     Returns:
-        IDF string if filepath is None, otherwise None
+        IDF string if *filepath* is ``None``, otherwise ``None``.
     """
-    writer = IDFWriter(doc)
+    writer = IDFWriter(doc, output_type=output_type)
     content = writer.to_string()
 
     if filepath:
@@ -82,25 +96,40 @@ class IDFWriter:
       field2,    !- Field 2 Name
       field3;    !- Field 3 Name
     ```
+
+    Supports three *output_type* modes mirroring eppy's
+    ``idf.outputtype``:
+
+    - ``"standard"`` — full comments (default).
+    - ``"nocomment"`` — no field comments, one field per line.
+    - ``"compressed"`` — each object on a single line.
     """
 
-    def __init__(self, doc: IDFDocument):
+    def __init__(self, doc: IDFDocument, output_type: OutputType = "standard"):
         self._doc = doc
+        self._output_type = output_type
 
     def to_string(self) -> str:
         """Convert document to IDF string."""
         lines: list[str] = []
 
-        # Write header comment
-        lines.append("!-Generator archetypal")
-        lines.append("!-Option SortedOrder")
-        lines.append("")
+        if self._output_type != "compressed":
+            # Write header comment
+            lines.append("!-Generator archetypal")
+            lines.append("!-Option SortedOrder")
+            lines.append("")
 
         # Write Version first
         version = self._doc.version
-        lines.append("Version,")
-        lines.append(f"  {version[0]}.{version[1]};                    !- Version Identifier")
-        lines.append("")
+        if self._output_type == "compressed":
+            lines.append(f"Version,{version[0]}.{version[1]};")
+        else:
+            lines.append("Version,")
+            if self._output_type == "standard":
+                lines.append(f"  {version[0]}.{version[1]};                    !- Version Identifier")
+            else:
+                lines.append(f"  {version[0]}.{version[1]};")
+            lines.append("")
 
         # Write objects grouped by type
         for obj_type in sorted(self._doc.collections.keys()):
@@ -111,22 +140,20 @@ class IDFWriter:
             for obj in collection:
                 obj_str = self._object_to_string(obj)
                 lines.append(obj_str)
-                lines.append("")
+                if self._output_type != "compressed":
+                    lines.append("")
 
         return "\n".join(lines)
 
-    def _object_to_string(self, obj: IDFObject) -> str:
-        """Convert a single object to IDF string."""
-        lines: list[str] = []
+    def _get_field_values_and_comments(self, obj: IDFObject) -> tuple[list[str], list[str]]:
+        """Get the ordered field values and comment labels for *obj*."""
         obj_type = obj.obj_type
         schema = self._doc.schema
 
-        # Determine if this object type has a name field
         obj_has_name = True
         if schema:
             obj_has_name = schema.has_name(obj_type)
 
-        # Get field order from schema or use data keys
         if obj.field_order:
             if obj_has_name:
                 field_names: list[str] = ["name", *list(obj.field_order)]
@@ -137,7 +164,6 @@ class IDFWriter:
         else:
             field_names = ["name", *list(obj.data.keys())] if obj_has_name else list(obj.data.keys())
 
-        # Get field values and comments
         values: list[str] = []
         comments: list[str] = []
 
@@ -148,26 +174,38 @@ class IDFWriter:
             else:
                 value = obj.data.get(field_name)
                 values.append(self._format_value(value))
-                # Convert field name to comment format
                 comment = field_name.replace("_", " ").title()
                 comments.append(comment)
 
-        # Trim trailing empty fields (avoids EnergyPlus interpreting them as blank values)
+        # Trim trailing empty fields
         while len(values) > 1 and values[-1] == "":
             values.pop()
             comments.pop()
 
-        # Build output
-        lines.append(f"{obj_type},")
+        return values, comments
 
+    def _object_to_string(self, obj: IDFObject) -> str:
+        """Convert a single object to IDF string."""
+        values, comments = self._get_field_values_and_comments(obj)
+        obj_type = obj.obj_type
+
+        if self._output_type == "compressed":
+            parts = ",".join(values)
+            return f"{obj_type},{parts};"
+
+        lines: list[str] = [f"{obj_type},"]
         for i, (value, comment) in enumerate(zip(values, comments, strict=False)):
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
 
-            # Format with comment
-            field_str = f"  {value}{terminator}"
-            field_str = field_str.ljust(30)
-            field_str += f"!- {comment}"
+            if self._output_type == "standard":
+                field_str = f"  {value}{terminator}"
+                field_str = field_str.ljust(30)
+                field_str += f"!- {comment}"
+            else:
+                # nocomment
+                field_str = f"  {value}{terminator}"
+
             lines.append(field_str)
 
         return "\n".join(lines)

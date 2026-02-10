@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from .fs import FileSystem
     from .outputs import OutputVariableIndex
     from .parsers.csv import CSVResult
+    from .parsers.html import HTMLResult
     from .parsers.sql import SQLResult
 
 # Sentinel for "not yet computed" (distinct from None = "computed, no file found")
@@ -50,6 +51,7 @@ class SimulationResult:
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
     _cached_csv: Any = field(default=_UNSET, init=False, repr=False)
+    _cached_html: Any = field(default=_UNSET, init=False, repr=False)
 
     @property
     def errors(self) -> ErrorReport:
@@ -156,6 +158,31 @@ class SimulationResult:
         else:
             result = _CSVResult.from_file(path)
         object.__setattr__(self, "_cached_csv", result)
+        return result
+
+    @property
+    def html(self) -> HTMLResult | None:
+        """Parsed HTML tabular output (lazily cached).
+
+        Returns:
+            An HTMLResult with extracted tables and titles,
+            or None if no HTML file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_html")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = self.html_path
+        if path is None:
+            object.__setattr__(self, "_cached_html", None)
+            return None
+        from .parsers.html import HTMLResult as _HTMLResult
+
+        if self.fs is not None:
+            text = self.fs.read_text(str(path), encoding="latin-1")
+            result: HTMLResult = _HTMLResult.from_string(text)
+        else:
+            result = _HTMLResult.from_file(path)
+        object.__setattr__(self, "_cached_html", result)
         return result
 
     @property
