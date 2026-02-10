@@ -1,0 +1,76 @@
+name: Check for new EnergyPlus release
+
+on:
+  schedule:
+    # Run every Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+
+      - name: Check for new EnergyPlus release
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          result=$(uv run python scripts/update_energyplus_schema.py --check 2>&1) || exit_code=$?
+          echo "$result"
+          exit_code=${exit_code:-0}
+
+          if [ "$exit_code" -eq 0 ]; then
+            # New version found - extract it from the output
+            new_version=$(echo "$result" | grep -oP 'New version detected: \(\K[0-9]+, [0-9]+, [0-9]+' | tr -d ' ')
+            major=$(echo "$new_version" | cut -d, -f1)
+            minor=$(echo "$new_version" | cut -d, -f2)
+            patch=$(echo "$new_version" | cut -d, -f3)
+            echo "new_version=${major}.${minor}.${patch}" >> "$GITHUB_OUTPUT"
+            echo "has_new_version=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_new_version=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download and bundle new schema
+        if: steps.check.outputs.has_new_version == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run python scripts/update_energyplus_schema.py
+
+      - name: Create pull request
+        if: steps.check.outputs.has_new_version == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Add EnergyPlus ${{ steps.check.outputs.new_version }} schema"
+          title: "Add EnergyPlus ${{ steps.check.outputs.new_version }} schema"
+          body: |
+            ## Summary
+
+            A new EnergyPlus release (${{ steps.check.outputs.new_version }}) was detected
+            on the [NREL/EnergyPlus](https://github.com/NREL/EnergyPlus/releases) repository.
+
+            This PR:
+            - Adds the bundled `Energy+.schema.epJSON.gz` for v${{ steps.check.outputs.new_version }}
+            - Updates `src/idfkit/versions.py` to register the new version
+
+            ## Test plan
+
+            - [ ] Verify the new schema loads correctly: `python -c "from idfkit.schema import get_schema; s = get_schema((${{ steps.check.outputs.new_version }})); print(len(s))"`
+            - [ ] Run the full test suite: `make check && make test`
+            - [ ] Spot-check a sample IDF file against the new version
+          branch: auto/energyplus-${{ steps.check.outputs.new_version }}
+          delete-branch: true
+          labels: |
+            automated
+            schema-update

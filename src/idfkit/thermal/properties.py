@@ -208,8 +208,16 @@ def _extract_layer_properties(material: IDFObject) -> LayerThermalProperties:
         solar_trans = material.solar_transmittance_at_normal_incidence
         solar_refl_front = material.front_side_solar_reflectance_at_normal_incidence
         vis_trans = material.visible_transmittance_at_normal_incidence
-        emiss_front = material.front_side_infrared_hemispherical_emissivity if material.front_side_infrared_hemispherical_emissivity is not None else 0.84
-        emiss_back = material.back_side_infrared_hemispherical_emissivity if material.back_side_infrared_hemispherical_emissivity is not None else 0.84
+        emiss_front = (
+            material.front_side_infrared_hemispherical_emissivity
+            if material.front_side_infrared_hemispherical_emissivity is not None
+            else 0.84
+        )
+        emiss_back = (
+            material.back_side_infrared_hemispherical_emissivity
+            if material.back_side_infrared_hemispherical_emissivity is not None
+            else 0.84
+        )
 
         return LayerThermalProperties(
             name=material.name,
