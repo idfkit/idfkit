@@ -460,11 +460,19 @@ class IDFDocument:
         and the value is the new field value.  The object must already
         exist in the document.
 
+        .. note::
+
+           Object names containing literal dots are **not** supported
+           because the separator is itself a dot.  For objects whose
+           names may contain dots, modify fields directly via
+           :meth:`getobject` instead.
+
         Args:
             updates: Mapping of ``"Type.Name.field"`` -> new_value.
 
         Raises:
-            KeyError: If the referenced object does not exist.
+            KeyError: If the referenced object does not exist or the
+                key format is invalid.
 
         Example::
 

@@ -15,7 +15,6 @@ Tests cover:
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
 import pytest
@@ -28,7 +27,6 @@ from idfkit.geometry import (
     calculate_surface_azimuth,
     calculate_surface_tilt,
     calculate_zone_ceiling_area,
-    calculate_zone_floor_area,
     calculate_zone_height,
     rotate_building,
     translate_building,
@@ -50,16 +48,15 @@ def _close(a: float, b: float, tol: float = _TOL) -> bool:
 
 class TestTiltAzimuth:
     def test_horizontal_ceiling_tilt_zero(self) -> None:
-        """Horizontal roof/ceiling pointing up -> tilt 0."""
+        """Horizontal roof/ceiling (normal pointing up) -> tilt 0."""
+        # CCW winding viewed from above produces upward normal
         poly = Polygon3D([
             Vector3D(0, 0, 3),
             Vector3D(10, 0, 3),
             Vector3D(10, 10, 3),
             Vector3D(0, 10, 3),
         ])
-        # Normal is (0,0,-1) for this winding, so tilt = 180 (floor-facing)
-        # OR (0,0,1) depending on winding.  Let's check:
-        assert _close(poly.tilt, 180.0) or _close(poly.tilt, 0.0)
+        assert _close(poly.tilt, 0.0)
 
     def test_vertical_wall_tilt_90(self) -> None:
         """Vertical wall -> tilt ~90."""
@@ -596,3 +593,121 @@ class TestHTMLParser:
 
         result = HTMLResult.from_string("<html><body></body></html>")
         assert len(result) == 0
+
+    def test_to_dict_excludes_row_key_column(self) -> None:
+        from idfkit.simulation.parsers.html import HTMLResult
+
+        result = HTMLResult.from_string(self.SAMPLE_HTML)
+        d = result[0].to_dict()
+        # The first header (empty string) should NOT appear as a value key
+        assert "" not in d["Total Site Energy"]
+        # But the data columns should be present
+        assert "Total Energy [GJ]" in d["Total Site Energy"]
+
+    def test_tablesbyreport(self) -> None:
+        from idfkit.simulation.parsers.html import HTMLResult
+
+        result = HTMLResult.from_string(self.SAMPLE_HTML)
+        tables = result.tablesbyreport("Annual Building Utility Performance Summary")
+        assert len(tables) == 2
+
+
+# ---------------------------------------------------------------------------
+# Additional edge-case coverage
+# ---------------------------------------------------------------------------
+
+
+class TestGetReferencedObjectFallback:
+    """Test the fallback path in get_referenced_object (no schema match)."""
+
+    def test_fallback_scan_finds_object(self) -> None:
+        """When schema lookup fails, collection scan should still find the target."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "TargetZone")
+        # Create a standalone object with a reference-like field
+        obj = IDFObject(
+            obj_type="People",
+            name="P1",
+            data={"zone_or_zonelist_or_space_or_spacelist_name": "TargetZone"},
+        )
+        doc.addidfobject(obj)
+        found = obj.get_referenced_object("zone_or_zonelist_or_space_or_spacelist_name")
+        assert found is not None
+        assert found.name == "TargetZone"
+
+
+class TestGetReferingObjsIddGroups:
+    def test_filter_by_iddgroups(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        # Filter to a group that should contain BuildingSurface:Detailed
+        refs = zone.getreferingobjs(iddgroups=["Thermal Zones and Surfaces"])
+        ref_types = {obj.obj_type for obj in refs}
+        assert "BuildingSurface:Detailed" in ref_types
+
+    def test_filter_by_iddgroups_excludes(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        # Filter to a group that should NOT contain surfaces
+        refs = zone.getreferingobjs(iddgroups=["Schedules"])
+        assert len(refs) == 0
+
+
+class TestGetReferringObjectsAlias:
+    def test_alias_works(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        refs1 = zone.getreferingobjs()
+        refs2 = zone.get_referring_objects()
+        assert {id(o) for o in refs1} == {id(o) for o in refs2}
+
+
+class TestCheckRangeEdgeCases:
+    def test_checkrange_maximum_violation(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        zone = doc.add("Zone", "Z1", {"direction_of_relative_north": 500.0}, validate=False)
+        rng = zone.getrange("direction_of_relative_north")
+        if "maximum" in rng:
+            with pytest.raises(RangeError):
+                zone.checkrange("direction_of_relative_north")
+
+    def test_checkrange_passes_within_range(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        zone = doc.add("Zone", "Z1", {"direction_of_relative_north": 45.0})
+        assert zone.checkrange("direction_of_relative_north") is True
+
+
+class TestRotateBuildingAnchor:
+    def test_rotate_with_custom_anchor(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1")
+        doc.add("Construction", "C1", validate=False)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Wall",
+            {
+                "surface_type": "Wall",
+                "construction_name": "C1",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        # Rotate 180 degrees around (5, 0, 0) -> vertex (10,0,z) becomes (0,0,z)
+        rotate_building(doc, 180, anchor=Vector3D(5, 0, 0))
+        wall = doc.getobject("BuildingSurface:Detailed", "Wall")
+        assert wall is not None
+        assert _close(wall.vertex_1_x_coordinate, 0.0, tol=1e-5)
+        assert _close(wall.vertex_4_x_coordinate, 10.0, tol=1e-5)

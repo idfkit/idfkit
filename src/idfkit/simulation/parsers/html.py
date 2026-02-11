@@ -9,10 +9,10 @@ structured Python data, providing an API compatible with eppy's
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any
 
 
 @dataclass(slots=True)
@@ -35,12 +35,16 @@ class HTMLTable:
     report_name: str = ""
     for_string: str = ""
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, dict[str, str]]:
         """Convert to a dict mapping row headers to {col_header: value}.
 
         The first column is treated as the row key.  Remaining columns
-        are keyed by the column headers.  This gives convenient
-        dict-style access similar to ``readhtml.named_grid_h``.
+        are keyed by their respective column headers (starting at
+        index 1).  Duplicate row keys are silently overwritten by the
+        last occurrence.
+
+        This gives convenient dict-style access similar to eppy's
+        ``readhtml.named_grid_h``.
         """
         result: dict[str, dict[str, str]] = {}
         for row in self.rows:
@@ -48,9 +52,9 @@ class HTMLTable:
                 continue
             row_key = row[0]
             entry: dict[str, str] = {}
-            for i, hdr in enumerate(self.header):
+            for i in range(1, len(self.header)):
                 if i < len(row):
-                    entry[hdr] = row[i]
+                    entry[self.header[i]] = row[i]
             result[row_key] = entry
         return result
 
@@ -100,7 +104,7 @@ class HTMLResult:
     def __getitem__(self, index: int) -> HTMLTable:
         return self.tables[index]
 
-    def __iter__(self):  # type: ignore[override]
+    def __iter__(self) -> Iterator[HTMLTable]:
         return iter(self.tables)
 
     # ------------------------------------------------------------------
@@ -205,44 +209,52 @@ class _EnergyPlusHTMLParser(HTMLParser):
         tag = tag.lower()
 
         if tag == "table":
-            if self._current_header or self._current_rows:
-                table = HTMLTable(
-                    title=self._last_title.strip(),
-                    header=self._current_header,
-                    rows=self._current_rows,
-                    report_name=self._report_name,
-                    for_string=self._for_string,
-                )
-                self.tables.append(table)
-            self._in_table = False
-
+            self._end_table()
         elif tag == "tr":
-            if self._in_table:
-                if self._is_header_row and not self._current_header:
-                    self._current_header = self._current_row
-                else:
-                    if self._current_row:
-                        self._current_rows.append(self._current_row)
-            self._in_row = False
-
+            self._end_row()
         elif tag in ("td", "th"):
-            text = self._current_cell_text.strip()
-            text = re.sub(r"\s+", " ", text)
-            self._current_row.append(text)
-            self._in_cell = False
-            self._in_header_cell = False
-
+            self._end_cell()
         elif tag in _BOLD_TAGS:
-            if self._in_bold and not self._in_table:
-                trimmed = self._bold_text.strip()
-                if trimmed:
-                    self._last_title = trimmed
-                    # Detect report-level headers vs table-level titles
-                    if trimmed.endswith("Summary") or trimmed.endswith("Report"):
-                        self._report_name = trimmed
-                    elif trimmed.startswith("For:"):
-                        self._for_string = trimmed[4:].strip()
-            self._in_bold = False
+            self._end_bold()
+
+    def _end_table(self) -> None:
+        if self._current_header or self._current_rows:
+            table = HTMLTable(
+                title=self._last_title.strip(),
+                header=self._current_header,
+                rows=self._current_rows,
+                report_name=self._report_name,
+                for_string=self._for_string,
+            )
+            self.tables.append(table)
+        self._in_table = False
+
+    def _end_row(self) -> None:
+        if self._in_table:
+            if self._is_header_row and not self._current_header:
+                self._current_header = self._current_row
+            elif self._current_row:
+                self._current_rows.append(self._current_row)
+        self._in_row = False
+
+    def _end_cell(self) -> None:
+        text = self._current_cell_text.strip()
+        text = re.sub(r"\s+", " ", text)
+        self._current_row.append(text)
+        self._in_cell = False
+        self._in_header_cell = False
+
+    def _end_bold(self) -> None:
+        if self._in_bold and not self._in_table:
+            trimmed = self._bold_text.strip()
+            if trimmed:
+                self._last_title = trimmed
+                # Detect report-level headers vs table-level titles
+                if trimmed.endswith("Summary") or trimmed.endswith("Report"):
+                    self._report_name = trimmed
+                elif trimmed.startswith("For:"):
+                    self._for_string = trimmed[4:].strip()
+        self._in_bold = False
 
     def handle_data(self, data: str) -> None:
         if self._in_cell:

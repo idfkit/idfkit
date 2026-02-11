@@ -194,8 +194,8 @@ class Polygon3D:
         # For horizontal surfaces the azimuth is undefined
         if abs(n.x) < 1e-10 and abs(n.y) < 1e-10:
             return 0.0
-        # atan2 gives angle from +X axis counter-clockwise.
-        # We want angle from +Y axis clockwise.
+        # atan2(x, y) gives the angle from +Y axis toward +X axis,
+        # which is clockwise from north -- exactly the convention we need.
         angle = math.degrees(math.atan2(n.x, n.y))
         if angle < 0:
             angle += 360.0
@@ -481,6 +481,13 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
 
     Modifies the document in-place, shifting every surface's vertices
     by *offset*.
+
+    .. note::
+
+       Only vertex coordinates are modified.  ``Zone`` origin fields
+       and the ``Building`` object are **not** updated.  Use
+       :func:`translate_to_world` if you need to collapse zone-relative
+       coordinates into world coordinates.
     """
     surface_types = [
         "BuildingSurface:Detailed",
@@ -498,6 +505,9 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
 
 def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None = None) -> None:
     """Rotate all building surfaces around the Z axis.
+
+    Only vertex coordinates are modified; ``Building.north_axis`` and
+    ``Zone`` rotation fields are **not** updated.
 
     Args:
         doc: The document to modify in-place.

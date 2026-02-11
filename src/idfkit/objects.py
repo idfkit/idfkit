@@ -336,35 +336,43 @@ class IDFObject:
         if not refs_with_fields:
             return []
 
-        # Determine if we need to filter by group
-        group_filter: set[str] | None = None
-        if iddgroups is not None and doc.schema is not None:
-            group_filter = set()
-            for obj_type in doc.schema.object_types:
-                grp = doc.schema.get_group(obj_type)
-                if grp and grp in iddgroups:
-                    group_filter.add(obj_type)
+        group_filter = self._build_group_filter(iddgroups)
+        normalized_fields = {to_python_name(f) for f in fields} if fields is not None else None
 
         results: list[IDFObject] = []
         seen: set[int] = set()
         for obj, field_name in refs_with_fields:
-            # Dedup by identity
             obj_id = id(obj)
             if obj_id in seen:
                 continue
-
-            # Filter by field name
-            if fields is not None and field_name not in fields:
+            if normalized_fields is not None and to_python_name(field_name) not in normalized_fields:
                 continue
-
-            # Filter by IDD group
             if group_filter is not None and obj.obj_type not in group_filter:
                 continue
-
             seen.add(obj_id)
             results.append(obj)
 
         return results
+
+    def _build_group_filter(self, iddgroups: list[str] | None) -> set[str] | None:
+        """Build a set of object types belonging to the given IDD groups."""
+        doc = self._document
+        if iddgroups is None or doc is None or doc.schema is None:
+            return None
+        result: set[str] = set()
+        for obj_type in doc.schema.object_types:
+            grp = doc.schema.get_group(obj_type)
+            if grp and grp in iddgroups:
+                result.add(obj_type)
+        return result
+
+    def get_referring_objects(
+        self,
+        iddgroups: list[str] | None = None,
+        fields: list[str] | None = None,
+    ) -> list[IDFObject]:
+        """Properly-spelled alias for :meth:`getreferingobjs`."""
+        return self.getreferingobjs(iddgroups=iddgroups, fields=fields)
 
     # -----------------------------------------------------------------
     # eppy compatibility: range checking
