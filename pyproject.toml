@@ -126,7 +126,7 @@ reportMissingModuleSource = false
 reportOperatorIssue = false
 reportArgumentType = false
 reportCallIssue = false
-reportGeneralTypeIssues = false
+reportGeneralTypeIssues = false  # deprecated but still needed for "not iterable" errors
 reportIndexIssue = false
 reportInvalidTypeForm = false
 
