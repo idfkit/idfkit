@@ -128,6 +128,7 @@ Common extras:
 | DataFrames | `pip install idfkit[dataframes]` |
 | Plotting (matplotlib) | `pip install idfkit[plot]` |
 | Plotting (plotly) | `pip install idfkit[plotly]` |
+| Progress bars (tqdm) | `pip install idfkit[progress]` |
 | S3 Storage | `pip install idfkit[s3]` |
 | Weather refresh | `pip install idfkit[weather]` |
 
