@@ -20,6 +20,7 @@ Simulation result container and output file access.
         - sql
         - variables
         - csv
+        - html
         - sql_path
         - err_path
         - eso_path
@@ -55,3 +56,32 @@ Simulation result container and output file access.
     options:
       show_root_heading: true
       show_source: true
+
+## HTMLResult
+
+::: idfkit.simulation.parsers.html.HTMLResult
+    options:
+      show_root_heading: true
+      show_source: true
+      members:
+        - tables
+        - from_file
+        - from_string
+        - titletable
+        - tablebyname
+        - tablebyindex
+        - tablesbyreport
+
+## HTMLTable
+
+::: idfkit.simulation.parsers.html.HTMLTable
+    options:
+      show_root_heading: true
+      show_source: true
+      members:
+        - title
+        - header
+        - rows
+        - report_name
+        - for_string
+        - to_dict

@@ -420,6 +420,24 @@ class IDFDocument:
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
+    def popidfobject(self, obj_type: str, index: int) -> IDFObject:
+        """Remove and return an object by type and index (eppy compatibility).
+
+        Args:
+            obj_type: Object type (e.g. "Zone")
+            index: Zero-based index within the collection
+
+        Returns:
+            The removed IDFObject
+
+        Raises:
+            IndexError: If the index is out of range
+        """
+        collection = self[obj_type]
+        obj = collection[index]
+        self.removeidfobject(obj)
+        return obj
+
     def removeidfobjects(self, objects: list[IDFObject]) -> None:
         """Remove multiple objects from the document."""
         for obj in objects:
@@ -431,6 +449,51 @@ class IDFDocument:
         if new_name:
             new_obj.name = new_name
         return self.addidfobject(new_obj)
+
+    def update(self, updates: dict[str, Any]) -> None:
+        """Apply batch field updates using dot-separated key paths.
+
+        Mirrors eppy's ``json_functions.updateidf`` for parametric
+        sweeps and bulk modifications.
+
+        Each key has the form ``"ObjectType.ObjectName.field_name"``
+        and the value is the new field value.  The object must already
+        exist in the document.
+
+        .. note::
+
+           Object names containing literal dots are **not** supported
+           because the separator is itself a dot.  For objects whose
+           names may contain dots, modify fields directly via
+           :meth:`getobject` instead.
+
+        Args:
+            updates: Mapping of ``"Type.Name.field"`` -> new_value.
+
+        Raises:
+            KeyError: If the referenced object does not exist or the
+                key format is invalid.
+
+        Example::
+
+            model.update({
+                "Zone.Office.x_origin": 5.0,
+                "Material.Concrete.thickness": 0.2,
+            })
+        """
+        from .objects import to_python_name
+
+        for dotted_key, value in updates.items():
+            parts = dotted_key.split(".", 2)
+            if len(parts) != 3:
+                msg = f"Expected 'ObjectType.ObjectName.field_name', got '{dotted_key}'"
+                raise KeyError(msg)
+            obj_type, obj_name, field_name = parts
+            obj = self.getobject(obj_type, obj_name)
+            if obj is None:
+                msg = f"No {obj_type} named '{obj_name}'"
+                raise KeyError(msg)
+            setattr(obj, to_python_name(field_name), value)
 
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
         """
@@ -586,7 +649,7 @@ class IDFDocument:
 
         if surface_type:
             surface_type_upper = surface_type.upper()
-            surfaces = [s for s in surfaces if getattr(s, "surface_type", "").upper() == surface_type_upper]
+            surfaces = [s for s in surfaces if (getattr(s, "surface_type", None) or "").upper() == surface_type_upper]
 
         return surfaces
 
@@ -669,6 +732,54 @@ class IDFDocument:
             new_doc.addidfobject(new_obj)
 
         return new_doc
+
+    # -------------------------------------------------------------------------
+    # File I/O (eppy compatibility)
+    # -------------------------------------------------------------------------
+
+    def save(self, filepath: str | Path | None = None, encoding: str = "latin-1") -> None:
+        """Save the document to its current filepath (eppy compatibility).
+
+        Args:
+            filepath: Explicit path override.  If ``None``, uses
+                ``self.filepath``.
+            encoding: Output encoding (default ``latin-1``).
+
+        Raises:
+            ValueError: If no filepath is set and none is provided.
+        """
+        from .writers import write_idf
+
+        target = Path(filepath) if filepath else self.filepath
+        if target is None:
+            msg = "No filepath set - pass a path or use saveas()"
+            raise ValueError(msg)
+        write_idf(self, target, encoding=encoding)
+        self.filepath = target
+
+    def saveas(self, filepath: str | Path, encoding: str = "latin-1") -> None:
+        """Save to a new path and update ``self.filepath`` (eppy compatibility).
+
+        Args:
+            filepath: Destination path.
+            encoding: Output encoding.
+        """
+        from .writers import write_idf
+
+        target = Path(filepath)
+        write_idf(self, target, encoding=encoding)
+        self.filepath = target
+
+    def savecopy(self, filepath: str | Path, encoding: str = "latin-1") -> None:
+        """Save a copy without changing ``self.filepath`` (eppy compatibility).
+
+        Args:
+            filepath: Destination path.
+            encoding: Output encoding.
+        """
+        from .writers import write_idf
+
+        write_idf(self, Path(filepath), encoding=encoding)
 
     # -------------------------------------------------------------------------
     # String Representation

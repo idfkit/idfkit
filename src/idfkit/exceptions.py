@@ -84,6 +84,22 @@ class DanglingReferenceError(IdfKitError):
         )
 
 
+class RangeError(IdfKitError):
+    """Raised when a field value is outside the valid range (eppy compatibility).
+
+    Attributes:
+        obj_type: The object type.
+        obj_name: The object name.
+        field_name: The field that failed range checking.
+    """
+
+    def __init__(self, obj_type: str, obj_name: str, field_name: str, message: str) -> None:
+        self.obj_type = obj_type
+        self.obj_name = obj_name
+        self.field_name = field_name
+        super().__init__(message)
+
+
 class ValidationFailedError(IdfKitError):
     """Raised when validation fails."""
 

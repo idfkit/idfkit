@@ -168,6 +168,40 @@ class Polygon3D:
         return Vector3D(x, y, z)
 
     @property
+    def tilt(self) -> float:
+        """Surface tilt angle in degrees.
+
+        0 = facing up (horizontal roof/ceiling), 90 = vertical wall,
+        180 = facing down (horizontal floor).  Computed from the surface
+        normal using the same convention as EnergyPlus / eppy.
+        """
+        n = self.normal
+        # Clamp to avoid floating-point issues with acos
+        clamped = max(-1.0, min(1.0, n.z))
+        return math.degrees(math.acos(clamped))
+
+    @property
+    def azimuth(self) -> float:
+        """Surface azimuth in degrees (0=north, 90=east, 180=south, 270=west).
+
+        Uses the same convention as EnergyPlus / eppy: the angle of the
+        outward normal projected onto the horizontal plane, measured
+        clockwise from north (+Y axis).
+
+        Returns 0.0 for perfectly horizontal surfaces (tilt 0 or 180).
+        """
+        n = self.normal
+        # For horizontal surfaces the azimuth is undefined
+        if abs(n.x) < 1e-10 and abs(n.y) < 1e-10:
+            return 0.0
+        # atan2(x, y) gives the angle from +Y axis toward +X axis,
+        # which is clockwise from north -- exactly the convention we need.
+        angle = math.degrees(math.atan2(n.x, n.y))
+        if angle < 0:
+            angle += 360.0
+        return angle
+
+    @property
     def is_horizontal(self) -> bool:
         """Check if polygon is horizontal (floor/ceiling)."""
         n = self.normal
@@ -368,19 +402,135 @@ def calculate_surface_area(surface: IDFObject) -> float:
     return coords.area if coords else 0.0
 
 
+def calculate_surface_tilt(surface: IDFObject) -> float:
+    """Calculate the tilt of a surface in degrees (eppy compatibility).
+
+    0 = facing up, 90 = vertical, 180 = facing down.
+    """
+    coords = get_surface_coords(surface)
+    return coords.tilt if coords else 0.0
+
+
+def calculate_surface_azimuth(surface: IDFObject) -> float:
+    """Calculate the azimuth of a surface in degrees (eppy compatibility).
+
+    0 = north, 90 = east, 180 = south, 270 = west.
+    """
+    coords = get_surface_coords(surface)
+    return coords.azimuth if coords else 0.0
+
+
 def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
     """Calculate the total floor area of a zone."""
     total_area = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
-        surface_type = getattr(surface, "surface_type", "")
+        surface_type = getattr(surface, "surface_type", None) or ""
         if surface_type and surface_type.lower() == "floor":
             total_area += calculate_surface_area(surface)
 
     return total_area
+
+
+def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
+    """Calculate the total ceiling/roof area of a zone (eppy compatibility)."""
+    total_area = 0.0
+
+    for surface in doc["BuildingSurface:Detailed"]:
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
+            continue
+
+        surface_type = getattr(surface, "surface_type", None) or ""
+        if surface_type and surface_type.lower() in ("ceiling", "roof"):
+            total_area += calculate_surface_area(surface)
+
+    return total_area
+
+
+def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
+    """Calculate the height of a zone from its surfaces.
+
+    Returns the difference between the maximum and minimum Z coordinates
+    across all surfaces belonging to the zone.
+    """
+    z_min = float("inf")
+    z_max = float("-inf")
+
+    for surface in doc["BuildingSurface:Detailed"]:
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
+            continue
+
+        coords = get_surface_coords(surface)
+        if coords is None:
+            continue
+
+        for v in coords.vertices:
+            z_min = min(z_min, v.z)
+            z_max = max(z_max, v.z)
+
+    if z_min == float("inf"):
+        return 0.0
+    return z_max - z_min
+
+
+def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
+    """Translate all building surfaces by the given offset vector.
+
+    Modifies the document in-place, shifting every surface's vertices
+    by *offset*.
+
+    .. note::
+
+       Only vertex coordinates are modified.  ``Zone`` origin fields
+       and the ``Building`` object are **not** updated.  Use
+       :func:`translate_to_world` if you need to collapse zone-relative
+       coordinates into world coordinates.
+    """
+    surface_types = [
+        "BuildingSurface:Detailed",
+        "FenestrationSurface:Detailed",
+        "Shading:Site:Detailed",
+        "Shading:Building:Detailed",
+        "Shading:Zone:Detailed",
+    ]
+    for stype in surface_types:
+        for surface in doc[stype]:
+            coords = get_surface_coords(surface)
+            if coords is not None:
+                set_surface_coords(surface, coords.translate(offset))
+
+
+def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None = None) -> None:
+    """Rotate all building surfaces around the Z axis.
+
+    Only vertex coordinates are modified; ``Building.north_axis`` and
+    ``Zone`` rotation fields are **not** updated.
+
+    Args:
+        doc: The document to modify in-place.
+        angle_deg: Rotation angle in degrees (positive = counter-clockwise when
+            viewed from above).
+        anchor: Point to rotate around.  If ``None``, the origin ``(0, 0, 0)``
+            is used.
+    """
+    if anchor is None:
+        anchor = Vector3D.origin()
+
+    surface_types = [
+        "BuildingSurface:Detailed",
+        "FenestrationSurface:Detailed",
+        "Shading:Site:Detailed",
+        "Shading:Building:Detailed",
+        "Shading:Zone:Detailed",
+    ]
+    for stype in surface_types:
+        for surface in doc[stype]:
+            coords = get_surface_coords(surface)
+            if coords is not None:
+                set_surface_coords(surface, coords.rotate_z(angle_deg, anchor=anchor))
 
 
 def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
@@ -392,7 +542,7 @@ def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
     volume = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
         coords = get_surface_coords(surface)

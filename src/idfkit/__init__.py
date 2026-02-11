@@ -38,6 +38,7 @@ from .exceptions import (
     IdfKitError,
     NoDesignDaysError,
     ParseError,
+    RangeError,
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
@@ -46,7 +47,19 @@ from .exceptions import (
 )
 
 # Geometry utilities
-from .geometry import Polygon3D, Vector3D
+from .geometry import (
+    Polygon3D,
+    Vector3D,
+    calculate_surface_area,
+    calculate_surface_azimuth,
+    calculate_surface_tilt,
+    calculate_zone_ceiling_area,
+    calculate_zone_floor_area,
+    calculate_zone_height,
+    calculate_zone_volume,
+    rotate_building,
+    translate_building,
+)
 
 # Parsing functions
 from .idf_parser import IDFParser, get_idf_version, parse_idf
@@ -159,6 +172,7 @@ __all__ = [
     "ObjectDescription",
     "ParseError",
     "Polygon3D",
+    "RangeError",
     "ReferenceGraph",
     "SchemaManager",
     "SchemaNotFoundError",
@@ -170,6 +184,13 @@ __all__ = [
     "Vector3D",
     "VersionNotFoundError",
     "__version__",
+    "calculate_surface_area",
+    "calculate_surface_azimuth",
+    "calculate_surface_tilt",
+    "calculate_zone_ceiling_area",
+    "calculate_zone_floor_area",
+    "calculate_zone_height",
+    "calculate_zone_volume",
     "find_closest_version",
     "get_idf_version",
     "get_schema",
@@ -180,6 +201,8 @@ __all__ = [
     "new_document",
     "parse_epjson",
     "parse_idf",
+    "rotate_building",
+    "translate_building",
     "validate_document",
     "validate_object",
     "version_string",

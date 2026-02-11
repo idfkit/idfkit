@@ -21,6 +21,7 @@ result.errors     # ErrorReport from .err file
 result.sql        # SQLResult from .sql database
 result.variables  # OutputVariableIndex from .rdd/.mdd
 result.csv        # CSVResult from .csv file
+result.html       # HTMLResult from HTML tabular output
 ```
 
 ## Output File Paths
@@ -126,6 +127,56 @@ if csv_result is not None:
     values = csv_result.get_column_values("Zone Mean Air Temperature")
 ```
 
+## HTML Tabular Output
+
+Parse the HTML tabular summary file (`eplustbl.htm`) that EnergyPlus
+produces alongside every simulation:
+
+```python
+html = result.html
+if html is not None:
+    # Iterate all tables
+    for table in html:
+        print(f"{table.title}: {len(table.rows)} rows")
+
+    # eppy-compatible (title, rows) pairs
+    for title, rows in html.titletable():
+        print(title)
+
+    # Look up a table by title (case-insensitive substring match)
+    table = html.tablebyname("Site and Source Energy")
+    if table:
+        data = table.to_dict()  # {row_key: {col_header: value}}
+        print(data)
+
+    # Get all tables from a specific report
+    annual = html.tablesbyreport("Annual Building Utility Performance Summary")
+
+    # Access by index
+    first = html.tablebyindex(0)
+```
+
+Each `HTMLTable` has these attributes:
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `title` | `str` | Bold title preceding the table |
+| `header` | `list[str]` | Column headers |
+| `rows` | `list[list[str]]` | Data rows |
+| `report_name` | `str` | Parent report name |
+| `for_string` | `str` | The "For:" qualifier (e.g. "Entire Facility") |
+
+You can also parse a standalone HTML file without a full simulation:
+
+```python
+from idfkit.simulation.parsers.html import HTMLResult
+
+html = HTMLResult.from_file("eplustbl.htm")
+html = HTMLResult.from_string(html_string)
+```
+
+This replaces eppy's `readhtml` module.
+
 ## Lazy Loading
 
 Output files are parsed only when accessed:
@@ -138,6 +189,7 @@ result = simulate(model, weather)
 result.errors    # NOW parses .err file
 result.sql       # NOW opens SQLite database
 result.variables # NOW parses .rdd/.mdd files
+result.html      # NOW parses HTML tabular output
 ```
 
 This keeps memory usage low, especially for batch simulations where you
@@ -185,6 +237,7 @@ ts = result.sql.get_timeseries(
 | `sql` | `SQLResult \| None` | SQL database accessor |
 | `variables` | `OutputVariableIndex \| None` | Variable discovery |
 | `csv` | `CSVResult \| None` | CSV output parser |
+| `html` | `HTMLResult \| None` | HTML tabular output parser |
 | `sql_path` | `Path \| None` | Path to .sql file |
 | `err_path` | `Path \| None` | Path to .err file |
 | `eso_path` | `Path \| None` | Path to .eso file |
