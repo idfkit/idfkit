@@ -93,7 +93,9 @@ typeCheckingMode = "strict"
 exclude = ["benchmarks", "src/idfkit/schemas", "src/idfkit/weather/data", ".venv", "**/node_modules", "**/__pycache__"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "src/idfkit"]
+addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/weather --ignore=src/idfkit/schedules --ignore=src/idfkit/thermal --ignore=src/idfkit/visualization --ignore=src/idfkit/download.py"
+doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 markers = [
     "integration: marks tests as requiring EnergyPlus installation (deselect with '-m \"not integration\"')",
 ]

@@ -42,6 +42,34 @@ class IDFObject:
     Uses __slots__ for memory efficiency - each object is ~200 bytes.
     Provides attribute access to fields via __getattr__/__setattr__.
 
+    Examples:
+        Create a rigid insulation material and access its properties:
+
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> insulation = model.add("Material", "XPS_50mm",
+        ...     roughness="Rough", thickness=0.05,
+        ...     conductivity=0.034, density=35.0, specific_heat=1400.0)
+
+        Read thermal properties as attributes:
+
+        >>> insulation.conductivity
+        0.034
+        >>> insulation.thickness
+        0.05
+
+        Modify for parametric analysis (double the insulation):
+
+        >>> insulation.thickness = 0.1
+        >>> insulation.thickness
+        0.1
+
+        Export to a dictionary for use with external tools:
+
+        >>> d = insulation.to_dict()
+        >>> d["conductivity"]
+        0.034
+
     Attributes:
         _type: The IDF object type (e.g., "Zone", "Material")
         _name: The object's name (first field)
@@ -250,11 +278,37 @@ class IDFObject:
         object.__setattr__(self, "_version", self._version + 1)
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        Useful for serializing EnergyPlus objects to JSON, CSV, or
+        DataFrames for post-processing.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> mat = model.add("Material", "Concrete_200mm",
+            ...     roughness="MediumRough", thickness=0.2,
+            ...     conductivity=1.4, density=2240.0, specific_heat=900.0)
+            >>> d = mat.to_dict()
+            >>> d["name"], d["thickness"], d["conductivity"]
+            ('Concrete_200mm', 0.2, 1.4)
+        """
         return {"name": self._name, **self._data}
 
     def get(self, key: str, default: Any = None) -> Any:
-        """Get field value with default."""
+        """Get field value with default.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> mat = model.add("Material", "Concrete_200mm",
+            ...     roughness="MediumRough", thickness=0.2,
+            ...     conductivity=1.4, density=2240.0, specific_heat=900.0)
+            >>> mat.get("conductivity")
+            1.4
+            >>> mat.get("thermal_absorptance", 0.9)
+            0.9
+        """
         value = getattr(self, key)
         return value if value is not None else default
 
@@ -279,6 +333,24 @@ class IDFObject:
             The referenced :class:`IDFObject`, or ``None`` if the field is
             empty, the document is not attached, or the target cannot be
             found.
+
+        Examples:
+            Follow a surface's ``zone_name`` reference to retrieve the
+            Zone object it belongs to:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> wall = model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="",
+            ...     zone_name="Perimeter_ZN_1",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)
+            >>> zone = wall.get_referenced_object("zone_name")
+            >>> zone.name
+            'Perimeter_ZN_1'
         """
         doc = self._document
         if doc is None:
@@ -386,6 +458,18 @@ class IDFObject:
         Returns a dict which may contain keys ``minimum``,
         ``exclusiveMinimum``, ``maximum``, ``exclusiveMaximum``, and
         ``type``.
+
+        Examples:
+            Check valid thickness bounds before setting a new value:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> mat = model.add("Material", "Insulation_Board",
+            ...     roughness="MediumRough", thickness=0.05,
+            ...     conductivity=0.04, density=30.0, specific_heat=1500.0)
+            >>> rng = mat.getrange("thickness")
+            >>> rng["exclusiveMinimum"]
+            0.0
         """
         result: dict[str, Any] = {}
         field_idd = self.get_field_idd(to_python_name(field_name))
@@ -415,6 +499,17 @@ class IDFObject:
 
         Raises:
             RangeError: If the value is outside the valid range.
+
+        Examples:
+            Verify a material's thickness is within EnergyPlus limits:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> mat = model.add("Material", "Concrete_200mm",
+            ...     roughness="MediumRough", thickness=0.2,
+            ...     conductivity=1.4, density=2240.0, specific_heat=900.0)
+            >>> mat.checkrange("thickness")
+            True
         """
         from .exceptions import RangeError
 
@@ -544,6 +639,24 @@ class IDFCollection:
 
     Provides list-like iteration and dict-like access by name.
 
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+        Zone('Perimeter_ZN_1')
+        >>> model.add("Zone", "Core_ZN")  # doctest: +ELLIPSIS
+        Zone('Core_ZN')
+        >>> zones = model["Zone"]
+        >>> len(zones)
+        2
+
+        O(1) lookup by name:
+
+        >>> zones["Perimeter_ZN_1"].name
+        'Perimeter_ZN_1'
+        >>> zones[0].name
+        'Perimeter_ZN_1'
+
     Attributes:
         _type: The object type this collection holds
         _by_name: Dict mapping uppercase names to objects
@@ -630,21 +743,83 @@ class IDFCollection:
         return f"IDFCollection({self._type}, count={len(self._items)})"
 
     def get(self, name: str, default: IDFObject | None = None) -> IDFObject | None:
-        """Get object by name with default."""
+        """Get object by name with default.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> model["Zone"].get("Perimeter_ZN_1").name
+            'Perimeter_ZN_1'
+            >>> model["Zone"].get("NonExistent") is None
+            True
+        """
         return self._by_name.get(name.upper(), default)
 
     def first(self) -> IDFObject | None:
-        """Get the first object or None."""
+        """Get the first object or None.
+
+        Examples:
+            Quickly grab a singleton like Building or SimulationControl:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Core_ZN")  # doctest: +ELLIPSIS
+            Zone('Core_ZN')
+            >>> model["Zone"].first().name
+            'Core_ZN'
+            >>> model["Material"].first() is None
+            True
+        """
         return self._items[0] if self._items else None
 
     def to_list(self) -> list[IDFObject]:
-        """Convert to list."""
+        """Convert to list.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> model.add("Zone", "Core_ZN")  # doctest: +ELLIPSIS
+            Zone('Core_ZN')
+            >>> [z.name for z in model["Zone"].to_list()]
+            ['Perimeter_ZN_1', 'Core_ZN']
+        """
         return list(self._items)
 
     def to_dict(self) -> list[dict[str, Any]]:
-        """Convert all objects to list of dicts (eppy compatibility)."""
+        """Convert all objects to list of dicts (eppy compatibility).
+
+        Useful for feeding zone/material data into pandas or other
+        analysis tools.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1", x_origin=0.0)  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> dicts = model["Zone"].to_dict()
+            >>> dicts[0]["name"]
+            'Perimeter_ZN_1'
+        """
         return [obj.to_dict() for obj in self._items]
 
     def filter(self, predicate: Callable[[IDFObject], bool]) -> list[IDFObject]:
-        """Filter objects by predicate function."""
+        """Filter objects by predicate function.
+
+        Examples:
+            Find zones on upper floors of a multi-story building:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Ground_Office", z_origin=0.0)  # doctest: +ELLIPSIS
+            Zone('Ground_Office')
+            >>> model.add("Zone", "Floor2_Office", z_origin=3.5)  # doctest: +ELLIPSIS
+            Zone('Floor2_Office')
+            >>> upper = model["Zone"].filter(lambda z: (z.z_origin or 0) > 0)
+            >>> [z.name for z in upper]
+            ['Floor2_Office']
+        """
         return [obj for obj in self._items if predicate(obj)]

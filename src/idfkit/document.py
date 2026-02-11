@@ -153,9 +153,24 @@ class IDFDocument:
         """
         Get collection by object type name.
 
+        Returns an empty collection if no objects of that type exist yet.
+
         Examples:
-            doc["Zone"]
-            doc["BuildingSurface:Detailed"]
+            Access all zones in the model:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> model.add("Zone", "Core_ZN")  # doctest: +ELLIPSIS
+            Zone('Core_ZN')
+            >>> len(model["Zone"])
+            2
+
+            Look up a specific zone by name (O(1)):
+
+            >>> model["Zone"]["Perimeter_ZN_1"].name
+            'Perimeter_ZN_1'
         """
         key = obj_type
         if key not in self._collections:
@@ -166,9 +181,21 @@ class IDFDocument:
         """
         Get collection by Python-style attribute name.
 
+        Convenient shorthand names are mapped to their IDF equivalents
+        (e.g. ``zones`` -> ``Zone``, ``building_surfaces`` ->
+        ``BuildingSurface:Detailed``).
+
         Examples:
-            doc.zones  # -> Zone collection
-            doc.building_surfaces  # -> BuildingSurface:Detailed collection
+            Use shorthand attribute names for common object types:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> len(model.zones)
+            1
+            >>> model.zones[0].name
+            'Perimeter_ZN_1'
 
         Raises:
             AttributeError: If the attribute is not a known collection mapping.
@@ -190,7 +217,20 @@ class IDFDocument:
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")  # noqa: TRY003
 
     def __contains__(self, obj_type: str) -> bool:
-        """Check if document has objects of a type."""
+        """Check if document has objects of a type.
+
+        Examples:
+            Check whether the model contains any zones or materials:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> "Zone" in model
+            True
+            >>> "Material" in model
+            False
+        """
         return obj_type in self._collections and len(self._collections[obj_type]) > 0
 
     def __iter__(self) -> Iterator[str]:
@@ -202,15 +242,42 @@ class IDFDocument:
         return sum(len(c) for c in self._collections.values())
 
     def keys(self) -> list[str]:
-        """Return list of object type names that have objects."""
+        """Return list of object type names that have objects.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> model.keys()
+            ['Zone']
+        """
         return [k for k, v in self._collections.items() if v]
 
     def values(self) -> list[IDFCollection]:
-        """Return list of non-empty collections."""
+        """Return list of non-empty collections.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> len(model.values())
+            1
+        """
         return [v for v in self._collections.values() if v]
 
     def items(self) -> list[tuple[str, IDFCollection]]:
-        """Return list of (object_type, collection) pairs for non-empty collections."""
+        """Return list of (object_type, collection) pairs for non-empty collections.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> [(t, len(c)) for t, c in model.items()]
+            [('Zone', 1)]
+        """
         return [(k, v) for k, v in self._collections.items() if v]
 
     # -------------------------------------------------------------------------
@@ -236,6 +303,16 @@ class IDFDocument:
 
         Returns:
             IDFObject or None if not found
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> model.getobject("Zone", "Perimeter_ZN_1").name
+            'Perimeter_ZN_1'
+            >>> model.getobject("Zone", "NonExistent") is None
+            True
         """
         collection = self._collections.get(obj_type)
         if collection:
@@ -276,15 +353,22 @@ class IDFDocument:
             ValueError: If no schema is loaded
             KeyError: If the object type is not found in the schema
 
-        Example:
+        Examples:
+            Discover which fields are needed for a new Material:
+
+            >>> from idfkit import new_document
             >>> model = new_document()
-            >>> print(model.describe("Zone"))
-            === Zone ===
-            ...
-            Fields (9):
-              direction_of_relative_north (number) [deg] default=0
-              x_origin (number) [m] default=0
-              ...
+            >>> mat_desc = model.describe("Material")
+            >>> mat_desc.required_fields
+            ['roughness', 'thickness', 'conductivity', 'density', 'specific_heat']
+
+            Explore Zone fields:
+
+            >>> zone_desc = model.describe("Zone")
+            >>> zone_desc.obj_type
+            'Zone'
+            >>> len(zone_desc.fields) > 0
+            True
         """
         if self._schema is None:
             msg = "No schema loaded - cannot describe object types"
@@ -324,12 +408,37 @@ class IDFDocument:
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
 
-        Example:
-            # Standard usage (validates by default)
-            model.add("Zone", "Office", x_origin=0)
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
 
-            # Disable validation for bulk operations
-            model.add("Zone", "Office", x_origin=0, validate=False)
+            Create a thermal zone for a south-facing perimeter office:
+
+            >>> zone = model.add("Zone", "Perimeter_ZN_South",
+            ...     x_origin=0.0, y_origin=0.0, z_origin=0.0)
+            >>> zone.name
+            'Perimeter_ZN_South'
+
+            Define a concrete wall material (200 mm, k=1.4 W/m-K):
+
+            >>> concrete = model.add("Material", "Concrete_200mm",
+            ...     roughness="MediumRough", thickness=0.2,
+            ...     conductivity=1.4, density=2240.0, specific_heat=900.0)
+            >>> concrete.conductivity
+            1.4
+
+            Build a construction and assign it to a surface:
+
+            >>> wall = model.add("Construction", "Ext_Wall",
+            ...     outside_layer="Concrete_200mm", validate=False)
+
+            Disable validation for bulk loading (e.g., importing from
+            another tool):
+
+            >>> for i in range(3):
+            ...     _ = model.add("Zone", f"Floor{i+1}_Core", validate=False)
+            >>> len(model["Zone"])
+            4
         """
         # Merge data and kwargs
         field_data = dict(data) if data else {}
@@ -474,12 +583,19 @@ class IDFDocument:
             KeyError: If the referenced object does not exist or the
                 key format is invalid.
 
-        Example::
+        Examples:
+            Batch-update fields for parametric analysis -- for instance,
+            sweep insulation thickness without touching the rest of the model:
 
-            model.update({
-                "Zone.Office.x_origin": 5.0,
-                "Material.Concrete.thickness": 0.2,
-            })
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Material", "Insulation",
+            ...     roughness="Rough", thickness=0.05,
+            ...     conductivity=0.04, density=30.0, specific_heat=1500.0)  # doctest: +ELLIPSIS
+            Material('Insulation')
+            >>> model.update({"Material.Insulation.thickness": 0.1})
+            >>> model.getobject("Material", "Insulation").thickness
+            0.1
         """
         from .objects import to_python_name
 
@@ -499,10 +615,27 @@ class IDFDocument:
         """
         Rename an object and update all references.
 
+        All objects that reference the old name are automatically updated
+        to point to the new name via the reference graph.
+
         Args:
             obj_type: Object type
             old_name: Current name
             new_name: New name
+
+        Examples:
+            Rename a zone -- all referencing surfaces, people, lights,
+            etc. are updated automatically via the reference graph:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "THERMAL ZONE 1")  # doctest: +ELLIPSIS
+            Zone('THERMAL ZONE 1')
+            >>> model.rename("Zone", "THERMAL ZONE 1", "Perimeter_ZN_South")
+            >>> model.getobject("Zone", "THERMAL ZONE 1") is None
+            True
+            >>> model.getobject("Zone", "Perimeter_ZN_South").name
+            'Perimeter_ZN_South'
         """
         obj = self.getobject(obj_type, old_name)
         if not obj:
@@ -570,11 +703,55 @@ class IDFDocument:
                     self._references.register(obj, field_name, value)
 
     def get_referencing(self, name: str) -> set[IDFObject]:
-        """Get all objects that reference a given name."""
+        """Get all objects that reference a given name.
+
+        Uses the reference graph for O(1) lookup.  This is the primary
+        way to find all surfaces in a zone, all objects using a schedule,
+        or all surfaces assigned to a construction.
+
+        Examples:
+            Find every surface that belongs to a zone:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="",
+            ...     zone_name="Perimeter_ZN_1",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('South_Wall')
+            >>> refs = model.get_referencing("Perimeter_ZN_1")
+            >>> len(refs)
+            1
+        """
         return self._references.get_referencing(name)
 
     def get_references(self, obj: IDFObject) -> set[str]:
-        """Get all names that an object references."""
+        """Get all names that an object references.
+
+        Useful for understanding the dependency chain of a surface
+        (which zone and construction does it point to?).
+
+        Examples:
+            Inspect what a wall surface depends on:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> wall = model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="",
+            ...     zone_name="Perimeter_ZN_1",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)
+            >>> refs = model.get_references(wall)
+            >>> "PERIMETER_ZN_1" in refs
+            True
+        """
         return self._references.get_references(obj)
 
     # -------------------------------------------------------------------------
@@ -644,6 +821,24 @@ class IDFDocument:
 
         Returns:
             List of surface objects
+
+        Examples:
+            Query the building envelope by surface type:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="", zone_name="",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('South_Wall')
+            >>> len(model.getsurfaces())
+            1
+            >>> len(model.getsurfaces("wall"))
+            1
+            >>> len(model.getsurfaces("floor"))
+            0
         """
         surfaces = list(self["BuildingSurface:Detailed"])
 
@@ -705,11 +900,20 @@ class IDFDocument:
             EnergyPlusNotFoundError: If no EnergyPlus installation is found.
             ExpandObjectsError: If the preprocessor fails.
 
-        Example:
-            >>> model = load_idf("building_with_templates.idf")
-            >>> expanded = model.expand()
-            >>> for obj in expanded["ZoneHVAC:IdealLoadsAirSystem"]:
-            ...     print(obj.name)
+        Examples:
+            Expand HVACTemplate objects into low-level HVAC components
+            so you can inspect or modify the resulting system::
+
+                model = load_idf("5ZoneAirCooled_HVACTemplate.idf")
+                expanded = model.expand()
+                for ideal in expanded["ZoneHVAC:IdealLoadsAirSystem"]:
+                    print(ideal.name, ideal.cooling_limit)
+
+            Point to a specific EnergyPlus installation::
+
+                from idfkit.simulation import find_energyplus
+                ep = find_energyplus(version=(24, 1, 0))
+                expanded = model.expand(energyplus=ep)
         """
         from .simulation.expand import expand_objects
 
@@ -720,7 +924,29 @@ class IDFDocument:
     # -------------------------------------------------------------------------
 
     def copy(self) -> IDFDocument:
-        """Create a deep copy of the document."""
+        """Create a deep copy of the document.
+
+        The copy is independent -- modifying the copy does not affect
+        the original.
+
+        Examples:
+            Create a copy for parametric comparison (e.g., testing
+            different insulation strategies without altering the baseline):
+
+            >>> from idfkit import new_document
+            >>> baseline = new_document()
+            >>> baseline.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> variant = baseline.copy()
+            >>> len(variant)
+            1
+            >>> variant.add("Zone", "Server_Room")  # doctest: +ELLIPSIS
+            Zone('Server_Room')
+            >>> len(baseline)
+            1
+            >>> len(variant)
+            2
+        """
         new_doc = IDFDocument(
             version=self.version,
             schema=self._schema,
@@ -747,6 +973,17 @@ class IDFDocument:
 
         Raises:
             ValueError: If no filepath is set and none is provided.
+
+        Examples:
+            Save a modified model back to its original IDF file::
+
+                model = load_idf("5ZoneAirCooled.idf")
+                model.add("Zone", "Mech_Room")
+                model.save()   # overwrites 5ZoneAirCooled.idf
+
+            Save to a new path for archival::
+
+                model.save("5ZoneAirCooled_v2.idf")
         """
         from .writers import write_idf
 
@@ -760,9 +997,19 @@ class IDFDocument:
     def saveas(self, filepath: str | Path, encoding: str = "latin-1") -> None:
         """Save to a new path and update ``self.filepath`` (eppy compatibility).
 
+        After saving, ``self.filepath`` is updated to the new path so
+        subsequent :meth:`save` calls write to it.
+
         Args:
             filepath: Destination path.
             encoding: Output encoding.
+
+        Examples:
+            Save under a new name and continue editing there::
+
+                model = load_idf("Baseline.idf")
+                model.saveas("HighInsulation_Variant.idf")
+                model.save()   # now writes to HighInsulation_Variant.idf
         """
         from .writers import write_idf
 
@@ -773,9 +1020,20 @@ class IDFDocument:
     def savecopy(self, filepath: str | Path, encoding: str = "latin-1") -> None:
         """Save a copy without changing ``self.filepath`` (eppy compatibility).
 
+        Unlike :meth:`saveas`, the document's ``filepath`` remains
+        unchanged.
+
         Args:
             filepath: Destination path.
             encoding: Output encoding.
+
+        Examples:
+            Create a snapshot before running a parametric sweep::
+
+                model = load_idf("Baseline.idf")
+                model.savecopy("Baseline_backup.idf")
+                # ... modify model ...
+                model.save()   # still writes to Baseline.idf
         """
         from .writers import write_idf
 

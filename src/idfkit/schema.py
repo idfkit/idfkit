@@ -32,6 +32,24 @@ class EpJSONSchema:
     - Reference lists (object-list) for cross-object validation
     - Legacy IDD info for IDF field ordering
 
+    Examples:
+        >>> from idfkit import get_schema, LATEST_VERSION
+        >>> schema = get_schema(LATEST_VERSION)
+        >>> "Zone" in schema
+        True
+
+        Check which IDD group a type belongs to:
+
+        >>> schema.get_group("Zone")
+        'Thermal Zones and Surfaces'
+
+        Some object types (like Timestep) are singletons with no name field:
+
+        >>> schema.has_name("Zone")
+        True
+        >>> schema.has_name("Timestep")
+        False
+
     Attributes:
         version: The EnergyPlus version tuple
         _raw: The raw schema dict
@@ -81,7 +99,17 @@ class EpJSONSchema:
                         self._object_lists[obj_list].add(f"{obj_type}.{field_name}")
 
     def get_object_schema(self, obj_type: str) -> dict[str, Any] | None:
-        """Get the full schema for an object type."""
+        """Get the full schema for an object type.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> zone_schema = schema.get_object_schema("Zone")
+            >>> zone_schema is not None
+            True
+            >>> schema.get_object_schema("NonExistent") is None
+            True
+        """
         return self._properties.get(obj_type)
 
     def get_inner_schema(self, obj_type: str) -> dict[str, Any] | None:
@@ -103,7 +131,19 @@ class EpJSONSchema:
         return inner.get("properties", {}).get(field_name)
 
     def get_field_names(self, obj_type: str) -> list[str]:
-        """Get ordered list of field names for an object type (from legacy_idd)."""
+        """Get ordered list of field names for an object type (from legacy_idd).
+
+        Useful for discovering valid field names when building objects
+        programmatically.
+
+        Examples:
+            List the fields available on a Material object:
+
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> "thickness" in schema.get_field_names("Material")
+            True
+        """
         obj_schema = self.get_object_schema(obj_type)
         if not obj_schema:
             return []
@@ -121,7 +161,16 @@ class EpJSONSchema:
         return list(legacy.get("fields", []))
 
     def get_required_fields(self, obj_type: str) -> list[str]:
-        """Get list of required field names for an object type."""
+        """Get list of required field names for an object type.
+
+        Check which fields must be supplied before a Material is valid:
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.get_required_fields("Material")
+            ['roughness', 'thickness', 'conductivity', 'density', 'specific_heat']
+        """
         inner = self.get_inner_schema(obj_type)
         if not inner:
             return []
@@ -135,7 +184,19 @@ class EpJSONSchema:
         return None
 
     def get_field_type(self, obj_type: str, field_name: str) -> str | None:
-        """Get the type of a field ('number', 'string', 'integer', 'array')."""
+        """Get the type of a field ('number', 'string', 'integer', 'array').
+
+        Useful for dynamic type coercion when importing data from
+        spreadsheets or CSV files.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.get_field_type("Material", "thickness")
+            'number'
+            >>> schema.get_field_type("Material", "roughness")
+            'string'
+        """
         field_schema = self.get_field_schema(obj_type, field_name)
         if not field_schema:
             # Fall back to legacy_idd field_info for extensible fields
@@ -226,7 +287,19 @@ class EpJSONSchema:
         return legacy.get("extensibles", [])
 
     def is_extensible(self, obj_type: str) -> bool:
-        """Check if an object type has extensible fields."""
+        """Check if an object type has extensible fields.
+
+        Extensible types (like surfaces) can have a variable number of
+        vertices or layers.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.is_extensible("BuildingSurface:Detailed")
+            True
+            >>> schema.is_extensible("Zone")
+            False
+        """
         obj_schema = self.get_object_schema(obj_type)
         if obj_schema:
             return "extensible_size" in obj_schema
@@ -241,7 +314,16 @@ class EpJSONSchema:
 
     @property
     def object_types(self) -> list[str]:
-        """Get list of all object types in the schema."""
+        """Get list of all object types in the schema.
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> "Zone" in schema.object_types
+            True
+            >>> len(schema.object_types) > 100
+            True
+        """
         return list(self._properties.keys())
 
     def __contains__(self, obj_type: str) -> bool:
@@ -531,5 +613,15 @@ def get_schema_manager() -> SchemaManager:
 
 
 def get_schema(version: tuple[int, int, int]) -> EpJSONSchema:
-    """Convenience function to get schema for a version."""
+    """Convenience function to get schema for a version.
+
+    Examples:
+        >>> from idfkit import get_schema, LATEST_VERSION
+        >>> schema = get_schema(LATEST_VERSION)
+        >>> "Zone" in schema
+        True
+        >>> schema = get_schema((24, 1, 0))
+        >>> schema.version
+        (24, 1, 0)
+    """
     return get_schema_manager().get_schema(version)

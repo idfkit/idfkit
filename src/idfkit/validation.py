@@ -113,6 +113,25 @@ def validate_document(  # noqa: C901
 
     Returns:
         ValidationResult with all issues found
+
+    Examples:
+        Validate a model before running a simulation:
+
+        >>> from idfkit import new_document, validate_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+        Zone('Perimeter_ZN_1')
+        >>> result = validate_document(model)
+        >>> result.is_valid
+        True
+        >>> result.total_issues
+        0
+
+        Validate only material and construction definitions:
+
+        >>> result = validate_document(model, object_types=["Material", "Construction"])
+        >>> result.is_valid
+        True
     """
     schema = schema or doc.schema
 
@@ -194,6 +213,16 @@ def validate_object(
 
     Returns:
         List of ValidationError objects describing any issues found
+
+    Examples:
+        Check a newly created zone for schema violations:
+
+        >>> from idfkit import new_document, validate_object, get_schema, LATEST_VERSION
+        >>> model = new_document()
+        >>> zone = model.add("Zone", "Perimeter_ZN_1")
+        >>> errors = validate_object(zone, get_schema(LATEST_VERSION))
+        >>> len(errors)
+        0
     """
     return _validate_object(
         obj,
