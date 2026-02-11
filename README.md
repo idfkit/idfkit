@@ -7,6 +7,13 @@
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
+> [!NOTE]
+> idfkit is in **beta**. The API may change between minor versions. We're looking
+> for early adopters and testers — especially users of eppy or opyplus who want
+> better performance and a modern API. If you try it out, please
+> [open an issue](https://github.com/samuelduchesne/idfkit/issues) with feedback,
+> bug reports, or feature requests.
+
 idfkit lets you load, create, query, and modify EnergyPlus models with an
 intuitive Python API. It is designed as a drop-in replacement for
 [eppy](https://github.com/santoshphilip/eppy) with better performance,
