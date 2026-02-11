@@ -30,6 +30,14 @@ formats.
   result parsing, batch processing, and content-addressed caching.
 - **Weather data** — Search 55,000+ weather stations, download EPW/DDY files,
   and apply ASHRAE design day conditions.
+- **Async & batch simulation** — Run simulations concurrently with
+  `async_simulate` or process parameter sweeps with `simulate_batch`.
+- **3D visualization** — Render building geometry to interactive 3D views or
+  static SVG images with no external tools.
+- **Schedule evaluation** — Parse and evaluate EnergyPlus compact, weekly, and
+  holiday schedules to time-series values.
+- **Thermal properties** — Gas mixture and material thermal calculations for
+  glazing and construction analysis.
 - **Broad version support** — Bundled schemas for every EnergyPlus release
   from v8.9 through v25.2.
 
@@ -46,9 +54,11 @@ thanks to O(1) dict-based indexing:
 </picture>
 
 See [full benchmark results](https://samuelduchesne.github.io/idfkit/benchmarks/)
-for all six operations (load, query, add, modify, write) across four tools.
+for all six operations (load, get by type, get by name, add, modify, write) across four tools.
 
 ## Installation
+
+Requires **Python 3.10+**.
 
 ```bash
 pip install idfkit
@@ -69,6 +79,7 @@ uv add idfkit
 | `s3` | `pip install idfkit[s3]` | S3 cloud storage backend (boto3) |
 | `plot` | `pip install idfkit[plot]` | Matplotlib plotting |
 | `plotly` | `pip install idfkit[plotly]` | Plotly interactive charts |
+| `progress` | `pip install idfkit[progress]` | tqdm progress bars for simulations |
 | `all` | `pip install idfkit[all]` | Everything above |
 
 ## Quick Example
@@ -94,6 +105,16 @@ for obj in doc.get_referencing("Office"):
 write_idf(doc, "out.idf")
 ```
 
+### Creating a model from scratch
+
+```python
+from idfkit import new_document, write_idf
+
+doc = new_document()
+doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
+write_idf(doc, "new_building.idf")
+```
+
 ## Simulation
 
 ```python
@@ -101,13 +122,17 @@ from idfkit.simulation import simulate
 
 result = simulate(doc, "weather.epw", design_day=True)
 
-# Query results
+# Query results from the SQLite output
 ts = result.sql.get_timeseries(
     variable_name="Zone Mean Air Temperature",
     key_value="Office",
 )
 print(f"Max temp: {max(ts.values):.1f}°C")
 ```
+
+> **Note:** `result.sql` requires EnergyPlus to produce SQLite output (the
+> default). See the [Simulation Guide](https://samuelduchesne.github.io/idfkit/simulation/)
+> for details on output configuration.
 
 ## Weather
 
