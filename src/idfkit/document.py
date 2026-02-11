@@ -649,7 +649,7 @@ class IDFDocument:
 
         if surface_type:
             surface_type_upper = surface_type.upper()
-            surfaces = [s for s in surfaces if getattr(s, "surface_type", "").upper() == surface_type_upper]
+            surfaces = [s for s in surfaces if (getattr(s, "surface_type", None) or "").upper() == surface_type_upper]
 
         return surfaces
 

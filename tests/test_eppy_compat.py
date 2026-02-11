@@ -237,6 +237,61 @@ class TestZoneCeilingArea:
         assert area == 0.0
 
 
+class TestZoneGeometryWithMissingFields:
+    """Surfaces that have no zone_name or surface_type should not crash."""
+
+    def test_floor_area_surface_missing_zone(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1")
+        # Surface with no zone_name
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Orphan",
+            {
+                "surface_type": "Floor",
+                "number_of_vertices": 3,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 1.0,
+                "vertex_3_z_coordinate": 0.0,
+            },
+            validate=False,
+        )
+        from idfkit.geometry import calculate_zone_floor_area
+
+        # Should not crash, and should not count the orphan surface
+        area = calculate_zone_floor_area(doc, "Z1")
+        assert area == 0.0
+
+    def test_height_surface_missing_zone(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1")
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Orphan",
+            {
+                "number_of_vertices": 3,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 1.0,
+                "vertex_3_z_coordinate": 0.0,
+            },
+            validate=False,
+        )
+        height = calculate_zone_height(doc, "Z1")
+        assert height == 0.0
+
+
 # ---------------------------------------------------------------------------
 # get_referenced_object
 # ---------------------------------------------------------------------------

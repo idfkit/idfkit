@@ -425,10 +425,10 @@ def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
     total_area = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
-        surface_type = getattr(surface, "surface_type", "")
+        surface_type = getattr(surface, "surface_type", None) or ""
         if surface_type and surface_type.lower() == "floor":
             total_area += calculate_surface_area(surface)
 
@@ -440,10 +440,10 @@ def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
     total_area = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
-        surface_type = getattr(surface, "surface_type", "")
+        surface_type = getattr(surface, "surface_type", None) or ""
         if surface_type and surface_type.lower() in ("ceiling", "roof"):
             total_area += calculate_surface_area(surface)
 
@@ -460,7 +460,7 @@ def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
     z_max = float("-inf")
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
         coords = get_surface_coords(surface)
@@ -542,7 +542,7 @@ def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
     volume = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
-        if getattr(surface, "zone_name", "").upper() != zone_name.upper():
+        if (getattr(surface, "zone_name", None) or "").upper() != zone_name.upper():
             continue
 
         coords = get_surface_coords(surface)
