@@ -69,7 +69,10 @@ def nearest(
     self,
     latitude: float,
     longitude: float,
-    limit: int = 10,
+    *,
+    limit: int = 5,
+    max_distance_km: float | None = None,
+    country: str | None = None,
 ) -> list[SpatialResult]:
 ```
 
@@ -110,13 +113,14 @@ california = [s for s in us_stations if s.state == "CA"]
 
 ## Filter by Coordinates
 
+Use `nearest()` with `max_distance_km` to find stations within a geographic area:
+
 ```python
-# Bounding box filter
-stations = index.filter(
-    lat_min=40.0,
-    lat_max=42.0,
-    lon_min=-90.0,
-    lon_max=-87.0,
+# Find all stations within 100 km of a point
+stations = index.nearest(
+    41.0, -88.5,
+    max_distance_km=100.0,
+    limit=50,
 )
 ```
 
@@ -127,7 +131,7 @@ stations = index.filter(
 results = index.get_by_wmo("725300")
 
 for station in results:
-    print(f"{station.display_name}: {station.source_data}")
+    print(f"{station.display_name}: {station.source}")
 ```
 
 Note: WMO numbers are **not unique** — multiple entries can share a WMO
@@ -141,10 +145,10 @@ Note: WMO numbers are **not unique** — multiple entries can share a WMO
 | `state` | `str` | State/province/region |
 | `country` | `str` | Country name |
 | `wmo` | `str` | WMO station number |
-| `source_data` | `str` | Data source (e.g., "TMYx.2009-2023") |
+| `source` | `str` | Data source identifier (e.g., "SRC-TMYx") |
 | `latitude` | `float` | Station latitude |
 | `longitude` | `float` | Station longitude |
-| `time_zone` | `float` | UTC offset |
+| `timezone` | `float` | UTC offset (hours from GMT) |
 | `elevation` | `float` | Elevation in meters |
 | `url` | `str` | Download URL for weather files |
 | `display_name` | `str` | Formatted name (city, state, country) |

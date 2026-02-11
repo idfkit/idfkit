@@ -28,16 +28,12 @@ print(f"Added {len(added)} design days")
 Use `apply_ashrae_sizing()` for a streamlined workflow:
 
 ```python
-from idfkit.weather import apply_ashrae_sizing, WeatherDownloader
+from idfkit.weather import apply_ashrae_sizing
 
-# Download DDY file
-downloader = WeatherDownloader()
-files = downloader.download(station)
-
-# Apply standard design conditions
+# Apply standard design conditions (downloads DDY from station automatically)
 added = apply_ashrae_sizing(
     model,
-    ddy_path=files.ddy,
+    station,
     standard="90.1",  # ASHRAE 90.1 criteria
 )
 ```
@@ -72,8 +68,8 @@ DDY files contain multiple design day types classified by ASHRAE criteria:
 |------|-------------|
 | `DEHUMID_0_4` | 0.4% dehumidification |
 | `DEHUMID_1` | 1% dehumidification |
-| `HUMIDIF_99_6` | 99.6% humidification |
-| `MONTHLY` | Monthly design conditions |
+| `HUMIDIFICATION_99_6` | 99.6% humidification |
+| `HUMIDIFICATION_99` | 99% humidification |
 
 ## Accessing Design Days
 
@@ -97,9 +93,9 @@ if clg:
 ### All Design Days
 
 ```python
-# All classified annual design days
-for dd_type, dd_obj in ddm.annual.items():
-    print(f"{dd_type.name}: {dd_obj.name}")
+# All classified annual design days (returns a list of IDFObject)
+for dd_obj in ddm.annual:
+    print(dd_obj.name)
 
 # Monthly design days
 for dd_obj in ddm.monthly:
@@ -129,14 +125,17 @@ added = ddm.apply_to_model(
 )
 ```
 
-### Update Site Location
+### Skip Site Location Update
+
+By default, `apply_to_model` also updates the `Site:Location` object.
+To skip this, set `update_location=False`:
 
 ```python
 added = ddm.apply_to_model(
     model,
     heating="99.6%",
     cooling="1%",
-    update_location=True,  # Also add/update Site:Location
+    update_location=False,  # Keep existing Site:Location
 )
 ```
 
@@ -153,8 +152,8 @@ added = ddm.apply_to_model(
     cooling="1%",
 )
 
-# Or use the convenience function
-added = apply_ashrae_sizing(model, ddy_path=files.ddy, standard="90.1")
+# Or use the convenience function (takes a WeatherStation, not a path)
+added = apply_ashrae_sizing(model, station, standard="90.1")
 ```
 
 ### ASHRAE 62.1 (Ventilation)

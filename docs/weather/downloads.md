@@ -27,7 +27,10 @@ The `download()` method returns a `WeatherFiles` object:
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `epw` | `Path` | Path to the EPW file |
-| `ddy` | `Path \| None` | Path to the DDY file (may be None) |
+| `ddy` | `Path` | Path to the DDY file |
+| `stat` | `Path \| None` | Path to the STAT file (may be None) |
+| `zip_path` | `Path` | Path to the original downloaded ZIP archive |
+| `station` | `WeatherStation` | The station this download corresponds to |
 
 ```python
 files = downloader.download(station)
@@ -37,9 +40,8 @@ from idfkit.simulation import simulate
 result = simulate(model, files.epw)
 
 # Use for design days
-if files.ddy:
-    from idfkit.weather import DesignDayManager
-    ddm = DesignDayManager(files.ddy)
+from idfkit.weather import DesignDayManager
+ddm = DesignDayManager(files.ddy)
 ```
 
 ## Caching
@@ -187,9 +189,8 @@ downloader = WeatherDownloader()
 files = downloader.download(station)
 
 # Apply design days
-if files.ddy:
-    ddm = DesignDayManager(files.ddy)
-    ddm.apply_to_model(model, heating="99.6%", cooling="1%")
+ddm = DesignDayManager(files.ddy)
+ddm.apply_to_model(model, heating="99.6%", cooling="1%")
 
 # Run simulation
 result = simulate(model, files.epw, design_day=True)

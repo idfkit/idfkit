@@ -88,6 +88,22 @@ Visualize simulation results with matplotlib or plotly:
     uv add idfkit[plotly]
     ```
 
+### Progress Bars
+
+Show tqdm progress bars during batch simulations:
+
+=== "pip"
+
+    ```bash
+    pip install idfkit[progress]
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add idfkit[progress]
+    ```
+
 ### Cloud Storage (S3)
 
 Store simulation results in Amazon S3:
