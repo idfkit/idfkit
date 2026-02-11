@@ -113,6 +113,23 @@ def validate_document(  # noqa: C901
 
     Returns:
         ValidationResult with all issues found
+
+    Examples:
+        >>> from idfkit import new_document, validate_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+        Zone('Office')
+        >>> result = validate_document(model)
+        >>> result.is_valid
+        True
+        >>> result.total_issues
+        0
+
+        Validate only specific object types:
+
+        >>> result = validate_document(model, object_types=["Zone"])
+        >>> result.is_valid
+        True
     """
     schema = schema or doc.schema
 
@@ -194,6 +211,14 @@ def validate_object(
 
     Returns:
         List of ValidationError objects describing any issues found
+
+    Examples:
+        >>> from idfkit import new_document, validate_object, get_schema, LATEST_VERSION
+        >>> model = new_document()
+        >>> zone = model.add("Zone", "Office")
+        >>> errors = validate_object(zone, get_schema(LATEST_VERSION))
+        >>> len(errors)
+        0
     """
     return _validate_object(
         obj,

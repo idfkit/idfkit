@@ -21,11 +21,22 @@ class Vector3D:
     """
     Immutable 3D vector.
 
-    Example:
+    Supports arithmetic operations (``+``, ``-``, ``*``, ``/``, unary ``-``)
+    and common vector operations (dot product, cross product, normalization).
+
+    Examples:
         >>> v = Vector3D(1.0, 2.0, 3.0)
-        >>> v2 = v + Vector3D(1, 0, 0)
-        >>> print(v2)
-        Vector3D(2.0, 2.0, 3.0)
+        >>> v.x, v.y, v.z
+        (1.0, 2.0, 3.0)
+
+        Vectors support arithmetic:
+
+        >>> Vector3D(1, 2, 3) + Vector3D(4, 5, 6)
+        Vector3D(x=5, y=7, z=9)
+        >>> Vector3D(3, 0, 0) * 2
+        Vector3D(x=6, y=0, z=0)
+        >>> -Vector3D(1, 0, 0)
+        Vector3D(x=-1, y=0, z=0)
     """
 
     x: float
@@ -51,11 +62,25 @@ class Vector3D:
         return Vector3D(-self.x, -self.y, -self.z)
 
     def dot(self, other: Vector3D) -> float:
-        """Dot product."""
+        """Dot product.
+
+        Examples:
+            >>> Vector3D(1, 0, 0).dot(Vector3D(0, 1, 0))
+            0
+            >>> Vector3D(3.0, 0.0, 0.0).dot(Vector3D(4.0, 0.0, 0.0))
+            12.0
+        """
         return self.x * other.x + self.y * other.y + self.z * other.z
 
     def cross(self, other: Vector3D) -> Vector3D:
-        """Cross product."""
+        """Cross product.
+
+        Examples:
+            >>> Vector3D(1, 0, 0).cross(Vector3D(0, 1, 0))
+            Vector3D(x=0, y=0, z=1)
+            >>> Vector3D(3, 0, 0).cross(Vector3D(0, 4, 0))
+            Vector3D(x=0, y=0, z=12)
+        """
         return Vector3D(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
@@ -63,18 +88,40 @@ class Vector3D:
         )
 
     def length(self) -> float:
-        """Vector magnitude."""
+        """Vector magnitude.
+
+        Examples:
+            >>> Vector3D(3, 4, 0).length()
+            5.0
+            >>> Vector3D(1, 0, 0).length()
+            1.0
+        """
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
     def normalize(self) -> Vector3D:
-        """Return unit vector."""
+        """Return unit vector.
+
+        Examples:
+            >>> Vector3D(3, 0, 0).normalize()
+            Vector3D(x=1.0, y=0.0, z=0.0)
+            >>> Vector3D(0, 0, 5).normalize()
+            Vector3D(x=0.0, y=0.0, z=1.0)
+        """
         mag = self.length()
         if mag == 0:
             return Vector3D(0, 0, 0)
         return self / mag
 
     def rotate_z(self, angle_deg: float) -> Vector3D:
-        """Rotate around Z axis by angle in degrees."""
+        """Rotate around Z axis by angle in degrees.
+
+        Examples:
+            >>> v = Vector3D(1, 0, 0).rotate_z(90)
+            >>> round(v.x, 10), round(v.y, 10)
+            (0.0, 1.0)
+            >>> Vector3D(1, 0, 5).rotate_z(180)  # doctest: +SKIP
+            Vector3D(x=-1.0, y=0.0, z=5.0)
+        """
         angle_rad = math.radians(angle_deg)
         cos_a = math.cos(angle_rad)
         sin_a = math.sin(angle_rad)
@@ -85,17 +132,36 @@ class Vector3D:
         )
 
     def as_tuple(self) -> tuple[float, float, float]:
-        """Return as tuple."""
+        """Return as tuple.
+
+        Examples:
+            >>> Vector3D(1.0, 2.0, 3.0).as_tuple()
+            (1.0, 2.0, 3.0)
+            >>> Vector3D.origin().as_tuple()
+            (0.0, 0.0, 0.0)
+        """
         return (self.x, self.y, self.z)
 
     @classmethod
     def from_tuple(cls, t: Sequence[float]) -> Vector3D:
-        """Create from tuple or list."""
+        """Create from tuple or list.
+
+        Examples:
+            >>> Vector3D.from_tuple((1.0, 2.0, 3.0))
+            Vector3D(x=1.0, y=2.0, z=3.0)
+            >>> Vector3D.from_tuple([0, 0, 0])
+            Vector3D(x=0.0, y=0.0, z=0.0)
+        """
         return cls(float(t[0]), float(t[1]), float(t[2]))
 
     @classmethod
     def origin(cls) -> Vector3D:
-        """Return origin vector."""
+        """Return origin vector.
+
+        Examples:
+            >>> Vector3D.origin()
+            Vector3D(x=0.0, y=0.0, z=0.0)
+        """
         return cls(0.0, 0.0, 0.0)
 
 
@@ -104,23 +170,59 @@ class Polygon3D:
     """
     3D polygon defined by vertices.
 
-    Example:
-        >>> vertices = [Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0), Vector3D(0, 1, 0)]
-        >>> poly = Polygon3D(vertices)
-        >>> print(poly.area)
+    Computes geometric properties (area, normal, tilt, azimuth) and supports
+    transformations (translate, rotate).
+
+    Examples:
+        Create a 1 m x 1 m horizontal square:
+
+        >>> square = Polygon3D([
+        ...     Vector3D(0, 0, 0), Vector3D(1, 0, 0),
+        ...     Vector3D(1, 1, 0), Vector3D(0, 1, 0),
+        ... ])
+        >>> square.area
         1.0
+        >>> square.is_horizontal
+        True
+
+        Create a 10 m x 3 m south-facing wall:
+
+        >>> wall = Polygon3D([
+        ...     Vector3D(0, 0, 0), Vector3D(10, 0, 0),
+        ...     Vector3D(10, 0, 3), Vector3D(0, 0, 3),
+        ... ])
+        >>> wall.area
+        30.0
+        >>> wall.tilt
+        90.0
+        >>> wall.azimuth
+        180.0
     """
 
     vertices: list[Vector3D]
 
     @property
     def num_vertices(self) -> int:
-        """Number of vertices."""
+        """Number of vertices.
+
+        Examples:
+            >>> Polygon3D([Vector3D(0,0,0), Vector3D(1,0,0), Vector3D(0,1,0)]).num_vertices
+            3
+        """
         return len(self.vertices)
 
     @property
     def normal(self) -> Vector3D:
-        """Surface normal vector."""
+        """Surface normal vector.
+
+        Examples:
+            >>> floor = Polygon3D([
+            ...     Vector3D(0, 0, 0), Vector3D(1, 0, 0),
+            ...     Vector3D(1, 1, 0), Vector3D(0, 1, 0),
+            ... ])
+            >>> floor.normal
+            Vector3D(x=0.0, y=0.0, z=1.0)
+        """
         if self.num_vertices < 3:
             return Vector3D(0, 0, 1)
 
@@ -138,7 +240,15 @@ class Polygon3D:
 
     @property
     def area(self) -> float:
-        """Surface area using cross product method."""
+        """Surface area using cross product method.
+
+        Examples:
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(5,0,0),
+            ...     Vector3D(5,5,0), Vector3D(0,5,0),
+            ... ]).area
+            25.0
+        """
         if self.num_vertices < 3:
             return 0.0
 
@@ -158,7 +268,15 @@ class Polygon3D:
 
     @property
     def centroid(self) -> Vector3D:
-        """Geometric center."""
+        """Geometric center.
+
+        Examples:
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(4,0,0),
+            ...     Vector3D(4,4,0), Vector3D(0,4,0),
+            ... ]).centroid
+            Vector3D(x=2.0, y=2.0, z=0.0)
+        """
         if not self.vertices:
             return Vector3D.origin()
 
@@ -174,6 +292,23 @@ class Polygon3D:
         0 = facing up (horizontal roof/ceiling), 90 = vertical wall,
         180 = facing down (horizontal floor).  Computed from the surface
         normal using the same convention as EnergyPlus / eppy.
+
+        Examples:
+            Horizontal surface (roof/ceiling):
+
+            >>> Polygon3D([
+            ...     Vector3D(0,0,3), Vector3D(5,0,3),
+            ...     Vector3D(5,5,3), Vector3D(0,5,3),
+            ... ]).tilt
+            0.0
+
+            Vertical wall:
+
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(10,0,0),
+            ...     Vector3D(10,0,3), Vector3D(0,0,3),
+            ... ]).tilt
+            90.0
         """
         n = self.normal
         # Clamp to avoid floating-point issues with acos
@@ -189,6 +324,23 @@ class Polygon3D:
         clockwise from north (+Y axis).
 
         Returns 0.0 for perfectly horizontal surfaces (tilt 0 or 180).
+
+        Examples:
+            South-facing wall (normal points toward -Y):
+
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(10,0,0),
+            ...     Vector3D(10,0,3), Vector3D(0,0,3),
+            ... ]).azimuth
+            180.0
+
+            Horizontal surface has azimuth 0:
+
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(1,0,0),
+            ...     Vector3D(1,1,0), Vector3D(0,1,0),
+            ... ]).azimuth
+            0.0
         """
         n = self.normal
         # For horizontal surfaces the azimuth is undefined
@@ -203,18 +355,51 @@ class Polygon3D:
 
     @property
     def is_horizontal(self) -> bool:
-        """Check if polygon is horizontal (floor/ceiling)."""
+        """Check if polygon is horizontal (floor/ceiling).
+
+        Examples:
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(1,0,0),
+            ...     Vector3D(1,1,0), Vector3D(0,1,0),
+            ... ]).is_horizontal
+            True
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(1,0,0),
+            ...     Vector3D(1,0,1), Vector3D(0,0,1),
+            ... ]).is_horizontal
+            False
+        """
         n = self.normal
         return abs(n.z) > 0.99
 
     @property
     def is_vertical(self) -> bool:
-        """Check if polygon is vertical (wall)."""
+        """Check if polygon is vertical (wall).
+
+        Examples:
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(1,0,0),
+            ...     Vector3D(1,0,1), Vector3D(0,0,1),
+            ... ]).is_vertical
+            True
+            >>> Polygon3D([
+            ...     Vector3D(0,0,0), Vector3D(1,0,0),
+            ...     Vector3D(1,1,0), Vector3D(0,1,0),
+            ... ]).is_vertical
+            False
+        """
         n = self.normal
         return abs(n.z) < 0.01
 
     def translate(self, offset: Vector3D) -> Polygon3D:
-        """Return translated polygon."""
+        """Return translated polygon.
+
+        Examples:
+            >>> tri = Polygon3D([Vector3D(0,0,0), Vector3D(1,0,0), Vector3D(0,1,0)])
+            >>> moved = tri.translate(Vector3D(10, 20, 0))
+            >>> moved.centroid
+            Vector3D(x=10.333333333333334, y=20.333333333333332, z=0.0)
+        """
         return Polygon3D([v + offset for v in self.vertices])
 
     def rotate_z(self, angle_deg: float, anchor: Vector3D | None = None) -> Polygon3D:
@@ -232,12 +417,26 @@ class Polygon3D:
         return Polygon3D(rotated)
 
     def as_tuple_list(self) -> list[tuple[float, float, float]]:
-        """Return vertices as list of tuples."""
+        """Return vertices as list of tuples.
+
+        Examples:
+            >>> tri = Polygon3D([Vector3D(0,0,0), Vector3D(1,0,0), Vector3D(0,1,0)])
+            >>> tri.as_tuple_list()
+            [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+        """
         return [v.as_tuple() for v in self.vertices]
 
     @classmethod
     def from_tuples(cls, coords: Sequence[Sequence[float]]) -> Polygon3D:
-        """Create from sequence of coordinate tuples."""
+        """Create from sequence of coordinate tuples.
+
+        Examples:
+            >>> poly = Polygon3D.from_tuples([(0,0,0), (5,0,0), (5,5,0), (0,5,0)])
+            >>> poly.area
+            25.0
+            >>> poly.num_vertices
+            4
+        """
         return cls([Vector3D.from_tuple(c) for c in coords])
 
 
@@ -250,6 +449,23 @@ def get_surface_coords(surface: IDFObject) -> Polygon3D | None:
 
     - Classic/programmatic: ``vertex_1_x_coordinate``, ``vertex_2_x_coordinate``, ...
     - epJSON schema: ``vertex_x_coordinate``, ``vertex_x_coordinate_2``, ...
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> coords = get_surface_coords(wall)
+        >>> coords.area
+        30.0
     """
     vertices = _get_vertices_classic(surface)
     if not vertices:
@@ -304,6 +520,24 @@ def set_surface_coords(surface: IDFObject, polygon: Polygon3D) -> None:
     Set coordinates on a surface object.
 
     Updates vertex fields and number_of_vertices.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> new_poly = Polygon3D.from_tuples([(0,0,0),(5,0,0),(5,0,3),(0,0,3)])
+        >>> set_surface_coords(wall, new_poly)
+        >>> get_surface_coords(wall).area
+        15.0
     """
     # Set number of vertices
     surface.number_of_vertices = len(polygon.vertices)
@@ -316,7 +550,15 @@ def set_surface_coords(surface: IDFObject, polygon: Polygon3D) -> None:
 
 
 def get_zone_origin(zone: IDFObject) -> Vector3D:
-    """Get the origin point of a zone."""
+    """Get the origin point of a zone.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> zone = model.add("Zone", "Office", x_origin=10.0, y_origin=20.0, z_origin=0.0)
+        >>> get_zone_origin(zone)
+        Vector3D(x=10.0, y=20.0, z=0.0)
+    """
     x = getattr(zone, "x_origin", 0) or 0
     y = getattr(zone, "y_origin", 0) or 0
     z = getattr(zone, "z_origin", 0) or 0
@@ -324,7 +566,15 @@ def get_zone_origin(zone: IDFObject) -> Vector3D:
 
 
 def get_zone_rotation(zone: IDFObject) -> float:
-    """Get the rotation angle of a zone in degrees."""
+    """Get the rotation angle of a zone in degrees.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> zone = model.add("Zone", "Office", direction_of_relative_north=45.0)
+        >>> get_zone_rotation(zone)
+        45.0
+    """
     angle = getattr(zone, "direction_of_relative_north", 0)
     return float(angle) if angle else 0.0
 
@@ -397,7 +647,24 @@ def translate_to_world(doc: IDFDocument) -> None:  # noqa: C901
 
 
 def calculate_surface_area(surface: IDFObject) -> float:
-    """Calculate the area of a surface."""
+    """Calculate the area of a surface.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> calculate_surface_area(wall)
+        30.0
+    """
     coords = get_surface_coords(surface)
     return coords.area if coords else 0.0
 
@@ -406,6 +673,22 @@ def calculate_surface_tilt(surface: IDFObject) -> float:
     """Calculate the tilt of a surface in degrees (eppy compatibility).
 
     0 = facing up, 90 = vertical, 180 = facing down.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> calculate_surface_tilt(wall)
+        90.0
     """
     coords = get_surface_coords(surface)
     return coords.tilt if coords else 0.0
@@ -415,13 +698,40 @@ def calculate_surface_azimuth(surface: IDFObject) -> float:
     """Calculate the azimuth of a surface in degrees (eppy compatibility).
 
     0 = north, 90 = east, 180 = south, 270 = west.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "SouthWall",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> calculate_surface_azimuth(wall)
+        180.0
     """
     coords = get_surface_coords(surface)
     return coords.azimuth if coords else 0.0
 
 
 def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
-    """Calculate the total floor area of a zone."""
+    """Calculate the total floor area of a zone.
+
+    Examples:
+        A zone with no surfaces returns 0:
+
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Empty")  # doctest: +ELLIPSIS
+        Zone('Empty')
+        >>> calculate_zone_floor_area(model, "Empty")
+        0.0
+    """
     total_area = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
@@ -436,7 +746,16 @@ def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
 
 
 def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
-    """Calculate the total ceiling/roof area of a zone (eppy compatibility)."""
+    """Calculate the total ceiling/roof area of a zone (eppy compatibility).
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Empty")  # doctest: +ELLIPSIS
+        Zone('Empty')
+        >>> calculate_zone_ceiling_area(model, "Empty")
+        0.0
+    """
     total_area = 0.0
 
     for surface in doc["BuildingSurface:Detailed"]:
@@ -455,6 +774,14 @@ def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
 
     Returns the difference between the maximum and minimum Z coordinates
     across all surfaces belonging to the zone.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Empty")  # doctest: +ELLIPSIS
+        Zone('Empty')
+        >>> calculate_zone_height(model, "Empty")
+        0.0
     """
     z_min = float("inf")
     z_max = float("-inf")
@@ -488,6 +815,23 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
        and the ``Building`` object are **not** updated.  Use
        :func:`translate_to_world` if you need to collapse zone-relative
        coordinates into world coordinates.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> wall = model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     number_of_vertices=4,
+        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
+        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
+        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
+        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     validate=False)
+        >>> translate_building(model, Vector3D(100, 200, 0))
+        >>> wall.vertex_1_x_coordinate
+        100.0
     """
     surface_types = [
         "BuildingSurface:Detailed",
@@ -538,6 +882,14 @@ def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
     Calculate the volume of a zone from its surfaces.
 
     Uses the divergence theorem to compute volume from surface polygons.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Empty")  # doctest: +ELLIPSIS
+        Zone('Empty')
+        >>> calculate_zone_volume(model, "Empty")
+        0.0
     """
     volume = 0.0
 

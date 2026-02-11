@@ -44,6 +44,27 @@ def write_idf(
 
     Returns:
         IDF string if *filepath* is ``None``, otherwise ``None``.
+
+    Examples:
+        Return the IDF as a string (pass no filepath):
+
+        >>> from idfkit import new_document, write_idf
+        >>> model = new_document()
+        >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+        Zone('Office')
+        >>> idf_str = write_idf(model)
+        >>> "Zone," in idf_str
+        True
+
+        Write to a file::
+
+            write_idf(model, "output.idf")
+
+        Use compressed format for minimal file size:
+
+        >>> compressed = write_idf(model, output_type="compressed")
+        >>> "\\n" not in compressed.split("Zone")[1].split(";")[0]
+        True
     """
     writer = IDFWriter(doc, output_type=output_type)
     content = writer.to_string()
@@ -72,6 +93,21 @@ def write_epjson(
 
     Returns:
         JSON string if filepath is None, otherwise None
+
+    Examples:
+        Return JSON as a string:
+
+        >>> from idfkit import new_document, write_epjson
+        >>> model = new_document()
+        >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+        Zone('Office')
+        >>> json_str = write_epjson(model)
+        >>> '"Zone"' in json_str
+        True
+
+        Write to a file::
+
+            write_epjson(model, "output.epJSON")
     """
     writer = EpJSONWriter(doc)
     data = writer.to_dict()
@@ -335,6 +371,14 @@ def convert_idf_to_epjson(
 
     Returns:
         Path to the output file
+
+    Examples:
+        ::
+
+            output = convert_idf_to_epjson("building.idf")
+            # Creates building.epJSON
+
+            convert_idf_to_epjson("building.idf", "output.epJSON")
     """
     from .idf_parser import parse_idf
 
@@ -361,6 +405,14 @@ def convert_epjson_to_idf(
 
     Returns:
         Path to the output file
+
+    Examples:
+        ::
+
+            output = convert_epjson_to_idf("building.epJSON")
+            # Creates building.idf
+
+            convert_epjson_to_idf("building.epJSON", "output.idf")
     """
     from .epjson_parser import parse_epjson
 

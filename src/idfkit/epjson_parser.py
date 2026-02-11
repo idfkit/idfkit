@@ -38,6 +38,15 @@ def parse_epjson(
     Raises:
         VersionNotFoundError: If version cannot be detected
         IdfKitError: If parsing fails
+
+    Examples:
+        ::
+
+            from idfkit import parse_epjson
+
+            model = parse_epjson("building.epJSON")
+            for zone in model["Zone"]:
+                print(zone.name)
     """
     filepath = Path(filepath)
 
@@ -214,7 +223,16 @@ def load_epjson(filepath: Path | str) -> dict[str, Any]:
     """
     Load raw epJSON data without parsing into document.
 
-    Useful for quick inspection or manipulation.
+    Useful for quick inspection or manipulation when you need the
+    raw JSON dict rather than an :class:`IDFDocument`.
+
+    Examples:
+        ::
+
+            from idfkit.epjson_parser import load_epjson
+
+            data = load_epjson("building.epJSON")
+            zone_names = list(data.get("Zone", {}).keys())
     """
     filepath = Path(filepath)
     with open(filepath, encoding="utf-8") as f:
@@ -233,6 +251,14 @@ def get_epjson_version(filepath: Path | str) -> tuple[int, int, int]:
 
     Raises:
         VersionNotFoundError: If version cannot be detected
+
+    Examples:
+        ::
+
+            from idfkit.epjson_parser import get_epjson_version
+
+            version = get_epjson_version("building.epJSON")
+            print(f"EnergyPlus v{version[0]}.{version[1]}")
     """
     filepath = Path(filepath)
 

@@ -47,17 +47,40 @@ _VERSION_TO_DIRNAME: Final[dict[tuple[int, int, int], str]] = {v: f"V{v[0]}-{v[1
 
 
 def is_supported_version(version: tuple[int, int, int]) -> bool:
-    """Check if a version is in the supported set."""
+    """Check if a version is in the supported set.
+
+    Examples:
+        >>> is_supported_version((24, 1, 0))
+        True
+        >>> is_supported_version((99, 0, 0))
+        False
+        >>> is_supported_version(MINIMUM_VERSION)
+        True
+    """
     return version in _VERSION_SET
 
 
 def version_string(version: tuple[int, int, int]) -> str:
-    """Format a version tuple as a human-readable string (e.g. '24.1.0')."""
+    """Format a version tuple as a human-readable string.
+
+    Examples:
+        >>> version_string((24, 1, 0))
+        '24.1.0'
+        >>> version_string((9, 6, 0))
+        '9.6.0'
+    """
     return f"{version[0]}.{version[1]}.{version[2]}"
 
 
 def version_dirname(version: tuple[int, int, int]) -> str:
-    """Return the schema directory name for a version (e.g. 'V24-1-0')."""
+    """Return the schema directory name for a version.
+
+    Examples:
+        >>> version_dirname((24, 1, 0))
+        'V24-1-0'
+        >>> version_dirname((9, 6, 0))
+        'V9-6-0'
+    """
     return f"V{version[0]}-{version[1]}-{version[2]}"
 
 
@@ -70,6 +93,14 @@ def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] 
 
     Returns:
         The closest supported version, or None if no suitable version exists.
+
+    Examples:
+        >>> find_closest_version((24, 1, 5))
+        (24, 1, 0)
+        >>> find_closest_version((9, 0, 0))
+        (8, 9, 0)
+        >>> find_closest_version((1, 0, 0)) is None
+        True
     """
     best: tuple[int, int, int] | None = None
     for v in ENERGYPLUS_VERSIONS:
@@ -79,5 +110,12 @@ def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] 
 
 
 def github_release_tag(version: tuple[int, int, int]) -> str:
-    """Return the GitHub release tag for a version (e.g. 'v24.1.0')."""
+    """Return the GitHub release tag for a version.
+
+    Examples:
+        >>> github_release_tag((24, 1, 0))
+        'v24.1.0'
+        >>> github_release_tag((9, 2, 0))
+        'v9.2.0'
+    """
     return f"v{version[0]}.{version[1]}.{version[2]}"

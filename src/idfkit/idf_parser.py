@@ -68,6 +68,19 @@ def parse_idf(
     Raises:
         VersionNotFoundError: If version cannot be detected
         IdfKitError: If parsing fails
+
+    Examples:
+        ::
+
+            from idfkit import parse_idf
+
+            model = parse_idf("building.idf")
+            for zone in model["Zone"]:
+                print(zone.name, zone.x_origin)
+
+        Force a specific version::
+
+            model = parse_idf("building.idf", version=(24, 1, 0))
     """
     filepath = Path(filepath)
 
@@ -350,6 +363,24 @@ def iter_idf_objects(
         Tuples of (object_type, name, [field_values])
 
     This is useful for quick scanning or filtering without full parsing.
+
+    Examples:
+        Count zones without loading the full model::
+
+            from idfkit import iter_idf_objects
+
+            zone_count = sum(
+                1 for obj_type, name, _ in iter_idf_objects("building.idf")
+                if obj_type == "Zone"
+            )
+
+        Collect all material names::
+
+            materials = [
+                name for obj_type, name, _
+                in iter_idf_objects("building.idf")
+                if obj_type == "Material"
+            ]
     """
     filepath = Path(filepath)
 
@@ -378,6 +409,9 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
     """
     Quick version detection without full parsing.
 
+    Only reads the first 10 KB of the file, making it very fast
+    even for large models.
+
     Args:
         filepath: Path to IDF file
 
@@ -386,6 +420,14 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
 
     Raises:
         VersionNotFoundError: If version cannot be detected
+
+    Examples:
+        ::
+
+            from idfkit import get_idf_version
+
+            version = get_idf_version("building.idf")
+            print(f"EnergyPlus v{version[0]}.{version[1]}.{version[2]}")
     """
     filepath = Path(filepath)
 

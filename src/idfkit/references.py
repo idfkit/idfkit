@@ -29,6 +29,27 @@ class ReferenceGraph:
     - Finding all surfaces in a zone
     - Finding all objects using a construction
     - Detecting dangling references
+
+    The reference graph is automatically maintained by
+    :class:`~idfkit.document.IDFDocument` when objects are added,
+    removed, or when reference fields are modified.
+
+    Examples:
+        >>> from idfkit import new_document
+        >>> model = new_document()
+        >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+        Zone('Office')
+        >>> model.add("BuildingSurface:Detailed", "Wall1",
+        ...     surface_type="Wall", construction_name="", zone_name="Office",
+        ...     outside_boundary_condition="Outdoors",
+        ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+        ...     validate=False)  # doctest: +ELLIPSIS
+        BuildingSurface:Detailed('Wall1')
+        >>> model.references.is_referenced("Office")
+        True
+        >>> stats = model.references.stats()
+        >>> stats["total_references"] >= 1
+        True
     """
 
     __slots__ = ("_object_lists", "_referenced_by", "_references")
@@ -86,6 +107,20 @@ class ReferenceGraph:
 
         Returns:
             Set of IDFObjects that reference this name
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> model.add("BuildingSurface:Detailed", "Wall1",
+            ...     surface_type="Wall", construction_name="", zone_name="Office",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('Wall1')
+            >>> len(model.references.get_referencing("Office"))
+            1
         """
         refs = self._referenced_by.get(name.upper(), set())
         return {obj for obj, _ in refs}
@@ -128,7 +163,24 @@ class ReferenceGraph:
         return self._references.get(obj, set()).copy()
 
     def is_referenced(self, name: str) -> bool:
-        """Check if a name is referenced by any object."""
+        """Check if a name is referenced by any object.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> model.references.is_referenced("Office")
+            False
+            >>> model.add("BuildingSurface:Detailed", "Wall1",
+            ...     surface_type="Wall", construction_name="", zone_name="Office",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('Wall1')
+            >>> model.references.is_referenced("Office")
+            True
+        """
         return name.upper() in self._referenced_by
 
     def get_dangling_references(self, valid_names: set[str]) -> Iterator[tuple[IDFObject, str, str]]:

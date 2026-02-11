@@ -107,9 +107,17 @@ def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocum
     Returns:
         Parsed IDFDocument
 
-    Example:
-        model = load_idf("building.idf")
-        print(f"Loaded {len(model)} objects")
+    Examples:
+        Load a model and inspect its contents::
+
+            model = load_idf("building.idf")
+            print(f"Loaded {len(model)} objects")
+            for zone in model["Zone"]:
+                print(zone.name)
+
+        Override the version if auto-detection fails::
+
+            model = load_idf("old_building.idf", version=(9, 6, 0))
     """
     from pathlib import Path
 
@@ -127,9 +135,16 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
     Returns:
         Parsed IDFDocument
 
-    Example:
-        model = load_epjson("building.epJSON")
-        print(f"Loaded {len(model)} objects")
+    Examples:
+        Load a model and iterate over zones::
+
+            model = load_epjson("building.epJSON")
+            for zone in model["Zone"]:
+                print(zone.name, zone.x_origin)
+
+        Specify an explicit version::
+
+            model = load_epjson("building.epJSON", version=(24, 1, 0))
     """
     from pathlib import Path
 
@@ -146,9 +161,24 @@ def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
     Returns:
         Empty IDFDocument with schema loaded
 
-    Example:
-        model = new_document()
-        model.add("Zone", "MyZone", {"x_origin": 0, "y_origin": 0})
+    Examples:
+        >>> model = new_document()
+        >>> len(model)
+        0
+
+        Add objects to the model:
+
+        >>> zone = model.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
+        >>> zone.name
+        'Office'
+        >>> len(model)
+        1
+
+        Create a model for a specific EnergyPlus version:
+
+        >>> model_v24 = new_document(version=(24, 1, 0))
+        >>> model_v24.version
+        (24, 1, 0)
     """
     schema = get_schema(version)
     return IDFDocument(version=version, schema=schema)
