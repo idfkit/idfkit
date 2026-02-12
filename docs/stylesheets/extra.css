@@ -14,6 +14,11 @@
   --md-accent-fg-color: #ff9100;
 }
 
+/* ===== Hide edit/view actions on the landing page — they offset hero centering ===== */
+.md-content__inner:has(> .hero) > .md-content__button {
+  display: none;
+}
+
 /* ===== Hero section on landing page ===== */
 .md-typeset .hero {
   display: flex;
