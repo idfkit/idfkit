@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 
 from idfkit import IDFDocument
 from idfkit.simulation import SimulationResult
@@ -13,7 +12,7 @@ from pathlib import Path
 
 from celery import Celery
 
-from idfkit import load_idf, write_idf
+from idfkit import load_idf
 from idfkit.simulation import simulate
 
 app = Celery("tasks")
@@ -22,7 +21,7 @@ app.config_from_object("celeryconfig")
 
 @app.task(bind=True, name="run_parametric_case")
 def run_parametric_case(
-    self,  # noqa: ANN001
+    self,
     base_idf_path: str,
     weather_path: str,
     output_dir: str,
@@ -55,4 +54,6 @@ def run_parametric_case(
         "runtime": result.runtime_seconds,
         "output_dir": str(Path(result.run_dir).resolve()),
     }
+
+
 # --8<-- [end:example]
