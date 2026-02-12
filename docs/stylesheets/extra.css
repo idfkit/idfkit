@@ -40,6 +40,10 @@
   -webkit-text-fill-color: transparent;
 }
 
+.md-typeset .hero h1 .headerlink {
+  display: none;
+}
+
 [data-md-color-scheme="slate"] .md-typeset .hero h1 {
   background: linear-gradient(135deg, #ff6d00 0%, #ff9100 50%, #ffab40 100%);
   -webkit-background-clip: text;
