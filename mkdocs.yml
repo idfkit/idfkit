@@ -49,6 +49,7 @@ nav:
     - Design Day Sizing: examples/sizing-workflow.ipynb
     - Cloud Simulations (S3): examples/cloud-simulations.md
     - Celery Integration: examples/celery-integration.md
+    - Distributed Simulations (Scythe): examples/scythe.md
 
   - API Reference:
     - Core:
