@@ -13,7 +13,7 @@ A fast, modern EnergyPlus IDF/epJSON toolkit for Python — with O(1) lookups,
 automatic reference tracking, and built-in simulation support.
 </p>
 
-<div class="badges">
+<div class="badges" markdown>
 
 [![Release](https://img.shields.io/github/v/release/samuelduchesne/idfkit)](https://img.shields.io/github/v/release/samuelduchesne/idfkit)
 [![Build status](https://img.shields.io/github/actions/workflow/status/samuelduchesne/idfkit/main.yml?branch=main)](https://github.com/samuelduchesne/idfkit/actions/workflows/main.yml?query=branch%3Amain)
