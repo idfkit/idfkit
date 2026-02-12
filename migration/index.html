@@ -924,8 +924,52 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#window-wall-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Window-wall ratio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-intersection-and-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface intersection and matching
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strict-field-access-new-in-idfkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strict field access (new in idfkit)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-a-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a simulation
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1759,6 +1803,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1875,6 +1923,62 @@
     
   
     Cloud Simulations (S3)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/celery-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Celery Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/scythe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Simulations (Scythe)
   
 
     
@@ -3287,8 +3391,52 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#window-wall-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Window-wall ratio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-intersection-and-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface intersection and matching
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strict-field-access-new-in-idfkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strict field access (new in idfkit)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-a-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a simulation
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3504,8 +3652,14 @@ when one exists.</p>
 <tr>
 <td>Output type</td>
 <td><code>idf.outputtype = "compressed"</code></td>
-<td><code>write_idf(doc, path, output_type="compressed")</code></td>
+<td><code>doc.save(output_type="compressed")</code></td>
 <td>--</td>
+</tr>
+<tr>
+<td>Run simulation</td>
+<td><code>idf.run(weather)</code></td>
+<td><code>simulate(doc, weather)</code></td>
+<td><code>doc.run(weather)</code></td>
 </tr>
 <tr>
 <td>Batch update</td>
@@ -3517,6 +3671,18 @@ when one exists.</p>
 <td>HTML tables</td>
 <td><code>readhtml.titletable(html)</code></td>
 <td><code>result.html.titletable()</code></td>
+<td>--</td>
+</tr>
+<tr>
+<td>Window-wall ratio</td>
+<td><code>idf.set_wwr(0.4)</code></td>
+<td><code>set_wwr(doc, 0.4)</code></td>
+<td>--</td>
+</tr>
+<tr>
+<td>Match surfaces</td>
+<td><code>idf.intersect_match()</code></td>
+<td><code>intersect_match(doc)</code></td>
 <td>--</td>
 </tr>
 </tbody>
@@ -3695,33 +3861,95 @@ classes with no external dependencies:</p>
 </span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="c1"># Rotate around a custom anchor point</span>
 </span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="n">rotate_building</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="n">Vector3D</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 </span></code></pre></div>
+<h3 id="window-wall-ratio">Window-wall ratio<a class="headerlink" href="#window-wall-ratio" title="Permanent link">&para;</a></h3>
+<p><strong>geomeppy</strong> sets window-wall ratios as a method on the IDF:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># geomeppy (extends eppy)</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">idf</span><span class="o">.</span><span class="n">set_wwr</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">idf</span><span class="o">.</span><span class="n">set_wwr</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">construction</span><span class="o">=</span><span class="s2">&quot;SimpleGlazing&quot;</span><span class="p">)</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="n">idf</span><span class="o">.</span><span class="n">set_wwr</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;south&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>idfkit</strong> uses a standalone function:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_wwr</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="c1"># Apply 40% WWR to all exterior walls</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="n">set_wwr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># Specify a window construction</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="n">set_wwr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">construction</span><span class="o">=</span><span class="s2">&quot;SimpleGlazing&quot;</span><span class="p">)</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="c1"># Target only south-facing walls</span>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="n">set_wwr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;south&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="surface-intersection-and-matching">Surface intersection and matching<a class="headerlink" href="#surface-intersection-and-matching" title="Permanent link">&para;</a></h3>
+<p><strong>geomeppy</strong> matches adjacent surfaces as a method on the IDF:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># geomeppy (extends eppy)</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">idf</span><span class="o">.</span><span class="n">intersect_match</span><span class="p">()</span>
+</span></code></pre></div>
+<p><strong>idfkit</strong> uses a standalone function:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">intersect_match</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="c1"># Match coincident walls between zones and set boundary conditions</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="n">intersect_match</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="strict-field-access-new-in-idfkit">Strict field access (new in idfkit)<a class="headerlink" href="#strict-field-access-new-in-idfkit" title="Permanent link">&para;</a></h2>
+<p>eppy silently returns an empty string when you mistype a field name,
+making bugs hard to find. idfkit defaults to the same behaviour for
+compatibility, but you can opt in to <strong>strict mode</strong> to catch typos
+immediately:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_document</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="c1"># Enable strict mode to catch field-name typos during migration</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">new_document</span><span class="p">()</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="n">doc</span><span class="o">.</span><span class="n">strict</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="n">zone</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;Zone&quot;</span><span class="p">,</span> <span class="s2">&quot;Office&quot;</span><span class="p">,</span> <span class="n">x_origin</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">zone</span><span class="o">.</span><span class="n">x_origin</span><span class="p">)</span>  <span class="c1"># 5.0 — known field, works fine</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="n">zone</span><span class="o">.</span><span class="n">x_orgin</span>  <span class="c1"># AttributeError: &#39;Zone&#39; object has no field &#39;x_orgin&#39;</span>
+</span></code></pre></div>
+<p>Enable strict mode during migration to surface field-name mismatches
+early. Once your code is clean you can leave it on or turn it off.</p>
+<h2 id="running-a-simulation">Running a simulation<a class="headerlink" href="#running-a-simulation" title="Permanent link">&para;</a></h2>
+<p><strong>eppy</strong> runs simulations directly on the IDF object:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">idf</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;weather.epw&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>idfkit</strong> uses a standalone <code>simulate()</code> function (recommended):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="s2">&quot;weather.epw&quot;</span><span class="p">)</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</span></code></pre></div>
+<p>Or use the eppy-compatible convenience method:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># eppy-compatible shortcut (calls simulate() internally)</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;weather.epw&quot;</span><span class="p">,</span> <span class="n">design_day</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
 <h2 id="html-tabular-output">HTML tabular output<a class="headerlink" href="#html-tabular-output" title="Permanent link">&para;</a></h2>
 <p><strong>eppy</strong> parses HTML tabular output using <code>readhtml</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">eppy</span><span class="w"> </span><span class="kn">import</span> <span class="n">readhtml</span>
-</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
-</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;eplustbl.htm&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="n">html</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="n">tables</span> <span class="o">=</span> <span class="n">readhtml</span><span class="o">.</span><span class="n">titletable</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">eppy</span><span class="w"> </span><span class="kn">import</span> <span class="n">readhtml</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;eplustbl.htm&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>    <span class="n">html</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="n">tables</span> <span class="o">=</span> <span class="n">readhtml</span><span class="o">.</span><span class="n">titletable</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>idfkit</strong> parses HTML output as part of <code>SimulationResult</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">weather</span><span class="p">)</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">html</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">html</span>  <span class="c1"># HTMLResult, lazily parsed</span>
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># eppy-compatible (title, rows) pairs</span>
-</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">html</span><span class="o">.</span><span class="n">titletable</span><span class="p">():</span>
-</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="s2">&quot;rows&quot;</span><span class="p">)</span>
-</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>
-</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="c1"># Lookup by name</span>
-</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="n">table</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">tablebyname</span><span class="p">(</span><span class="s2">&quot;Site and Source Energy&quot;</span><span class="p">)</span>
-</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>  <span class="c1"># {row_key: {col_header: value}}</span>
-</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>
-</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="c1"># Filter by report</span>
-</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="n">annual</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">tablesbyreport</span><span class="p">(</span><span class="s2">&quot;Annual Building Utility Performance Summary&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">weather</span><span class="p">)</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="n">html</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">html</span>  <span class="c1"># HTMLResult, lazily parsed</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="c1"># eppy-compatible (title, rows) pairs</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">html</span><span class="o">.</span><span class="n">titletable</span><span class="p">():</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="s2">&quot;rows&quot;</span><span class="p">)</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a>
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a><span class="c1"># Lookup by name</span>
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a><span class="n">table</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">tablebyname</span><span class="p">(</span><span class="s2">&quot;Site and Source Energy&quot;</span><span class="p">)</span>
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>  <span class="c1"># {row_key: {col_header: value}}</span>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a>
+</span><span id="__span-37-12"><a id="__codelineno-37-12" name="__codelineno-37-12" href="#__codelineno-37-12"></a><span class="c1"># Filter by report</span>
+</span><span id="__span-37-13"><a id="__codelineno-37-13" name="__codelineno-37-13" href="#__codelineno-37-13"></a><span class="n">annual</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">tablesbyreport</span><span class="p">(</span><span class="s2">&quot;Annual Building Utility Performance Summary&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Or parse a standalone HTML file:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.simulation.parsers.html</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTMLResult</span>
-</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
-</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="n">html</span> <span class="o">=</span> <span class="n">HTMLResult</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;eplustbl.htm&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.simulation.parsers.html</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTMLResult</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="n">html</span> <span class="o">=</span> <span class="n">HTMLResult</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;eplustbl.htm&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 
 

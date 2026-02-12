@@ -1516,6 +1516,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1814,6 +1818,62 @@
     
   
     Cloud Simulations (S3)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../celery-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Celery Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scythe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Simulations (Scythe)
   
 
     
@@ -4323,7 +4383,7 @@ for name in added:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Check Site:Location</span>
 <span class="k">if</span> <span class="s2">"Site:Location"</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
-    <span class="n">location</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"Site:Location"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"Site:Location"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Site Location: </span><span class="si">{</span><span class="n">location</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Latitude: </span><span class="si">{</span><span class="n">location</span><span class="o">.</span><span class="n">latitude</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Longitude: </span><span class="si">{</span><span class="n">location</span><span class="o">.</span><span class="n">longitude</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -4331,12 +4391,12 @@ for name in added:
 <span class="c1"># Check design days</span>
 <span class="k">if</span> <span class="s2">"SizingPeriod:DesignDay"</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Design days in model: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">'SizingPeriod:DesignDay'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"SizingPeriod:DesignDay"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"SizingPeriod:DesignDay"</span><span class="p">]:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">dd</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-8"># Check Site:Location
 if "Site:Location" in model:
-    location = next(iter(model["Site:Location"].values()))
+    location = model["Site:Location"][0]
     print(f"Site Location: {location.name}")
     print(f"  Latitude: {location.latitude}")
     print(f"  Longitude: {location.longitude}")
@@ -4344,7 +4404,7 @@ if "Site:Location" in model:
 # Check design days
 if "SizingPeriod:DesignDay" in model:
     print(f"\nDesign days in model: {len(model['SizingPeriod:DesignDay'])}")
-    for dd in model["SizingPeriod:DesignDay"].values():
+    for dd in model["SizingPeriod:DesignDay"]:
         print(f"  {dd.name}")</div>
 </div>
 </div>

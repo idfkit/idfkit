@@ -1577,6 +1577,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1693,6 +1697,62 @@
     
   
     Cloud Simulations (S3)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/celery-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Celery Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/scythe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Simulations (Scythe)
   
 
     
@@ -4521,13 +4581,13 @@ and internal loads.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=96937dee">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=96937dee">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
@@ -4728,9 +4788,13 @@ and internal loads.</p>
     <span class="n">vertex_4_z_coordinate</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># Schedule</span>
+<span class="c1"># Schedules</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"ScheduleTypeLimits"</span><span class="p">,</span> <span class="s2">"Fraction"</span><span class="p">,</span> <span class="n">lower_limit_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_limit_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">numeric_type</span><span class="o">=</span><span class="s2">"Continuous"</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="s2">"ScheduleTypeLimits"</span><span class="p">,</span> <span class="s2">"Activity_Level"</span><span class="p">,</span> <span class="n">lower_limit_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_limit_value</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">numeric_type</span><span class="o">=</span><span class="s2">"Continuous"</span>
+<span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Always_On"</span><span class="p">,</span> <span class="n">schedule_type_limits_name</span><span class="o">=</span><span class="s2">"Fraction"</span><span class="p">,</span> <span class="n">hourly_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Activity_Schedule"</span><span class="p">,</span> <span class="n">schedule_type_limits_name</span><span class="o">=</span><span class="s2">"Activity_Level"</span><span class="p">,</span> <span class="n">hourly_value</span><span class="o">=</span><span class="mf">120.0</span><span class="p">)</span>
 
 <span class="c1"># People (references Zone and Schedule)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
@@ -4740,6 +4804,7 @@ and internal loads.</p>
     <span class="n">number_of_people_schedule_name</span><span class="o">=</span><span class="s2">"Always_On"</span><span class="p">,</span>
     <span class="n">number_of_people_calculation_method</span><span class="o">=</span><span class="s2">"People"</span><span class="p">,</span>
     <span class="n">number_of_people</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">activity_level_schedule_name</span><span class="o">=</span><span class="s2">"Activity_Schedule"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Lights</span>
@@ -4942,9 +5007,13 @@ model.add(
     vertex_4_z_coordinate=3,
 )
 
-# Schedule
+# Schedules
 model.add("ScheduleTypeLimits", "Fraction", lower_limit_value=0, upper_limit_value=1, numeric_type="Continuous")
+model.add(
+    "ScheduleTypeLimits", "Activity_Level", lower_limit_value=0, upper_limit_value=1000, numeric_type="Continuous"
+)
 model.add("Schedule:Constant", "Always_On", schedule_type_limits_name="Fraction", hourly_value=1.0)
+model.add("Schedule:Constant", "Activity_Schedule", schedule_type_limits_name="Activity_Level", hourly_value=120.0)
 
 # People (references Zone and Schedule)
 model.add(
@@ -4954,6 +5023,7 @@ model.add(
     number_of_people_schedule_name="Always_On",
     number_of_people_calculation_method="People",
     number_of_people=10,
+    activity_level_schedule_name="Activity_Schedule",
 )
 
 # Lights
@@ -4967,30 +5037,6 @@ model.add(
 )
 
 print(model)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>IDFDocument(version=24.1.0, objects=18)
-
-  Building: 1 objects
-  BuildingSurface:Detailed: 6 objects
-  Construction: 3 objects
-  GlobalGeometryRules: 1 objects
-  Lights: 1 objects
-  Material: 2 objects
-  People: 1 objects
-  Schedule:Constant: 1 objects
-  ScheduleTypeLimits: 1 objects
-  Zone: 1 objects
-</pre>
 </div>
 </div>
 </div>
@@ -5181,13 +5227,13 @@ automatically.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=458a0803">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=458a0803">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-15">
@@ -5202,18 +5248,29 @@ automatically.</p>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Demonstrate rename on a separate model so the main model stays clean</span>
 <span class="n">rename_demo</span> <span class="o">=</span> <span class="n">new_document</span><span class="p">()</span>
+<span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"ScheduleTypeLimits"</span><span class="p">,</span> <span class="s2">"Fraction"</span><span class="p">,</span> <span class="n">lower_limit_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_limit_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">numeric_type</span><span class="o">=</span><span class="s2">"Continuous"</span><span class="p">)</span>
+<span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="s2">"ScheduleTypeLimits"</span><span class="p">,</span> <span class="s2">"Activity_Level"</span><span class="p">,</span> <span class="n">lower_limit_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_limit_value</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">numeric_type</span><span class="o">=</span><span class="s2">"Continuous"</span>
+<span class="p">)</span>
+<span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Always_On"</span><span class="p">,</span> <span class="n">schedule_type_limits_name</span><span class="o">=</span><span class="s2">"Fraction"</span><span class="p">,</span> <span class="n">hourly_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Activity_Schedule"</span><span class="p">,</span> <span class="n">schedule_type_limits_name</span><span class="o">=</span><span class="s2">"Activity_Level"</span><span class="p">,</span> <span class="n">hourly_value</span><span class="o">=</span><span class="mf">120.0</span>
+<span class="p">)</span>
 <span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"Zone"</span><span class="p">,</span> <span class="s2">"Kitchen"</span><span class="p">)</span>
 <span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
     <span class="s2">"People"</span><span class="p">,</span>
     <span class="s2">"Kitchen_Staff"</span><span class="p">,</span>
     <span class="n">zone_or_zonelist_or_space_or_spacelist_name</span><span class="o">=</span><span class="s2">"Kitchen"</span><span class="p">,</span>
+    <span class="n">number_of_people_schedule_name</span><span class="o">=</span><span class="s2">"Always_On"</span><span class="p">,</span>
     <span class="n">number_of_people_calculation_method</span><span class="o">=</span><span class="s2">"People"</span><span class="p">,</span>
     <span class="n">number_of_people</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">activity_level_schedule_name</span><span class="o">=</span><span class="s2">"Activity_Schedule"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">rename_demo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
     <span class="s2">"Lights"</span><span class="p">,</span>
     <span class="s2">"Kitchen_Lights"</span><span class="p">,</span>
     <span class="n">zone_or_zonelist_or_space_or_spacelist_name</span><span class="o">=</span><span class="s2">"Kitchen"</span><span class="p">,</span>
+    <span class="n">schedule_name</span><span class="o">=</span><span class="s2">"Always_On"</span><span class="p">,</span>
     <span class="n">design_level_calculation_method</span><span class="o">=</span><span class="s2">"Watts/Area"</span><span class="p">,</span>
     <span class="n">watts_per_floor_area</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span>
 <span class="p">)</span>
@@ -5244,18 +5301,29 @@ automatically.</p>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-15"># Demonstrate rename on a separate model so the main model stays clean
 rename_demo = new_document()
+rename_demo.add("ScheduleTypeLimits", "Fraction", lower_limit_value=0, upper_limit_value=1, numeric_type="Continuous")
+rename_demo.add(
+    "ScheduleTypeLimits", "Activity_Level", lower_limit_value=0, upper_limit_value=1000, numeric_type="Continuous"
+)
+rename_demo.add("Schedule:Constant", "Always_On", schedule_type_limits_name="Fraction", hourly_value=1.0)
+rename_demo.add(
+    "Schedule:Constant", "Activity_Schedule", schedule_type_limits_name="Activity_Level", hourly_value=120.0
+)
 rename_demo.add("Zone", "Kitchen")
 rename_demo.add(
     "People",
     "Kitchen_Staff",
     zone_or_zonelist_or_space_or_spacelist_name="Kitchen",
+    number_of_people_schedule_name="Always_On",
     number_of_people_calculation_method="People",
     number_of_people=3,
+    activity_level_schedule_name="Activity_Schedule",
 )
 rename_demo.add(
     "Lights",
     "Kitchen_Lights",
     zone_or_zonelist_or_space_or_spacelist_name="Kitchen",
+    schedule_name="Always_On",
     design_level_calculation_method="Watts/Area",
     watts_per_floor_area=12.0,
 )
@@ -5283,31 +5351,6 @@ rename_demo.rename("Zone", "Staff_Kitchen", "Main_Kitchen")
 print("\nAfter model.rename('Zone', 'Staff_Kitchen', 'Main_Kitchen'):")
 print(f"  People zone ref: {people.zone_or_zonelist_or_space_or_spacelist_name}")
 print(f"  Lights zone ref: {lights.zone_or_zonelist_or_space_or_spacelist_name}")</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Before rename:
-  People zone ref: Kitchen
-  Lights zone ref: Kitchen
-
-After zone.name = 'Staff_Kitchen':
-  People zone ref: Staff_Kitchen
-  Lights zone ref: Staff_Kitchen
-  Lookup by new name: True
-  Lookup by old name: False
-
-After model.rename('Zone', 'Staff_Kitchen', 'Main_Kitchen'):
-  People zone ref: Main_Kitchen
-  Lights zone ref: Main_Kitchen
-</pre>
 </div>
 </div>
 </div>
@@ -5479,13 +5522,13 @@ required fields, field types, numeric ranges, and reference integrity.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=bdedb5ff">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=bdedb5ff">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-18">
@@ -5513,24 +5556,6 @@ print(result)
 print(f"\nValid: {result.is_valid}")
 print(f"Total issues: {result.total_issues}")
 print(f"Errors: {len(result.errors)}, Warnings: {len(result.warnings)}, Info: {len(result.info)}")</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Validation: 1 errors, 0 warnings
-  [ERROR] People:'Office_People'.activity_level_schedule_name: Required field 'activity_level_schedule_name' is missing
-
-Valid: False
-Total issues: 1
-Errors: 1, Warnings: 0, Info: 0
-</pre>
 </div>
 </div>
 </div>
@@ -6399,13 +6424,13 @@ for key, value in stats.items():
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=e0e26548">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e0e26548">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-32">
@@ -6427,6 +6452,8 @@ for key, value in stats.items():
     <span class="n">number_of_people_schedule_name</span><span class="o">=</span><span class="s2">"NonExistent_Schedule"</span><span class="p">,</span>
     <span class="n">number_of_people_calculation_method</span><span class="o">=</span><span class="s2">"People"</span><span class="p">,</span>
     <span class="n">number_of_people</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">activity_level_schedule_name</span><span class="o">=</span><span class="s2">"NonExistent_Activity"</span><span class="p">,</span>
+    <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Skip validation on add so we can demonstrate it below</span>
 <span class="p">)</span>
 
 <span class="c1"># Validate to find the dangling references</span>
@@ -6445,6 +6472,8 @@ bad_model.add(
     number_of_people_schedule_name="NonExistent_Schedule",
     number_of_people_calculation_method="People",
     number_of_people=5,
+    activity_level_schedule_name="NonExistent_Activity",
+    validate=False,  # Skip validation on add so we can demonstrate it below
 )
 
 # Validate to find the dangling references
@@ -6453,27 +6482,6 @@ print(f"Valid? {bad_result.is_valid}")
 for err in bad_result.errors:
     if "non-existent" in err.message.lower() or "reference" in err.message.lower():
         print(f"  {err}")</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Valid? False</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>
-  [ERROR] People:'Ghost_People'.number_of_people_schedule_name: Reference to non-existent object 'NONEXISTENT_SCHEDULE'
-  [ERROR] People:'Ghost_People'.zone_or_zonelist_or_space_or_spacelist_name: Reference to non-existent object 'NONEXISTENT_ZONE'
-</pre>
 </div>
 </div>
 </div>
