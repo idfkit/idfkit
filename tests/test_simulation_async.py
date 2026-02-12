@@ -486,3 +486,82 @@ class TestAsyncFileSystem:
         # Both should have used the async fs
         for r in result.results:
             assert r.async_fs is fs
+
+    @pytest.mark.asyncio
+    async def test_sync_property_raises_when_only_async_fs_set(self) -> None:
+        """Accessing sync properties on an async_fs-only result should raise."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        result = SimulationResult(
+            run_dir=Path("remote/output"),
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=fs,
+        )
+        with pytest.raises(RuntimeError, match="async accessors"):
+            _ = result.errors
+        with pytest.raises(RuntimeError, match="async accessors"):
+            _ = result.sql
+
+    @pytest.mark.asyncio
+    async def test_async_errors_with_actual_data(self) -> None:
+        """async_errors should parse .err content from an async fs."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        await fs.write_text(
+            "run/eplusout.err",
+            "Program Version,EnergyPlus, 24.1\n   ************* EnergyPlus Completed Successfully.\n",
+        )
+        result = SimulationResult(
+            run_dir=Path("run"),
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=fs,
+        )
+        errors = await result.async_errors()
+        assert "completed successfully" in errors.summary()
+
+    @pytest.mark.asyncio
+    async def test_async_csv_with_actual_data(self) -> None:
+        """async_csv should parse .csv content from an async fs."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        csv_content = "Date/Time,Zone Mean Air Temperature [C](TimeStep)\n 01/01  01:00:00,21.5\n"
+        await fs.write_text("run/eplusout.csv", csv_content)
+        result = SimulationResult(
+            run_dir=Path("run"),
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=fs,
+        )
+        csv_result = await result.async_csv()
+        assert csv_result is not None
+        assert len(csv_result.columns) > 0
+
+    @pytest.mark.asyncio
+    async def test_from_directory_with_async_fs(self) -> None:
+        """from_directory should accept async_fs and populate it on the result."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        await fs.write_text(
+            "run/eplusout.err",
+            "Program Version,EnergyPlus, 24.1\n   ************* EnergyPlus Completed Successfully.\n",
+        )
+        result = SimulationResult.from_directory("run", async_fs=fs)
+        assert result.async_fs is fs
+        assert result.fs is None
+        errors = await result.async_errors()
+        assert "completed successfully" in errors.summary()

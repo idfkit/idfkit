@@ -165,10 +165,12 @@ async with AsyncS3FileSystem(bucket="my-bucket", prefix="study/") as fs:
     )
 ```
 
-A sync `FileSystem` (e.g., `S3FileSystem`) is still accepted — it will be
-automatically wrapped in `asyncio.to_thread()` so uploads don't block the
-event loop.  However, `AsyncS3FileSystem` avoids the thread-pool overhead
-and provides true non-blocking I/O.
+A sync `FileSystem` (e.g., `S3FileSystem`) is still accepted — the upload
+step is automatically wrapped in `asyncio.to_thread()` so it doesn't block
+the event loop.  However, using `AsyncFileSystem` is recommended because it
+provides true non-blocking I/O for both uploads *and* result reads (via the
+`async_errors()`, `async_sql()`, etc. accessors), and avoids thread-pool
+overhead.
 
 ## FastAPI Integration
 

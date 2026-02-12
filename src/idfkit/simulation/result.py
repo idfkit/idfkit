@@ -235,7 +235,19 @@ class SimulationResult:
 
         Returns:
             Path to the file, or None if not found.
+
+        Raises:
+            RuntimeError: If only :attr:`async_fs` is set (no sync access
+                available).  Use the ``async_*`` methods instead.
         """
+        if self.async_fs is not None and self.fs is None:
+            msg = (
+                "This SimulationResult was created with an AsyncFileSystem. "
+                "Use the async accessors (e.g. async_errors(), async_sql()) "
+                "instead of the sync properties."
+            )
+            raise RuntimeError(msg)
+
         primary = self.run_dir / f"{self.output_prefix}out{suffix}"
 
         if self.fs is not None:
@@ -474,6 +486,7 @@ class SimulationResult:
         *,
         output_prefix: str = "eplus",
         fs: FileSystem | None = None,
+        async_fs: AsyncFileSystem | None = None,
     ) -> SimulationResult:
         """Reconstruct a SimulationResult from an existing output directory.
 
@@ -482,12 +495,13 @@ class SimulationResult:
         Args:
             path: Path to the simulation output directory.
             output_prefix: Output file prefix used during the run.
-            fs: Optional file system backend for reading output files.
+            fs: Optional sync file system backend for reading output files.
+            async_fs: Optional async file system backend for non-blocking reads.
 
         Returns:
             SimulationResult pointing to the existing output.
         """
-        run_dir = Path(path) if fs is not None else Path(path).resolve()
+        run_dir = Path(path) if (fs is not None or async_fs is not None) else Path(path).resolve()
         return cls(
             run_dir=run_dir,
             success=True,
@@ -497,4 +511,5 @@ class SimulationResult:
             runtime_seconds=0.0,
             output_prefix=output_prefix,
             fs=fs,
+            async_fs=async_fs,
         )
