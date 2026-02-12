@@ -61,13 +61,13 @@ Each callback invocation receives a `SimulationProgress` event:
 |-------|------|-------------|
 | `phase` | `str` | `"initializing"`, `"warmup"`, `"simulating"`, `"postprocessing"`, or `"complete"` |
 | `message` | `str` | Raw EnergyPlus stdout line (stripped) |
-| `percent` | `float \| None` | Estimated 0-100 completion, or `None` when indeterminate |
-| `environment` | `str \| None` | Current simulation environment name |
-| `warmup_day` | `int \| None` | Current warmup iteration (1-based) |
-| `sim_day` | `int \| None` | Current day-of-year (1-based) |
-| `sim_total_days` | `int \| None` | Total simulation days when known |
-| `job_index` | `int \| None` | Batch job index (only set in batch mode) |
-| `job_label` | `str \| None` | Batch job label (only set in batch mode) |
+| `percent` | <code>float &#124; None</code> | Estimated 0-100 completion, or `None` when indeterminate |
+| `environment` | <code>str &#124; None</code> | Current simulation environment name |
+| `warmup_day` | <code>int &#124; None</code> | Current warmup iteration (1-based) |
+| `sim_day` | <code>int &#124; None</code> | Current day-of-year (1-based) |
+| `sim_total_days` | <code>int &#124; None</code> | Total simulation days when known |
+| `job_index` | <code>int &#124; None</code> | Batch job index (only set in batch mode) |
+| `job_label` | <code>str &#124; None</code> | Batch job label (only set in batch mode) |
 
 ### Simulation Phases
 

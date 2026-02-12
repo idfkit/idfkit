@@ -23,17 +23,17 @@ Define individual simulations with `SimulationJob`:
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `model` | `IDFDocument` | Required | EnergyPlus model |
-| `weather` | `str \| Path` | Required | Weather file path |
+| `weather` | <code>str &#124; Path</code> | Required | Weather file path |
 | `label` | `str` | `""` | Human-readable label |
-| `output_dir` | `str \| Path \| None` | `None` | Output directory |
+| `output_dir` | <code>str &#124; Path &#124; None</code> | `None` | Output directory |
 | `expand_objects` | `bool` | `True` | Run ExpandObjects |
 | `annual` | `bool` | `False` | Annual simulation |
 | `design_day` | `bool` | `False` | Design-day-only |
 | `output_prefix` | `str` | `"eplus"` | Output file prefix |
-| `output_suffix` | `"C" \| "L" \| "D"` | `"C"` | Output naming style |
+| `output_suffix` | <code>"C" &#124; "L" &#124; "D"</code> | `"C"` | Output naming style |
 | `readvars` | `bool` | `False` | Run ReadVarsESO |
 | `timeout` | `float` | `3600.0` | Max runtime (seconds) |
-| `extra_args` | `tuple[str, ...] \| None` | `None` | Extra CLI args |
+| `extra_args` | <code>tuple[str, ...] &#124; None</code> | `None` | Extra CLI args |
 
 ## Parametric Studies
 

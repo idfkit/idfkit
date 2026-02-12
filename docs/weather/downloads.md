@@ -17,7 +17,7 @@ The `download()` method returns a `WeatherFiles` object:
 |-----------|------|-------------|
 | `epw` | `Path` | Path to the EPW file |
 | `ddy` | `Path` | Path to the DDY file |
-| `stat` | `Path \| None` | Path to the STAT file (may be None) |
+| `stat` | <code>Path &#124; None</code> | Path to the STAT file (may be None) |
 | `zip_path` | `Path` | Path to the original downloaded ZIP archive |
 | `station` | `WeatherStation` | The station this download corresponds to |
 

@@ -109,7 +109,7 @@ Inspect results from a previous simulation:
 |-----------|------|-------------|
 | `run_dir` | `Path` | Directory containing output files |
 | `success` | `bool` | Whether simulation succeeded |
-| `exit_code` | `int \| None` | Process exit code (None if timed out) |
+| `exit_code` | <code>int &#124; None</code> | Process exit code (None if timed out) |
 | `stdout` | `str` | Captured standard output |
 | `stderr` | `str` | Captured standard error |
 | `runtime_seconds` | `float` | Wall-clock execution time |
@@ -120,17 +120,17 @@ Inspect results from a previous simulation:
 | Property | Type | Description |
 |----------|------|-------------|
 | `errors` | `ErrorReport` | Parsed error/warning report |
-| `sql` | `SQLResult \| None` | SQL database accessor |
-| `variables` | `OutputVariableIndex \| None` | Variable discovery |
-| `csv` | `CSVResult \| None` | CSV output parser |
-| `html` | `HTMLResult \| None` | HTML tabular output parser |
-| `sql_path` | `Path \| None` | Path to .sql file |
-| `err_path` | `Path \| None` | Path to .err file |
-| `eso_path` | `Path \| None` | Path to .eso file |
-| `csv_path` | `Path \| None` | Path to .csv file |
-| `html_path` | `Path \| None` | Path to HTML file |
-| `rdd_path` | `Path \| None` | Path to .rdd file |
-| `mdd_path` | `Path \| None` | Path to .mdd file |
+| `sql` | <code>SQLResult &#124; None</code> | SQL database accessor |
+| `variables` | <code>OutputVariableIndex &#124; None</code> | Variable discovery |
+| `csv` | <code>CSVResult &#124; None</code> | CSV output parser |
+| `html` | <code>HTMLResult &#124; None</code> | HTML tabular output parser |
+| `sql_path` | <code>Path &#124; None</code> | Path to .sql file |
+| `err_path` | <code>Path &#124; None</code> | Path to .err file |
+| `eso_path` | <code>Path &#124; None</code> | Path to .eso file |
+| `csv_path` | <code>Path &#124; None</code> | Path to .csv file |
+| `html_path` | <code>Path &#124; None</code> | Path to HTML file |
+| `rdd_path` | <code>Path &#124; None</code> | Path to .rdd file |
+| `mdd_path` | <code>Path &#124; None</code> | Path to .mdd file |
 
 ## See Also
 
