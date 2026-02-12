@@ -22,7 +22,7 @@ def collect_results(sim_result: dict) -> dict:
     )
     return {
         **sim_result,
-        "peak_heating_W": float(heating.max()) if heating is not None else None,
+        "peak_heating_W": float(heating.max()),
     }
 
 
