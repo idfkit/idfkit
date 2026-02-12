@@ -15,7 +15,7 @@ def collect_results(sim_result: dict) -> dict:
 
     from idfkit.simulation import SimulationResult
 
-    result = SimulationResult.from_dir(sim_result["output_dir"])
+    result = SimulationResult.from_directory(sim_result["output_dir"])
     heating = result.sql.get_timeseries(
         variable_name="Zone Ideal Loads Heating Energy",
         key_value="OFFICE",

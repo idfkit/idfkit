@@ -31,7 +31,7 @@ docker run -d -p 6379:6379 redis:7-alpine
 
 ## Project Layout
 
-```python
+```text
 --8<-- "docs/snippets/examples/celery-integration/project_layout.py:example"
 ```
 
@@ -168,13 +168,13 @@ example, running a simulation and then post-processing the results:
 
 ### Dockerfile
 
-```python
+```dockerfile
 --8<-- "docs/snippets/examples/celery-integration/dockerfile.py:example"
 ```
 
 ### Docker Compose
 
-```python
+```yaml
 --8<-- "docs/snippets/examples/celery-integration/docker_compose.py:example"
 ```
 
