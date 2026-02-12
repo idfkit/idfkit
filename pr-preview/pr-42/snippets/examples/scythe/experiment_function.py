@@ -30,9 +30,7 @@ class BuildingSimOutput(ExperimentOutputSpec):
 
 # --8<-- [start:example]
 @ExperimentRegistry.Register()
-def simulate_building(
-    input_spec: BuildingSimInput, tempdir: Path
-) -> BuildingSimOutput:
+def simulate_building(input_spec: BuildingSimInput, tempdir: Path) -> BuildingSimOutput:
     """Run a single parametric EnergyPlus simulation using idfkit."""
     from idfkit import load_idf
     from idfkit.simulation import simulate
@@ -87,4 +85,6 @@ def simulate_building(
         timeseries=csv_path,
         dataframes={},
     )
+
+
 # --8<-- [end:example]
