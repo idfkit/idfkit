@@ -26,7 +26,7 @@ from .versions import (
     version_string,
 )
 
-_GITHUB_API_BASE = "https://api.github.com/repos/NREL/EnergyPlus/releases/tags"
+_GITHUB_API_BASE = "https://api.github.com/repos/NatLabRockies/EnergyPlus/releases/tags"
 _SCHEMA_FILENAME = "Energy+.schema.epJSON"
 _SCHEMA_FILENAME_GZ = "Energy+.schema.epJSON.gz"
 

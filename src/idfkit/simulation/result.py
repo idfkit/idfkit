@@ -217,7 +217,12 @@ class SimulationResult:
     @property
     def html_path(self) -> Path | None:
         """Path to the HTML tabular output file, if present."""
-        return self._find_output_file("Table.html") or self._find_output_file(".html")
+        return (
+            self._find_output_file("Table.htm")
+            or self._find_output_file("Table.html")
+            or self._find_output_file(".htm")
+            or self._find_output_file(".html")
+        )
 
     @property
     def rdd_path(self) -> Path | None:
@@ -427,7 +432,12 @@ class SimulationResult:
         cached = object.__getattribute__(self, "_cached_html")
         if cached is not _UNSET:
             return cached  # type: ignore[no-any-return]
-        path = await self._async_find_output_file("Table.html") or await self._async_find_output_file(".html")
+        path = (
+            await self._async_find_output_file("Table.htm")
+            or await self._async_find_output_file("Table.html")
+            or await self._async_find_output_file(".htm")
+            or await self._async_find_output_file(".html")
+        )
         if path is None:
             object.__setattr__(self, "_cached_html", None)
             return None
