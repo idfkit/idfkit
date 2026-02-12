@@ -57,6 +57,11 @@ class SimulationResult:
     _cached_csv: Any = field(default=_UNSET, init=False, repr=False)
     _cached_html: Any = field(default=_UNSET, init=False, repr=False)
 
+    def __post_init__(self) -> None:
+        if self.fs is not None and self.async_fs is not None:
+            msg = "fs and async_fs are mutually exclusive — provide one or neither"
+            raise ValueError(msg)
+
     @property
     def errors(self) -> ErrorReport:
         """Parsed error report from the .err file (lazily cached).

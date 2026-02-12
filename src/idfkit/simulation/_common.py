@@ -102,8 +102,9 @@ def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem) -> None:
 async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileSystem) -> None:
     """Upload all output files from a local directory to a remote async file system.
 
-    Uploads are performed concurrently via :func:`asyncio.gather` for
-    network-backed storage like S3.
+    Local file reads are delegated to a thread via :func:`asyncio.to_thread`
+    to avoid blocking the event loop.  Remote writes are dispatched
+    concurrently via :func:`asyncio.gather`.
 
     Args:
         local_dir: Local directory containing simulation outputs.
@@ -112,12 +113,12 @@ async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileS
     """
     import asyncio
 
-    tasks: list[asyncio.Task[None]] = []
-    for p in local_dir.iterdir():
-        if p.is_file():
-            remote_path = str(remote_dir / p.name)
-            data = p.read_bytes()
-            tasks.append(asyncio.ensure_future(fs.write_bytes(remote_path, data)))
+    async def _upload_one(p: Path) -> None:
+        remote_path = str(remote_dir / p.name)
+        data = await asyncio.to_thread(p.read_bytes)
+        await fs.write_bytes(remote_path, data)
+
+    tasks = [asyncio.create_task(_upload_one(p)) for p in local_dir.iterdir() if p.is_file()]
     if tasks:
         await asyncio.gather(*tasks)
 

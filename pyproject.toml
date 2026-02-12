@@ -36,6 +36,10 @@ weather = ["openpyxl>=3.1.0"]
 pandas = ["pandas>=1.5"]
 dataframes = ["pandas>=1.5"]  # Alias for backwards compatibility
 # Cloud storage backends
+# Note: aiobotocore pins a narrow botocore range.  When both s3 and
+# async-s3 are installed, the resolver must find a boto3 version whose
+# botocore matches aiobotocore's pin.  Modern resolvers (pip, uv)
+# handle this automatically.
 s3 = ["boto3>=1.26"]
 async-s3 = ["aiobotocore>=2.5"]
 cloud = ["boto3>=1.26"]  # Alias for s3

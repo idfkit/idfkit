@@ -167,19 +167,40 @@ Implement the `AsyncFileSystem` protocol for other storage systems
 (Azure Blob Storage, GCS, etc.):
 
 ```python
+from pathlib import Path
+
 from idfkit.simulation import AsyncFileSystem
 
 
 class AsyncGCSFileSystem:
-    """Example async GCS backend."""
+    """Example async GCS backend — implements AsyncFileSystem."""
 
-    async def read_bytes(self, path, **kw):
+    async def read_bytes(self, path: str | Path) -> bytes:
         ...
 
-    async def write_bytes(self, path, data, **kw):
+    async def write_bytes(self, path: str | Path, data: bytes) -> None:
         ...
 
-    # ... implement all AsyncFileSystem methods
+    async def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
+        return (await self.read_bytes(path)).decode(encoding)
+
+    async def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
+        await self.write_bytes(path, text.encode(encoding))
+
+    async def exists(self, path: str | Path) -> bool:
+        ...
+
+    async def makedirs(self, path: str | Path, *, exist_ok: bool = False) -> None:
+        ...
+
+    async def copy(self, src: str | Path, dst: str | Path) -> None:
+        ...
+
+    async def glob(self, path: str | Path, pattern: str) -> list[str]:
+        ...
+
+    async def remove(self, path: str | Path) -> None:
+        ...
 ```
 
 ### Backward Compatibility

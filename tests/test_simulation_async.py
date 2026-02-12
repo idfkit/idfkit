@@ -551,6 +551,53 @@ class TestAsyncFileSystem:
         assert len(csv_result.columns) > 0
 
     @pytest.mark.asyncio
+    async def test_async_variables_with_actual_data(self) -> None:
+        """async_variables should parse .rdd content from an async fs."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        rdd_content = "! Program Version,EnergyPlus, 24.1\nOutput:Variable,*,Zone Mean Air Temperature,hourly; !- [C]\n"
+        await fs.write_text("run/eplusout.rdd", rdd_content)
+        result = SimulationResult(
+            run_dir=Path("run"),
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=fs,
+        )
+        variables = await result.async_variables()
+        assert variables is not None
+        assert len(variables.variables) == 1
+
+    @pytest.mark.asyncio
+    async def test_async_html_with_actual_data(self) -> None:
+        """async_html should parse HTML content from an async fs."""
+        from idfkit.simulation.result import SimulationResult
+
+        fs = InMemoryAsyncFileSystem()
+        html_content = (
+            "<html><body>"
+            "<b>Report:</b><b>Test Report</b>"
+            "<table><tr><td>Zone</td><td>Value</td></tr>"
+            "<tr><td>Zone1</td><td>21.5</td></tr></table>"
+            "</body></html>"
+        )
+        await fs.write_text("run/eplusoutTable.html", html_content)
+        result = SimulationResult(
+            run_dir=Path("run"),
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=0.0,
+            async_fs=fs,
+        )
+        html_result = await result.async_html()
+        assert html_result is not None
+
+    @pytest.mark.asyncio
     async def test_from_directory_with_async_fs(self) -> None:
         """from_directory should accept async_fs and populate it on the result."""
         from idfkit.simulation.result import SimulationResult
@@ -565,3 +612,19 @@ class TestAsyncFileSystem:
         assert result.fs is None
         errors = await result.async_errors()
         assert "completed successfully" in errors.summary()
+
+    def test_both_fs_and_async_fs_raises(self) -> None:
+        """Setting both fs and async_fs should raise ValueError."""
+        from idfkit.simulation.result import SimulationResult
+
+        with pytest.raises(ValueError, match="mutually exclusive"):
+            SimulationResult(
+                run_dir=Path("run"),
+                success=True,
+                exit_code=0,
+                stdout="",
+                stderr="",
+                runtime_seconds=0.0,
+                fs=InMemoryFileSystem(),
+                async_fs=InMemoryAsyncFileSystem(),
+            )
