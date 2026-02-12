@@ -27,14 +27,14 @@ def simulate_to_s3(
     """Run a simulation and upload results to S3."""
     model = load_idf(idf_path)
 
-    with S3FileSystem(bucket="my-sim-bucket", prefix=s3_prefix) as fs:
-        result = simulate(
-            model,
-            weather_path,
-            output_dir="results",
-            design_day=design_day,
-            fs=fs,
-        )
+    fs = S3FileSystem(bucket="my-sim-bucket", prefix=s3_prefix)
+    result = simulate(
+        model,
+        weather_path,
+        output_dir="results",
+        design_day=design_day,
+        fs=fs,
+    )
 
     return {
         "success": result.success,

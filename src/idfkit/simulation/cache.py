@@ -53,8 +53,8 @@ class SimulationCache:
 
     _META_FILE = "_cache_meta.json"
 
-    def __init__(self, cache_dir: Path | None = None) -> None:
-        self._cache_dir = cache_dir if cache_dir is not None else default_simulation_cache_dir()
+    def __init__(self, cache_dir: str | Path | None = None) -> None:
+        self._cache_dir = Path(cache_dir) if cache_dir is not None else default_simulation_cache_dir()
 
     @property
     def cache_dir(self) -> Path:
