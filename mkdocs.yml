@@ -48,6 +48,7 @@ nav:
     - Parametric Study: examples/parametric-study.ipynb
     - Design Day Sizing: examples/sizing-workflow.ipynb
     - Cloud Simulations (S3): examples/cloud-simulations.md
+    - Celery Integration: examples/celery-integration.md
 
   - API Reference:
     - Core:

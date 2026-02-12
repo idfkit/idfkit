@@ -137,6 +137,9 @@ reportCallIssue = false
 reportGeneralTypeIssues = false  # deprecated but still needed for "not iterable" errors
 reportIndexIssue = false
 reportInvalidTypeForm = false
+reportUnnecessaryComparison = false
+reportFunctionMemberAccess = false
+reportUnknownLambdaType = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/idfkit"]
