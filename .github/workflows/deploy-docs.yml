@@ -39,5 +39,6 @@ jobs:
           git add -A
           git diff --cached --quiet || {
             git commit -m "Deploy documentation"
+            git pull --rebase origin gh-pages
             git push origin gh-pages
           }

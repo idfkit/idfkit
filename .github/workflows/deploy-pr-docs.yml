@@ -44,6 +44,7 @@ jobs:
           git add -A
           git diff --cached --quiet || {
             git commit -m "Deploy docs preview for PR #${{ github.event.number }}"
+            git pull --rebase origin gh-pages
             git push origin gh-pages
           }
 
@@ -98,5 +99,6 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git rm -rf "pr-preview/pr-${{ github.event.number }}"
             git commit -m "Remove docs preview for PR #${{ github.event.number }}"
+            git pull --rebase origin gh-pages
             git push
           fi
