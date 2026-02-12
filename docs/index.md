@@ -22,7 +22,7 @@ automatic reference tracking, and built-in simulation support.
 
 </div>
 
-<div class="hero-buttons">
+<div class="hero-buttons" markdown>
 
 [Get Started :material-arrow-right:](getting-started/installation.md){ .md-button .md-button--primary }
 [API Reference](api/document.md){ .md-button }
