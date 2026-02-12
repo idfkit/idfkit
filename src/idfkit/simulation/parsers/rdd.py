@@ -32,7 +32,12 @@ _MDD_RE = re.compile(
 
 @dataclass(frozen=True, slots=True)
 class OutputVariable:
-    """An available output variable from a .rdd file.
+    """An available output variable from a ``.rdd`` file.
+
+    Unlike meters, variables are associated with a specific key (zone,
+    surface, etc.).  For post-simulation SQL results where variables and
+    meters are stored together, see
+    :class:`~idfkit.simulation.parsers.sql.VariableInfo`.
 
     Attributes:
         key: The key value (e.g. ``"*"`` or ``"ZONE 1"``).
@@ -49,7 +54,12 @@ class OutputVariable:
 
 @dataclass(frozen=True, slots=True)
 class OutputMeter:
-    """An available meter from a .mdd file.
+    """An available meter from a ``.mdd`` file.
+
+    Meters aggregate energy or resource consumption and have no key value,
+    unlike :class:`OutputVariable`.  For post-simulation SQL results where
+    variables and meters are stored together, see
+    :class:`~idfkit.simulation.parsers.sql.VariableInfo`.
 
     Attributes:
         name: The meter name (e.g. ``"Electricity:Facility"``).

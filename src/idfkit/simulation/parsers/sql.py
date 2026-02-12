@@ -115,11 +115,20 @@ class TabularRow:
 
 @dataclass(frozen=True, slots=True)
 class VariableInfo:
-    """Metadata about an available variable in the SQL database.
+    """Metadata about an available variable or meter in the SQL database.
+
+    This class represents both regular variables and meters because EnergyPlus
+    stores them in a single ``ReportDataDictionary`` table, distinguished only
+    by an ``IsMeter`` column.  Use the :attr:`is_meter` flag to tell them
+    apart.
+
+    For pre-simulation discovery from ``.rdd`` / ``.mdd`` files, see the
+    separate :class:`~idfkit.simulation.parsers.rdd.OutputVariable` and
+    :class:`~idfkit.simulation.parsers.rdd.OutputMeter` classes instead.
 
     Attributes:
         name: The variable name.
-        key_value: The key value.
+        key_value: The key value.  Empty for meters.
         frequency: The reporting frequency.
         units: The variable units.
         is_meter: Whether this is a meter (vs. a regular variable).
