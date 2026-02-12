@@ -5,13 +5,13 @@ from idfkit.weather import StationIndex, WeatherDownloader
 
 # Find the closest weather station
 index = StationIndex.load()
-stations = index.nearest(lat=42.36, lon=-71.06, limit=3)
+results = index.nearest(latitude=42.36, longitude=-71.06, limit=3)
 
 # Download EPW and DDY files
 downloader = WeatherDownloader()
-for station in stations:
-    files = downloader.download(station, output_dir="weather_files/")
-    print(f"{station.name}: {files.epw}, {files.ddy}")
+for result in results:
+    files = downloader.download(result.station)
+    print(f"{result.station.name} ({result.distance_km:.1f} km): {files.epw}, {files.ddy}")
 
 # Use these local paths (or upload to S3) as FileReference inputs to Scythe
 # --8<-- [end:example]

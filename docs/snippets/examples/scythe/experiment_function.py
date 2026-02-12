@@ -34,7 +34,7 @@ def simulate_building(input_spec: BuildingSimInput, tempdir: Path) -> BuildingSi
     """Run a single parametric EnergyPlus simulation using idfkit."""
     from idfkit import load_idf
     from idfkit.simulation import simulate
-    from idfkit.weather import apply_ashrae_sizing
+    from idfkit.weather import DesignDayManager
 
     # Load the base IDF model (FileReference resolves to a local path)
     model = load_idf(input_spec.idf_file)
@@ -52,7 +52,8 @@ def simulate_building(input_spec: BuildingSimInput, tempdir: Path) -> BuildingSi
         pass  # modify as needed for your model
 
     # Inject ASHRAE design days from the DDY file
-    apply_ashrae_sizing(model, input_spec.design_day_file)
+    ddm = DesignDayManager(input_spec.design_day_file)
+    ddm.apply_to_model(model)
 
     # Run the simulation
     result = simulate(
@@ -64,24 +65,37 @@ def simulate_building(input_spec: BuildingSimInput, tempdir: Path) -> BuildingSi
 
     # Extract end-use totals from the SQL output
     sql = result.sql
-    end_use = sql.tabular_data_by_name(
-        "AnnualBuildingUtilityPerformanceSummary",
-        "End Uses",
+    rows = sql.get_tabular_data(
+        report_name="AnnualBuildingUtilityPerformanceSummary",
+        table_name="End Uses",
     )
 
-    floor_area = sql.total_conditioned_area()
+    # Build a lookup: (row_name, column_name) -> value
+    end_use = {(r.row_name, r.column_name): r.value for r in rows}
 
-    # Write hourly time-series to CSV
+    # Get conditioned floor area from the building summary
+    area_rows = sql.get_tabular_data(
+        report_name="AnnualBuildingUtilityPerformanceSummary",
+        table_name="Building Area",
+    )
+    floor_area = float(next(r.value for r in area_rows if r.row_name == "Net Conditioned Building Area"))
+
+    # Write hourly time-series to CSV for the FileReference output
     csv_path = tempdir / "timeseries.csv"
-    ts = result.csv
-    ts.to_dataframe().to_csv(csv_path)
+    if result.csv is not None:
+        with open(csv_path, "w") as f:
+            f.write("timestamp," + ",".join(c.header for c in result.csv.columns) + "\n")
+            for i, ts in enumerate(result.csv.timestamps):
+                vals = ",".join(str(c.values[i]) for c in result.csv.columns)
+                f.write(f"{ts},{vals}\n")
 
     return BuildingSimOutput(
-        heating_kwh_m2=end_use["Heating"]["Total"] / floor_area,
-        cooling_kwh_m2=end_use["Cooling"]["Total"] / floor_area,
-        lighting_kwh_m2=end_use["Interior Lighting"]["Total"] / floor_area,
-        fans_kwh_m2=end_use["Fans"]["Total"] / floor_area,
-        total_eui=end_use["Total End Uses"]["Total"] / floor_area,
+        heating_kwh_m2=float(end_use.get(("Heating", "Electricity"), 0)) / floor_area,
+        cooling_kwh_m2=float(end_use.get(("Cooling", "Electricity"), 0)) / floor_area,
+        lighting_kwh_m2=float(end_use.get(("Interior Lighting", "Electricity"), 0)) / floor_area,
+        fans_kwh_m2=float(end_use.get(("Fans", "Electricity"), 0)) / floor_area,
+        total_eui=sum(float(v) for (row, col), v in end_use.items() if row == "Total End Uses" and col == "Electricity")
+        / floor_area,
         timeseries=csv_path,
         dataframes={},
     )

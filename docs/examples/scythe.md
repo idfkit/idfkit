@@ -79,10 +79,10 @@ Inside the function you have full access to the idfkit API:
 
 - **`load_idf()`** parses the model file that Scythe downloaded to a local path
 - **Object manipulation** applies parametric changes (R-values, lighting, setpoints)
-- **`apply_ashrae_sizing()`** injects design days from the DDY file
+- **`DesignDayManager`** loads a DDY file by path and injects design days into the model
 - **`simulate()`** runs EnergyPlus and returns structured results
-- **`result.sql`** queries the SQLite output for tabular end-use data
-- **`result.csv`** provides time-series data as a DataFrame
+- **`result.sql.get_tabular_data()`** queries the SQLite output for tabular end-use data
+- **`result.csv`** provides access to time-series column data
 
 Any file you write to `tempdir` and return as a `FileReference` gets uploaded
 to S3 automatically.
@@ -178,9 +178,9 @@ results.
 |---|---|
 | `load_idf()` / `load_epjson()` | Load base model from `FileReference` |
 | Object field manipulation | Apply parametric changes per spec |
-| `apply_ashrae_sizing()` | Inject design days from DDY files |
+| `DesignDayManager` | Inject design days from DDY files |
 | `simulate()` | Run EnergyPlus inside the experiment function |
-| `result.sql` | Query tabular end-use summaries |
+| `result.sql.get_tabular_data()` | Query tabular end-use summaries |
 | `result.csv` | Extract time-series for `FileReference` output |
 | `rotate_building()` | Orientation studies |
 | `model.copy()` | Create variants from a shared base |
