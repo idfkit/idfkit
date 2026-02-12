@@ -30,8 +30,8 @@ def simulate_with_progress(
         self.update_state(
             state="SIMULATING",
             meta={
-                "current_environment": progress.current_environment,
-                "percent_complete": progress.percent_complete,
+                "environment": progress.environment,
+                "percent": progress.percent,
             },
         )
 

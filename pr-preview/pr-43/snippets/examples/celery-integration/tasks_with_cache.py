@@ -20,7 +20,7 @@ app.config_from_object("celeryconfig")
 # Use a network file system (NFS, EFS) or a local directory if
 # workers run on the same machine.
 CACHE_DIR = Path("/shared/simulation-cache")
-cache = SimulationCache(directory=CACHE_DIR)
+cache = SimulationCache(cache_dir=CACHE_DIR)
 
 
 @app.task(bind=True, name="simulate_cached")

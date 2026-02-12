@@ -13,9 +13,9 @@ result = simulate_with_progress.delay(
 
 while not result.ready():
     meta = result.info  # dict with progress metadata
-    if isinstance(meta, dict) and "percent_complete" in meta:
-        pct = meta["percent_complete"]
-        env = meta["current_environment"]
+    if isinstance(meta, dict) and "percent" in meta:
+        pct = meta["percent"]
+        env = meta["environment"]
         print(f"  {pct:.0f}%  —  {env}")
     time.sleep(2)
 
