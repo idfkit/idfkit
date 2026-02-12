@@ -27,7 +27,7 @@ app.config_from_object("celeryconfig")
     max_retries=3,
 )
 def simulate_with_retry(
-    self,  # noqa: ANN001
+    self,
     idf_path: str,
     weather_path: str,
     output_dir: str,
@@ -49,4 +49,6 @@ def simulate_with_retry(
         "output_dir": str(Path(result.run_dir).resolve()),
         "retries": self.request.retries,
     }
+
+
 # --8<-- [end:example]

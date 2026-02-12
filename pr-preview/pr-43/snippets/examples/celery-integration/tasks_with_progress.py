@@ -19,7 +19,7 @@ app.config_from_object("celeryconfig")
 
 @app.task(bind=True, name="simulate_with_progress")
 def simulate_with_progress(
-    self,  # noqa: ANN001
+    self,
     idf_path: str,
     weather_path: str,
     output_dir: str,
@@ -48,4 +48,6 @@ def simulate_with_progress(
         "runtime": result.runtime_seconds,
         "output_dir": str(Path(result.run_dir).resolve()),
     }
+
+
 # --8<-- [end:example]

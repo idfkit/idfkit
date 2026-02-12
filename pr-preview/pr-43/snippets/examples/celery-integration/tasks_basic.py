@@ -20,7 +20,7 @@ app.config_from_object("celeryconfig")
 
 @app.task(bind=True, name="simulate_building")
 def simulate_building(
-    self,  # noqa: ANN001
+    self,
     idf_path: str,
     weather_path: str,
     output_dir: str,
@@ -40,4 +40,6 @@ def simulate_building(
         "runtime": result.runtime_seconds,
         "output_dir": str(Path(result.run_dir).resolve()),
     }
+
+
 # --8<-- [end:example]

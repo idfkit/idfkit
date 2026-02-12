@@ -25,7 +25,7 @@ cache = SimulationCache(directory=CACHE_DIR)
 
 @app.task(bind=True, name="simulate_cached")
 def simulate_cached(
-    self,  # noqa: ANN001
+    self,
     idf_path: str,
     weather_path: str,
     output_dir: str,
@@ -45,4 +45,6 @@ def simulate_cached(
         "runtime": result.runtime_seconds,
         "output_dir": str(Path(result.run_dir).resolve()),
     }
+
+
 # --8<-- [end:example]
