@@ -49,7 +49,7 @@ from .expand import (
     run_preprocessing,
     run_slab_preprocessor,
 )
-from .fs import FileSystem, LocalFileSystem, S3FileSystem
+from .fs import AsyncFileSystem, AsyncLocalFileSystem, FileSystem, LocalFileSystem, S3FileSystem
 from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
@@ -68,6 +68,8 @@ from .result import SimulationResult
 from .runner import simulate
 
 __all__ = [
+    "AsyncFileSystem",
+    "AsyncLocalFileSystem",
     "BatchResult",
     "CSVColumn",
     "CSVResult",

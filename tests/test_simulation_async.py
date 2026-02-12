@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from conftest import InMemoryFileSystem
+from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
 
 from idfkit import new_document
 from idfkit.exceptions import SimulationError
@@ -392,3 +392,97 @@ class TestSimulationEvent:
         assert event.result is result
         assert event.completed == 3
         assert event.total == 5
+
+
+# ---------------------------------------------------------------------------
+# AsyncFileSystem integration
+# ---------------------------------------------------------------------------
+
+
+class TestAsyncFileSystem:
+    """Tests for async file system support in async_simulate()."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_simulate_with_async_fs_uploads_results(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """async_simulate with an AsyncFileSystem should upload without blocking."""
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryAsyncFileSystem()
+        model = new_document()
+        result = await async_simulate(
+            model,
+            weather_file,
+            energyplus=mock_config,
+            output_dir="remote/output",
+            fs=fs,
+        )
+        assert result.success
+        assert result.async_fs is fs
+        assert result.fs is None
+        assert result.run_dir == Path("remote/output")
+        uploaded = [k for k in fs._files if k.startswith("remote/output/")]
+        assert len(uploaded) > 0
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_simulate_with_sync_fs_wraps_in_thread(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """async_simulate with a sync FileSystem should wrap upload in to_thread."""
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryFileSystem()
+        model = new_document()
+        result = await async_simulate(
+            model,
+            weather_file,
+            energyplus=mock_config,
+            output_dir="remote/output",
+            fs=fs,
+        )
+        assert result.success
+        assert result.fs is fs
+        assert result.async_fs is None
+        assert result.run_dir == Path("remote/output")
+        uploaded = [k for k in fs._files if k.startswith("remote/output/")]
+        assert len(uploaded) > 0
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_async_fs_result_has_async_accessors(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """SimulationResult from async fs should support async_errors() etc."""
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryAsyncFileSystem()
+        model = new_document()
+        result = await async_simulate(
+            model,
+            weather_file,
+            energyplus=mock_config,
+            output_dir="remote/output",
+            fs=fs,
+        )
+        # async_errors should not raise (even if no .err file exists)
+        errors = await result.async_errors()
+        assert errors is not None
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_async_batch_with_async_fs(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """async_simulate_batch should accept an AsyncFileSystem."""
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryAsyncFileSystem()
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="job-0", output_dir="batch/run-0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="job-1", output_dir="batch/run-1"),
+        ]
+        result = await async_simulate_batch(jobs, energyplus=mock_config, fs=fs)
+        assert len(result) == 2
+        assert result.all_succeeded
+        # Both should have used the async fs
+        for r in result.results:
+            assert r.async_fs is fs

@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from .parsers.err import ErrorReport
 
 if TYPE_CHECKING:
-    from .fs import FileSystem
+    from .fs import AsyncFileSystem, FileSystem
     from .outputs import OutputVariableIndex
     from .parsers.csv import CSVResult
     from .parsers.html import HTMLResult
@@ -36,7 +36,10 @@ class SimulationResult:
         stderr: Captured standard error.
         runtime_seconds: Wall-clock execution time in seconds.
         output_prefix: Output file prefix (default "eplus").
-        fs: Optional file system backend for reading output files.
+        fs: Optional sync file system backend for reading output files.
+        async_fs: Optional async file system backend for non-blocking reads.
+            Set automatically by :func:`async_simulate` when an
+            :class:`~idfkit.simulation.fs.AsyncFileSystem` is provided.
     """
 
     run_dir: Path
@@ -47,6 +50,7 @@ class SimulationResult:
     runtime_seconds: float
     output_prefix: str = "eplus"
     fs: FileSystem | None = field(default=None, repr=False)
+    async_fs: AsyncFileSystem | None = field(default=None, repr=False)
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
@@ -248,6 +252,215 @@ class SimulationResult:
             return primary
 
         # Fallback: scan directory
+        for p in self.run_dir.iterdir():
+            if p.is_file() and p.name.endswith(suffix):
+                return p
+
+        return None
+
+    # ------------------------------------------------------------------
+    # Async accessors — non-blocking counterparts to the sync properties
+    # ------------------------------------------------------------------
+
+    async def async_errors(self) -> ErrorReport:
+        """Parsed error report from the .err file (async, lazily cached).
+
+        Non-blocking counterpart to :attr:`errors` that uses
+        :attr:`async_fs` for file reads.
+
+        Returns:
+            Parsed ErrorReport from the simulation's .err output.
+        """
+        cached = object.__getattribute__(self, "_cached_errors")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        err = await self._async_find_output_file(".err")
+        if err is None:
+            report = ErrorReport.from_string("")
+        elif self.async_fs is not None:
+            text = await self.async_fs.read_text(str(err), encoding="latin-1")
+            report = ErrorReport.from_string(text)
+        elif self.fs is not None:
+            text = self.fs.read_text(str(err), encoding="latin-1")
+            report = ErrorReport.from_string(text)
+        else:
+            report = ErrorReport.from_file(err)
+        object.__setattr__(self, "_cached_errors", report)
+        return report
+
+    async def async_sql(self) -> SQLResult | None:
+        """Parsed SQL output database (async, lazily cached).
+
+        Non-blocking counterpart to :attr:`sql` that uses
+        :attr:`async_fs` for file reads.
+
+        Returns:
+            An SQLResult for querying time-series and tabular data,
+            or None if no .sql file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_sql")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = await self._async_find_output_file(".sql")
+        if path is None:
+            object.__setattr__(self, "_cached_sql", None)
+            return None
+        from .parsers.sql import SQLResult as _SQLResult
+
+        if self.async_fs is not None:
+            data = await self.async_fs.read_bytes(str(path))
+            with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
+                tmp_file.write(data)
+            result: SQLResult = _SQLResult(Path(tmp_file.name))
+        elif self.fs is not None:
+            data = self.fs.read_bytes(str(path))
+            with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
+                tmp_file.write(data)
+            result = _SQLResult(Path(tmp_file.name))
+        else:
+            result = _SQLResult(path)
+        object.__setattr__(self, "_cached_sql", result)
+        return result
+
+    async def async_variables(self) -> OutputVariableIndex | None:
+        """Output variable/meter index (async, lazily cached).
+
+        Non-blocking counterpart to :attr:`variables` that uses
+        :attr:`async_fs` for file reads.
+
+        Returns:
+            An OutputVariableIndex for searching and injecting output
+            variables, or None if no .rdd file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_variables")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        rdd = await self._async_find_output_file(".rdd")
+        if rdd is None:
+            object.__setattr__(self, "_cached_variables", None)
+            return None
+
+        if self.async_fs is not None:
+            from .parsers.rdd import parse_mdd, parse_rdd
+
+            rdd_text = await self.async_fs.read_text(str(rdd), encoding="latin-1")
+            variables = parse_rdd(rdd_text)
+            mdd = await self._async_find_output_file(".mdd")
+            meters = parse_mdd(await self.async_fs.read_text(str(mdd), encoding="latin-1")) if mdd is not None else ()
+            from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+            result: OutputVariableIndex = _OutputVariableIndex(variables=variables, meters=meters)
+        elif self.fs is not None:
+            from .parsers.rdd import parse_mdd, parse_rdd
+
+            rdd_text = self.fs.read_text(str(rdd), encoding="latin-1")
+            variables = parse_rdd(rdd_text)
+            mdd = self._find_output_file(".mdd")
+            meters = parse_mdd(self.fs.read_text(str(mdd), encoding="latin-1")) if mdd is not None else ()
+            from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+            result = _OutputVariableIndex(variables=variables, meters=meters)
+        else:
+            from .outputs import OutputVariableIndex as _OutputVariableIndex
+
+            result = _OutputVariableIndex.from_files(rdd, self.mdd_path)
+        object.__setattr__(self, "_cached_variables", result)
+        return result
+
+    async def async_csv(self) -> CSVResult | None:
+        """Parsed CSV output (async, lazily cached).
+
+        Non-blocking counterpart to :attr:`csv` that uses
+        :attr:`async_fs` for file reads.
+
+        Returns:
+            A CSVResult with extracted column metadata and values,
+            or None if no .csv file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_csv")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = await self._async_find_output_file(".csv")
+        if path is None:
+            object.__setattr__(self, "_cached_csv", None)
+            return None
+        from .parsers.csv import CSVResult as _CSVResult
+
+        if self.async_fs is not None:
+            text = await self.async_fs.read_text(str(path), encoding="latin-1")
+            result: CSVResult = _CSVResult.from_string(text)
+        elif self.fs is not None:
+            text = self.fs.read_text(str(path), encoding="latin-1")
+            result = _CSVResult.from_string(text)
+        else:
+            result = _CSVResult.from_file(path)
+        object.__setattr__(self, "_cached_csv", result)
+        return result
+
+    async def async_html(self) -> HTMLResult | None:
+        """Parsed HTML tabular output (async, lazily cached).
+
+        Non-blocking counterpart to :attr:`html` that uses
+        :attr:`async_fs` for file reads.
+
+        Returns:
+            An HTMLResult with extracted tables and titles,
+            or None if no HTML file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_html")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = await self._async_find_output_file("Table.html") or await self._async_find_output_file(".html")
+        if path is None:
+            object.__setattr__(self, "_cached_html", None)
+            return None
+        from .parsers.html import HTMLResult as _HTMLResult
+
+        if self.async_fs is not None:
+            text = await self.async_fs.read_text(str(path), encoding="latin-1")
+            result: HTMLResult = _HTMLResult.from_string(text)
+        elif self.fs is not None:
+            text = self.fs.read_text(str(path), encoding="latin-1")
+            result = _HTMLResult.from_string(text)
+        else:
+            result = _HTMLResult.from_file(path)
+        object.__setattr__(self, "_cached_html", result)
+        return result
+
+    async def _async_find_output_file(self, suffix: str) -> Path | None:
+        """Async counterpart to :meth:`_find_output_file`.
+
+        Uses :attr:`async_fs` for non-blocking file lookups, falling back
+        to :attr:`fs` or local path checks.
+
+        Args:
+            suffix: File suffix to look for (e.g. ".sql", ".err").
+
+        Returns:
+            Path to the file, or None if not found.
+        """
+        primary = self.run_dir / f"{self.output_prefix}out{suffix}"
+
+        if self.async_fs is not None:
+            if await self.async_fs.exists(str(primary)):
+                return primary
+            matches = await self.async_fs.glob(str(self.run_dir), f"*{suffix}")
+            if matches:
+                return Path(matches[0])
+            return None
+
+        if self.fs is not None:
+            if self.fs.exists(str(primary)):
+                return primary
+            matches = self.fs.glob(str(self.run_dir), f"*{suffix}")
+            if matches:
+                return Path(matches[0])
+            return None
+
+        # Local path-based lookup
+        if primary.is_file():
+            return primary
+
         for p in self.run_dir.iterdir():
             if p.is_file() and p.name.endswith(suffix):
                 return p

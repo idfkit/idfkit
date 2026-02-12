@@ -5,6 +5,11 @@ stored on and read from non-local backends (e.g. S3 for cloud workflows).
 EnergyPlus itself always runs locally; the abstraction covers pre/post I/O
 and result reading.
 
+An :class:`AsyncFileSystem` protocol is also available for use with the
+async simulation API (:func:`~idfkit.simulation.async_runner.async_simulate`).
+Using ``AsyncFileSystem`` avoids blocking the event loop during file uploads
+and result reads — important for S3 and other network-backed storage.
+
 Cloud Workflow Example
 ----------------------
 
@@ -44,6 +49,7 @@ The :class:`FileSystem` protocol can also be implemented for other backends
 
 from __future__ import annotations
 
+import asyncio
 import fnmatch
 import shutil
 from pathlib import Path
@@ -190,6 +196,157 @@ class LocalFileSystem:
     def remove(self, path: str | Path) -> None:
         """Remove a file."""
         Path(path).unlink()
+
+
+@runtime_checkable
+class AsyncFileSystem(Protocol):
+    """Protocol for async file system operations used by the async simulation module.
+
+    This is the async counterpart to :class:`FileSystem`.  Use this with
+    :func:`~idfkit.simulation.async_runner.async_simulate` and the async batch
+    functions to avoid blocking the event loop during file I/O — especially
+    important for network-backed storage like S3.
+
+    All methods accept ``str | Path`` for path arguments.
+    """
+
+    async def read_bytes(self, path: str | Path) -> bytes:
+        """Read a file as raw bytes.
+
+        Args:
+            path: Path to the file.
+
+        Returns:
+            The file contents as bytes.
+        """
+        ...
+
+    async def write_bytes(self, path: str | Path, data: bytes) -> None:
+        """Write raw bytes to a file.
+
+        Args:
+            path: Path to the file.
+            data: Bytes to write.
+        """
+        ...
+
+    async def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
+        """Read a file as text.
+
+        Args:
+            path: Path to the file.
+            encoding: Text encoding (default ``"utf-8"``).
+
+        Returns:
+            The file contents as a string.
+        """
+        ...
+
+    async def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
+        """Write text to a file.
+
+        Args:
+            path: Path to the file.
+            text: Text to write.
+            encoding: Text encoding (default ``"utf-8"``).
+        """
+        ...
+
+    async def exists(self, path: str | Path) -> bool:
+        """Check whether a file exists.
+
+        Args:
+            path: Path to check.
+
+        Returns:
+            True if the file exists.
+        """
+        ...
+
+    async def makedirs(self, path: str | Path, *, exist_ok: bool = False) -> None:
+        """Create directories recursively.
+
+        Args:
+            path: Directory path to create.
+            exist_ok: If True, do not raise if the directory already exists.
+        """
+        ...
+
+    async def copy(self, src: str | Path, dst: str | Path) -> None:
+        """Copy a file from *src* to *dst*.
+
+        Args:
+            src: Source file path.
+            dst: Destination file path.
+        """
+        ...
+
+    async def glob(self, path: str | Path, pattern: str) -> list[str]:
+        """List files matching a glob pattern under *path*.
+
+        Args:
+            path: Base directory.
+            pattern: Glob pattern (e.g. ``"*.sql"``).
+
+        Returns:
+            List of matching file paths as strings.
+        """
+        ...
+
+    async def remove(self, path: str | Path) -> None:
+        """Remove a file.
+
+        Args:
+            path: Path to the file to remove.
+        """
+        ...
+
+
+class AsyncLocalFileSystem:
+    """Non-blocking local file system using :func:`asyncio.to_thread`.
+
+    Wraps :class:`LocalFileSystem` so that each blocking I/O call runs in
+    the default executor, keeping the event loop free.
+    """
+
+    def __init__(self) -> None:
+        self._sync = LocalFileSystem()
+
+    async def read_bytes(self, path: str | Path) -> bytes:
+        """Read a file as raw bytes without blocking the event loop."""
+        return await asyncio.to_thread(self._sync.read_bytes, path)
+
+    async def write_bytes(self, path: str | Path, data: bytes) -> None:
+        """Write raw bytes to a file without blocking the event loop."""
+        await asyncio.to_thread(self._sync.write_bytes, path, data)
+
+    async def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
+        """Read a file as text without blocking the event loop."""
+        return await asyncio.to_thread(self._sync.read_text, path, encoding)
+
+    async def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
+        """Write text to a file without blocking the event loop."""
+        await asyncio.to_thread(self._sync.write_text, path, text, encoding)
+
+    async def exists(self, path: str | Path) -> bool:
+        """Check whether a file exists without blocking the event loop."""
+        return await asyncio.to_thread(self._sync.exists, path)
+
+    async def makedirs(self, path: str | Path, *, exist_ok: bool = False) -> None:
+        """Create directories recursively without blocking the event loop."""
+        await asyncio.to_thread(self._sync.makedirs, path, exist_ok=exist_ok)
+
+    async def copy(self, src: str | Path, dst: str | Path) -> None:
+        """Copy a file without blocking the event loop."""
+        await asyncio.to_thread(self._sync.copy, src, dst)
+
+    async def glob(self, path: str | Path, pattern: str) -> list[str]:
+        """List files matching a glob pattern without blocking the event loop."""
+        return await asyncio.to_thread(self._sync.glob, path, pattern)
+
+    async def remove(self, path: str | Path) -> None:
+        """Remove a file without blocking the event loop."""
+        await asyncio.to_thread(self._sync.remove, path)
 
 
 class S3FileSystem:

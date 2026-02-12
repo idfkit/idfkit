@@ -100,6 +100,59 @@ Implement the `FileSystem` protocol for other storage systems:
 --8<-- "docs/snippets/concepts/cloud-storage/implementing_custom_backends.py:example"
 ```
 
+## Async File System
+
+For use with `async_simulate()` and the async batch functions, an
+`AsyncFileSystem` protocol is available.  This avoids blocking the event
+loop during file uploads and result reads — important for
+network-backed storage like S3.
+
+### Built-in: AsyncLocalFileSystem
+
+Wraps `LocalFileSystem` via `asyncio.to_thread()`:
+
+```python
+from idfkit.simulation import AsyncLocalFileSystem, async_simulate
+
+fs = AsyncLocalFileSystem()
+result = await async_simulate(
+    model, "weather.epw",
+    output_dir="run-001",
+    fs=fs,
+)
+
+# Non-blocking result access
+errors = await result.async_errors()
+sql = await result.async_sql()
+```
+
+### Custom Async Backend
+
+Implement the `AsyncFileSystem` protocol for full control:
+
+```python
+from idfkit.simulation import AsyncFileSystem
+
+
+class AsyncS3FileSystem:
+    """Example async S3 backend using aioboto3."""
+
+    async def read_bytes(self, path, **kw):
+        ...
+
+    async def write_bytes(self, path, data, **kw):
+        ...
+
+    # ... implement all AsyncFileSystem methods
+```
+
+### Backward Compatibility
+
+A sync `FileSystem` passed to `async_simulate()` is automatically wrapped
+in `asyncio.to_thread()` for the upload step, so existing code continues
+to work without changes.  However, using `AsyncFileSystem` avoids the
+thread-pool overhead and provides true non-blocking I/O.
+
 ## EnergyPlus Execution
 
 Important: **EnergyPlus always runs locally**. The FileSystem abstraction

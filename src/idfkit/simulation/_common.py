@@ -14,7 +14,7 @@ from .config import EnergyPlusConfig, find_energyplus
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
-    from .fs import FileSystem
+    from .fs import AsyncFileSystem, FileSystem
 
 
 def resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:
@@ -97,6 +97,21 @@ def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem) -> None:
         if p.is_file():
             remote_path = str(remote_dir / p.name)
             fs.write_bytes(remote_path, p.read_bytes())
+
+
+async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileSystem) -> None:
+    """Upload all output files from a local directory to a remote async file system.
+
+    Args:
+        local_dir: Local directory containing simulation outputs.
+        remote_dir: Remote directory path for the file system.
+        fs: Async file system backend to upload to.
+    """
+    for p in local_dir.iterdir():
+        if p.is_file():
+            remote_path = str(remote_dir / p.name)
+            data = p.read_bytes()
+            await fs.write_bytes(remote_path, data)
 
 
 def prepare_run_directory(output_dir: str | Path | None, weather_path: Path) -> Path:

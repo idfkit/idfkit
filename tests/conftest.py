@@ -67,6 +67,59 @@ class InMemoryFileSystem:
             del self._files[key]
 
 
+class InMemoryAsyncFileSystem:
+    """Dict-backed async file system for testing.
+
+    Satisfies the :class:`~idfkit.simulation.fs.AsyncFileSystem` protocol.
+    """
+
+    def __init__(self) -> None:
+        self._files: dict[str, bytes] = {}
+
+    def _norm(self, path: str | Path) -> str:
+        return str(path).replace("\\", "/").strip("/")
+
+    async def read_bytes(self, path: str | Path) -> bytes:
+        key = self._norm(path)
+        if key not in self._files:
+            msg = f"File not found: {key}"
+            raise FileNotFoundError(msg)
+        return self._files[key]
+
+    async def write_bytes(self, path: str | Path, data: bytes) -> None:
+        self._files[self._norm(path)] = data
+
+    async def read_text(self, path: str | Path, encoding: str = "utf-8") -> str:
+        return (await self.read_bytes(path)).decode(encoding)
+
+    async def write_text(self, path: str | Path, text: str, encoding: str = "utf-8") -> None:
+        await self.write_bytes(path, text.encode(encoding))
+
+    async def exists(self, path: str | Path) -> bool:
+        return self._norm(path) in self._files
+
+    async def makedirs(self, path: str | Path, *, exist_ok: bool = False) -> None:
+        pass  # no-op
+
+    async def copy(self, src: str | Path, dst: str | Path) -> None:
+        self._files[self._norm(dst)] = self._files[self._norm(src)]
+
+    async def glob(self, path: str | Path, pattern: str) -> list[str]:
+        prefix = self._norm(path) + "/"
+        matches: list[str] = []
+        for key in self._files:
+            if key.startswith(prefix):
+                relative = key[len(prefix) :]
+                if fnmatch.fnmatch(relative, pattern):
+                    matches.append(key)
+        return matches
+
+    async def remove(self, path: str | Path) -> None:
+        key = self._norm(path)
+        if key in self._files:
+            del self._files[key]
+
+
 @pytest.fixture
 def schema() -> EpJSONSchema:
     """Load the v24.1.0 schema."""

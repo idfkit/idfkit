@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from ..exceptions import SimulationError
 from ._common import (
+    async_upload_results,
     build_command,
     ensure_sql_output,
     maybe_preprocess,
@@ -50,7 +51,12 @@ if TYPE_CHECKING:
     from ..document import IDFDocument
     from .cache import CacheKey, SimulationCache
     from .config import EnergyPlusConfig
-    from .fs import FileSystem
+    from .fs import AsyncFileSystem, FileSystem
+
+
+def _is_async_fs(fs: object) -> bool:
+    """Check whether *fs* is an async file system."""
+    return inspect.iscoroutinefunction(getattr(fs, "write_bytes", None))
 
 
 async def async_simulate(
@@ -68,7 +74,7 @@ async def async_simulate(
     timeout: float = 3600.0,
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
-    fs: FileSystem | None = None,
+    fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation without blocking the event loop.
@@ -101,7 +107,12 @@ async def async_simulate(
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend for storing results on remote
-            storage (e.g., S3).
+            storage (e.g., S3).  Both sync :class:`~idfkit.simulation.fs.FileSystem`
+            and async :class:`~idfkit.simulation.fs.AsyncFileSystem` are accepted.
+            When an ``AsyncFileSystem`` is provided, uploads and result reads
+            are truly non-blocking.  A sync ``FileSystem`` is automatically
+            wrapped in :func:`asyncio.to_thread` to avoid blocking the event
+            loop.
         on_progress: Optional callback invoked with a
             :class:`~idfkit.simulation.progress.SimulationProgress` event
             each time EnergyPlus emits a progress line.  Both synchronous
@@ -194,17 +205,30 @@ async def async_simulate(
 
     if fs is not None:
         remote_dir = Path(str(output_dir))
-        upload_results(run_dir, remote_dir, fs)
-        result = SimulationResult(
-            run_dir=remote_dir,
-            success=returncode == 0,
-            exit_code=returncode,
-            stdout=stdout,
-            stderr=stderr,
-            runtime_seconds=elapsed,
-            output_prefix=output_prefix,
-            fs=fs,
-        )
+        if _is_async_fs(fs):
+            await async_upload_results(run_dir, remote_dir, fs)  # type: ignore[arg-type]
+            result = SimulationResult(
+                run_dir=remote_dir,
+                success=returncode == 0,
+                exit_code=returncode,
+                stdout=stdout,
+                stderr=stderr,
+                runtime_seconds=elapsed,
+                output_prefix=output_prefix,
+                async_fs=fs,  # type: ignore[arg-type]
+            )
+        else:
+            await asyncio.to_thread(upload_results, run_dir, remote_dir, fs)  # type: ignore[arg-type]
+            result = SimulationResult(
+                run_dir=remote_dir,
+                success=returncode == 0,
+                exit_code=returncode,
+                stdout=stdout,
+                stderr=stderr,
+                runtime_seconds=elapsed,
+                output_prefix=output_prefix,
+                fs=fs,  # type: ignore[arg-type]
+            )
     else:
         result = SimulationResult(
             run_dir=run_dir,

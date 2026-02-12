@@ -55,7 +55,7 @@ from .result import SimulationResult
 if TYPE_CHECKING:
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
-    from .fs import FileSystem
+    from .fs import AsyncFileSystem, FileSystem
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,7 +86,7 @@ async def async_simulate_batch(
     energyplus: EnergyPlusConfig | None = None,
     max_concurrent: int | None = None,
     cache: SimulationCache | None = None,
-    fs: FileSystem | None = None,
+    fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | None = None,
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations concurrently using asyncio.
@@ -172,7 +172,7 @@ async def async_simulate_batch_stream(
     energyplus: EnergyPlusConfig | None = None,
     max_concurrent: int | None = None,
     cache: SimulationCache | None = None,
-    fs: FileSystem | None = None,
+    fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | None = None,
 ) -> AsyncIterator[SimulationEvent]:
     """Run simulations concurrently, yielding events as each one completes.
@@ -266,7 +266,7 @@ async def _async_run_job(
     job: SimulationJob,
     energyplus: EnergyPlusConfig | None,
     cache: SimulationCache | None,
-    fs: FileSystem | None,
+    fs: FileSystem | AsyncFileSystem | None,
     on_progress: Callable[[SimulationProgress], Any] | None,
 ) -> SimulationResult:
     """Execute a single simulation job, catching SimulationError."""
