@@ -12,7 +12,6 @@ from idfkit.schedules import evaluate
 value = evaluate(
     schedule,
     datetime(2024, 7, 15, 14, 0),
-    document=doc,
     day_type="summer",
 )
 
@@ -20,7 +19,6 @@ value = evaluate(
 value = evaluate(
     schedule,
     datetime(2024, 1, 15, 6, 0),
-    document=doc,
     day_type="winter",
 )
 # --8<-- [end:example]

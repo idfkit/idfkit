@@ -14,5 +14,5 @@ print(f"Holidays: {holidays}")
 
 # Evaluation automatically uses holiday schedules on those dates
 christmas = datetime(2024, 12, 25, 10, 0)
-value = evaluate(schedule, christmas, document=doc)
+value = evaluate(schedule, christmas)
 # --8<-- [end:example]

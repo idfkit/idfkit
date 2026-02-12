@@ -16,10 +16,10 @@ doc = load_idf("building.idf")
 schedule = doc["Schedule:Compact"]["Office Occupancy"]
 
 # Evaluate at a specific time
-value = evaluate(schedule, datetime(2024, 1, 8, 10, 0), document=doc)
+value = evaluate(schedule, datetime(2024, 1, 8, 10, 0))
 print(f"Value at Monday 10am: {value}")
 
 # Get hourly values for a full year
-hourly = values(schedule, year=2024, document=doc)
+hourly = values(schedule, year=2024)
 print(f"Annual hours: {len(hourly)}")  # 8784 for leap year
 # --8<-- [end:example]
