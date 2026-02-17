@@ -435,6 +435,36 @@ class TestSQLResultGetTabularValue:
             )
         assert val == "0.35"
 
+    def test_multiple_matches_raises(self, tmp_path: Path) -> None:
+        """get_tabular_value raises KeyError when more than one row matches."""
+        db_path = tmp_path / "dup.sql"
+        conn = sqlite3.connect(str(db_path))
+        cur = conn.cursor()
+        cur.execute(
+            "CREATE TABLE TabularDataWithStrings ("
+            "  TabularDataIndex INTEGER PRIMARY KEY,"
+            "  ReportName TEXT, ReportForString TEXT,"
+            "  TableName TEXT, RowName TEXT, ColumnName TEXT,"
+            "  Units TEXT, Value TEXT)"
+        )
+        # Insert two rows that match the same report/table/row/column/reportFor
+        cur.execute(
+            "INSERT INTO TabularDataWithStrings VALUES (1, 'R', 'Entire Facility', 'T', 'Row', 'Col', 'W', '1.0')"
+        )
+        cur.execute(
+            "INSERT INTO TabularDataWithStrings VALUES (2, 'R', 'Entire Facility', 'T', 'Row', 'Col', 'W', '2.0')"
+        )
+        conn.commit()
+        conn.close()
+
+        with SQLResult(db_path) as sql, pytest.raises(KeyError, match="Multiple rows found"):
+            sql.get_tabular_value(
+                report_name="R",
+                table_name="T",
+                row_name="Row",
+                column_name="Col",
+            )
+
 
 class TestSQLResultListVariables:
     """Tests for list_variables()."""

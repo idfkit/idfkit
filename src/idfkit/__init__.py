@@ -83,6 +83,13 @@ from .objects import IDFCollection, IDFObject
 # Reference graph
 from .references import ReferenceGraph
 
+# Schedule builders
+from .schedules.builder import (
+    create_compact_schedule_from_values,
+    create_constant_schedule,
+    create_schedule_type_limits,
+)
+
 # Schema access
 from .schema import EpJSONSchema, SchemaManager, get_schema, get_schema_manager
 
@@ -237,6 +244,9 @@ __all__ = [
     "calculate_zone_floor_area",
     "calculate_zone_height",
     "calculate_zone_volume",
+    "create_compact_schedule_from_values",
+    "create_constant_schedule",
+    "create_schedule_type_limits",
     "find_closest_version",
     "get_idf_version",
     "get_schema",

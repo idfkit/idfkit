@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from idfkit import new_document
-from idfkit.geometry import calculate_surface_area, calculate_zone_floor_area, get_surface_coords
+from idfkit.geometry import calculate_surface_area, calculate_zone_floor_area
 from idfkit.geometry_builders import (
     Shoebox,
     add_block,

@@ -164,7 +164,7 @@ def create_compact_schedule_from_values(
 
 def _profiles_equal(a: tuple[float, ...], b: tuple[float, ...], tol: float) -> bool:
     """Compare two 24-value daily profiles within tolerance."""
-    return len(a) == len(b) and all(abs(x - y) <= tol for x, y in zip(a, b))
+    return len(a) == len(b) and all(abs(x - y) <= tol for x, y in zip(a, b, strict=True))
 
 
 def _profile_to_until_fields(profile: Sequence[float]) -> list[str]:
@@ -172,6 +172,11 @@ def _profile_to_until_fields(profile: Sequence[float]) -> list[str]:
 
     Merges consecutive hours with the same value to produce compact output.
     For a constant-value day, this returns just ``["Until: 24:00", "value"]``.
+
+    Note: Uses exact float equality for intra-day hour merging (not the
+    tolerance used for inter-day profile grouping).  This is correct because
+    the values within a single day come from the same input array and are
+    compared to themselves, not to values from a different day.
     """
     fields: list[str] = []
     prev_value = profile[0]
@@ -195,6 +200,6 @@ def _profile_to_until_fields(profile: Sequence[float]) -> list[str]:
 
 def _format_value(v: float) -> str:
     """Format a numeric value for Compact DSL, dropping trailing zeros."""
-    if v == int(v):
-        return str(int(v))
+    # Using :.15g handles integers (1.0 → "1"), floats, inf, and nan
+    # without the OverflowError risk of int(v) on non-finite values.
     return f"{v:.15g}"

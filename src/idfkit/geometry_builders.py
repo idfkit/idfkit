@@ -15,21 +15,17 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .geometry import Polygon3D, Vector3D, get_surface_coords, set_surface_coords
+from .geometry import (
+    VERTEX_SURFACE_TYPES,
+    Polygon3D,
+    Vector3D,
+    get_surface_coords,
+    set_surface_coords,
+)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
     from .objects import IDFObject
-
-# Surface types that carry vertex geometry (shared with translate_building /
-# rotate_building in geometry.py).
-_SURFACE_TYPES = [
-    "BuildingSurface:Detailed",
-    "FenestrationSurface:Detailed",
-    "Shading:Site:Detailed",
-    "Shading:Building:Detailed",
-    "Shading:Zone:Detailed",
-]
 
 
 # ---------------------------------------------------------------------------
@@ -224,8 +220,7 @@ def set_default_constructions(doc: IDFDocument, construction_name: str = "Defaul
     count = 0
     for stype in ("BuildingSurface:Detailed", "FenestrationSurface:Detailed"):
         for srf in doc[stype]:
-            current = getattr(srf, "construction_name", None)
-            if not current:
+            if not srf.get("Construction Name"):
                 srf.construction_name = construction_name
                 count += 1
     return count
@@ -285,7 +280,7 @@ def scale_building(
 
     ax, ay, az = (anchor.x, anchor.y, anchor.z) if anchor else (0.0, 0.0, 0.0)
 
-    for stype in _SURFACE_TYPES:
+    for stype in VERTEX_SURFACE_TYPES:
         for srf in doc[stype]:
             coords = get_surface_coords(srf)
             if coords is None:

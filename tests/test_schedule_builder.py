@@ -109,7 +109,13 @@ class TestCreateCompactScheduleFromValues:
         assert obj.field_5 == "Through: 12/31"
 
     def test_unique_daily_profiles(self) -> None:
-        """Each day having a unique profile produces 365 Through blocks."""
+        """Each day having a unique profile produces 365 Through blocks.
+
+        No roundtrip test here: 365 unique profiles produce 1460 Compact
+        fields, which exceeds the Schedule:Compact parser's practical
+        field limit.  The roundtrip is covered by other tests with fewer
+        distinct profiles.
+        """
         doc = new_document()
         # Each day gets a slightly different constant value
         vals: list[float] = []
@@ -152,7 +158,7 @@ class TestCreateCompactScheduleFromValues:
         obj = create_compact_schedule_from_values(doc, "RT", input_vals, year=year)
         output_vals = values(obj, year=year)
         assert len(output_vals) == 8760
-        for i, (inp, out) in enumerate(zip(input_vals, output_vals)):
+        for i, (inp, out) in enumerate(zip(input_vals, output_vals, strict=True)):
             assert abs(inp - out) < _TOL, f"Mismatch at hour {i}: {inp} vs {out}"
 
     def test_roundtrip_binary_pattern(self) -> None:
@@ -164,7 +170,7 @@ class TestCreateCompactScheduleFromValues:
         obj = create_compact_schedule_from_values(doc, "RT_Binary", input_vals, year=year)
         output_vals = values(obj, year=year)
         assert len(output_vals) == 8760
-        for i, (inp, out) in enumerate(zip(input_vals, output_vals)):
+        for i, (inp, out) in enumerate(zip(input_vals, output_vals, strict=True)):
             assert abs(inp - out) < _TOL, f"Mismatch at hour {i}: {inp} vs {out}"
 
     def test_roundtrip_monthly_varying(self) -> None:
@@ -198,7 +204,7 @@ class TestCreateCompactScheduleFromValues:
         obj = create_compact_schedule_from_values(doc, "RT_Monthly", input_vals, year=year)
         output_vals = values(obj, year=year)
         assert len(output_vals) == 8760
-        for i, (inp, out) in enumerate(zip(input_vals, output_vals)):
+        for i, (inp, out) in enumerate(zip(input_vals, output_vals, strict=True)):
             assert abs(inp - out) < _TOL, f"Mismatch at hour {i}: {inp} vs {out}"
 
     def test_roundtrip_leap_year(self) -> None:
@@ -213,15 +219,13 @@ class TestCreateCompactScheduleFromValues:
         obj = create_compact_schedule_from_values(doc, "RT_Leap", input_vals, year=year)
         output_vals = values(obj, year=year)
         assert len(output_vals) == 8784
-        for i, (inp, out) in enumerate(zip(input_vals, output_vals)):
+        for i, (inp, out) in enumerate(zip(input_vals, output_vals, strict=True)):
             assert abs(inp - out) < _TOL, f"Mismatch at hour {i}: {inp} vs {out}"
 
     def test_with_type_limits(self) -> None:
         doc = new_document()
         create_schedule_type_limits(doc, "Fraction")
-        obj = create_compact_schedule_from_values(
-            doc, "Sched", [0.5] * 8760, year=2023, type_limits="Fraction"
-        )
+        obj = create_compact_schedule_from_values(doc, "Sched", [0.5] * 8760, year=2023, type_limits="Fraction")
         assert obj.schedule_type_limits_name == "Fraction"
 
     def test_compact_field_count_constant(self) -> None:
