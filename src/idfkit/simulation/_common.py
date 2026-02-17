@@ -41,6 +41,29 @@ def ensure_sql_output(model: IDFDocument) -> None:
         model.add("Output:SQLite", "", data={"option_type": "SimpleAndTabular"})
 
 
+def prep_outputs(model: IDFDocument) -> None:
+    """Add standard output objects to the model if not already present.
+
+    Ensures the model includes:
+
+    - ``Output:SQLite`` (SimpleAndTabular) — for SQL-based result queries
+    - ``Output:Table:SummaryReports`` (AllSummary) — for tabular reports
+    - ``Output:VariableDictionary`` (Regular) — for ``.rdd`` / ``.mdd`` generation
+
+    This is a superset of :func:`ensure_sql_output`.
+
+    Args:
+        model: The model to modify in place.
+    """
+    ensure_sql_output(model)
+
+    if "Output:Table:SummaryReports" not in model:
+        model.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+
+    if "Output:VariableDictionary" not in model:
+        model.add("Output:VariableDictionary", "", key_field="Regular", validate=False)
+
+
 def maybe_preprocess(
     original: IDFDocument,
     sim_model: IDFDocument,

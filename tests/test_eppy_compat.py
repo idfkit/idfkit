@@ -402,6 +402,27 @@ class TestRangeChecking:
 # ---------------------------------------------------------------------------
 
 
+class TestRemoveAllIdfObjects:
+    def test_removes_all(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+        doc.add("Zone", "C")
+        assert len(doc["Zone"]) == 3
+        doc.removeallidfobjects("Zone")
+        assert len(doc["Zone"]) == 0
+
+    def test_no_objects_noop(self, empty_doc: IDFDocument) -> None:
+        empty_doc.removeallidfobjects("Zone")
+        assert len(empty_doc["Zone"]) == 0
+
+    def test_references_cleaned(self, simple_doc: IDFDocument) -> None:
+        simple_doc.removeallidfobjects("BuildingSurface:Detailed")
+        refs = simple_doc.get_referencing("TestZone")
+        surface_refs = [r for r in refs if r.obj_type == "BuildingSurface:Detailed"]
+        assert len(surface_refs) == 0
+
+
 class TestPopIdfObject:
     def test_pop_by_index(self, simple_doc: IDFDocument) -> None:
         initial_count = len(simple_doc["BuildingSurface:Detailed"])

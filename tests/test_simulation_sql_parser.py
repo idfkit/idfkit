@@ -374,6 +374,67 @@ class TestSQLResultTabular:
             )
         assert len(rows) == 2
 
+    def test_filter_by_row_name(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(row_name="Heating")
+        assert len(rows) == 1
+        assert rows[0].value == "12.50"
+
+    def test_filter_by_column_name(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(column_name="Electricity")
+        assert len(rows) == 2
+        assert {r.row_name for r in rows} == {"Heating", "Cooling"}
+
+    def test_filter_by_report_for(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(report_for="Entire Facility")
+        assert len(rows) == 3  # All rows have "Entire Facility"
+
+    def test_combined_filters(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            rows = sql.get_tabular_data(
+                report_name="AnnualBuildingUtilityPerformanceSummary",
+                row_name="Cooling",
+                column_name="Electricity",
+            )
+        assert len(rows) == 1
+        assert rows[0].value == "8.30"
+
+
+class TestSQLResultGetTabularValue:
+    """Tests for get_tabular_value()."""
+
+    def test_found(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            val = sql.get_tabular_value(
+                report_name="AnnualBuildingUtilityPerformanceSummary",
+                table_name="End Uses",
+                row_name="Heating",
+                column_name="Electricity",
+            )
+        assert val == "12.50"
+
+    def test_not_found_raises(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql, pytest.raises(KeyError, match="No tabular data found"):
+            sql.get_tabular_value(
+                report_name="AnnualBuildingUtilityPerformanceSummary",
+                table_name="End Uses",
+                row_name="Nonexistent",
+                column_name="Electricity",
+            )
+
+    def test_custom_report_for(self, sql_db: Path) -> None:
+        with SQLResult(sql_db) as sql:
+            val = sql.get_tabular_value(
+                report_name="EnvelopeSummary",
+                table_name="Opaque Exterior",
+                row_name="Wall 1",
+                column_name="U-Factor",
+                report_for="Entire Facility",
+            )
+        assert val == "0.35"
+
 
 class TestSQLResultListVariables:
     """Tests for list_variables()."""

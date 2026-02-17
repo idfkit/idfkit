@@ -63,6 +63,16 @@ from .geometry import (
     translate_building,
 )
 
+# Geometry builders
+from .geometry_builders import (
+    Shoebox,
+    add_block,
+    add_shading_block,
+    bounding_box,
+    scale_building,
+    set_default_constructions,
+)
+
 # Parsing functions
 from .idf_parser import IDFParser, get_idf_version, parse_idf
 
@@ -208,6 +218,7 @@ __all__ = [
     "ReferenceGraph",
     "SchemaManager",
     "SchemaNotFoundError",
+    "Shoebox",
     "SimulationError",
     "UnknownObjectTypeError",
     "ValidationError",
@@ -216,6 +227,9 @@ __all__ = [
     "Vector3D",
     "VersionNotFoundError",
     "__version__",
+    "add_block",
+    "add_shading_block",
+    "bounding_box",
     "calculate_surface_area",
     "calculate_surface_azimuth",
     "calculate_surface_tilt",
@@ -235,6 +249,8 @@ __all__ = [
     "parse_epjson",
     "parse_idf",
     "rotate_building",
+    "scale_building",
+    "set_default_constructions",
     "set_wwr",
     "translate_building",
     "validate_document",

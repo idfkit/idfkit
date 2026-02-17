@@ -81,7 +81,17 @@ class IDFObject(EppyObjectMixin):
         _field_order: Ordered list of field names from schema
     """
 
-    __slots__ = ("_data", "_document", "_field_order", "_name", "_ref_fields", "_schema", "_type", "_version")
+    __slots__ = (
+        "__weakref__",
+        "_data",
+        "_document",
+        "_field_order",
+        "_name",
+        "_ref_fields",
+        "_schema",
+        "_type",
+        "_version",
+    )
 
     _type: str
     _name: str

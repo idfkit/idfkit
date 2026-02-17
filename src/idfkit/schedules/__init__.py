@@ -65,6 +65,11 @@ Schedule:File objects can read CSV files from any storage backend:
 
 from __future__ import annotations
 
+from idfkit.schedules.builder import (
+    create_compact_schedule_from_values,
+    create_constant_schedule,
+    create_schedule_type_limits,
+)
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
     ScheduleEvaluationError,
@@ -109,6 +114,9 @@ __all__ = [
     "SpecialDay",
     "TimeValue",
     "UnsupportedScheduleType",
+    "create_compact_schedule_from_values",
+    "create_constant_schedule",
+    "create_schedule_type_limits",
     "evaluate",
     "extract_special_days",
     "get_holidays",

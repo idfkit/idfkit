@@ -263,6 +263,33 @@ class EppyDocumentMixin:
         for obj in objects:
             self.removeidfobject(obj)
 
+    def removeallidfobjects(self, obj_type: str) -> None:
+        """Remove all objects of a given type from the document (eppy compatibility).
+
+        .. tip::
+
+            For new code, iterate and remove directly::
+
+                for obj in list(doc[obj_type]):
+                    doc.removeidfobject(obj)
+
+        Args:
+            obj_type: Object type to remove all instances of (e.g. ``"Zone"``).
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "A")  # doctest: +ELLIPSIS
+            Zone('A')
+            >>> model.add("Zone", "B")  # doctest: +ELLIPSIS
+            Zone('B')
+            >>> model.removeallidfobjects("Zone")
+            >>> len(model["Zone"])
+            0
+        """
+        for obj in list(self[obj_type]):
+            self.removeidfobject(obj)
+
     def copyidfobject(self, obj: IDFObject, new_name: str | None = None) -> IDFObject:
         """Create a copy of an object with optional new name (eppy compatibility).
 
