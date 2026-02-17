@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from idfkit import new_document
-from idfkit.geometry import calculate_surface_area, calculate_zone_floor_area
+from idfkit.geometry import Vector3D, calculate_surface_area, calculate_zone_floor_area, get_surface_coords, set_wwr
 from idfkit.geometry_builders import (
     Shoebox,
     add_block,
@@ -257,8 +257,6 @@ class TestScaleBuilding:
         assert _close(max_y, 5.0)
 
     def test_scale_with_anchor(self) -> None:
-        from idfkit.geometry import Vector3D
-
         doc = new_document()
         add_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], floor_to_floor=3)
         # Scale by 2x around center (5, 5, 0) → box expands from (-5,-5) to (15,15)
@@ -277,3 +275,94 @@ class TestScaleBuilding:
         n_before = len(doc["BuildingSurface:Detailed"])
         scale_building(doc, 3.0)
         assert len(doc["BuildingSurface:Detailed"]) == n_before
+
+    def test_scale_fenestration_surfaces(self) -> None:
+        """scale_building should also scale FenestrationSurface:Detailed objects."""
+        doc = new_document()
+        add_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        windows = set_wwr(doc, 0.4)
+        assert len(windows) > 0
+        # Record a window vertex before scaling
+        win = windows[0]
+        coords_before = get_surface_coords(win)
+        assert coords_before is not None
+        max_x_before = max(v.x for v in coords_before.vertices)
+
+        scale_building(doc, 2.0)
+
+        coords_after = get_surface_coords(win)
+        assert coords_after is not None
+        max_x_after = max(v.x for v in coords_after.vertices)
+        assert _close(max_x_after, max_x_before * 2.0, tol=0.01)
+
+    def test_scale_shading_surfaces(self) -> None:
+        """scale_building should also scale Shading:Site:Detailed objects."""
+        doc = new_document()
+        add_shading_block(doc, "S", [(0, 0), (6, 0), (6, 4), (0, 4)], height=8)
+        cap = doc.getobject("Shading:Site:Detailed", "S Top")
+        assert cap is not None
+        coords_before = get_surface_coords(cap)
+        assert coords_before is not None
+
+        scale_building(doc, (1.0, 1.0, 2.0))  # double Z only
+
+        coords_after = get_surface_coords(cap)
+        assert coords_after is not None
+        # Cap was at z=8, should now be at z=16
+        assert all(_close(v.z, 16.0) for v in coords_after.vertices)
+        # X/Y should be unchanged
+        for v_before, v_after in zip(coords_before.vertices, coords_after.vertices, strict=True):
+            assert _close(v_before.x, v_after.x)
+            assert _close(v_before.y, v_after.y)
+
+
+# ---------------------------------------------------------------------------
+# Shoebox validation
+# ---------------------------------------------------------------------------
+
+
+class TestShoeboxValidation:
+    def test_negative_width_raises(self) -> None:
+        with pytest.raises(ValueError, match="width must be positive"):
+            Shoebox(name="Bad", width=-5, depth=8, floor_to_floor=3)
+
+    def test_zero_depth_raises(self) -> None:
+        with pytest.raises(ValueError, match="depth must be positive"):
+            Shoebox(name="Bad", width=10, depth=0, floor_to_floor=3)
+
+    def test_negative_floor_to_floor_raises(self) -> None:
+        with pytest.raises(ValueError, match="floor_to_floor must be positive"):
+            Shoebox(name="Bad", width=10, depth=8, floor_to_floor=-1)
+
+    def test_zero_stories_raises(self) -> None:
+        with pytest.raises(ValueError, match="num_stories must be >= 1"):
+            Shoebox(name="Bad", width=10, depth=8, floor_to_floor=3, num_stories=0)
+
+
+# ---------------------------------------------------------------------------
+# add_shading_block base_z
+# ---------------------------------------------------------------------------
+
+
+class TestAddShadingBlockBaseZ:
+    def test_elevated_shading(self) -> None:
+        doc = new_document()
+        add_shading_block(doc, "Canopy", [(0, 0), (5, 0), (5, 5), (0, 5)], height=1, base_z=3.0)
+        cap = doc.getobject("Shading:Site:Detailed", "Canopy Top")
+        assert cap is not None
+        coords = get_surface_coords(cap)
+        assert coords is not None
+        # Top should be at z = 3.0 + 1.0 = 4.0
+        assert all(_close(v.z, 4.0) for v in coords.vertices)
+
+    def test_elevated_walls_span_correct_range(self) -> None:
+        doc = new_document()
+        add_shading_block(doc, "C", [(0, 0), (5, 0), (5, 5), (0, 5)], height=2, base_z=5.0)
+        wall = doc.getobject("Shading:Site:Detailed", "C Wall 1")
+        assert wall is not None
+        coords = get_surface_coords(wall)
+        assert coords is not None
+        z_values = sorted({v.z for v in coords.vertices})
+        # Wall bottom at base_z=5, top at base_z+height=7
+        assert _close(z_values[0], 5.0)
+        assert _close(z_values[1], 7.0)

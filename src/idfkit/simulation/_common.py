@@ -38,7 +38,7 @@ def ensure_sql_output(model: IDFDocument) -> None:
         model: The model to modify in place.
     """
     if "Output:SQLite" not in model:
-        model.add("Output:SQLite", "", data={"option_type": "SimpleAndTabular"})
+        model.add("Output:SQLite", "", option_type="SimpleAndTabular", validate=False)
 
 
 def prep_outputs(model: IDFDocument) -> None:

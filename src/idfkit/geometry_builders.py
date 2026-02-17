@@ -56,6 +56,20 @@ class Shoebox:
     num_stories: int = 1
     origin: tuple[float, float] = (0.0, 0.0)
 
+    def __post_init__(self) -> None:
+        if self.width <= 0:
+            msg = f"width must be positive, got {self.width}"
+            raise ValueError(msg)
+        if self.depth <= 0:
+            msg = f"depth must be positive, got {self.depth}"
+            raise ValueError(msg)
+        if self.floor_to_floor <= 0:
+            msg = f"floor_to_floor must be positive, got {self.floor_to_floor}"
+            raise ValueError(msg)
+        if self.num_stories < 1:
+            msg = f"num_stories must be >= 1, got {self.num_stories}"
+            raise ValueError(msg)
+
     @property
     def footprint(self) -> list[tuple[float, float]]:
         """The rectangular footprint as 4 counter-clockwise ``(x, y)`` tuples."""
@@ -141,6 +155,7 @@ def add_shading_block(
     name: str,
     footprint: Sequence[tuple[float, float]],
     height: float,
+    base_z: float = 0.0,
 ) -> list[IDFObject]:
     """Create ``Shading:Site:Detailed`` surfaces from a 2D footprint.
 
@@ -152,6 +167,8 @@ def add_shading_block(
         name: Base name for shading surfaces.
         footprint: 2D footprint as ``(x, y)`` tuples (counter-clockwise).
         height: Height of the shading block in metres.
+        base_z: Z-coordinate of the block base (default ``0.0``).
+            Use this to create elevated shading surfaces such as canopies.
 
     Returns:
         List of created ``Shading:Site:Detailed`` objects.
@@ -167,6 +184,8 @@ def add_shading_block(
         msg = f"Height must be positive, got {height}"
         raise ValueError(msg)
 
+    z_bot = base_z
+    z_top = base_z + height
     created: list[IDFObject] = []
     n = len(fp)
 
@@ -176,18 +195,18 @@ def add_shading_block(
         p2 = fp[(j + 1) % n]
         wall_name = f"{name} Wall {j + 1}"
         poly = Polygon3D([
-            Vector3D(p1[0], p1[1], height),
-            Vector3D(p1[0], p1[1], 0.0),
-            Vector3D(p2[0], p2[1], 0.0),
-            Vector3D(p2[0], p2[1], height),
+            Vector3D(p1[0], p1[1], z_top),
+            Vector3D(p1[0], p1[1], z_bot),
+            Vector3D(p2[0], p2[1], z_bot),
+            Vector3D(p2[0], p2[1], z_top),
         ])
         obj = doc.add("Shading:Site:Detailed", wall_name, validate=False)
         set_surface_coords(obj, poly)
         created.append(obj)
 
-    # Top cap — footprint at height (normal up: CCW viewed from above)
+    # Top cap — footprint at z_top (normal up: CCW viewed from above)
     cap_name = f"{name} Top"
-    cap_poly = Polygon3D([Vector3D(p[0], p[1], height) for p in fp])
+    cap_poly = Polygon3D([Vector3D(p[0], p[1], z_top) for p in fp])
     cap = doc.add("Shading:Site:Detailed", cap_name, validate=False)
     set_surface_coords(cap, cap_poly)
     created.append(cap)
@@ -231,6 +250,13 @@ def bounding_box(doc: IDFDocument) -> tuple[tuple[float, float], tuple[float, fl
 
     Scans all ``BuildingSurface:Detailed`` vertices and returns the
     bounding envelope projected onto the XY plane.
+
+    .. note::
+
+        Only ``BuildingSurface:Detailed`` objects are considered.
+        Fenestration and shading surfaces are excluded because they
+        are either coplanar with (windows) or outside (shading) the
+        thermal envelope.
 
     Returns:
         ``((min_x, min_y), (max_x, max_y))`` or ``None`` if no

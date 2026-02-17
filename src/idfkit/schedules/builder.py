@@ -96,6 +96,15 @@ def create_compact_schedule_from_values(
     a single ``Through:`` block, and consecutive hours with the same
     value are merged into a single ``Until:`` entry.
 
+    .. note::
+
+        All ``Through:`` blocks use ``For: AllDays``.  Day-type
+        differentiation (``For: Weekdays``, ``For: Weekends``, etc.)
+        is not performed — each calendar day is compared individually.
+        A schedule with distinct weekday/weekend profiles will produce
+        alternating ``Through:`` blocks rather than a single block
+        with separate ``For:`` entries.
+
     Args:
         doc: Document to add the schedule to.
         name: Schedule name.
