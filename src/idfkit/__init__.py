@@ -114,6 +114,20 @@ from .versions import (
 # Writing functions
 from .writers import write_epjson, write_idf
 
+# Zoning
+from .zoning import (
+    ASHRAE_PERIMETER_DEPTH,
+    ZonedBlock,
+    ZoningScheme,
+    create_building,
+    footprint_courtyard,
+    footprint_h_shape,
+    footprint_l_shape,
+    footprint_rectangle,
+    footprint_t_shape,
+    footprint_u_shape,
+)
+
 
 def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:
     """
@@ -204,6 +218,7 @@ def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
 
 
 __all__ = [
+    "ASHRAE_PERIMETER_DEPTH",
     "ENERGYPLUS_VERSIONS",
     "LATEST_VERSION",
     "MINIMUM_VERSION",
@@ -233,6 +248,8 @@ __all__ = [
     "ValidationResult",
     "Vector3D",
     "VersionNotFoundError",
+    "ZonedBlock",
+    "ZoningScheme",
     "__version__",
     "add_block",
     "add_shading_block",
@@ -244,10 +261,17 @@ __all__ = [
     "calculate_zone_floor_area",
     "calculate_zone_height",
     "calculate_zone_volume",
+    "create_building",
     "create_compact_schedule_from_values",
     "create_constant_schedule",
     "create_schedule_type_limits",
     "find_closest_version",
+    "footprint_courtyard",
+    "footprint_h_shape",
+    "footprint_l_shape",
+    "footprint_rectangle",
+    "footprint_t_shape",
+    "footprint_u_shape",
     "get_idf_version",
     "get_schema",
     "get_schema_manager",

@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 # Wall corner indices in canonical order [UL, LL, LR, UR].
 # The tuple gives the output index order for each
 # (starting_vertex_position, clockwise) combination.
-_WALL_ORDER: dict[tuple[str, bool], tuple[int, int, int, int]] = {
+WALL_ORDER: dict[tuple[str, bool], tuple[int, int, int, int]] = {
     # Counterclockwise ---------------------------------------------------
     ("UpperLeftCorner", False): (0, 1, 2, 3),  # UL LL LR UR
     ("LowerLeftCorner", False): (1, 2, 3, 0),  # LL LR UR UL
@@ -53,7 +53,7 @@ _WALL_ORDER: dict[tuple[str, bool], tuple[int, int, int, int]] = {
 }
 
 
-def _get_geometry_convention(doc: IDFDocument) -> tuple[str, bool]:
+def get_geometry_convention(doc: IDFDocument) -> tuple[str, bool]:
     """Read the vertex ordering convention from ``GlobalGeometryRules``.
 
     Returns:
@@ -228,8 +228,8 @@ def add_shading_block(
         msg = f"Height must be positive, got {height}"
         raise ValueError(msg)
 
-    svp, clockwise = _get_geometry_convention(doc)
-    wall_order = _WALL_ORDER.get((svp, clockwise), (0, 1, 2, 3))
+    svp, clockwise = get_geometry_convention(doc)
+    wall_order = WALL_ORDER.get((svp, clockwise), (0, 1, 2, 3))
 
     z_bot = base_z
     z_top = base_z + height
@@ -255,7 +255,7 @@ def add_shading_block(
     # Top cap — horizontal surface with normal pointing up
     cap_name = f"{name} Top"
     cap = doc.add("Shading:Site:Detailed", cap_name, validate=False)
-    set_surface_coords(cap, _horizontal_poly(fp, z_top, reverse=clockwise))
+    set_surface_coords(cap, horizontal_poly(fp, z_top, reverse=clockwise))
     created.append(cap)
 
     return created
@@ -374,7 +374,7 @@ def scale_building(
 # ---------------------------------------------------------------------------
 
 
-def _horizontal_poly(footprint: list[tuple[float, float]], z: float, *, reverse: bool) -> Polygon3D:
+def horizontal_poly(footprint: list[tuple[float, float]], z: float, *, reverse: bool) -> Polygon3D:
     """Build a horizontal polygon at height *z*.
 
     When *reverse* is ``True`` the footprint is reversed, flipping the
@@ -413,8 +413,8 @@ def _build_block(
         msg = f"num_stories must be >= 1, got {num_stories}"
         raise ValueError(msg)
 
-    svp, clockwise = _get_geometry_convention(doc)
-    wall_order = _WALL_ORDER.get((svp, clockwise), (0, 1, 2, 3))
+    svp, clockwise = get_geometry_convention(doc)
+    wall_order = WALL_ORDER.get((svp, clockwise), (0, 1, 2, 3))
 
     created: list[IDFObject] = []
     n = len(footprint)
@@ -482,7 +482,7 @@ def _build_block(
             validate=False,
         )
         # CCW: reversed footprint → normal down; CW: footprint order → normal down.
-        set_surface_coords(floor_srf, _horizontal_poly(footprint, z_bot, reverse=not clockwise))
+        set_surface_coords(floor_srf, horizontal_poly(footprint, z_bot, reverse=not clockwise))
         created.append(floor_srf)
 
         # --- Ceiling / Roof ---
@@ -515,7 +515,7 @@ def _build_block(
             validate=False,
         )
         # CCW: footprint order → normal up; CW: reversed footprint → normal up.
-        set_surface_coords(ceil_srf, _horizontal_poly(footprint, z_top, reverse=clockwise))
+        set_surface_coords(ceil_srf, horizontal_poly(footprint, z_top, reverse=clockwise))
         created.append(ceil_srf)
 
     return created
