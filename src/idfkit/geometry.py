@@ -15,6 +15,16 @@ if TYPE_CHECKING:
     from .document import IDFDocument
     from .objects import IDFObject
 
+# Surface types that carry vertex geometry.  Used by translate_building,
+# rotate_building, scale_building, and related functions.
+VERTEX_SURFACE_TYPES: list[str] = [
+    "BuildingSurface:Detailed",
+    "FenestrationSurface:Detailed",
+    "Shading:Site:Detailed",
+    "Shading:Building:Detailed",
+    "Shading:Zone:Detailed",
+]
+
 
 @dataclass(frozen=True, slots=True)
 class Vector3D:
@@ -899,14 +909,7 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
         >>> wall.vertex_1_x_coordinate
         100.0
     """
-    surface_types = [
-        "BuildingSurface:Detailed",
-        "FenestrationSurface:Detailed",
-        "Shading:Site:Detailed",
-        "Shading:Building:Detailed",
-        "Shading:Zone:Detailed",
-    ]
-    for stype in surface_types:
+    for stype in VERTEX_SURFACE_TYPES:
         for surface in doc[stype]:
             coords = get_surface_coords(surface)
             if coords is not None:
@@ -929,14 +932,7 @@ def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None 
     if anchor is None:
         anchor = Vector3D.origin()
 
-    surface_types = [
-        "BuildingSurface:Detailed",
-        "FenestrationSurface:Detailed",
-        "Shading:Site:Detailed",
-        "Shading:Building:Detailed",
-        "Shading:Zone:Detailed",
-    ]
-    for stype in surface_types:
+    for stype in VERTEX_SURFACE_TYPES:
         for surface in doc[stype]:
             coords = get_surface_coords(surface)
             if coords is not None:

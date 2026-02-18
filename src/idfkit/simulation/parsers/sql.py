@@ -341,12 +341,18 @@ class SQLResult:
         self,
         report_name: str | None = None,
         table_name: str | None = None,
+        row_name: str | None = None,
+        column_name: str | None = None,
+        report_for: str | None = None,
     ) -> list[TabularRow]:
         """Retrieve tabular report data.
 
         Args:
             report_name: Optional filter by report name.
             table_name: Optional filter by table name.
+            row_name: Optional filter by row label.
+            column_name: Optional filter by column label.
+            report_for: Optional filter by report scope (e.g. ``"Entire Facility"``).
 
         Returns:
             List of TabularRow entries matching the filters.
@@ -365,6 +371,15 @@ class SQLResult:
         if table_name is not None:
             conditions.append("TableName = ?")
             params.append(table_name)
+        if row_name is not None:
+            conditions.append("RowName = ?")
+            params.append(row_name)
+        if column_name is not None:
+            conditions.append("ColumnName = ?")
+            params.append(column_name)
+        if report_for is not None:
+            conditions.append("ReportForString = ?")
+            params.append(report_for)
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -384,6 +399,53 @@ class SQLResult:
             )
             for row in cur.fetchall()
         ]
+
+    def get_tabular_value(
+        self,
+        report_name: str,
+        table_name: str,
+        row_name: str,
+        column_name: str,
+        report_for: str = "Entire Facility",
+    ) -> str:
+        """Retrieve a single tabular cell value.
+
+        Convenience wrapper around :meth:`get_tabular_data` that returns
+        exactly one cell value.
+
+        Args:
+            report_name: Report name (e.g. ``"AnnualBuildingUtilityPerformanceSummary"``).
+            table_name: Table name (e.g. ``"End Uses"``).
+            row_name: Row label (e.g. ``"Heating"``).
+            column_name: Column label (e.g. ``"Electricity"``).
+            report_for: Report scope (default ``"Entire Facility"``).
+
+        Returns:
+            The cell value as a string.
+
+        Raises:
+            KeyError: If no matching row is found or if multiple rows match.
+        """
+        rows = self.get_tabular_data(
+            report_name=report_name,
+            table_name=table_name,
+            row_name=row_name,
+            column_name=column_name,
+            report_for=report_for,
+        )
+        if len(rows) == 0:
+            msg = (
+                f"No tabular data found: report={report_name!r}, table={table_name!r}, "
+                f"row={row_name!r}, column={column_name!r}"
+            )
+            raise KeyError(msg)
+        if len(rows) > 1:
+            msg = (
+                f"Multiple rows found ({len(rows)}): report={report_name!r}, table={table_name!r}, "
+                f"row={row_name!r}, column={column_name!r}"
+            )
+            raise KeyError(msg)
+        return rows[0].value
 
     def list_variables(self) -> list[VariableInfo]:
         """List all available variables in the database.

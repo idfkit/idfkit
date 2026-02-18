@@ -37,6 +37,7 @@ your use case.
 
 from __future__ import annotations
 
+from ._common import prep_outputs
 from .async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from .async_runner import async_simulate
 from .batch import BatchResult, SimulationJob, simulate_batch
@@ -106,6 +107,7 @@ __all__ = [
     "plot_comfort_hours",
     "plot_energy_balance",
     "plot_temperature_profile",
+    "prep_outputs",
     "run_basement_preprocessor",
     "run_preprocessing",
     "run_slab_preprocessor",

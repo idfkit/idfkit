@@ -59,6 +59,7 @@ nav:
       - Schema: api/schema.md
       - Validation: api/validation.md
       - Geometry: api/geometry.md
+      - Geometry Builders: api/geometry_builders.md
       - References: api/references.md
       - Thermal: api/thermal.md
       - Visualization: api/visualization.md
