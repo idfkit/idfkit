@@ -2374,6 +2374,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#idfkit.geometry_builders.get_geometry_convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_geometry_convention
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#idfkit.geometry_builders.horizontal_poly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        horizontal_poly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#idfkit.geometry_builders.scale_building" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3604,6 +3626,28 @@
     <span class="md-ellipsis">
       
         bounding_box
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#idfkit.geometry_builders.get_geometry_convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_geometry_convention
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#idfkit.geometry_builders.horizontal_poly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        horizontal_poly
       
     </span>
   </a>
@@ -4857,8 +4901,8 @@ Use this to create elevated shading surfaces such as canopies.</p>
 </span><span id="__span-0-228"><a id="__codelineno-0-228" name="__codelineno-0-228"></a>        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Height must be positive, got </span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="__span-0-229"><a id="__codelineno-0-229" name="__codelineno-0-229"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a>
-</span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a>    <span class="n">svp</span><span class="p">,</span> <span class="n">clockwise</span> <span class="o">=</span> <span class="n">_get_geometry_convention</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
-</span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">wall_order</span> <span class="o">=</span> <span class="n">_WALL_ORDER</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">svp</span><span class="p">,</span> <span class="n">clockwise</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a>    <span class="n">svp</span><span class="p">,</span> <span class="n">clockwise</span> <span class="o">=</span> <span class="n">get_geometry_convention</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+</span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">wall_order</span> <span class="o">=</span> <span class="n">WALL_ORDER</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">svp</span><span class="p">,</span> <span class="n">clockwise</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 </span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a>
 </span><span id="__span-0-234"><a id="__codelineno-0-234" name="__codelineno-0-234"></a>    <span class="n">z_bot</span> <span class="o">=</span> <span class="n">base_z</span>
 </span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a>    <span class="n">z_top</span> <span class="o">=</span> <span class="n">base_z</span> <span class="o">+</span> <span class="n">height</span>
@@ -4884,7 +4928,7 @@ Use this to create elevated shading surfaces such as canopies.</p>
 </span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>    <span class="c1"># Top cap — horizontal surface with normal pointing up</span>
 </span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a>    <span class="n">cap_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> Top&quot;</span>
 </span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="n">cap</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;Shading:Site:Detailed&quot;</span><span class="p">,</span> <span class="n">cap_name</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>    <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">cap</span><span class="p">,</span> <span class="n">_horizontal_poly</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">z_top</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">clockwise</span><span class="p">))</span>
+</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>    <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">cap</span><span class="p">,</span> <span class="n">horizontal_poly</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">z_top</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">clockwise</span><span class="p">))</span>
 </span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="n">created</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cap</span><span class="p">)</span>
 </span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a>
 </span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a>    <span class="k">return</span> <span class="n">created</span>
@@ -5024,6 +5068,146 @@ thermal envelope.
 </span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
 </span><span id="__span-0-330"><a id="__codelineno-0-330" name="__codelineno-0-330"></a>        <span class="k">return</span> <span class="kc">None</span>
 </span><span id="__span-0-331"><a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="k">return</span> <span class="p">((</span><span class="n">min_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">),</span> <span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span><span class="p">))</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="idfkit.geometry_builders.get_geometry_convention" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_geometry_convention</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span></code>
+
+<a href="#idfkit.geometry_builders.get_geometry_convention" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Read the vertex ordering convention from <code>GlobalGeometryRules</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(starting_vertex_position, clockwise)</code> where <em>clockwise</em> is</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> when <code>vertex_entry_direction</code> is <code>"Clockwise"</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="str">str</span>, <span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Defaults to <code>("UpperLeftCorner", False)</code> if no rules exist.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/idfkit/geometry_builders.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_geometry_convention</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the vertex ordering convention from ``GlobalGeometryRules``.</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        ``(starting_vertex_position, clockwise)`` where *clockwise* is</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        ``True`` when ``vertex_entry_direction`` is ``&quot;Clockwise&quot;``.</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        Defaults to ``(&quot;UpperLeftCorner&quot;, False)`` if no rules exist.</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="n">geo_rules</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;GlobalGeometryRules&quot;</span><span class="p">]</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">geo_rules</span><span class="p">:</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;UpperLeftCorner&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">rules</span> <span class="o">=</span> <span class="n">geo_rules</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="k">if</span> <span class="n">rules</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;UpperLeftCorner&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="n">svp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="s2">&quot;starting_vertex_position&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;UpperLeftCorner&quot;</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="n">ved</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="s2">&quot;vertex_entry_direction&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;Counterclockwise&quot;</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="k">return</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">svp</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">ved</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;clockwise&quot;</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="idfkit.geometry_builders.horizontal_poly" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">horizontal_poly</span><span class="p">(</span><span class="n">footprint</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span></code>
+
+<a href="#idfkit.geometry_builders.horizontal_poly" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build a horizontal polygon at height <em>z</em>.</p>
+<p>When <em>reverse</em> is <code>True</code> the footprint is reversed, flipping the
+polygon normal.  Used to produce floor and ceiling polygons in the
+correct winding for the active <code>GlobalGeometryRules</code> convention.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/idfkit/geometry_builders.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-377">377</a></span>
+<span class="normal"><a href="#__codelineno-0-378">378</a></span>
+<span class="normal"><a href="#__codelineno-0-379">379</a></span>
+<span class="normal"><a href="#__codelineno-0-380">380</a></span>
+<span class="normal"><a href="#__codelineno-0-381">381</a></span>
+<span class="normal"><a href="#__codelineno-0-382">382</a></span>
+<span class="normal"><a href="#__codelineno-0-383">383</a></span>
+<span class="normal"><a href="#__codelineno-0-384">384</a></span>
+<span class="normal"><a href="#__codelineno-0-385">385</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-377"><a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="k">def</span><span class="w"> </span><span class="nf">horizontal_poly</span><span class="p">(</span><span class="n">footprint</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Polygon3D</span><span class="p">:</span>
+</span><span id="__span-0-378"><a id="__codelineno-0-378" name="__codelineno-0-378"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a horizontal polygon at height *z*.</span>
+</span><span id="__span-0-379"><a id="__codelineno-0-379" name="__codelineno-0-379"></a>
+</span><span id="__span-0-380"><a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">    When *reverse* is ``True`` the footprint is reversed, flipping the</span>
+</span><span id="__span-0-381"><a id="__codelineno-0-381" name="__codelineno-0-381"></a><span class="sd">    polygon normal.  Used to produce floor and ceiling polygons in the</span>
+</span><span id="__span-0-382"><a id="__codelineno-0-382" name="__codelineno-0-382"></a><span class="sd">    correct winding for the active ``GlobalGeometryRules`` convention.</span>
+</span><span id="__span-0-383"><a id="__codelineno-0-383" name="__codelineno-0-383"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-384"><a id="__codelineno-0-384" name="__codelineno-0-384"></a>    <span class="n">pts</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span> <span class="k">if</span> <span class="n">reverse</span> <span class="k">else</span> <span class="n">footprint</span>
+</span><span id="__span-0-385"><a id="__codelineno-0-385" name="__codelineno-0-385"></a>    <span class="k">return</span> <span class="n">Polygon3D</span><span class="p">([</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">])</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
