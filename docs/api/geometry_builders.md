@@ -193,6 +193,8 @@ scale_building(doc, 0.5, anchor=Vector3D(15, 10, 0))
 
 ## See Also
 
+- [Zoning](zoning.md) -- `create_building`, core-perimeter zoning, footprint
+  helpers, and multi-zone building generation
 - [Geometry](geometry.md) -- Lower-level 3D primitives, coordinate transforms,
   and surface intersection
 - [Visualization](visualization.md) -- 3D rendering of building geometry
