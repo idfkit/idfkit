@@ -7,6 +7,7 @@ installation directories.
 
 from __future__ import annotations
 
+import logging
 import os
 import platform
 import re
@@ -15,6 +16,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..exceptions import EnergyPlusNotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,8 +178,10 @@ def find_energyplus(
     # 2-4. Try candidates from env var, PATH, and platform dirs
     for candidate in _discovery_candidates():
         searched.append(str(candidate))
+        logger.debug("Trying candidate %s", candidate)
         result = _try_candidate(candidate, target_version)
         if result is not None:
+            logger.info("Found EnergyPlus %d.%d.%d at %s", *result.version, result.install_dir)
             return result
 
     raise EnergyPlusNotFoundError(searched)

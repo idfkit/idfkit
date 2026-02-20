@@ -14,8 +14,11 @@ mirrors eppy's ``idf.outputtype`` options:
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -75,8 +78,10 @@ def write_idf(
         filepath = Path(filepath)
         with open(filepath, "w", encoding=encoding) as f:
             f.write(content)
+        logger.info("Wrote IDF (%d objects) to %s", len(doc), filepath)
         return None
 
+    logger.debug("Serialized IDF (%d objects) to string", len(doc))
     return content
 
 
@@ -120,8 +125,10 @@ def write_epjson(
         filepath = Path(filepath)
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=indent)
+        logger.info("Wrote epJSON (%d objects) to %s", len(doc), filepath)
         return None
 
+    logger.debug("Serialized epJSON (%d objects) to string", len(doc))
     return json.dumps(data, indent=indent)
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import shutil
 import time
 import zipfile
@@ -13,6 +14,8 @@ from urllib.request import Request, urlopen
 
 from .index import default_cache_dir
 from .station import WeatherStation
+
+logger = logging.getLogger(__name__)
 
 _USER_AGENT = "idfkit (https://github.com/samuelduchesne/idfkit)"
 
@@ -112,6 +115,7 @@ class WeatherDownloader:
         # Download if not cached or if stale
         if not zip_path.exists() or self._is_stale(zip_path):
             station_dir.mkdir(parents=True, exist_ok=True)
+            logger.info("Downloading weather data for %s (WMO %s)", station.display_name, station.wmo)
             try:
                 req = Request(station.url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
                 with urlopen(req, timeout=120) as resp:  # noqa: S310
@@ -119,6 +123,8 @@ class WeatherDownloader:
             except (HTTPError, URLError, TimeoutError, OSError) as exc:
                 msg = f"Failed to download weather data from {station.url}: {exc}"
                 raise RuntimeError(msg) from exc
+        else:
+            logger.debug("Cache hit for station %s (WMO %s)", station.display_name, station.wmo)
 
         # Extract if EPW doesn't already exist or if the ZIP is newer than
         # the EPW (i.e. we just re-downloaded).  We compare against the ZIP's

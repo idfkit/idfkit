@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import gzip
 import json
+import logging
 import os
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -22,6 +24,8 @@ from .versions import (
     find_closest_version,
     version_dirname,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -538,7 +542,10 @@ class SchemaManager:
             SchemaNotFoundError: If schema cannot be found
         """
         if version in self._cache:
+            logger.debug("Schema cache hit for version %d.%d.%d", *version)
             return self._cache[version]
+
+        t0 = time.perf_counter()
 
         # Try exact version first
         schema_path = self._find_schema_file(version)
@@ -546,16 +553,30 @@ class SchemaManager:
             # Try closest supported version
             closest = find_closest_version(version)
             if closest is not None and closest != version:
+                logger.debug(
+                    "Exact schema not found for %d.%d.%d, falling back to closest %d.%d.%d",
+                    *version,
+                    *closest,
+                )
                 schema_path = self._find_schema_file(closest)
 
         if schema_path is None:
             searched = self._get_searched_paths(version)
             raise SchemaNotFoundError(version, searched)
 
+        logger.debug("Loading schema from %s", schema_path)
         data = load_schema_json(schema_path)
 
         schema = EpJSONSchema(version, data)
         self._cache[version] = schema
+
+        elapsed = time.perf_counter() - t0
+        logger.info(
+            "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
+            *version,
+            len(schema),
+            elapsed,
+        )
         return schema
 
     def _find_schema_file(self, version: tuple[int, int, int]) -> Path | None:

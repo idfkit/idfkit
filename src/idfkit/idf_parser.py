@@ -10,8 +10,10 @@ Features:
 
 from __future__ import annotations
 
+import logging
 import mmap
 import re
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -19,6 +21,8 @@ from typing import TYPE_CHECKING, Any
 from .document import IDFDocument
 from .exceptions import VersionNotFoundError
 from .objects import IDFObject
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
@@ -146,12 +150,16 @@ class IDFParser:
         Returns:
             Parsed IDFDocument
         """
+        t0 = time.perf_counter()
+        logger.debug("Parsing IDF file %s", self._filepath)
+
         # Load content (with mmap for large files)
         content = self._load_content()
 
         # Detect version if not provided
         if version is None:
             version = self._detect_version(content)
+            logger.debug("Detected version %d.%d.%d", *version)
 
         # Load schema if not provided
         schema = self._schema
@@ -166,13 +174,18 @@ class IDFParser:
         # Parse objects
         self._parse_objects(content, doc, schema)
 
+        elapsed = time.perf_counter() - t0
+        logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
+
         return doc
 
     def _load_content(self) -> bytes:
         """Load file content, using mmap for large files."""
         file_size = self._filepath.stat().st_size
+        use_mmap = file_size > _MMAP_THRESHOLD
 
-        if file_size > _MMAP_THRESHOLD:
+        if use_mmap:
+            logger.debug("Using mmap for large file (%d bytes)", file_size)
             # Use memory mapping for large files
             with open(self._filepath, "rb") as f:
                 mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -213,6 +226,7 @@ class IDFParser:
         type_cache: dict[str, ParsingCache | None] = {}
         encoding = self._encoding
         addidfobject = doc.addidfobject
+        skipped_types: set[str] = set()
 
         for match in _OBJECT_PATTERN.finditer(content):
             try:
@@ -229,6 +243,7 @@ class IDFParser:
                         pc = schema.get_parsing_cache(obj_type)
                         type_cache[obj_type] = pc
                     if pc is None:
+                        skipped_types.add(obj_type)
                         continue  # Unknown object type
                 else:
                     pc = None
@@ -239,6 +254,11 @@ class IDFParser:
             except Exception:  # noqa: S110
                 # Log parse errors but continue
                 pass
+
+        if skipped_types:
+            logger.warning(
+                "Skipped %d unknown object type(s): %s", len(skipped_types), ", ".join(sorted(skipped_types))
+            )
 
     def _parse_object_cached(
         self,

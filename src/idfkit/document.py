@@ -10,6 +10,7 @@ Provides:
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -21,6 +22,8 @@ from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
 from .validation import validate_object
 from .versions import LATEST_VERSION
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema
@@ -456,6 +459,7 @@ class IDFDocument(EppyDocumentMixin):
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
+        logger.debug("Added %s '%s'", obj_type, name)
         return obj
 
     def removeidfobject(self, obj: IDFObject) -> None:
@@ -476,6 +480,8 @@ class IDFDocument(EppyDocumentMixin):
         # Invalidate caches
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
+
+        logger.debug("Removed %s '%s'", obj_type, obj.name)
 
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
         """
@@ -550,6 +556,14 @@ class IDFDocument(EppyDocumentMixin):
         # 4. Invalidate schedules cache if needed
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
+
+        logger.debug(
+            "Renamed %s '%s' -> '%s' (updated %d referencing objects)",
+            obj_type,
+            old_name,
+            new_name,
+            len(referencing),
+        )
 
     def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None:
         """Called by IDFObject._set_field when a reference field changes."""

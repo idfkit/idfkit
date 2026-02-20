@@ -24,6 +24,8 @@ Basic usage:
 
 from __future__ import annotations
 
+import logging
+
 __version__ = "0.1.0"
 
 # Core classes
@@ -127,6 +129,8 @@ from .zoning import (
     footprint_t_shape,
     footprint_u_shape,
 )
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import shutil
 import sys
@@ -16,6 +17,8 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
@@ -118,7 +121,9 @@ class SimulationCache:
         h.update(idf_text.encode("utf-8"))
         h.update(weather_bytes)
         h.update(flags.encode("utf-8"))
-        return CacheKey(hex_digest=h.hexdigest())
+        key = CacheKey(hex_digest=h.hexdigest())
+        logger.debug("Computed cache key %s", key.hex_digest[:12])
+        return key
 
     def get(self, key: CacheKey) -> SimulationResult | None:
         """Retrieve a cached simulation result.
@@ -133,6 +138,7 @@ class SimulationCache:
         entry_dir = self._cache_dir / key.hex_digest
         meta_path = entry_dir / self._META_FILE
         if not meta_path.is_file():
+            logger.debug("Cache miss for %s", key.hex_digest[:12])
             return None
 
         try:
@@ -140,6 +146,7 @@ class SimulationCache:
 
             from .result import SimulationResult
 
+            logger.debug("Cache hit for %s", key.hex_digest[:12])
             return SimulationResult(
                 run_dir=entry_dir,
                 success=meta["success"],
@@ -152,6 +159,7 @@ class SimulationCache:
         except (json.JSONDecodeError, KeyError, OSError):
             # Corrupted or incomplete cache entry — remove it so that
             # a subsequent put() can write a fresh copy, then treat as miss.
+            logger.debug("Removing corrupted cache entry %s", key.hex_digest[:12])
             shutil.rmtree(entry_dir, ignore_errors=True)
             return None
 
@@ -193,6 +201,7 @@ class SimulationCache:
             # (another process beat us), unlike shutil.move which would nest
             # tmp_dir inside the existing target as a subdirectory.
             os.rename(str(tmp_dir), str(target_dir))
+            logger.debug("Cached result for %s", key.hex_digest[:12])
         except OSError:
             # Another thread/process beat us, or a real filesystem error
             # — clean up the temporary directory.
@@ -206,3 +215,4 @@ class SimulationCache:
         """Remove all cached entries."""
         if self._cache_dir.is_dir():
             shutil.rmtree(self._cache_dir)
+            logger.debug("Cleared simulation cache at %s", self._cache_dir)

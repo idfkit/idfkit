@@ -9,9 +9,12 @@ Provides O(1) lookups for:
 
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .objects import IDFObject
