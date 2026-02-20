@@ -10,14 +10,12 @@ class JSONFormatter(logging.Formatter):
     """Emit each log record as a single JSON line."""
 
     def format(self, record: logging.LogRecord) -> str:
-        return json.dumps(
-            {
-                "ts": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
-                "level": record.levelname,
-                "logger": record.name,
-                "message": record.getMessage(),
-            }
-        )
+        return json.dumps({
+            "ts": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        })
 
 
 handler = logging.StreamHandler()
