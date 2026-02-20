@@ -50,7 +50,7 @@ def prep_outputs(model: IDFDocument) -> None:
     - ``Output:Table:SummaryReports`` (AllSummary) — for tabular reports
     - ``Output:VariableDictionary`` (Regular) — for ``.rdd`` / ``.mdd`` generation
 
-    This is a superset of [ensure_sql_output][idfkit.simulation._common.ensure_sql_output].
+    This is a superset of `ensure_sql_output`.
 
     Args:
         model: The model to modify in place.

@@ -112,7 +112,7 @@ class DesignDayManager:
     """Parse DDY files and inject design day conditions into IDF models.
 
     A DDY file is a valid IDF-syntax file containing ``Site:Location`` and
-    ``SizingPeriod:DesignDay`` objects.  This class uses [idfkit.load_idf][idfkit.load_idf]
+    ``SizingPeriod:DesignDay`` objects.  This class uses `idfkit.load_idf()`
     to parse the file and classifies each design day by its ASHRAE condition
     type.
 

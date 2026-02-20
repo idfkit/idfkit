@@ -38,7 +38,7 @@ Search by name:
 Search by Address (Splat Pattern)
 ---------------------------------
 
-Combine [geocode][idfkit.weather.geocode.geocode] with [nearest][StationIndex.nearest] using the splat
+Combine [geocode][idfkit.weather.geocode.geocode] with [nearest][idfkit.weather.index.StationIndex.nearest] using the splat
 operator to find weather stations near any address:
 
     ```python

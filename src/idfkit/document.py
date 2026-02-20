@@ -463,7 +463,7 @@ class IDFDocument(EppyDocumentMixin):
 
         !!! tip
             This method is also the recommended idfkit API.  Alternatively,
-            use [popidfobject][idfkit.document.IDFDocument.popidfobject] to remove by index.
+            use `popidfobject()` to remove by index.
         """
         obj_type = obj.obj_type
 
