@@ -1,23 +1,17 @@
-"""High-level geometry construction functions.
+"""Geometry utility functions for EnergyPlus surface manipulation.
 
-Provides building-block primitives for creating EnergyPlus zone and surface
-geometry from simple 2D footprints.  The [Shoebox][idfkit.geometry_builders.Shoebox] dataclass describes
-a rectangular building; call [Shoebox.build][idfkit.geometry_builders.Shoebox.build] to realise it in a
-document.  For arbitrary polygon footprints, use [add_block][idfkit.geometry_builders.add_block] directly.
+Provides shading block creation, default construction assignment, bounding
+box queries, building scaling, and ``GlobalGeometryRules`` vertex-ordering
+helpers.
 
-These functions complement the lower-level [geometry][idfkit.geometry] module
-which operates on *existing* surfaces.
-
-All generated vertex coordinates respect the document's
-``GlobalGeometryRules`` (``starting_vertex_position`` and
-``vertex_entry_direction``).  When no rules are present the EnergyPlus
-default of ``UpperLeftCorner`` / ``Counterclockwise`` is assumed.
+For building zone and surface creation, see [zoning][idfkit.zoning] which
+provides [create_building][idfkit.zoning.create_building] and
+[ZonedBlock][idfkit.zoning.ZonedBlock].
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from .geometry import (
@@ -73,125 +67,8 @@ def get_geometry_convention(doc: IDFDocument) -> tuple[str, bool]:
 
 
 # ---------------------------------------------------------------------------
-# Shoebox (describe-then-apply pattern)
+# add_shading_block
 # ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Shoebox:
-    """A rectangular building block described by width, depth, and stories.
-
-    This is a pure data object — it does **not** modify any document.  Call
-    [build][idfkit.geometry_builders.Shoebox.build] to realise the geometry in an [IDFDocument][idfkit.document.IDFDocument].
-
-    Attributes:
-        name: Base name for zones and surfaces.
-        width: Building width in metres (along X axis).
-        depth: Building depth in metres (along Y axis).
-        floor_to_floor: Floor-to-floor height in metres.
-        num_stories: Number of above-ground stories (default 1).
-        origin: ``(x, y)`` position of the lower-left corner (default ``(0, 0)``).
-    """
-
-    name: str
-    width: float
-    depth: float
-    floor_to_floor: float
-    num_stories: int = 1
-    origin: tuple[float, float] = (0.0, 0.0)
-
-    def __post_init__(self) -> None:
-        if self.width <= 0:
-            msg = f"width must be positive, got {self.width}"
-            raise ValueError(msg)
-        if self.depth <= 0:
-            msg = f"depth must be positive, got {self.depth}"
-            raise ValueError(msg)
-        if self.floor_to_floor <= 0:
-            msg = f"floor_to_floor must be positive, got {self.floor_to_floor}"
-            raise ValueError(msg)
-        if self.num_stories < 1:
-            msg = f"num_stories must be >= 1, got {self.num_stories}"
-            raise ValueError(msg)
-
-    @property
-    def footprint(self) -> list[tuple[float, float]]:
-        """The rectangular footprint as 4 counter-clockwise ``(x, y)`` tuples."""
-        x, y = self.origin
-        return [
-            (x, y),
-            (x + self.width, y),
-            (x + self.width, y + self.depth),
-            (x, y + self.depth),
-        ]
-
-    @property
-    def height(self) -> float:
-        """Total building height."""
-        return self.floor_to_floor * self.num_stories
-
-    @property
-    def floor_area(self) -> float:
-        """Single-floor area (width * depth)."""
-        return self.width * self.depth
-
-    @property
-    def total_floor_area(self) -> float:
-        """Total floor area across all stories."""
-        return self.floor_area * self.num_stories
-
-    def build(self, doc: IDFDocument) -> list[IDFObject]:
-        """Realise this shoebox geometry in the document.
-
-        Creates zones, walls, floors, and ceiling/roof surfaces.
-        Inter-story floors/ceilings are matched with ``Surface`` boundary
-        conditions.
-
-        Returns:
-            All created [IDFObject][idfkit.objects.IDFObject] instances
-            (zones + surfaces).
-        """
-        return _build_block(doc, self.name, self.footprint, self.floor_to_floor, self.num_stories)
-
-
-# ---------------------------------------------------------------------------
-# add_block / add_shading_block (general-purpose)
-# ---------------------------------------------------------------------------
-
-
-def add_block(
-    doc: IDFDocument,
-    name: str,
-    footprint: Sequence[tuple[float, float]],
-    floor_to_floor: float,
-    num_stories: int = 1,
-) -> list[IDFObject]:
-    """Create zones and surfaces from an arbitrary 2D footprint.
-
-    For each story, creates a ``Zone`` and ``BuildingSurface:Detailed``
-    objects for walls (one per footprint edge), a floor, and a
-    ceiling/roof.
-
-    This is the general-purpose alternative to [Shoebox][idfkit.geometry_builders.Shoebox] for
-    non-rectangular footprints.
-
-    Args:
-        doc: The document to add objects to.
-        name: Base name for zones and surfaces.
-        footprint: 2D footprint as ``(x, y)`` tuples.
-            Vertices should be in counter-clockwise order when viewed
-            from above.
-        floor_to_floor: Floor-to-floor height in metres.
-        num_stories: Number of stories (default 1).
-
-    Returns:
-        All created IDFObject instances (zones + surfaces).
-
-    Raises:
-        ValueError: If footprint has fewer than 3 vertices, height <= 0,
-            or num_stories < 1.
-    """
-    return _build_block(doc, name, list(footprint), floor_to_floor, num_stories)
 
 
 def add_shading_block(
@@ -382,139 +259,3 @@ def horizontal_poly(footprint: list[tuple[float, float]], z: float, *, reverse: 
     """
     pts = reversed(footprint) if reverse else footprint
     return Polygon3D([Vector3D(p[0], p[1], z) for p in pts])
-
-
-# ---------------------------------------------------------------------------
-# _build_block — shared implementation for Shoebox.build() and add_block()
-# ---------------------------------------------------------------------------
-
-
-def _build_block(
-    doc: IDFDocument,
-    name: str,
-    footprint: list[tuple[float, float]],
-    floor_to_floor: float,
-    num_stories: int,
-) -> list[IDFObject]:
-    """Create zones and surfaces from a footprint (internal helper).
-
-    Reads ``GlobalGeometryRules`` from *doc* to determine the vertex
-    ordering convention.  If no rules exist, defaults to
-    ``UpperLeftCorner`` / ``Counterclockwise``.
-    """
-    if len(footprint) < 3:
-        msg = f"Footprint must have at least 3 vertices, got {len(footprint)}"
-        raise ValueError(msg)
-    if floor_to_floor <= 0:
-        msg = f"floor_to_floor must be positive, got {floor_to_floor}"
-        raise ValueError(msg)
-    if num_stories < 1:
-        msg = f"num_stories must be >= 1, got {num_stories}"
-        raise ValueError(msg)
-
-    svp, clockwise = get_geometry_convention(doc)
-    wall_order = WALL_ORDER.get((svp, clockwise), (0, 1, 2, 3))
-
-    created: list[IDFObject] = []
-    n = len(footprint)
-
-    # Pre-compute zone names so we can set up inter-story references.
-    zone_names: list[str] = []
-    for i in range(num_stories):
-        zone_names.append(f"{name} Story {i + 1}" if num_stories > 1 else name)
-
-    for i in range(num_stories):
-        z_bot = i * floor_to_floor
-        z_top = (i + 1) * floor_to_floor
-        zone_name = zone_names[i]
-
-        # --- Zone ---
-        zone = doc.add("Zone", zone_name, validate=False)
-        created.append(zone)
-
-        # --- Walls (one per footprint edge) ---
-        for j in range(n):
-            p1 = footprint[j]
-            p2 = footprint[(j + 1) % n]
-            wall_name = f"{zone_name} Wall {j + 1}"
-            wall = doc.add(
-                "BuildingSurface:Detailed",
-                wall_name,
-                surface_type="Wall",
-                construction_name="",
-                zone_name=zone_name,
-                outside_boundary_condition="Outdoors",
-                sun_exposure="SunExposed",
-                wind_exposure="WindExposed",
-                validate=False,
-            )
-            # Canonical wall corners viewed from outside: UL, LL, LR, UR
-            corners = [
-                Vector3D(p1[0], p1[1], z_top),  # UL
-                Vector3D(p1[0], p1[1], z_bot),  # LL
-                Vector3D(p2[0], p2[1], z_bot),  # LR
-                Vector3D(p2[0], p2[1], z_top),  # UR
-            ]
-            poly = Polygon3D([corners[k] for k in wall_order])
-            set_surface_coords(wall, poly)
-            created.append(wall)
-
-        # --- Floor ---
-        floor_name = f"{zone_name} Floor"
-        if i == 0:
-            floor_bc = "Ground"
-            floor_bc_obj = ""
-        else:
-            floor_bc = "Surface"
-            floor_bc_obj = f"{zone_names[i - 1]} Ceiling"
-
-        floor_srf = doc.add(
-            "BuildingSurface:Detailed",
-            floor_name,
-            surface_type="Floor",
-            construction_name="",
-            zone_name=zone_name,
-            outside_boundary_condition=floor_bc,
-            outside_boundary_condition_object=floor_bc_obj,
-            sun_exposure="NoSun",
-            wind_exposure="NoWind",
-            validate=False,
-        )
-        # CCW: reversed footprint → normal down; CW: footprint order → normal down.
-        set_surface_coords(floor_srf, horizontal_poly(footprint, z_bot, reverse=not clockwise))
-        created.append(floor_srf)
-
-        # --- Ceiling / Roof ---
-        is_top = i == num_stories - 1
-        if is_top:
-            ceil_name = f"{zone_name} Roof"
-            ceil_type = "Roof"
-            ceil_bc = "Outdoors"
-            ceil_bc_obj = ""
-            ceil_sun = "SunExposed"
-            ceil_wind = "WindExposed"
-        else:
-            ceil_name = f"{zone_name} Ceiling"
-            ceil_type = "Ceiling"
-            ceil_bc = "Surface"
-            ceil_bc_obj = f"{zone_names[i + 1]} Floor"
-            ceil_sun = "NoSun"
-            ceil_wind = "NoWind"
-
-        ceil_srf = doc.add(
-            "BuildingSurface:Detailed",
-            ceil_name,
-            surface_type=ceil_type,
-            construction_name="",
-            zone_name=zone_name,
-            outside_boundary_condition=ceil_bc,
-            outside_boundary_condition_object=ceil_bc_obj,
-            sun_exposure=ceil_sun,
-            wind_exposure=ceil_wind,
-            validate=False,
-        )
-        # CCW: footprint order → normal up; CW: reversed footprint → normal up.
-        set_surface_coords(ceil_srf, horizontal_poly(footprint, z_top, reverse=clockwise))
-        created.append(ceil_srf)
-
-    return created

@@ -1,74 +1,18 @@
 # Geometry Builders
 
-High-level functions for creating EnergyPlus zone and surface geometry from
-simple 2D footprints.  Use these when you need to build a thermal model
-from scratch rather than editing an existing one.
+Geometry utility functions for EnergyPlus surface manipulation.  For
+creating building zones and surfaces, see [Zoning](zoning.md).
 
 ## Quick Start
 
 ```python
-from idfkit import new_document, add_block
+from idfkit import new_document
+from idfkit.geometry_builders import add_shading_block
 
 doc = new_document()
-add_block(doc, "Office", [(0, 0), (10, 0), (10, 8), (0, 8)], floor_to_floor=3)
+add_shading_block(doc, "Neighbour", [(30, 0), (50, 0), (50, 20), (30, 20)], height=25)
 
-# Result: 1 Zone, 4 Walls, 1 Floor, 1 Roof
-print(len(doc["Zone"]))                      # 1
-print(len(doc["BuildingSurface:Detailed"]))  # 6
-```
-
-## Shoebox
-
-The `Shoebox` dataclass is a *describe-then-apply* alternative for
-rectangular buildings.  All parameters are validated up front; call
-`build()` to realise the geometry.
-
-```python
-from idfkit import new_document, Shoebox
-
-box = Shoebox(name="Core", width=30, depth=20, floor_to_floor=3.5, num_stories=3)
-
-print(f"Total floor area: {box.total_floor_area} m²")  # 1800.0
-print(f"Building height: {box.height} m")               # 10.5
-
-doc = new_document()
-box.build(doc)
-
-# 3 zones, 18 surfaces (4 walls + floor + ceiling per story)
-print(len(doc["Zone"]))                      # 3
-print(len(doc["BuildingSurface:Detailed"]))  # 18
-```
-
-### Multi-Story Boundary Conditions
-
-For multi-story blocks, inter-story floors and ceilings are
-automatically linked with `Surface` boundary conditions:
-
-| Story | Floor BC | Ceiling BC |
-|-------|----------|------------|
-| Ground floor | `Ground` | `Surface` (story above) |
-| Mid floors | `Surface` (story below) | `Surface` (story above) |
-| Top floor | `Surface` (story below) | `Outdoors` (Roof) |
-
-## Non-Rectangular Footprints
-
-`add_block` accepts any convex or concave polygon footprint.  Vertices
-should be in counter-clockwise order when viewed from above.
-
-```python
-from idfkit import new_document, add_block
-
-doc = new_document()
-
-# L-shaped footprint
-footprint = [
-    (0, 0), (20, 0), (20, 10),
-    (10, 10), (10, 15), (0, 15),
-]
-add_block(doc, "L-Wing", footprint, floor_to_floor=3)
-
-# 6 walls (one per footprint edge) + floor + roof
-print(len(doc["BuildingSurface:Detailed"]))  # 8
+print(len(doc["Shading:Site:Detailed"]))  # 5
 ```
 
 ## Shading Blocks
@@ -109,14 +53,14 @@ This means you can safely add geometry to an existing model that uses a
 non-default convention without having to rewrite all existing surfaces:
 
 ```python
-from idfkit import load_idf, add_block
+from idfkit import load_idf, create_building
 
 # Model uses Clockwise vertex convention
 model = load_idf("existing_building.idf")
 
 # New surfaces will automatically use Clockwise ordering
 # to match the model's GlobalGeometryRules
-add_block(model, "Addition", [(20, 0), (30, 0), (30, 10), (20, 10)], floor_to_floor=3)
+create_building(model, "Addition", [(20, 0), (30, 0), (30, 10), (20, 10)], floor_to_floor=3)
 ```
 
 ### Wall Vertex Order by Convention
@@ -193,6 +137,8 @@ scale_building(doc, 0.5, anchor=Vector3D(15, 10, 0))
 
 ## See Also
 
+- [Zoning](zoning.md) -- `create_building`, core-perimeter zoning, footprint
+  helpers, and multi-zone building generation
 - [Geometry](geometry.md) -- Lower-level 3D primitives, coordinate transforms,
   and surface intersection
 - [Visualization](visualization.md) -- 3D rendering of building geometry

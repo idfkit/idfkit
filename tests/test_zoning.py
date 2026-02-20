@@ -9,13 +9,13 @@ from idfkit.geometry import calculate_surface_area, get_surface_coords
 from idfkit.zoning import (
     ASHRAE_PERIMETER_DEPTH,
     ZonedBlock,
+    ZoneFootprint,
     ZoningScheme,
     _classify_edge_orientation,
     _inset_polygon_2d,
     _is_convex,
     _polygon_area_signed,
     _split_core_perimeter,
-    _ZoneFootprint,
     create_building,
     footprint_courtyard,
     footprint_h_shape,
@@ -308,6 +308,46 @@ class TestZonedBlock:
                 floor_to_floor=3,
                 zoning=ZoningScheme.CUSTOM,
             )
+
+    def test_height(self) -> None:
+        block = ZonedBlock(
+            name="Box",
+            footprint=footprint_rectangle(10, 8),
+            floor_to_floor=3,
+            num_stories=2,
+        )
+        assert block.height == 6.0
+
+    def test_floor_area_rectangle(self) -> None:
+        block = ZonedBlock(
+            name="Box",
+            footprint=footprint_rectangle(10, 8),
+            floor_to_floor=3,
+        )
+        assert _close(block.floor_area, 80.0)
+
+    def test_floor_area_triangle(self) -> None:
+        block = ZonedBlock(
+            name="Tri",
+            footprint=[(0, 0), (10, 0), (5, 8)],
+            floor_to_floor=3,
+        )
+        assert _close(block.floor_area, 40.0)
+
+    def test_floor_area_l_shape(self) -> None:
+        fp = footprint_l_shape(width=20, depth=10, wing_width=10, wing_depth=10)
+        block = ZonedBlock(name="L", footprint=fp, floor_to_floor=3)
+        # L area = 20*10 + 10*10 = 300
+        assert _close(block.floor_area, 300.0)
+
+    def test_total_floor_area(self) -> None:
+        block = ZonedBlock(
+            name="Box",
+            footprint=footprint_rectangle(10, 8),
+            floor_to_floor=3,
+            num_stories=2,
+        )
+        assert _close(block.total_floor_area, 160.0)
 
     def test_by_storey_single_story(self) -> None:
         doc = new_document()
@@ -622,8 +662,8 @@ class TestCustomZoning:
     def test_custom_zones(self) -> None:
         doc = new_document()
         custom = [
-            _ZoneFootprint("East_Wing", [(0, 0), (10, 0), (10, 10), (0, 10)]),
-            _ZoneFootprint("West_Wing", [(10, 0), (20, 0), (20, 10), (10, 10)]),
+            ZoneFootprint("East_Wing", [(0, 0), (10, 0), (10, 10), (0, 10)]),
+            ZoneFootprint("West_Wing", [(10, 0), (20, 0), (20, 10), (10, 10)]),
         ]
         create_building(
             doc,

@@ -67,8 +67,6 @@ from .geometry import (
 
 # Geometry builders
 from .geometry_builders import (
-    Shoebox,
-    add_block,
     add_shading_block,
     bounding_box,
     scale_building,
@@ -120,6 +118,7 @@ from .writers import write_epjson, write_idf
 from .zoning import (
     ASHRAE_PERIMETER_DEPTH,
     ZonedBlock,
+    ZoneFootprint,
     ZoningScheme,
     create_building,
     footprint_courtyard,
@@ -252,7 +251,6 @@ __all__ = [
     "ReferenceGraph",
     "SchemaManager",
     "SchemaNotFoundError",
-    "Shoebox",
     "SimulationError",
     "UnknownObjectTypeError",
     "ValidationError",
@@ -260,10 +258,10 @@ __all__ = [
     "ValidationResult",
     "Vector3D",
     "VersionNotFoundError",
+    "ZoneFootprint",
     "ZonedBlock",
     "ZoningScheme",
     "__version__",
-    "add_block",
     "add_shading_block",
     "bounding_box",
     "calculate_surface_area",
