@@ -6,7 +6,8 @@ Simulation result container and output file access.
 
 ::: idfkit.simulation.result.SimulationResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - run_dir
@@ -36,7 +37,8 @@ Simulation result container and output file access.
 
 ::: idfkit.simulation.parsers.err.ErrorReport
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - messages
@@ -56,14 +58,16 @@ Simulation result container and output file access.
 
 ::: idfkit.simulation.parsers.err.ErrorMessage
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## HTMLResult
 
 ::: idfkit.simulation.parsers.html.HTMLResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - tables
@@ -78,7 +82,8 @@ Simulation result container and output file access.
 
 ::: idfkit.simulation.parsers.html.HTMLTable
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - title

@@ -6,7 +6,8 @@ Weather file downloading and caching.
 
 ::: idfkit.weather.download.WeatherDownloader
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - cache_dir
@@ -16,7 +17,8 @@ Weather file downloading and caching.
 
 ::: idfkit.weather.download.WeatherFiles
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - epw

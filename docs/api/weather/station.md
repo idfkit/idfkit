@@ -6,7 +6,8 @@ Weather station index, search, and geocoding.
 
 ::: idfkit.weather.index.StationIndex
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - load
@@ -22,7 +23,8 @@ Weather station index, search, and geocoding.
 
 ::: idfkit.weather.station.WeatherStation
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - city
@@ -41,7 +43,8 @@ Weather station index, search, and geocoding.
 
 ::: idfkit.weather.station.SearchResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - station
@@ -51,7 +54,8 @@ Weather station index, search, and geocoding.
 
 ::: idfkit.weather.station.SpatialResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - station
@@ -61,12 +65,14 @@ Weather station index, search, and geocoding.
 
 ::: idfkit.weather.geocode.geocode
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## GeocodingError
 
 ::: idfkit.weather.geocode.GeocodingError
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true

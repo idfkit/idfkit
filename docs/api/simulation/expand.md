@@ -28,35 +28,40 @@ immediately without invoking any external process.
 
 ::: idfkit.simulation.expand.expand_objects
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## run_slab_preprocessor
 
 ::: idfkit.simulation.expand.run_slab_preprocessor
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## run_basement_preprocessor
 
 ::: idfkit.simulation.expand.run_basement_preprocessor
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## run_preprocessing
 
 ::: idfkit.simulation.expand.run_preprocessing
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## needs_ground_heat_preprocessing
 
 ::: idfkit.simulation.expand.needs_ground_heat_preprocessing
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## Error Handling

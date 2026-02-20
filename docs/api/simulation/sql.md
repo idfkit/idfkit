@@ -6,7 +6,8 @@ SQLite output database parsing and query interface.
 
 ::: idfkit.simulation.parsers.sql.SQLResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - path
@@ -19,7 +20,8 @@ SQLite output database parsing and query interface.
 
 ::: idfkit.simulation.parsers.sql.TimeSeriesResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - variable_name
@@ -35,7 +37,8 @@ SQLite output database parsing and query interface.
 
 ::: idfkit.simulation.parsers.sql.TabularRow
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - report_name
@@ -50,7 +53,8 @@ SQLite output database parsing and query interface.
 
 ::: idfkit.simulation.parsers.sql.VariableInfo
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - name
@@ -64,7 +68,8 @@ SQLite output database parsing and query interface.
 
 ::: idfkit.simulation.parsers.sql.EnvironmentInfo
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - index

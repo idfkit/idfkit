@@ -6,7 +6,8 @@ Content-addressed simulation result caching.
 
 ::: idfkit.simulation.cache.SimulationCache
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - cache_dir
@@ -20,7 +21,8 @@ Content-addressed simulation result caching.
 
 ::: idfkit.simulation.cache.CacheKey
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - hex_digest
@@ -29,5 +31,6 @@ Content-addressed simulation result caching.
 
 ::: idfkit.simulation.cache.default_simulation_cache_dir
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true

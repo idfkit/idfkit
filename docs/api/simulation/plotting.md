@@ -6,14 +6,16 @@ Pluggable plotting backends for result visualization.
 
 ::: idfkit.simulation.plotting.PlotBackend
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## get_default_backend
 
 ::: idfkit.simulation.plotting.get_default_backend
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## Built-in Visualizations
@@ -22,21 +24,24 @@ Pluggable plotting backends for result visualization.
 
 ::: idfkit.simulation.plotting.visualizations.plot_temperature_profile
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ### plot_energy_balance
 
 ::: idfkit.simulation.plotting.visualizations.plot_energy_balance
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ### plot_comfort_hours
 
 ::: idfkit.simulation.plotting.visualizations.plot_comfort_hours
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## Backend Implementations
@@ -45,12 +50,14 @@ Pluggable plotting backends for result visualization.
 
 ::: idfkit.simulation.plotting.matplotlib.MatplotlibBackend
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ### PlotlyBackend
 
 ::: idfkit.simulation.plotting.plotly.PlotlyBackend
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true

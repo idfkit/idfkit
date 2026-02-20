@@ -6,14 +6,16 @@ Parallel simulation execution with thread-pool parallelism.
 
 ::: idfkit.simulation.batch.simulate_batch
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## SimulationJob
 
 ::: idfkit.simulation.batch.SimulationJob
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - model
@@ -33,7 +35,8 @@ Parallel simulation execution with thread-pool parallelism.
 
 ::: idfkit.simulation.batch.BatchResult
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - results

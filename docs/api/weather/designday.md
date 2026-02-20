@@ -6,7 +6,8 @@ Design day parsing, classification, and model injection.
 
 ::: idfkit.weather.designday.DesignDayManager
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - annual
@@ -20,7 +21,8 @@ Design day parsing, classification, and model injection.
 
 ::: idfkit.weather.designday.DesignDayType
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - HEATING_99_6
@@ -45,7 +47,8 @@ Design day parsing, classification, and model injection.
 
 ::: idfkit.weather.designday.apply_ashrae_sizing
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
 
 ## NoDesignDaysError

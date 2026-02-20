@@ -6,7 +6,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.FileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes
@@ -23,7 +24,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.AsyncFileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes
@@ -40,7 +42,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.LocalFileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes
@@ -57,7 +60,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.AsyncLocalFileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes
@@ -74,7 +78,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.S3FileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes
@@ -91,7 +96,8 @@ Pluggable storage backends for simulation I/O.
 
 ::: idfkit.simulation.fs.AsyncS3FileSystem
     options:
-      show_root_heading: true
+      show_root_heading: false
+      show_root_toc_entry: false
       show_source: true
       members:
         - read_bytes

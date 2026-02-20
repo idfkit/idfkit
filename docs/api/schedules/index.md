@@ -7,7 +7,7 @@ running a simulation.
 
 | Function/Class | Description |
 |---------------|-------------|
-| [`evaluate()`](#idfkit.schedules.evaluate) | Evaluate a schedule at a specific datetime |
+| [`evaluate()`](#idfkit.schedules.evaluate.evaluate) | Evaluate a schedule at a specific datetime |
 | [`values()`](#idfkit.schedules.values) | Generate values for a date range |
 | [`to_series()`](#idfkit.schedules.to_series) | Convert to pandas Series |
 | [`plot_schedule()`](#idfkit.schedules.plot_schedule) | Quick visualization |
@@ -23,7 +23,7 @@ The `day_type` and `interpolation` parameters accept strings for convenience:
 
 ## Core Functions
 
-::: idfkit.schedules.evaluate
+::: idfkit.schedules.evaluate.evaluate
     options:
       show_root_heading: true
       show_source: false
