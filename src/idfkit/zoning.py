@@ -7,8 +7,7 @@ simulation.
 
 Three zoning schemes are provided:
 
-* **by_storey** - one zone per floor (the existing [add_block][idfkit.geometry_builders.add_block]
-  behaviour).
+* **by_storey** - one zone per floor.
 * **core_perimeter** - four orientation-based perimeter zones plus an
   interior core zone per floor.  Perimeter depth defaults to
   **4.57 m (15 ft)** per ASHRAE 90.1 Appendix G and the DOE prototype
@@ -908,6 +907,21 @@ class ZonedBlock:
         if self.zoning == ZoningScheme.CUSTOM and not self.custom_zones:
             msg = "custom_zones is required when zoning is CUSTOM"
             raise ValueError(msg)
+
+    @property
+    def height(self) -> float:
+        """Total building height in metres."""
+        return self.floor_to_floor * self.num_stories
+
+    @property
+    def floor_area(self) -> float:
+        """Single-floor footprint area in square metres."""
+        return abs(_polygon_area_signed(list(self.footprint)))
+
+    @property
+    def total_floor_area(self) -> float:
+        """Total floor area across all stories in square metres."""
+        return self.floor_area * self.num_stories
 
     def build(self, doc: IDFDocument) -> list[IDFObject]:
         """Realise the zoned geometry in the document.

@@ -31,7 +31,7 @@ print(len(doc["Zone"]))  # 15
 
 | Scheme | Zones per floor | Description |
 |--------|-----------------|-------------|
-| `BY_STOREY` | 1 | One zone per floor (default). Same behaviour as `add_block`. |
+| `BY_STOREY` | 1 | One zone per floor (default). |
 | `CORE_PERIMETER` | 5 | Four orientation-based perimeter zones plus an interior core zone. |
 | `CUSTOM` | User-defined | Caller supplies named zone polygons via `custom_zones`. |
 
@@ -154,8 +154,7 @@ print(len(doc["Construction:AirBoundary"]))  # 1
 ## Multi-Story Boundary Conditions
 
 For multi-story buildings, inter-story floors and ceilings are
-automatically linked with `Surface` boundary conditions, identical
-to the behaviour described in [Geometry Builders](geometry_builders.md#multi-story-boundary-conditions):
+automatically linked with `Surface` boundary conditions:
 
 | Story | Floor BC | Ceiling BC |
 |-------|----------|------------|
@@ -280,8 +279,9 @@ create_building(
 ## ZonedBlock (Describe-then-Apply)
 
 `ZonedBlock` is a frozen dataclass alternative that validates all
-parameters up front.  Call `build()` to realise the geometry — the same
-*describe-then-apply* pattern used by [`Shoebox`](geometry_builders.md#shoebox).
+parameters up front.  Call `build()` to realise the geometry.
+This *describe-then-apply* pattern lets you inspect computed properties
+before committing to a document.
 
 ```python
 from idfkit import new_document, ZonedBlock, ZoningScheme
@@ -295,6 +295,10 @@ block = ZonedBlock(
     zoning=ZoningScheme.CORE_PERIMETER,
 )
 
+print(f"Building height: {block.height} m")              # 10.5
+print(f"Floor area: {block.floor_area} m²")               # 1500.0
+print(f"Total floor area: {block.total_floor_area} m²")  # 4500.0
+
 doc = new_document()
 objects = block.build(doc)
 print(len(objects))  # all created Zone + BuildingSurface:Detailed objects
@@ -306,8 +310,8 @@ print(len(objects))  # all created Zone + BuildingSurface:Detailed objects
 
 ## See Also
 
-- [Geometry Builders](geometry_builders.md) -- `add_block`, `Shoebox`, shading blocks,
-  and utility functions
+- [Geometry Builders](geometry_builders.md) -- Shading blocks and utility functions
+  (`bounding_box`, `scale_building`, `set_default_constructions`)
 - [Geometry](geometry.md) -- Lower-level 3D primitives, coordinate transforms,
   and surface intersection
 - [Visualization](visualization.md) -- 3D rendering of building geometry
