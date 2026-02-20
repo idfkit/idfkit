@@ -31,7 +31,7 @@ class ReferenceGraph:
     - Detecting dangling references
 
     The reference graph is automatically maintained by
-    :class:`~idfkit.document.IDFDocument` when objects are added,
+    [IDFDocument][idfkit.document.IDFDocument] when objects are added,
     removed, or when reference fields are modified.
 
     Examples:

@@ -38,8 +38,8 @@ class SimulationResult:
         output_prefix: Output file prefix (default "eplus").
         fs: Optional sync file system backend for reading output files.
         async_fs: Optional async file system backend for non-blocking reads.
-            Set automatically by :func:`async_simulate` when an
-            :class:`~idfkit.simulation.fs.AsyncFileSystem` is provided.
+            Set automatically by [async_simulate][idfkit.simulation.async_runner.async_simulate] when an
+            [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] is provided.
     """
 
     run_dir: Path
@@ -247,7 +247,7 @@ class SimulationResult:
             Path to the file, or None if not found.
 
         Raises:
-            RuntimeError: If only :attr:`async_fs` is set (no sync access
+            RuntimeError: If only [async_fs][idfkit.simulation.result.SimulationResult.async_fs] is set (no sync access
                 available).  Use the ``async_*`` methods instead.
         """
         if self.async_fs is not None and self.fs is None:
@@ -287,8 +287,8 @@ class SimulationResult:
     async def async_errors(self) -> ErrorReport:
         """Parsed error report from the .err file (async, lazily cached).
 
-        Non-blocking counterpart to :attr:`errors` that uses
-        :attr:`async_fs` for file reads.
+        Non-blocking counterpart to [errors][idfkit.simulation.result.SimulationResult.errors] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
             Parsed ErrorReport from the simulation's .err output.
@@ -313,8 +313,8 @@ class SimulationResult:
     async def async_sql(self) -> SQLResult | None:
         """Parsed SQL output database (async, lazily cached).
 
-        Non-blocking counterpart to :attr:`sql` that uses
-        :attr:`async_fs` for file reads.
+        Non-blocking counterpart to [sql][idfkit.simulation.result.SimulationResult.sql] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
             An SQLResult for querying time-series and tabular data,
@@ -347,8 +347,8 @@ class SimulationResult:
     async def async_variables(self) -> OutputVariableIndex | None:
         """Output variable/meter index (async, lazily cached).
 
-        Non-blocking counterpart to :attr:`variables` that uses
-        :attr:`async_fs` for file reads.
+        Non-blocking counterpart to [variables][idfkit.simulation.result.SimulationResult.variables] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
             An OutputVariableIndex for searching and injecting output
@@ -392,8 +392,8 @@ class SimulationResult:
     async def async_csv(self) -> CSVResult | None:
         """Parsed CSV output (async, lazily cached).
 
-        Non-blocking counterpart to :attr:`csv` that uses
-        :attr:`async_fs` for file reads.
+        Non-blocking counterpart to [csv][idfkit.simulation.result.SimulationResult.csv] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
             A CSVResult with extracted column metadata and values,
@@ -422,8 +422,8 @@ class SimulationResult:
     async def async_html(self) -> HTMLResult | None:
         """Parsed HTML tabular output (async, lazily cached).
 
-        Non-blocking counterpart to :attr:`html` that uses
-        :attr:`async_fs` for file reads.
+        Non-blocking counterpart to [html][idfkit.simulation.result.SimulationResult.html] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
 
         Returns:
             An HTMLResult with extracted tables and titles,
@@ -455,10 +455,10 @@ class SimulationResult:
         return result
 
     async def _async_find_output_file(self, suffix: str) -> Path | None:
-        """Async counterpart to :meth:`_find_output_file`.
+        """Async counterpart to [_find_output_file][].
 
-        Uses :attr:`async_fs` for non-blocking file lookups, falling back
-        to :attr:`fs` or local path checks.
+        Uses [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for non-blocking file lookups, falling back
+        to [fs][] or local path checks.
 
         Args:
             suffix: File suffix to look for (e.g. ".sql", ".err").

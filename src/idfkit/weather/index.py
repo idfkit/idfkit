@@ -248,18 +248,19 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
 class StationIndex:
     """Searchable index of weather stations from climate.onebuilding.org.
 
-    Use :meth:`load` to load the bundled (or user-refreshed) station index.
-    No network access or ``openpyxl`` is required for :meth:`load`.
+    Use [load][idfkit.weather.index.StationIndex.load] to load the bundled (or user-refreshed) station index.
+    No network access or ``openpyxl`` is required for [load][idfkit.weather.index.StationIndex.load].
 
-    Use :meth:`check_for_updates` to see if upstream data has changed, and
-    :meth:`refresh` to re-download and rebuild the index.
+    Use [check_for_updates][idfkit.weather.index.StationIndex.check_for_updates] to see if upstream data has changed, and
+    [refresh][idfkit.weather.index.StationIndex.refresh] to re-download and rebuild the index.
 
-    Example::
-
+    Examples:
+        ```python
         index = StationIndex.load()
         results = index.search("chicago ohare", limit=3)
         for r in results:
             print(r.station.display_name, r.score)
+        ```
     """
 
     __slots__ = ("_by_wmo", "_last_modified", "_stations")

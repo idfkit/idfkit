@@ -365,13 +365,14 @@ class EpJSONSchema:
         Returns:
             The group name, or ``None`` if *obj_type* is not in the schema.
 
-        Example::
-
+        Examples:
+            ```python
             schema = get_schema((24, 1, 0))
             schema.get_group("Zone")
             # "Thermal Zones and Surfaces"
             schema.get_group("HVACTemplate:Zone:IdealLoadsAirSystem")
             # "HVAC Templates"
+            ```
         """
         obj_schema = self.get_object_schema(obj_type)
         if obj_schema:

@@ -1,12 +1,14 @@
 """Built-in progress bar factories for simulation callbacks.
 
-Provides :func:`tqdm_progress`, a context manager that yields a ready-to-use
+Provides [tqdm_progress][], a context manager that yields a ready-to-use
 ``on_progress`` callback powered by `tqdm <https://tqdm.github.io/>`_.
-Install the optional dependency with::
+Install the optional dependency with:
 
+    ```bash
     pip install idfkit[progress]
+    ```
 
-The :func:`resolve_on_progress` helper is used internally by the runners
+The [resolve_on_progress][] helper is used internally by the runners
 to accept ``on_progress="tqdm"`` as a convenience shorthand.
 """
 
@@ -41,7 +43,7 @@ def tqdm_progress(
         leave: Whether the bar remains visible after completion.
         position: Line position for the bar (useful for nested bars).
         file: Output stream (default: ``sys.stderr``).
-        **tqdm_kwargs: Extra keyword arguments forwarded to :class:`tqdm.tqdm`.
+        **tqdm_kwargs: Extra keyword arguments forwarded to `tqdm.tqdm`.
 
     Yields:
         A callback suitable for the ``on_progress`` parameter.
@@ -49,13 +51,14 @@ def tqdm_progress(
     Raises:
         ImportError: If tqdm is not installed.
 
-    Example::
-
+    Examples:
+        ```python
         from idfkit.simulation import simulate
         from idfkit.simulation.progress_bars import tqdm_progress
 
         with tqdm_progress(desc="Annual run") as cb:
             result = simulate(model, "weather.epw", annual=True, on_progress=cb)
+        ```
     """
     tqdm_cls = _import_tqdm()
     bar = tqdm_cls(

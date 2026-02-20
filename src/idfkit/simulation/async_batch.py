@@ -1,19 +1,19 @@
 """Async batch simulation with semaphore-based concurrency control.
 
-Non-blocking counterpart to :func:`~idfkit.simulation.batch.simulate_batch`
-that uses :mod:`asyncio` for concurrency instead of
-:class:`~concurrent.futures.ThreadPoolExecutor`.
+Non-blocking counterpart to [simulate_batch][idfkit.simulation.batch.simulate_batch]
+that uses [asyncio][] for concurrency instead of
+[ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor].
 
 Two entry points are provided:
 
-* :func:`async_simulate_batch` — runs all jobs and returns an aggregated
-  :class:`~idfkit.simulation.batch.BatchResult`, mirroring the sync API.
-* :func:`async_simulate_batch_stream` — an async generator that yields
-  :class:`SimulationEvent` objects as each simulation completes, enabling
+* [async_simulate_batch][idfkit.simulation.async_batch.async_simulate_batch] — runs all jobs and returns an aggregated
+  [BatchResult][idfkit.simulation.batch.BatchResult], mirroring the sync API.
+* [async_simulate_batch_stream][idfkit.simulation.async_batch.async_simulate_batch_stream] — an async generator that yields
+  [SimulationEvent][idfkit.simulation.async_batch.SimulationEvent] objects as each simulation completes, enabling
   real-time progress monitoring without callbacks.
 
-Example::
-
+Examples:
+    ```python
     import asyncio
     from idfkit.simulation import async_simulate_batch, SimulationJob
 
@@ -23,9 +23,11 @@ Example::
         print(f"{len(batch.succeeded)}/{len(batch)} succeeded")
 
     asyncio.run(main())
+    ```
 
-Streaming example::
+Streaming example:
 
+    ```python
     from idfkit.simulation import async_simulate_batch_stream
 
     async def main():
@@ -33,6 +35,7 @@ Streaming example::
         async for event in async_simulate_batch_stream(jobs, max_concurrent=4):
             status = "OK" if event.result.success else "FAIL"
             print(f"[{event.completed}/{event.total}] {event.label}: {status}")
+    ```
 """
 
 from __future__ import annotations
@@ -60,14 +63,14 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True, slots=True)
 class SimulationEvent:
-    """Progress event emitted by :func:`async_simulate_batch_stream`.
+    """Progress event emitted by [async_simulate_batch_stream][idfkit.simulation.async_batch.async_simulate_batch_stream].
 
     Each event represents a single simulation that has finished (successfully
     or not).  Events are yielded in *completion order*, not submission order.
 
     Attributes:
         index: Zero-based position of this job in the original *jobs* sequence.
-        label: Human-readable label from the :class:`SimulationJob`.
+        label: Human-readable label from the [SimulationJob][idfkit.simulation.batch.SimulationJob].
         result: The simulation result.
         completed: Number of jobs completed so far (including this one).
         total: Total number of jobs in the batch.
@@ -92,11 +95,11 @@ async def async_simulate_batch(
     """Run multiple EnergyPlus simulations concurrently using asyncio.
 
     This is the async counterpart to
-    :func:`~idfkit.simulation.batch.simulate_batch`.  Concurrency is
-    controlled with an :class:`asyncio.Semaphore` instead of a thread pool.
+    [simulate_batch][idfkit.simulation.batch.simulate_batch].  Concurrency is
+    controlled with an [asyncio.Semaphore][] instead of a thread pool.
 
     Individual job failures are captured as failed
-    :class:`~idfkit.simulation.result.SimulationResult` entries -- the batch
+    [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch
     never raises due to a single job failing.
 
     Args:
@@ -107,18 +110,18 @@ async def async_simulate_batch(
             to ``min(len(jobs), os.cpu_count() or 1)``.
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend passed through to each
-            :func:`~idfkit.simulation.async_runner.async_simulate` call.
+            [async_simulate][idfkit.simulation.async_runner.async_simulate] call.
         on_progress: Optional callback invoked with
-            :class:`~idfkit.simulation.progress.SimulationProgress` events
+            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events
             during each individual simulation.  Events include
             ``job_index`` and ``job_label`` to identify which batch job
             they belong to.  Both sync and async callables are accepted.
             The ``"tqdm"`` shorthand is not supported for batch runners;
-            use :func:`~idfkit.simulation.progress_bars.tqdm_progress`
+            use [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
 
     Returns:
-        A :class:`~idfkit.simulation.batch.BatchResult` with results in the
+        A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the
         same order as *jobs*.
 
     Raises:
@@ -177,8 +180,8 @@ async def async_simulate_batch_stream(
 ) -> AsyncIterator[SimulationEvent]:
     """Run simulations concurrently, yielding events as each one completes.
 
-    This is an async generator variant of :func:`async_simulate_batch` that
-    yields :class:`SimulationEvent` objects in *completion order*.  This
+    This is an async generator variant of [async_simulate_batch][idfkit.simulation.async_batch.async_simulate_batch] that
+    yields [SimulationEvent][idfkit.simulation.async_batch.SimulationEvent] objects in *completion order*.  This
     enables real-time progress reporting without needing a callback:
 
     .. code-block:: python
@@ -195,15 +198,15 @@ async def async_simulate_batch_stream(
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend.
         on_progress: Optional callback invoked with
-            :class:`~idfkit.simulation.progress.SimulationProgress` events
+            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events
             during each individual simulation.  Events include
             ``job_index`` and ``job_label``.  The ``"tqdm"`` shorthand
             is not supported for batch runners; use
-            :func:`~idfkit.simulation.progress_bars.tqdm_progress`
+            [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
 
     Yields:
-        :class:`SimulationEvent` for each completed simulation, in the order
+        [SimulationEvent][idfkit.simulation.async_batch.SimulationEvent] for each completed simulation, in the order
         they finish.
 
     Raises:

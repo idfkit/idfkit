@@ -1,6 +1,6 @@
 """Output variable discovery and model injection.
 
-Provides the :class:`OutputVariableIndex` for searching available output
+Provides the [OutputVariableIndex][idfkit.simulation.outputs.OutputVariableIndex] for searching available output
 variables and meters from a completed simulation, and adding them to a model
 for subsequent runs.
 """

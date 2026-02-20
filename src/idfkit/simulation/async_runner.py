@@ -1,16 +1,16 @@
 """Async EnergyPlus simulation runner.
 
-Non-blocking counterpart to :func:`~idfkit.simulation.runner.simulate` that
-uses :mod:`asyncio` subprocess management instead of :func:`subprocess.run`.
+Non-blocking counterpart to [simulate][idfkit.simulation.runner.simulate] that
+uses [asyncio][] subprocess management instead of [subprocess.run][].
 
 The preparation steps (model copy, directory setup, cache lookup) are
 synchronous and fast; only the EnergyPlus subprocess execution is truly
 async.  Preprocessing (ExpandObjects, Slab, Basement) is delegated to
-a thread via :func:`asyncio.to_thread` because those routines use
-:func:`subprocess.run` internally.
+a thread via [asyncio.to_thread][] because those routines use
+[subprocess.run][] internally.
 
-Example::
-
+Examples:
+    ```python
     import asyncio
     from idfkit import load_idf
     from idfkit.simulation import async_simulate
@@ -21,6 +21,7 @@ Example::
         print(result.errors.summary())
 
     asyncio.run(main())
+    ```
 """
 
 from __future__ import annotations
@@ -79,12 +80,12 @@ async def async_simulate(
 ) -> SimulationResult:
     """Run an EnergyPlus simulation without blocking the event loop.
 
-    This is the async counterpart to :func:`~idfkit.simulation.runner.simulate`.
+    This is the async counterpart to [simulate][idfkit.simulation.runner.simulate].
     All parameters and return values are identical; the only difference is that
-    EnergyPlus runs as an :mod:`asyncio` subprocess, allowing the caller to
+    EnergyPlus runs as an [asyncio][] subprocess, allowing the caller to
     ``await`` the result while other coroutines continue executing.
 
-    Cancellation is supported: if the wrapping :class:`asyncio.Task` is
+    Cancellation is supported: if the wrapping [asyncio.Task][] is
     cancelled, the EnergyPlus subprocess is killed and cleaned up.
 
     Args:
@@ -92,7 +93,7 @@ async def async_simulate(
         weather: Path to the weather file (.epw).
         output_dir: Directory for output files (default: auto temp dir).
         energyplus: Pre-configured EnergyPlus installation. If None,
-            uses :func:`find_energyplus` for auto-discovery.
+            uses [find_energyplus][idfkit.simulation.config.find_energyplus] for auto-discovery.
         expand_objects: Run ExpandObjects before simulation.  When
             ``True``, also runs the Slab and Basement ground heat-transfer
             preprocessors if the model contains the corresponding objects.
@@ -107,14 +108,14 @@ async def async_simulate(
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend for storing results on remote
-            storage (e.g., S3).  Both sync :class:`~idfkit.simulation.fs.FileSystem`
-            and async :class:`~idfkit.simulation.fs.AsyncFileSystem` are accepted.
+            storage (e.g., S3).  Both sync [FileSystem][idfkit.simulation.fs.FileSystem]
+            and async [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] are accepted.
             When an ``AsyncFileSystem`` is provided, uploads and result reads
             are truly non-blocking.  A sync ``FileSystem`` is automatically
-            wrapped in :func:`asyncio.to_thread` to avoid blocking the event
+            wrapped in [asyncio.to_thread][] to avoid blocking the event
             loop.
         on_progress: Optional callback invoked with a
-            :class:`~idfkit.simulation.progress.SimulationProgress` event
+            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] event
             each time EnergyPlus emits a progress line.  Both synchronous
             and async callables are accepted -- async callables are awaited.
             Pass ``"tqdm"`` to use a built-in tqdm progress bar (requires

@@ -1,6 +1,6 @@
 """Pluggable plotting layer for simulation results.
 
-Provides a :class:`PlotBackend` protocol so that visualizations can be
+Provides a [PlotBackend][idfkit.simulation.plotting.PlotBackend] protocol so that visualizations can be
 rendered with either matplotlib or plotly (or a custom backend). Users can
 choose their preferred library without requiring both as dependencies.
 

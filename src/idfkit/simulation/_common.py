@@ -50,7 +50,7 @@ def prep_outputs(model: IDFDocument) -> None:
     - ``Output:Table:SummaryReports`` (AllSummary) — for tabular reports
     - ``Output:VariableDictionary`` (Regular) — for ``.rdd`` / ``.mdd`` generation
 
-    This is a superset of :func:`ensure_sql_output`.
+    This is a superset of `ensure_sql_output`.
 
     Args:
         model: The model to modify in place.
@@ -125,9 +125,9 @@ def upload_results(local_dir: Path, remote_dir: Path, fs: FileSystem) -> None:
 async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileSystem) -> None:
     """Upload all output files from a local directory to a remote async file system.
 
-    Local file reads are delegated to a thread via :func:`asyncio.to_thread`
+    Local file reads are delegated to a thread via [asyncio.to_thread][]
     to avoid blocking the event loop.  Remote writes are dispatched
-    concurrently via :func:`asyncio.gather`.
+    concurrently via [asyncio.gather][].
 
     Args:
         local_dir: Local directory containing simulation outputs.

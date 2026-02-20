@@ -43,24 +43,25 @@ class WeatherDownloader:
     subsequent requests for the same station and dataset are served from
     disk without a network call.
 
-    Example::
-
+    Examples:
+        ```python
         from idfkit.weather import StationIndex, WeatherDownloader
 
         station = StationIndex.load().search("chicago ohare")[0].station
         downloader = WeatherDownloader()
         files = downloader.download(station)
         print(files.epw)
+        ```
 
     Args:
         cache_dir: Override the default cache directory.
         max_age: Maximum age of cached files before re-downloading.
-            Can be a :class:`~datetime.timedelta` or a number of seconds.
+            Can be a [timedelta][datetime.timedelta] or a number of seconds.
             If ``None`` (default), cached files never expire.
 
     Note:
         The cache has no size limit. For CI/CD environments with limited disk
-        space, consider using :meth:`clear_cache` periodically or setting
+        space, consider using [clear_cache][idfkit.weather.download.WeatherDownloader.clear_cache] periodically or setting
         a ``max_age`` to force re-downloads of stale files.
     """
 
@@ -97,7 +98,7 @@ class WeatherDownloader:
             station: The weather station to download files for.
 
         Returns:
-            A :class:`WeatherFiles` with paths to the extracted files.
+            A [WeatherFiles][idfkit.weather.download.WeatherFiles] with paths to the extracted files.
 
         Raises:
             RuntimeError: If the download or extraction fails.

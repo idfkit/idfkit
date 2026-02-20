@@ -882,12 +882,11 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
     Modifies the document in-place, shifting every surface's vertices
     by *offset*.
 
-    .. note::
-
-       Only vertex coordinates are modified.  ``Zone`` origin fields
-       and the ``Building`` object are **not** updated.  Use
-       :func:`translate_to_world` if you need to collapse zone-relative
-       coordinates into world coordinates.
+    !!! note
+        Only vertex coordinates are modified.  ``Zone`` origin fields
+        and the ``Building`` object are **not** updated.  Use
+        [translate_to_world][idfkit.geometry.translate_to_world] if you need to collapse zone-relative
+        coordinates into world coordinates.
 
     Examples:
         Reposition a building on its site (e.g., from local to
@@ -1186,8 +1185,7 @@ def intersect_match(doc: IDFDocument) -> None:  # noqa: C901
     Args:
         doc: The document to modify in-place.
 
-    .. note::
-
+    !!! note
         This implementation handles the common case of full-overlap
         matching (same-size surfaces on opposite sides of a shared
         wall).  Partial intersection and surface splitting are **not**

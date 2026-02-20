@@ -146,7 +146,7 @@ def find_energyplus(
     Discovery order:
         1. Explicit *path* argument.
         2. ``ENERGYPLUS_DIR`` environment variable.
-        3. ``energyplus`` on ``PATH`` (via :func:`shutil.which`).
+        3. ``energyplus`` on ``PATH`` (via [shutil.which][]).
         4. Platform-specific default directories (newest version first).
 
     Args:

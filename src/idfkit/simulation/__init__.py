@@ -17,13 +17,13 @@ Parser Coverage
 
 The module provides parsers for the most commonly used EnergyPlus output formats:
 
-- **SQLite** (:class:`SQLResult`): Time-series data, tabular reports, and metadata.
+- **SQLite** ([SQLResult][idfkit.simulation.parsers.sql.SQLResult]): Time-series data, tabular reports, and metadata.
   This is the recommended output format as it contains all simulation data in a
   single queryable file.
-- **CSV** (:class:`CSVResult`): Time-series data in comma-separated format.
-- **HTML** (:class:`HTMLResult`): Tabular reports in HTML format.
-- **RDD/MDD** (:class:`OutputVariableIndex`): Available output variables and meters.
-- **ERR** (:class:`ErrorReport`): Errors, warnings, and simulation status.
+- **CSV** ([CSVResult][idfkit.simulation.parsers.csv.CSVResult]): Time-series data in comma-separated format.
+- **HTML** ([HTMLResult][idfkit.simulation.parsers.html.HTMLResult]): Tabular reports in HTML format.
+- **RDD/MDD** ([OutputVariableIndex][idfkit.simulation.outputs.OutputVariableIndex]): Available output variables and meters.
+- **ERR** ([ErrorReport][idfkit.simulation.parsers.err.ErrorReport]): Errors, warnings, and simulation status.
 
 The following formats are **intentionally not implemented** as the SQLite output
 covers the same data more reliably and completely:

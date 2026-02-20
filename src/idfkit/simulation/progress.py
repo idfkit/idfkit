@@ -17,8 +17,8 @@ class SimulationProgress:
 
     This dataclass represents a progress update parsed from EnergyPlus
     stdout output.  It is passed to user-supplied ``on_progress`` callbacks
-    on :func:`~idfkit.simulation.runner.simulate` and
-    :func:`~idfkit.simulation.async_runner.async_simulate`.
+    on [simulate][idfkit.simulation.runner.simulate] and
+    [async_simulate][idfkit.simulation.async_runner.async_simulate].
 
     Attributes:
         phase: Current simulation phase.
@@ -50,7 +50,7 @@ class SimulationProgress:
 
 
 class ProgressParser:
-    """Parse EnergyPlus stdout lines into :class:`SimulationProgress` events.
+    """Parse EnergyPlus stdout lines into [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events.
 
     Maintains internal state to track the current environment, warmup
     iteration count, and simulation day for percentage estimation.
@@ -59,13 +59,14 @@ class ProgressParser:
     is designed to be defensive — unrecognised lines return ``None`` and
     never raise.
 
-    Example::
-
+    Examples:
+        ```python
         parser = ProgressParser()
         for line in energyplus_stdout_lines:
             event = parser.parse_line(line)
             if event is not None:
                 print(event.phase, event.percent)
+        ```
     """
 
     _RE_WARMUP = re.compile(r"Warming up \{(\d+)\}")
@@ -104,7 +105,7 @@ class ProgressParser:
             line: A single line from EnergyPlus stdout.
 
         Returns:
-            A :class:`SimulationProgress` event, or ``None`` if the line
+            A [SimulationProgress][idfkit.simulation.progress.SimulationProgress] event, or ``None`` if the line
             does not contain progress information.
         """
         stripped = line.strip()

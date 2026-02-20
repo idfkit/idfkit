@@ -16,6 +16,8 @@ Simulation result container and output file access.
         - stderr
         - runtime_seconds
         - output_prefix
+        - fs
+        - async_fs
         - errors
         - sql
         - variables

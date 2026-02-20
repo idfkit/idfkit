@@ -1,6 +1,6 @@
 """Matplotlib plotting backend for simulation results.
 
-Provides :class:`MatplotlibBackend` which implements the :class:`PlotBackend`
+Provides [MatplotlibBackend][idfkit.simulation.plotting.matplotlib.MatplotlibBackend] which implements the [PlotBackend][idfkit.simulation.plotting.PlotBackend]
 protocol using matplotlib. Requires matplotlib to be installed.
 """
 

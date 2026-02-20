@@ -1,8 +1,8 @@
 """Batch simulation execution with thread-pool parallelism.
 
 Runs multiple EnergyPlus simulations concurrently using a
-:class:`~concurrent.futures.ThreadPoolExecutor`.  Thread-based parallelism
-is appropriate because :func:`simulate` delegates to ``subprocess.run``
+[ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor].  Thread-based parallelism
+is appropriate because [simulate][idfkit.simulation.runner.simulate] delegates to ``subprocess.run``
 which releases the GIL.
 """
 
@@ -107,9 +107,9 @@ def simulate_batch(
 ) -> BatchResult:
     """Run multiple EnergyPlus simulations in parallel.
 
-    Uses :class:`~concurrent.futures.ThreadPoolExecutor` to dispatch
+    Uses [ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor] to dispatch
     simulations concurrently.  Individual job failures are captured as
-    failed :class:`SimulationResult` entries -- the batch never raises
+    failed [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch never raises
     due to a single job failing.
 
     Args:
@@ -123,18 +123,18 @@ def simulate_batch(
             Called as ``progress(completed=N, total=M, label=label,
             success=bool)``.
         fs: Optional file system backend passed through to each
-            :func:`simulate` call.
+            [simulate][idfkit.simulation.runner.simulate] call.
         on_progress: Optional callback invoked with
-            :class:`~idfkit.simulation.progress.SimulationProgress` events
+            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events
             during each individual simulation.  Events include
             ``job_index`` and ``job_label`` to identify which batch job
             they belong to.  The ``"tqdm"`` shorthand is not supported
             for batch runners; use
-            :func:`~idfkit.simulation.progress_bars.tqdm_progress`
+            [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]
             with a custom per-job callback instead.
 
     Returns:
-        A :class:`BatchResult` with results in the same order as *jobs*.
+        A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the same order as *jobs*.
 
     Raises:
         ValueError: If *jobs* is empty.

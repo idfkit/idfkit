@@ -85,18 +85,22 @@ def parse_idf(
         IdfKitError: If parsing fails
 
     Examples:
-        Load and inspect a DOE reference building::
+        Load and inspect a DOE reference building:
 
+            ```python
             from idfkit import parse_idf
 
             model = parse_idf("RefBldgSmallOfficeNew2004.idf")
             for zone in model["Zone"]:
                 print(zone.name, zone.x_origin)
+            ```
 
         Force a specific EnergyPlus version when auto-detection fails
-        (e.g., a pre-v8.9 file that was manually upgraded)::
+        (e.g., a pre-v8.9 file that was manually upgraded):
 
+            ```python
             model = parse_idf("legacy_building.idf", version=(9, 6, 0))
+            ```
     """
     filepath = Path(filepath)
 
@@ -347,8 +351,9 @@ def iter_idf_objects(
 
     Examples:
         Count thermal zones without loading the full document
-        (useful for quickly sizing batch runs)::
+        (useful for quickly sizing batch runs):
 
+            ```python
             from idfkit import iter_idf_objects
 
             zone_count = sum(
@@ -356,14 +361,17 @@ def iter_idf_objects(
                 in iter_idf_objects("5ZoneAirCooled.idf")
                 if obj_type == "Zone"
             )
+            ```
 
-        Collect all material names for an audit report::
+        Collect all material names for an audit report:
 
+            ```python
             materials = [
                 name for obj_type, name, _
                 in iter_idf_objects("LargeOffice.idf")
                 if obj_type == "Material"
             ]
+            ```
     """
     filepath = Path(filepath)
 
@@ -406,12 +414,14 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
 
     Examples:
         Check which EnergyPlus version a model was created for
-        (reads only the first 10 KB for speed)::
+        (reads only the first 10 KB for speed):
 
+            ```python
             from idfkit import get_idf_version
 
             version = get_idf_version("5ZoneAirCooled.idf")
             print(f"EnergyPlus v{version[0]}.{version[1]}.{version[2]}")
+            ```
     """
     filepath = Path(filepath)
 

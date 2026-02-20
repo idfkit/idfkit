@@ -7,7 +7,7 @@ simulation.
 
 Three zoning schemes are provided:
 
-* **by_storey** - one zone per floor (the existing :func:`add_block`
+* **by_storey** - one zone per floor (the existing [add_block][idfkit.geometry_builders.add_block]
   behaviour).
 * **core_perimeter** - four orientation-based perimeter zones plus an
   interior core zone per floor.  Perimeter depth defaults to
@@ -18,8 +18,8 @@ Three zoning schemes are provided:
 Footprint helpers for common commercial shapes (rectangle, L, U, T, H,
 courtyard) are included so users never have to compute vertices by hand.
 
-Example::
-
+Examples:
+    ```python
     from idfkit import new_document
     from idfkit.zoning import (
         ZoningScheme,
@@ -37,6 +37,7 @@ Example::
         zoning=ZoningScheme.CORE_PERIMETER,
         perimeter_depth=4.57,
     )
+    ```
 """
 
 from __future__ import annotations
@@ -115,14 +116,14 @@ def footprint_l_shape(
     ``depth`` (Y).  A shorter wing extends upward from the left side
     with dimensions ``wing_width`` x ``wing_depth``.
 
-    ::
-
+        ```text
         ┌────────┐
         │  wing  │
         │        │
         ├────────┴──────────┐
         │      base         │
         └───────────────────┘
+        ```
 
     Args:
         width: Base width (X).
@@ -157,13 +158,13 @@ def footprint_u_shape(
     The overall bounding box is ``width`` x ``depth``.  A rectangular
     courtyard is cut from the top centre of the footprint.
 
-    ::
-
+        ```text
         ┌──────┐    ┌──────┐
         │      │    │      │
         │      └────┘      │
         │                  │
         └──────────────────┘
+        ```
 
     Args:
         width: Overall width (X).
@@ -205,13 +206,13 @@ def footprint_t_shape(
 
     A narrower base rectangle is centred below a wider top bar.
 
-    ::
-
+        ```text
         ┌──────────────────────┐
         │       top bar        │
         └───┐              ┌───┘
             │    base      │
             └──────────────┘
+        ```
 
     Args:
         base_width: Width of the stem (X).
@@ -249,13 +250,13 @@ def footprint_h_shape(
     Two symmetrical courtyards are cut from the left and right sides of
     the bounding rectangle.
 
-    ::
-
+        ```text
         ┌──────┐    ┌──────┐
         │      └────┘      │
         │     connector    │
         │      ┌────┐      │
         └──────┘    └──────┘
+        ```
 
     Args:
         width: Overall width (X).
@@ -306,13 +307,13 @@ def footprint_courtyard(
     the courtyard clockwise, and returns.  This is a valid simple polygon
     that EnergyPlus can handle.
 
-    ::
-
+        ```text
         ┌──────────────────┐
         │  ┌────────────┐  │
         │  │  courtyard │  │
         │  └────────────┘  │
         └──────────────────┘
+        ```
 
     Args:
         outer_width: Outer bounding box width (X).
@@ -865,8 +866,8 @@ def _apply_air_boundaries(doc: IDFDocument, created: list[IDFObject]) -> None:
 class ZonedBlock:
     """Describes a building block with a zoning strategy.
 
-    This is a pure data object.  Call :meth:`build` to realise the
-    geometry in an :class:`~idfkit.document.IDFDocument`.
+    This is a pure data object.  Call [build][] to realise the
+    geometry in an [IDFDocument][idfkit.document.IDFDocument].
 
     Attributes:
         name: Base name for zones and surfaces.
@@ -912,7 +913,7 @@ class ZonedBlock:
         """Realise the zoned geometry in the document.
 
         Returns:
-            All created :class:`~idfkit.objects.IDFObject` instances.
+            All created [IDFObject][idfkit.objects.IDFObject] instances.
         """
         fp = list(self.footprint)
 
@@ -986,11 +987,12 @@ def create_building(
             to all inter-zone walls (for open-plan spaces).
 
     Returns:
-        All created :class:`~idfkit.objects.IDFObject` instances.
+        All created [IDFObject][idfkit.objects.IDFObject] instances.
 
     Examples:
-        Core-perimeter zoning for a 3-story office::
+        Core-perimeter zoning for a 3-story office:
 
+            ```python
             from idfkit import new_document
             from idfkit.zoning import (
                 ZoningScheme,
@@ -1007,6 +1009,7 @@ def create_building(
                 num_stories=3,
                 zoning=ZoningScheme.CORE_PERIMETER,
             )
+            ```
     """
     block = ZonedBlock(
         name=name,

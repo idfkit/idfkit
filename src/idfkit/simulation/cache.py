@@ -90,7 +90,7 @@ class SimulationCache:
             extra_args: Additional command-line arguments.
 
         Returns:
-            A :class:`CacheKey` for use with :meth:`get` / :meth:`put`.
+            A [CacheKey][idfkit.simulation.cache.CacheKey] for use with [get][idfkit.simulation.cache.SimulationCache.get] / [put][idfkit.simulation.cache.SimulationCache.put].
         """
         from ..writers import write_idf
 
@@ -124,10 +124,10 @@ class SimulationCache:
         """Retrieve a cached simulation result.
 
         Args:
-            key: Cache key from :meth:`compute_key`.
+            key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].
 
         Returns:
-            A :class:`SimulationResult` if a cache hit exists, otherwise
+            A [SimulationResult][idfkit.simulation.result.SimulationResult] if a cache hit exists, otherwise
             ``None``.
         """
         entry_dir = self._cache_dir / key.hex_digest
@@ -162,7 +162,7 @@ class SimulationCache:
         directory is copied into the cache atomically.
 
         Args:
-            key: Cache key from :meth:`compute_key`.
+            key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].
             result: Successful simulation result to cache.
         """
         if not result.success:

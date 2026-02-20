@@ -58,8 +58,8 @@ def simulate(
     ``GroundHeatTransfer:Slab:*`` or ``GroundHeatTransfer:Basement:*``
     objects, the Slab and/or Basement ground heat-transfer preprocessors
     are run automatically before simulation.  This is equivalent to
-    calling :func:`~idfkit.simulation.expand.run_slab_preprocessor` or
-    :func:`~idfkit.simulation.expand.run_basement_preprocessor`
+    calling [run_slab_preprocessor][idfkit.simulation.expand.run_slab_preprocessor] or
+    [run_basement_preprocessor][idfkit.simulation.expand.run_basement_preprocessor]
     individually, but happens transparently.
 
     Args:
@@ -67,7 +67,7 @@ def simulate(
         weather: Path to the weather file (.epw).
         output_dir: Directory for output files (default: auto temp dir).
         energyplus: Pre-configured EnergyPlus installation. If None,
-            uses :func:`find_energyplus` for auto-discovery.
+            uses [find_energyplus][idfkit.simulation.config.find_energyplus] for auto-discovery.
         expand_objects: Run ExpandObjects before simulation.  When
             ``True``, also runs the Slab and Basement ground heat-transfer
             preprocessors if the model contains the corresponding objects.
@@ -87,15 +87,14 @@ def simulate(
             locally in a temp directory; results are then uploaded to
             ``output_dir`` via *fs* after execution.
 
-            .. note::
-
+            !!! note
                 The ``fs`` parameter handles **output storage only**.
                 The ``weather`` file must be a local path — remote weather
                 files are not automatically downloaded. For cloud workflows,
-                download weather files first using :class:`~idfkit.weather.WeatherDownloader`
+                download weather files first using [WeatherDownloader][idfkit.weather.WeatherDownloader]
                 or pre-stage them locally before calling ``simulate()``.
         on_progress: Optional callback invoked with a
-            :class:`~idfkit.simulation.progress.SimulationProgress` event
+            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] event
             each time EnergyPlus emits a progress line (warmup iterations,
             simulation day changes, post-processing steps, etc.).  Pass
             ``"tqdm"`` to use a built-in tqdm progress bar (requires

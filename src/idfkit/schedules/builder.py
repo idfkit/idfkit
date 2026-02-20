@@ -5,7 +5,7 @@ from simple Python inputs (constant values, hourly arrays).  These are
 the inverse of the schedule *evaluation* functions in the sibling modules.
 
 The main entry point for 8760-value arrays is
-:func:`create_compact_schedule_from_values`, which produces a single
+[create_compact_schedule_from_values][idfkit.schedules.builder.create_compact_schedule_from_values], which produces a single
 ``Schedule:Compact`` object using the EnergyPlus Compact DSL.
 """
 
@@ -96,8 +96,7 @@ def create_compact_schedule_from_values(
     a single ``Through:`` block, and consecutive hours with the same
     value are merged into a single ``Until:`` entry.
 
-    .. note::
-
+    !!! note
         All ``Through:`` blocks use ``For: AllDays``.  Day-type
         differentiation (``For: Weekdays``, ``For: Weekends``, etc.)
         is not performed — each calendar day is compared individually.
