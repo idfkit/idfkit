@@ -3647,7 +3647,7 @@ of the simulation run directory plus a <code>_cache_meta.json</code> manifest.</
 </span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">            extra_args: Additional command-line arguments.</span>
 </span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a>
 </span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">        Returns:</span>
-</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">            A :class:`CacheKey` for use with :meth:`get` / :meth:`put`.</span>
+</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">            A [CacheKey][idfkit.simulation.cache.CacheKey] for use with [get][idfkit.simulation.cache.SimulationCache.get] / [put][idfkit.simulation.cache.SimulationCache.put].</span>
 </span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a>        <span class="kn">from</span><span class="w"> </span><span class="nn">..writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_idf</span>
 </span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a>
@@ -3683,10 +3683,10 @@ of the simulation run directory plus a <code>_cache_meta.json</code> manifest.</
 </span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a cached simulation result.</span>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">            key: Cache key from :meth:`compute_key`.</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">            key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">        Returns:</span>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">            A :class:`SimulationResult` if a cache hit exists, otherwise</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">            A [SimulationResult][idfkit.simulation.result.SimulationResult] if a cache hit exists, otherwise</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">            ``None``.</span>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="n">entry_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">/</span> <span class="n">key</span><span class="o">.</span><span class="n">hex_digest</span>
@@ -3724,7 +3724,7 @@ of the simulation run directory plus a <code>_cache_meta.json</code> manifest.</
 </span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">        directory is copied into the cache atomically.</span>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>
 </span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">            key: Cache key from :meth:`compute_key`.</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">            key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].</span>
 </span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">            result: Successful simulation result to cache.</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
@@ -3857,7 +3857,7 @@ same key.</p>
                 <code>weather</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3873,7 +3873,7 @@ same key.</p>
                 <code>expand_objects</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3889,7 +3889,7 @@ same key.</p>
                 <code>annual</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3905,7 +3905,7 @@ same key.</p>
                 <code>design_day</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3921,7 +3921,7 @@ same key.</p>
                 <code>output_suffix</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;C&#39;, &#39;L&#39;, &#39;D&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;C&#39;, &#39;L&#39;, &#39;D&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3937,7 +3937,7 @@ same key.</p>
                 <code>readvars</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3953,7 +3953,7 @@ same key.</p>
                 <code>extra_args</code>
             </td>
             <td>
-                  <code><span title="list">list</span>[<span title="str">str</span>] | <span title="tuple">tuple</span>[<span title="str">str</span>, ...] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3972,13 +3972,13 @@ same key.</p>
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>A</code></td>            <td>
+            <td>
                   <code><a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.cache.CacheKey&lt;/code&gt;
 
 
@@ -3988,7 +3988,12 @@ same key.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>class:<code>CacheKey</code> for use with :meth:<code>get</code> / :meth:<code>put</code>.</p>
+                <p>A <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.cache.CacheKey&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="#idfkit.simulation.cache.CacheKey">CacheKey</a> for use with <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.simulation.cache.SimulationCache.get">get</a> / <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.simulation.cache.SimulationCache.put">put</a>.</p>
               </div>
             </td>
           </tr>
@@ -4086,7 +4091,7 @@ same key.</p>
 </span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">        extra_args: Additional command-line arguments.</span>
 </span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a>
 </span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        A :class:`CacheKey` for use with :meth:`get` / :meth:`put`.</span>
+</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        A [CacheKey][idfkit.simulation.cache.CacheKey] for use with [get][idfkit.simulation.cache.SimulationCache.get] / [put][idfkit.simulation.cache.SimulationCache.put].</span>
 </span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">..writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_idf</span>
 </span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a>
@@ -4162,7 +4167,7 @@ same key.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Cache key from :meth:<code>compute_key</code>.</p>
+                <p>Cache key from <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;compute_key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weather&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expand_objects&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;annual&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;design_day&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_suffix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;C&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readvars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;extra_args&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.simulation.cache.SimulationCache.compute_key">compute_key</a>.</p>
               </div>
             </td>
             <td>
@@ -4177,13 +4182,13 @@ same key.</p>
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>A</code></td>            <td>
+            <td>
                   <code><a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
 
 
@@ -4193,12 +4198,17 @@ same key.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>class:<code>SimulationResult</code> if a cache hit exists, otherwise</p>
+                <p>A <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../results/#idfkit.simulation.result.SimulationResult">SimulationResult</a> if a cache hit exists, otherwise</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
-<td></td>            <td>
+            <td>
                   <code><a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
 
 
@@ -4258,10 +4268,10 @@ same key.</p>
 </span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve a cached simulation result.</span>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">        key: Cache key from :meth:`compute_key`.</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">        key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">        A :class:`SimulationResult` if a cache hit exists, otherwise</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">        A [SimulationResult][idfkit.simulation.result.SimulationResult] if a cache hit exists, otherwise</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">        ``None``.</span>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span class="n">entry_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">/</span> <span class="n">key</span><span class="o">.</span><span class="n">hex_digest</span>
@@ -4338,7 +4348,7 @@ directory is copied into the cache atomically.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Cache key from :meth:<code>compute_key</code>.</p>
+                <p>Cache key from <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;compute_key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weather&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expand_objects&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;annual&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;design_day&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_suffix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;C&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readvars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;extra_args&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.simulation.cache.SimulationCache.compute_key">compute_key</a>.</p>
               </div>
             </td>
             <td>
@@ -4421,7 +4431,7 @@ directory is copied into the cache atomically.</p>
 </span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">    directory is copied into the cache atomically.</span>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>
 </span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">        key: Cache key from :meth:`compute_key`.</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">        key: Cache key from [compute_key][idfkit.simulation.cache.SimulationCache.compute_key].</span>
 </span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        result: Successful simulation result to cache.</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>

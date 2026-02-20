@@ -6567,7 +6567,8 @@ Returns 0.0 if the zone has no surfaces.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-945">945</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-944">944</a></span>
+<span class="normal"><a href="#__codelineno-0-945">945</a></span>
 <span class="normal"><a href="#__codelineno-0-946">946</a></span>
 <span class="normal"><a href="#__codelineno-0-947">947</a></span>
 <span class="normal"><a href="#__codelineno-0-948">948</a></span>
@@ -6592,34 +6593,33 @@ Returns 0.0 if the zone has no surfaces.</p>
 <span class="normal"><a href="#__codelineno-0-967">967</a></span>
 <span class="normal"><a href="#__codelineno-0-968">968</a></span>
 <span class="normal"><a href="#__codelineno-0-969">969</a></span>
-<span class="normal"><a href="#__codelineno-0-970">970</a></span>
-<span class="normal"><a href="#__codelineno-0-971">971</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-945"><a id="__codelineno-0-945" name="__codelineno-0-945"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_zone_volume</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">zone_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-</span><span id="__span-0-946"><a id="__codelineno-0-946" name="__codelineno-0-946"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-0-947"><a id="__codelineno-0-947" name="__codelineno-0-947"></a><span class="sd">    Calculate the volume of a zone from its surfaces.</span>
-</span><span id="__span-0-948"><a id="__codelineno-0-948" name="__codelineno-0-948"></a>
-</span><span id="__span-0-949"><a id="__codelineno-0-949" name="__codelineno-0-949"></a><span class="sd">    Uses the divergence theorem to compute volume from surface polygons.</span>
-</span><span id="__span-0-950"><a id="__codelineno-0-950" name="__codelineno-0-950"></a><span class="sd">    Returns 0.0 if the zone has no surfaces.</span>
-</span><span id="__span-0-951"><a id="__codelineno-0-951" name="__codelineno-0-951"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-952"><a id="__codelineno-0-952" name="__codelineno-0-952"></a>    <span class="n">volume</span> <span class="o">=</span> <span class="mf">0.0</span>
-</span><span id="__span-0-953"><a id="__codelineno-0-953" name="__codelineno-0-953"></a>
-</span><span id="__span-0-954"><a id="__codelineno-0-954" name="__codelineno-0-954"></a>    <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-955"><a id="__codelineno-0-955" name="__codelineno-0-955"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="s2">&quot;zone_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">zone_name</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
-</span><span id="__span-0-956"><a id="__codelineno-0-956" name="__codelineno-0-956"></a>            <span class="k">continue</span>
-</span><span id="__span-0-957"><a id="__codelineno-0-957" name="__codelineno-0-957"></a>
-</span><span id="__span-0-958"><a id="__codelineno-0-958" name="__codelineno-0-958"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
-</span><span id="__span-0-959"><a id="__codelineno-0-959" name="__codelineno-0-959"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-</span><span id="__span-0-960"><a id="__codelineno-0-960" name="__codelineno-0-960"></a>            <span class="k">continue</span>
-</span><span id="__span-0-961"><a id="__codelineno-0-961" name="__codelineno-0-961"></a>
-</span><span id="__span-0-962"><a id="__codelineno-0-962" name="__codelineno-0-962"></a>        <span class="c1"># Contribution to volume using signed volume of tetrahedra</span>
-</span><span id="__span-0-963"><a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="n">centroid</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">centroid</span>
-</span><span id="__span-0-964"><a id="__codelineno-0-964" name="__codelineno-0-964"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">):</span>
-</span><span id="__span-0-965"><a id="__codelineno-0-965" name="__codelineno-0-965"></a>            <span class="n">v1</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span id="__span-0-966"><a id="__codelineno-0-966" name="__codelineno-0-966"></a>            <span class="n">v2</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">]</span>
-</span><span id="__span-0-967"><a id="__codelineno-0-967" name="__codelineno-0-967"></a>
-</span><span id="__span-0-968"><a id="__codelineno-0-968" name="__codelineno-0-968"></a>            <span class="c1"># Volume of tetrahedron with origin</span>
-</span><span id="__span-0-969"><a id="__codelineno-0-969" name="__codelineno-0-969"></a>            <span class="n">volume</span> <span class="o">+=</span> <span class="n">v1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v2</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">centroid</span><span class="p">))</span> <span class="o">/</span> <span class="mf">6.0</span>
-</span><span id="__span-0-970"><a id="__codelineno-0-970" name="__codelineno-0-970"></a>
-</span><span id="__span-0-971"><a id="__codelineno-0-971" name="__codelineno-0-971"></a>    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-970">970</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-944"><a id="__codelineno-0-944" name="__codelineno-0-944"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_zone_volume</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">zone_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span id="__span-0-945"><a id="__codelineno-0-945" name="__codelineno-0-945"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-946"><a id="__codelineno-0-946" name="__codelineno-0-946"></a><span class="sd">    Calculate the volume of a zone from its surfaces.</span>
+</span><span id="__span-0-947"><a id="__codelineno-0-947" name="__codelineno-0-947"></a>
+</span><span id="__span-0-948"><a id="__codelineno-0-948" name="__codelineno-0-948"></a><span class="sd">    Uses the divergence theorem to compute volume from surface polygons.</span>
+</span><span id="__span-0-949"><a id="__codelineno-0-949" name="__codelineno-0-949"></a><span class="sd">    Returns 0.0 if the zone has no surfaces.</span>
+</span><span id="__span-0-950"><a id="__codelineno-0-950" name="__codelineno-0-950"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-951"><a id="__codelineno-0-951" name="__codelineno-0-951"></a>    <span class="n">volume</span> <span class="o">=</span> <span class="mf">0.0</span>
+</span><span id="__span-0-952"><a id="__codelineno-0-952" name="__codelineno-0-952"></a>
+</span><span id="__span-0-953"><a id="__codelineno-0-953" name="__codelineno-0-953"></a>    <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-954"><a id="__codelineno-0-954" name="__codelineno-0-954"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="s2">&quot;zone_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">zone_name</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+</span><span id="__span-0-955"><a id="__codelineno-0-955" name="__codelineno-0-955"></a>            <span class="k">continue</span>
+</span><span id="__span-0-956"><a id="__codelineno-0-956" name="__codelineno-0-956"></a>
+</span><span id="__span-0-957"><a id="__codelineno-0-957" name="__codelineno-0-957"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+</span><span id="__span-0-958"><a id="__codelineno-0-958" name="__codelineno-0-958"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+</span><span id="__span-0-959"><a id="__codelineno-0-959" name="__codelineno-0-959"></a>            <span class="k">continue</span>
+</span><span id="__span-0-960"><a id="__codelineno-0-960" name="__codelineno-0-960"></a>
+</span><span id="__span-0-961"><a id="__codelineno-0-961" name="__codelineno-0-961"></a>        <span class="c1"># Contribution to volume using signed volume of tetrahedra</span>
+</span><span id="__span-0-962"><a id="__codelineno-0-962" name="__codelineno-0-962"></a>        <span class="n">centroid</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">centroid</span>
+</span><span id="__span-0-963"><a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">):</span>
+</span><span id="__span-0-964"><a id="__codelineno-0-964" name="__codelineno-0-964"></a>            <span class="n">v1</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span id="__span-0-965"><a id="__codelineno-0-965" name="__codelineno-0-965"></a>            <span class="n">v2</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">coords</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">]</span>
+</span><span id="__span-0-966"><a id="__codelineno-0-966" name="__codelineno-0-966"></a>
+</span><span id="__span-0-967"><a id="__codelineno-0-967" name="__codelineno-0-967"></a>            <span class="c1"># Volume of tetrahedron with origin</span>
+</span><span id="__span-0-968"><a id="__codelineno-0-968" name="__codelineno-0-968"></a>            <span class="n">volume</span> <span class="o">+=</span> <span class="n">v1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v2</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">centroid</span><span class="p">))</span> <span class="o">/</span> <span class="mf">6.0</span>
+</span><span id="__span-0-969"><a id="__codelineno-0-969" name="__codelineno-0-969"></a>
+</span><span id="__span-0-970"><a id="__codelineno-0-970" name="__codelineno-0-970"></a>    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6931,18 +6931,20 @@ and centroid-distance filters to skip most comparisons quickly.</p>
           </tr>
       </tbody>
     </table>
-        <p>.. note::</p>
-<div class="language-text highlight"><pre><span></span><code>This implementation handles the common case of full-overlap
+        <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This implementation handles the common case of full-overlap
 matching (same-size surfaces on opposite sides of a shared
-wall).  Partial intersection and surface splitting are **not**
-implemented — use EnergyPlus&#39; ``ExpandObjects`` preprocessor
-or manual surface definition for complex cases.
-</code></pre></div>
+wall).  Partial intersection and surface splitting are <strong>not</strong>
+implemented — use EnergyPlus' <code>ExpandObjects</code> preprocessor
+or manual surface definition for complex cases.</p>
+</div>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1176">1176</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1175">1175</a></span>
+<span class="normal"><a href="#__codelineno-0-1176">1176</a></span>
 <span class="normal"><a href="#__codelineno-0-1177">1177</a></span>
 <span class="normal"><a href="#__codelineno-0-1178">1178</a></span>
 <span class="normal"><a href="#__codelineno-0-1179">1179</a></span>
@@ -7033,102 +7035,99 @@ or manual surface definition for complex cases.
 <span class="normal"><a href="#__codelineno-0-1264">1264</a></span>
 <span class="normal"><a href="#__codelineno-0-1265">1265</a></span>
 <span class="normal"><a href="#__codelineno-0-1266">1266</a></span>
-<span class="normal"><a href="#__codelineno-0-1267">1267</a></span>
-<span class="normal"><a href="#__codelineno-0-1268">1268</a></span>
-<span class="normal"><a href="#__codelineno-0-1269">1269</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1176"><a id="__codelineno-0-1176" name="__codelineno-0-1176"></a><span class="k">def</span><span class="w"> </span><span class="nf">intersect_match</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: C901</span>
-</span><span id="__span-0-1177"><a id="__codelineno-0-1177" name="__codelineno-0-1177"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Match adjacent surfaces and set boundary conditions.</span>
-</span><span id="__span-0-1178"><a id="__codelineno-0-1178" name="__codelineno-0-1178"></a>
-</span><span id="__span-0-1179"><a id="__codelineno-0-1179" name="__codelineno-0-1179"></a><span class="sd">    Scans all ``BuildingSurface:Detailed`` walls and identifies pairs</span>
-</span><span id="__span-0-1180"><a id="__codelineno-0-1180" name="__codelineno-0-1180"></a><span class="sd">    whose polygons are coincident (same plane, overlapping area).  For</span>
-</span><span id="__span-0-1181"><a id="__codelineno-0-1181" name="__codelineno-0-1181"></a><span class="sd">    each matched pair, the boundary conditions are updated so the</span>
-</span><span id="__span-0-1182"><a id="__codelineno-0-1182" name="__codelineno-0-1182"></a><span class="sd">    surfaces reference each other.</span>
-</span><span id="__span-0-1183"><a id="__codelineno-0-1183" name="__codelineno-0-1183"></a>
-</span><span id="__span-0-1184"><a id="__codelineno-0-1184" name="__codelineno-0-1184"></a><span class="sd">    This is the idfkit equivalent of geomeppy&#39;s</span>
-</span><span id="__span-0-1185"><a id="__codelineno-0-1185" name="__codelineno-0-1185"></a><span class="sd">    ``idf.intersect_match()``.</span>
-</span><span id="__span-0-1186"><a id="__codelineno-0-1186" name="__codelineno-0-1186"></a>
-</span><span id="__span-0-1187"><a id="__codelineno-0-1187" name="__codelineno-0-1187"></a><span class="sd">    The algorithm is O(n²) over exterior walls but uses normal-vector</span>
-</span><span id="__span-0-1188"><a id="__codelineno-0-1188" name="__codelineno-0-1188"></a><span class="sd">    and centroid-distance filters to skip most comparisons quickly.</span>
-</span><span id="__span-0-1189"><a id="__codelineno-0-1189" name="__codelineno-0-1189"></a>
-</span><span id="__span-0-1190"><a id="__codelineno-0-1190" name="__codelineno-0-1190"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-1191"><a id="__codelineno-0-1191" name="__codelineno-0-1191"></a><span class="sd">        doc: The document to modify in-place.</span>
-</span><span id="__span-0-1192"><a id="__codelineno-0-1192" name="__codelineno-0-1192"></a>
-</span><span id="__span-0-1193"><a id="__codelineno-0-1193" name="__codelineno-0-1193"></a><span class="sd">    .. note::</span>
-</span><span id="__span-0-1194"><a id="__codelineno-0-1194" name="__codelineno-0-1194"></a>
-</span><span id="__span-0-1195"><a id="__codelineno-0-1195" name="__codelineno-0-1195"></a><span class="sd">        This implementation handles the common case of full-overlap</span>
-</span><span id="__span-0-1196"><a id="__codelineno-0-1196" name="__codelineno-0-1196"></a><span class="sd">        matching (same-size surfaces on opposite sides of a shared</span>
-</span><span id="__span-0-1197"><a id="__codelineno-0-1197" name="__codelineno-0-1197"></a><span class="sd">        wall).  Partial intersection and surface splitting are **not**</span>
-</span><span id="__span-0-1198"><a id="__codelineno-0-1198" name="__codelineno-0-1198"></a><span class="sd">        implemented — use EnergyPlus&#39; ``ExpandObjects`` preprocessor</span>
-</span><span id="__span-0-1199"><a id="__codelineno-0-1199" name="__codelineno-0-1199"></a><span class="sd">        or manual surface definition for complex cases.</span>
-</span><span id="__span-0-1200"><a id="__codelineno-0-1200" name="__codelineno-0-1200"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-1201"><a id="__codelineno-0-1201" name="__codelineno-0-1201"></a>    <span class="n">walls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-0-1202"><a id="__codelineno-0-1202" name="__codelineno-0-1202"></a>    <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-1203"><a id="__codelineno-0-1203" name="__codelineno-0-1203"></a>        <span class="n">st</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="s2">&quot;surface_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
-</span><span id="__span-0-1204"><a id="__codelineno-0-1204" name="__codelineno-0-1204"></a>        <span class="k">if</span> <span class="n">st</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;WALL&quot;</span><span class="p">:</span>
-</span><span id="__span-0-1205"><a id="__codelineno-0-1205" name="__codelineno-0-1205"></a>            <span class="n">walls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
-</span><span id="__span-0-1206"><a id="__codelineno-0-1206" name="__codelineno-0-1206"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;intersect_match: checking </span><span class="si">%d</span><span class="s2"> walls&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walls</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-1267">1267</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1175"><a id="__codelineno-0-1175" name="__codelineno-0-1175"></a><span class="k">def</span><span class="w"> </span><span class="nf">intersect_match</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: C901</span>
+</span><span id="__span-0-1176"><a id="__codelineno-0-1176" name="__codelineno-0-1176"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Match adjacent surfaces and set boundary conditions.</span>
+</span><span id="__span-0-1177"><a id="__codelineno-0-1177" name="__codelineno-0-1177"></a>
+</span><span id="__span-0-1178"><a id="__codelineno-0-1178" name="__codelineno-0-1178"></a><span class="sd">    Scans all ``BuildingSurface:Detailed`` walls and identifies pairs</span>
+</span><span id="__span-0-1179"><a id="__codelineno-0-1179" name="__codelineno-0-1179"></a><span class="sd">    whose polygons are coincident (same plane, overlapping area).  For</span>
+</span><span id="__span-0-1180"><a id="__codelineno-0-1180" name="__codelineno-0-1180"></a><span class="sd">    each matched pair, the boundary conditions are updated so the</span>
+</span><span id="__span-0-1181"><a id="__codelineno-0-1181" name="__codelineno-0-1181"></a><span class="sd">    surfaces reference each other.</span>
+</span><span id="__span-0-1182"><a id="__codelineno-0-1182" name="__codelineno-0-1182"></a>
+</span><span id="__span-0-1183"><a id="__codelineno-0-1183" name="__codelineno-0-1183"></a><span class="sd">    This is the idfkit equivalent of geomeppy&#39;s</span>
+</span><span id="__span-0-1184"><a id="__codelineno-0-1184" name="__codelineno-0-1184"></a><span class="sd">    ``idf.intersect_match()``.</span>
+</span><span id="__span-0-1185"><a id="__codelineno-0-1185" name="__codelineno-0-1185"></a>
+</span><span id="__span-0-1186"><a id="__codelineno-0-1186" name="__codelineno-0-1186"></a><span class="sd">    The algorithm is O(n²) over exterior walls but uses normal-vector</span>
+</span><span id="__span-0-1187"><a id="__codelineno-0-1187" name="__codelineno-0-1187"></a><span class="sd">    and centroid-distance filters to skip most comparisons quickly.</span>
+</span><span id="__span-0-1188"><a id="__codelineno-0-1188" name="__codelineno-0-1188"></a>
+</span><span id="__span-0-1189"><a id="__codelineno-0-1189" name="__codelineno-0-1189"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-1190"><a id="__codelineno-0-1190" name="__codelineno-0-1190"></a><span class="sd">        doc: The document to modify in-place.</span>
+</span><span id="__span-0-1191"><a id="__codelineno-0-1191" name="__codelineno-0-1191"></a>
+</span><span id="__span-0-1192"><a id="__codelineno-0-1192" name="__codelineno-0-1192"></a><span class="sd">    !!! note</span>
+</span><span id="__span-0-1193"><a id="__codelineno-0-1193" name="__codelineno-0-1193"></a><span class="sd">        This implementation handles the common case of full-overlap</span>
+</span><span id="__span-0-1194"><a id="__codelineno-0-1194" name="__codelineno-0-1194"></a><span class="sd">        matching (same-size surfaces on opposite sides of a shared</span>
+</span><span id="__span-0-1195"><a id="__codelineno-0-1195" name="__codelineno-0-1195"></a><span class="sd">        wall).  Partial intersection and surface splitting are **not**</span>
+</span><span id="__span-0-1196"><a id="__codelineno-0-1196" name="__codelineno-0-1196"></a><span class="sd">        implemented — use EnergyPlus&#39; ``ExpandObjects`` preprocessor</span>
+</span><span id="__span-0-1197"><a id="__codelineno-0-1197" name="__codelineno-0-1197"></a><span class="sd">        or manual surface definition for complex cases.</span>
+</span><span id="__span-0-1198"><a id="__codelineno-0-1198" name="__codelineno-0-1198"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-1199"><a id="__codelineno-0-1199" name="__codelineno-0-1199"></a>    <span class="n">walls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-1200"><a id="__codelineno-0-1200" name="__codelineno-0-1200"></a>    <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-1201"><a id="__codelineno-0-1201" name="__codelineno-0-1201"></a>        <span class="n">st</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="s2">&quot;surface_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+</span><span id="__span-0-1202"><a id="__codelineno-0-1202" name="__codelineno-0-1202"></a>        <span class="k">if</span> <span class="n">st</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;WALL&quot;</span><span class="p">:</span>
+</span><span id="__span-0-1203"><a id="__codelineno-0-1203" name="__codelineno-0-1203"></a>            <span class="n">walls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+</span><span id="__span-0-1204"><a id="__codelineno-0-1204" name="__codelineno-0-1204"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;intersect_match: checking </span><span class="si">%d</span><span class="s2"> walls&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walls</span><span class="p">))</span>
+</span><span id="__span-0-1205"><a id="__codelineno-0-1205" name="__codelineno-0-1205"></a>
+</span><span id="__span-0-1206"><a id="__codelineno-0-1206" name="__codelineno-0-1206"></a>    <span class="n">matched</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span id="__span-0-1207"><a id="__codelineno-0-1207" name="__codelineno-0-1207"></a>
-</span><span id="__span-0-1208"><a id="__codelineno-0-1208" name="__codelineno-0-1208"></a>    <span class="n">matched</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-</span><span id="__span-0-1209"><a id="__codelineno-0-1209" name="__codelineno-0-1209"></a>
-</span><span id="__span-0-1210"><a id="__codelineno-0-1210" name="__codelineno-0-1210"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">wall_a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">walls</span><span class="p">):</span>
-</span><span id="__span-0-1211"><a id="__codelineno-0-1211" name="__codelineno-0-1211"></a>        <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">wall_a</span><span class="p">)</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
-</span><span id="__span-0-1212"><a id="__codelineno-0-1212" name="__codelineno-0-1212"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1213"><a id="__codelineno-0-1213" name="__codelineno-0-1213"></a>        <span class="n">coords_a</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall_a</span><span class="p">)</span>
-</span><span id="__span-0-1214"><a id="__codelineno-0-1214" name="__codelineno-0-1214"></a>        <span class="k">if</span> <span class="n">coords_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-1215"><a id="__codelineno-0-1215" name="__codelineno-0-1215"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1216"><a id="__codelineno-0-1216" name="__codelineno-0-1216"></a>
-</span><span id="__span-0-1217"><a id="__codelineno-0-1217" name="__codelineno-0-1217"></a>        <span class="n">normal_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">normal</span>
-</span><span id="__span-0-1218"><a id="__codelineno-0-1218" name="__codelineno-0-1218"></a>        <span class="n">centroid_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">centroid</span>
-</span><span id="__span-0-1219"><a id="__codelineno-0-1219" name="__codelineno-0-1219"></a>
-</span><span id="__span-0-1220"><a id="__codelineno-0-1220" name="__codelineno-0-1220"></a>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walls</span><span class="p">)):</span>
-</span><span id="__span-0-1221"><a id="__codelineno-0-1221" name="__codelineno-0-1221"></a>            <span class="n">wall_b</span> <span class="o">=</span> <span class="n">walls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-</span><span id="__span-0-1222"><a id="__codelineno-0-1222" name="__codelineno-0-1222"></a>            <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">wall_b</span><span class="p">)</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
-</span><span id="__span-0-1223"><a id="__codelineno-0-1223" name="__codelineno-0-1223"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1224"><a id="__codelineno-0-1224" name="__codelineno-0-1224"></a>            <span class="n">coords_b</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall_b</span><span class="p">)</span>
-</span><span id="__span-0-1225"><a id="__codelineno-0-1225" name="__codelineno-0-1225"></a>            <span class="k">if</span> <span class="n">coords_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-1226"><a id="__codelineno-0-1226" name="__codelineno-0-1226"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1227"><a id="__codelineno-0-1227" name="__codelineno-0-1227"></a>
-</span><span id="__span-0-1228"><a id="__codelineno-0-1228" name="__codelineno-0-1228"></a>            <span class="c1"># Quick filter: normals must be anti-parallel</span>
-</span><span id="__span-0-1229"><a id="__codelineno-0-1229" name="__codelineno-0-1229"></a>            <span class="n">normal_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">normal</span>
-</span><span id="__span-0-1230"><a id="__codelineno-0-1230" name="__codelineno-0-1230"></a>            <span class="n">dot</span> <span class="o">=</span> <span class="n">normal_a</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal_b</span><span class="p">)</span>
-</span><span id="__span-0-1231"><a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>            <span class="k">if</span> <span class="n">dot</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">:</span>
-</span><span id="__span-0-1232"><a id="__codelineno-0-1232" name="__codelineno-0-1232"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1233"><a id="__codelineno-0-1233" name="__codelineno-0-1233"></a>
-</span><span id="__span-0-1234"><a id="__codelineno-0-1234" name="__codelineno-0-1234"></a>            <span class="c1"># Quick filter: centroids must be close</span>
-</span><span id="__span-0-1235"><a id="__codelineno-0-1235" name="__codelineno-0-1235"></a>            <span class="n">centroid_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">centroid</span>
-</span><span id="__span-0-1236"><a id="__codelineno-0-1236" name="__codelineno-0-1236"></a>            <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">centroid_a</span> <span class="o">-</span> <span class="n">centroid_b</span><span class="p">)</span><span class="o">.</span><span class="n">length</span><span class="p">()</span>
-</span><span id="__span-0-1237"><a id="__codelineno-0-1237" name="__codelineno-0-1237"></a>            <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># Allow 1 m tolerance for thick walls</span>
-</span><span id="__span-0-1238"><a id="__codelineno-0-1238" name="__codelineno-0-1238"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1239"><a id="__codelineno-0-1239" name="__codelineno-0-1239"></a>
-</span><span id="__span-0-1240"><a id="__codelineno-0-1240" name="__codelineno-0-1240"></a>            <span class="c1"># Check coplanarity: centroid_b must lie on plane of A</span>
-</span><span id="__span-0-1241"><a id="__codelineno-0-1241" name="__codelineno-0-1241"></a>            <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">centroid_b</span> <span class="o">-</span> <span class="n">centroid_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal_a</span><span class="p">)</span>
-</span><span id="__span-0-1242"><a id="__codelineno-0-1242" name="__codelineno-0-1242"></a>            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>  <span class="c1"># Allow 0.5 m for wall thickness</span>
-</span><span id="__span-0-1243"><a id="__codelineno-0-1243" name="__codelineno-0-1243"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1244"><a id="__codelineno-0-1244" name="__codelineno-0-1244"></a>
-</span><span id="__span-0-1245"><a id="__codelineno-0-1245" name="__codelineno-0-1245"></a>            <span class="c1"># Check area similarity</span>
-</span><span id="__span-0-1246"><a id="__codelineno-0-1246" name="__codelineno-0-1246"></a>            <span class="n">area_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">area</span>
-</span><span id="__span-0-1247"><a id="__codelineno-0-1247" name="__codelineno-0-1247"></a>            <span class="n">area_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">area</span>
-</span><span id="__span-0-1248"><a id="__codelineno-0-1248" name="__codelineno-0-1248"></a>            <span class="k">if</span> <span class="n">area_a</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-</span><span id="__span-0-1249"><a id="__codelineno-0-1249" name="__codelineno-0-1249"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1250"><a id="__codelineno-0-1250" name="__codelineno-0-1250"></a>            <span class="n">ratio</span> <span class="o">=</span> <span class="n">area_b</span> <span class="o">/</span> <span class="n">area_a</span>
-</span><span id="__span-0-1251"><a id="__codelineno-0-1251" name="__codelineno-0-1251"></a>            <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mf">0.9</span> <span class="ow">or</span> <span class="n">ratio</span> <span class="o">&gt;</span> <span class="mf">1.1</span><span class="p">:</span>
-</span><span id="__span-0-1252"><a id="__codelineno-0-1252" name="__codelineno-0-1252"></a>                <span class="k">continue</span>
-</span><span id="__span-0-1253"><a id="__codelineno-0-1253" name="__codelineno-0-1253"></a>
-</span><span id="__span-0-1254"><a id="__codelineno-0-1254" name="__codelineno-0-1254"></a>            <span class="c1"># Match found — update boundary conditions</span>
-</span><span id="__span-0-1255"><a id="__codelineno-0-1255" name="__codelineno-0-1255"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">outside_boundary_condition</span> <span class="o">=</span> <span class="s2">&quot;Surface&quot;</span>
-</span><span id="__span-0-1256"><a id="__codelineno-0-1256" name="__codelineno-0-1256"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">outside_boundary_condition_object</span> <span class="o">=</span> <span class="n">wall_b</span><span class="o">.</span><span class="n">name</span>
-</span><span id="__span-0-1257"><a id="__codelineno-0-1257" name="__codelineno-0-1257"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">sun_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoSun&quot;</span>
-</span><span id="__span-0-1258"><a id="__codelineno-0-1258" name="__codelineno-0-1258"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">wind_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoWind&quot;</span>
-</span><span id="__span-0-1259"><a id="__codelineno-0-1259" name="__codelineno-0-1259"></a>
-</span><span id="__span-0-1260"><a id="__codelineno-0-1260" name="__codelineno-0-1260"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">outside_boundary_condition</span> <span class="o">=</span> <span class="s2">&quot;Surface&quot;</span>
-</span><span id="__span-0-1261"><a id="__codelineno-0-1261" name="__codelineno-0-1261"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">outside_boundary_condition_object</span> <span class="o">=</span> <span class="n">wall_a</span><span class="o">.</span><span class="n">name</span>
-</span><span id="__span-0-1262"><a id="__codelineno-0-1262" name="__codelineno-0-1262"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">sun_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoSun&quot;</span>
-</span><span id="__span-0-1263"><a id="__codelineno-0-1263" name="__codelineno-0-1263"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">wind_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoWind&quot;</span>
-</span><span id="__span-0-1264"><a id="__codelineno-0-1264" name="__codelineno-0-1264"></a>
-</span><span id="__span-0-1265"><a id="__codelineno-0-1265" name="__codelineno-0-1265"></a>            <span class="n">matched</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">wall_a</span><span class="p">))</span>
-</span><span id="__span-0-1266"><a id="__codelineno-0-1266" name="__codelineno-0-1266"></a>            <span class="n">matched</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">wall_b</span><span class="p">))</span>
-</span><span id="__span-0-1267"><a id="__codelineno-0-1267" name="__codelineno-0-1267"></a>            <span class="k">break</span>
-</span><span id="__span-0-1268"><a id="__codelineno-0-1268" name="__codelineno-0-1268"></a>
-</span><span id="__span-0-1269"><a id="__codelineno-0-1269" name="__codelineno-0-1269"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;intersect_match: matched </span><span class="si">%d</span><span class="s2"> surfaces&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">matched</span><span class="p">))</span>
+</span><span id="__span-0-1208"><a id="__codelineno-0-1208" name="__codelineno-0-1208"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">wall_a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">walls</span><span class="p">):</span>
+</span><span id="__span-0-1209"><a id="__codelineno-0-1209" name="__codelineno-0-1209"></a>        <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">wall_a</span><span class="p">)</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
+</span><span id="__span-0-1210"><a id="__codelineno-0-1210" name="__codelineno-0-1210"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1211"><a id="__codelineno-0-1211" name="__codelineno-0-1211"></a>        <span class="n">coords_a</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall_a</span><span class="p">)</span>
+</span><span id="__span-0-1212"><a id="__codelineno-0-1212" name="__codelineno-0-1212"></a>        <span class="k">if</span> <span class="n">coords_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-1213"><a id="__codelineno-0-1213" name="__codelineno-0-1213"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1214"><a id="__codelineno-0-1214" name="__codelineno-0-1214"></a>
+</span><span id="__span-0-1215"><a id="__codelineno-0-1215" name="__codelineno-0-1215"></a>        <span class="n">normal_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">normal</span>
+</span><span id="__span-0-1216"><a id="__codelineno-0-1216" name="__codelineno-0-1216"></a>        <span class="n">centroid_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">centroid</span>
+</span><span id="__span-0-1217"><a id="__codelineno-0-1217" name="__codelineno-0-1217"></a>
+</span><span id="__span-0-1218"><a id="__codelineno-0-1218" name="__codelineno-0-1218"></a>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walls</span><span class="p">)):</span>
+</span><span id="__span-0-1219"><a id="__codelineno-0-1219" name="__codelineno-0-1219"></a>            <span class="n">wall_b</span> <span class="o">=</span> <span class="n">walls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+</span><span id="__span-0-1220"><a id="__codelineno-0-1220" name="__codelineno-0-1220"></a>            <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">wall_b</span><span class="p">)</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
+</span><span id="__span-0-1221"><a id="__codelineno-0-1221" name="__codelineno-0-1221"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1222"><a id="__codelineno-0-1222" name="__codelineno-0-1222"></a>            <span class="n">coords_b</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall_b</span><span class="p">)</span>
+</span><span id="__span-0-1223"><a id="__codelineno-0-1223" name="__codelineno-0-1223"></a>            <span class="k">if</span> <span class="n">coords_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-1224"><a id="__codelineno-0-1224" name="__codelineno-0-1224"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1225"><a id="__codelineno-0-1225" name="__codelineno-0-1225"></a>
+</span><span id="__span-0-1226"><a id="__codelineno-0-1226" name="__codelineno-0-1226"></a>            <span class="c1"># Quick filter: normals must be anti-parallel</span>
+</span><span id="__span-0-1227"><a id="__codelineno-0-1227" name="__codelineno-0-1227"></a>            <span class="n">normal_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">normal</span>
+</span><span id="__span-0-1228"><a id="__codelineno-0-1228" name="__codelineno-0-1228"></a>            <span class="n">dot</span> <span class="o">=</span> <span class="n">normal_a</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal_b</span><span class="p">)</span>
+</span><span id="__span-0-1229"><a id="__codelineno-0-1229" name="__codelineno-0-1229"></a>            <span class="k">if</span> <span class="n">dot</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">:</span>
+</span><span id="__span-0-1230"><a id="__codelineno-0-1230" name="__codelineno-0-1230"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1231"><a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>
+</span><span id="__span-0-1232"><a id="__codelineno-0-1232" name="__codelineno-0-1232"></a>            <span class="c1"># Quick filter: centroids must be close</span>
+</span><span id="__span-0-1233"><a id="__codelineno-0-1233" name="__codelineno-0-1233"></a>            <span class="n">centroid_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">centroid</span>
+</span><span id="__span-0-1234"><a id="__codelineno-0-1234" name="__codelineno-0-1234"></a>            <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">centroid_a</span> <span class="o">-</span> <span class="n">centroid_b</span><span class="p">)</span><span class="o">.</span><span class="n">length</span><span class="p">()</span>
+</span><span id="__span-0-1235"><a id="__codelineno-0-1235" name="__codelineno-0-1235"></a>            <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># Allow 1 m tolerance for thick walls</span>
+</span><span id="__span-0-1236"><a id="__codelineno-0-1236" name="__codelineno-0-1236"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1237"><a id="__codelineno-0-1237" name="__codelineno-0-1237"></a>
+</span><span id="__span-0-1238"><a id="__codelineno-0-1238" name="__codelineno-0-1238"></a>            <span class="c1"># Check coplanarity: centroid_b must lie on plane of A</span>
+</span><span id="__span-0-1239"><a id="__codelineno-0-1239" name="__codelineno-0-1239"></a>            <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">centroid_b</span> <span class="o">-</span> <span class="n">centroid_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal_a</span><span class="p">)</span>
+</span><span id="__span-0-1240"><a id="__codelineno-0-1240" name="__codelineno-0-1240"></a>            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>  <span class="c1"># Allow 0.5 m for wall thickness</span>
+</span><span id="__span-0-1241"><a id="__codelineno-0-1241" name="__codelineno-0-1241"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1242"><a id="__codelineno-0-1242" name="__codelineno-0-1242"></a>
+</span><span id="__span-0-1243"><a id="__codelineno-0-1243" name="__codelineno-0-1243"></a>            <span class="c1"># Check area similarity</span>
+</span><span id="__span-0-1244"><a id="__codelineno-0-1244" name="__codelineno-0-1244"></a>            <span class="n">area_a</span> <span class="o">=</span> <span class="n">coords_a</span><span class="o">.</span><span class="n">area</span>
+</span><span id="__span-0-1245"><a id="__codelineno-0-1245" name="__codelineno-0-1245"></a>            <span class="n">area_b</span> <span class="o">=</span> <span class="n">coords_b</span><span class="o">.</span><span class="n">area</span>
+</span><span id="__span-0-1246"><a id="__codelineno-0-1246" name="__codelineno-0-1246"></a>            <span class="k">if</span> <span class="n">area_a</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+</span><span id="__span-0-1247"><a id="__codelineno-0-1247" name="__codelineno-0-1247"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1248"><a id="__codelineno-0-1248" name="__codelineno-0-1248"></a>            <span class="n">ratio</span> <span class="o">=</span> <span class="n">area_b</span> <span class="o">/</span> <span class="n">area_a</span>
+</span><span id="__span-0-1249"><a id="__codelineno-0-1249" name="__codelineno-0-1249"></a>            <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mf">0.9</span> <span class="ow">or</span> <span class="n">ratio</span> <span class="o">&gt;</span> <span class="mf">1.1</span><span class="p">:</span>
+</span><span id="__span-0-1250"><a id="__codelineno-0-1250" name="__codelineno-0-1250"></a>                <span class="k">continue</span>
+</span><span id="__span-0-1251"><a id="__codelineno-0-1251" name="__codelineno-0-1251"></a>
+</span><span id="__span-0-1252"><a id="__codelineno-0-1252" name="__codelineno-0-1252"></a>            <span class="c1"># Match found — update boundary conditions</span>
+</span><span id="__span-0-1253"><a id="__codelineno-0-1253" name="__codelineno-0-1253"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">outside_boundary_condition</span> <span class="o">=</span> <span class="s2">&quot;Surface&quot;</span>
+</span><span id="__span-0-1254"><a id="__codelineno-0-1254" name="__codelineno-0-1254"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">outside_boundary_condition_object</span> <span class="o">=</span> <span class="n">wall_b</span><span class="o">.</span><span class="n">name</span>
+</span><span id="__span-0-1255"><a id="__codelineno-0-1255" name="__codelineno-0-1255"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">sun_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoSun&quot;</span>
+</span><span id="__span-0-1256"><a id="__codelineno-0-1256" name="__codelineno-0-1256"></a>            <span class="n">wall_a</span><span class="o">.</span><span class="n">wind_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoWind&quot;</span>
+</span><span id="__span-0-1257"><a id="__codelineno-0-1257" name="__codelineno-0-1257"></a>
+</span><span id="__span-0-1258"><a id="__codelineno-0-1258" name="__codelineno-0-1258"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">outside_boundary_condition</span> <span class="o">=</span> <span class="s2">&quot;Surface&quot;</span>
+</span><span id="__span-0-1259"><a id="__codelineno-0-1259" name="__codelineno-0-1259"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">outside_boundary_condition_object</span> <span class="o">=</span> <span class="n">wall_a</span><span class="o">.</span><span class="n">name</span>
+</span><span id="__span-0-1260"><a id="__codelineno-0-1260" name="__codelineno-0-1260"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">sun_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoSun&quot;</span>
+</span><span id="__span-0-1261"><a id="__codelineno-0-1261" name="__codelineno-0-1261"></a>            <span class="n">wall_b</span><span class="o">.</span><span class="n">wind_exposure</span> <span class="o">=</span> <span class="s2">&quot;NoWind&quot;</span>
+</span><span id="__span-0-1262"><a id="__codelineno-0-1262" name="__codelineno-0-1262"></a>
+</span><span id="__span-0-1263"><a id="__codelineno-0-1263" name="__codelineno-0-1263"></a>            <span class="n">matched</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">wall_a</span><span class="p">))</span>
+</span><span id="__span-0-1264"><a id="__codelineno-0-1264" name="__codelineno-0-1264"></a>            <span class="n">matched</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">wall_b</span><span class="p">))</span>
+</span><span id="__span-0-1265"><a id="__codelineno-0-1265" name="__codelineno-0-1265"></a>            <span class="k">break</span>
+</span><span id="__span-0-1266"><a id="__codelineno-0-1266" name="__codelineno-0-1266"></a>
+</span><span id="__span-0-1267"><a id="__codelineno-0-1267" name="__codelineno-0-1267"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;intersect_match: matched </span><span class="si">%d</span><span class="s2"> surfaces&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">matched</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7183,7 +7182,7 @@ or manual surface definition for complex cases.
                 <code>angle_deg</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7223,7 +7222,8 @@ is used.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-922">922</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-921">921</a></span>
+<span class="normal"><a href="#__codelineno-0-922">922</a></span>
 <span class="normal"><a href="#__codelineno-0-923">923</a></span>
 <span class="normal"><a href="#__codelineno-0-924">924</a></span>
 <span class="normal"><a href="#__codelineno-0-925">925</a></span>
@@ -7242,28 +7242,27 @@ is used.</p>
 <span class="normal"><a href="#__codelineno-0-938">938</a></span>
 <span class="normal"><a href="#__codelineno-0-939">939</a></span>
 <span class="normal"><a href="#__codelineno-0-940">940</a></span>
-<span class="normal"><a href="#__codelineno-0-941">941</a></span>
-<span class="normal"><a href="#__codelineno-0-942">942</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-922"><a id="__codelineno-0-922" name="__codelineno-0-922"></a><span class="k">def</span><span class="w"> </span><span class="nf">rotate_building</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">angle_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">anchor</span><span class="p">:</span> <span class="n">Vector3D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-923"><a id="__codelineno-0-923" name="__codelineno-0-923"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotate all building surfaces around the Z axis.</span>
-</span><span id="__span-0-924"><a id="__codelineno-0-924" name="__codelineno-0-924"></a>
-</span><span id="__span-0-925"><a id="__codelineno-0-925" name="__codelineno-0-925"></a><span class="sd">    Only vertex coordinates are modified; ``Building.north_axis`` and</span>
-</span><span id="__span-0-926"><a id="__codelineno-0-926" name="__codelineno-0-926"></a><span class="sd">    ``Zone`` rotation fields are **not** updated.</span>
-</span><span id="__span-0-927"><a id="__codelineno-0-927" name="__codelineno-0-927"></a>
-</span><span id="__span-0-928"><a id="__codelineno-0-928" name="__codelineno-0-928"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-929"><a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="sd">        doc: The document to modify in-place.</span>
-</span><span id="__span-0-930"><a id="__codelineno-0-930" name="__codelineno-0-930"></a><span class="sd">        angle_deg: Rotation angle in degrees (positive = counter-clockwise when</span>
-</span><span id="__span-0-931"><a id="__codelineno-0-931" name="__codelineno-0-931"></a><span class="sd">            viewed from above).</span>
-</span><span id="__span-0-932"><a id="__codelineno-0-932" name="__codelineno-0-932"></a><span class="sd">        anchor: Point to rotate around.  If ``None``, the origin ``(0, 0, 0)``</span>
-</span><span id="__span-0-933"><a id="__codelineno-0-933" name="__codelineno-0-933"></a><span class="sd">            is used.</span>
-</span><span id="__span-0-934"><a id="__codelineno-0-934" name="__codelineno-0-934"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-935"><a id="__codelineno-0-935" name="__codelineno-0-935"></a>    <span class="k">if</span> <span class="n">anchor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-936"><a id="__codelineno-0-936" name="__codelineno-0-936"></a>        <span class="n">anchor</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="o">.</span><span class="n">origin</span><span class="p">()</span>
-</span><span id="__span-0-937"><a id="__codelineno-0-937" name="__codelineno-0-937"></a>
-</span><span id="__span-0-938"><a id="__codelineno-0-938" name="__codelineno-0-938"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
-</span><span id="__span-0-939"><a id="__codelineno-0-939" name="__codelineno-0-939"></a>        <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
-</span><span id="__span-0-940"><a id="__codelineno-0-940" name="__codelineno-0-940"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
-</span><span id="__span-0-941"><a id="__codelineno-0-941" name="__codelineno-0-941"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-942"><a id="__codelineno-0-942" name="__codelineno-0-942"></a>                <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">rotate_z</span><span class="p">(</span><span class="n">angle_deg</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="n">anchor</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-941">941</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-921"><a id="__codelineno-0-921" name="__codelineno-0-921"></a><span class="k">def</span><span class="w"> </span><span class="nf">rotate_building</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">angle_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">anchor</span><span class="p">:</span> <span class="n">Vector3D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-922"><a id="__codelineno-0-922" name="__codelineno-0-922"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotate all building surfaces around the Z axis.</span>
+</span><span id="__span-0-923"><a id="__codelineno-0-923" name="__codelineno-0-923"></a>
+</span><span id="__span-0-924"><a id="__codelineno-0-924" name="__codelineno-0-924"></a><span class="sd">    Only vertex coordinates are modified; ``Building.north_axis`` and</span>
+</span><span id="__span-0-925"><a id="__codelineno-0-925" name="__codelineno-0-925"></a><span class="sd">    ``Zone`` rotation fields are **not** updated.</span>
+</span><span id="__span-0-926"><a id="__codelineno-0-926" name="__codelineno-0-926"></a>
+</span><span id="__span-0-927"><a id="__codelineno-0-927" name="__codelineno-0-927"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-928"><a id="__codelineno-0-928" name="__codelineno-0-928"></a><span class="sd">        doc: The document to modify in-place.</span>
+</span><span id="__span-0-929"><a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="sd">        angle_deg: Rotation angle in degrees (positive = counter-clockwise when</span>
+</span><span id="__span-0-930"><a id="__codelineno-0-930" name="__codelineno-0-930"></a><span class="sd">            viewed from above).</span>
+</span><span id="__span-0-931"><a id="__codelineno-0-931" name="__codelineno-0-931"></a><span class="sd">        anchor: Point to rotate around.  If ``None``, the origin ``(0, 0, 0)``</span>
+</span><span id="__span-0-932"><a id="__codelineno-0-932" name="__codelineno-0-932"></a><span class="sd">            is used.</span>
+</span><span id="__span-0-933"><a id="__codelineno-0-933" name="__codelineno-0-933"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-934"><a id="__codelineno-0-934" name="__codelineno-0-934"></a>    <span class="k">if</span> <span class="n">anchor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-935"><a id="__codelineno-0-935" name="__codelineno-0-935"></a>        <span class="n">anchor</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="o">.</span><span class="n">origin</span><span class="p">()</span>
+</span><span id="__span-0-936"><a id="__codelineno-0-936" name="__codelineno-0-936"></a>
+</span><span id="__span-0-937"><a id="__codelineno-0-937" name="__codelineno-0-937"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
+</span><span id="__span-0-938"><a id="__codelineno-0-938" name="__codelineno-0-938"></a>        <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
+</span><span id="__span-0-939"><a id="__codelineno-0-939" name="__codelineno-0-939"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+</span><span id="__span-0-940"><a id="__codelineno-0-940" name="__codelineno-0-940"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-941"><a id="__codelineno-0-941" name="__codelineno-0-941"></a>                <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">rotate_z</span><span class="p">(</span><span class="n">angle_deg</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="n">anchor</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7433,7 +7432,7 @@ removed first.</p>
                 <code>wwr</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7449,7 +7448,7 @@ removed first.</p>
                 <code>construction</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7467,7 +7466,7 @@ require it to be set before simulation).</p>
                 <code>surface_type</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7484,7 +7483,7 @@ insensitive) are considered.  Defaults to <code>"Wall"</code>.</p>
                 <code>orientation</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7502,7 +7501,7 @@ walls within <em>tolerance</em> degrees of that azimuth are modified.</p>
                 <code>tolerance</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7529,7 +7528,7 @@ given.  Defaults to 10°.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7552,7 +7551,7 @@ given.  Defaults to 10°.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="ValueError">ValueError</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7566,7 +7565,8 @@ given.  Defaults to 10°.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-979"> 979</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-978"> 978</a></span>
+<span class="normal"><a href="#__codelineno-0-979"> 979</a></span>
 <span class="normal"><a href="#__codelineno-0-980"> 980</a></span>
 <span class="normal"><a href="#__codelineno-0-981"> 981</a></span>
 <span class="normal"><a href="#__codelineno-0-982"> 982</a></span>
@@ -7659,102 +7659,101 @@ given.  Defaults to 10°.</p>
 <span class="normal"><a href="#__codelineno-0-1069">1069</a></span>
 <span class="normal"><a href="#__codelineno-0-1070">1070</a></span>
 <span class="normal"><a href="#__codelineno-0-1071">1071</a></span>
-<span class="normal"><a href="#__codelineno-0-1072">1072</a></span>
-<span class="normal"><a href="#__codelineno-0-1073">1073</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-979"><a id="__codelineno-0-979" name="__codelineno-0-979"></a><span class="k">def</span><span class="w"> </span><span class="nf">set_wwr</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
-</span><span id="__span-0-980"><a id="__codelineno-0-980" name="__codelineno-0-980"></a>    <span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span>
-</span><span id="__span-0-981"><a id="__codelineno-0-981" name="__codelineno-0-981"></a>    <span class="n">wwr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-</span><span id="__span-0-982"><a id="__codelineno-0-982" name="__codelineno-0-982"></a>    <span class="o">*</span><span class="p">,</span>
-</span><span id="__span-0-983"><a id="__codelineno-0-983" name="__codelineno-0-983"></a>    <span class="n">construction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-984"><a id="__codelineno-0-984" name="__codelineno-0-984"></a>    <span class="n">surface_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Wall&quot;</span><span class="p">,</span>
-</span><span id="__span-0-985"><a id="__codelineno-0-985" name="__codelineno-0-985"></a>    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-986"><a id="__codelineno-0-986" name="__codelineno-0-986"></a>    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
-</span><span id="__span-0-987"><a id="__codelineno-0-987" name="__codelineno-0-987"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]:</span>
-</span><span id="__span-0-988"><a id="__codelineno-0-988" name="__codelineno-0-988"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Add or replace windows to achieve a target window-wall ratio.</span>
-</span><span id="__span-0-989"><a id="__codelineno-0-989" name="__codelineno-0-989"></a>
-</span><span id="__span-0-990"><a id="__codelineno-0-990" name="__codelineno-0-990"></a><span class="sd">    For each exterior wall matching the filter criteria, a single</span>
-</span><span id="__span-0-991"><a id="__codelineno-0-991" name="__codelineno-0-991"></a><span class="sd">    rectangular sub-surface (``FenestrationSurface:Detailed``) is</span>
-</span><span id="__span-0-992"><a id="__codelineno-0-992" name="__codelineno-0-992"></a><span class="sd">    created whose area equals ``wwr * wall_area``.  Any existing</span>
-</span><span id="__span-0-993"><a id="__codelineno-0-993" name="__codelineno-0-993"></a><span class="sd">    ``FenestrationSurface:Detailed`` sub-surfaces on matching walls are</span>
-</span><span id="__span-0-994"><a id="__codelineno-0-994" name="__codelineno-0-994"></a><span class="sd">    removed first.</span>
-</span><span id="__span-0-995"><a id="__codelineno-0-995" name="__codelineno-0-995"></a>
-</span><span id="__span-0-996"><a id="__codelineno-0-996" name="__codelineno-0-996"></a><span class="sd">    This is the idfkit equivalent of geomeppy&#39;s ``idf.set_wwr()``.</span>
-</span><span id="__span-0-997"><a id="__codelineno-0-997" name="__codelineno-0-997"></a>
-</span><span id="__span-0-998"><a id="__codelineno-0-998" name="__codelineno-0-998"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-999"><a id="__codelineno-0-999" name="__codelineno-0-999"></a><span class="sd">        doc: The document to modify in-place.</span>
-</span><span id="__span-0-1000"><a id="__codelineno-0-1000" name="__codelineno-0-1000"></a><span class="sd">        wwr: Target window-wall ratio in the range ``(0, 1)``.</span>
-</span><span id="__span-0-1001"><a id="__codelineno-0-1001" name="__codelineno-0-1001"></a><span class="sd">        construction: Name of the window ``Construction`` to assign.</span>
-</span><span id="__span-0-1002"><a id="__codelineno-0-1002" name="__codelineno-0-1002"></a><span class="sd">            If ``None``, the field is left empty (EnergyPlus will</span>
-</span><span id="__span-0-1003"><a id="__codelineno-0-1003" name="__codelineno-0-1003"></a><span class="sd">            require it to be set before simulation).</span>
-</span><span id="__span-0-1004"><a id="__codelineno-0-1004" name="__codelineno-0-1004"></a><span class="sd">        surface_type: Only walls whose ``surface_type`` matches (case-</span>
-</span><span id="__span-0-1005"><a id="__codelineno-0-1005" name="__codelineno-0-1005"></a><span class="sd">            insensitive) are considered.  Defaults to ``&quot;Wall&quot;``.</span>
-</span><span id="__span-0-1006"><a id="__codelineno-0-1006" name="__codelineno-0-1006"></a><span class="sd">        orientation: Optional cardinal direction filter — one of</span>
-</span><span id="__span-0-1007"><a id="__codelineno-0-1007" name="__codelineno-0-1007"></a><span class="sd">            ``&quot;north&quot;``, ``&quot;south&quot;``, ``&quot;east&quot;``, ``&quot;west&quot;``.  Only</span>
-</span><span id="__span-0-1008"><a id="__codelineno-0-1008" name="__codelineno-0-1008"></a><span class="sd">            walls within *tolerance* degrees of that azimuth are modified.</span>
-</span><span id="__span-0-1009"><a id="__codelineno-0-1009" name="__codelineno-0-1009"></a><span class="sd">        tolerance: Azimuth tolerance in degrees when *orientation* is</span>
-</span><span id="__span-0-1010"><a id="__codelineno-0-1010" name="__codelineno-0-1010"></a><span class="sd">            given.  Defaults to 10°.</span>
-</span><span id="__span-0-1011"><a id="__codelineno-0-1011" name="__codelineno-0-1011"></a>
-</span><span id="__span-0-1012"><a id="__codelineno-0-1012" name="__codelineno-0-1012"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-1013"><a id="__codelineno-0-1013" name="__codelineno-0-1013"></a><span class="sd">        List of newly created ``FenestrationSurface:Detailed`` objects.</span>
-</span><span id="__span-0-1014"><a id="__codelineno-0-1014" name="__codelineno-0-1014"></a>
-</span><span id="__span-0-1015"><a id="__codelineno-0-1015" name="__codelineno-0-1015"></a><span class="sd">    Raises:</span>
-</span><span id="__span-0-1016"><a id="__codelineno-0-1016" name="__codelineno-0-1016"></a><span class="sd">        ValueError: If *wwr* is not in ``(0, 1)``.</span>
-</span><span id="__span-0-1017"><a id="__codelineno-0-1017" name="__codelineno-0-1017"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-1018"><a id="__codelineno-0-1018" name="__codelineno-0-1018"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">wwr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-</span><span id="__span-0-1019"><a id="__codelineno-0-1019" name="__codelineno-0-1019"></a>        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wwr must be between 0 and 1 (exclusive), got </span><span class="si">{</span><span class="n">wwr</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-0-1020"><a id="__codelineno-0-1020" name="__codelineno-0-1020"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-</span><span id="__span-0-1021"><a id="__codelineno-0-1021" name="__codelineno-0-1021"></a>
-</span><span id="__span-0-1022"><a id="__codelineno-0-1022" name="__codelineno-0-1022"></a>    <span class="n">azimuth_target</span> <span class="o">=</span> <span class="n">_orientation_to_azimuth</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span> <span class="k">if</span> <span class="n">orientation</span> <span class="k">else</span> <span class="kc">None</span>
-</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023"></a>
-</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024"></a>    <span class="c1"># Remove existing fenestration on matching walls</span>
-</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025"></a>    <span class="n">existing_fen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026"></a>    <span class="n">wall_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-</span><span id="__span-0-1027"><a id="__codelineno-0-1027" name="__codelineno-0-1027"></a>    <span class="k">for</span> <span class="n">wall</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">_wall_matches</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">azimuth_target</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
-</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030"></a>        <span class="n">wall_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
-</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031"></a>
-</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032"></a>    <span class="k">for</span> <span class="n">fen</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;FenestrationSurface:Detailed&quot;</span><span class="p">]):</span>
-</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033"></a>        <span class="n">bsn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fen</span><span class="p">,</span> <span class="s2">&quot;building_surface_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
-</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034"></a>        <span class="k">if</span> <span class="n">bsn</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="n">wall_names</span><span class="p">:</span>
-</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035"></a>            <span class="n">existing_fen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
-</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036"></a>    <span class="k">for</span> <span class="n">fen</span> <span class="ow">in</span> <span class="n">existing_fen</span><span class="p">:</span>
-</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037"></a>        <span class="n">doc</span><span class="o">.</span><span class="n">removeidfobject</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
-</span><span id="__span-0-1038"><a id="__codelineno-0-1038" name="__codelineno-0-1038"></a>
-</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039"></a>    <span class="c1"># Create new windows</span>
-</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040"></a>    <span class="n">new_windows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-0-1041"><a id="__codelineno-0-1041" name="__codelineno-0-1041"></a>    <span class="k">for</span> <span class="n">wall</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">_wall_matches</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">azimuth_target</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
-</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044"></a>        <span class="n">obc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="s2">&quot;outside_boundary_condition&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
-</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045"></a>        <span class="k">if</span> <span class="n">obc</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;OUTDOORS&quot;</span><span class="p">:</span>
-</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047"></a>
-</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall</span><span class="p">)</span>
-</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coords</span><span class="o">.</span><span class="n">area</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>
-</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>        <span class="n">window_poly</span> <span class="o">=</span> <span class="n">_inset_polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">wwr</span><span class="p">)</span>
-</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>        <span class="k">if</span> <span class="n">window_poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>            <span class="k">continue</span>
-</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>
-</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>        <span class="n">win_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_Window&quot;</span>
-</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>        <span class="n">win_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>            <span class="s2">&quot;surface_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Window&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1059"><a id="__codelineno-0-1059" name="__codelineno-0-1059"></a>            <span class="s2">&quot;building_surface_name&quot;</span><span class="p">:</span> <span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-</span><span id="__span-0-1060"><a id="__codelineno-0-1060" name="__codelineno-0-1060"></a>            <span class="s2">&quot;number_of_vertices&quot;</span><span class="p">:</span> <span class="n">window_poly</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">,</span>
-</span><span id="__span-0-1061"><a id="__codelineno-0-1061" name="__codelineno-0-1061"></a>        <span class="p">}</span>
-</span><span id="__span-0-1062"><a id="__codelineno-0-1062" name="__codelineno-0-1062"></a>        <span class="k">if</span> <span class="n">construction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-1063"><a id="__codelineno-0-1063" name="__codelineno-0-1063"></a>            <span class="n">win_data</span><span class="p">[</span><span class="s2">&quot;construction_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">construction</span>
-</span><span id="__span-0-1064"><a id="__codelineno-0-1064" name="__codelineno-0-1064"></a>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">window_poly</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_x_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_y_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-</span><span id="__span-0-1067"><a id="__codelineno-0-1067" name="__codelineno-0-1067"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_z_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-</span><span id="__span-0-1068"><a id="__codelineno-0-1068" name="__codelineno-0-1068"></a>
-</span><span id="__span-0-1069"><a id="__codelineno-0-1069" name="__codelineno-0-1069"></a>        <span class="n">win_obj</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;FenestrationSurface:Detailed&quot;</span><span class="p">,</span> <span class="n">win_name</span><span class="p">,</span> <span class="n">win_data</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-0-1070"><a id="__codelineno-0-1070" name="__codelineno-0-1070"></a>        <span class="n">new_windows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">win_obj</span><span class="p">)</span>
-</span><span id="__span-0-1071"><a id="__codelineno-0-1071" name="__codelineno-0-1071"></a>
-</span><span id="__span-0-1072"><a id="__codelineno-0-1072" name="__codelineno-0-1072"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;set_wwr: created </span><span class="si">%d</span><span class="s2"> windows at target ratio </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_windows</span><span class="p">),</span> <span class="n">wwr</span><span class="p">)</span>
-</span><span id="__span-0-1073"><a id="__codelineno-0-1073" name="__codelineno-0-1073"></a>    <span class="k">return</span> <span class="n">new_windows</span>
+<span class="normal"><a href="#__codelineno-0-1072">1072</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-978"><a id="__codelineno-0-978" name="__codelineno-0-978"></a><span class="k">def</span><span class="w"> </span><span class="nf">set_wwr</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+</span><span id="__span-0-979"><a id="__codelineno-0-979" name="__codelineno-0-979"></a>    <span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span>
+</span><span id="__span-0-980"><a id="__codelineno-0-980" name="__codelineno-0-980"></a>    <span class="n">wwr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+</span><span id="__span-0-981"><a id="__codelineno-0-981" name="__codelineno-0-981"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-982"><a id="__codelineno-0-982" name="__codelineno-0-982"></a>    <span class="n">construction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-983"><a id="__codelineno-0-983" name="__codelineno-0-983"></a>    <span class="n">surface_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Wall&quot;</span><span class="p">,</span>
+</span><span id="__span-0-984"><a id="__codelineno-0-984" name="__codelineno-0-984"></a>    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-985"><a id="__codelineno-0-985" name="__codelineno-0-985"></a>    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+</span><span id="__span-0-986"><a id="__codelineno-0-986" name="__codelineno-0-986"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]:</span>
+</span><span id="__span-0-987"><a id="__codelineno-0-987" name="__codelineno-0-987"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Add or replace windows to achieve a target window-wall ratio.</span>
+</span><span id="__span-0-988"><a id="__codelineno-0-988" name="__codelineno-0-988"></a>
+</span><span id="__span-0-989"><a id="__codelineno-0-989" name="__codelineno-0-989"></a><span class="sd">    For each exterior wall matching the filter criteria, a single</span>
+</span><span id="__span-0-990"><a id="__codelineno-0-990" name="__codelineno-0-990"></a><span class="sd">    rectangular sub-surface (``FenestrationSurface:Detailed``) is</span>
+</span><span id="__span-0-991"><a id="__codelineno-0-991" name="__codelineno-0-991"></a><span class="sd">    created whose area equals ``wwr * wall_area``.  Any existing</span>
+</span><span id="__span-0-992"><a id="__codelineno-0-992" name="__codelineno-0-992"></a><span class="sd">    ``FenestrationSurface:Detailed`` sub-surfaces on matching walls are</span>
+</span><span id="__span-0-993"><a id="__codelineno-0-993" name="__codelineno-0-993"></a><span class="sd">    removed first.</span>
+</span><span id="__span-0-994"><a id="__codelineno-0-994" name="__codelineno-0-994"></a>
+</span><span id="__span-0-995"><a id="__codelineno-0-995" name="__codelineno-0-995"></a><span class="sd">    This is the idfkit equivalent of geomeppy&#39;s ``idf.set_wwr()``.</span>
+</span><span id="__span-0-996"><a id="__codelineno-0-996" name="__codelineno-0-996"></a>
+</span><span id="__span-0-997"><a id="__codelineno-0-997" name="__codelineno-0-997"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-998"><a id="__codelineno-0-998" name="__codelineno-0-998"></a><span class="sd">        doc: The document to modify in-place.</span>
+</span><span id="__span-0-999"><a id="__codelineno-0-999" name="__codelineno-0-999"></a><span class="sd">        wwr: Target window-wall ratio in the range ``(0, 1)``.</span>
+</span><span id="__span-0-1000"><a id="__codelineno-0-1000" name="__codelineno-0-1000"></a><span class="sd">        construction: Name of the window ``Construction`` to assign.</span>
+</span><span id="__span-0-1001"><a id="__codelineno-0-1001" name="__codelineno-0-1001"></a><span class="sd">            If ``None``, the field is left empty (EnergyPlus will</span>
+</span><span id="__span-0-1002"><a id="__codelineno-0-1002" name="__codelineno-0-1002"></a><span class="sd">            require it to be set before simulation).</span>
+</span><span id="__span-0-1003"><a id="__codelineno-0-1003" name="__codelineno-0-1003"></a><span class="sd">        surface_type: Only walls whose ``surface_type`` matches (case-</span>
+</span><span id="__span-0-1004"><a id="__codelineno-0-1004" name="__codelineno-0-1004"></a><span class="sd">            insensitive) are considered.  Defaults to ``&quot;Wall&quot;``.</span>
+</span><span id="__span-0-1005"><a id="__codelineno-0-1005" name="__codelineno-0-1005"></a><span class="sd">        orientation: Optional cardinal direction filter — one of</span>
+</span><span id="__span-0-1006"><a id="__codelineno-0-1006" name="__codelineno-0-1006"></a><span class="sd">            ``&quot;north&quot;``, ``&quot;south&quot;``, ``&quot;east&quot;``, ``&quot;west&quot;``.  Only</span>
+</span><span id="__span-0-1007"><a id="__codelineno-0-1007" name="__codelineno-0-1007"></a><span class="sd">            walls within *tolerance* degrees of that azimuth are modified.</span>
+</span><span id="__span-0-1008"><a id="__codelineno-0-1008" name="__codelineno-0-1008"></a><span class="sd">        tolerance: Azimuth tolerance in degrees when *orientation* is</span>
+</span><span id="__span-0-1009"><a id="__codelineno-0-1009" name="__codelineno-0-1009"></a><span class="sd">            given.  Defaults to 10°.</span>
+</span><span id="__span-0-1010"><a id="__codelineno-0-1010" name="__codelineno-0-1010"></a>
+</span><span id="__span-0-1011"><a id="__codelineno-0-1011" name="__codelineno-0-1011"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-1012"><a id="__codelineno-0-1012" name="__codelineno-0-1012"></a><span class="sd">        List of newly created ``FenestrationSurface:Detailed`` objects.</span>
+</span><span id="__span-0-1013"><a id="__codelineno-0-1013" name="__codelineno-0-1013"></a>
+</span><span id="__span-0-1014"><a id="__codelineno-0-1014" name="__codelineno-0-1014"></a><span class="sd">    Raises:</span>
+</span><span id="__span-0-1015"><a id="__codelineno-0-1015" name="__codelineno-0-1015"></a><span class="sd">        ValueError: If *wwr* is not in ``(0, 1)``.</span>
+</span><span id="__span-0-1016"><a id="__codelineno-0-1016" name="__codelineno-0-1016"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-1017"><a id="__codelineno-0-1017" name="__codelineno-0-1017"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">wwr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="__span-0-1018"><a id="__codelineno-0-1018" name="__codelineno-0-1018"></a>        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wwr must be between 0 and 1 (exclusive), got </span><span class="si">{</span><span class="n">wwr</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-0-1019"><a id="__codelineno-0-1019" name="__codelineno-0-1019"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</span><span id="__span-0-1020"><a id="__codelineno-0-1020" name="__codelineno-0-1020"></a>
+</span><span id="__span-0-1021"><a id="__codelineno-0-1021" name="__codelineno-0-1021"></a>    <span class="n">azimuth_target</span> <span class="o">=</span> <span class="n">_orientation_to_azimuth</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span> <span class="k">if</span> <span class="n">orientation</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span id="__span-0-1022"><a id="__codelineno-0-1022" name="__codelineno-0-1022"></a>
+</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023"></a>    <span class="c1"># Remove existing fenestration on matching walls</span>
+</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024"></a>    <span class="n">existing_fen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025"></a>    <span class="n">wall_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026"></a>    <span class="k">for</span> <span class="n">wall</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-1027"><a id="__codelineno-0-1027" name="__codelineno-0-1027"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">_wall_matches</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">azimuth_target</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+</span><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029"></a>        <span class="n">wall_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030"></a>
+</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031"></a>    <span class="k">for</span> <span class="n">fen</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;FenestrationSurface:Detailed&quot;</span><span class="p">]):</span>
+</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032"></a>        <span class="n">bsn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fen</span><span class="p">,</span> <span class="s2">&quot;building_surface_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033"></a>        <span class="k">if</span> <span class="n">bsn</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="n">wall_names</span><span class="p">:</span>
+</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034"></a>            <span class="n">existing_fen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
+</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035"></a>    <span class="k">for</span> <span class="n">fen</span> <span class="ow">in</span> <span class="n">existing_fen</span><span class="p">:</span>
+</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036"></a>        <span class="n">doc</span><span class="o">.</span><span class="n">removeidfobject</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
+</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037"></a>
+</span><span id="__span-0-1038"><a id="__codelineno-0-1038" name="__codelineno-0-1038"></a>    <span class="c1"># Create new windows</span>
+</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039"></a>    <span class="n">new_windows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IDFObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040"></a>    <span class="k">for</span> <span class="n">wall</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-1041"><a id="__codelineno-0-1041" name="__codelineno-0-1041"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">_wall_matches</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">azimuth_target</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043"></a>        <span class="n">obc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wall</span><span class="p">,</span> <span class="s2">&quot;outside_boundary_condition&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044"></a>        <span class="k">if</span> <span class="n">obc</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;OUTDOORS&quot;</span><span class="p">:</span>
+</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046"></a>
+</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">wall</span><span class="p">)</span>
+</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coords</span><span class="o">.</span><span class="n">area</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>
+</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>        <span class="n">window_poly</span> <span class="o">=</span> <span class="n">_inset_polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">wwr</span><span class="p">)</span>
+</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>        <span class="k">if</span> <span class="n">window_poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>            <span class="k">continue</span>
+</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>
+</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>        <span class="n">win_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_Window&quot;</span>
+</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>        <span class="n">win_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>            <span class="s2">&quot;surface_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Window&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>            <span class="s2">&quot;building_surface_name&quot;</span><span class="p">:</span> <span class="n">wall</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+</span><span id="__span-0-1059"><a id="__codelineno-0-1059" name="__codelineno-0-1059"></a>            <span class="s2">&quot;number_of_vertices&quot;</span><span class="p">:</span> <span class="n">window_poly</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">,</span>
+</span><span id="__span-0-1060"><a id="__codelineno-0-1060" name="__codelineno-0-1060"></a>        <span class="p">}</span>
+</span><span id="__span-0-1061"><a id="__codelineno-0-1061" name="__codelineno-0-1061"></a>        <span class="k">if</span> <span class="n">construction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-1062"><a id="__codelineno-0-1062" name="__codelineno-0-1062"></a>            <span class="n">win_data</span><span class="p">[</span><span class="s2">&quot;construction_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">construction</span>
+</span><span id="__span-0-1063"><a id="__codelineno-0-1063" name="__codelineno-0-1063"></a>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">window_poly</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="__span-0-1064"><a id="__codelineno-0-1064" name="__codelineno-0-1064"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_x_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</span><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_y_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066"></a>            <span class="n">win_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_z_coordinate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</span><span id="__span-0-1067"><a id="__codelineno-0-1067" name="__codelineno-0-1067"></a>
+</span><span id="__span-0-1068"><a id="__codelineno-0-1068" name="__codelineno-0-1068"></a>        <span class="n">win_obj</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;FenestrationSurface:Detailed&quot;</span><span class="p">,</span> <span class="n">win_name</span><span class="p">,</span> <span class="n">win_data</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-0-1069"><a id="__codelineno-0-1069" name="__codelineno-0-1069"></a>        <span class="n">new_windows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">win_obj</span><span class="p">)</span>
+</span><span id="__span-0-1070"><a id="__codelineno-0-1070" name="__codelineno-0-1070"></a>
+</span><span id="__span-0-1071"><a id="__codelineno-0-1071" name="__codelineno-0-1071"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;set_wwr: created </span><span class="si">%d</span><span class="s2"> windows at target ratio </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_windows</span><span class="p">),</span> <span class="n">wwr</span><span class="p">)</span>
+</span><span id="__span-0-1072"><a id="__codelineno-0-1072" name="__codelineno-0-1072"></a>    <span class="k">return</span> <span class="n">new_windows</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7775,11 +7774,13 @@ given.  Defaults to 10°.</p>
         <p>Translate all building surfaces by the given offset vector.</p>
 <p>Modifies the document in-place, shifting every surface's vertices
 by <em>offset</em>.</p>
-<p>.. note::</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Only vertex coordinates are modified.  <code>Zone</code> origin fields
-   and the <code>Building</code> object are <strong>not</strong> updated.  Use
-   :func:<code>translate_to_world</code> if you need to collapse zone-relative
-   coordinates into world coordinates.</p>
+and the <code>Building</code> object are <strong>not</strong> updated.  Use
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;translate_to_world&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;doc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.geometry.translate_to_world">translate_to_world</a> if you need to collapse zone-relative
+coordinates into world coordinates.</p>
+</div>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -7841,45 +7842,43 @@ geo-referenced coordinates):</p>
 <span class="normal"><a href="#__codelineno-0-915">915</a></span>
 <span class="normal"><a href="#__codelineno-0-916">916</a></span>
 <span class="normal"><a href="#__codelineno-0-917">917</a></span>
-<span class="normal"><a href="#__codelineno-0-918">918</a></span>
-<span class="normal"><a href="#__codelineno-0-919">919</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-882"><a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="k">def</span><span class="w"> </span><span class="nf">translate_building</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">Vector3D</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-918">918</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-882"><a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="k">def</span><span class="w"> </span><span class="nf">translate_building</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">Vector3D</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-883"><a id="__codelineno-0-883" name="__codelineno-0-883"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate all building surfaces by the given offset vector.</span>
 </span><span id="__span-0-884"><a id="__codelineno-0-884" name="__codelineno-0-884"></a>
 </span><span id="__span-0-885"><a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">    Modifies the document in-place, shifting every surface&#39;s vertices</span>
 </span><span id="__span-0-886"><a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">    by *offset*.</span>
 </span><span id="__span-0-887"><a id="__codelineno-0-887" name="__codelineno-0-887"></a>
-</span><span id="__span-0-888"><a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">    .. note::</span>
-</span><span id="__span-0-889"><a id="__codelineno-0-889" name="__codelineno-0-889"></a>
-</span><span id="__span-0-890"><a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">       Only vertex coordinates are modified.  ``Zone`` origin fields</span>
-</span><span id="__span-0-891"><a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">       and the ``Building`` object are **not** updated.  Use</span>
-</span><span id="__span-0-892"><a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">       :func:`translate_to_world` if you need to collapse zone-relative</span>
-</span><span id="__span-0-893"><a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">       coordinates into world coordinates.</span>
-</span><span id="__span-0-894"><a id="__codelineno-0-894" name="__codelineno-0-894"></a>
-</span><span id="__span-0-895"><a id="__codelineno-0-895" name="__codelineno-0-895"></a><span class="sd">    Examples:</span>
-</span><span id="__span-0-896"><a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">        Reposition a building on its site (e.g., from local to</span>
-</span><span id="__span-0-897"><a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">        geo-referenced coordinates):</span>
-</span><span id="__span-0-898"><a id="__codelineno-0-898" name="__codelineno-0-898"></a>
-</span><span id="__span-0-899"><a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        &gt;&gt;&gt; from idfkit import new_document</span>
-</span><span id="__span-0-900"><a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">        &gt;&gt;&gt; model = new_document()</span>
-</span><span id="__span-0-901"><a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">        &gt;&gt;&gt; wall = model.add(&quot;BuildingSurface:Detailed&quot;, &quot;South_Wall&quot;,</span>
-</span><span id="__span-0-902"><a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">        ...     surface_type=&quot;Wall&quot;, construction_name=&quot;&quot;, zone_name=&quot;&quot;,</span>
-</span><span id="__span-0-903"><a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">        ...     outside_boundary_condition=&quot;Outdoors&quot;,</span>
-</span><span id="__span-0-904"><a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">        ...     sun_exposure=&quot;SunExposed&quot;, wind_exposure=&quot;WindExposed&quot;,</span>
-</span><span id="__span-0-905"><a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        ...     number_of_vertices=4,</span>
-</span><span id="__span-0-906"><a id="__codelineno-0-906" name="__codelineno-0-906"></a><span class="sd">        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,</span>
-</span><span id="__span-0-907"><a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,</span>
-</span><span id="__span-0-908"><a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,</span>
-</span><span id="__span-0-909"><a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,</span>
-</span><span id="__span-0-910"><a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">        ...     validate=False)</span>
-</span><span id="__span-0-911"><a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">        &gt;&gt;&gt; translate_building(model, Vector3D(100, 200, 0))</span>
-</span><span id="__span-0-912"><a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">        &gt;&gt;&gt; wall.vertex_1_x_coordinate</span>
-</span><span id="__span-0-913"><a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">        100.0</span>
-</span><span id="__span-0-914"><a id="__codelineno-0-914" name="__codelineno-0-914"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-915"><a id="__codelineno-0-915" name="__codelineno-0-915"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
-</span><span id="__span-0-916"><a id="__codelineno-0-916" name="__codelineno-0-916"></a>        <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
-</span><span id="__span-0-917"><a id="__codelineno-0-917" name="__codelineno-0-917"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
-</span><span id="__span-0-918"><a id="__codelineno-0-918" name="__codelineno-0-918"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-919"><a id="__codelineno-0-919" name="__codelineno-0-919"></a>                <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">offset</span><span class="p">))</span>
+</span><span id="__span-0-888"><a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">    !!! note</span>
+</span><span id="__span-0-889"><a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">        Only vertex coordinates are modified.  ``Zone`` origin fields</span>
+</span><span id="__span-0-890"><a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">        and the ``Building`` object are **not** updated.  Use</span>
+</span><span id="__span-0-891"><a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">        [translate_to_world][idfkit.geometry.translate_to_world] if you need to collapse zone-relative</span>
+</span><span id="__span-0-892"><a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">        coordinates into world coordinates.</span>
+</span><span id="__span-0-893"><a id="__codelineno-0-893" name="__codelineno-0-893"></a>
+</span><span id="__span-0-894"><a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    Examples:</span>
+</span><span id="__span-0-895"><a id="__codelineno-0-895" name="__codelineno-0-895"></a><span class="sd">        Reposition a building on its site (e.g., from local to</span>
+</span><span id="__span-0-896"><a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">        geo-referenced coordinates):</span>
+</span><span id="__span-0-897"><a id="__codelineno-0-897" name="__codelineno-0-897"></a>
+</span><span id="__span-0-898"><a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">        &gt;&gt;&gt; from idfkit import new_document</span>
+</span><span id="__span-0-899"><a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        &gt;&gt;&gt; model = new_document()</span>
+</span><span id="__span-0-900"><a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">        &gt;&gt;&gt; wall = model.add(&quot;BuildingSurface:Detailed&quot;, &quot;South_Wall&quot;,</span>
+</span><span id="__span-0-901"><a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">        ...     surface_type=&quot;Wall&quot;, construction_name=&quot;&quot;, zone_name=&quot;&quot;,</span>
+</span><span id="__span-0-902"><a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">        ...     outside_boundary_condition=&quot;Outdoors&quot;,</span>
+</span><span id="__span-0-903"><a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">        ...     sun_exposure=&quot;SunExposed&quot;, wind_exposure=&quot;WindExposed&quot;,</span>
+</span><span id="__span-0-904"><a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">        ...     number_of_vertices=4,</span>
+</span><span id="__span-0-905"><a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,</span>
+</span><span id="__span-0-906"><a id="__codelineno-0-906" name="__codelineno-0-906"></a><span class="sd">        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,</span>
+</span><span id="__span-0-907"><a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,</span>
+</span><span id="__span-0-908"><a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,</span>
+</span><span id="__span-0-909"><a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">        ...     validate=False)</span>
+</span><span id="__span-0-910"><a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">        &gt;&gt;&gt; translate_building(model, Vector3D(100, 200, 0))</span>
+</span><span id="__span-0-911"><a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">        &gt;&gt;&gt; wall.vertex_1_x_coordinate</span>
+</span><span id="__span-0-912"><a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">        100.0</span>
+</span><span id="__span-0-913"><a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-914"><a id="__codelineno-0-914" name="__codelineno-0-914"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
+</span><span id="__span-0-915"><a id="__codelineno-0-915" name="__codelineno-0-915"></a>        <span class="k">for</span> <span class="n">surface</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
+</span><span id="__span-0-916"><a id="__codelineno-0-916" name="__codelineno-0-916"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+</span><span id="__span-0-917"><a id="__codelineno-0-917" name="__codelineno-0-917"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-918"><a id="__codelineno-0-918" name="__codelineno-0-918"></a>                <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">offset</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

@@ -3714,8 +3714,9 @@ is because each station may have multiple TMYx year-range variants
 (e.g., <code>TMYx.2007-2021</code>, <code>TMYx.2009-2023</code>), each stored as a
 separate entry with its own download URL.</p>
 <h3 id="idfkit.weather--quick-start">Quick Start<a class="headerlink" href="#idfkit.weather--quick-start" title="Permanent link">&para;</a></h3>
-<p>Search by name::</p>
-<div class="language-text highlight"><pre><span></span><code>from idfkit.weather import StationIndex, WeatherDownloader
+<p>Search by name:</p>
+<div class="language-text highlight"><pre><span></span><code>```python
+from idfkit.weather import StationIndex, WeatherDownloader
 
 index = StationIndex.load()  # Instant, no network needed
 results = index.search(&quot;chicago ohare&quot;)
@@ -3724,11 +3725,13 @@ station = results[0].station
 downloader = WeatherDownloader()
 files = downloader.download(station)
 print(files.epw, files.ddy)
+```
 </code></pre></div>
 <h3 id="idfkit.weather--search-by-address-splat-pattern">Search by Address (Splat Pattern)<a class="headerlink" href="#idfkit.weather--search-by-address-splat-pattern" title="Permanent link">&para;</a></h3>
-<p>Combine :func:<code>geocode</code> with :meth:<code>~StationIndex.nearest</code> using the splat
-operator to find weather stations near any address::</p>
-<div class="language-text highlight"><pre><span></span><code>from idfkit.weather import StationIndex, geocode
+<p>Combine <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;idfkit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weather&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geocode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geocode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="station/#idfkit.weather.geocode.geocode">geocode</a> with <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;nearest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;latitude&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;longitude&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;limit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_distance_km&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;country&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="station/#idfkit.weather.index.StationIndex.nearest">nearest</a> using the splat
+operator to find weather stations near any address:</p>
+<div class="language-text highlight"><pre><span></span><code>```python
+from idfkit.weather import StationIndex, geocode
 
 index = StationIndex.load()
 
@@ -3742,12 +3745,14 @@ for r in results[:3]:
 # New York La Guardia AP, NY, USA: 10 km
 # New York J F Kennedy Intl AP, NY, USA: 18 km
 # Newark Liberty Intl AP, NJ, USA: 22 km
+```
 </code></pre></div>
-<p>The :func:<code>geocode</code> function uses the free Nominatim (OpenStreetMap) service,
+<p>The <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;idfkit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weather&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geocode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geocode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="station/#idfkit.weather.geocode.geocode">geocode</a> function uses the free Nominatim (OpenStreetMap) service,
 which requires no API key. Requests are rate-limited to 1 per second.</p>
 <h3 id="idfkit.weather--apply-design-days">Apply Design Days<a class="headerlink" href="#idfkit.weather--apply-design-days" title="Permanent link">&para;</a></h3>
-<p>Inject ASHRAE sizing design days into your model::</p>
-<div class="language-text highlight"><pre><span></span><code>from idfkit import load_idf
+<p>Inject ASHRAE sizing design days into your model:</p>
+<div class="language-text highlight"><pre><span></span><code>```python
+from idfkit import load_idf
 from idfkit.weather import StationIndex, apply_ashrae_sizing
 
 model = load_idf(&quot;building.idf&quot;)
@@ -3756,13 +3761,16 @@ station = StationIndex.load().search(&quot;chicago ohare&quot;)[0].station
 # Apply ASHRAE 90.1 design conditions
 added = apply_ashrae_sizing(model, station, standard=&quot;90.1&quot;)
 print(f&quot;Added {len(added)} design days&quot;)
+```
 </code></pre></div>
 <h3 id="idfkit.weather--index-freshness">Index Freshness<a class="headerlink" href="#idfkit.weather--index-freshness" title="Permanent link">&para;</a></h3>
 <p><code>StationIndex.load()</code> is purely local and requires no extra dependencies.
 Use <code>StationIndex.refresh()</code> (requires <code>openpyxl</code>) to re-download the
-upstream Excel indexes and rebuild the local cache::</p>
-<div class="language-text highlight"><pre><span></span><code>if index.check_for_updates():
+upstream Excel indexes and rebuild the local cache:</p>
+<div class="language-text highlight"><pre><span></span><code>```python
+if index.check_for_updates():
     index = StationIndex.refresh()  # requires openpyxl
+```
 </code></pre></div>
 
 
@@ -3895,7 +3903,7 @@ conditions data in the climate.onebuilding.org database.</p>
 
         <p>Parse DDY files and inject design day conditions into IDF models.</p>
 <p>A DDY file is a valid IDF-syntax file containing <code>Site:Location</code> and
-<code>SizingPeriod:DesignDay</code> objects.  This class uses :func:<code>idfkit.load_idf</code>
+<code>SizingPeriod:DesignDay</code> objects.  This class uses <code>[idfkit.load_idf][idfkit.load_idf]</code>
 to parse the file and classifies each design day by its ASHRAE condition
 type.</p>
 
@@ -3916,7 +3924,7 @@ type.</p>
                 <code>ddy_path</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3932,7 +3940,7 @@ type.</p>
                 <code>version</code>
             </td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>, <span title="int">int</span>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4029,7 +4037,7 @@ across versions).</p>
         <p>All monthly design day objects.</p>
 <p>Monthly design days follow the naming pattern
 <code>{Location} {Month} {pct}% Condns {type}</code> and are not classified
-into the :class:<code>DesignDayType</code> enum.</p>
+into the <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.weather.designday.DesignDayType&lt;/code&gt;" href="designday/#idfkit.weather.designday.DesignDayType">DesignDayType</a> enum.</p>
 
     </div>
 
@@ -4159,7 +4167,7 @@ into the :class:<code>DesignDayType</code> enum.</p>
                 <code>dataset</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4175,7 +4183,7 @@ into the :class:<code>DesignDayType</code> enum.</p>
                 <code>version</code>
             </td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>, <span title="int">int</span>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4224,7 +4232,11 @@ into the :class:<code>DesignDayType</code> enum.</p>
     <div class="doc doc-contents ">
 
         <p>Raise :exc:<code>NoDesignDaysError</code> if this DDY has no design days.</p>
-<p>When constructed via :meth:<code>from_station</code>, the error message includes
+<p>When constructed via <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;from_station&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;station&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataset&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;version&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-classmethod&quot;&gt;&lt;code&gt;classmethod&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="#idfkit.weather.DesignDayManager.from_station">from_station</a>, the error message includes
 suggestions for nearby stations that may have design day data.</p>
 
 
@@ -4291,7 +4303,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The target :class:<code>~idfkit.document.IDFDocument</code>.</p>
+                <p>The target <a class="autorefs autorefs-internal" href="../document/#idfkit.document.IDFDocument">IDFDocument</a>.</p>
               </div>
             </td>
             <td>
@@ -4303,7 +4315,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>heating</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;99.6%&#39;, &#39;99%&#39;, &#39;both&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;99.6%&#39;, &#39;99%&#39;, &#39;both&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4319,7 +4331,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>cooling</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;0.4%&#39;, &#39;1%&#39;, &#39;2%&#39;, &#39;all&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;0.4%&#39;, &#39;1%&#39;, &#39;2%&#39;, &#39;all&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4335,7 +4347,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_wet_bulb</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4351,7 +4363,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_enthalpy</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4367,7 +4379,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_dehumidification</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4383,7 +4395,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_wind</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4399,7 +4411,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>update_location</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4416,7 +4428,7 @@ DDY file metadata.</p>
                 <code>replace_existing</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4443,7 +4455,7 @@ before adding new ones.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4498,7 +4510,7 @@ before adding new ones.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="enum.Enum">Enum</span></code></p>
+              Bases: <code><a class="autorefs autorefs-external" title="&lt;code&gt;enum.Enum&lt;/code&gt;" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -4553,14 +4565,16 @@ before adding new ones.</p>
 <p>Downloaded ZIP archives are extracted and cached locally so that
 subsequent requests for the same station and dataset are served from
 disk without a network call.</p>
-<p>Example::</p>
-<div class="language-text highlight"><pre><span></span><code>from idfkit.weather import StationIndex, WeatherDownloader
 
-station = StationIndex.load().search(&quot;chicago ohare&quot;)[0].station
-downloader = WeatherDownloader()
-files = downloader.download(station)
-print(files.epw)
-</code></pre></div>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.weather</span><span class="w"> </span><span class="kn">import</span> <span class="n">StationIndex</span><span class="p">,</span> <span class="n">WeatherDownloader</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">station</span> <span class="o">=</span> <span class="n">StationIndex</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;chicago ohare&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">station</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">downloader</span> <span class="o">=</span> <span class="n">WeatherDownloader</span><span class="p">()</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">files</span> <span class="o">=</span> <span class="n">downloader</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">station</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">files</span><span class="o">.</span><span class="n">epw</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4579,7 +4593,7 @@ print(files.epw)
                 <code>cache_dir</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4595,12 +4609,12 @@ print(files.epw)
                 <code>max_age</code>
             </td>
             <td>
-                  <code><span title="datetime.timedelta">timedelta</span> | <span title="float">float</span> | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;datetime.timedelta&lt;/code&gt;" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>Maximum age of cached files before re-downloading.
-Can be a :class:<code>~datetime.timedelta</code> or a number of seconds.
+Can be a <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a> or a number of seconds.
 If <code>None</code> (default), cached files never expire.</p>
               </div>
             </td>
@@ -4615,7 +4629,7 @@ If <code>None</code> (default), cached files never expire.</p>
 <details class="note" open>
   <summary>Note</summary>
   <p>The cache has no size limit. For CI/CD environments with limited disk
-space, consider using :meth:<code>clear_cache</code> periodically or setting
+space, consider using <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;clear_cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;" href="#idfkit.weather.WeatherDownloader.clear_cache">clear_cache</a> periodically or setting
 a <code>max_age</code> to force re-downloads of stale files.</p>
 </details>
 
@@ -4694,13 +4708,13 @@ a <code>max_age</code> to force re-downloads of stale files.</p>
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>A</code></td>            <td>
+            <td>
                   <code><a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.weather.download.WeatherFiles&lt;/code&gt;
 
 
@@ -4710,7 +4724,12 @@ a <code>max_age</code> to force re-downloads of stale files.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>class:<code>WeatherFiles</code> with paths to the extracted files.</p>
+                <p>A <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.weather.download.WeatherFiles&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="download/#idfkit.weather.download.WeatherFiles">WeatherFiles</a> with paths to the extracted files.</p>
               </div>
             </td>
           </tr>
@@ -4729,7 +4748,7 @@ a <code>max_age</code> to force re-downloads of stale files.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="RuntimeError">RuntimeError</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError">RuntimeError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4848,7 +4867,7 @@ which contains all downloaded ZIP archives and extracted files.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherFiles.epw&lt;/code&gt;)" href="download/#idfkit.weather.download.WeatherFiles.epw">epw</a></code></td>
             <td>
-                  <code><span title="pathlib.Path">Path</span></code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4863,7 +4882,7 @@ which contains all downloaded ZIP archives and extracted files.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherFiles.ddy&lt;/code&gt;)" href="download/#idfkit.weather.download.WeatherFiles.ddy">ddy</a></code></td>
             <td>
-                  <code><span title="pathlib.Path">Path</span></code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4874,7 +4893,7 @@ which contains all downloaded ZIP archives and extracted files.</p>
           <tr class="doc-section-item">
             <td><code><span title="idfkit.weather.WeatherFiles.stat">stat</span></code></td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4885,7 +4904,7 @@ which contains all downloaded ZIP archives and extracted files.</p>
           <tr class="doc-section-item">
             <td><code><span title="idfkit.weather.WeatherFiles.zip_path">zip_path</span></code></td>
             <td>
-                  <code><span title="pathlib.Path">Path</span></code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4954,7 +4973,7 @@ which contains all downloaded ZIP archives and extracted files.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="Exception">Exception</span></code></p>
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></code></p>
 
 
 
@@ -4988,16 +5007,30 @@ which contains all downloaded ZIP archives and extracted files.</p>
 
 
         <p>Searchable index of weather stations from climate.onebuilding.org.</p>
-<p>Use :meth:<code>load</code> to load the bundled (or user-refreshed) station index.
-No network access or <code>openpyxl</code> is required for :meth:<code>load</code>.</p>
-<p>Use :meth:<code>check_for_updates</code> to see if upstream data has changed, and
-:meth:<code>refresh</code> to re-download and rebuild the index.</p>
-<p>Example::</p>
-<div class="language-text highlight"><pre><span></span><code>index = StationIndex.load()
-results = index.search(&quot;chicago ohare&quot;, limit=3)
-for r in results:
-    print(r.station.display_name, r.score)
-</code></pre></div>
+<p>Use <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cache_dir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-classmethod&quot;&gt;&lt;code&gt;classmethod&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="station/#idfkit.weather.index.StationIndex.load">load</a> to load the bundled (or user-refreshed) station index.
+No network access or <code>openpyxl</code> is required for <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cache_dir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-classmethod&quot;&gt;&lt;code&gt;classmethod&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="station/#idfkit.weather.index.StationIndex.load">load</a>.</p>
+<p>Use <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;check_for_updates&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;" href="station/#idfkit.weather.index.StationIndex.check_for_updates">check_for_updates</a> to see if upstream data has changed, and
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;refresh&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cache_dir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-classmethod&quot;&gt;&lt;code&gt;classmethod&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="station/#idfkit.weather.index.StationIndex.refresh">refresh</a> to re-download and rebuild the index.</p>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">index</span> <span class="o">=</span> <span class="n">StationIndex</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">results</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;chicago ohare&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 
@@ -5101,7 +5134,7 @@ required.</p>
                 <code>cache_dir</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5177,7 +5210,7 @@ required.</p>
                 <code>cache_dir</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5248,7 +5281,7 @@ timeout, etc.).</p>
                 <code>wmo</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5301,7 +5334,7 @@ heuristics (no external NLP dependencies).</p>
                 <code>query</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5317,7 +5350,7 @@ heuristics (no external NLP dependencies).</p>
                 <code>limit</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5333,7 +5366,7 @@ heuristics (no external NLP dependencies).</p>
                 <code>country</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5385,7 +5418,7 @@ computing distances for stations that are obviously too far.</p>
                 <code>latitude</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5401,7 +5434,7 @@ computing distances for stations that are obviously too far.</p>
                 <code>longitude</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5417,7 +5450,7 @@ computing distances for stations that are obviously too far.</p>
                 <code>limit</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5433,7 +5466,7 @@ computing distances for stations that are obviously too far.</p>
                 <code>max_distance_km</code>
             </td>
             <td>
-                  <code><span title="float">float</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5449,7 +5482,7 @@ computing distances for stations that are obviously too far.</p>
                 <code>country</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5703,7 +5736,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.country&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.country">country</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5718,7 +5751,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.state&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.state">state</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5733,7 +5766,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.city&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.city">city</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5749,7 +5782,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.wmo&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.wmo">wmo</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5761,7 +5794,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
           <tr class="doc-section-item">
             <td><code><span title="idfkit.weather.WeatherStation.source">source</span></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5776,7 +5809,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.latitude&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.latitude">latitude</a></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5791,7 +5824,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.longitude&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.longitude">longitude</a></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5802,7 +5835,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
           <tr class="doc-section-item">
             <td><code><span title="idfkit.weather.WeatherStation.timezone">timezone</span></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5817,7 +5850,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.elevation&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.elevation">elevation</a></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5832,7 +5865,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.weather.WeatherStation.url&lt;/code&gt;)" href="station/#idfkit.weather.station.WeatherStation.url">url</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6005,7 +6038,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The :class:<code>~idfkit.document.IDFDocument</code> to modify.</p>
+                <p>The <a class="autorefs autorefs-internal" href="../document/#idfkit.document.IDFDocument">IDFDocument</a> to modify.</p>
               </div>
             </td>
             <td>
@@ -6038,7 +6071,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
                 <code>standard</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;90.1&#39;, &#39;general&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;90.1&#39;, &#39;general&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6054,7 +6087,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
                 <code>version</code>
             </td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>, <span title="int">int</span>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6080,7 +6113,7 @@ variants (e.g. <code>TMYx.2007-2021</code> vs <code>TMYx.2009-2023</code>).</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">

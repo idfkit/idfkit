@@ -3633,9 +3633,14 @@
     <div class="doc doc-contents first">
 
         <p>Run multiple EnergyPlus simulations in parallel.</p>
-<p>Uses :class:<code>~concurrent.futures.ThreadPoolExecutor</code> to dispatch
+<p>Uses <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor">ThreadPoolExecutor</a> to dispatch
 simulations concurrently.  Individual job failures are captured as
-failed :class:<code>SimulationResult</code> entries -- the batch never raises
+failed <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../results/#idfkit.simulation.result.SimulationResult">SimulationResult</a> entries -- the batch never raises
 due to a single job failing.</p>
 
 
@@ -3655,7 +3660,7 @@ due to a single job failing.</p>
                 <code>jobs</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.batch.SimulationJob&lt;/code&gt;
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;collections.abc.Sequence&lt;/code&gt;" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.batch.SimulationJob&lt;/code&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
@@ -3698,7 +3703,7 @@ due to a single job failing.</p>
                 <code>max_workers</code>
             </td>
             <td>
-                  <code><span title="int">int</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3731,7 +3736,7 @@ to <code>min(len(jobs), os.cpu_count() or 1)</code>.</p>
                 <code>progress</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Callable">Callable</span>[..., None] | None</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;collections.abc.Callable&lt;/code&gt;" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[..., None] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3754,7 +3759,7 @@ success=bool)</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>Optional file system backend passed through to each
-:func:<code>simulate</code> call.</p>
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;idfkit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;simulation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;simulate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weather&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_dir&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;energyplus&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expand_objects&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;annual&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;design_day&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_prefix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;eplus&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_suffix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;C&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readvars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;3600.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;extra_args&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;on_progress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="../runner/#idfkit.simulation.runner.simulate">simulate</a> call.</p>
               </div>
             </td>
             <td>
@@ -3766,7 +3771,7 @@ success=bool)</code>.</p>
                 <code>on_progress</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Callable">Callable</span>[[<a class="autorefs autorefs-internal" title="&lt;code&gt;SimulationProgress&lt;/code&gt;
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;collections.abc.Callable&lt;/code&gt;" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="&lt;code&gt;SimulationProgress&lt;/code&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
@@ -3776,12 +3781,17 @@ success=bool)</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>Optional callback invoked with
-:class:<code>~idfkit.simulation.progress.SimulationProgress</code> events
+<a class="autorefs autorefs-internal" title="&lt;code&gt;SimulationProgress&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../#idfkit.simulation.SimulationProgress">SimulationProgress</a> events
 during each individual simulation.  Events include
 <code>job_index</code> and <code>job_label</code> to identify which batch job
 they belong to.  The <code>"tqdm"</code> shorthand is not supported
 for batch runners; use
-:func:<code>~idfkit.simulation.progress_bars.tqdm_progress</code>
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;tqdm_progress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;desc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;Simulating&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar_format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{l_bar}{bar}&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;| &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{n:.0f}&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{total_fmt}&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;% [&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{elapsed}&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{remaining}&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;]&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leave&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tqdm_kwargs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="../#idfkit.simulation.tqdm_progress">tqdm_progress</a>
 with a custom per-job callback instead.</p>
               </div>
             </td>
@@ -3797,13 +3807,13 @@ with a custom per-job callback instead.</p>
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>A</code></td>            <td>
+            <td>
                   <code><a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.batch.BatchResult&lt;/code&gt;
 
 
@@ -3813,7 +3823,12 @@ with a custom per-job callback instead.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>class:<code>BatchResult</code> with results in the same order as <em>jobs</em>.</p>
+                <p>A <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.batch.BatchResult&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="#idfkit.simulation.batch.BatchResult">BatchResult</a> with results in the same order as <em>jobs</em>.</p>
               </div>
             </td>
           </tr>
@@ -3832,7 +3847,7 @@ with a custom per-job callback instead.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="ValueError">ValueError</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3967,9 +3982,9 @@ with a custom per-job callback instead.</p>
 </span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchResult</span><span class="p">:</span>
 </span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run multiple EnergyPlus simulations in parallel.</span>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>
-</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">    Uses :class:`~concurrent.futures.ThreadPoolExecutor` to dispatch</span>
+</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">    Uses [ThreadPoolExecutor][concurrent.futures.ThreadPoolExecutor] to dispatch</span>
 </span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    simulations concurrently.  Individual job failures are captured as</span>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    failed :class:`SimulationResult` entries -- the batch never raises</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    failed [SimulationResult][idfkit.simulation.result.SimulationResult] entries -- the batch never raises</span>
 </span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    due to a single job failing.</span>
 </span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a>
 </span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Args:</span>
@@ -3983,18 +3998,18 @@ with a custom per-job callback instead.</p>
 </span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="sd">            Called as ``progress(completed=N, total=M, label=label,</span>
 </span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="sd">            success=bool)``.</span>
 </span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">        fs: Optional file system backend passed through to each</span>
-</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">            :func:`simulate` call.</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">            [simulate][idfkit.simulation.runner.simulate] call.</span>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="sd">        on_progress: Optional callback invoked with</span>
-</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">            :class:`~idfkit.simulation.progress.SimulationProgress` events</span>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">            [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">            during each individual simulation.  Events include</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a><span class="sd">            ``job_index`` and ``job_label`` to identify which batch job</span>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">            they belong to.  The ``&quot;tqdm&quot;`` shorthand is not supported</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">            for batch runners; use</span>
-</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">            :func:`~idfkit.simulation.progress_bars.tqdm_progress`</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">            [tqdm_progress][idfkit.simulation.progress_bars.tqdm_progress]</span>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">            with a custom per-job callback instead.</span>
 </span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>
 </span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">        A :class:`BatchResult` with results in the same order as *jobs*.</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">        A [BatchResult][idfkit.simulation.batch.BatchResult] with results in the same order as *jobs*.</span>
 </span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>
 </span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">    Raises:</span>
 </span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">        ValueError: If *jobs* is empty.</span>
@@ -4111,7 +4126,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.model&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.model">model</a></code></td>
             <td>
-                  <code><span title="object">object</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4126,7 +4141,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.weather&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.weather">weather</a></code></td>
             <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4142,7 +4157,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.label&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.label">label</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4158,7 +4173,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.output_dir&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.output_dir">output_dir</a></code></td>
             <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4174,7 +4189,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.expand_objects&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.expand_objects">expand_objects</a></code></td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4190,7 +4205,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.annual&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.annual">annual</a></code></td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4206,7 +4221,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.design_day&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.design_day">design_day</a></code></td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4222,7 +4237,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.output_prefix&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.output_prefix">output_prefix</a></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4238,7 +4253,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.output_suffix&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.output_suffix">output_suffix</a></code></td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;C&#39;, &#39;L&#39;, &#39;D&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;C&#39;, &#39;L&#39;, &#39;D&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4254,7 +4269,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.readvars&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.readvars">readvars</a></code></td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4270,7 +4285,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.timeout&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.timeout">timeout</a></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4286,7 +4301,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.SimulationJob.extra_args&lt;/code&gt;)" href="#idfkit.simulation.batch.SimulationJob.extra_args">extra_args</a></code></td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="str">str</span>, ...] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4681,7 +4696,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.BatchResult.results&lt;/code&gt;)" href="#idfkit.simulation.batch.BatchResult.results">results</a></code></td>
             <td>
-                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.simulation.result.SimulationResult&lt;/code&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
@@ -4701,7 +4716,7 @@ with a custom per-job callback instead.</p>
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;idfkit.simulation.batch.BatchResult.total_runtime_seconds&lt;/code&gt;)" href="#idfkit.simulation.batch.BatchResult.total_runtime_seconds">total_runtime_seconds</a></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">

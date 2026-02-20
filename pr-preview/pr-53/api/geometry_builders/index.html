@@ -3953,10 +3953,15 @@ EnergyPlus computes the correct outward normal regardless of convention:</p>
 
         <p>High-level geometry construction functions.</p>
 <p>Provides building-block primitives for creating EnergyPlus zone and surface
-geometry from simple 2D footprints.  The :class:<code>Shoebox</code> dataclass describes
-a rectangular building; call :meth:<code>Shoebox.build</code> to realise it in a
-document.  For arbitrary polygon footprints, use :func:<code>add_block</code> directly.</p>
-<p>These functions complement the lower-level :mod:<code>~idfkit.geometry</code> module
+geometry from simple 2D footprints.  The <a class="autorefs autorefs-internal" title="&lt;code&gt;Shoebox&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="#idfkit.geometry_builders.Shoebox">Shoebox</a> dataclass describes
+a rectangular building; call <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;doc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.geometry_builders.Shoebox.build">Shoebox.build</a> to realise it in a
+document.  For arbitrary polygon footprints, use <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;add_block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;doc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;footprint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;floor_to_floor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_stories&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.geometry_builders.add_block">add_block</a> directly.</p>
+<p>These functions complement the lower-level <a class="autorefs autorefs-internal" href="../geometry/#idfkit.geometry">geometry</a> module
 which operates on <em>existing</em> surfaces.</p>
 <p>All generated vertex coordinates respect the document's
 <code>GlobalGeometryRules</code> (<code>starting_vertex_position</code> and
@@ -4003,7 +4008,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
 
         <p>A rectangular building block described by width, depth, and stories.</p>
 <p>This is a pure data object — it does <strong>not</strong> modify any document.  Call
-:meth:<code>build</code> to realise the geometry in an :class:<code>~idfkit.document.IDFDocument</code>.</p>
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;doc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="#idfkit.geometry_builders.Shoebox.build">build</a> to realise the geometry in an <a class="autorefs autorefs-internal" href="../document/#idfkit.document.IDFDocument">IDFDocument</a>.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -4019,7 +4024,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.name">name</span></code></td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4030,7 +4035,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.width">width</span></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4041,7 +4046,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.depth">depth</span></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4052,7 +4057,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.floor_to_floor">floor_to_floor</span></code></td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4063,7 +4068,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.num_stories">num_stories</span></code></td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4074,7 +4079,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
           <tr class="doc-section-item">
             <td><code><span title="idfkit.geometry_builders.Shoebox.origin">origin</span></code></td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4173,7 +4178,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
 </span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A rectangular building block described by width, depth, and stories.</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    This is a pure data object — it does **not** modify any document.  Call</span>
-</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">    :meth:`build` to realise the geometry in an :class:`~idfkit.document.IDFDocument`.</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">    [build][idfkit.geometry_builders.Shoebox.build] to realise the geometry in an [IDFDocument][idfkit.document.IDFDocument].</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">    Attributes:</span>
 </span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">        name: Base name for zones and surfaces.</span>
@@ -4239,7 +4244,7 @@ default of <code>UpperLeftCorner</code> / <code>Counterclockwise</code> is assum
 </span><span id="__span-0-148"><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="sd">        conditions.</span>
 </span><span id="__span-0-149"><a id="__codelineno-0-149" name="__codelineno-0-149"></a>
 </span><span id="__span-0-150"><a id="__codelineno-0-150" name="__codelineno-0-150"></a><span class="sd">        Returns:</span>
-</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">            All created :class:`~idfkit.objects.IDFObject` instances</span>
+</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">            All created [IDFObject][idfkit.objects.IDFObject] instances</span>
 </span><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a><span class="sd">            (zones + surfaces).</span>
 </span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>        <span class="k">return</span> <span class="n">_build_block</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">footprint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_stories</span><span class="p">)</span>
@@ -4375,17 +4380,17 @@ conditions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>All created :class:<code>~idfkit.objects.IDFObject</code> instances</p>
+                <p>All created <a class="autorefs autorefs-internal" href="../objects/#idfkit.objects.IDFObject">IDFObject</a> instances</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4418,7 +4423,7 @@ conditions.</p>
 </span><span id="__span-0-148"><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="sd">    conditions.</span>
 </span><span id="__span-0-149"><a id="__codelineno-0-149" name="__codelineno-0-149"></a>
 </span><span id="__span-0-150"><a id="__codelineno-0-150" name="__codelineno-0-150"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">        All created :class:`~idfkit.objects.IDFObject` instances</span>
+</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">        All created [IDFObject][idfkit.objects.IDFObject] instances</span>
 </span><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a><span class="sd">        (zones + surfaces).</span>
 </span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="k">return</span> <span class="n">_build_block</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">footprint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_stories</span><span class="p">)</span>
@@ -4452,7 +4457,12 @@ conditions.</p>
 <p>For each story, creates a <code>Zone</code> and <code>BuildingSurface:Detailed</code>
 objects for walls (one per footprint edge), a floor, and a
 ceiling/roof.</p>
-<p>This is the general-purpose alternative to :class:<code>Shoebox</code> for
+<p>This is the general-purpose alternative to <a class="autorefs autorefs-internal" title="&lt;code&gt;Shoebox&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="#idfkit.geometry_builders.Shoebox">Shoebox</a> for
 non-rectangular footprints.</p>
 
 
@@ -4488,7 +4498,7 @@ non-rectangular footprints.</p>
                 <code>name</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4504,7 +4514,7 @@ non-rectangular footprints.</p>
                 <code>footprint</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;collections.abc.Sequence&lt;/code&gt;" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4522,7 +4532,7 @@ from above.</p>
                 <code>floor_to_floor</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4538,7 +4548,7 @@ from above.</p>
                 <code>num_stories</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4564,7 +4574,7 @@ from above.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4587,7 +4597,7 @@ from above.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="ValueError">ValueError</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4647,7 +4657,7 @@ or num_stories &lt; 1.</p>
 </span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">    objects for walls (one per footprint edge), a floor, and a</span>
 </span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">    ceiling/roof.</span>
 </span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    This is the general-purpose alternative to :class:`Shoebox` for</span>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    This is the general-purpose alternative to [Shoebox][idfkit.geometry_builders.Shoebox] for</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">    non-rectangular footprints.</span>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>
 </span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">    Args:</span>
@@ -4721,7 +4731,7 @@ horizontal top cap.  No zones or thermal surfaces are created.</p>
                 <code>name</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4737,7 +4747,7 @@ horizontal top cap.  No zones or thermal surfaces are created.</p>
                 <code>footprint</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;collections.abc.Sequence&lt;/code&gt;" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4753,7 +4763,7 @@ horizontal top cap.  No zones or thermal surfaces are created.</p>
                 <code>height</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4769,7 +4779,7 @@ horizontal top cap.  No zones or thermal surfaces are created.</p>
                 <code>base_z</code>
             </td>
             <td>
-                  <code><span title="float">float</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4796,7 +4806,7 @@ Use this to create elevated shading surfaces such as canopies.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="&lt;code&gt;IDFObject&lt;/code&gt; (&lt;code&gt;idfkit.objects.IDFObject&lt;/code&gt;)" href="../objects/#idfkit.objects.IDFObject">IDFObject</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4819,7 +4829,7 @@ Use this to create elevated shading surfaces such as canopies.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="ValueError">ValueError</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4982,12 +4992,13 @@ Use this to create elevated shading surfaces such as canopies.</p>
         <p>Return the 2D axis-aligned bounding box of all building surfaces.</p>
 <p>Scans all <code>BuildingSurface:Detailed</code> vertices and returns the
 bounding envelope projected onto the XY plane.</p>
-<p>.. note::</p>
-<div class="language-text highlight"><pre><span></span><code>Only ``BuildingSurface:Detailed`` objects are considered.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only <code>BuildingSurface:Detailed</code> objects are considered.
 Fenestration and shading surfaces are excluded because they
 are either coplanar with (windows) or outside (shading) the
-thermal envelope.
-</code></pre></div>
+thermal envelope.</p>
+</div>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -5001,7 +5012,7 @@ thermal envelope.
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>], <span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5011,7 +5022,7 @@ thermal envelope.
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>], <span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5060,44 +5071,42 @@ thermal envelope.
 <span class="normal"><a href="#__codelineno-0-327">327</a></span>
 <span class="normal"><a href="#__codelineno-0-328">328</a></span>
 <span class="normal"><a href="#__codelineno-0-329">329</a></span>
-<span class="normal"><a href="#__codelineno-0-330">330</a></span>
-<span class="normal"><a href="#__codelineno-0-331">331</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-295"><a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="k">def</span><span class="w"> </span><span class="nf">bounding_box</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-295"><a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="k">def</span><span class="w"> </span><span class="nf">bounding_box</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-296"><a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the 2D axis-aligned bounding box of all building surfaces.</span>
 </span><span id="__span-0-297"><a id="__codelineno-0-297" name="__codelineno-0-297"></a>
 </span><span id="__span-0-298"><a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="sd">    Scans all ``BuildingSurface:Detailed`` vertices and returns the</span>
 </span><span id="__span-0-299"><a id="__codelineno-0-299" name="__codelineno-0-299"></a><span class="sd">    bounding envelope projected onto the XY plane.</span>
 </span><span id="__span-0-300"><a id="__codelineno-0-300" name="__codelineno-0-300"></a>
-</span><span id="__span-0-301"><a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">    .. note::</span>
-</span><span id="__span-0-302"><a id="__codelineno-0-302" name="__codelineno-0-302"></a>
-</span><span id="__span-0-303"><a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="sd">        Only ``BuildingSurface:Detailed`` objects are considered.</span>
-</span><span id="__span-0-304"><a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">        Fenestration and shading surfaces are excluded because they</span>
-</span><span id="__span-0-305"><a id="__codelineno-0-305" name="__codelineno-0-305"></a><span class="sd">        are either coplanar with (windows) or outside (shading) the</span>
-</span><span id="__span-0-306"><a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">        thermal envelope.</span>
-</span><span id="__span-0-307"><a id="__codelineno-0-307" name="__codelineno-0-307"></a>
-</span><span id="__span-0-308"><a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-309"><a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">        ``((min_x, min_y), (max_x, max_y))`` or ``None`` if no</span>
-</span><span id="__span-0-310"><a id="__codelineno-0-310" name="__codelineno-0-310"></a><span class="sd">        surfaces with valid coordinates exist.</span>
-</span><span id="__span-0-311"><a id="__codelineno-0-311" name="__codelineno-0-311"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-312"><a id="__codelineno-0-312" name="__codelineno-0-312"></a>    <span class="n">min_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
-</span><span id="__span-0-313"><a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="n">min_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
-</span><span id="__span-0-314"><a id="__codelineno-0-314" name="__codelineno-0-314"></a>    <span class="n">max_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
-</span><span id="__span-0-315"><a id="__codelineno-0-315" name="__codelineno-0-315"></a>    <span class="n">max_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
-</span><span id="__span-0-316"><a id="__codelineno-0-316" name="__codelineno-0-316"></a>    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-0-317"><a id="__codelineno-0-317" name="__codelineno-0-317"></a>
-</span><span id="__span-0-318"><a id="__codelineno-0-318" name="__codelineno-0-318"></a>    <span class="k">for</span> <span class="n">srf</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-319"><a id="__codelineno-0-319" name="__codelineno-0-319"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">)</span>
-</span><span id="__span-0-320"><a id="__codelineno-0-320" name="__codelineno-0-320"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-321"><a id="__codelineno-0-321" name="__codelineno-0-321"></a>            <span class="k">continue</span>
-</span><span id="__span-0-322"><a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
-</span><span id="__span-0-323"><a id="__codelineno-0-323" name="__codelineno-0-323"></a>            <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-</span><span id="__span-0-324"><a id="__codelineno-0-324" name="__codelineno-0-324"></a>            <span class="n">min_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-</span><span id="__span-0-325"><a id="__codelineno-0-325" name="__codelineno-0-325"></a>            <span class="n">max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-</span><span id="__span-0-326"><a id="__codelineno-0-326" name="__codelineno-0-326"></a>            <span class="n">max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_y</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-</span><span id="__span-0-327"><a id="__codelineno-0-327" name="__codelineno-0-327"></a>            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-0-328"><a id="__codelineno-0-328" name="__codelineno-0-328"></a>
-</span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-</span><span id="__span-0-330"><a id="__codelineno-0-330" name="__codelineno-0-330"></a>        <span class="k">return</span> <span class="kc">None</span>
-</span><span id="__span-0-331"><a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="k">return</span> <span class="p">((</span><span class="n">min_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">),</span> <span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span><span class="p">))</span>
+</span><span id="__span-0-301"><a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">    !!! note</span>
+</span><span id="__span-0-302"><a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="sd">        Only ``BuildingSurface:Detailed`` objects are considered.</span>
+</span><span id="__span-0-303"><a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="sd">        Fenestration and shading surfaces are excluded because they</span>
+</span><span id="__span-0-304"><a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">        are either coplanar with (windows) or outside (shading) the</span>
+</span><span id="__span-0-305"><a id="__codelineno-0-305" name="__codelineno-0-305"></a><span class="sd">        thermal envelope.</span>
+</span><span id="__span-0-306"><a id="__codelineno-0-306" name="__codelineno-0-306"></a>
+</span><span id="__span-0-307"><a id="__codelineno-0-307" name="__codelineno-0-307"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-308"><a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">        ``((min_x, min_y), (max_x, max_y))`` or ``None`` if no</span>
+</span><span id="__span-0-309"><a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">        surfaces with valid coordinates exist.</span>
+</span><span id="__span-0-310"><a id="__codelineno-0-310" name="__codelineno-0-310"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-311"><a id="__codelineno-0-311" name="__codelineno-0-311"></a>    <span class="n">min_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+</span><span id="__span-0-312"><a id="__codelineno-0-312" name="__codelineno-0-312"></a>    <span class="n">min_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+</span><span id="__span-0-313"><a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="n">max_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+</span><span id="__span-0-314"><a id="__codelineno-0-314" name="__codelineno-0-314"></a>    <span class="n">max_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+</span><span id="__span-0-315"><a id="__codelineno-0-315" name="__codelineno-0-315"></a>    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-316"><a id="__codelineno-0-316" name="__codelineno-0-316"></a>
+</span><span id="__span-0-317"><a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="k">for</span> <span class="n">srf</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;BuildingSurface:Detailed&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-318"><a id="__codelineno-0-318" name="__codelineno-0-318"></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">)</span>
+</span><span id="__span-0-319"><a id="__codelineno-0-319" name="__codelineno-0-319"></a>        <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-320"><a id="__codelineno-0-320" name="__codelineno-0-320"></a>            <span class="k">continue</span>
+</span><span id="__span-0-321"><a id="__codelineno-0-321" name="__codelineno-0-321"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+</span><span id="__span-0-322"><a id="__codelineno-0-322" name="__codelineno-0-322"></a>            <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</span><span id="__span-0-323"><a id="__codelineno-0-323" name="__codelineno-0-323"></a>            <span class="n">min_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+</span><span id="__span-0-324"><a id="__codelineno-0-324" name="__codelineno-0-324"></a>            <span class="n">max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</span><span id="__span-0-325"><a id="__codelineno-0-325" name="__codelineno-0-325"></a>            <span class="n">max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_y</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+</span><span id="__span-0-326"><a id="__codelineno-0-326" name="__codelineno-0-326"></a>            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-0-327"><a id="__codelineno-0-327" name="__codelineno-0-327"></a>
+</span><span id="__span-0-328"><a id="__codelineno-0-328" name="__codelineno-0-328"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+</span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>        <span class="k">return</span> <span class="kc">None</span>
+</span><span id="__span-0-330"><a id="__codelineno-0-330" name="__codelineno-0-330"></a>    <span class="k">return</span> <span class="p">((</span><span class="n">min_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">),</span> <span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5129,7 +5138,7 @@ thermal envelope.
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5139,7 +5148,7 @@ thermal envelope.
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5149,7 +5158,7 @@ thermal envelope.
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="str">str</span>, <span title="bool">bool</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5221,23 +5230,23 @@ correct winding for the active <code>GlobalGeometryRules</code> convention.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry_builders.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-377">377</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-376">376</a></span>
+<span class="normal"><a href="#__codelineno-0-377">377</a></span>
 <span class="normal"><a href="#__codelineno-0-378">378</a></span>
 <span class="normal"><a href="#__codelineno-0-379">379</a></span>
 <span class="normal"><a href="#__codelineno-0-380">380</a></span>
 <span class="normal"><a href="#__codelineno-0-381">381</a></span>
 <span class="normal"><a href="#__codelineno-0-382">382</a></span>
 <span class="normal"><a href="#__codelineno-0-383">383</a></span>
-<span class="normal"><a href="#__codelineno-0-384">384</a></span>
-<span class="normal"><a href="#__codelineno-0-385">385</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-377"><a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="k">def</span><span class="w"> </span><span class="nf">horizontal_poly</span><span class="p">(</span><span class="n">footprint</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Polygon3D</span><span class="p">:</span>
-</span><span id="__span-0-378"><a id="__codelineno-0-378" name="__codelineno-0-378"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a horizontal polygon at height *z*.</span>
-</span><span id="__span-0-379"><a id="__codelineno-0-379" name="__codelineno-0-379"></a>
-</span><span id="__span-0-380"><a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">    When *reverse* is ``True`` the footprint is reversed, flipping the</span>
-</span><span id="__span-0-381"><a id="__codelineno-0-381" name="__codelineno-0-381"></a><span class="sd">    polygon normal.  Used to produce floor and ceiling polygons in the</span>
-</span><span id="__span-0-382"><a id="__codelineno-0-382" name="__codelineno-0-382"></a><span class="sd">    correct winding for the active ``GlobalGeometryRules`` convention.</span>
-</span><span id="__span-0-383"><a id="__codelineno-0-383" name="__codelineno-0-383"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-384"><a id="__codelineno-0-384" name="__codelineno-0-384"></a>    <span class="n">pts</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span> <span class="k">if</span> <span class="n">reverse</span> <span class="k">else</span> <span class="n">footprint</span>
-</span><span id="__span-0-385"><a id="__codelineno-0-385" name="__codelineno-0-385"></a>    <span class="k">return</span> <span class="n">Polygon3D</span><span class="p">([</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">])</span>
+<span class="normal"><a href="#__codelineno-0-384">384</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-376"><a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="k">def</span><span class="w"> </span><span class="nf">horizontal_poly</span><span class="p">(</span><span class="n">footprint</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Polygon3D</span><span class="p">:</span>
+</span><span id="__span-0-377"><a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a horizontal polygon at height *z*.</span>
+</span><span id="__span-0-378"><a id="__codelineno-0-378" name="__codelineno-0-378"></a>
+</span><span id="__span-0-379"><a id="__codelineno-0-379" name="__codelineno-0-379"></a><span class="sd">    When *reverse* is ``True`` the footprint is reversed, flipping the</span>
+</span><span id="__span-0-380"><a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">    polygon normal.  Used to produce floor and ceiling polygons in the</span>
+</span><span id="__span-0-381"><a id="__codelineno-0-381" name="__codelineno-0-381"></a><span class="sd">    correct winding for the active ``GlobalGeometryRules`` convention.</span>
+</span><span id="__span-0-382"><a id="__codelineno-0-382" name="__codelineno-0-382"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-383"><a id="__codelineno-0-383" name="__codelineno-0-383"></a>    <span class="n">pts</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span> <span class="k">if</span> <span class="n">reverse</span> <span class="k">else</span> <span class="n">footprint</span>
+</span><span id="__span-0-384"><a id="__codelineno-0-384" name="__codelineno-0-384"></a>    <span class="k">return</span> <span class="n">Polygon3D</span><span class="p">([</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">])</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5290,7 +5299,7 @@ correct winding for the active <code>GlobalGeometryRules</code> convention.</p>
                 <code>factor</code>
             </td>
             <td>
-                  <code><span title="float">float</span> | <span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5331,7 +5340,8 @@ a <code>(fx, fy, fz)</code> tuple scales each axis independently
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/idfkit/geometry_builders.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-334">334</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-333">333</a></span>
+<span class="normal"><a href="#__codelineno-0-334">334</a></span>
 <span class="normal"><a href="#__codelineno-0-335">335</a></span>
 <span class="normal"><a href="#__codelineno-0-336">336</a></span>
 <span class="normal"><a href="#__codelineno-0-337">337</a></span>
@@ -5365,43 +5375,42 @@ a <code>(fx, fy, fz)</code> tuple scales each axis independently
 <span class="normal"><a href="#__codelineno-0-365">365</a></span>
 <span class="normal"><a href="#__codelineno-0-366">366</a></span>
 <span class="normal"><a href="#__codelineno-0-367">367</a></span>
-<span class="normal"><a href="#__codelineno-0-368">368</a></span>
-<span class="normal"><a href="#__codelineno-0-369">369</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-334"><a id="__codelineno-0-334" name="__codelineno-0-334"></a><span class="k">def</span><span class="w"> </span><span class="nf">scale_building</span><span class="p">(</span>
-</span><span id="__span-0-335"><a id="__codelineno-0-335" name="__codelineno-0-335"></a>    <span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span>
-</span><span id="__span-0-336"><a id="__codelineno-0-336" name="__codelineno-0-336"></a>    <span class="n">factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-</span><span id="__span-0-337"><a id="__codelineno-0-337" name="__codelineno-0-337"></a>    <span class="n">anchor</span><span class="p">:</span> <span class="n">Vector3D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-338"><a id="__codelineno-0-338" name="__codelineno-0-338"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-339"><a id="__codelineno-0-339" name="__codelineno-0-339"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Scale all surface vertices around an anchor point.</span>
-</span><span id="__span-0-340"><a id="__codelineno-0-340" name="__codelineno-0-340"></a>
-</span><span id="__span-0-341"><a id="__codelineno-0-341" name="__codelineno-0-341"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-342"><a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="sd">        doc: The document to modify in-place.</span>
-</span><span id="__span-0-343"><a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="sd">        factor: Scale factor.  A single ``float`` applies uniform scaling;</span>
-</span><span id="__span-0-344"><a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">            a ``(fx, fy, fz)`` tuple scales each axis independently</span>
-</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">            (e.g. ``(2.0, 1.0, 1.0)`` doubles X only).</span>
-</span><span id="__span-0-346"><a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">        anchor: Point to scale around.  If ``None``, the origin</span>
-</span><span id="__span-0-347"><a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">            ``(0, 0, 0)`` is used.</span>
-</span><span id="__span-0-348"><a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-349"><a id="__codelineno-0-349" name="__codelineno-0-349"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-</span><span id="__span-0-350"><a id="__codelineno-0-350" name="__codelineno-0-350"></a>        <span class="n">fx</span><span class="p">,</span> <span class="n">fy</span><span class="p">,</span> <span class="n">fz</span> <span class="o">=</span> <span class="n">factor</span>
-</span><span id="__span-0-351"><a id="__codelineno-0-351" name="__codelineno-0-351"></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-352"><a id="__codelineno-0-352" name="__codelineno-0-352"></a>        <span class="n">fx</span> <span class="o">=</span> <span class="n">fy</span> <span class="o">=</span> <span class="n">fz</span> <span class="o">=</span> <span class="n">factor</span>
-</span><span id="__span-0-353"><a id="__codelineno-0-353" name="__codelineno-0-353"></a>
-</span><span id="__span-0-354"><a id="__codelineno-0-354" name="__codelineno-0-354"></a>    <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">az</span> <span class="o">=</span> <span class="p">(</span><span class="n">anchor</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">anchor</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">anchor</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="k">if</span> <span class="n">anchor</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-</span><span id="__span-0-355"><a id="__codelineno-0-355" name="__codelineno-0-355"></a>
-</span><span id="__span-0-356"><a id="__codelineno-0-356" name="__codelineno-0-356"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
-</span><span id="__span-0-357"><a id="__codelineno-0-357" name="__codelineno-0-357"></a>        <span class="k">for</span> <span class="n">srf</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
-</span><span id="__span-0-358"><a id="__codelineno-0-358" name="__codelineno-0-358"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">)</span>
-</span><span id="__span-0-359"><a id="__codelineno-0-359" name="__codelineno-0-359"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-360"><a id="__codelineno-0-360" name="__codelineno-0-360"></a>                <span class="k">continue</span>
-</span><span id="__span-0-361"><a id="__codelineno-0-361" name="__codelineno-0-361"></a>            <span class="n">new_vertices</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="__span-0-362"><a id="__codelineno-0-362" name="__codelineno-0-362"></a>                <span class="n">Vector3D</span><span class="p">(</span>
-</span><span id="__span-0-363"><a id="__codelineno-0-363" name="__codelineno-0-363"></a>                    <span class="n">ax</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ax</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span><span class="p">,</span>
-</span><span id="__span-0-364"><a id="__codelineno-0-364" name="__codelineno-0-364"></a>                    <span class="n">ay</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">ay</span><span class="p">)</span> <span class="o">*</span> <span class="n">fy</span><span class="p">,</span>
-</span><span id="__span-0-365"><a id="__codelineno-0-365" name="__codelineno-0-365"></a>                    <span class="n">az</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">az</span><span class="p">)</span> <span class="o">*</span> <span class="n">fz</span><span class="p">,</span>
-</span><span id="__span-0-366"><a id="__codelineno-0-366" name="__codelineno-0-366"></a>                <span class="p">)</span>
-</span><span id="__span-0-367"><a id="__codelineno-0-367" name="__codelineno-0-367"></a>                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span>
-</span><span id="__span-0-368"><a id="__codelineno-0-368" name="__codelineno-0-368"></a>            <span class="p">]</span>
-</span><span id="__span-0-369"><a id="__codelineno-0-369" name="__codelineno-0-369"></a>            <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">,</span> <span class="n">Polygon3D</span><span class="p">(</span><span class="n">new_vertices</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-368">368</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-333"><a id="__codelineno-0-333" name="__codelineno-0-333"></a><span class="k">def</span><span class="w"> </span><span class="nf">scale_building</span><span class="p">(</span>
+</span><span id="__span-0-334"><a id="__codelineno-0-334" name="__codelineno-0-334"></a>    <span class="n">doc</span><span class="p">:</span> <span class="n">IDFDocument</span><span class="p">,</span>
+</span><span id="__span-0-335"><a id="__codelineno-0-335" name="__codelineno-0-335"></a>    <span class="n">factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+</span><span id="__span-0-336"><a id="__codelineno-0-336" name="__codelineno-0-336"></a>    <span class="n">anchor</span><span class="p">:</span> <span class="n">Vector3D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-337"><a id="__codelineno-0-337" name="__codelineno-0-337"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-338"><a id="__codelineno-0-338" name="__codelineno-0-338"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Scale all surface vertices around an anchor point.</span>
+</span><span id="__span-0-339"><a id="__codelineno-0-339" name="__codelineno-0-339"></a>
+</span><span id="__span-0-340"><a id="__codelineno-0-340" name="__codelineno-0-340"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-341"><a id="__codelineno-0-341" name="__codelineno-0-341"></a><span class="sd">        doc: The document to modify in-place.</span>
+</span><span id="__span-0-342"><a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="sd">        factor: Scale factor.  A single ``float`` applies uniform scaling;</span>
+</span><span id="__span-0-343"><a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="sd">            a ``(fx, fy, fz)`` tuple scales each axis independently</span>
+</span><span id="__span-0-344"><a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">            (e.g. ``(2.0, 1.0, 1.0)`` doubles X only).</span>
+</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">        anchor: Point to scale around.  If ``None``, the origin</span>
+</span><span id="__span-0-346"><a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">            ``(0, 0, 0)`` is used.</span>
+</span><span id="__span-0-347"><a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-348"><a id="__codelineno-0-348" name="__codelineno-0-348"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+</span><span id="__span-0-349"><a id="__codelineno-0-349" name="__codelineno-0-349"></a>        <span class="n">fx</span><span class="p">,</span> <span class="n">fy</span><span class="p">,</span> <span class="n">fz</span> <span class="o">=</span> <span class="n">factor</span>
+</span><span id="__span-0-350"><a id="__codelineno-0-350" name="__codelineno-0-350"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-0-351"><a id="__codelineno-0-351" name="__codelineno-0-351"></a>        <span class="n">fx</span> <span class="o">=</span> <span class="n">fy</span> <span class="o">=</span> <span class="n">fz</span> <span class="o">=</span> <span class="n">factor</span>
+</span><span id="__span-0-352"><a id="__codelineno-0-352" name="__codelineno-0-352"></a>
+</span><span id="__span-0-353"><a id="__codelineno-0-353" name="__codelineno-0-353"></a>    <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">az</span> <span class="o">=</span> <span class="p">(</span><span class="n">anchor</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">anchor</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">anchor</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="k">if</span> <span class="n">anchor</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-0-354"><a id="__codelineno-0-354" name="__codelineno-0-354"></a>
+</span><span id="__span-0-355"><a id="__codelineno-0-355" name="__codelineno-0-355"></a>    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">VERTEX_SURFACE_TYPES</span><span class="p">:</span>
+</span><span id="__span-0-356"><a id="__codelineno-0-356" name="__codelineno-0-356"></a>        <span class="k">for</span> <span class="n">srf</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">stype</span><span class="p">]:</span>
+</span><span id="__span-0-357"><a id="__codelineno-0-357" name="__codelineno-0-357"></a>            <span class="n">coords</span> <span class="o">=</span> <span class="n">get_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">)</span>
+</span><span id="__span-0-358"><a id="__codelineno-0-358" name="__codelineno-0-358"></a>            <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-359"><a id="__codelineno-0-359" name="__codelineno-0-359"></a>                <span class="k">continue</span>
+</span><span id="__span-0-360"><a id="__codelineno-0-360" name="__codelineno-0-360"></a>            <span class="n">new_vertices</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-0-361"><a id="__codelineno-0-361" name="__codelineno-0-361"></a>                <span class="n">Vector3D</span><span class="p">(</span>
+</span><span id="__span-0-362"><a id="__codelineno-0-362" name="__codelineno-0-362"></a>                    <span class="n">ax</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ax</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span><span class="p">,</span>
+</span><span id="__span-0-363"><a id="__codelineno-0-363" name="__codelineno-0-363"></a>                    <span class="n">ay</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">ay</span><span class="p">)</span> <span class="o">*</span> <span class="n">fy</span><span class="p">,</span>
+</span><span id="__span-0-364"><a id="__codelineno-0-364" name="__codelineno-0-364"></a>                    <span class="n">az</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">az</span><span class="p">)</span> <span class="o">*</span> <span class="n">fz</span><span class="p">,</span>
+</span><span id="__span-0-365"><a id="__codelineno-0-365" name="__codelineno-0-365"></a>                <span class="p">)</span>
+</span><span id="__span-0-366"><a id="__codelineno-0-366" name="__codelineno-0-366"></a>                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coords</span><span class="o">.</span><span class="n">vertices</span>
+</span><span id="__span-0-367"><a id="__codelineno-0-367" name="__codelineno-0-367"></a>            <span class="p">]</span>
+</span><span id="__span-0-368"><a id="__codelineno-0-368" name="__codelineno-0-368"></a>            <span class="n">set_surface_coords</span><span class="p">(</span><span class="n">srf</span><span class="p">,</span> <span class="n">Polygon3D</span><span class="p">(</span><span class="n">new_vertices</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5459,7 +5468,7 @@ is responsible for ensuring it exists.</p>
                 <code>construction_name</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5485,7 +5494,7 @@ is responsible for ensuring it exists.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">

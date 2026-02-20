@@ -3748,7 +3748,7 @@
 
         <p>Parse DDY files and inject design day conditions into IDF models.</p>
 <p>A DDY file is a valid IDF-syntax file containing <code>Site:Location</code> and
-<code>SizingPeriod:DesignDay</code> objects.  This class uses :func:<code>idfkit.load_idf</code>
+<code>SizingPeriod:DesignDay</code> objects.  This class uses <code>[idfkit.load_idf][idfkit.load_idf]</code>
 to parse the file and classifies each design day by its ASHRAE condition
 type.</p>
 
@@ -3769,7 +3769,7 @@ type.</p>
                 <code>ddy_path</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span></code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3785,7 +3785,7 @@ type.</p>
                 <code>version</code>
             </td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>, <span title="int">int</span>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4107,7 +4107,7 @@ across versions).</p>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse DDY files and inject design day conditions into IDF models.</span>
 </span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a>
 </span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    A DDY file is a valid IDF-syntax file containing ``Site:Location`` and</span>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    ``SizingPeriod:DesignDay`` objects.  This class uses :func:`idfkit.load_idf`</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    ``SizingPeriod:DesignDay`` objects.  This class uses `[idfkit.load_idf][idfkit.load_idf]`</span>
 </span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    to parse the file and classifies each design day by its ASHRAE condition</span>
 </span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">    type.</span>
 </span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>
@@ -4196,7 +4196,7 @@ across versions).</p>
 </span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a>
 </span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a><span class="sd">        Monthly design days follow the naming pattern</span>
 </span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">        ``{Location} {Month} {pct}% Condns {type}`` and are not classified</span>
-</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">        into the :class:`DesignDayType` enum.</span>
+</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">        into the [DesignDayType][idfkit.weather.designday.DesignDayType] enum.</span>
 </span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a>        <span class="k">return</span> <span class="p">[</span><span class="n">dd</span> <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_objects</span> <span class="k">if</span> <span class="n">_MONTH_PATTERN</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
 </span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a>
@@ -4222,7 +4222,7 @@ across versions).</p>
 </span><span id="__span-0-227"><a id="__codelineno-0-227" name="__codelineno-0-227"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">raise_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-228"><a id="__codelineno-0-228" name="__codelineno-0-228"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Raise :exc:`NoDesignDaysError` if this DDY has no design days.</span>
 </span><span id="__span-0-229"><a id="__codelineno-0-229" name="__codelineno-0-229"></a>
-</span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="sd">        When constructed via :meth:`from_station`, the error message includes</span>
+</span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="sd">        When constructed via [from_station][idfkit.weather.designday.DesignDayManager.from_station], the error message includes</span>
 </span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="sd">        suggestions for nearby stations that may have design day data.</span>
 </span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a>
 </span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a><span class="sd">        Raises:</span>
@@ -4337,7 +4337,7 @@ across versions).</p>
 </span><span id="__span-0-342"><a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="sd">        practices and adds them as ``SizingPeriod:DesignDay`` objects.</span>
 </span><span id="__span-0-343"><a id="__codelineno-0-343" name="__codelineno-0-343"></a>
 </span><span id="__span-0-344"><a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">            model: The target :class:`~idfkit.document.IDFDocument`.</span>
+</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">            model: The target [IDFDocument][idfkit.document.IDFDocument].</span>
 </span><span id="__span-0-346"><a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">            heating: Which heating percentile to include.</span>
 </span><span id="__span-0-347"><a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">            cooling: Which cooling dry-bulb percentile to include.</span>
 </span><span id="__span-0-348"><a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="sd">            include_wet_bulb: Also include cooling wet-bulb design days.</span>
@@ -4451,7 +4451,7 @@ across versions).</p>
         <p>All monthly design day objects.</p>
 <p>Monthly design days follow the naming pattern
 <code>{Location} {Month} {pct}% Condns {type}</code> and are not classified
-into the :class:<code>DesignDayType</code> enum.</p>
+into the <a class="autorefs autorefs-internal" title="&lt;code&gt;idfkit.weather.designday.DesignDayType&lt;/code&gt;" href="#idfkit.weather.designday.DesignDayType">DesignDayType</a> enum.</p>
 
     </div>
 
@@ -4545,7 +4545,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The target :class:<code>~idfkit.document.IDFDocument</code>.</p>
+                <p>The target <a class="autorefs autorefs-internal" href="../../document/#idfkit.document.IDFDocument">IDFDocument</a>.</p>
               </div>
             </td>
             <td>
@@ -4557,7 +4557,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>heating</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;99.6%&#39;, &#39;99%&#39;, &#39;both&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;99.6%&#39;, &#39;99%&#39;, &#39;both&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4573,7 +4573,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>cooling</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;0.4%&#39;, &#39;1%&#39;, &#39;2%&#39;, &#39;all&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;0.4%&#39;, &#39;1%&#39;, &#39;2%&#39;, &#39;all&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4589,7 +4589,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_wet_bulb</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4605,7 +4605,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_enthalpy</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4621,7 +4621,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_dehumidification</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4637,7 +4637,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>include_wind</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4653,7 +4653,7 @@ practices and adds them as <code>SizingPeriod:DesignDay</code> objects.</p>
                 <code>update_location</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4670,7 +4670,7 @@ DDY file metadata.</p>
                 <code>replace_existing</code>
             </td>
             <td>
-                  <code><span title="bool">bool</span></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4697,7 +4697,7 @@ before adding new ones.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4793,7 +4793,7 @@ before adding new ones.</p>
 </span><span id="__span-0-342"><a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="sd">    practices and adds them as ``SizingPeriod:DesignDay`` objects.</span>
 </span><span id="__span-0-343"><a id="__codelineno-0-343" name="__codelineno-0-343"></a>
 </span><span id="__span-0-344"><a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">        model: The target :class:`~idfkit.document.IDFDocument`.</span>
+</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">        model: The target [IDFDocument][idfkit.document.IDFDocument].</span>
 </span><span id="__span-0-346"><a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">        heating: Which heating percentile to include.</span>
 </span><span id="__span-0-347"><a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">        cooling: Which cooling dry-bulb percentile to include.</span>
 </span><span id="__span-0-348"><a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="sd">        include_wet_bulb: Also include cooling wet-bulb design days.</span>
@@ -4915,7 +4915,7 @@ before adding new ones.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="enum.Enum">Enum</span></code></p>
+              Bases: <code><a class="autorefs autorefs-external" title="&lt;code&gt;enum.Enum&lt;/code&gt;" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -5367,7 +5367,7 @@ before adding new ones.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The :class:<code>~idfkit.document.IDFDocument</code> to modify.</p>
+                <p>The <a class="autorefs autorefs-internal" href="../../document/#idfkit.document.IDFDocument">IDFDocument</a> to modify.</p>
               </div>
             </td>
             <td>
@@ -5400,7 +5400,7 @@ before adding new ones.</p>
                 <code>standard</code>
             </td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;90.1&#39;, &#39;general&#39;]</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Literal&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;90.1&#39;, &#39;general&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5416,7 +5416,7 @@ before adding new ones.</p>
                 <code>version</code>
             </td>
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>, <span title="int">int</span>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5442,7 +5442,7 @@ before adding new ones.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5534,7 +5534,7 @@ have design day data.</p>
 </span><span id="__span-0-422"><a id="__codelineno-0-422" name="__codelineno-0-422"></a><span class="sd">          (conservative general practice).</span>
 </span><span id="__span-0-423"><a id="__codelineno-0-423" name="__codelineno-0-423"></a>
 </span><span id="__span-0-424"><a id="__codelineno-0-424" name="__codelineno-0-424"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-425"><a id="__codelineno-0-425" name="__codelineno-0-425"></a><span class="sd">        model: The :class:`~idfkit.document.IDFDocument` to modify.</span>
+</span><span id="__span-0-425"><a id="__codelineno-0-425" name="__codelineno-0-425"></a><span class="sd">        model: The [IDFDocument][idfkit.document.IDFDocument] to modify.</span>
 </span><span id="__span-0-426"><a id="__codelineno-0-426" name="__codelineno-0-426"></a><span class="sd">        station: Weather station whose DDY file to use.</span>
 </span><span id="__span-0-427"><a id="__codelineno-0-427" name="__codelineno-0-427"></a><span class="sd">        standard: ASHRAE preset to apply.</span>
 </span><span id="__span-0-428"><a id="__codelineno-0-428" name="__codelineno-0-428"></a><span class="sd">        version: EnergyPlus version for schema resolution.</span>
