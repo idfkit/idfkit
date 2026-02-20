@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument
+from idfkit import IDFDocument, new_document
 from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 
@@ -168,6 +168,38 @@ class TestIDFDocumentObjectManipulation:
     def test_getobject_missing_type(self, simple_doc: IDFDocument) -> None:
         obj = simple_doc.getobject("Nonexistent", "X")
         assert obj is None
+
+
+class TestIDFDocumentSingletons:
+    def test_duplicate_seeded_building_raises(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(DuplicateObjectError):
+            doc.add("Building", "OtherBuilding")
+
+    def test_duplicate_seeded_global_geometry_rules_raises(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(DuplicateObjectError):
+            doc.add(
+                "GlobalGeometryRules",
+                starting_vertex_position="UpperLeftCorner",
+                vertex_entry_direction="Counterclockwise",
+                coordinate_system="Relative",
+            )
+
+    def test_duplicate_non_seeded_singleton_raises(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Timestep", number_of_timesteps_per_hour=4)
+        with pytest.raises(DuplicateObjectError):
+            empty_doc.add("Timestep", number_of_timesteps_per_hour=6)
+
+    def test_singleton_duplicate_check_is_case_insensitive(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(DuplicateObjectError):
+            doc.add("building", "OtherBuilding")
+
+    def test_non_singleton_still_allows_multiple(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "Z1")
+        empty_doc.add("Zone", "Z2")
+        assert len(empty_doc["Zone"]) == 2
 
 
 class TestIDFDocumentRename:

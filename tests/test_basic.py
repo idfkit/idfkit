@@ -44,7 +44,19 @@ def test_new_document():
 
     model = new_document(version=(24, 1, 0))
     assert model.version == (24, 1, 0)
-    assert len(model) == 0
+    assert len(model) == 4
+    assert len(model["Version"]) == 1
+    assert len(model["Building"]) == 1
+    assert len(model["SimulationControl"]) == 1
+    assert len(model["GlobalGeometryRules"]) == 1
+
+    version_obj = model["Version"].first()
+    assert version_obj is not None
+    assert version_obj.version_identifier == "24.1"
+
+    building = model["Building"].first()
+    assert building is not None
+    assert building.name == "Building"
 
 
 def test_add_object():

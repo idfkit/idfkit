@@ -228,7 +228,7 @@ class TestGeometryConvention:
     """Verify that builders adapt vertex ordering to GlobalGeometryRules."""
 
     def test_default_ulc_ccw(self) -> None:
-        """Without GlobalGeometryRules the default is ULC + CCW."""
+        """new_document() defaults to ULC + CCW convention."""
         doc = new_document()
         create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
@@ -244,13 +244,11 @@ class TestGeometryConvention:
     def test_ulc_clockwise_wall_order(self) -> None:
         """ULC + Clockwise reverses winding: UL → UR → LR → LL."""
         doc = new_document()
-        doc.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="UpperLeftCorner",
-            vertex_entry_direction="Clockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "UpperLeftCorner"
+        rules.vertex_entry_direction = "Clockwise"
+        rules.coordinate_system = "World"
         create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
@@ -264,13 +262,11 @@ class TestGeometryConvention:
     def test_llc_ccw_wall_order(self) -> None:
         """LLC + CCW starts from lower-left: LL → LR → UR → UL."""
         doc = new_document()
-        doc.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="LowerLeftCorner",
-            vertex_entry_direction="Counterclockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "LowerLeftCorner"
+        rules.vertex_entry_direction = "Counterclockwise"
+        rules.coordinate_system = "World"
         create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
@@ -291,13 +287,11 @@ class TestGeometryConvention:
         assert coords_ccw is not None
 
         doc_cw = new_document()
-        doc_cw.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="UpperLeftCorner",
-            vertex_entry_direction="Clockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc_cw["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "UpperLeftCorner"
+        rules.vertex_entry_direction = "Clockwise"
+        rules.coordinate_system = "World"
         create_building(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         floor_cw = doc_cw.getobject("BuildingSurface:Detailed", "B Floor")
         assert floor_cw is not None
@@ -320,13 +314,11 @@ class TestGeometryConvention:
         assert coords_ccw is not None
 
         doc_cw = new_document()
-        doc_cw.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="UpperLeftCorner",
-            vertex_entry_direction="Clockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc_cw["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "UpperLeftCorner"
+        rules.vertex_entry_direction = "Clockwise"
+        rules.coordinate_system = "World"
         create_building(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         roof_cw = doc_cw.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof_cw is not None
@@ -345,13 +337,11 @@ class TestGeometryConvention:
         assert coords_ccw is not None
 
         doc_cw = new_document()
-        doc_cw.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="UpperLeftCorner",
-            vertex_entry_direction="Clockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc_cw["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "UpperLeftCorner"
+        rules.vertex_entry_direction = "Clockwise"
+        rules.coordinate_system = "World"
         add_shading_block(doc_cw, "S", [(0, 0), (5, 0), (5, 5), (0, 5)], height=10)
         cap_cw = doc_cw.getobject("Shading:Site:Detailed", "S Top")
         assert cap_cw is not None
@@ -364,13 +354,11 @@ class TestGeometryConvention:
     def test_surface_count_unchanged_by_convention(self) -> None:
         """Convention changes vertex ordering, not the number of surfaces."""
         doc = new_document()
-        doc.add(
-            "GlobalGeometryRules",
-            starting_vertex_position="LowerRightCorner",
-            vertex_entry_direction="Clockwise",
-            coordinate_system="World",
-            validate=False,
-        )
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.starting_vertex_position = "LowerRightCorner"
+        rules.vertex_entry_direction = "Clockwise"
+        rules.coordinate_system = "World"
         block = ZonedBlock(name="Box", footprint=footprint_rectangle(10, 8), floor_to_floor=3, num_stories=2)
         block.build(doc)
         assert len(doc["Zone"]) == 2

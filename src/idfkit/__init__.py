@@ -197,18 +197,23 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
 
 def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
     """
-    Create a new empty IDFDocument.
+    Create a new IDFDocument with baseline singleton objects populated.
 
     Args:
         version: EnergyPlus version (default: latest supported version)
 
     Returns:
-        Empty IDFDocument with schema loaded
+        IDFDocument with schema loaded and baseline objects seeded
 
     Examples:
         >>> model = new_document()
         >>> len(model)
-        0
+        4
+
+        Baseline singleton objects are present by default:
+
+        >>> model["Building"].first().name
+        'Building'
 
         Add objects to the model:
 
@@ -216,7 +221,7 @@ def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
         >>> zone.name
         'Office'
         >>> len(model)
-        1
+        5
 
         Create a model for a specific EnergyPlus version:
 
@@ -225,7 +230,20 @@ def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
         (24, 1, 0)
     """
     schema = get_schema(version)
-    return IDFDocument(version=version, schema=schema)
+    doc = IDFDocument(version=version, schema=schema)
+
+    # Seed core singleton objects for a minimal baseline model.
+    version_identifier = f"{version[0]}.{version[1]}"
+    doc.add("Version", version_identifier=version_identifier)
+    doc.add("Building", "Building")
+    doc.add("SimulationControl")
+    doc.add(
+        "GlobalGeometryRules",
+        starting_vertex_position="UpperLeftCorner",
+        vertex_entry_direction="Counterclockwise",
+        coordinate_system="Relative",
+    )
+    return doc
 
 
 __all__ = [

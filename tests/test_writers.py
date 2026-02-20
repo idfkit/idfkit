@@ -57,6 +57,21 @@ class TestWriteIDF:
         # IDF format should include !- comments
         assert "!-" in output
 
+    def test_version_not_duplicated_when_version_object_exists(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        output = write_idf(doc, None)
+        assert output is not None
+        assert output.count("Version,") == 1
+
+    def test_version_object_is_authoritative_for_idf_output(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        version_obj = doc["Version"].first()
+        assert version_obj is not None
+        version_obj.version_identifier = "99.7"
+        output = write_idf(doc, None)
+        assert output is not None
+        assert "99.7" in output
+
     def test_programmatic_surface_extensibles_schema_style_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
         doc.add(
@@ -200,6 +215,24 @@ class TestWriteEpJSON:
         assert output is not None
         # 4-space indent should have more spaces than 2-space
         assert "    " in output
+
+    def test_version_not_duplicated_when_version_object_exists(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        output = write_epjson(doc, None)
+        assert output is not None
+        data = json.loads(output)
+        assert "Version" in data
+        assert len(data["Version"]) == 1
+
+    def test_version_object_is_authoritative_for_epjson_output(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        version_obj = doc["Version"].first()
+        assert version_obj is not None
+        version_obj.version_identifier = "88.4"
+        output = write_epjson(doc, None)
+        assert output is not None
+        data = json.loads(output)
+        assert data["Version"]["Version 1"]["version_identifier"] == "88.4"
 
 
 # ---------------------------------------------------------------------------

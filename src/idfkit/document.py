@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ._compat import EppyDocumentMixin
-from .exceptions import ValidationFailedError
+from .exceptions import DuplicateObjectError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
@@ -278,8 +278,8 @@ class IDFDocument(EppyDocumentMixin):
             >>> model = new_document()
             >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
             Zone('Office')
-            >>> model.keys()
-            ['Zone']
+            >>> "Zone" in model.keys()
+            True
         """
         return [k for k, v in self._collections.items() if v]
 
@@ -291,8 +291,8 @@ class IDFDocument(EppyDocumentMixin):
             >>> model = new_document()
             >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
             Zone('Office')
-            >>> len(model.values())
-            1
+            >>> len(model.values()) >= 1
+            True
         """
         return [v for v in self._collections.values() if v]
 
@@ -304,8 +304,8 @@ class IDFDocument(EppyDocumentMixin):
             >>> model = new_document()
             >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
             Zone('Office')
-            >>> [(t, len(c)) for t, c in model.items()]
-            [('Zone', 1)]
+            >>> "Zone" in [t for t, _ in model.items()]
+            True
         """
         return [(k, v) for k, v in self._collections.items() if v]
 
@@ -400,6 +400,33 @@ class IDFDocument(EppyDocumentMixin):
 
         return field_order
 
+    def _resolve_schema_obj_type(self, obj_type: str) -> str:
+        """Resolve object type casing against schema definitions."""
+        if self._schema is None:
+            return obj_type
+
+        if self._schema.get_object_schema(obj_type) is not None:
+            return obj_type
+
+        obj_type_upper = obj_type.upper()
+        for candidate in self._schema.object_types:
+            if candidate.upper() == obj_type_upper:
+                return candidate
+
+        return obj_type
+
+    def _find_existing_collection_type(self, obj_type: str) -> str | None:
+        """Find existing non-empty collection type by case-insensitive name."""
+        if self._collections.get(obj_type):
+            return obj_type
+
+        obj_type_upper = obj_type.upper()
+        for existing_type, collection in self._collections.items():
+            if existing_type.upper() == obj_type_upper and collection:
+                return existing_type
+
+        return None
+
     def add(
         self,
         obj_type: str,
@@ -426,6 +453,8 @@ class IDFDocument(EppyDocumentMixin):
             The created IDFObject
 
         Raises:
+            DuplicateObjectError: If a singleton object type (marked with
+                schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
 
@@ -466,23 +495,34 @@ class IDFDocument(EppyDocumentMixin):
         field_data.update(kwargs)
 
         # Get schema info
+        resolved_obj_type = obj_type
         obj_schema: dict[str, Any] | None = None
         field_order: list[str] | None = None
         ref_fields: frozenset[str] | None = None
         parsing_cache: ParsingCache | None = None
         if self._schema:
-            obj_schema = self._schema.get_object_schema(obj_type)
-            if self._schema.has_name(obj_type):
-                field_order = self._schema.get_field_names(obj_type)
+            resolved_obj_type = self._resolve_schema_obj_type(obj_type)
+            obj_schema = self._schema.get_object_schema(resolved_obj_type)
+
+            # Enforce singleton object types (schema marker: maxProperties == 1).
+            if obj_schema and obj_schema.get("maxProperties") == 1:
+                existing_type = self._find_existing_collection_type(resolved_obj_type)
+                if existing_type is not None:
+                    existing = self._collections[existing_type].first()
+                    duplicate_name = existing.name if existing and existing.name else existing_type
+                    raise DuplicateObjectError(resolved_obj_type, duplicate_name)
+
+            if self._schema.has_name(resolved_obj_type):
+                field_order = self._schema.get_field_names(resolved_obj_type)
             else:
-                field_order = self._schema.get_all_field_names(obj_type)
-            parsing_cache = self._schema.get_parsing_cache(obj_type)
+                field_order = self._schema.get_all_field_names(resolved_obj_type)
+            parsing_cache = self._schema.get_parsing_cache(resolved_obj_type)
             field_order = self._build_field_order_for_add(field_order, field_data, parsing_cache)
-            ref_fields = self._compute_ref_fields(self._schema, obj_type)
+            ref_fields = self._compute_ref_fields(self._schema, resolved_obj_type)
 
         # Create object
         obj = IDFObject(
-            obj_type=obj_type,
+            obj_type=resolved_obj_type,
             name=name,
             data=field_data,
             schema=obj_schema,
@@ -498,16 +538,16 @@ class IDFDocument(EppyDocumentMixin):
                 raise ValidationFailedError(errors)
 
         # Add to collection
-        self[obj_type].add(obj)
+        self[resolved_obj_type].add(obj)
 
         # Index references
         self._index_object_references(obj)
 
         # Invalidate schedules cache
-        if obj_type.upper().startswith("SCHEDULE"):
+        if resolved_obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
-        logger.debug("Added %s '%s'", obj_type, name)
+        logger.debug("Added %s '%s'", resolved_obj_type, name)
         return obj
 
     def removeidfobject(self, obj: IDFObject) -> None:
@@ -847,14 +887,12 @@ class IDFDocument(EppyDocumentMixin):
             >>> baseline.add("Zone", "Office")  # doctest: +ELLIPSIS
             Zone('Office')
             >>> variant = baseline.copy()
-            >>> len(variant)
-            1
+            >>> len(variant) == len(baseline)
+            True
             >>> variant.add("Zone", "Server_Room")  # doctest: +ELLIPSIS
             Zone('Server_Room')
-            >>> len(baseline)
-            1
-            >>> len(variant)
-            2
+            >>> len(variant) == len(baseline) + 1
+            True
         """
         new_doc = IDFDocument(
             version=self.version,

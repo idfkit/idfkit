@@ -46,8 +46,10 @@ determine the vertex ordering convention:
 - **`vertex_entry_direction`** -- winding direction (`Counterclockwise`
   or `Clockwise`)
 
-When no `GlobalGeometryRules` object exists, the EnergyPlus default of
-`UpperLeftCorner` / `Counterclockwise` is assumed.
+`new_document()` pre-seeds `GlobalGeometryRules` with
+`UpperLeftCorner` / `Counterclockwise` defaults. If a model is missing
+`GlobalGeometryRules` (for example, some legacy inputs), the same
+EnergyPlus defaults are assumed.
 
 This means you can safely add geometry to an existing model that uses a
 non-default convention without having to rewrite all existing surfaces:

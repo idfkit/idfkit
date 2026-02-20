@@ -128,8 +128,8 @@ def schema() -> EpJSONSchema:
 
 @pytest.fixture
 def empty_doc() -> IDFDocument:
-    """Create an empty IDFDocument with schema loaded."""
-    return new_document(version=(24, 1, 0))
+    """Create a truly empty IDFDocument with schema loaded."""
+    return IDFDocument(version=(24, 1, 0), schema=get_schema((24, 1, 0)))
 
 
 @pytest.fixture

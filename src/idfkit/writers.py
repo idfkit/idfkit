@@ -27,6 +27,26 @@ if TYPE_CHECKING:
 OutputType = Literal["standard", "nocomment", "compressed"]
 
 
+def _resolve_version_identifier(doc: IDFDocument) -> str:
+    """Resolve version identifier from Version object, falling back to document metadata."""
+    for obj_type, collection in doc.collections.items():
+        if obj_type.upper() != "VERSION" or not collection:
+            continue
+        version_obj = collection.first()
+        if version_obj is None:
+            continue
+        version_identifier = version_obj.data.get("version_identifier")
+        if isinstance(version_identifier, str):
+            version_identifier = version_identifier.strip()
+            if version_identifier:
+                return version_identifier
+        elif version_identifier is not None:
+            return str(version_identifier)
+
+    version = doc.version
+    return f"{version[0]}.{version[1]}"
+
+
 def write_idf(
     doc: IDFDocument,
     filepath: Path | str | None = None,
@@ -167,19 +187,21 @@ class IDFWriter:
             lines.append("")
 
         # Write Version first
-        version = self._doc.version
+        version_identifier = _resolve_version_identifier(self._doc)
         if self._output_type == "compressed":
-            lines.append(f"Version,{version[0]}.{version[1]};")
+            lines.append(f"Version,{version_identifier};")
         else:
             lines.append("Version,")
             if self._output_type == "standard":
-                lines.append(f"  {version[0]}.{version[1]};                    !- Version Identifier")
+                lines.append(f"  {version_identifier};                    !- Version Identifier")
             else:
-                lines.append(f"  {version[0]}.{version[1]};")
+                lines.append(f"  {version_identifier};")
             lines.append("")
 
         # Write objects grouped by type
         for obj_type in sorted(self._doc.collections.keys()):
+            if obj_type.upper() == "VERSION":
+                continue
             collection = self._doc.collections[obj_type]
             if not collection:
                 continue
@@ -314,11 +336,12 @@ class EpJSONWriter:
         result: dict[str, Any] = {}
 
         # Add Version
-        version = self._doc.version
-        result["Version"] = {"Version 1": {"version_identifier": f"{version[0]}.{version[1]}"}}
+        result["Version"] = {"Version 1": {"version_identifier": _resolve_version_identifier(self._doc)}}
 
         # Add objects by type
         for obj_type, collection in self._doc.collections.items():
+            if obj_type.upper() == "VERSION":
+                continue
             if not collection:
                 continue
 
