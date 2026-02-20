@@ -29,6 +29,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import inspect
+import logging
 import time
 from collections.abc import Callable, Coroutine
 from pathlib import Path
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
     from .cache import CacheKey, SimulationCache
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 def _is_async_fs(fs: object) -> bool:
@@ -143,6 +146,8 @@ async def async_simulate(
             msg = f"Weather file not found: {weather_path}"
             raise SimulationError(msg)
 
+        logger.info("Starting async simulation with weather %s", weather_path.name)
+
         cache_key: CacheKey | None = None
         if cache is not None:
             cache_key = cache.compute_key(
@@ -203,6 +208,8 @@ async def async_simulate(
             progress_cleanup()
 
     elapsed = time.monotonic() - start
+
+    logger.info("Async simulation finished (exit_code=%d) in %.1fs", returncode, elapsed)
 
     if fs is not None:
         remote_dir = Path(str(output_dir))

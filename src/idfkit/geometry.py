@@ -6,10 +6,13 @@ Provides coordinate handling and transformations without geomeppy dependency.
 
 from __future__ import annotations
 
+import logging
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -1065,6 +1068,7 @@ def set_wwr(  # noqa: C901
         win_obj = doc.add("FenestrationSurface:Detailed", win_name, win_data, validate=False)
         new_windows.append(win_obj)
 
+    logger.debug("set_wwr: created %d windows at target ratio %.2f", len(new_windows), wwr)
     return new_windows
 
 
@@ -1197,6 +1201,7 @@ def intersect_match(doc: IDFDocument) -> None:  # noqa: C901
         st = getattr(surface, "surface_type", None) or ""
         if st.upper() == "WALL":
             walls.append(surface)
+    logger.debug("intersect_match: checking %d walls", len(walls))
 
     matched: set[int] = set()
 
@@ -1258,3 +1263,5 @@ def intersect_match(doc: IDFDocument) -> None:  # noqa: C901
             matched.add(id(wall_a))
             matched.add(id(wall_b))
             break
+
+    logger.debug("intersect_match: matched %d surfaces", len(matched))

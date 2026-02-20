@@ -94,6 +94,7 @@ expects a weather file named ``in.epw`` in its working directory.
 
 from __future__ import annotations
 
+import logging
 import re
 import shutil
 import subprocess
@@ -103,6 +104,8 @@ from typing import TYPE_CHECKING
 
 from ..exceptions import ExpandObjectsError
 from .config import EnergyPlusConfig, find_energyplus
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
@@ -307,8 +310,10 @@ def _run_expand_objects(config: EnergyPlusConfig, run_dir: Path, *, timeout: flo
     # Copy Energy+.idd so ExpandObjects can parse the model
     shutil.copy2(config.idd_path, run_dir / "Energy+.idd")
 
+    logger.info("Running ExpandObjects in %s", run_dir)
     proc = _run_subprocess(exe, cwd=run_dir, timeout=timeout, label="ExpandObjects")
     _require_file(run_dir / "expanded.idf", label="ExpandObjects", proc=proc)
+    logger.info("ExpandObjects completed (exit code %d)", proc.returncode)
 
 
 def _prepare_run_dir(model: IDFDocument, *, weather: str | Path | None = None) -> Path:
@@ -367,12 +372,14 @@ def _run_slab_in_dir(config: EnergyPlusConfig, run_dir: Path, *, timeout: float)
 
     shutil.copy2(slab_idd, run_dir / "SlabGHT.idd")
 
+    logger.info("Running Slab preprocessor in %s", run_dir)
     proc = _run_subprocess(slab_exe, cwd=run_dir, timeout=timeout, label="Slab")
     _check_process_exit_code(proc, label="Slab")
     slab_output = run_dir / "SLABSurfaceTemps.TXT"
     _require_file(slab_output, label="Slab", proc=proc)
     _check_output_not_empty(slab_output, label="Slab", proc=proc)
     _check_for_fatal_preprocessor_message(slab_output, label="Slab", proc=proc)
+    logger.info("Slab preprocessor completed (exit code %d)", proc.returncode)
 
     _append_file(run_dir / "expanded.idf", slab_output)
 
@@ -396,12 +403,14 @@ def _run_basement_in_dir(config: EnergyPlusConfig, run_dir: Path, *, timeout: fl
 
     shutil.copy2(basement_idd, run_dir / "BasementGHT.idd")
 
+    logger.info("Running Basement preprocessor in %s", run_dir)
     proc = _run_subprocess(basement_exe, cwd=run_dir, timeout=timeout, label="Basement")
     _check_process_exit_code(proc, label="Basement")
     basement_output = run_dir / "EPObjects.TXT"
     _require_file(basement_output, label="Basement", proc=proc)
     _check_output_not_empty(basement_output, label="Basement", proc=proc)
     _check_for_fatal_preprocessor_message(basement_output, label="Basement", proc=proc)
+    logger.info("Basement preprocessor completed (exit code %d)", proc.returncode)
 
     _append_file(run_dir / "expanded.idf", basement_output)
 

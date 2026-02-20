@@ -41,6 +41,7 @@ Streaming example:
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import tempfile
 import time
@@ -59,6 +60,8 @@ if TYPE_CHECKING:
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,6 +148,8 @@ async def async_simulate_batch(
         if max_concurrent is None:
             max_concurrent = min(len(jobs), os.cpu_count() or 1)
 
+        logger.info("Starting async batch of %d jobs with concurrency %d", len(jobs), max_concurrent)
+
         semaphore = asyncio.Semaphore(max_concurrent)
         results: list[SimulationResult | None] = [None] * len(jobs)
         start = time.monotonic()
@@ -166,7 +171,14 @@ async def async_simulate_batch(
         assert r is not None  # noqa: S101
         final.append(r)
 
-    return BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
+    batch_result = BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
+    logger.info(
+        "Async batch complete: %d succeeded, %d failed in %.1fs",
+        len(batch_result.succeeded),
+        len(batch_result.failed),
+        elapsed,
+    )
+    return batch_result
 
 
 async def async_simulate_batch_stream(

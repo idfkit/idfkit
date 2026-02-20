@@ -8,6 +8,7 @@ which releases the GIL.
 
 from __future__ import annotations
 
+import logging
 import os
 import tempfile
 import time
@@ -26,6 +27,8 @@ if TYPE_CHECKING:
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
     from .fs import FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,6 +160,8 @@ def simulate_batch(
         if max_workers is None:
             max_workers = min(len(jobs), os.cpu_count() or 1)
 
+        logger.info("Starting batch of %d jobs with %d workers", len(jobs), max_workers)
+
         results: list[SimulationResult | None] = [None] * len(jobs)
         completed_count = 0
         total = len(jobs)
@@ -195,7 +200,14 @@ def simulate_batch(
         assert r is not None  # noqa: S101
         final.append(r)
 
-    return BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
+    batch_result = BatchResult(results=tuple(final), total_runtime_seconds=elapsed)
+    logger.info(
+        "Batch complete: %d succeeded, %d failed in %.1fs",
+        len(batch_result.succeeded),
+        len(batch_result.failed),
+        elapsed,
+    )
+    return batch_result
 
 
 def _run_job(

@@ -20,6 +20,7 @@ nav:
     - Simulation Architecture: concepts/simulation-architecture.md
     - Weather Data Pipeline: concepts/weather-pipeline.md
     - Caching Strategy: concepts/caching.md
+    - Logging: concepts/logging.md
     - Cloud & Remote Storage: concepts/cloud-storage.md
 
   - Simulation:

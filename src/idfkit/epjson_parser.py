@@ -8,12 +8,16 @@ Parsing is straightforward since it's already structured JSON.
 from __future__ import annotations
 
 import json
+import logging
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from .document import IDFDocument
 from .exceptions import VersionNotFoundError
 from .objects import IDFObject
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
@@ -87,6 +91,9 @@ class EpJSONParser:
         Returns:
             Parsed IDFDocument
         """
+        t0 = time.perf_counter()
+        logger.debug("Parsing epJSON file %s", self._filepath)
+
         # Load JSON
         with open(self._filepath, encoding="utf-8") as f:
             data = json.load(f)
@@ -94,6 +101,7 @@ class EpJSONParser:
         # Detect version if not provided
         if version is None:
             version = self._detect_version(data)
+            logger.debug("Detected version %d.%d.%d", *version)
 
         # Load schema if not provided
         schema = self._schema
@@ -107,6 +115,9 @@ class EpJSONParser:
 
         # Parse objects
         self._parse_objects(data, doc, schema)
+
+        elapsed = time.perf_counter() - t0
+        logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
 
         return doc
 

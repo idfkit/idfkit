@@ -7,9 +7,12 @@ eager validation during parsing.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -154,6 +157,7 @@ def validate_document(  # noqa: C901
 
     # Determine which object types to validate
     types_to_check = object_types or list(doc.collections.keys())
+    logger.debug("Validating %d object type(s)", len(types_to_check))
 
     for obj_type in types_to_check:
         if obj_type not in doc.collections:
@@ -185,7 +189,14 @@ def validate_document(  # noqa: C901
             elif err.severity == Severity.WARNING:
                 warnings.append(err)
 
-    return ValidationResult(errors, warnings, info)
+    result = ValidationResult(errors, warnings, info)
+    logger.info(
+        "Validation complete: %d error(s), %d warning(s), %d info",
+        len(errors),
+        len(warnings),
+        len(info),
+    )
+    return result
 
 
 def validate_object(

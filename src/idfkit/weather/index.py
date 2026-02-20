@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import logging
 import math
 import os
 import sys
@@ -15,6 +16,8 @@ from urllib.request import Request, urlopen
 
 from .spatial import haversine_km
 from .station import SearchResult, SpatialResult, WeatherStation
+
+logger = logging.getLogger(__name__)
 
 # The main regional TMYx Excel index files covering worldwide stations.
 _INDEX_FILES: tuple[str, ...] = (
@@ -304,6 +307,7 @@ class StationIndex:
             raise FileNotFoundError(msg)
 
         stations, last_modified, _ = _load_compressed_index(source)
+        logger.info("Loaded station index with %d stations from %s", len(stations), source)
         instance = cls(stations)
         instance._last_modified = last_modified
         return instance

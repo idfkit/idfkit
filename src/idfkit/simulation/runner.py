@@ -5,6 +5,7 @@ Executes EnergyPlus as a subprocess and returns structured results.
 
 from __future__ import annotations
 
+import logging
 import subprocess
 import threading
 import time
@@ -29,6 +30,8 @@ if TYPE_CHECKING:
     from ..document import IDFDocument
     from .cache import CacheKey, SimulationCache
     from .fs import FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 def simulate(
@@ -117,11 +120,14 @@ def simulate(
 
     try:
         config = resolve_config(energyplus)
+        logger.debug("EnergyPlus: %s (version %d.%d.%d)", config.executable, *config.version)
         weather_path = Path(weather).resolve()
 
         if not weather_path.is_file():
             msg = f"Weather file not found: {weather_path}"
             raise SimulationError(msg)
+
+        logger.info("Starting simulation with weather %s", weather_path.name)
 
         cache_key: CacheKey | None = None
         if cache is not None:
@@ -137,7 +143,9 @@ def simulate(
             )
             cached = cache.get(cache_key)
             if cached is not None:
+                logger.debug("Cache hit for key %s", cache_key.hex_digest[:12])
                 return cached
+            logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
         # Copy model to avoid mutation
         sim_model = model.copy()
@@ -168,6 +176,7 @@ def simulate(
             readvars=readvars,
             extra_args=extra_args,
         )
+        logger.debug("Command: %s", " ".join(cmd))
 
         start = time.monotonic()
 
@@ -180,6 +189,11 @@ def simulate(
             progress_cleanup()
 
     elapsed = time.monotonic() - start
+
+    if returncode != 0:
+        logger.warning("Simulation exited with code %d in %.1fs", returncode, elapsed)
+    else:
+        logger.info("Simulation completed successfully in %.1fs", elapsed)
 
     if fs is not None:
         remote_dir = Path(str(output_dir))
