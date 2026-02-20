@@ -22,6 +22,7 @@ nav:
     - Caching Strategy: concepts/caching.md
     - Logging: concepts/logging.md
     - Cloud & Remote Storage: concepts/cloud-storage.md
+    - Schedule Evaluator Design: design/schedule-evaluator.md
 
   - Simulation:
     - Overview: simulation/index.md
@@ -30,6 +31,7 @@ nav:
     - Parsing Results: simulation/results.md
     - SQL Output Queries: simulation/sql-queries.md
     - Batch Processing: simulation/batch.md
+    - Progress Tracking: simulation/progress.md
     - Caching: simulation/caching.md
     - Plotting: simulation/plotting.md
     - Output Discovery: simulation/output-discovery.md
