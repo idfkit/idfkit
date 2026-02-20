@@ -96,6 +96,8 @@ plugins:
       handlers:
         python:
           paths: ["src"]
+          inventories:
+            - https://docs.python.org/3/objects.inv
   - mkdocs-jupyter:
       include_source: true
       execute: false

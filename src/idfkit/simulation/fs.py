@@ -1,12 +1,12 @@
 """File system abstraction for simulation I/O.
 
-Provides a :class:`FileSystem` protocol so that simulation results can be
+Provides a [FileSystem][idfkit.simulation.fs.FileSystem] protocol so that simulation results can be
 stored on and read from non-local backends (e.g. S3 for cloud workflows).
 EnergyPlus itself always runs locally; the abstraction covers pre/post I/O
 and result reading.
 
-An :class:`AsyncFileSystem` protocol is also available for use with the
-async simulation API (:func:`~idfkit.simulation.async_runner.async_simulate`).
+An [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] protocol is also available for use with the
+async simulation API ([async_simulate][idfkit.simulation.async_runner.async_simulate]).
 Using ``AsyncFileSystem`` avoids blocking the event loop during file uploads
 and result reads — important for S3 and other network-backed storage.
 
@@ -20,8 +20,8 @@ typical workflow is:
 2. **Cloud execution**: Workers run simulations locally, upload results to S3
 3. **Result collection**: Collect results from S3 from any machine
 
-Example::
-
+Examples:
+    ```python
     from idfkit import load_idf
     from idfkit.simulation import simulate, SimulationResult, S3FileSystem
 
@@ -42,8 +42,9 @@ Example::
 
     # Later, reconstruct results from S3 (from any machine)
     result = SimulationResult.from_directory("run-001", fs=fs)
+    ```
 
-The :class:`FileSystem` protocol can also be implemented for other backends
+The [FileSystem][idfkit.simulation.fs.FileSystem] protocol can also be implemented for other backends
 (Azure Blob Storage, GCS, etc.) by implementing the required methods.
 """
 
@@ -160,7 +161,7 @@ class FileSystem(Protocol):
 
 
 class LocalFileSystem:
-    """File system implementation backed by :mod:`pathlib` and :mod:`shutil`."""
+    """File system implementation backed by [pathlib][] and [shutil][]."""
 
     def read_bytes(self, path: str | Path) -> bytes:
         """Read a file as raw bytes."""
@@ -203,8 +204,8 @@ class LocalFileSystem:
 class AsyncFileSystem(Protocol):
     """Protocol for async file system operations used by the async simulation module.
 
-    This is the async counterpart to :class:`FileSystem`.  Use this with
-    :func:`~idfkit.simulation.async_runner.async_simulate` and the async batch
+    This is the async counterpart to [FileSystem][idfkit.simulation.fs.FileSystem].  Use this with
+    [async_simulate][idfkit.simulation.async_runner.async_simulate] and the async batch
     functions to avoid blocking the event loop during file I/O — especially
     important for network-backed storage like S3.
 
@@ -304,9 +305,9 @@ class AsyncFileSystem(Protocol):
 
 
 class AsyncLocalFileSystem:
-    """Non-blocking local file system using :func:`asyncio.to_thread`.
+    """Non-blocking local file system using [asyncio.to_thread][].
 
-    Wraps :class:`LocalFileSystem` so that each blocking I/O call runs in
+    Wraps [LocalFileSystem][idfkit.simulation.fs.LocalFileSystem] so that each blocking I/O call runs in
     the default executor, keeping the event loop free.
     """
 
@@ -372,8 +373,8 @@ class S3FileSystem:
             - ``aws_access_key_id``, ``aws_secret_access_key``: Explicit
               credentials (normally use IAM roles or environment variables)
 
-    Example::
-
+    Examples:
+        ```python
         # Basic usage
         fs = S3FileSystem(bucket="my-bucket", prefix="simulations/")
 
@@ -387,6 +388,7 @@ class S3FileSystem:
 
         # Use with simulate()
         result = simulate(model, weather, output_dir="run-001", fs=fs)
+        ```
     """
 
     def __init__(self, bucket: str, prefix: str = "", **boto_kwargs: Any) -> None:
@@ -485,14 +487,16 @@ class AsyncS3FileSystem:
     Requires the ``aiobotocore`` package
     (install via ``pip install idfkit[async-s3]``).
 
-    This is the non-blocking counterpart to :class:`S3FileSystem`.  Use it
-    with :func:`~idfkit.simulation.async_runner.async_simulate` and the
+    This is the non-blocking counterpart to [S3FileSystem][idfkit.simulation.fs.S3FileSystem].  Use it
+    with [async_simulate][idfkit.simulation.async_runner.async_simulate] and the
     async batch functions to avoid blocking the event loop during S3 I/O.
 
-    The client must be initialised via the async context manager protocol::
+    The client must be initialised via the async context manager protocol:
 
+        ```python
         async with AsyncS3FileSystem(bucket="my-bucket") as fs:
             result = await async_simulate(model, weather, output_dir="run-001", fs=fs)
+        ```
 
     Args:
         bucket: S3 bucket name.
@@ -507,13 +511,14 @@ class AsyncS3FileSystem:
             - ``aws_access_key_id``, ``aws_secret_access_key``: Explicit
               credentials (normally use IAM roles or environment variables)
 
-    Example::
-
+    Examples:
+        ```python
         from idfkit.simulation import AsyncS3FileSystem, async_simulate
 
         async with AsyncS3FileSystem(bucket="my-bucket", prefix="sims/") as fs:
             result = await async_simulate(model, weather, output_dir="run-001", fs=fs)
             errors = await result.async_errors()
+        ```
     """
 
     def __init__(self, bucket: str, prefix: str = "", **boto_kwargs: Any) -> None:

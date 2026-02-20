@@ -1,11 +1,11 @@
 """High-level geometry construction functions.
 
 Provides building-block primitives for creating EnergyPlus zone and surface
-geometry from simple 2D footprints.  The :class:`Shoebox` dataclass describes
-a rectangular building; call :meth:`Shoebox.build` to realise it in a
-document.  For arbitrary polygon footprints, use :func:`add_block` directly.
+geometry from simple 2D footprints.  The [Shoebox][idfkit.geometry_builders.Shoebox] dataclass describes
+a rectangular building; call [Shoebox.build][idfkit.geometry_builders.Shoebox.build] to realise it in a
+document.  For arbitrary polygon footprints, use [add_block][idfkit.geometry_builders.add_block] directly.
 
-These functions complement the lower-level :mod:`~idfkit.geometry` module
+These functions complement the lower-level [geometry][idfkit.geometry] module
 which operates on *existing* surfaces.
 
 All generated vertex coordinates respect the document's
@@ -82,7 +82,7 @@ class Shoebox:
     """A rectangular building block described by width, depth, and stories.
 
     This is a pure data object — it does **not** modify any document.  Call
-    :meth:`build` to realise the geometry in an :class:`~idfkit.document.IDFDocument`.
+    [build][idfkit.geometry_builders.Shoebox.build] to realise the geometry in an [IDFDocument][idfkit.document.IDFDocument].
 
     Attributes:
         name: Base name for zones and surfaces.
@@ -148,7 +148,7 @@ class Shoebox:
         conditions.
 
         Returns:
-            All created :class:`~idfkit.objects.IDFObject` instances
+            All created [IDFObject][idfkit.objects.IDFObject] instances
             (zones + surfaces).
         """
         return _build_block(doc, self.name, self.footprint, self.floor_to_floor, self.num_stories)
@@ -172,7 +172,7 @@ def add_block(
     objects for walls (one per footprint edge), a floor, and a
     ceiling/roof.
 
-    This is the general-purpose alternative to :class:`Shoebox` for
+    This is the general-purpose alternative to [Shoebox][idfkit.geometry_builders.Shoebox] for
     non-rectangular footprints.
 
     Args:
@@ -298,8 +298,7 @@ def bounding_box(doc: IDFDocument) -> tuple[tuple[float, float], tuple[float, fl
     Scans all ``BuildingSurface:Detailed`` vertices and returns the
     bounding envelope projected onto the XY plane.
 
-    .. note::
-
+    !!! note
         Only ``BuildingSurface:Detailed`` objects are considered.
         Fenestration and shading surfaces are excluded because they
         are either coplanar with (windows) or outside (shading) the

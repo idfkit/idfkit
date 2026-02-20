@@ -3,7 +3,7 @@ Writers for IDF and epJSON formats.
 
 Provides serialization of IDFDocument to both formats.
 
-The :func:`write_idf` function accepts an *output_type* parameter that
+The [write_idf][idfkit.writers.write_idf] function accepts an *output_type* parameter that
 mirrors eppy's ``idf.outputtype`` options:
 
 - ``"standard"`` (default): field comments included (``!- Field Name``).
@@ -56,9 +56,11 @@ def write_idf(
         >>> "Zone," in idf_str
         True
 
-        Write to disk for EnergyPlus simulation::
+        Write to disk for EnergyPlus simulation:
 
+            ```python
             write_idf(model, "in.idf")
+            ```
 
         Use compressed format for batch parametric runs:
 
@@ -105,9 +107,11 @@ def write_epjson(
         >>> '"Zone"' in json_str
         True
 
-        Write to disk::
+        Write to disk:
 
+            ```python
             write_epjson(model, "in.epJSON")
+            ```
     """
     writer = EpJSONWriter(doc)
     data = writer.to_dict()
@@ -373,12 +377,14 @@ def convert_idf_to_epjson(
         Path to the output file
 
     Examples:
-        Convert an IDF model to native JSON format::
+        Convert an IDF model to native JSON format:
 
+            ```python
             output = convert_idf_to_epjson("5ZoneAirCooled.idf")
             # Creates 5ZoneAirCooled.epJSON
 
             convert_idf_to_epjson("legacy_model.idf", "modern_model.epJSON")
+            ```
     """
     from .idf_parser import parse_idf
 
@@ -407,12 +413,14 @@ def convert_epjson_to_idf(
         Path to the output file
 
     Examples:
-        Convert an epJSON model back to classic IDF format::
+        Convert an epJSON model back to classic IDF format:
 
+            ```python
             output = convert_epjson_to_idf("5ZoneAirCooled.epJSON")
             # Creates 5ZoneAirCooled.idf
 
             convert_epjson_to_idf("modern_model.epJSON", "classic_model.idf")
+            ```
     """
     from .epjson_parser import parse_epjson
 

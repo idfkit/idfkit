@@ -24,8 +24,8 @@ END_OF_DAY_MINUTES = 1440.0
 def time_to_minutes(t: time) -> float:
     """Convert a time to minutes from midnight.
 
-    Detects the :data:`END_OF_DAY` sentinel and returns exactly
-    :data:`END_OF_DAY_MINUTES` (1440.0) so that ``Until: 24:00``
+    Detects the [END_OF_DAY][idfkit.schedules.time_utils.END_OF_DAY] sentinel and returns exactly
+    [END_OF_DAY_MINUTES][idfkit.schedules.time_utils.END_OF_DAY_MINUTES] (1440.0) so that ``Until: 24:00``
     intervals cover the full day without floating-point drift.
 
     Args:

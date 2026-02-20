@@ -141,16 +141,20 @@ def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocum
         Parsed IDFDocument
 
     Examples:
-        Load a DOE reference building and list its zones::
+        Load a DOE reference building and list its zones:
 
+            ```python
             model = load_idf("RefBldgSmallOfficeNew2004.idf")
             print(f"Loaded {len(model)} objects")
             for zone in model["Zone"]:
                 print(zone.name)
+            ```
 
-        Override the version for a legacy model::
+        Override the version for a legacy model:
 
+            ```python
             model = load_idf("pre_v9_building.idf", version=(9, 6, 0))
+            ```
     """
     from pathlib import Path
 
@@ -169,15 +173,19 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
         Parsed IDFDocument
 
     Examples:
-        Load an epJSON model and iterate over zones::
+        Load an epJSON model and iterate over zones:
 
+            ```python
             model = load_epjson("SmallOffice.epJSON")
             for zone in model["Zone"]:
                 print(zone.name, zone.x_origin)
+            ```
 
-        Specify an explicit EnergyPlus version::
+        Specify an explicit EnergyPlus version:
 
+            ```python
             model = load_epjson("SmallOffice.epJSON", version=(24, 1, 0))
+            ```
     """
     from pathlib import Path
 

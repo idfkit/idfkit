@@ -9,8 +9,8 @@ Three preprocessors are supported:
 * **Basement** (Fortran) computes ground temperatures around basement walls
   and floors (``GroundHeatTransfer:Basement:*``).
 
-Example::
-
+Examples:
+    ```python
     from idfkit import load_idf
     from idfkit.simulation import expand_objects, run_slab_preprocessor
 
@@ -19,6 +19,7 @@ Example::
 
     model_with_slab = load_idf("building_with_slab.idf")
     expanded = run_slab_preprocessor(model_with_slab)
+    ```
 
 Design rationale
 ----------------
@@ -58,21 +59,23 @@ a single ``returncode != 0`` check cannot cover.  In testing we observed:
    ``Output:PreprocessorMessage`` is written.
 
 To catch all of these, each preprocessor run passes through four checks in
-order::
+order:
 
+    ```python
     _check_process_exit_code   →  catches crashes (SIGSEGV, etc.)
     _require_file              →  catches missing output file
     _check_output_not_empty    →  catches silent solver failures
     _check_for_fatal_preprocessor_message  →  catches IDF-level Fatal errors
+    ```
 
 ExpandObjects (C++) does not use the exit-code or empty-file checks because
 its error semantics differ from the Fortran preprocessors.
 
 **Automatic integration with ``simulate()``**
 
-The :func:`~idfkit.simulation.runner.simulate` function automatically
+The [simulate][idfkit.simulation.runner.simulate] function automatically
 detects ground heat-transfer objects and runs the preprocessing pipeline
-before simulation.  It invokes :func:`run_preprocessing`, which runs
+before simulation.  It invokes [run_preprocessing][], which runs
 ExpandObjects once, then checks which preprocessor input files were
 produced (``GHTIn.idf`` and/or ``BasementGHTIn.idf``) and runs the
 corresponding solver.  This means users do not need to call the
@@ -82,7 +85,7 @@ to inspect or modify the preprocessed model before simulation.
 
 **File handling mirrors the simulation runner**
 
-The same care taken in :func:`~idfkit.simulation.runner.simulate` --
+The same care taken in [simulate][idfkit.simulation.runner.simulate] --
 copying ``Energy+.idd`` to the run directory, isolating work in a temp
 directory, cleaning up afterward -- is applied here.  Each preprocessor
 also requires its own IDD (``SlabGHT.idd``, ``BasementGHT.idd``) and
@@ -169,7 +172,7 @@ def _run_subprocess(
 ) -> subprocess.CompletedProcess[str]:
     """Run *exe* in *cwd* and return the completed process.
 
-    Raises :class:`ExpandObjectsError` on timeout or OS errors.
+    Raises [ExpandObjectsError][idfkit.exceptions.ExpandObjectsError] on timeout or OS errors.
     """
     try:
         return subprocess.run(  # noqa: S603
@@ -220,7 +223,7 @@ def _check_process_exit_code(
 
 
 def _require_file(path: Path, *, label: str, proc: subprocess.CompletedProcess[str]) -> None:
-    """Raise :class:`ExpandObjectsError` if *path* does not exist."""
+    """Raise [ExpandObjectsError][idfkit.exceptions.ExpandObjectsError] if *path* does not exist."""
     if not path.is_file():
         msg = f"{label} did not produce {path.name}"
         raise ExpandObjectsError(
@@ -415,7 +418,7 @@ def needs_ground_heat_preprocessing(model: IDFDocument) -> bool:
     ``GroundHeatTransfer:Basement:*`` objects that require the Slab or
     Basement preprocessor before simulation.
 
-    This is used by :func:`~idfkit.simulation.runner.simulate` to decide
+    This is used by [simulate][idfkit.simulation.runner.simulate] to decide
     whether to auto-run the preprocessing pipeline.
     """
     return _has_slab_objects(model) or _has_basement_objects(model)
@@ -435,7 +438,7 @@ def run_preprocessing(
     preprocessor input files were produced (``GHTIn.idf`` and/or
     ``BasementGHTIn.idf``) and runs the corresponding Fortran solvers.
 
-    :func:`~idfkit.simulation.runner.simulate` calls this automatically
+    [simulate][idfkit.simulation.runner.simulate] calls this automatically
     when the model contains ground heat-transfer objects and
     *expand_objects* is ``True``.  Call it directly only when you need to
     inspect or modify the preprocessed model before simulation.
@@ -450,7 +453,7 @@ def run_preprocessing(
             (default 120).
 
     Returns:
-        A new :class:`~idfkit.document.IDFDocument` with all
+        A new [IDFDocument][idfkit.document.IDFDocument] with all
         preprocessing applied.
 
     Raises:
@@ -486,19 +489,19 @@ def expand_objects(
     mutated.
 
     If the document contains no ``HVACTemplate:*`` objects a
-    :meth:`~idfkit.document.IDFDocument.copy` is returned immediately without
+    [copy][idfkit.document.IDFDocument.copy] is returned immediately without
     invoking the preprocessor (no EnergyPlus installation required).
 
     Args:
         model: The EnergyPlus model to expand.
         energyplus: Pre-configured EnergyPlus installation.  If ``None``,
-            :func:`~idfkit.simulation.config.find_energyplus` is used for
+            [find_energyplus][idfkit.simulation.config.find_energyplus] is used for
             auto-discovery.
         timeout: Maximum time in seconds to wait for the preprocessor
             (default 120).
 
     Returns:
-        A new :class:`~idfkit.document.IDFDocument` containing the expanded
+        A new [IDFDocument][idfkit.document.IDFDocument] containing the expanded
         objects.
 
     Raises:
@@ -539,7 +542,7 @@ def run_slab_preprocessor(
     The original *model* is **not** mutated.
 
     If the document contains no ``GroundHeatTransfer:Slab:*`` objects a
-    :meth:`~idfkit.document.IDFDocument.copy` is returned immediately.
+    [copy][idfkit.document.IDFDocument.copy] is returned immediately.
 
     Args:
         model: The EnergyPlus model containing ``GroundHeatTransfer:Slab:*``
@@ -552,7 +555,7 @@ def run_slab_preprocessor(
             (default 120).
 
     Returns:
-        A new :class:`~idfkit.document.IDFDocument` with slab ground
+        A new [IDFDocument][idfkit.document.IDFDocument] with slab ground
         temperatures appended.
 
     Raises:
@@ -602,7 +605,7 @@ def run_basement_preprocessor(
     The original *model* is **not** mutated.
 
     If the document contains no ``GroundHeatTransfer:Basement:*`` objects a
-    :meth:`~idfkit.document.IDFDocument.copy` is returned immediately.
+    [copy][idfkit.document.IDFDocument.copy] is returned immediately.
 
     Args:
         model: The EnergyPlus model containing
@@ -615,7 +618,7 @@ def run_basement_preprocessor(
             (default 120).
 
     Returns:
-        A new :class:`~idfkit.document.IDFDocument` with basement ground
+        A new [IDFDocument][idfkit.document.IDFDocument] with basement ground
         temperatures appended.
 
     Raises:

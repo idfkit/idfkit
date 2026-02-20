@@ -1,6 +1,6 @@
 """Shared day-type utilities for schedule evaluation.
 
-Provides :data:`DAY_TYPE_PRIORITY` ordering and :func:`get_applicable_day_types`
+Provides [DAY_TYPE_PRIORITY][idfkit.schedules.day_types.DAY_TYPE_PRIORITY] ordering and [get_applicable_day_types][idfkit.schedules.day_types.get_applicable_day_types]
 used by both compact.py and week.py.
 """
 

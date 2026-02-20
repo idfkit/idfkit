@@ -64,9 +64,10 @@ def geocode(address: str) -> tuple[float, float]:
     be serialized to respect the rate limit.
 
     **Composable with spatial search:** Use the splat operator to combine with
-    :meth:`~idfkit.weather.index.StationIndex.nearest` for address-based
-    weather station lookup::
+    [nearest][idfkit.weather.index.StationIndex.nearest] for address-based
+    weather station lookup:
 
+        ```python
         from idfkit.weather import StationIndex, geocode
 
         # Find weather stations near an address (one line!)
@@ -74,6 +75,7 @@ def geocode(address: str) -> tuple[float, float]:
 
         for r in results[:3]:
             print(f"{r.station.display_name}: {r.distance_km:.0f} km")
+        ```
 
     Args:
         address: A free-form address string (e.g. ``"Willis Tower, Chicago"``).

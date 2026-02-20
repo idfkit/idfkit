@@ -1,11 +1,11 @@
-"""Eppy-compatibility helpers for :class:`~idfkit.objects.IDFObject`.
+"""Eppy-compatibility helpers for [IDFObject][idfkit.objects.IDFObject].
 
 This module contains properties and methods that exist **solely** to
 ease migration from `eppy <https://github.com/santoshphilip/eppy>`_.
 For each item there is a recommended idfkit alternative noted in the
 docstring.
 
-The mixin is mixed into :class:`IDFObject` so that existing eppy code
+The mixin is mixed into [IDFObject][idfkit.objects.IDFObject] so that existing eppy code
 continues to work.  In a future release the mixin may be deprecated and
 eventually removed.
 
@@ -22,10 +22,10 @@ if TYPE_CHECKING:
 
 
 class EppyObjectMixin:
-    """Eppy-compatibility properties and methods for :class:`~idfkit.objects.IDFObject`.
+    """Eppy-compatibility properties and methods for [IDFObject][idfkit.objects.IDFObject].
 
-    Mixed into :class:`IDFObject` automatically.  Each item documents
-    the preferred idfkit API in a ``.. tip::`` block.
+    Mixed into [IDFObject][idfkit.objects.IDFObject] automatically.  Each item documents
+    the preferred idfkit API in a tip admonition.
     """
 
     __slots__ = ()
@@ -47,7 +47,8 @@ class EppyObjectMixin:
     def key(self) -> str:
         """The object type (eppy compatibility).
 
-        .. tip:: Prefer :attr:`obj_type` for new code.
+        !!! tip
+            Prefer [obj_type][] for new code.
         """
         return self._type
 
@@ -55,7 +56,8 @@ class EppyObjectMixin:
     def Name(self) -> str:
         """The object's name (eppy compatibility — capitalised).
 
-        .. tip:: Prefer :attr:`name` for new code.
+        !!! tip
+            Prefer [name][] for new code.
         """
         return self._name
 
@@ -68,7 +70,8 @@ class EppyObjectMixin:
     def fieldnames(self) -> list[str]:
         """List of field names (eppy compatibility).
 
-        .. tip:: Prefer ``list(obj.data.keys())`` for new code.
+        !!! tip
+            Prefer ``list(obj.data.keys())`` for new code.
         """
         if self._field_order:
             return ["Name", *list(self._field_order)]
@@ -78,7 +81,8 @@ class EppyObjectMixin:
     def fieldvalues(self) -> list[Any]:
         """List of field values in order (eppy compatibility).
 
-        .. tip:: Prefer ``list(obj.data.values())`` for new code.
+        !!! tip
+            Prefer ``list(obj.data.values())`` for new code.
         """
         if self._field_order:
             return [self._name] + [self._data.get(f) for f in self._field_order]
@@ -88,7 +92,8 @@ class EppyObjectMixin:
     def theidf(self) -> IDFDocument | None:
         """Reference to parent document (eppy compatibility).
 
-        .. tip:: Prefer ``obj._document`` for new code.
+        !!! tip
+            Prefer ``obj._document`` for new code.
         """
         return self._document
 
@@ -106,16 +111,18 @@ class EppyObjectMixin:
         return inner.get("properties", {}).get(to_python_name(field_name))
 
     def getfieldidd(self, field_name: str) -> dict[str, Any] | None:
-        """Alias for :meth:`get_field_idd` (eppy compatibility).
+        """Alias for [get_field_idd][] (eppy compatibility).
 
-        .. tip:: Prefer :meth:`get_field_idd` for new code.
+        !!! tip
+            Prefer [get_field_idd][] for new code.
         """
         return self.get_field_idd(field_name)
 
     def getfieldidd_item(self, field_name: str, item: str) -> Any:
         """Get specific item from field IDD info (eppy compatibility).
 
-        .. tip:: Use ``obj.get_field_idd(name).get(item)`` for new code.
+        !!! tip
+            Use ``obj.get_field_idd(name).get(item)`` for new code.
         """
         field_idd = self.get_field_idd(field_name)
         if field_idd:
@@ -286,10 +293,9 @@ class EppyObjectMixin:
     ) -> list[IDFObject]:
         """Find all objects that reference this object by name (eppy compatibility).
 
-        .. tip::
-
-            Prefer :meth:`get_referring_objects` (correct spelling) for
-            new code, or :meth:`IDFDocument.get_referencing` for
+        !!! tip
+            Prefer [get_referring_objects][] (correct spelling) for
+            new code, or [IDFDocument.get_referencing][] for
             document-level queries.
 
         Args:
@@ -345,7 +351,7 @@ class EppyObjectMixin:
     ) -> list[IDFObject]:
         """Find all objects that reference this object (corrected spelling).
 
-        Equivalent to :meth:`getreferingobjs` with a corrected name.
+        Equivalent to [getreferingobjs][] with a corrected name.
         See that method for full documentation.
         """
         return self.getreferingobjs(iddgroups=iddgroups, fields=fields)

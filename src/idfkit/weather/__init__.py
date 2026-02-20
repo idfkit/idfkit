@@ -21,8 +21,9 @@ separate entry with its own download URL.
 Quick Start
 -----------
 
-Search by name::
+Search by name:
 
+    ```python
     from idfkit.weather import StationIndex, WeatherDownloader
 
     index = StationIndex.load()  # Instant, no network needed
@@ -32,13 +33,15 @@ Search by name::
     downloader = WeatherDownloader()
     files = downloader.download(station)
     print(files.epw, files.ddy)
+    ```
 
 Search by Address (Splat Pattern)
 ---------------------------------
 
-Combine :func:`geocode` with :meth:`~StationIndex.nearest` using the splat
-operator to find weather stations near any address::
+Combine [geocode][idfkit.weather.geocode.geocode] with [nearest][StationIndex.nearest] using the splat
+operator to find weather stations near any address:
 
+    ```python
     from idfkit.weather import StationIndex, geocode
 
     index = StationIndex.load()
@@ -53,15 +56,17 @@ operator to find weather stations near any address::
     # New York La Guardia AP, NY, USA: 10 km
     # New York J F Kennedy Intl AP, NY, USA: 18 km
     # Newark Liberty Intl AP, NJ, USA: 22 km
+    ```
 
-The :func:`geocode` function uses the free Nominatim (OpenStreetMap) service,
+The [geocode][idfkit.weather.geocode.geocode] function uses the free Nominatim (OpenStreetMap) service,
 which requires no API key. Requests are rate-limited to 1 per second.
 
 Apply Design Days
 -----------------
 
-Inject ASHRAE sizing design days into your model::
+Inject ASHRAE sizing design days into your model:
 
+    ```python
     from idfkit import load_idf
     from idfkit.weather import StationIndex, apply_ashrae_sizing
 
@@ -71,16 +76,19 @@ Inject ASHRAE sizing design days into your model::
     # Apply ASHRAE 90.1 design conditions
     added = apply_ashrae_sizing(model, station, standard="90.1")
     print(f"Added {len(added)} design days")
+    ```
 
 Index Freshness
 ---------------
 
 ``StationIndex.load()`` is purely local and requires no extra dependencies.
 Use ``StationIndex.refresh()`` (requires ``openpyxl``) to re-download the
-upstream Excel indexes and rebuild the local cache::
+upstream Excel indexes and rebuild the local cache:
 
+    ```python
     if index.check_for_updates():
         index = StationIndex.refresh()  # requires openpyxl
+    ```
 """
 
 from __future__ import annotations

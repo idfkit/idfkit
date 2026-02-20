@@ -37,7 +37,7 @@ class OutputVariable:
     Unlike meters, variables are associated with a specific key (zone,
     surface, etc.).  For post-simulation SQL results where variables and
     meters are stored together, see
-    :class:`~idfkit.simulation.parsers.sql.VariableInfo`.
+    [VariableInfo][idfkit.simulation.parsers.sql.VariableInfo].
 
     Attributes:
         key: The key value (e.g. ``"*"`` or ``"ZONE 1"``).
@@ -57,9 +57,9 @@ class OutputMeter:
     """An available meter from a ``.mdd`` file.
 
     Meters aggregate energy or resource consumption and have no key value,
-    unlike :class:`OutputVariable`.  For post-simulation SQL results where
+    unlike [OutputVariable][idfkit.simulation.parsers.rdd.OutputVariable].  For post-simulation SQL results where
     variables and meters are stored together, see
-    :class:`~idfkit.simulation.parsers.sql.VariableInfo`.
+    [VariableInfo][idfkit.simulation.parsers.sql.VariableInfo].
 
     Attributes:
         name: The meter name (e.g. ``"Electricity:Facility"``).

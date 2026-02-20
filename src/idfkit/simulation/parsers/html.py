@@ -79,7 +79,7 @@ class HTMLResult:
             encoding: File encoding (default ``latin-1``).
 
         Returns:
-            Parsed :class:`HTMLResult`.
+            Parsed [HTMLResult][idfkit.simulation.parsers.html.HTMLResult].
         """
         with open(path, encoding=encoding, errors="replace") as f:
             return cls.from_string(f.read())
@@ -92,7 +92,7 @@ class HTMLResult:
             html: The raw HTML content.
 
         Returns:
-            Parsed :class:`HTMLResult`.
+            Parsed [HTMLResult][idfkit.simulation.parsers.html.HTMLResult].
         """
         parser = _EnergyPlusHTMLParser()
         parser.feed(html)

@@ -128,7 +128,7 @@ class IDFDocument(EppyDocumentMixin):
             schema: EpJSONSchema for validation
             filepath: Source file path
             strict: When ``True``, accessing an unknown field name on any
-                :class:`IDFObject` owned by this document raises
+                [IDFObject][idfkit.objects.IDFObject] owned by this document raises
                 ``AttributeError`` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.
@@ -461,10 +461,9 @@ class IDFDocument(EppyDocumentMixin):
     def removeidfobject(self, obj: IDFObject) -> None:
         """Remove an object from the document.
 
-        .. tip::
-
+        !!! tip
             This method is also the recommended idfkit API.  Alternatively,
-            use :meth:`popidfobject` to remove by index.
+            use [popidfobject][idfkit.document.IDFDocument.popidfobject] to remove by index.
         """
         obj_type = obj.obj_type
 
@@ -738,7 +737,7 @@ class IDFDocument(EppyDocumentMixin):
                 (default 120).
 
         Returns:
-            A new :class:`IDFDocument` with all template objects expanded.
+            A new [IDFDocument][idfkit.document.IDFDocument] with all template objects expanded.
 
         Raises:
             EnergyPlusNotFoundError: If no EnergyPlus installation is found.
@@ -746,18 +745,22 @@ class IDFDocument(EppyDocumentMixin):
 
         Examples:
             Expand HVACTemplate objects into low-level HVAC components
-            so you can inspect or modify the resulting system::
+            so you can inspect or modify the resulting system:
 
+                ```python
                 model = load_idf("5ZoneAirCooled_HVACTemplate.idf")
                 expanded = model.expand()
                 for ideal in expanded["ZoneHVAC:IdealLoadsAirSystem"]:
                     print(ideal.name, ideal.cooling_limit)
+                ```
 
-            Point to a specific EnergyPlus installation::
+            Point to a specific EnergyPlus installation:
 
+                ```python
                 from idfkit.simulation import find_energyplus
                 ep = find_energyplus(version=(24, 1, 0))
                 expanded = model.expand(energyplus=ep)
+                ```
         """
         from .simulation.expand import expand_objects
 

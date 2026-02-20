@@ -1,6 +1,6 @@
 """Design day parsing and injection into EnergyPlus models.
 
-Parses DDY files (which use standard IDF syntax) via :func:`idfkit.load_idf`
+Parses DDY files (which use standard IDF syntax) via [idfkit.load_idf][idfkit.load_idf]
 and classifies the ``SizingPeriod:DesignDay`` objects they contain into
 ASHRAE design-condition categories.
 """
@@ -112,7 +112,7 @@ class DesignDayManager:
     """Parse DDY files and inject design day conditions into IDF models.
 
     A DDY file is a valid IDF-syntax file containing ``Site:Location`` and
-    ``SizingPeriod:DesignDay`` objects.  This class uses :func:`idfkit.load_idf`
+    ``SizingPeriod:DesignDay`` objects.  This class uses [idfkit.load_idf][idfkit.load_idf]
     to parse the file and classifies each design day by its ASHRAE condition
     type.
 
@@ -201,7 +201,7 @@ class DesignDayManager:
 
         Monthly design days follow the naming pattern
         ``{Location} {Month} {pct}% Condns {type}`` and are not classified
-        into the :class:`DesignDayType` enum.
+        into the [DesignDayType][idfkit.weather.designday.DesignDayType] enum.
         """
         return [dd for dd in self._all_objects if _MONTH_PATTERN.search(dd.name)]
 
@@ -227,7 +227,7 @@ class DesignDayManager:
     def raise_if_empty(self) -> None:
         """Raise :exc:`NoDesignDaysError` if this DDY has no design days.
 
-        When constructed via :meth:`from_station`, the error message includes
+        When constructed via [from_station][idfkit.weather.designday.DesignDayManager.from_station], the error message includes
         suggestions for nearby stations that may have design day data.
 
         Raises:
@@ -342,7 +342,7 @@ class DesignDayManager:
         practices and adds them as ``SizingPeriod:DesignDay`` objects.
 
         Args:
-            model: The target :class:`~idfkit.document.IDFDocument`.
+            model: The target [IDFDocument][idfkit.document.IDFDocument].
             heating: Which heating percentile to include.
             cooling: Which cooling dry-bulb percentile to include.
             include_wet_bulb: Also include cooling wet-bulb design days.
@@ -422,7 +422,7 @@ def apply_ashrae_sizing(
           (conservative general practice).
 
     Args:
-        model: The :class:`~idfkit.document.IDFDocument` to modify.
+        model: The [IDFDocument][idfkit.document.IDFDocument] to modify.
         station: Weather station whose DDY file to use.
         standard: ASHRAE preset to apply.
         version: EnergyPlus version for schema resolution.

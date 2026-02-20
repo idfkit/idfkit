@@ -1,6 +1,6 @@
 """Plotly plotting backend for simulation results.
 
-Provides :class:`PlotlyBackend` which implements the :class:`PlotBackend`
+Provides [PlotlyBackend][idfkit.simulation.plotting.plotly.PlotlyBackend] which implements the [PlotBackend][idfkit.simulation.plotting.PlotBackend]
 protocol using plotly. Requires plotly to be installed.
 """
 

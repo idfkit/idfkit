@@ -1,10 +1,10 @@
-"""Eppy-compatibility helpers for :class:`~idfkit.document.IDFDocument`.
+"""Eppy-compatibility helpers for [IDFDocument][idfkit.document.IDFDocument].
 
 This module contains methods that exist **solely** to ease migration from
 `eppy <https://github.com/santoshphilip/eppy>`_.  For each method there is
 a recommended idfkit alternative noted in the docstring.
 
-The mixin is mixed into :class:`IDFDocument` so that existing eppy code
+The mixin is mixed into [IDFDocument][idfkit.document.IDFDocument] so that existing eppy code
 continues to work without modification.  In a future release the mixin
 may be deprecated and eventually removed.
 
@@ -83,10 +83,10 @@ class _IDFObjectsView:
 
 
 class EppyDocumentMixin:
-    """Eppy-compatibility methods for :class:`~idfkit.document.IDFDocument`.
+    """Eppy-compatibility methods for [IDFDocument][idfkit.document.IDFDocument].
 
-    Mixed into :class:`IDFDocument` automatically.  Each method documents
-    the preferred idfkit API in a ``.. tip::`` block.
+    Mixed into [IDFDocument][idfkit.document.IDFDocument] automatically.  Each method documents
+    the preferred idfkit API in a tip admonition.
     """
 
     __slots__ = ()
@@ -116,23 +116,25 @@ class EppyDocumentMixin:
         Returns a case-insensitive view so ``idf.idfobjects["ZONE"]``
         continues to work.
 
-        .. tip::
+        !!! tip
+            Prefer bracket access for new code:
 
-            Prefer bracket access for new code::
-
+                ```python
                 zones = doc["Zone"]
                 zone = doc["Zone"]["Office"]
+                ```
         """
         return _IDFObjectsView(self)
 
     def getobject(self, obj_type: str, name: str) -> IDFObject | None:
         """Get a specific object by type and name (eppy compatibility).
 
-        .. tip::
+        !!! tip
+            Prefer bracket access for new code:
 
-            Prefer bracket access for new code::
-
+                ```python
                 zone = doc["Zone"]["Office"]
+                ```
 
         Args:
             obj_type: Object type (e.g., "Zone")
@@ -196,11 +198,12 @@ class EppyDocumentMixin:
         Provided for migration convenience.  The ``Name`` kwarg becomes
         the object name if provided.
 
-        .. tip::
+        !!! tip
+            Prefer [add][idfkit.document.IDFDocument.add] for new code:
 
-            Prefer :meth:`~idfkit.document.IDFDocument.add` for new code::
-
+                ```python
                 zone = doc.add("Zone", "Office", x_origin=0.0)
+                ```
         """
         name = kwargs.pop("Name", kwargs.pop("name", ""))
         return self.add(obj_type, name, **kwargs)
@@ -208,9 +211,8 @@ class EppyDocumentMixin:
     def addidfobject(self, obj: IDFObject) -> IDFObject:
         """Add an existing IDFObject to the document (eppy compatibility).
 
-        .. tip::
-
-            Prefer :meth:`~idfkit.document.IDFDocument.add` for new code.
+        !!! tip
+            Prefer [add][idfkit.document.IDFDocument.add] for new code.
         """
         object.__setattr__(obj, "_document", self)
 
@@ -228,16 +230,16 @@ class EppyDocumentMixin:
     def addidfobjects(self, objects: list[IDFObject]) -> list[IDFObject]:
         """Add multiple objects to the document (eppy compatibility).
 
-        .. tip:: Prefer calling :meth:`~idfkit.document.IDFDocument.add` in a loop.
+        !!! tip
+            Prefer calling [add][idfkit.document.IDFDocument.add] in a loop.
         """
         return [self.addidfobject(obj) for obj in objects]
 
     def popidfobject(self, obj_type: str, index: int) -> IDFObject:
         """Remove and return an object by type and index (eppy compatibility).
 
-        .. tip::
-
-            Prefer :meth:`~idfkit.document.IDFDocument.removeidfobject`
+        !!! tip
+            Prefer [removeidfobject][idfkit.document.IDFDocument.removeidfobject]
             with a direct object reference.
 
         Args:
@@ -258,7 +260,8 @@ class EppyDocumentMixin:
     def removeidfobjects(self, objects: list[IDFObject]) -> None:
         """Remove multiple objects from the document (eppy compatibility).
 
-        .. tip:: Call :meth:`~idfkit.document.IDFDocument.removeidfobject` in a loop.
+        !!! tip
+            Call [removeidfobject][idfkit.document.IDFDocument.removeidfobject] in a loop.
         """
         for obj in objects:
             self.removeidfobject(obj)
@@ -266,12 +269,13 @@ class EppyDocumentMixin:
     def removeallidfobjects(self, obj_type: str) -> None:
         """Remove all objects of a given type from the document (eppy compatibility).
 
-        .. tip::
+        !!! tip
+            For new code, iterate and remove directly:
 
-            For new code, iterate and remove directly::
-
+                ```python
                 for obj in list(doc[obj_type]):
                     doc.removeidfobject(obj)
+                ```
 
         Args:
             obj_type: Object type to remove all instances of (e.g. ``"Zone"``).
@@ -293,10 +297,9 @@ class EppyDocumentMixin:
     def copyidfobject(self, obj: IDFObject, new_name: str | None = None) -> IDFObject:
         """Create a copy of an object with optional new name (eppy compatibility).
 
-        .. tip::
-
+        !!! tip
             Use ``obj.copy()`` to create a detached copy, then
-            :meth:`addidfobject` to add it.
+            [addidfobject][] to add it.
         """
         new_obj = obj.copy()
         if new_name:
@@ -313,19 +316,19 @@ class EppyDocumentMixin:
         and the value is the new field value.  The object must already
         exist in the document.
 
-        .. tip::
+        !!! tip
+            For new code, modify objects directly:
 
-            For new code, modify objects directly::
-
+                ```python
                 zone = doc["Zone"]["Office"]
                 zone.x_origin = 10.0
+                ```
 
-        .. note::
-
-           Object names containing literal dots are **not** supported
-           because the separator is itself a dot.  For objects whose
-           names may contain dots, modify fields directly via
-           :meth:`getobject` instead.
+        !!! note
+            Object names containing literal dots are **not** supported
+            because the separator is itself a dot.  For objects whose
+            names may contain dots, modify fields directly via
+            [getobject][] instead.
 
         Args:
             updates: Mapping of ``"Type.Name.field"`` -> new_value.
@@ -367,13 +370,14 @@ class EppyDocumentMixin:
     def getsurfaces(self, surface_type: str | None = None) -> list[IDFObject]:
         """Get building surfaces, optionally filtered by type (eppy compatibility).
 
-        .. tip::
+        !!! tip
+            Prefer filtering directly for new code:
 
-            Prefer filtering directly for new code::
-
+                ```python
                 walls = doc["BuildingSurface:Detailed"].filter(
                     lambda s: s.surface_type == "Wall"
                 )
+                ```
 
         Args:
             surface_type: Filter by surface type ("wall", "floor", "roof", "ceiling")
@@ -417,11 +421,10 @@ class EppyDocumentMixin:
     ) -> None:
         """Save the document to its current filepath (eppy compatibility).
 
-        .. tip::
-
+        !!! tip
             Also the recommended idfkit API.  For format conversion, use
-            :func:`~idfkit.writers.write_idf` or
-            :func:`~idfkit.writers.write_epjson` directly.
+            [write_idf][idfkit.writers.write_idf] or
+            [write_epjson][idfkit.writers.write_epjson] directly.
 
         Args:
             filepath: Explicit path override.  If ``None``, uses
@@ -434,15 +437,19 @@ class EppyDocumentMixin:
             ValueError: If no filepath is set and none is provided.
 
         Examples:
-            Save a modified model back to its original IDF file::
+            Save a modified model back to its original IDF file:
 
+                ```python
                 model = load_idf("5ZoneAirCooled.idf")
                 model.add("Zone", "Mech_Room")
                 model.save()   # overwrites 5ZoneAirCooled.idf
+                ```
 
-            Save to a new path for archival::
+            Save to a new path for archival:
 
+                ```python
                 model.save("5ZoneAirCooled_v2.idf")
+                ```
         """
         from .writers import write_idf
 
@@ -462,10 +469,9 @@ class EppyDocumentMixin:
         """Save to a new path and update ``self.filepath`` (eppy compatibility).
 
         After saving, ``self.filepath`` is updated to the new path so
-        subsequent :meth:`save` calls write to it.
+        subsequent [save][] calls write to it.
 
-        .. tip::
-
+        !!! tip
             Also the recommended idfkit API.
 
         Args:
@@ -475,11 +481,13 @@ class EppyDocumentMixin:
                 comments), ``"nocomment"``, or ``"compressed"`` (single-line).
 
         Examples:
-            Save under a new name and continue editing there::
+            Save under a new name and continue editing there:
 
+                ```python
                 model = load_idf("Baseline.idf")
                 model.saveas("HighInsulation_Variant.idf")
                 model.save()   # now writes to HighInsulation_Variant.idf
+                ```
         """
         from .writers import write_idf
 
@@ -495,11 +503,10 @@ class EppyDocumentMixin:
     ) -> None:
         """Save a copy without changing ``self.filepath`` (eppy compatibility).
 
-        Unlike :meth:`saveas`, the document's ``filepath`` remains
+        Unlike [saveas][], the document's ``filepath`` remains
         unchanged.
 
-        .. tip::
-
+        !!! tip
             Also the recommended idfkit API.
 
         Args:
@@ -509,12 +516,14 @@ class EppyDocumentMixin:
                 comments), ``"nocomment"``, or ``"compressed"`` (single-line).
 
         Examples:
-            Create a snapshot before running a parametric sweep::
+            Create a snapshot before running a parametric sweep:
 
+                ```python
                 model = load_idf("Baseline.idf")
                 model.savecopy("Baseline_backup.idf")
                 # ... modify model ...
                 model.save()   # still writes to Baseline.idf
+                ```
         """
         from .writers import write_idf
 
@@ -529,27 +538,28 @@ class EppyDocumentMixin:
     ) -> SimulationResult:
         """Run an EnergyPlus simulation (eppy-compatible convenience method).
 
-        This is a thin wrapper around :func:`idfkit.simulation.simulate`
+        This is a thin wrapper around [idfkit.simulation.simulate][]
         provided for users migrating from eppy's ``idf.run()`` pattern.
 
-        .. tip::
+        !!! tip
+            For new code, prefer the standalone function:
 
-            For new code, prefer the standalone function::
-
+                ```python
                 from idfkit.simulation import simulate
                 result = simulate(model, "weather.epw")
+                ```
 
             It offers the same parameters and keeps simulation concerns
             separate from document manipulation.
 
         Args:
             weather: Path to the EPW weather file.
-            **kwargs: Forwarded to :func:`~idfkit.simulation.simulate`
+            **kwargs: Forwarded to [simulate][idfkit.simulation.simulate]
                 (e.g. ``output_dir``, ``annual``, ``design_day``,
                 ``timeout``, ``energyplus``).
 
         Returns:
-            :class:`~idfkit.simulation.SimulationResult` with paths to all
+            [SimulationResult][idfkit.simulation.SimulationResult] with paths to all
             output files, error reports, and SQL queries.
 
         Raises:
@@ -557,11 +567,13 @@ class EppyDocumentMixin:
             SimulationError: If the simulation fails.
 
         Examples:
-            Run a design-day simulation::
+            Run a design-day simulation:
 
+                ```python
                 model = load_idf("5ZoneAirCooled.idf")
                 result = model.run("weather.epw", design_day=True)
                 print(result.errors.summary())
+                ```
         """
         from .simulation import simulate
 

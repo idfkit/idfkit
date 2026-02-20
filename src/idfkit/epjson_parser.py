@@ -40,13 +40,15 @@ def parse_epjson(
         IdfKitError: If parsing fails
 
     Examples:
-        Load an epJSON model and list its thermal zones::
+        Load an epJSON model and list its thermal zones:
 
+            ```python
             from idfkit import parse_epjson
 
             model = parse_epjson("SmallOffice.epJSON")
             for zone in model["Zone"]:
                 print(zone.name)
+            ```
     """
     filepath = Path(filepath)
 
@@ -225,15 +227,17 @@ def load_epjson(filepath: Path | str) -> dict[str, Any]:
     Load raw epJSON data without parsing into document.
 
     Useful for quick inspection or manipulation when you need the
-    raw JSON dict rather than an :class:`IDFDocument`.
+    raw JSON dict rather than an [IDFDocument][idfkit.document.IDFDocument].
 
     Examples:
-        Grab the raw JSON dict for custom post-processing::
+        Grab the raw JSON dict for custom post-processing:
 
+            ```python
             from idfkit.epjson_parser import load_epjson
 
             data = load_epjson("SmallOffice.epJSON")
             zone_names = list(data.get("Zone", {}).keys())
+            ```
     """
     filepath = Path(filepath)
     with open(filepath, encoding="utf-8") as f:
@@ -254,12 +258,14 @@ def get_epjson_version(filepath: Path | str) -> tuple[int, int, int]:
         VersionNotFoundError: If version cannot be detected
 
     Examples:
-        Detect the EnergyPlus version of an epJSON file::
+        Detect the EnergyPlus version of an epJSON file:
 
+            ```python
             from idfkit.epjson_parser import get_epjson_version
 
             version = get_epjson_version("SmallOffice.epJSON")
             print(f"EnergyPlus v{version[0]}.{version[1]}")
+            ```
     """
     filepath = Path(filepath)
 

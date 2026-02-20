@@ -119,12 +119,12 @@ class VariableInfo:
 
     This class represents both regular variables and meters because EnergyPlus
     stores them in a single ``ReportDataDictionary`` table, distinguished only
-    by an ``IsMeter`` column.  Use the :attr:`is_meter` flag to tell them
+    by an ``IsMeter`` column.  Use the [is_meter][idfkit.simulation.parsers.sql.VariableInfo.is_meter] flag to tell them
     apart.
 
     For pre-simulation discovery from ``.rdd`` / ``.mdd`` files, see the
-    separate :class:`~idfkit.simulation.parsers.rdd.OutputVariable` and
-    :class:`~idfkit.simulation.parsers.rdd.OutputMeter` classes instead.
+    separate [OutputVariable][idfkit.simulation.parsers.rdd.OutputVariable] and
+    [OutputMeter][idfkit.simulation.parsers.rdd.OutputMeter] classes instead.
 
     Attributes:
         name: The variable name.
@@ -209,10 +209,12 @@ class SQLResult:
     Opens the database in read-only mode and provides methods for retrieving
     time-series data, tabular reports, and variable metadata.
 
-    Can be used as a context manager::
+    Can be used as a context manager:
 
+        ```python
         with SQLResult("eplusout.sql") as sql:
             ts = sql.get_timeseries("Zone Mean Air Temperature", "ZONE 1")
+        ```
     """
 
     def __init__(self, db_path: str | Path) -> None:
@@ -410,7 +412,7 @@ class SQLResult:
     ) -> str:
         """Retrieve a single tabular cell value.
 
-        Convenience wrapper around :meth:`get_tabular_data` that returns
+        Convenience wrapper around [get_tabular_data][idfkit.simulation.parsers.sql.SQLResult.get_tabular_data] that returns
         exactly one cell value.
 
         Args:
@@ -501,7 +503,7 @@ class SQLResult:
     ) -> Any:
         """Retrieve a time series as a pandas DataFrame.
 
-        This is a convenience wrapper around :meth:`get_timeseries` that
+        This is a convenience wrapper around [get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries] that
         directly returns a DataFrame.
 
         Args:
