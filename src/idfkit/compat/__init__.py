@@ -19,8 +19,8 @@ Quick start -- library API::
 
 Quick start -- CLI::
 
-    idfkit check-compat my_script.py --from 24.2 --to 25.1
-    idfkit check-compat my_script.py --targets 24.2,25.1,25.2 --json
+    idfkit check my_script.py --from 24.2 --to 25.1
+    idfkit check my_script.py --targets 24.2,25.1,25.2 --json
 """
 
 from __future__ import annotations

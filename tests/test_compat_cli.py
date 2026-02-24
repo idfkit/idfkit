@@ -11,7 +11,6 @@ from idfkit.compat._checker import check_compatibility, resolve_version
 from idfkit.compat._cli import main
 from idfkit.compat._models import CompatSeverity, Diagnostic
 
-
 # ---------------------------------------------------------------------------
 # Fixtures: small Python files used as test inputs
 # ---------------------------------------------------------------------------
@@ -149,7 +148,7 @@ class TestCLI:
         """CLI exits 0 when no issues are found between close versions."""
         with pytest.raises(SystemExit) as exc_info:
             main([
-                "check-compat",
+                "check",
                 str(simple_script_file),
                 "--from",
                 "24.1",
@@ -164,7 +163,7 @@ class TestCLI:
         """CLI --json produces valid JSON output."""
         with pytest.raises(SystemExit):
             main([
-                "check-compat",
+                "check",
                 str(simple_script_file),
                 "--from",
                 "24.1",
@@ -186,7 +185,7 @@ class TestCLI:
         """CLI --targets accepts comma-separated versions."""
         with pytest.raises(SystemExit):
             main([
-                "check-compat",
+                "check",
                 str(simple_script_file),
                 "--targets",
                 "24.1,24.2,25.1",
@@ -202,7 +201,7 @@ class TestCLI:
         p.write_text('from idfkit import new_document\ndoc = new_document()\ndoc.add("Zone", "Z")\n')
 
         with pytest.raises(SystemExit) as exc_info:
-            main(["check-compat", str(p), "--from", "24.1", "--to", "24.2"])
+            main(["check", str(p), "--from", "24.1", "--to", "24.2"])
 
         captured = capsys.readouterr()
         if exc_info.value.code == 0:
@@ -214,13 +213,13 @@ class TestCLI:
     def test_cli_file_not_found(self, capsys: pytest.CaptureFixture[str]) -> None:
         """CLI exits 2 when file does not exist."""
         with pytest.raises(SystemExit) as exc_info:
-            main(["check-compat", "/nonexistent/file.py", "--from", "24.1", "--to", "24.2"])
+            main(["check", "/nonexistent/file.py", "--from", "24.1", "--to", "24.2"])
         assert exc_info.value.code == 2
 
     def test_cli_missing_to(self, capsys: pytest.CaptureFixture[str], simple_script_file: Path) -> None:
         """CLI exits 2 when --from is given without --to."""
         with pytest.raises(SystemExit) as exc_info:
-            main(["check-compat", str(simple_script_file), "--from", "24.1"])
+            main(["check", str(simple_script_file), "--from", "24.1"])
         assert exc_info.value.code == 2
 
     def test_cli_no_command(self) -> None:
@@ -246,7 +245,7 @@ class TestCLI:
         p.write_text(f'doc.add("{removed_type}", "Obj1")\n')
 
         with pytest.raises(SystemExit) as exc_info:
-            main(["check-compat", str(p), "--from", "8.9", "--to", "25.2", "--json"])
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json"])
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()

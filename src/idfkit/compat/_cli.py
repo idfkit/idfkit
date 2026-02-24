@@ -2,9 +2,9 @@
 
 Usage examples::
 
-    idfkit check-compat script.py --from 24.2 --to 25.1
-    idfkit check-compat script.py --targets 24.2,25.1,25.2
-    idfkit check-compat script.py --targets 24.2,25.1,25.2 --json
+    idfkit check script.py --from 24.2 --to 25.1
+    idfkit check script.py --targets 24.2,25.1,25.2
+    idfkit check script.py --targets 24.2,25.1,25.2 --json
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = top.add_subparsers(dest="command")
 
     compat = sub.add_parser(
-        "check-compat",
+        "check",
         help="Check Python files for EnergyPlus cross-version compatibility issues",
         description=(
             "Analyse Python source files that use idfkit and report "
@@ -156,12 +156,12 @@ def main(argv: list[str] | None = None) -> None:
         parser.print_help()
         sys.exit(2)
 
-    if args.command == "check-compat":
-        _run_check_compat(args)
+    if args.command == "check":
+        _run_check(args)
 
 
-def _run_check_compat(args: argparse.Namespace) -> None:
-    """Execute the ``check-compat`` subcommand."""
+def _run_check(args: argparse.Namespace) -> None:
+    """Execute the ``check`` subcommand."""
     targets = _resolve_targets(args)
     all_diagnostics: list[Diagnostic] = []
 

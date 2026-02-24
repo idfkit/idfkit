@@ -18,24 +18,24 @@ different EnergyPlus versions.
 
 ## CLI usage
 
-The `idfkit check-compat` command checks one or more Python files:
+The `idfkit check` command checks one or more Python files:
 
 ### Check migration between two versions
 
 ```bash
-idfkit check-compat my_model.py --from 24.2 --to 25.1
+idfkit check my_model.py --from 24.2 --to 25.1
 ```
 
 ### Check against multiple target versions
 
 ```bash
-idfkit check-compat my_model.py --targets 24.1,24.2,25.1
+idfkit check my_model.py --targets 24.1,24.2,25.1
 ```
 
 ### Machine-readable JSON output (for CI)
 
 ```bash
-idfkit check-compat my_model.py --from 24.2 --to 25.1 --json
+idfkit check my_model.py --from 24.2 --to 25.1 --json
 ```
 
 ### Exit codes

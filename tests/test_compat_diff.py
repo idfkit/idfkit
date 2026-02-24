@@ -51,9 +51,7 @@ class TestBuildSchemaIndex:
         for choices in index_24_1.choices.values():
             assert isinstance(choices, frozenset)
 
-    def test_two_versions_have_different_counts(
-        self, index_24_1: SchemaIndex, index_24_2: SchemaIndex
-    ) -> None:
+    def test_two_versions_have_different_counts(self, index_24_1: SchemaIndex, index_24_2: SchemaIndex) -> None:
         # Versions should have slightly different object type counts
         # (this verifies they are independently loaded)
         assert index_24_1.version != index_24_2.version
