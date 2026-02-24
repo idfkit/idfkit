@@ -139,6 +139,35 @@ class TestCheckCompatibility:
         assert len(c001_diags) >= 1
         assert any(removed_type in d.message for d in c001_diags)
 
+    def test_removed_choice_detected_for_noncanonical_obj_type_casing(self) -> None:
+        """Choice checks should still work when object type casing differs from schema canonical form."""
+        from idfkit.compat._diff import build_schema_index, diff_schemas
+        from idfkit.schema import get_schema
+
+        idx_old = build_schema_index(get_schema((8, 9, 0)))
+        idx_new = build_schema_index(get_schema((25, 2, 0)))
+        diff = diff_schemas(idx_old, idx_new)
+
+        candidate = next(
+            (
+                (obj_type, field_name, choice)
+                for (obj_type, field_name), choices in sorted(diff.removed_choices.items())
+                if field_name.isidentifier() and choices and (obj_type, field_name) in idx_new.choices
+                for choice in sorted(choices)
+            ),
+            None,
+        )
+        if candidate is None:
+            pytest.skip("No suitable removed enum choice found between 8.9.0 and 25.2.0")
+
+        obj_type, field_name, removed_choice = candidate
+        source = f'doc.add("{obj_type.lower()}", "Obj1", {field_name}="{removed_choice}")\n'
+        diagnostics = check_compatibility(source, "test.py", targets=[(8, 9, 0), (25, 2, 0)])
+
+        c002_diags = [d for d in diagnostics if d.code == "C002"]
+        assert len(c002_diags) >= 1
+        assert any(removed_choice in d.message for d in c002_diags)
+
 
 class TestCheckCompatibilityGroupFiltering:
     """Tests for include_groups / exclude_groups parameters."""

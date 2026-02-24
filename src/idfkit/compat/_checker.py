@@ -181,14 +181,19 @@ def _check_choice_value(
     if obj_type is None or field_name is None:
         return
 
-    key = (obj_type, field_name)
-
     # Collect which versions have this field as an enum and include/exclude the value.
     present_in: list[tuple[int, int, int]] = []
     absent_in: list[tuple[int, int, int]] = []
 
     for version, index in indices.items():
-        choices = index.choices.get(key)
+        choices = index.choices.get((obj_type, field_name))
+        if choices is None:
+            canonical_obj_type = next(
+                (candidate for candidate in index.object_types if candidate.casefold() == obj_type.casefold()),
+                None,
+            )
+            if canonical_obj_type is not None:
+                choices = index.choices.get((canonical_obj_type, field_name))
         if choices is None:
             # Field has no enum in this version -- not applicable; skip.
             continue
