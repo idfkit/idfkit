@@ -1,5 +1,5 @@
 site_name: idfkit
-repo_url: https://github.com/samuelduchesne/idfkit
+repo_url: https://github.com/idfkit/idfkit
 site_url: https://samuelduchesne.github.io/idfkit
 site_description: A fast, modern EnergyPlus IDF/epJSON parser for Python with O(1) lookups and reference tracking.
 site_author: Samuel Letellier-Duchesne
@@ -22,7 +22,6 @@ nav:
     - Caching Strategy: concepts/caching.md
     - Logging: concepts/logging.md
     - Cloud & Remote Storage: concepts/cloud-storage.md
-    - Version Compatibility Checking: concepts/version-compatibility.md
     - Schedule Evaluator Design: design/schedule-evaluator.md
 
   - Simulation:
@@ -159,7 +158,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/samuelduchesne/idfkit
+      link: https://github.com/idfkit/idfkit
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/idfkit
   generator: false

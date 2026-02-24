@@ -259,7 +259,7 @@ Enable long paths in Windows or use shorter directory names.
 
 If you can't resolve an issue:
 
-1. Check the [idfkit GitHub issues](https://github.com/samuelduchesne/idfkit/issues)
+1. Check the [idfkit GitHub issues](https://github.com/idfkit/idfkit/issues)
 2. Check the [EnergyPlus documentation](https://energyplus.net/documentation)
 3. Search the [EnergyPlus Helpdesk](https://energyplushelp.freshdesk.com/)
 

@@ -169,7 +169,7 @@ Download from the official EnergyPlus website:
 To contribute to idfkit, clone the repository and install with development dependencies:
 
 ```bash
-git clone https://github.com/samuelduchesne/idfkit.git
+git clone https://github.com/idfkit/idfkit.git
 cd idfkit
 uv sync
 ```

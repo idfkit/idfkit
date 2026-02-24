@@ -24,7 +24,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://samuelduchesne.github.io/idfkit/"
-Repository = "https://github.com/samuelduchesne/idfkit"
+Repository = "https://github.com/idfkit/idfkit"
 Documentation = "https://samuelduchesne.github.io/idfkit/"
 
 [project.optional-dependencies]

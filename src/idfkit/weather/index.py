@@ -34,7 +34,7 @@ _INDEX_FILES: tuple[str, ...] = (
 )
 
 _SOURCES_BASE_URL = "https://climate.onebuilding.org/sources"
-_USER_AGENT = "idfkit (https://github.com/samuelduchesne/idfkit)"
+_USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 _BUNDLED_INDEX = Path(__file__).parent / "data" / "stations.json.gz"
 _CACHED_INDEX = "stations.json.gz"

@@ -10,7 +10,7 @@ import urllib.request
 from urllib.error import URLError
 
 _NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-_USER_AGENT = "idfkit (https://github.com/samuelduchesne/idfkit)"
+_USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 
 class GeocodingError(Exception):

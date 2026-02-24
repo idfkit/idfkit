@@ -17,7 +17,7 @@ from .station import WeatherStation
 
 logger = logging.getLogger(__name__)
 
-_USER_AGENT = "idfkit (https://github.com/samuelduchesne/idfkit)"
+_USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 
 @dataclass(frozen=True)

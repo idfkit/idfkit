@@ -1,9 +1,9 @@
 # idfkit
 
-[![Release](https://img.shields.io/github/v/release/samuelduchesne/idfkit)](https://github.com/samuelduchesne/idfkit/releases)
-[![Build status](https://img.shields.io/github/actions/workflow/status/samuelduchesne/idfkit/main.yml?branch=main)](https://github.com/samuelduchesne/idfkit/actions/workflows/main.yml?query=branch%3Amain)
+[![Release](https://img.shields.io/github/v/release/samuelduchesne/idfkit)](https://github.com/idfkit/idfkit/releases)
+[![Build status](https://img.shields.io/github/actions/workflow/status/samuelduchesne/idfkit/main.yml?branch=main)](https://github.com/idfkit/idfkit/actions/workflows/main.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/samuelduchesne/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/samuelduchesne/idfkit)
-[![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://github.com/samuelduchesne/idfkit/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://github.com/idfkit/idfkit/blob/main/LICENSE)
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
@@ -11,7 +11,7 @@
 > idfkit is in **beta**. The API may change between minor versions. We're looking
 > for early adopters and testers — especially users of eppy who want
 > better performance and a modern API. If you try it out, please
-> [open an issue](https://github.com/samuelduchesne/idfkit/issues) with feedback,
+> [open an issue](https://github.com/idfkit/idfkit/issues) with feedback,
 > bug reports, or feature requests.
 
 idfkit lets you load, create, query, and modify EnergyPlus models with an
