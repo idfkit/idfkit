@@ -66,6 +66,12 @@ def _literal_obj_type(literal: ExtractedLiteral) -> str | None:
     return literal.obj_type
 
 
+def _contains_object_type_case_insensitive(object_type: str, available_types: set[str] | frozenset[str]) -> bool:
+    """Return whether *object_type* exists in *available_types* using case-insensitive matching."""
+    needle = object_type.casefold()
+    return any(candidate.casefold() == needle for candidate in available_types)
+
+
 def check_compatibility(
     source: str,
     filename: str,
@@ -108,7 +114,7 @@ def check_compatibility(
     for literal in literals:
         if allowed_types is not None:
             ot = _literal_obj_type(literal)
-            if ot is not None and ot not in allowed_types:
+            if ot is not None and not _contains_object_type_case_insensitive(ot, allowed_types):
                 continue
 
         if literal.kind == LiteralKind.OBJECT_TYPE:
@@ -131,7 +137,7 @@ def _check_object_type(
     absent_in: list[tuple[int, int, int]] = []
 
     for version, index in indices.items():
-        if literal.value in index.object_types:
+        if _contains_object_type_case_insensitive(literal.value, index.object_types):
             present_in.append(version)
         else:
             absent_in.append(version)

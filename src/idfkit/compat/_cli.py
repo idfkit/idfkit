@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path
 
-from ..versions import version_string
+from ..versions import ENERGYPLUS_VERSIONS, version_string
 from ._checker import check_compatibility, resolve_version
 from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 from ._sarif import format_sarif
@@ -30,10 +30,31 @@ from ._sarif import format_sarif
 def _parse_version_spec(spec: str) -> tuple[int, int, int]:
     """Parse a version string like ``"24.2"`` or ``"25.1.0"`` into a tuple."""
     parts = spec.strip().split(".")
-    if len(parts) == 2:
-        return (int(parts[0]), int(parts[1]), 0)
-    if len(parts) == 3:
-        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    if len(parts) not in {2, 3}:
+        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
+        raise argparse.ArgumentTypeError(msg)
+
+    if any(part == "" for part in parts):
+        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
+        raise argparse.ArgumentTypeError(msg)
+
+    try:
+        values = tuple(int(part) for part in parts)
+    except ValueError as exc:
+        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
+        raise argparse.ArgumentTypeError(msg) from exc
+
+    if len(values) == 2:
+        major, minor = values
+        matching_minor = [v for v in ENERGYPLUS_VERSIONS if v[0] == major and v[1] == minor]
+        if matching_minor:
+            return max(matching_minor, key=lambda v: v[2])
+        return (major, minor, 0)
+
+    if len(values) == 3:
+        major, minor, patch = values
+        return (major, minor, patch)
+
     msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
     raise argparse.ArgumentTypeError(msg)
 
@@ -153,7 +174,11 @@ def _resolve_targets(args: argparse.Namespace) -> list[tuple[int, int, int]]:
 
     if args.targets is not None:
         for part in args.targets.split(","):
-            raw_versions.append(_parse_version_spec(part))
+            try:
+                raw_versions.append(_parse_version_spec(part))
+            except argparse.ArgumentTypeError as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                sys.exit(2)
     else:
         if args.from_version is None or args.to_version is None:
             print("error: --from and --to must both be specified", file=sys.stderr)
@@ -285,13 +310,17 @@ def _run_check(args: argparse.Namespace) -> None:
             sys.exit(2)
 
         source = filepath.read_text(encoding="utf-8")
-        diagnostics = check_compatibility(
-            source,
-            str(filepath),
-            targets,
-            include_groups=include_groups,
-            exclude_groups=exclude_groups,
-        )
+        try:
+            diagnostics = check_compatibility(
+                source,
+                str(filepath),
+                targets,
+                include_groups=include_groups,
+                exclude_groups=exclude_groups,
+            )
+        except SyntaxError as exc:
+            print(f"error: failed to parse {filepath}: {exc}", file=sys.stderr)
+            sys.exit(2)
         all_diagnostics.extend(diagnostics)
 
     # Post-check filtering (rule codes, severity)

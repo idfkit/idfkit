@@ -609,3 +609,48 @@ class TestDiagnosticModel:
         assert "C001" in s
         assert "warning" in s
         assert "Object type 'Foo' not found" in s
+
+
+class TestCompatRegressionFixes:
+    """Regression tests for review feedback fixes."""
+
+    def test_cli_resolves_two_part_minor_to_bundled_patch(self) -> None:
+        """9.0 should resolve to 9.0.1, not fallback to 8.9.0."""
+        from idfkit.compat._cli import _parse_version_spec
+
+        assert _parse_version_spec("9.0") == (9, 0, 1)
+
+    def test_cli_invalid_targets_entry_exits_2(self, simple_script_file: Path) -> None:
+        """Malformed --targets entries should be treated as usage errors."""
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(simple_script_file), "--targets", "24.2,"])
+
+        assert exc_info.value.code == 2
+
+    def test_object_type_check_is_case_insensitive(self) -> None:
+        """Lowercase object literals should be checked the same as canonical names."""
+        from idfkit.compat._diff import build_schema_index, diff_schemas
+        from idfkit.schema import get_schema
+
+        idx_old = build_schema_index(get_schema((8, 9, 0)))
+        idx_new = build_schema_index(get_schema((25, 2, 0)))
+        diff = diff_schemas(idx_old, idx_new)
+
+        if not diff.removed_types:
+            pytest.skip("No removed types between 8.9.0 and 25.2.0")
+
+        removed_type = sorted(diff.removed_types)[0]
+        source = f'doc.add("{removed_type.lower()}", "Obj1")\n'
+
+        diagnostics = check_compatibility(source, "case.py", targets=[(8, 9, 0), (25, 2, 0)])
+        assert any(d.code == "C001" for d in diagnostics)
+
+    def test_cli_syntax_error_exits_2(self, tmp_path: Path) -> None:
+        """Syntax-invalid sources should not crash the CLI."""
+        broken = tmp_path / "broken.py"
+        broken.write_text('doc.add("Zone", "Z1"\n')
+
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(broken), "--from", "24.1", "--to", "24.2"])
+
+        assert exc_info.value.code == 2
