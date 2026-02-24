@@ -15,9 +15,7 @@ from typing import Any
 from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 
 _SARIF_VERSION = "2.1.0"
-_SARIF_SCHEMA = (
-    "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json"
-)
+_SARIF_SCHEMA = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json"
 
 _SEVERITY_MAP: dict[CompatSeverity, str] = {
     CompatSeverity.ERROR: "error",
