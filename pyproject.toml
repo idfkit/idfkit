@@ -88,6 +88,9 @@ benchmark = [
     "energyplus-idd-idf-utilities>=0.88",
 ]
 
+[project.scripts]
+idfkit = "idfkit.compat._cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -143,7 +146,7 @@ reportUnknownLambdaType = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/idfkit"]
-addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/weather --ignore=src/idfkit/schedules --ignore=src/idfkit/thermal --ignore=src/idfkit/visualization --ignore=src/idfkit/download.py"
+addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/weather --ignore=src/idfkit/schedules --ignore=src/idfkit/thermal --ignore=src/idfkit/visualization --ignore=src/idfkit/download.py --ignore=src/idfkit/compat"
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 markers = [
     "integration: marks tests as requiring EnergyPlus installation (deselect with '-m \"not integration\"')",
