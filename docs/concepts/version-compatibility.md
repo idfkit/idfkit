@@ -124,7 +124,7 @@ Add the following to your `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
-  - repo: https://github.com/samuelduchesne/idfkit
+  - repo: https://github.com/idfkit/idfkit
     rev: v0.1.0  # pin to a release tag
     hooks:
       - id: idfkit-check
