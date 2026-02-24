@@ -89,3 +89,9 @@ class Diagnostic:
 
     def __str__(self) -> str:
         return f"{self.filename}:{self.line}:{self.col}: {self.code} [{self.severity.value}] {self.message}"
+
+
+DIAGNOSTIC_CODES: dict[str, str] = {
+    "C001": "Object type exists in one schema version but not another",
+    "C002": "Enumerated choice value for a field exists in one version but not another",
+}

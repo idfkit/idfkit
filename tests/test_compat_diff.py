@@ -56,6 +56,17 @@ class TestBuildSchemaIndex:
         # (this verifies they are independently loaded)
         assert index_24_1.version != index_24_2.version
 
+    def test_groups_populated(self, index_24_1: SchemaIndex) -> None:
+        assert "Zone" in index_24_1.groups
+        assert index_24_1.groups["Zone"] == "Thermal Zones and Surfaces"
+        assert "Material" in index_24_1.groups
+        assert index_24_1.groups["Material"] == "Surface Construction Elements"
+
+    def test_groups_cover_all_types(self, index_24_1: SchemaIndex) -> None:
+        # Every object type should have a group mapping
+        for obj_type in index_24_1.object_types:
+            assert obj_type in index_24_1.groups, f"{obj_type} missing from groups"
+
 
 class TestDiffSchemas:
     """Tests for diff_schemas."""

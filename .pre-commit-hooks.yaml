@@ -1,0 +1,9 @@
+- id: idfkit-check
+  name: idfkit compatibility lint
+  language: python
+  entry: idfkit check
+  types: [python]
+  require_serial: true
+  description: >
+    Lint Python files for EnergyPlus cross-version compatibility issues.
+    Requires --from/--to or --targets in additional_dependencies args.

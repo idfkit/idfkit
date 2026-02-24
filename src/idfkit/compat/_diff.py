@@ -6,7 +6,7 @@ from ``EpJSONSchema`` instances, then computes diffs between versions.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 
 from ..schema import EpJSONSchema
@@ -21,11 +21,14 @@ class SchemaIndex:
         object_types: All object type names in the schema.
         choices: Mapping from ``(object_type, field_name)`` to the set of
             valid enum/choice string values for that field.
+        groups: Mapping from object type name to its IDD group
+            (e.g. ``"Zone"`` → ``"Thermal Zones and Surfaces"``).
     """
 
     version: tuple[int, int, int]
     object_types: frozenset[str]
     choices: dict[tuple[str, str], frozenset[str]]
+    groups: dict[str, str] = field(default_factory=lambda: {})
 
 
 @dataclass(frozen=True)
@@ -75,13 +78,18 @@ def build_schema_index(schema: EpJSONSchema) -> SchemaIndex:
     """Build a :class:`SchemaIndex` from an ``EpJSONSchema``.
 
     Iterates over all object types and their field properties to collect
-    the set of object type names and all enumerated choice values.
+    the set of object type names, all enumerated choice values, and
+    IDD group membership.
     """
     object_types: set[str] = set()
     choices: dict[tuple[str, str], frozenset[str]] = {}
+    groups: dict[str, str] = {}
 
     for obj_type in schema.object_types:
         object_types.add(obj_type)
+        group = schema.get_group(obj_type)
+        if group is not None:
+            groups[obj_type] = group
         inner = schema.get_inner_schema(obj_type)
         if inner is None:
             continue
@@ -99,6 +107,7 @@ def build_schema_index(schema: EpJSONSchema) -> SchemaIndex:
         version=schema.version,
         object_types=frozenset(object_types),
         choices=choices,
+        groups=groups,
     )
 
 

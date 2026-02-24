@@ -1,6 +1,7 @@
-"""Core compatibility checking engine.
+"""Core compatibility linting engine.
 
-Combines schema diffing with AST extraction to produce diagnostics.
+Combines schema diffing with AST extraction to produce lint diagnostics
+for cross-version EnergyPlus compatibility issues.
 """
 
 from __future__ import annotations
@@ -37,18 +38,57 @@ def resolve_version(version: tuple[int, int, int]) -> tuple[int, int, int]:
     return closest
 
 
+def _build_allowed_types(
+    indices: dict[tuple[int, int, int], SchemaIndex],
+    include_groups: set[str] | None,
+    exclude_groups: set[str] | None,
+) -> set[str] | None:
+    """Build the set of object types that pass group filters, or ``None`` if no filter is active."""
+    if include_groups is None and exclude_groups is None:
+        return None
+    merged_groups: dict[str, str] = {}
+    for index in indices.values():
+        merged_groups.update(index.groups)
+    allowed: set[str] = set()
+    for obj_type, group in merged_groups.items():
+        if include_groups is not None and group not in include_groups:
+            continue
+        if exclude_groups is not None and group in exclude_groups:
+            continue
+        allowed.add(obj_type)
+    return allowed
+
+
+def _literal_obj_type(literal: ExtractedLiteral) -> str | None:
+    """Return the object type associated with *literal* for group-filter purposes."""
+    if literal.kind == LiteralKind.OBJECT_TYPE:
+        return literal.value
+    return literal.obj_type
+
+
 def check_compatibility(
     source: str,
     filename: str,
     targets: list[tuple[int, int, int]],
+    *,
+    include_groups: set[str] | None = None,
+    exclude_groups: set[str] | None = None,
 ) -> list[Diagnostic]:
-    """Check a Python source file for cross-version compatibility issues.
+    """Lint a Python source file for cross-version EnergyPlus compatibility issues.
+
+    Parses *source* via the AST (no code execution) and compares extracted
+    string literals against the bundled epJSON schemas for the given
+    *targets*, emitting a :class:`Diagnostic` for every object type or
+    choice value that does not exist in all target versions.
 
     Args:
-        source: Python source code.
+        source: Python source code to lint.
         filename: File path (used in diagnostic output).
-        targets: List of EnergyPlus version tuples to check against.
+        targets: List of EnergyPlus version tuples to lint against.
             Versions should already be resolved to bundled schema versions.
+        include_groups: If set, only lint object types belonging to these
+            IDD groups (e.g. ``{"Thermal Zones and Surfaces"}``).
+        exclude_groups: If set, skip object types belonging to these IDD groups.
 
     Returns:
         List of :class:`Diagnostic` instances, sorted by line then column.
@@ -61,13 +101,16 @@ def check_compatibility(
     if not literals:
         return []
 
-    # Load schema indices for all targets
-    indices: dict[tuple[int, int, int], SchemaIndex] = {}
-    for version in targets:
-        indices[version] = _get_index(version)
+    indices: dict[tuple[int, int, int], SchemaIndex] = {v: _get_index(v) for v in targets}
+    allowed_types = _build_allowed_types(indices, include_groups, exclude_groups)
 
     diagnostics: list[Diagnostic] = []
     for literal in literals:
+        if allowed_types is not None:
+            ot = _literal_obj_type(literal)
+            if ot is not None and ot not in allowed_types:
+                continue
+
         if literal.kind == LiteralKind.OBJECT_TYPE:
             _check_object_type(literal, indices, filename, diagnostics)
         elif literal.kind == LiteralKind.CHOICE_VALUE:

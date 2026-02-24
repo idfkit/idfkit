@@ -1,4 +1,4 @@
-"""Tests for idfkit.compat._cli and the check_compatibility integration."""
+"""Tests for idfkit.compat._cli, SARIF output, and the check_compatibility integration."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import pytest
 from idfkit.compat._checker import check_compatibility, resolve_version
 from idfkit.compat._cli import main
 from idfkit.compat._models import CompatSeverity, Diagnostic
+from idfkit.compat._sarif import format_sarif
 
 # ---------------------------------------------------------------------------
 # Fixtures: small Python files used as test inputs
@@ -45,6 +46,25 @@ def nonexistent_type_file(tmp_path: Path) -> Path:
     p = tmp_path / "fake_type.py"
     p.write_text(NONEXISTENT_TYPE_SCRIPT)
     return p
+
+
+@pytest.fixture
+def removed_type_script(tmp_path: Path) -> tuple[Path, str]:
+    """Create a script referencing a type that was removed between 8.9 and 25.2."""
+    from idfkit.compat._diff import build_schema_index, diff_schemas
+    from idfkit.schema import get_schema
+
+    idx_old = build_schema_index(get_schema((8, 9, 0)))
+    idx_new = build_schema_index(get_schema((25, 2, 0)))
+    diff = diff_schemas(idx_old, idx_new)
+
+    if not diff.removed_types:
+        pytest.skip("No removed types between 8.9.0 and 25.2.0")
+
+    removed_type = sorted(diff.removed_types)[0]
+    p = tmp_path / "removed.py"
+    p.write_text(f'doc.add("{removed_type}", "Obj1")\n')
+    return p, removed_type
 
 
 # ---------------------------------------------------------------------------
@@ -102,8 +122,6 @@ class TestCheckCompatibility:
 
     def test_synthetic_removed_type_detected(self) -> None:
         """Using a type that exists in an older version but not a newer one."""
-        # Find a type that was removed between two versions
-        # Use schema comparison to find one
         from idfkit.compat._diff import build_schema_index, diff_schemas
         from idfkit.schema import get_schema
 
@@ -120,6 +138,52 @@ class TestCheckCompatibility:
         c001_diags = [d for d in diagnostics if d.code == "C001"]
         assert len(c001_diags) >= 1
         assert any(removed_type in d.message for d in c001_diags)
+
+
+class TestCheckCompatibilityGroupFiltering:
+    """Tests for include_groups / exclude_groups parameters."""
+
+    def test_include_groups_filters_results(self) -> None:
+        """Only Zone (Thermal Zones and Surfaces) should produce diagnostics."""
+        source = 'doc.add("Zone", "Z1")\ndoc.add("Material", "M1")\n'
+        # With include_groups, only the specified group's types are checked
+        diags_all = check_compatibility(source, "t.py", targets=[(8, 9, 0), (25, 2, 0)])
+        diags_filtered = check_compatibility(
+            source,
+            "t.py",
+            targets=[(8, 9, 0), (25, 2, 0)],
+            include_groups={"Thermal Zones and Surfaces"},
+        )
+        # Zone is in "Thermal Zones and Surfaces", Material is in
+        # "Surface Construction Elements".  The filtered set should have no
+        # Material diagnostics.
+        mat_diags = [d for d in diags_filtered if "Material" in d.message]
+        assert len(mat_diags) == 0
+        # But if there were any Material diagnostics in the unfiltered set,
+        # the filter removed them.
+        mat_diags_all = [d for d in diags_all if "Material" in d.message]
+        assert len(diags_filtered) <= len(diags_all) - len(mat_diags_all)
+
+    def test_exclude_groups_filters_results(self) -> None:
+        """Excluding 'Thermal Zones and Surfaces' should remove Zone diagnostics."""
+        source = 'doc.add("Zone", "Z1")\ndoc.add("Material", "M1")\n'
+        diags_filtered = check_compatibility(
+            source,
+            "t.py",
+            targets=[(8, 9, 0), (25, 2, 0)],
+            exclude_groups={"Thermal Zones and Surfaces"},
+        )
+        zone_diags = [d for d in diags_filtered if "Zone" in d.message]
+        assert len(zone_diags) == 0
+
+    def test_no_groups_returns_all(self) -> None:
+        """Without group filters, all diagnostics are returned."""
+        source = 'doc.add("Zone", "Z1")\n'
+        diags = check_compatibility(source, "t.py", targets=[(24, 1, 0), (24, 2, 0)])
+        diags_explicit = check_compatibility(
+            source, "t.py", targets=[(24, 1, 0), (24, 2, 0)], include_groups=None, exclude_groups=None
+        )
+        assert len(diags) == len(diags_explicit)
 
 
 class TestResolveVersion:
@@ -228,21 +292,11 @@ class TestCLI:
             main([])
         assert exc_info.value.code == 2
 
-    def test_cli_json_diagnostic_structure(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_cli_json_diagnostic_structure(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """If diagnostics are emitted in JSON, each has the required fields."""
-        from idfkit.compat._diff import build_schema_index, diff_schemas
-        from idfkit.schema import get_schema
-
-        idx_old = build_schema_index(get_schema((8, 9, 0)))
-        idx_new = build_schema_index(get_schema((25, 2, 0)))
-        diff = diff_schemas(idx_old, idx_new)
-
-        if not diff.removed_types:
-            pytest.skip("No removed types between 8.9.0 and 25.2.0")
-
-        removed_type = sorted(diff.removed_types)[0]
-        p = tmp_path / "removed.py"
-        p.write_text(f'doc.add("{removed_type}", "Obj1")\n')
+        p, _removed_type = removed_type_script
 
         with pytest.raises(SystemExit) as exc_info:
             main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json"])
@@ -263,6 +317,257 @@ class TestCLI:
             assert "from_version" in diag
             assert "to_version" in diag
             assert "suggested_fix" in diag
+
+
+# ---------------------------------------------------------------------------
+# SARIF output tests
+# ---------------------------------------------------------------------------
+
+
+class TestSARIFOutput:
+    """Tests for SARIF output format."""
+
+    def test_format_sarif_empty(self) -> None:
+        """Empty diagnostics produce valid SARIF with zero results."""
+        output = format_sarif([])
+        data = json.loads(output)
+        assert data["version"] == "2.1.0"
+        assert "$schema" in data
+        assert len(data["runs"]) == 1
+        assert data["runs"][0]["results"] == []
+        assert len(data["runs"][0]["tool"]["driver"]["rules"]) >= 2
+
+    def test_format_sarif_with_diagnostics(self) -> None:
+        """SARIF output includes correctly mapped diagnostic fields."""
+        diag = Diagnostic(
+            code="C001",
+            message="Object type 'Foo' not found in 25.1.0 (exists in 24.2.0)",
+            severity=CompatSeverity.WARNING,
+            filename="test.py",
+            line=10,
+            col=5,
+            end_col=15,
+            from_version="24.2.0",
+            to_version="25.1.0",
+        )
+        output = format_sarif([diag])
+        data = json.loads(output)
+        results = data["runs"][0]["results"]
+        assert len(results) == 1
+        r = results[0]
+        assert r["ruleId"] == "C001"
+        assert r["level"] == "warning"
+        assert "Foo" in r["message"]["text"]
+        loc = r["locations"][0]["physicalLocation"]
+        assert loc["artifactLocation"]["uri"] == "test.py"
+        assert loc["region"]["startLine"] == 10
+        assert loc["region"]["startColumn"] == 6  # 1-based
+        assert loc["region"]["endColumn"] == 16  # 1-based
+
+    def test_format_sarif_with_suggested_fix(self) -> None:
+        """SARIF output includes fixes when suggested_fix is set."""
+        diag = Diagnostic(
+            code="C001",
+            message="Test",
+            severity=CompatSeverity.WARNING,
+            filename="test.py",
+            line=1,
+            col=0,
+            end_col=5,
+            from_version="24.1.0",
+            to_version="25.1.0",
+            suggested_fix="Use 'NewType' instead",
+        )
+        output = format_sarif([diag])
+        data = json.loads(output)
+        result = data["runs"][0]["results"][0]
+        assert "fixes" in result
+        assert result["fixes"][0]["description"]["text"] == "Use 'NewType' instead"
+
+    def test_cli_sarif_output(self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]) -> None:
+        """CLI --sarif produces valid SARIF output."""
+        p, _removed_type = removed_type_script
+
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--sarif"])
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["version"] == "2.1.0"
+        assert len(data["runs"][0]["results"]) >= 1
+
+    def test_cli_json_and_sarif_mutually_exclusive(self, simple_script_file: Path) -> None:
+        """CLI rejects --json and --sarif together."""
+        with pytest.raises(SystemExit) as exc_info:
+            main([
+                "check",
+                str(simple_script_file),
+                "--from",
+                "24.1",
+                "--to",
+                "24.2",
+                "--json",
+                "--sarif",
+            ])
+        assert exc_info.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# Rule selection tests
+# ---------------------------------------------------------------------------
+
+
+class TestRuleSelection:
+    """Tests for --select and --ignore flags."""
+
+    def test_cli_select_filters_codes(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """--select C001 should only include C001 diagnostics."""
+        p, _removed_type = removed_type_script
+
+        with pytest.raises(SystemExit):
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json", "--select", "C001"])
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        for diag in data["diagnostics"]:
+            assert diag["code"] == "C001"
+
+    def test_cli_ignore_suppresses_codes(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """--ignore C001 should exclude C001 diagnostics."""
+        p, _removed_type = removed_type_script
+
+        with pytest.raises(SystemExit):
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json", "--ignore", "C001"])
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        for diag in data["diagnostics"]:
+            assert diag["code"] != "C001"
+
+    def test_cli_unknown_select_code_exits_2(self, simple_script_file: Path) -> None:
+        """Unknown codes in --select cause exit 2."""
+        with pytest.raises(SystemExit) as exc_info:
+            main([
+                "check",
+                str(simple_script_file),
+                "--from",
+                "24.1",
+                "--to",
+                "24.2",
+                "--select",
+                "C999",
+            ])
+        assert exc_info.value.code == 2
+
+    def test_cli_unknown_ignore_code_exits_2(self, simple_script_file: Path) -> None:
+        """Unknown codes in --ignore cause exit 2."""
+        with pytest.raises(SystemExit) as exc_info:
+            main([
+                "check",
+                str(simple_script_file),
+                "--from",
+                "24.1",
+                "--to",
+                "24.2",
+                "--ignore",
+                "XBAD",
+            ])
+        assert exc_info.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# Group filtering CLI tests
+# ---------------------------------------------------------------------------
+
+
+class TestGroupFilteringCLI:
+    """Tests for --group and --exclude-group flags."""
+
+    def test_cli_group_flag(self, simple_script_file: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """--group restricts linting to the specified IDD groups."""
+        with pytest.raises(SystemExit):
+            main([
+                "check",
+                str(simple_script_file),
+                "--from",
+                "8.9",
+                "--to",
+                "25.2",
+                "--json",
+                "--group",
+                "Thermal Zones and Surfaces",
+            ])
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        # No Material-related diagnostics should be present
+        for diag in data["diagnostics"]:
+            assert "Material" not in diag["message"]
+
+    def test_cli_exclude_group_flag(self, simple_script_file: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """--exclude-group removes the specified IDD groups from linting."""
+        with pytest.raises(SystemExit):
+            main([
+                "check",
+                str(simple_script_file),
+                "--from",
+                "8.9",
+                "--to",
+                "25.2",
+                "--json",
+                "--exclude-group",
+                "Surface Construction Elements",
+            ])
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        for diag in data["diagnostics"]:
+            assert "Material" not in diag["message"]
+
+
+# ---------------------------------------------------------------------------
+# Severity filtering tests
+# ---------------------------------------------------------------------------
+
+
+class TestSeverityFiltering:
+    """Tests for --severity flag."""
+
+    def test_cli_severity_error_suppresses_warnings(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """--severity error should suppress warning-level diagnostics."""
+        p, _removed_type = removed_type_script
+
+        with pytest.raises(SystemExit):
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json", "--severity", "error"])
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        for diag in data["diagnostics"]:
+            assert diag["severity"] == "error"
+
+    def test_cli_severity_warning_reports_all(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """--severity warning should report all diagnostics (the default)."""
+        p, _removed_type = removed_type_script
+
+        with pytest.raises(SystemExit):
+            main(["check", str(p), "--from", "8.9", "--to", "25.2", "--json", "--severity", "warning"])
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        # Should include both warnings and errors (if any)
+        assert isinstance(data["diagnostics"], list)
+
+
+# ---------------------------------------------------------------------------
+# Diagnostic model tests
+# ---------------------------------------------------------------------------
 
 
 class TestDiagnosticModel:
