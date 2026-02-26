@@ -100,6 +100,7 @@ def validate_document(  # noqa: C901
     check_required: bool = True,
     check_types: bool = True,
     check_ranges: bool = True,
+    check_singletons: bool = True,
     object_types: list[str] | None = None,
 ) -> ValidationResult:
     """
@@ -112,6 +113,7 @@ def validate_document(  # noqa: C901
         check_required: Check required fields
         check_types: Check field types
         check_ranges: Check numeric ranges
+        check_singletons: Check singleton (maxProperties) constraints
         object_types: Only validate these types (None = all)
 
     Returns:
@@ -158,6 +160,28 @@ def validate_document(  # noqa: C901
     # Determine which object types to validate
     types_to_check = object_types or list(doc.collections.keys())
     logger.debug("Validating %d object type(s)", len(types_to_check))
+
+    # Check singleton (maxProperties) constraints
+    if check_singletons:
+        for obj_type in types_to_check:
+            if obj_type not in doc.collections:
+                continue
+            obj_schema = schema.get_object_schema(obj_type)
+            if obj_schema and obj_schema.get("maxProperties") == 1:
+                count = len(doc[obj_type])
+                if count > 1:
+                    first = doc[obj_type].first()
+                    obj_name = first.name if first and first.name else obj_type
+                    errors.append(
+                        ValidationError(
+                            severity=Severity.ERROR,
+                            obj_type=obj_type,
+                            obj_name=obj_name,
+                            field=None,
+                            message=f"Singleton type '{obj_type}' has {count} instances (maximum 1 allowed)",
+                            code="E010",
+                        )
+                    )
 
     for obj_type in types_to_check:
         if obj_type not in doc.collections:

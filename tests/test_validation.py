@@ -153,6 +153,59 @@ class TestValidateReferences:
         assert isinstance(result, ValidationResult)
 
 
+class TestValidateSingletons:
+    """Tests for maxProperties (singleton) constraint checking in validate_document."""
+
+    def _force_duplicate_singleton(self, doc: IDFDocument, obj_type: str) -> None:
+        """Bypass add() singleton guard by inserting directly into the collection."""
+        from idfkit.objects import IDFCollection, IDFObject
+
+        key = obj_type.upper()
+        if key not in {k.upper(): k for k in doc.collections}:
+            collection = IDFCollection(obj_type)
+            doc._collections[obj_type] = collection  # pyright: ignore[reportPrivateUsage]
+        collection = doc[obj_type]
+        obj = IDFObject(obj_type, "")
+        collection._items.append(obj)  # pyright: ignore[reportPrivateUsage]
+
+    def test_singleton_violation_detected(self, empty_doc: IDFDocument) -> None:
+        """A singleton type with >1 instance should produce an E010 error."""
+        empty_doc.add("Timestep", number_of_timesteps_per_hour=4)
+        self._force_duplicate_singleton(empty_doc, "Timestep")
+
+        result = validate_document(empty_doc)
+        singleton_errors = [e for e in result.errors if e.code == "E010"]
+        assert len(singleton_errors) == 1
+        assert "Timestep" in singleton_errors[0].message
+        assert "2 instances" in singleton_errors[0].message
+
+    def test_singleton_valid_passes(self, empty_doc: IDFDocument) -> None:
+        """A singleton type with exactly 1 instance should pass."""
+        empty_doc.add("Timestep", number_of_timesteps_per_hour=4)
+        result = validate_document(empty_doc)
+        singleton_errors = [e for e in result.errors if e.code == "E010"]
+        assert len(singleton_errors) == 0
+
+    def test_singleton_check_disabled(self, empty_doc: IDFDocument) -> None:
+        """check_singletons=False should skip singleton validation."""
+        empty_doc.add("Timestep", number_of_timesteps_per_hour=4)
+        self._force_duplicate_singleton(empty_doc, "Timestep")
+
+        result = validate_document(empty_doc, check_singletons=False)
+        singleton_errors = [e for e in result.errors if e.code == "E010"]
+        assert len(singleton_errors) == 0
+
+    def test_singleton_check_respects_object_types_filter(self, empty_doc: IDFDocument) -> None:
+        """Singleton check should only apply to filtered object types."""
+        empty_doc.add("Timestep", number_of_timesteps_per_hour=4)
+        self._force_duplicate_singleton(empty_doc, "Timestep")
+
+        # Filter to Zone only — Timestep singleton violation should not appear
+        result = validate_document(empty_doc, object_types=["Zone"])
+        singleton_errors = [e for e in result.errors if e.code == "E010"]
+        assert len(singleton_errors) == 0
+
+
 class TestSeverityEnum:
     def test_values(self) -> None:
         assert Severity.ERROR.value == "error"
