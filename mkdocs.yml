@@ -96,7 +96,8 @@ nav:
 
 plugins:
   - search
-  - social
+  - social:
+      enabled: !ENV [CI, false]
   - meta
   - tags
   - mkdocstrings:
