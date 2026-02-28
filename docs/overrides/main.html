@@ -15,8 +15,8 @@
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "{{ page.meta.get('title', page.title) }}",
-    "description": "{{ page.meta.get('description', config.site_description) }}",
+    "headline": {{ page.meta.get('title', page.title) | tojson }},
+    "description": {{ page.meta.get('description', config.site_description) | tojson }},
     "url": "{{ page.canonical_url }}",
     "isPartOf": {
       "@type": "WebSite",
