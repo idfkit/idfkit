@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,6 +14,44 @@ class IdfKitError(Exception):
     """Base exception for all idfkit errors."""
 
     pass
+
+
+@dataclass(frozen=True, slots=True)
+class ParseDiagnostic:
+    """Structured parse diagnostic with best-effort source context."""
+
+    message: str
+    filepath: str | None = None
+    obj_type: str | None = None
+    obj_name: str | None = None
+    line: int | None = None
+    column: int | None = None
+
+
+class IDFParseError(IdfKitError):
+    """Raised when parsing IDF/epJSON content fails."""
+
+    diagnostics: tuple[ParseDiagnostic, ...]
+
+    def __init__(self, message: str, diagnostics: Sequence[ParseDiagnostic] | None = None) -> None:
+        self.diagnostics = tuple(diagnostics or ())
+        if self.diagnostics:
+            first = self.diagnostics[0]
+            location = "unknown location"
+            if first.filepath is not None and first.line is not None and first.column is not None:
+                location = f"{first.filepath}:{first.line}:{first.column}"
+            elif first.filepath is not None and first.line is not None:
+                location = f"{first.filepath}:{first.line}"
+            elif first.filepath is not None:
+                location = first.filepath
+            detail = f"{first.message} ({location})"
+            if first.obj_type:
+                detail += f" [object: {first.obj_type}]"
+            if first.obj_name:
+                detail += f" [name: {first.obj_name}]"
+            super().__init__(f"{message}: {detail}")
+            return
+        super().__init__(message)
 
 
 # Alias for backwards compatibility

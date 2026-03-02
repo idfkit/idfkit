@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from idfkit.exceptions import IDFParseError
 from idfkit.idf_parser import parse_idf
 from idfkit.schema import get_schema
 from idfkit.writers import write_idf
@@ -172,8 +173,8 @@ class TestPhantomObjects:
         obj_types = set(doc.collections.keys())
         assert "Minimal IDF for roundtrip testing" not in obj_types
 
-    def test_unknown_type_filtered(self, tmp_path: Path) -> None:
-        """Garbage text matching the object regex should be filtered out."""
+    def test_unknown_type_raises(self, tmp_path: Path) -> None:
+        """Garbage text matching the object regex should fail strict parsing."""
         content = """\
 Version, 24.1;
 
@@ -186,10 +187,8 @@ Zone,
 """
         filepath = tmp_path / "phantom.idf"
         filepath.write_text(content, encoding="latin-1")
-        doc = parse_idf(filepath)
-        obj_types = set(doc.collections.keys())
-        assert "design days" not in obj_types
-        assert "Zone" in obj_types
+        with pytest.raises(IDFParseError, match="Unknown object type"):
+            parse_idf(filepath)
 
 
 class TestExtensibleFieldsWithEmptyValues:

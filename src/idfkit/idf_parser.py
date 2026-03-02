@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .document import IDFDocument
-from .exceptions import VersionNotFoundError
+from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError
 from .objects import IDFObject
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,7 @@ def parse_idf(
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
     encoding: str = "latin-1",
+    strict: bool = True,
 ) -> IDFDocument:
     """
     Parse an IDF file into an IDFDocument.
@@ -80,6 +81,7 @@ def parse_idf(
         schema: Optional EpJSONSchema for field ordering and type coercion
         version: Optional version override (auto-detected if not provided)
         encoding: File encoding (default: latin-1 for compatibility)
+        strict: If True, fail fast on malformed objects (default: True)
 
     Returns:
         Parsed IDFDocument
@@ -111,7 +113,7 @@ def parse_idf(
     if not filepath.exists():
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
-    parser = IDFParser(filepath, schema, encoding)
+    parser = IDFParser(filepath, schema, encoding, strict=strict)
     return parser.parse(version)
 
 
@@ -122,22 +124,25 @@ class IDFParser:
     Uses memory mapping for large files and regex for tokenization.
     """
 
-    __slots__ = ("_content", "_encoding", "_filepath", "_schema")
+    __slots__ = ("_content", "_encoding", "_filepath", "_schema", "_strict")
 
     _filepath: Path
     _schema: EpJSONSchema | None
     _encoding: str
     _content: bytes | None
+    _strict: bool
 
     def __init__(
         self,
         filepath: Path,
         schema: EpJSONSchema | None = None,
         encoding: str = "latin-1",
+        strict: bool = True,
     ):
         self._filepath = filepath
         self._schema = schema
         self._encoding = encoding
+        self._strict = strict
         self._content: bytes | None = None
 
     def parse(self, version: tuple[int, int, int] | None = None) -> IDFDocument:
@@ -229,31 +234,47 @@ class IDFParser:
         skipped_types: set[str] = set()
 
         for match in _OBJECT_PATTERN.finditer(content):
+            match_offset = match.start(1)
+            obj_type: str | None = None
+            obj_name: str | None = None
+
             try:
-                obj_type = match.group(1).decode(encoding).strip()
+                decoded_obj_type = match.group(1).decode(encoding).strip()
+                obj_type = decoded_obj_type
 
                 # Skip version object (handled separately)
-                if obj_type.upper() == "VERSION":
+                if decoded_obj_type.upper() == "VERSION":
                     continue
 
-                # Get or build per-type cache
-                if schema is not None:
-                    pc = type_cache.get(obj_type)
-                    if pc is None and obj_type not in type_cache:
-                        pc = schema.get_parsing_cache(obj_type)
-                        type_cache[obj_type] = pc
-                    if pc is None:
-                        skipped_types.add(obj_type)
-                        continue  # Unknown object type
-                else:
-                    pc = None
+                obj_name = self._extract_object_name(match, encoding)
+
+                pc, should_skip = self._resolve_type_cache(
+                    content=content,
+                    schema=schema,
+                    type_cache=type_cache,
+                    skipped_types=skipped_types,
+                    obj_type=decoded_obj_type,
+                    obj_name=obj_name,
+                    match_offset=match_offset,
+                )
+                if should_skip:
+                    continue
 
                 obj = self._parse_object_cached(match, pc, encoding)
                 if obj:
                     addidfobject(obj)
-            except Exception:  # noqa: S110
-                # Log parse errors but continue
-                pass
+            except IDFParseError:
+                raise
+            except Exception as exc:
+                if self._strict:
+                    self._raise_parse_error(
+                        content,
+                        match_offset,
+                        f"Failed to parse object: {exc}",
+                        obj_type=obj_type,
+                        obj_name=obj_name,
+                    )
+                logger.warning("Skipping malformed object %r: %s", obj_type or "<decode_error>", exc)
 
         if skipped_types:
             logger.warning(
@@ -320,25 +341,57 @@ class IDFParser:
                 else:
                     data[field_name] = ""
 
-        # Handle extensible fields
+        if not pc.extensible and len(remaining_fields) > num_named and self._strict:
+            overflow = len(remaining_fields) - num_named
+            msg = (
+                f"Object has {overflow} extra field(s) but type is not extensible "
+                f"(expected at most {num_named}, got {len(remaining_fields)})"
+            )
+            raise ValueError(msg)
+
         if pc.extensible and num_named < len(remaining_fields):
-            ext_size = pc.ext_size
-            ext_names = pc.ext_field_names
-            num_ext = len(ext_names)
             extra = remaining_fields[num_named:]
-            for group_idx in range(0, len(extra), ext_size):
-                group = extra[group_idx : group_idx + ext_size]
-                suffix = "" if group_idx == 0 else f"_{group_idx // ext_size + 1}"
-                for j, value in enumerate(group):
-                    if j < num_ext:
-                        ext_field = f"{ext_names[j]}{suffix}"
-                        if value:
-                            data[ext_field] = _coerce_value_fast(field_types.get(ext_names[j]), value)
-                        else:
-                            data[ext_field] = ""
-                        field_names.append(ext_field)
+            self._append_extensible_fields(
+                data=data,
+                extra=extra,
+                field_names=field_names,
+                field_types=field_types,
+                pc=pc,
+            )
 
         return data
+
+    def _append_extensible_fields(
+        self,
+        *,
+        data: dict[str, Any],
+        extra: list[str],
+        field_names: list[str],
+        field_types: dict[str, str | None],
+        pc: ParsingCache,
+    ) -> None:
+        """Append extensible field groups to parsed data."""
+        ext_size = pc.ext_size
+        if ext_size <= 0:
+            if self._strict:
+                msg = "Object is marked extensible but extensible group size is invalid"
+                raise ValueError(msg)
+            return
+
+        ext_names = pc.ext_field_names
+        num_ext = len(ext_names)
+        for group_idx in range(0, len(extra), ext_size):
+            group = extra[group_idx : group_idx + ext_size]
+            suffix = "" if group_idx == 0 else f"_{group_idx // ext_size + 1}"
+            for j, value in enumerate(group):
+                if j >= num_ext:
+                    continue
+                ext_field = f"{ext_names[j]}{suffix}"
+                if value:
+                    data[ext_field] = _coerce_value_fast(field_types.get(ext_names[j]), value)
+                else:
+                    data[ext_field] = ""
+                field_names.append(ext_field)
 
     def _parse_fields(self, fields_raw: str) -> list[str]:
         """Parse and clean field values from raw string."""
@@ -355,6 +408,73 @@ class IDFParser:
             lines.append(line)
         clean_text = " ".join(lines)
         return [part.strip() for part in clean_text.split(",")]
+
+    @staticmethod
+    def _line_and_column(content: bytes, offset: int) -> tuple[int, int]:
+        """Convert a byte offset to 1-based (line, column)."""
+        line = content.count(b"\n", 0, offset) + 1
+        previous_newline = content.rfind(b"\n", 0, offset)
+        if previous_newline < 0:
+            return (line, offset + 1)
+        return (line, offset - previous_newline)
+
+    @staticmethod
+    def _extract_object_name(match: re.Match[bytes], encoding: str) -> str | None:
+        """Best-effort extraction of the raw first field (typically object name)."""
+        fields_raw = match.group(2).decode(encoding)
+        first = fields_raw.split(",", maxsplit=1)[0].strip()
+        return first or None
+
+    def _raise_parse_error(
+        self,
+        content: bytes,
+        offset: int,
+        message: str,
+        *,
+        obj_type: str | None = None,
+        obj_name: str | None = None,
+    ) -> None:
+        """Raise a ParseError with contextual diagnostics."""
+        line, column = self._line_and_column(content, offset)
+        diagnostic = ParseDiagnostic(
+            message=message,
+            filepath=str(self._filepath),
+            obj_type=obj_type,
+            obj_name=obj_name,
+            line=line,
+            column=column,
+        )
+        summary = "Failed to parse IDF"
+        raise IDFParseError(summary, diagnostics=[diagnostic])
+
+    def _resolve_type_cache(
+        self,
+        *,
+        content: bytes,
+        schema: EpJSONSchema | None,
+        type_cache: dict[str, ParsingCache | None],
+        skipped_types: set[str],
+        obj_type: str,
+        obj_name: str | None,
+        match_offset: int,
+    ) -> tuple[ParsingCache | None, bool]:
+        """Resolve and cache parsing metadata for an object type."""
+        if schema is None:
+            return (None, False)
+
+        pc = type_cache.get(obj_type)
+        if pc is None and obj_type not in type_cache:
+            pc = schema.get_parsing_cache(obj_type)
+            type_cache[obj_type] = pc
+
+        if pc is not None:
+            return (pc, False)
+
+        if self._strict:
+            msg = f"Unknown object type '{obj_type}'"
+            self._raise_parse_error(content, match_offset, msg, obj_type=obj_type, obj_name=obj_name)
+        skipped_types.add(obj_type)
+        return (None, True)
 
 
 def iter_idf_objects(

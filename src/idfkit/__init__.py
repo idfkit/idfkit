@@ -38,6 +38,7 @@ from .exceptions import (
     EnergyPlusNotFoundError,
     ExpandObjectsError,
     IdfKitError,
+    IDFParseError,
     NoDesignDaysError,
     ParseError,
     RangeError,
@@ -132,13 +133,19 @@ from .zoning import (
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:
+def load_idf(
+    path: str,
+    version: tuple[int, int, int] | None = None,
+    *,
+    strict: bool = True,
+) -> IDFDocument:
     """
     Load an IDF file and return an IDFDocument.
 
     Args:
         path: Path to the IDF file
         version: Optional version override (major, minor, patch)
+        strict: If True, fail fast on malformed IDF objects (default: True)
 
     Returns:
         Parsed IDFDocument
@@ -161,7 +168,7 @@ def load_idf(path: str, version: tuple[int, int, int] | None = None) -> IDFDocum
     """
     from pathlib import Path
 
-    return parse_idf(Path(path), version=version)
+    return parse_idf(Path(path), version=version, strict=strict)
 
 
 def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:
@@ -259,6 +266,7 @@ __all__ = [
     "IDFCollection",
     "IDFDocument",
     "IDFObject",
+    "IDFParseError",
     "IDFParser",
     "IdfKitError",
     "NoDesignDaysError",

@@ -10,7 +10,7 @@ import pytest
 from idfkit import load_epjson, load_idf
 from idfkit.epjson_parser import get_epjson_version, parse_epjson
 from idfkit.epjson_parser import load_epjson as raw_load_epjson
-from idfkit.exceptions import VersionNotFoundError
+from idfkit.exceptions import IDFParseError, VersionNotFoundError
 from idfkit.idf_parser import get_idf_version, iter_idf_objects, parse_idf
 
 # ---------------------------------------------------------------------------
@@ -334,3 +334,58 @@ Sizing:Zone,
         assert after_fields == original_fields, (
             f"Schema was mutated: started with {original_fields}, now {after_fields}"
         )
+
+    def test_non_extensible_overflow_raises(self, tmp_path: Path) -> None:
+        """Strict parsing should fail when non-extensible objects overflow fields."""
+        content = """\
+Version,24.1;
+Building,
+  My Building,
+  0.0,
+  Suburbs,
+  0.04,
+  0.4,
+  FullExterior,
+  25,
+  6,
+  UnexpectedTrailingField;
+"""
+        filepath = tmp_path / "overflow.idf"
+        filepath.write_text(content)
+        with pytest.raises(IDFParseError, match="not extensible") as exc_info:
+            parse_idf(filepath)
+        assert exc_info.value.diagnostics
+        assert exc_info.value.diagnostics[0].line is not None
+
+    def test_unknown_object_type_raises(self, tmp_path: Path) -> None:
+        """Strict parsing should fail on unknown object types instead of silently skipping."""
+        content = """\
+Version,24.1;
+Zone, KnownZone;
+TotallyMadeUpObject, Foo;
+"""
+        filepath = tmp_path / "unknown_type.idf"
+        filepath.write_text(content)
+        with pytest.raises(IDFParseError, match="Unknown object type") as exc_info:
+            parse_idf(filepath)
+        assert exc_info.value.diagnostics[0].obj_type == "TotallyMadeUpObject"
+
+    def test_invalid_field_bytes_strict_false_skips(self, tmp_path: Path) -> None:
+        """Malformed bytes should be skipped (not leaked as UnicodeDecodeError) when strict=False."""
+        content = b"Version,24.1;\nZone,\n  Bad\xffName,\n  0,0,0,0;\n"
+        filepath = tmp_path / "bad_bytes.idf"
+        filepath.write_bytes(content)
+
+        doc = parse_idf(filepath, encoding="utf-8", strict=False)
+        assert len(doc["Zone"]) == 0
+
+    def test_invalid_field_bytes_strict_true_wrapped(self, tmp_path: Path) -> None:
+        """Malformed bytes should raise IDFParseError with diagnostics when strict=True."""
+        content = b"Version,24.1;\nZone,\n  Bad\xffName,\n  0,0,0,0;\n"
+        filepath = tmp_path / "bad_bytes_strict.idf"
+        filepath.write_bytes(content)
+
+        with pytest.raises(IDFParseError, match="Failed to parse object") as exc_info:
+            parse_idf(filepath, encoding="utf-8", strict=True)
+        assert exc_info.value.diagnostics
+        assert exc_info.value.diagnostics[0].obj_type == "Zone"
