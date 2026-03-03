@@ -22,12 +22,12 @@ Examples:
     from idfkit import new_document
     from idfkit.zoning import (
         ZoningScheme,
-        create_building,
+        create_block,
         footprint_rectangle,
     )
 
     doc = new_document()
-    zones = create_building(
+    zones = create_block(
         doc,
         name="Office",
         footprint=footprint_rectangle(50, 30),
@@ -45,10 +45,17 @@ import enum
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 from .geometry import Polygon3D, Vector3D, set_surface_coords
-from .geometry_builders import WALL_ORDER, get_geometry_convention, horizontal_poly
+from .geometry_builders import (
+    WALL_ORDER,
+    detect_horizontal_adjacencies,
+    get_geometry_convention,
+    horizontal_poly,
+    link_horizontal_surfaces,
+    split_horizontal_surface,
+)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -709,8 +716,12 @@ def _build_story_surfaces(
 
         # --- Floor ---
         floor_name = f"{zone_name} Floor"
-        if spec.story == 1:
+        if spec.story == 1 and spec.z_bot == 0.0:
             floor_bc = "Ground"
+            floor_bc_obj = ""
+        elif spec.story == 1:
+            # Elevated block (base_elevation > 0)
+            floor_bc = "Outdoors"
             floor_bc_obj = ""
         else:
             # Link to the ceiling of the same zone suffix on the story below
@@ -880,6 +891,8 @@ class ZonedBlock:
             ``zoning`` is ``CUSTOM``.
         air_boundary: Whether to use ``Construction:AirBoundary``
             between inter-zone walls.
+        base_elevation: Elevation of the ground floor in metres.
+            Use this to stack blocks at different heights for setbacks.
     """
 
     name: str
@@ -890,6 +903,7 @@ class ZonedBlock:
     perimeter_depth: float = ASHRAE_PERIMETER_DEPTH
     custom_zones: list[ZoneFootprint] | None = None
     air_boundary: bool = False
+    base_elevation: float = 0.0
 
     def __post_init__(self) -> None:
         if len(self.footprint) < 3:
@@ -906,6 +920,9 @@ class ZonedBlock:
             raise ValueError(msg)
         if self.zoning == ZoningScheme.CUSTOM and not self.custom_zones:
             msg = "custom_zones is required when zoning is CUSTOM"
+            raise ValueError(msg)
+        if self.base_elevation < 0:
+            msg = f"base_elevation must be >= 0, got {self.base_elevation}"
             raise ValueError(msg)
 
     @property
@@ -942,8 +959,8 @@ class ZonedBlock:
         # Build story specs
         story_specs: list[_StorySpec] = []
         for i in range(self.num_stories):
-            z_bot = i * self.floor_to_floor
-            z_top = (i + 1) * self.floor_to_floor
+            z_bot = self.base_elevation + i * self.floor_to_floor
+            z_top = self.base_elevation + (i + 1) * self.floor_to_floor
             story_specs.append(_StorySpec(i + 1, z_bot, z_top, zone_footprints))
 
         # Create surfaces for each story
@@ -963,11 +980,11 @@ class ZonedBlock:
 
 
 # ---------------------------------------------------------------------------
-# create_building — high-level entry point
+# create_block — high-level entry point
 # ---------------------------------------------------------------------------
 
 
-def create_building(
+def create_block(
     doc: IDFDocument,
     name: str,
     footprint: Sequence[tuple[float, float]],
@@ -978,12 +995,16 @@ def create_building(
     perimeter_depth: float = ASHRAE_PERIMETER_DEPTH,
     custom_zones: list[ZoneFootprint] | None = None,
     air_boundary: bool = False,
+    base_elevation: float = 0.0,
 ) -> list[IDFObject]:
-    """Create a fully-zoned building in one call.
+    """Create a fully-zoned building block in one call.
 
     This is the primary entry point for the zoning module.  It combines
     footprint definition, zoning strategy, and multi-story extrusion into
     a single function call.
+
+    For setback buildings, create multiple blocks at different elevations
+    and link them with :func:`link_blocks`.
 
     Args:
         doc: The document to add objects to.
@@ -999,6 +1020,9 @@ def create_building(
             is ``CUSTOM``.
         air_boundary: If ``True``, apply ``Construction:AirBoundary``
             to all inter-zone walls (for open-plan spaces).
+        base_elevation: Elevation of the ground floor in metres.
+            Defaults to 0.  When > 0, the ground-floor boundary
+            condition is ``Outdoors`` instead of ``Ground``.
 
     Returns:
         All created [IDFObject][idfkit.objects.IDFObject] instances.
@@ -1010,12 +1034,12 @@ def create_building(
             from idfkit import new_document
             from idfkit.zoning import (
                 ZoningScheme,
-                create_building,
+                create_block,
                 footprint_rectangle,
             )
 
             doc = new_document()
-            create_building(
+            create_block(
                 doc,
                 name="Office",
                 footprint=footprint_rectangle(50, 30),
@@ -1034,5 +1058,104 @@ def create_building(
         perimeter_depth=perimeter_depth,
         custom_zones=custom_zones,
         air_boundary=air_boundary,
+        base_elevation=base_elevation,
     )
     return block.build(doc)
+
+
+# ---------------------------------------------------------------------------
+# link_blocks — automatic adjacency linking between stacked blocks
+# ---------------------------------------------------------------------------
+
+
+@overload
+def link_blocks(doc: IDFDocument) -> list[IDFObject]: ...
+
+
+@overload
+def link_blocks(doc: IDFDocument, lower: str, upper: str) -> list[IDFObject]: ...
+
+
+def link_blocks(
+    doc: IDFDocument,
+    lower: str | None = None,
+    upper: str | None = None,
+) -> list[IDFObject]:
+    """Link stacked building blocks at shared elevations.
+
+    Detects roof and floor surfaces at matching elevations, splits
+    surfaces where the footprints differ, and sets ``Surface`` boundary
+    conditions between the resulting ceiling/floor pairs.
+
+    Can be called in two ways:
+
+    * ``link_blocks(doc)`` — auto-detect all stacked blocks.
+    * ``link_blocks(doc, "Base", "Tower")`` — link only the named
+      blocks (surfaces whose zone name starts with the given prefix).
+
+    Uses the lower-level :func:`~idfkit.geometry_builders.detect_horizontal_adjacencies`,
+    :func:`~idfkit.geometry_builders.split_horizontal_surface`, and
+    :func:`~idfkit.geometry_builders.link_horizontal_surfaces` functions.
+
+    Args:
+        doc: The document containing the blocks.
+        lower: Optional name prefix for the lower block.
+        upper: Optional name prefix for the upper block.
+
+    Returns:
+        All created or modified surface objects.
+
+    Examples:
+        Setback building with a podium and tower:
+
+            ```python
+            from idfkit import new_document
+            from idfkit.zoning import create_block, link_blocks, footprint_rectangle
+
+            doc = new_document()
+            create_block(doc, "Base", footprint_rectangle(50, 30), 3.5, num_stories=5)
+            create_block(doc, "Tower", footprint_rectangle(40, 24), 3.5, num_stories=3, base_elevation=17.5)
+            linked = link_blocks(doc)
+            ```
+    """
+    if (lower is None) != (upper is None):
+        msg = "lower and upper must both be provided or both omitted"
+        raise ValueError(msg)
+
+    adjacencies = detect_horizontal_adjacencies(doc)
+
+    # Filter by block name prefix if specified
+    if lower is not None and upper is not None:
+        adjacencies = [
+            adj
+            for adj in adjacencies
+            if (getattr(adj.roof_surface, "zone_name", "") or "").startswith(lower)
+            and (getattr(adj.floor_surface, "zone_name", "") or "").startswith(upper)
+        ]
+
+    if not adjacencies:
+        return []
+
+    # Group adjacencies by roof surface to handle one-roof-to-many-floors
+    roof_groups: dict[str, list[tuple[IDFObject, list[tuple[float, float]]]]] = {}
+    for adj in adjacencies:
+        roof_name = adj.roof_surface.name
+        roof_groups.setdefault(roof_name, []).append((adj.floor_surface, adj.intersection))
+
+    modified: list[IDFObject] = []
+
+    for adj in adjacencies:
+        roof_name = adj.roof_surface.name
+        floor_srf = adj.floor_surface
+
+        # Split the roof surface: new ceiling for the overlap, remaining roof
+        new_ceiling, remaining_roof = split_horizontal_surface(doc, adj.roof_surface, adj.intersection)
+
+        # Link the new ceiling to the floor surface
+        link_horizontal_surfaces(new_ceiling, floor_srf)
+        modified.append(new_ceiling)
+        modified.append(floor_srf)
+        if remaining_roof is not None:
+            modified.append(remaining_roof)
+
+    return modified

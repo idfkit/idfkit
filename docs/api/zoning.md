@@ -8,11 +8,11 @@ objects needed for simulation.
 ## Quick Start
 
 ```python
-from idfkit import new_document, create_building, ZoningScheme
+from idfkit import new_document, create_block, ZoningScheme
 from idfkit.zoning import footprint_rectangle
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Office",
     footprint=footprint_rectangle(50, 30),
@@ -27,7 +27,7 @@ print(len(doc["Zone"]))  # 15
 
 ## Zoning Schemes
 
-`create_building` supports three zoning strategies via the `zoning` parameter:
+`create_block` supports three zoning strategies via the `zoning` parameter:
 
 | Scheme | Zones per floor | Description |
 |--------|-----------------|-------------|
@@ -40,10 +40,10 @@ print(len(doc["Zone"]))  # 15
 The simplest scheme — one thermal zone per floor:
 
 ```python
-from idfkit import new_document, create_building
+from idfkit import new_document, create_block
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Warehouse",
     footprint=[(0, 0), (40, 0), (40, 20), (0, 20)],
@@ -61,11 +61,11 @@ and one interior core zone.  The perimeter depth defaults to **4.57 m
 (15 ft)** per ASHRAE 90.1 Appendix G and the DOE prototype buildings.
 
 ```python
-from idfkit import new_document, create_building, ZoningScheme
+from idfkit import new_document, create_block, ZoningScheme
 from idfkit.zoning import footprint_rectangle
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Office",
     footprint=footprint_rectangle(50, 30),
@@ -81,11 +81,11 @@ print(len(doc["Zone"]))  # 15
 You can override the perimeter depth:
 
 ```python
-from idfkit import new_document, create_building, ZoningScheme
+from idfkit import new_document, create_block, ZoningScheme
 from idfkit.zoning import footprint_rectangle
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Office",
     footprint=footprint_rectangle(50, 30),
@@ -107,10 +107,10 @@ Supply your own named zone polygons per floor using `custom_zones`.
 Each entry is a `(name, polygon)` tuple:
 
 ```python
-from idfkit import ZoneFootprint, ZoningScheme, create_building, new_document
+from idfkit import ZoneFootprint, ZoningScheme, create_block, new_document
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Lab",
     footprint=[(0, 0), (30, 0), (30, 20), (0, 20)],
@@ -133,11 +133,11 @@ inter-zone walls.  This is useful for open-plan spaces where zone
 boundaries are notional rather than physical:
 
 ```python
-from idfkit import new_document, create_building, ZoningScheme
+from idfkit import new_document, create_block, ZoningScheme
 from idfkit.zoning import footprint_rectangle
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="Open Office",
     footprint=footprint_rectangle(50, 30),
@@ -158,9 +158,60 @@ automatically linked with `Surface` boundary conditions:
 
 | Story | Floor BC | Ceiling BC |
 |-------|----------|------------|
-| Ground floor | `Ground` | `Surface` (story above) |
+| Ground floor (`base_elevation=0`) | `Ground` | `Surface` (story above) |
+| Elevated ground floor (`base_elevation>0`) | `Outdoors` | `Surface` (story above) |
 | Mid floors | `Surface` (story below) | `Surface` (story above) |
 | Top floor | `Surface` (story below) | `Outdoors` (Roof) |
+
+## Stacked Blocks (Setbacks)
+
+Buildings with setbacks — where upper floors have a smaller footprint —
+are modelled as separate blocks stacked with `base_elevation`, then
+connected with `link_blocks`:
+
+```python
+from idfkit import new_document, create_block, link_blocks
+from idfkit.zoning import footprint_rectangle
+
+doc = new_document()
+
+# 5-story base
+create_block(
+    doc,
+    name="Base",
+    footprint=footprint_rectangle(50, 30),
+    floor_to_floor=3.5,
+    num_stories=5,
+)
+
+# 3-story tower with a setback, stacked on top of the base
+create_block(
+    doc,
+    name="Tower",
+    footprint=footprint_rectangle(40, 24),
+    floor_to_floor=3.5,
+    num_stories=3,
+    base_elevation=17.5,  # 5 × 3.5 m
+)
+
+# Auto-detect and link roof/floor pairs at z=17.5
+linked = link_blocks(doc)
+```
+
+`link_blocks` finds all roof and floor surfaces at shared elevations,
+splits roofs that partially overlap a floor, and sets mutual `Surface`
+boundary conditions between the new ceiling and floor.  The original
+roof is shrunk to cover only the remaining exposed area.
+
+To link only specific blocks by name, pass `lower` and `upper`:
+
+```python
+linked = link_blocks(doc, lower="Base", upper="Tower")
+```
+
+For finer control, use the lower-level
+[adjacency API](geometry_builders.md#horizontal-adjacency-detection)
+directly.
 
 ## Footprint Helpers
 
@@ -257,16 +308,16 @@ from idfkit.zoning import footprint_courtyard
 fp = footprint_courtyard(outer_width=50, outer_depth=40, inner_width=30, inner_depth=20)
 ```
 
-### Using Footprint Helpers with `create_building`
+### Using Footprint Helpers with `create_block`
 
-All footprint helpers plug directly into `create_building`:
+All footprint helpers plug directly into `create_block`:
 
 ```python
-from idfkit import new_document, create_building, ZoningScheme
+from idfkit import new_document, create_block, ZoningScheme
 from idfkit.zoning import footprint_l_shape
 
 doc = new_document()
-create_building(
+create_block(
     doc,
     name="L-Wing",
     footprint=footprint_l_shape(40, 10, 15, 20),
@@ -310,8 +361,8 @@ print(len(objects))  # all created Zone + BuildingSurface:Detailed objects
 
 ## See Also
 
-- [Geometry Builders](geometry_builders.md) -- Shading blocks and utility functions
-  (`bounding_box`, `scale_building`, `set_default_constructions`)
+- [Geometry Builders](geometry_builders.md) -- Shading blocks, horizontal
+  adjacency detection, surface splitting, and utility functions
 - [Geometry](geometry.md) -- Lower-level 3D primitives, coordinate transforms,
   and surface intersection
 - [Visualization](visualization.md) -- 3D rendering of building geometry

@@ -9,10 +9,13 @@ from idfkit.geometry import Vector3D, get_surface_coords, set_wwr
 from idfkit.geometry_builders import (
     add_shading_block,
     bounding_box,
+    detect_horizontal_adjacencies,
+    link_horizontal_surfaces,
     scale_building,
     set_default_constructions,
+    split_horizontal_surface,
 )
-from idfkit.zoning import ZonedBlock, create_building, footprint_rectangle
+from idfkit.zoning import ZonedBlock, create_block, footprint_rectangle
 
 _TOL = 1e-6
 
@@ -60,7 +63,7 @@ class TestAddShadingBlock:
 class TestSetDefaultConstructions:
     def test_assigns_to_empty(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
         count = set_default_constructions(doc, "MyConstruction")
         assert count == 6  # 4 walls + floor + roof
         for srf in doc["BuildingSurface:Detailed"]:
@@ -68,7 +71,7 @@ class TestSetDefaultConstructions:
 
     def test_preserves_existing(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
         wall.construction_name = "SpecialWall"
@@ -90,7 +93,7 @@ class TestSetDefaultConstructions:
 class TestBoundingBox:
     def test_correct_bbox(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(2, 3), (12, 3), (12, 8), (2, 8)], floor_to_floor=3)
+        create_block(doc, "B", [(2, 3), (12, 3), (12, 8), (2, 8)], floor_to_floor=3)
         bb = bounding_box(doc)
         assert bb is not None
         (min_x, min_y), (max_x, max_y) = bb
@@ -112,7 +115,7 @@ class TestBoundingBox:
 class TestScaleBuilding:
     def test_uniform_scale(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         scale_building(doc, 2.0)
         bb = bounding_box(doc)
         assert bb is not None
@@ -122,7 +125,7 @@ class TestScaleBuilding:
 
     def test_axis_independent_scale(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         scale_building(doc, (2.0, 1.0, 1.0))
         bb = bounding_box(doc)
         assert bb is not None
@@ -132,7 +135,7 @@ class TestScaleBuilding:
 
     def test_scale_with_anchor(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], floor_to_floor=3)
         # Scale by 2x around center (5, 5, 0) → box expands from (-5,-5) to (15,15)
         scale_building(doc, 2.0, anchor=Vector3D(5, 5, 0))
         bb = bounding_box(doc)
@@ -145,7 +148,7 @@ class TestScaleBuilding:
 
     def test_scale_preserves_surface_count(self) -> None:
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (5, 0), (5, 5), (0, 5)], floor_to_floor=3)
         n_before = len(doc["BuildingSurface:Detailed"])
         scale_building(doc, 3.0)
         assert len(doc["BuildingSurface:Detailed"]) == n_before
@@ -153,7 +156,7 @@ class TestScaleBuilding:
     def test_scale_fenestration_surfaces(self) -> None:
         """scale_building should also scale FenestrationSurface:Detailed objects."""
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         windows = set_wwr(doc, 0.4)
         assert len(windows) > 0
         # Record a window vertex before scaling
@@ -230,7 +233,7 @@ class TestGeometryConvention:
     def test_default_ulc_ccw(self) -> None:
         """new_document() defaults to ULC + CCW convention."""
         doc = new_document()
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
         coords = get_surface_coords(wall)
@@ -249,7 +252,7 @@ class TestGeometryConvention:
         rules.starting_vertex_position = "UpperLeftCorner"
         rules.vertex_entry_direction = "Clockwise"
         rules.coordinate_system = "World"
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
         coords = get_surface_coords(wall)
@@ -267,7 +270,7 @@ class TestGeometryConvention:
         rules.starting_vertex_position = "LowerLeftCorner"
         rules.vertex_entry_direction = "Counterclockwise"
         rules.coordinate_system = "World"
-        create_building(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         wall = doc.getobject("BuildingSurface:Detailed", "B Wall 1")
         assert wall is not None
         coords = get_surface_coords(wall)
@@ -280,7 +283,7 @@ class TestGeometryConvention:
     def test_clockwise_floor_winding_inverted(self) -> None:
         """In CW convention, raw Newell normal flips vs CCW (EnergyPlus negates it)."""
         doc_ccw = new_document()
-        create_building(doc_ccw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc_ccw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         floor_ccw = doc_ccw.getobject("BuildingSurface:Detailed", "B Floor")
         assert floor_ccw is not None
         coords_ccw = get_surface_coords(floor_ccw)
@@ -292,7 +295,7 @@ class TestGeometryConvention:
         rules.starting_vertex_position = "UpperLeftCorner"
         rules.vertex_entry_direction = "Clockwise"
         rules.coordinate_system = "World"
-        create_building(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         floor_cw = doc_cw.getobject("BuildingSurface:Detailed", "B Floor")
         assert floor_cw is not None
         coords_cw = get_surface_coords(floor_cw)
@@ -307,7 +310,7 @@ class TestGeometryConvention:
     def test_clockwise_ceiling_winding_inverted(self) -> None:
         """In CW convention, raw Newell normal of ceiling flips vs CCW."""
         doc_ccw = new_document()
-        create_building(doc_ccw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc_ccw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         roof_ccw = doc_ccw.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof_ccw is not None
         coords_ccw = get_surface_coords(roof_ccw)
@@ -319,7 +322,7 @@ class TestGeometryConvention:
         rules.starting_vertex_position = "UpperLeftCorner"
         rules.vertex_entry_direction = "Clockwise"
         rules.coordinate_system = "World"
-        create_building(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
+        create_block(doc_cw, "B", [(0, 0), (10, 0), (10, 5), (0, 5)], floor_to_floor=3)
         roof_cw = doc_cw.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof_cw is not None
         coords_cw = get_surface_coords(roof_cw)
@@ -364,3 +367,64 @@ class TestGeometryConvention:
         assert len(doc["Zone"]) == 2
         # Per story: 4 walls + floor + ceiling/roof = 6; total = 12
         assert len(doc["BuildingSurface:Detailed"]) == 12
+
+
+# ---------------------------------------------------------------------------
+# detect_horizontal_adjacencies
+# ---------------------------------------------------------------------------
+
+
+class TestDetectHorizontalAdjacencies:
+    def test_stacked_blocks(self) -> None:
+        doc = new_document()
+        fp = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        create_block(doc, "Base", fp, 3.5, num_stories=1)
+        create_block(doc, "Tower", fp, 3.5, num_stories=1, base_elevation=3.5)
+        adjs = detect_horizontal_adjacencies(doc)
+        assert len(adjs) == 1
+        assert abs(adjs[0].z - 3.5) < 0.01
+
+    def test_no_adjacency(self) -> None:
+        doc = new_document()
+        create_block(doc, "A", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1)
+        adjs = detect_horizontal_adjacencies(doc)
+        assert len(adjs) == 0
+
+
+# ---------------------------------------------------------------------------
+# split_horizontal_surface
+# ---------------------------------------------------------------------------
+
+
+class TestSplitHorizontalSurface:
+    def test_splits_roof(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", [(0, 0), (20, 0), (20, 20), (0, 20)], 3.5, num_stories=1)
+        roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
+        assert roof is not None
+        region = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        new_srf, remaining = split_horizontal_surface(doc, roof, region)
+        assert new_srf is not None
+        assert remaining is not None
+
+
+# ---------------------------------------------------------------------------
+# link_horizontal_surfaces
+# ---------------------------------------------------------------------------
+
+
+class TestLinkHorizontalSurfaces:
+    def test_sets_boundary_conditions(self) -> None:
+        doc = new_document()
+        create_block(doc, "Base", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1)
+        create_block(doc, "Tower", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1, base_elevation=3.5)
+        roof = doc.getobject("BuildingSurface:Detailed", "Base Roof")
+        floor = doc.getobject("BuildingSurface:Detailed", "Tower Floor")
+        assert roof is not None
+        assert floor is not None
+        link_horizontal_surfaces(roof, floor)
+        assert roof.surface_type == "Ceiling"
+        assert roof.outside_boundary_condition == "Surface"
+        assert roof.outside_boundary_condition_object == floor.name
+        assert floor.outside_boundary_condition == "Surface"
+        assert floor.outside_boundary_condition_object == roof.name

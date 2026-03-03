@@ -16,13 +16,14 @@ from idfkit.zoning import (
     _is_convex,
     _polygon_area_signed,
     _split_core_perimeter,
-    create_building,
+    create_block,
     footprint_courtyard,
     footprint_h_shape,
     footprint_l_shape,
     footprint_rectangle,
     footprint_t_shape,
     footprint_u_shape,
+    link_blocks,
 )
 
 _TOL = 1e-4
@@ -375,14 +376,14 @@ class TestZonedBlock:
 
 
 # =========================================================================
-# BY_STOREY zoning (via create_building)
+# BY_STOREY zoning (via create_block)
 # =========================================================================
 
 
 class TestByStorey:
     def test_single_story(self) -> None:
         doc = new_document()
-        objs = create_building(
+        objs = create_block(
             doc,
             "Box",
             footprint_rectangle(10, 8),
@@ -396,7 +397,7 @@ class TestByStorey:
 
     def test_multi_story(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Stack",
             footprint_rectangle(10, 10),
@@ -409,14 +410,14 @@ class TestByStorey:
 
     def test_ground_floor_bc(self) -> None:
         doc = new_document()
-        create_building(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3)
+        create_block(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3)
         floor = doc.getobject("BuildingSurface:Detailed", "B Floor")
         assert floor is not None
         assert floor.outside_boundary_condition == "Ground"
 
     def test_roof_bc(self) -> None:
         doc = new_document()
-        create_building(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3)
+        create_block(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3)
         roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof is not None
         assert roof.surface_type == "Roof"
@@ -424,7 +425,7 @@ class TestByStorey:
 
     def test_inter_story_boundary(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "T",
             footprint_rectangle(10, 10),
@@ -443,14 +444,14 @@ class TestByStorey:
 
 
 # =========================================================================
-# CORE_PERIMETER zoning (via create_building)
+# CORE_PERIMETER zoning (via create_block)
 # =========================================================================
 
 
 class TestCorePerimeter:
     def test_single_story_5_zones(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Office",
             footprint_rectangle(50, 30),
@@ -461,7 +462,7 @@ class TestCorePerimeter:
 
     def test_zone_names(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Office",
             footprint_rectangle(50, 30),
@@ -477,7 +478,7 @@ class TestCorePerimeter:
 
     def test_multi_story_zone_count(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Office",
             footprint_rectangle(50, 30),
@@ -489,7 +490,7 @@ class TestCorePerimeter:
 
     def test_multi_story_zone_names(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "O",
             footprint_rectangle(50, 30),
@@ -504,7 +505,7 @@ class TestCorePerimeter:
     def test_inter_zone_walls_paired(self) -> None:
         """Interior walls between perimeter and core must be paired."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(50, 30),
@@ -528,7 +529,7 @@ class TestCorePerimeter:
     def test_exterior_walls_are_outdoors(self) -> None:
         """Walls on the building perimeter must face Outdoors."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(50, 30),
@@ -551,7 +552,7 @@ class TestCorePerimeter:
     def test_core_has_no_exterior_walls(self) -> None:
         """Core zone should have no outdoor-facing walls."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(50, 30),
@@ -571,7 +572,7 @@ class TestCorePerimeter:
         """Sum of zone floor areas equals the footprint area."""
         doc = new_document()
         fp = footprint_rectangle(50, 30)
-        create_building(
+        create_block(
             doc,
             "B",
             fp,
@@ -589,7 +590,7 @@ class TestCorePerimeter:
     def test_custom_perimeter_depth(self) -> None:
         """A larger perimeter depth means a smaller core."""
         doc1 = new_document()
-        create_building(
+        create_block(
             doc1,
             "A",
             footprint_rectangle(50, 30),
@@ -598,7 +599,7 @@ class TestCorePerimeter:
             perimeter_depth=3.0,
         )
         doc2 = new_document()
-        create_building(
+        create_block(
             doc2,
             "A",
             footprint_rectangle(50, 30),
@@ -625,7 +626,7 @@ class TestCorePerimeter:
     def test_inter_story_boundary_core(self) -> None:
         """Core zone ceilings/floors are paired across stories."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "O",
             footprint_rectangle(50, 30),
@@ -641,7 +642,7 @@ class TestCorePerimeter:
     def test_small_footprint_degrades_gracefully(self) -> None:
         """Footprint too small for core-perimeter → single zone per floor."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Tiny",
             footprint_rectangle(8, 8),
@@ -665,7 +666,7 @@ class TestCustomZoning:
             ZoneFootprint("East_Wing", [(0, 0), (10, 0), (10, 10), (0, 10)]),
             ZoneFootprint("West_Wing", [(10, 0), (20, 0), (20, 10), (10, 10)]),
         ]
-        create_building(
+        create_block(
             doc,
             "Building",
             footprint_rectangle(20, 10),
@@ -687,7 +688,7 @@ class TestCustomZoning:
 class TestAirBoundary:
     def test_air_boundary_created(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Open",
             footprint_rectangle(50, 30),
@@ -701,7 +702,7 @@ class TestAirBoundary:
 
     def test_interior_walls_use_air_boundary(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Open",
             footprint_rectangle(50, 30),
@@ -720,7 +721,7 @@ class TestAirBoundary:
 
     def test_exterior_walls_not_air_boundary(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "Open",
             footprint_rectangle(50, 30),
@@ -739,7 +740,7 @@ class TestAirBoundary:
 
     def test_no_air_boundary_by_default(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(50, 30),
@@ -758,11 +759,11 @@ class TestDefaultPerimeterDepth:
     def test_ashrae_default(self) -> None:
         assert _close(ASHRAE_PERIMETER_DEPTH, 4.57, tol=0.01)
 
-    def test_default_used_by_create_building(self) -> None:
+    def test_default_used_by_create_block(self) -> None:
         """Verify the default perimeter depth is ASHRAE 4.57 m."""
         doc = new_document()
         fp = footprint_rectangle(50, 30)
-        create_building(
+        create_block(
             doc,
             "B",
             fp,
@@ -790,7 +791,7 @@ class TestDefaultPerimeterDepth:
 class TestWallGeometry:
     def test_exterior_wall_area(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(10, 8),
@@ -804,7 +805,7 @@ class TestWallGeometry:
 
     def test_wall_height(self) -> None:
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(10, 8),
@@ -821,7 +822,7 @@ class TestWallGeometry:
     def test_core_perimeter_wall_heights(self) -> None:
         """All walls in core-perimeter mode should have correct height."""
         doc = new_document()
-        create_building(
+        create_block(
             doc,
             "B",
             footprint_rectangle(50, 30),
@@ -853,3 +854,122 @@ class TestOriginSupport:
     def test_l_shape_origin(self) -> None:
         fp = footprint_l_shape(20, 10, 8, 5, origin=(50, 50))
         assert fp[0] == (50, 50)
+
+
+# =========================================================================
+# Base elevation support
+# =========================================================================
+
+
+class TestBaseElevation:
+    def test_offsets_z_coordinates(self) -> None:
+        doc = new_document()
+        create_block(doc, "Tower", footprint_rectangle(10, 10), floor_to_floor=3, num_stories=2, base_elevation=10.0)
+        floor = doc.getobject("BuildingSurface:Detailed", "Tower Story 1 Floor")
+        assert floor is not None
+        coords = get_surface_coords(floor)
+        assert coords is not None
+        z_values = sorted({v.z for v in coords.vertices})
+        assert _close(z_values[0], 10.0)
+
+    def test_elevated_floor_bc_outdoors(self) -> None:
+        doc = new_document()
+        create_block(doc, "Tower", footprint_rectangle(10, 10), floor_to_floor=3, base_elevation=5.0)
+        floor = doc.getobject("BuildingSurface:Detailed", "Tower Floor")
+        assert floor is not None
+        assert floor.outside_boundary_condition == "Outdoors"
+
+    def test_zero_elevation_ground_bc(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(10, 10), floor_to_floor=3)
+        floor = doc.getobject("BuildingSurface:Detailed", "B Floor")
+        assert floor is not None
+        assert floor.outside_boundary_condition == "Ground"
+
+    def test_roof_elevation(self) -> None:
+        doc = new_document()
+        create_block(doc, "T", footprint_rectangle(10, 10), floor_to_floor=3.5, num_stories=2, base_elevation=7.0)
+        roof = doc.getobject("BuildingSurface:Detailed", "T Story 2 Roof")
+        assert roof is not None
+        coords = get_surface_coords(roof)
+        assert coords is not None
+        assert _close(coords.vertices[0].z, 14.0)  # 7 + 2*3.5
+
+    def test_negative_elevation_raises(self) -> None:
+        with pytest.raises(ValueError, match="base_elevation"):
+            ZonedBlock(name="X", footprint=[(0, 0), (1, 0), (1, 1)], floor_to_floor=3, base_elevation=-1)
+
+
+# =========================================================================
+# link_blocks
+# =========================================================================
+
+
+class TestLinkBlocks:
+    def test_same_footprint(self) -> None:
+        doc = new_document()
+        fp = footprint_rectangle(10, 10)
+        create_block(doc, "Base", fp, 3.5, num_stories=2)
+        create_block(doc, "Tower", fp, 3.5, num_stories=2, base_elevation=7.0)
+        linked = link_blocks(doc)
+        assert len(linked) > 0
+        # Check that a ceiling was created and linked to a floor
+        has_ceiling = any(
+            (getattr(s, "surface_type", "") or "").upper() == "CEILING"
+            and (getattr(s, "outside_boundary_condition", "") or "").upper() == "SURFACE"
+            for s in linked
+        )
+        assert has_ceiling
+
+    def test_setback_rectangle(self) -> None:
+        doc = new_document()
+        create_block(doc, "Base", footprint_rectangle(50, 30), 3.5, num_stories=5)
+        create_block(doc, "Tower", footprint_rectangle(40, 24), 3.5, num_stories=3, base_elevation=17.5)
+        linked = link_blocks(doc)
+        assert len(linked) > 0
+        # There should be a remaining roof surface (the setback area)
+        roofs_outdoors = [
+            s
+            for s in doc["BuildingSurface:Detailed"]
+            if (getattr(s, "surface_type", "") or "").upper() == "ROOF"
+            and (getattr(s, "outside_boundary_condition", "") or "").upper() == "OUTDOORS"
+        ]
+        # The exposed setback roof should still exist
+        assert len(roofs_outdoors) > 0
+
+    def test_area_conservation(self) -> None:
+        doc = new_document()
+        create_block(doc, "Base", footprint_rectangle(20, 20), 3.5, num_stories=1)
+        create_block(doc, "Tower", footprint_rectangle(10, 10), 3.5, num_stories=1, base_elevation=3.5)
+        # Get original roof area before linking
+        original_roof_area = 20 * 20  # 400 m²
+        link_blocks(doc)
+        # Sum all horizontal surfaces at z=3.5 (ceiling + remaining roof)
+        total_area = 0.0
+        for s in doc["BuildingSurface:Detailed"]:
+            st = (getattr(s, "surface_type", "") or "").upper()
+            if st in ("ROOF", "CEILING"):
+                coords = get_surface_coords(s)
+                if coords and _close(coords.vertices[0].z, 3.5):
+                    total_area += calculate_surface_area(s)
+        assert _close(total_area, original_roof_area, tol=1.0)
+
+    def test_no_overlap_no_changes(self) -> None:
+        doc = new_document()
+        create_block(doc, "A", footprint_rectangle(10, 10), 3, num_stories=2)
+        create_block(doc, "B", footprint_rectangle(10, 10), 3, num_stories=2, base_elevation=100.0)
+        linked = link_blocks(doc)
+        assert len(linked) == 0
+
+    def test_named_blocks(self) -> None:
+        doc = new_document()
+        fp = footprint_rectangle(10, 10)
+        create_block(doc, "Base", fp, 3.5, num_stories=1)
+        create_block(doc, "Tower", fp, 3.5, num_stories=1, base_elevation=3.5)
+        linked = link_blocks(doc, "Base", "Tower")
+        assert len(linked) > 0
+
+    def test_lower_upper_must_be_both_or_neither(self) -> None:
+        doc = new_document()
+        with pytest.raises(ValueError, match="lower and upper"):
+            link_blocks(doc, "Base")

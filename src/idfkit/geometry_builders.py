@@ -1,17 +1,19 @@
 """Geometry utility functions for EnergyPlus surface manipulation.
 
 Provides shading block creation, default construction assignment, bounding
-box queries, building scaling, and ``GlobalGeometryRules`` vertex-ordering
-helpers.
+box queries, building scaling, horizontal adjacency detection, surface
+splitting, and ``GlobalGeometryRules`` vertex-ordering helpers.
 
 For building zone and surface creation, see [zoning][idfkit.zoning] which
-provides [create_building][idfkit.zoning.create_building] and
+provides [create_block][idfkit.zoning.create_block] and
 [ZonedBlock][idfkit.zoning.ZonedBlock].
 """
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from .geometry import (
@@ -19,12 +21,20 @@ from .geometry import (
     Polygon3D,
     Vector3D,
     get_surface_coords,
+    polygon_area_2d,
+    polygon_contains_2d,
+    polygon_difference_2d,
+    polygon_intersection_2d,
     set_surface_coords,
 )
 
 if TYPE_CHECKING:
     from .document import IDFDocument
     from .objects import IDFObject
+
+    _SurfacesByZ = dict[float, list[tuple[IDFObject, list[tuple[float, float]]]]]
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # GlobalGeometryRules helpers
@@ -259,3 +269,224 @@ def horizontal_poly(footprint: list[tuple[float, float]], z: float, *, reverse: 
     """
     pts = reversed(footprint) if reverse else footprint
     return Polygon3D([Vector3D(p[0], p[1], z) for p in pts])
+
+
+# ---------------------------------------------------------------------------
+# Horizontal surface adjacency detection and linking
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class HorizontalAdjacency:
+    """A detected adjacency between a roof and floor surface at the same elevation.
+
+    Attributes:
+        roof_surface: The roof surface from the lower block.
+        floor_surface: The floor surface from the upper block.
+        z: The shared elevation in metres.
+        intersection: 2-D polygon of the overlapping area.
+        intersection_area: Area of the overlap in square metres.
+    """
+
+    roof_surface: IDFObject
+    floor_surface: IDFObject
+    z: float
+    intersection: list[tuple[float, float]]
+    intersection_area: float
+
+
+def _extract_horizontal_footprint(
+    surface: IDFObject,
+) -> tuple[float, list[tuple[float, float]]] | None:
+    """Extract the z-elevation and 2-D footprint from a horizontal surface.
+
+    Returns ``(z, footprint_2d)`` or ``None`` if the surface has no coords.
+    """
+    coords = get_surface_coords(surface)
+    if coords is None:
+        return None
+    z = coords.vertices[0].z
+    fp = [(v.x, v.y) for v in coords.vertices]
+    # Normalise to CCW winding so polygon_intersection_2d works correctly.
+    if polygon_area_2d(fp) < 0:
+        fp.reverse()
+    return z, fp
+
+
+def _collect_outdoor_horizontal_surfaces(
+    doc: IDFDocument,
+) -> tuple[_SurfacesByZ, _SurfacesByZ]:
+    """Partition ``Outdoors``-BC horizontal surfaces into roofs and floors by z."""
+    roofs: _SurfacesByZ = {}
+    floors: _SurfacesByZ = {}
+    for srf in doc["BuildingSurface:Detailed"]:
+        st = (getattr(srf, "surface_type", "") or "").upper()
+        bc = (getattr(srf, "outside_boundary_condition", "") or "").upper()
+        if bc != "OUTDOORS":
+            continue
+        result = _extract_horizontal_footprint(srf)
+        if result is None:
+            continue
+        z, fp = result
+        z_key = round(z, 4)
+        if st == "ROOF":
+            roofs.setdefault(z_key, []).append((srf, fp))
+        elif st == "FLOOR":
+            floors.setdefault(z_key, []).append((srf, fp))
+    return roofs, floors
+
+
+def detect_horizontal_adjacencies(
+    doc: IDFDocument,
+) -> list[HorizontalAdjacency]:
+    """Find roof/floor surface pairs at matching elevations.
+
+    Scans all ``BuildingSurface:Detailed`` surfaces for horizontal Roof
+    surfaces with ``Outdoors`` boundary condition and horizontal Floor
+    surfaces with ``Outdoors`` boundary condition at the same elevation.
+
+    For each overlapping pair the 2-D polygon intersection is computed.
+
+    Args:
+        doc: The document to scan.
+
+    Returns:
+        List of :class:`HorizontalAdjacency` records for each detected
+        overlap.
+    """
+    roofs, floors = _collect_outdoor_horizontal_surfaces(doc)
+
+    adjacencies: list[HorizontalAdjacency] = []
+    for z_key, roof_list in roofs.items():
+        floor_list = floors.get(z_key)
+        if floor_list is None:
+            continue
+        for roof_srf, roof_fp in roof_list:
+            for floor_srf, floor_fp in floor_list:
+                inter = polygon_intersection_2d(roof_fp, floor_fp)
+                if inter is None:
+                    continue
+                area = abs(polygon_area_2d(inter))
+                if area < 0.01:
+                    continue
+                adjacencies.append(
+                    HorizontalAdjacency(
+                        roof_surface=roof_srf,
+                        floor_surface=floor_srf,
+                        z=z_key,
+                        intersection=inter,
+                        intersection_area=area,
+                    )
+                )
+    return adjacencies
+
+
+def split_horizontal_surface(
+    doc: IDFDocument,
+    surface: IDFObject,
+    region: Sequence[tuple[float, float]],
+) -> tuple[IDFObject, IDFObject | None]:
+    """Split a horizontal surface at a 2-D region boundary.
+
+    A new surface is created for the area *inside* the region.  The
+    original surface is shrunk to the area *outside* the region (the
+    remaining frame).
+
+    Args:
+        doc: The document containing the surface.
+        surface: Horizontal surface to split (floor, ceiling, or roof).
+        region: 2-D polygon defining the split region.
+
+    Returns:
+        ``(new_region_surface, remaining_surface)``.
+        *remaining_surface* is ``None`` if the region covers the entire
+        surface (i.e. no remaining area).
+    """
+    result = _extract_horizontal_footprint(surface)
+    if result is None:
+        msg = f"Surface '{surface.name}' has no coordinates"
+        raise ValueError(msg)
+    z, footprint = result
+    _, clockwise = get_geometry_convention(doc)
+
+    # Compute intersection of footprint and region
+    inter = polygon_intersection_2d(footprint, list(region))
+    if inter is None:
+        msg = f"Region does not overlap surface '{surface.name}'"
+        raise ValueError(msg)
+
+    inter_area = abs(polygon_area_2d(inter))
+    surface_area = abs(polygon_area_2d(footprint))
+
+    # Determine surface type for winding
+    st = (getattr(surface, "surface_type", "") or "").upper()
+    # For roofs/ceilings, winding is clockwise; for floors, not clockwise
+    reverse = clockwise if st in ("ROOF", "CEILING") else not clockwise
+
+    # Create new surface for the intersection region
+    zone_name: str = getattr(surface, "zone_name", "") or ""
+    construction: str = getattr(surface, "construction_name", "") or ""
+    new_name = f"{surface.name} Split"
+    # Ensure unique name
+    counter = 1
+    while doc.getobject("BuildingSurface:Detailed", new_name) is not None:
+        counter += 1
+        new_name = f"{surface.name} Split {counter}"
+
+    new_srf = doc.add(
+        "BuildingSurface:Detailed",
+        new_name,
+        surface_type=getattr(surface, "surface_type", "") or "",
+        construction_name=construction,
+        zone_name=zone_name,
+        outside_boundary_condition=getattr(surface, "outside_boundary_condition", "") or "",
+        outside_boundary_condition_object=getattr(surface, "outside_boundary_condition_object", "") or "",
+        sun_exposure=getattr(surface, "sun_exposure", "") or "",
+        wind_exposure=getattr(surface, "wind_exposure", "") or "",
+        validate=False,
+    )
+    set_surface_coords(new_srf, horizontal_poly(inter, z, reverse=reverse))
+
+    # Check if the region covers the entire surface
+    if abs(inter_area - surface_area) < 0.01:
+        return new_srf, None
+
+    # Compute remaining area (frame polygon)
+    if polygon_contains_2d(footprint, inter):
+        remaining = polygon_difference_2d(footprint, inter)
+    else:
+        # Partial overlap — compute difference via intersection subtraction
+        remaining = polygon_difference_2d(footprint, inter)
+
+    if remaining is None or abs(polygon_area_2d(remaining)) < 0.01:
+        return new_srf, None
+
+    # Update original surface geometry to the remaining area
+    set_surface_coords(surface, horizontal_poly(remaining, z, reverse=reverse))
+    return new_srf, surface
+
+
+def link_horizontal_surfaces(ceiling: IDFObject, floor: IDFObject) -> None:
+    """Set mutual ``Surface`` boundary conditions between ceiling and floor.
+
+    Modifies both surfaces in-place:
+
+    * The ceiling's ``surface_type`` is set to ``Ceiling``.
+    * Both surfaces get ``outside_boundary_condition = "Surface"``
+      pointing at each other, with sun/wind exposure set to ``NoSun``
+      / ``NoWind``.
+
+    Args:
+        ceiling: The surface to designate as the ceiling.
+        floor: The surface to designate as the floor.
+    """
+    ceiling.surface_type = "Ceiling"
+    ceiling.outside_boundary_condition = "Surface"
+    ceiling.outside_boundary_condition_object = floor.name
+    ceiling.sun_exposure = "NoSun"
+    ceiling.wind_exposure = "NoWind"
+
+    floor.outside_boundary_condition = "Surface"
+    floor.outside_boundary_condition_object = ceiling.name
+    floor.sun_exposure = "NoSun"
+    floor.wind_exposure = "NoWind"

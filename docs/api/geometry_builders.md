@@ -55,14 +55,14 @@ This means you can safely add geometry to an existing model that uses a
 non-default convention without having to rewrite all existing surfaces:
 
 ```python
-from idfkit import load_idf, create_building
+from idfkit import load_idf, create_block
 
 # Model uses Clockwise vertex convention
 model = load_idf("existing_building.idf")
 
 # New surfaces will automatically use Clockwise ordering
 # to match the model's GlobalGeometryRules
-create_building(model, "Addition", [(20, 0), (30, 0), (30, 10), (20, 10)], floor_to_floor=3)
+create_block(model, "Addition", [(20, 0), (30, 0), (30, 10), (20, 10)], floor_to_floor=3)
 ```
 
 ### Wall Vertex Order by Convention
@@ -133,14 +133,83 @@ scale_building(doc, (1.5, 1.0, 1.0))
 scale_building(doc, 0.5, anchor=Vector3D(15, 10, 0))
 ```
 
+## Horizontal Adjacency Detection
+
+When building models with stacked blocks (e.g. setback towers), roof
+and floor surfaces at shared elevations need to be detected, split, and
+linked.  The high-level [`link_blocks`](zoning.md#stacked-blocks-setbacks)
+handles this automatically, but you can use the lower-level API for
+custom geometry workflows.
+
+### Detecting Adjacencies
+
+`detect_horizontal_adjacencies` scans all `BuildingSurface:Detailed`
+surfaces for horizontal Roof/Floor pairs at the same z-elevation with
+`Outdoors` boundary condition, and computes their 2-D polygon
+intersection:
+
+```python
+from idfkit.geometry_builders import detect_horizontal_adjacencies
+
+adjacencies = detect_horizontal_adjacencies(doc)
+for adj in adjacencies:
+    print(f"Roof '{adj.roof_surface.name}' overlaps floor "
+          f"'{adj.floor_surface.name}' at z={adj.z} "
+          f"({adj.intersection_area:.1f} m²)")
+```
+
+Each `HorizontalAdjacency` record contains the roof surface, floor
+surface, z-elevation, 2-D intersection polygon, and intersection area.
+
+### Splitting Surfaces
+
+`split_horizontal_surface` creates a new surface for a 2-D region
+within an existing horizontal surface.  The original surface is shrunk
+to the remaining area:
+
+```python
+from idfkit.geometry_builders import split_horizontal_surface
+
+new_surface, remaining = split_horizontal_surface(doc, adj.roof_surface, adj.intersection)
+# new_surface covers the intersection region
+# remaining is the original surface, now covering only the exposed area
+```
+
+### Linking Surfaces
+
+`link_horizontal_surfaces` sets mutual `Surface` boundary conditions
+between a ceiling and floor:
+
+```python
+from idfkit.geometry_builders import link_horizontal_surfaces
+
+link_horizontal_surfaces(new_surface, adj.floor_surface)
+# new_surface is now a Ceiling pointing at the floor, and vice versa
+```
+
+### Full Example
+
+```python
+from idfkit.geometry_builders import (
+    detect_horizontal_adjacencies,
+    link_horizontal_surfaces,
+    split_horizontal_surface,
+)
+
+adjacencies = detect_horizontal_adjacencies(doc)
+for adj in adjacencies:
+    new_ceiling, _ = split_horizontal_surface(doc, adj.roof_surface, adj.intersection)
+    link_horizontal_surfaces(new_ceiling, adj.floor_surface)
+```
+
 ## API Reference
 
 ::: idfkit.geometry_builders
 
 ## See Also
 
-- [Zoning](zoning.md) -- `create_building`, core-perimeter zoning, footprint
-  helpers, and multi-zone building generation
+- [Zoning](zoning.md) -- `create_block`, `link_blocks`, core-perimeter zoning,
+  footprint helpers, and multi-zone building generation
 - [Geometry](geometry.md) -- Lower-level 3D primitives, coordinate transforms,
   and surface intersection
 - [Visualization](visualization.md) -- 3D rendering of building geometry

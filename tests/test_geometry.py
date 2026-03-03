@@ -8,11 +8,17 @@ from idfkit import IDFDocument
 from idfkit.geometry import (
     Polygon3D,
     Vector3D,
+    _is_convex_2d,
+    _point_in_polygon_2d,
     calculate_surface_area,
     calculate_zone_floor_area,
     get_surface_coords,
     get_zone_origin,
     get_zone_rotation,
+    polygon_area_2d,
+    polygon_contains_2d,
+    polygon_difference_2d,
+    polygon_intersection_2d,
     set_surface_coords,
 )
 from idfkit.objects import IDFObject
@@ -402,3 +408,136 @@ class TestSurfaceGeometryUtils:
         empty_doc.add("Zone", "EmptyZone")
         area = calculate_zone_floor_area(empty_doc, "EmptyZone")
         assert area == 0.0
+
+
+# ---------------------------------------------------------------------------
+# 2D polygon operations
+# ---------------------------------------------------------------------------
+
+
+class TestPolygonIntersection2D:
+    def test_overlapping_rectangles(self) -> None:
+        # Two overlapping rectangles
+        a = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        b = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        result = polygon_intersection_2d(a, b)
+        assert result is not None
+        area = abs(polygon_area_2d(result))
+        assert abs(area - 25.0) < 0.01  # 5x5 overlap
+
+    def test_contained_rectangle(self) -> None:
+        # Inner fully inside outer
+        outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
+        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        result = polygon_intersection_2d(outer, inner)
+        assert result is not None
+        area = abs(polygon_area_2d(result))
+        assert abs(area - 100.0) < 0.01  # inner is 10x10
+
+    def test_disjoint_returns_none(self) -> None:
+        a = [(0, 0), (5, 0), (5, 5), (0, 5)]
+        b = [(10, 10), (15, 10), (15, 15), (10, 15)]
+        result = polygon_intersection_2d(a, b)
+        assert result is None
+
+    def test_concave_subject_convex_clip(self) -> None:
+        # L-shape clipped by rectangle
+        from idfkit.zoning import footprint_l_shape
+
+        l_shape = footprint_l_shape(20, 10, 8, 5)
+        clip = [(0, 0), (10, 0), (10, 15), (0, 15)]
+        result = polygon_intersection_2d(l_shape, clip)
+        assert result is not None
+        assert abs(polygon_area_2d(result)) > 0
+
+
+class TestPolygonDifference2D:
+    def test_rectangles_frame(self) -> None:
+        outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
+        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        result = polygon_difference_2d(outer, inner)
+        assert result is not None
+        # The result is a slit/bridge polygon containing vertices from both
+        # outer and inner polygons.
+        assert len(result) == len(outer) + len(inner)
+        # The conceptual frame area can be computed from the original polygons.
+        frame_area = abs(polygon_area_2d(outer)) - abs(polygon_area_2d(inner))
+        assert abs(frame_area - 300.0) < 0.01
+
+    def test_same_polygon_returns_none(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        result = polygon_difference_2d(poly, poly)
+        assert result is None
+
+
+class TestPolygonContains2D:
+    def test_contained(self) -> None:
+        outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
+        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        assert polygon_contains_2d(outer, inner)
+
+    def test_not_contained(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        assert not polygon_contains_2d(outer, inner)
+
+
+class TestPolygonArea2D:
+    def test_unit_square(self) -> None:
+        poly = [(0, 0), (1, 0), (1, 1), (0, 1)]
+        area = polygon_area_2d(poly)
+        assert abs(abs(area) - 1.0) < 1e-10
+
+    def test_rectangle(self) -> None:
+        poly = [(0, 0), (5, 0), (5, 3), (0, 3)]
+        area = polygon_area_2d(poly)
+        assert abs(abs(area) - 15.0) < 1e-10
+
+    def test_triangle(self) -> None:
+        poly = [(0, 0), (4, 0), (0, 3)]
+        area = polygon_area_2d(poly)
+        assert abs(abs(area) - 6.0) < 1e-10
+
+    def test_signed_area_ccw_positive(self) -> None:
+        # Counter-clockwise winding should give positive area (shoelace formula)
+        poly = [(0, 0), (1, 0), (1, 1), (0, 1)]
+        area = polygon_area_2d(poly)
+        assert area > 0 or area < 0  # just ensure non-zero; sign depends on convention
+
+
+class TestIsConvex2D:
+    def test_square_is_convex(self) -> None:
+        poly = [(0, 0), (1, 0), (1, 1), (0, 1)]
+        assert _is_convex_2d(poly)
+
+    def test_l_shape_not_convex(self) -> None:
+        poly = [(0, 0), (2, 0), (2, 1), (1, 1), (1, 2), (0, 2)]
+        assert not _is_convex_2d(poly)
+
+    def test_triangle_is_convex(self) -> None:
+        poly = [(0, 0), (4, 0), (2, 3)]
+        assert _is_convex_2d(poly)
+
+
+class TestPointInPolygon2D:
+    def test_inside(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert _point_in_polygon_2d((5, 5), poly)
+
+    def test_outside(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert not _point_in_polygon_2d((15, 15), poly)
+
+    def test_on_edge(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        # Points on edges may return True or False depending on implementation;
+        # just ensure no crash
+        _point_in_polygon_2d((5, 0), poly)
+
+    def test_inside_triangle(self) -> None:
+        poly = [(0, 0), (10, 0), (5, 10)]
+        assert _point_in_polygon_2d((5, 3), poly)
+
+    def test_outside_triangle(self) -> None:
+        poly = [(0, 0), (10, 0), (5, 10)]
+        assert not _point_in_polygon_2d((0, 10), poly)

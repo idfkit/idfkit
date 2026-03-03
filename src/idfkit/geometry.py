@@ -1168,6 +1168,222 @@ def _inset_polygon(wall_poly: Polygon3D, wwr: float) -> Polygon3D | None:
 
 
 # ---------------------------------------------------------------------------
+# 2-D Polygon Boolean Operations
+# ---------------------------------------------------------------------------
+
+Polygon2D = list[tuple[float, float]]
+
+
+def polygon_area_2d(poly: Sequence[tuple[float, float]]) -> float:
+    """Signed area of a 2-D polygon (positive = CCW)."""
+    n = len(poly)
+    area = 0.0
+    for i in range(n):
+        j = (i + 1) % n
+        area += poly[i][0] * poly[j][1]
+        area -= poly[j][0] * poly[i][1]
+    return area / 2.0
+
+
+def _is_left_of_edge(
+    p: tuple[float, float],
+    edge_start: tuple[float, float],
+    edge_end: tuple[float, float],
+) -> bool:
+    """Return ``True`` if *p* is on the left side of directed edge."""
+    return (
+        (edge_end[0] - edge_start[0]) * (p[1] - edge_start[1]) - (edge_end[1] - edge_start[1]) * (p[0] - edge_start[0])
+    ) >= 0
+
+
+def _line_intersect_2d(
+    a1: tuple[float, float],
+    a2: tuple[float, float],
+    b1: tuple[float, float],
+    b2: tuple[float, float],
+) -> tuple[float, float] | None:
+    """Intersection of two infinite lines through (a1, a2) and (b1, b2)."""
+    d1x = a2[0] - a1[0]
+    d1y = a2[1] - a1[1]
+    d2x = b2[0] - b1[0]
+    d2y = b2[1] - b1[1]
+    denom = d1x * d2y - d1y * d2x
+    if abs(denom) < 1e-12:
+        return None
+    t = ((b1[0] - a1[0]) * d2y - (b1[1] - a1[1]) * d2x) / denom
+    return (a1[0] + t * d1x, a1[1] + t * d1y)
+
+
+def _sutherland_hodgman(
+    subject: Sequence[tuple[float, float]],
+    clip: Sequence[tuple[float, float]],
+) -> Polygon2D:
+    """Clip *subject* polygon against *clip* polygon (Sutherland-Hodgman).
+
+    The *clip* polygon **must** be convex.  The *subject* may be concave.
+    Returns the intersection vertices, or an empty list if disjoint.
+    """
+    output: list[tuple[float, float]] = list(subject)
+    n_clip = len(clip)
+    for i in range(n_clip):
+        if not output:
+            return []
+        edge_start = clip[i]
+        edge_end = clip[(i + 1) % n_clip]
+        inp = list(output)
+        output = []
+        n_inp = len(inp)
+        for j in range(n_inp):
+            current = inp[j]
+            nxt = inp[(j + 1) % n_inp]
+            curr_inside = _is_left_of_edge(current, edge_start, edge_end)
+            nxt_inside = _is_left_of_edge(nxt, edge_start, edge_end)
+            if curr_inside:
+                output.append(current)
+                if not nxt_inside:
+                    pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                    if pt is not None:
+                        output.append(pt)
+            elif nxt_inside:
+                pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                if pt is not None:
+                    output.append(pt)
+    return output
+
+
+def _is_convex_2d(poly: Sequence[tuple[float, float]]) -> bool:
+    """Return ``True`` if the 2-D polygon is convex."""
+    n = len(poly)
+    if n < 3:
+        return False
+    sign: float | None = None
+    for i in range(n):
+        x1, y1 = poly[i]
+        x2, y2 = poly[(i + 1) % n]
+        x3, y3 = poly[(i + 2) % n]
+        cross = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2)
+        if abs(cross) < 1e-12:
+            continue
+        if sign is None:
+            sign = cross
+        elif cross * sign < 0:
+            return False
+    return True
+
+
+def _point_in_polygon_2d(
+    point: tuple[float, float],
+    polygon: Sequence[tuple[float, float]],
+) -> bool:
+    """Ray-casting point-in-polygon test."""
+    x, y = point
+    n = len(polygon)
+    inside = False
+    j = n - 1
+    for i in range(n):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def polygon_intersection_2d(
+    poly_a: Sequence[tuple[float, float]],
+    poly_b: Sequence[tuple[float, float]],
+) -> Polygon2D | None:
+    """Compute the intersection of two 2-D polygons.
+
+    Uses the Sutherland-Hodgman algorithm.  At least one polygon must be
+    convex (the convex one is used as the clip polygon).  If both are
+    concave the function returns ``None``.
+
+    Returns:
+        The intersection polygon vertices, or ``None`` if disjoint or
+        both polygons are concave.
+    """
+    a_convex = _is_convex_2d(poly_a)
+    b_convex = _is_convex_2d(poly_b)
+
+    if (a_convex and b_convex) or b_convex:
+        result = _sutherland_hodgman(poly_a, poly_b)
+    elif a_convex:
+        result = _sutherland_hodgman(poly_b, poly_a)
+    else:
+        logger.warning("polygon_intersection_2d: both polygons are concave — not supported")
+        return None
+
+    if len(result) < 3:
+        return None
+    if abs(polygon_area_2d(result)) < 1e-6:
+        return None
+    return result
+
+
+def polygon_difference_2d(
+    outer: Sequence[tuple[float, float]],
+    inner: Sequence[tuple[float, float]],
+) -> Polygon2D | None:
+    """Subtract *inner* from *outer* using a bridge/slit polygon.
+
+    The *inner* polygon must be fully contained within *outer*.  Both
+    must be counter-clockwise.  Returns a single simple (non-convex)
+    polygon representing the frame region, or ``None`` if the inner
+    polygon covers the entire outer polygon.
+
+    The approach is the same slit technique used by
+    :func:`~idfkit.zoning.footprint_courtyard`.
+    """
+    outer_list = list(outer)
+    inner_list = list(inner)
+
+    outer_area = abs(polygon_area_2d(outer_list))
+    inner_area = abs(polygon_area_2d(inner_list))
+    if abs(outer_area - inner_area) < 1e-6:
+        return None
+
+    # Find closest vertex pair for the slit
+    best_dist = float("inf")
+    best_oi = 0
+    best_ii = 0
+    for oi, op in enumerate(outer_list):
+        for ii, ip in enumerate(inner_list):
+            d = math.hypot(op[0] - ip[0], op[1] - ip[1])
+            if d < best_dist:
+                best_dist = d
+                best_oi = oi
+                best_ii = ii
+
+    n_outer = len(outer_list)
+    n_inner = len(inner_list)
+
+    # Build bridge polygon:
+    # Walk outer CCW from best_oi+1 back to best_oi,
+    # slit to inner at best_ii,
+    # walk inner CW (reversed) from best_ii back to best_ii+1,
+    # slit back to outer.
+    result: Polygon2D = []
+    for k in range(n_outer):
+        result.append(outer_list[(best_oi + 1 + k) % n_outer])
+    # Slit entry: last point is outer[best_oi], now add inner[best_ii]
+    for k in range(n_inner):
+        result.append(inner_list[(best_ii - k) % n_inner])
+    # Slit exit: last point is inner[best_ii+1 in CW = best_ii-n_inner+1]
+    # Close back to outer[best_oi+1] via the implicit polygon close
+
+    return result
+
+
+def polygon_contains_2d(
+    outer: Sequence[tuple[float, float]],
+    inner: Sequence[tuple[float, float]],
+) -> bool:
+    """Return ``True`` if all vertices of *inner* are inside *outer*."""
+    return all(_point_in_polygon_2d(p, outer) for p in inner)
+
+
+# ---------------------------------------------------------------------------
 # Surface Intersection and Boundary Matching
 # ---------------------------------------------------------------------------
 
