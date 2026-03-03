@@ -112,6 +112,10 @@ for obj in doc.get_referencing("Office"):
 write_idf(doc, "out.idf")
 ```
 
+> **Note:** `load_idf()` defaults to strict parsing (`strict=True`) and raises
+> `IDFParseError` on malformed objects. Use `strict=False` only as a tolerant
+> migration/compatibility fallback for legacy or noisy files.
+
 ### Creating a model from scratch
 
 ```python

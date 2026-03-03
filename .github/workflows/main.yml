@@ -67,5 +67,10 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
 
+      - name: Install Cairo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2
+
       - name: Check if documentation can be built
-        run: uv run mkdocs build -s
+        run: ./scripts/build_docs.sh -s

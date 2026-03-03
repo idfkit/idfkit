@@ -49,7 +49,7 @@ build-and-publish: build publish ## Build and publish.
 
 .PHONY: docs-test
 docs-test: ## Test if documentation can be built without warnings or errors
-	@uv run mkdocs build -s
+	@./scripts/build_docs.sh -s
 
 .PHONY: docs
 docs: ## Build and serve the documentation

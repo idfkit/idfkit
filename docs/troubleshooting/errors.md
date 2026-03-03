@@ -193,16 +193,28 @@ model.add(
 ### Invalid IDF Syntax
 
 ```
-ValueError: Failed to parse IDF at line 42
+IDFParseError: Failed to parse object
 ```
 
-**Cause:** The IDF file has invalid syntax.
+**Cause:** `load_idf()` uses strict parsing by default
+(`strict=True`) and found malformed content (for example unknown object
+types, invalid bytes, or extra fields on non-extensible objects).
 
 **Solutions:**
 
 1. Check for unclosed objects (missing `;`)
 2. Check for invalid field separators
 3. Validate with EnergyPlus directly first
+4. For migration or best-effort loading of legacy/noisy files, use
+   tolerant parsing:
+   ```python
+   from idfkit import IDFParseError, load_idf
+
+   try:
+       doc = load_idf("file.idf")  # strict=True (default)
+   except IDFParseError:
+       doc = load_idf("file.idf", strict=False)
+   ```
 
 ### Version Mismatch
 

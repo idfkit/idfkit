@@ -274,17 +274,26 @@ Translate or rotate all surfaces in the model:
 
 ## Strict field access (new in idfkit)
 
+idfkit has two different strictness settings:
+
+- **Strict parsing** (`load_idf(..., strict=True)`) validates IDF input while
+  reading and is enabled by default.
+- **Strict field access** (`doc.strict = True`) raises on mistyped attribute
+  names when reading or writing object fields.
+
 eppy silently returns an empty string when you mistype a field name,
 making bugs hard to find. idfkit defaults to the same behaviour for
-compatibility, but you can opt in to **strict mode** to catch typos
+compatibility at field-access time, but you can opt in to **strict field
+access** to catch typos
 immediately:
 
 ```python
 --8<-- "docs/snippets/migration/strict_mode.py:example"
 ```
 
-Enable strict mode during migration to surface field-name mismatches
-early. Once your code is clean you can leave it on or turn it off.
+Enable strict field access during migration to surface field-name
+mismatches early. Once your code is clean you can leave it on or turn it
+off.
 
 ## Running a simulation
 

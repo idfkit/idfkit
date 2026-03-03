@@ -73,8 +73,13 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
 
+      - name: Install Cairo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2
+
       - name: Build documentation
-        run: uv run mkdocs build
+        run: ./scripts/build_docs.sh
 
       - name: Deploy documentation to gh-pages
         run: |
@@ -83,6 +88,8 @@ jobs:
           find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'pr-preview' -exec rm -rf {} +
           # Copy new site content
           cp -r ../site/. .
+          # Restore root-level gh-pages extras (e.g. CNAME)
+          cp -r ../gh-pages-extra/. .
           touch .nojekyll
 
           git config user.name "github-actions[bot]"
