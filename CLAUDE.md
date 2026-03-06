@@ -58,7 +58,7 @@ make build
 ```
 src/idfkit/                  # Main package
   __init__.py                # Public API: load_idf, load_epjson, new_document, write_*
-  document.py                # IDFDocument - main container class for EnergyPlus models
+  document.py                # IDFDocument - main container class for EnergyPlus docs
   objects.py                 # IDFObject (thin dict wrapper) and IDFCollection (indexed by name)
   idf_parser.py              # IDF format tokenizer and parser
   epjson_parser.py           # epJSON format parser
@@ -87,7 +87,7 @@ src/idfkit/                  # Main package
   weather/                   # Weather data module
     station.py               # Station index search (~17k stations)
     download.py              # EPW/DDY file download with local caching
-    designday.py             # DDY parsing and injection into models
+    designday.py             # DDY parsing and injection into docs
     geocode.py               # Address-to-coordinates via Nominatim
     spatial.py               # Nearby station queries
   schedules/                 # Schedule evaluation engine (all 8 EnergyPlus schedule types)
