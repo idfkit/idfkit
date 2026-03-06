@@ -6,7 +6,7 @@
 
 ## idfkit Dependency Guide
 
-**idfkit** is a Python toolkit for EnergyPlus IDF/epJSON files. It provides O(1) object lookups, automatic reference tracking, schema-driven validation, simulation execution, weather data, schedule evaluation, thermal calculations, and 3D geometry operations. Zero core dependencies; optional extras for simulation/weather/visualization.
+**idfkit** is a Python toolkit for EnergyPlus IDF/epJSON files. It provides O(1) object lookups, automatic reference tracking, schema-driven validation, simulation execution, weather data, schedule evaluation, thermal calculations, and 3D geometry operations. Zero third-party dependencies for the core package (including simulation, schedules, thermal, and geometry). Optional extras: `weather` (openpyxl), `pandas`, `plot` (matplotlib), `plotly`, `progress` (tqdm), `s3`/`async-s3` (cloud storage), or `all`.
 
 ### Loading & Creating Documents
 
@@ -94,7 +94,7 @@ for field in desc.fields:           # FieldDescription objects
     print(field.name, field.field_type, field.required, field.default)
 ```
 
-### Simulation (requires `idfkit[simulation]`)
+### Simulation (no extras required; requires EnergyPlus installed)
 
 ```python
 from idfkit.simulation import simulate, async_simulate
@@ -119,7 +119,7 @@ for r in batch.succeeded:
     print(r.label, r.result.success)
 ```
 
-### Weather Data (requires `idfkit[weather]`)
+### Weather Data (bundled index; `idfkit[weather]` extra for index refresh)
 
 ```python
 from idfkit.weather import WeatherDownloader
@@ -135,7 +135,7 @@ from idfkit.weather import inject_design_days
 inject_design_days(model, "./weather/station.ddy")
 ```
 
-### Schedule Evaluation (requires `idfkit[schedules]`)
+### Schedule Evaluation (no extras required)
 
 ```python
 from datetime import datetime
@@ -152,7 +152,7 @@ from idfkit.schedules import create_constant_schedule
 sched = create_constant_schedule(model, "AlwaysOn", value=1.0)
 ```
 
-### Thermal Properties (requires `idfkit[thermal]`)
+### Thermal Properties (no extras required)
 
 ```python
 from idfkit.thermal import calculate_u_value, calculate_r_value
@@ -200,7 +200,7 @@ intersect_match(model)
 - **Validation is opt-in**: Call `validate_document()` explicitly; parsing does not validate.
 - **Rename cascades**: `model.rename()` updates all cross-references automatically.
 - **Strict mode**: `model.strict = True` raises `AttributeError` on field typos (useful for debugging).
-- **Optional extras**: Install `idfkit[simulation]`, `idfkit[weather]`, `idfkit[schedules]`, `idfkit[thermal]`, or `idfkit[all]`.
+- **Optional extras**: Core features (simulation, schedules, thermal, geometry) need no extras. Install `idfkit[weather]` for index refresh, `idfkit[pandas]` for DataFrames, `idfkit[plot]`/`idfkit[plotly]` for plotting, `idfkit[progress]` for tqdm bars, `idfkit[s3]` for cloud storage, or `idfkit[all]`.
 
 ### Exception Hierarchy
 
