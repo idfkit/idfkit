@@ -24,6 +24,15 @@ jobs:
       - name: Build documentation
         run: ./scripts/build_docs.sh
 
+      - name: Preserve PR previews from gh-pages
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          if git show gh-pages:pr-preview >/dev/null 2>&1; then
+            git worktree add --detach gh-pages-ref gh-pages
+            cp -r gh-pages-ref/pr-preview site/pr-preview
+            git worktree remove gh-pages-ref
+          fi
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
