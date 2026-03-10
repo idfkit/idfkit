@@ -211,12 +211,18 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
     return parse_epjson(Path(path), version=version)
 
 
-def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
+def new_document(
+    version: tuple[int, int, int] = LATEST_VERSION,
+    *,
+    strict: bool = False,
+) -> IDFDocument:
     """
     Create a new IDFDocument with baseline singleton objects populated.
 
     Args:
         version: EnergyPlus version (default: latest supported version)
+        strict: When ``True``, accessing an unknown field name on any
+            IDFObject raises ``AttributeError`` instead of returning ``None``.
 
     Returns:
         IDFDocument with schema loaded and baseline objects seeded
@@ -246,7 +252,7 @@ def new_document(version: tuple[int, int, int] = LATEST_VERSION) -> IDFDocument:
         (24, 1, 0)
     """
     schema = get_schema(version)
-    doc = IDFDocument(version=version, schema=schema)
+    doc = IDFDocument(version=version, schema=schema, strict=strict)
 
     # Seed core singleton objects for a minimal baseline model.
     version_identifier = f"{version[0]}.{version[1]}"
