@@ -165,7 +165,8 @@ class IDFObject(EppyObjectMixin):
         When the parent document has ``strict=True``, accessing a field
         name that is neither present in the data dict nor recognised by
         the schema raises ``AttributeError`` instead of returning
-        ``None``.  This catches typos during migration.
+        ``None``.  This catches typos and unset field access during
+        migration.
         """
         if key.startswith("_"):
             raise AttributeError(key)
@@ -188,14 +189,18 @@ class IDFObject(EppyObjectMixin):
         # Field not found — check strict mode
         doc = object.__getattribute__(self, "_document")
         if doc is not None and getattr(doc, "_strict", False):
-            # In strict mode, only allow known schema fields
             field_order = object.__getattribute__(self, "_field_order")
+            obj_type = object.__getattribute__(self, "_type")
             if field_order is not None and python_key not in field_order:
-                obj_type = object.__getattribute__(self, "_type")
+                # Unknown field — not in schema at all
                 raise AttributeError(  # noqa: TRY003
                     f"'{obj_type}' object has no field '{key}'. "
                     f"Known fields: {', '.join(field_order[:10])}{'...' if len(field_order) > 10 else ''}"
                 )
+            # Known field but not set on this object
+            raise AttributeError(  # noqa: TRY003
+                f"Field '{key}' on '{obj_type}' object is not set."
+            )
 
         # Default: return None (eppy behaviour)
         return None

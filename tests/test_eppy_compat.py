@@ -866,6 +866,14 @@ class TestStrictFieldAccess:
         zone = doc.add("Zone", "Office")
         assert zone.x_orgin is None  # typo returns None
 
+    def test_strict_raises_on_unset_known_field(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.strict = True
+        zone = doc.add("Zone", "Office")
+        # x_origin is a valid Zone field, but was not set on this object
+        with pytest.raises(AttributeError, match="not set"):
+            _ = zone.x_origin
+
     def test_strict_via_constructor(self) -> None:
         from idfkit.schema import get_schema
 
