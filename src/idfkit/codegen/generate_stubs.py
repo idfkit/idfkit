@@ -24,7 +24,7 @@ import sys
 from typing import Any
 
 from idfkit.schema import EpJSONSchema, get_schema
-from idfkit.versions import LATEST_VERSION
+from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
 
 # ---- helpers ---------------------------------------------------------------
 
@@ -115,6 +115,46 @@ def _anyof_to_python(field_schema: dict[str, Any]) -> str:
     return " | ".join(parts) if parts else "str | float"
 
 
+# ---- version availability --------------------------------------------------
+
+
+def _build_version_availability() -> tuple[
+    dict[str, tuple[int, int, int]], dict[tuple[str, str], tuple[int, int, int]]
+]:
+    """Compute earliest version for each object type and field.
+
+    Iterates all supported EnergyPlus versions (oldest first) and records the
+    first version where each type/field appears.
+
+    Returns:
+        A ``(type_since, field_since)`` pair where *type_since* maps object
+        type names to their earliest version and *field_since* maps
+        ``(obj_type, field_name)`` pairs to theirs.
+    """
+    type_since: dict[str, tuple[int, int, int]] = {}
+    field_since: dict[tuple[str, str], tuple[int, int, int]] = {}
+
+    for ver in ENERGYPLUS_VERSIONS:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            if obj_type not in type_since:
+                type_since[obj_type] = ver
+
+            for field_name in schema.get_field_names(obj_type):
+                key = (obj_type, field_name)
+                if key not in field_since:
+                    field_since[key] = ver
+
+            # Also check extensible field names
+            if schema.is_extensible(obj_type):
+                for ext_name in schema.get_extensible_field_names(obj_type):
+                    key = (obj_type, ext_name)
+                    if key not in field_since:
+                        field_since[key] = ver
+
+    return type_since, field_since
+
+
 # ---- docstring generation --------------------------------------------------
 
 
@@ -132,39 +172,51 @@ def _format_constraints(field_schema: dict[str, Any]) -> str | None:
     return f"Range: {', '.join(parts)}" if parts else None
 
 
-def _field_docstring(field_schema: dict[str, Any] | None) -> str | None:
+def _field_docstring(
+    field_schema: dict[str, Any] | None,
+    since_version: tuple[int, int, int] | None = None,
+) -> str | None:
     """Build a single-line docstring from field metadata.
+
+    Args:
+        field_schema: The field's JSON schema fragment.
+        since_version: If set, appends ``Since: X.Y.Z`` to the docstring.
 
     Returns ``None`` if there is nothing useful to document.
     """
-    if field_schema is None:
+    if field_schema is None and since_version is None:
         return None
 
     parts: list[str] = []
 
-    # Primary description
-    note = field_schema.get("note")
-    if note:
-        note_text = " ".join(note.split())
-        if len(note_text) > 120:
-            note_text = note_text[:117] + "..."
-        parts.append(note_text)
+    if field_schema is not None:
+        # Primary description
+        note = field_schema.get("note")
+        if note:
+            note_text = " ".join(note.split())
+            if len(note_text) > 120:
+                note_text = note_text[:117] + "..."
+            parts.append(note_text)
 
-    # Units
-    units = field_schema.get("units")
-    ip_units = field_schema.get("ip-units")
-    if units:
-        parts.append(f"[{units}] ({ip_units})" if ip_units else f"[{units}]")
+        # Units
+        units = field_schema.get("units")
+        ip_units = field_schema.get("ip-units")
+        if units:
+            parts.append(f"[{units}] ({ip_units})" if ip_units else f"[{units}]")
 
-    # Default value
-    default = field_schema.get("default")
-    if default is not None:
-        parts.append(f"Default: {default}")
+        # Default value
+        default = field_schema.get("default")
+        if default is not None:
+            parts.append(f"Default: {default}")
 
-    # Constraints
-    constraint_str = _format_constraints(field_schema)
-    if constraint_str:
-        parts.append(constraint_str)
+        # Constraints
+        constraint_str = _format_constraints(field_schema)
+        if constraint_str:
+            parts.append(constraint_str)
+
+    # Version availability
+    if since_version is not None:
+        parts.append(f"Since: {since_version[0]}.{since_version[1]}.{since_version[2]}")
 
     if not parts:
         return None
@@ -194,17 +246,34 @@ def _truncate_text(text: str, max_len: int = 120) -> str:
     return _sanitize_docstring(collapsed)
 
 
+def _class_docstring(
+    memo: str | None,
+    since: tuple[int, int, int] | None,
+) -> str | None:
+    """Build a class-level docstring from memo and version info, or ``None``."""
+    parts: list[str] = []
+    if memo:
+        parts.append(_truncate_text(memo))
+    if since is not None and since > ENERGYPLUS_VERSIONS[0]:
+        parts.append(f"Since: {since[0]}.{since[1]}.{since[2]}")
+    return "; ".join(parts) if parts else None
+
+
 def _generate_object_class(
     schema: EpJSONSchema,
     obj_type: str,
     *,
     indent: str = "",
+    type_since: dict[str, tuple[int, int, int]] | None = None,
+    field_since: dict[tuple[str, str], tuple[int, int, int]] | None = None,
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
     Args:
         indent: Prefix for each line (e.g. ``""`` for top-level, ``"    "``
             for nested inside a block).
+        type_since: Mapping of object type -> earliest version it appeared.
+        field_since: Mapping of ``(obj_type, field)`` -> earliest version.
     """
     cls_name = _to_class_name(obj_type)
     lines: list[str] = []
@@ -220,11 +289,12 @@ def _generate_object_class(
 
     body_indent = indent + "    "
 
-    # Add object-level docstring from schema memo
-    memo = schema.get_object_memo(obj_type)
+    # Add object-level docstring from schema memo + version info
+    obj_since = type_since.get(obj_type) if type_since else None
+    cls_doc = _class_docstring(schema.get_object_memo(obj_type), obj_since)
     has_body = False
-    if memo:
-        lines.append(f'{body_indent}"""{_truncate_text(memo)}"""')
+    if cls_doc:
+        lines.append(f'{body_indent}"""{cls_doc}"""')
         has_body = True
 
     if not field_names:
@@ -234,6 +304,21 @@ def _generate_object_class(
             lines.append("")
         return lines
 
+    _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+
+    return lines
+
+
+def _generate_fields(
+    lines: list[str],
+    schema: EpJSONSchema,
+    obj_type: str,
+    field_names: list[str],
+    indent: str,
+    obj_since: tuple[int, int, int] | None,
+    field_since: dict[tuple[str, str], tuple[int, int, int]] | None,
+) -> None:
+    """Append typed field declarations to *lines*."""
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
 
@@ -246,13 +331,18 @@ def _generate_object_class(
         has_any_of = field_schema is not None and "anyOf" in field_schema
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
-        lines.append(f"{body_indent}{field_name}: {py_type} | None")
+        lines.append(f"{indent}{field_name}: {py_type} | None")
 
-        docstring = _field_docstring(field_schema)
+        # Determine field "Since:" — only if the field appeared after the type itself
+        fld_since: tuple[int, int, int] | None = None
+        if field_since is not None and obj_since is not None:
+            fld_ver = field_since.get((obj_type, field_name))
+            if fld_ver is not None and fld_ver > obj_since:
+                fld_since = fld_ver
+
+        docstring = _field_docstring(field_schema, since_version=fld_since)
         if docstring:
-            lines.append(f'{body_indent}"""{docstring}"""')
-
-    return lines
+            lines.append(f'{indent}"""{docstring}"""')
 
 
 # ---- TypedDict mapping generation ------------------------------------------
@@ -324,6 +414,9 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     schema = get_schema(ver)
     version_str = f"{ver[0]}.{ver[1]}.{ver[2]}"
 
+    # Compute version availability for "Since:" annotations
+    type_since, field_since = _build_version_availability()
+
     parts: list[str] = []
     parts.append(f'"""Auto-generated type stubs for EnergyPlus {version_str} object types.')
     parts.append("")
@@ -342,7 +435,12 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
 
     # Generate all typed object classes at top-level
     for obj_type in schema.object_types:
-        class_lines = _generate_object_class(schema, obj_type)
+        class_lines = _generate_object_class(
+            schema,
+            obj_type,
+            type_since=type_since,
+            field_since=field_since,
+        )
         parts.extend(class_lines)
         parts.append("")
 

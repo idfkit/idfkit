@@ -32,23 +32,23 @@ class SimulationControl(IDFObject):
     """the entire set of SizingPeriod:* objects may be repeated to fine tune size results this input sets a limit on the num...; Default: 1; Range: >= 1"""
 
 class PerformancePrecisionTradeoffs(IDFObject):
-    """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea..."""
+    """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea...; Since: 9.2.0"""
 
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
-    """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF"""
+    """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF; Since: 9.3.0"""
     override_mode: (
         Literal[
             "", "Advanced", "Mode01", "Mode02", "Mode03", "Mode04", "Mode05", "Mode06", "Mode07", "Mode08", "Normal"
         ]
         | None
     )
-    """The increasing mode number roughly correspond with increased speed. A description of each mode are shown in the docum...; Default: Normal"""
+    """The increasing mode number roughly correspond with increased speed. A description of each mode are shown in the docum...; Default: Normal; Since: 9.3.0"""
     maxzonetempdiff: float | None
-    """Maximum zone temperature change before HVAC timestep is shortened. Only used when Override Mode is set to Advanced; Default: 0.3; Range: >= 0.1, <= 3.0"""
+    """Maximum zone temperature change before HVAC timestep is shortened. Only used when Override Mode is set to Advanced; Default: 0.3; Range: >= 0.1, <= 3.0; Since: 9.3.0"""
     maxalloweddeltemp: float | None
-    """Maximum surface temperature change before HVAC timestep is shortened. Only used when Override Mode is set to Advanced; Default: 0.002; Range: >= 0.002, <= 0.1"""
+    """Maximum surface temperature change before HVAC timestep is shortened. Only used when Override Mode is set to Advanced; Default: 0.002; Range: >= 0.002, <= 0.1; Since: 9.4.0"""
     use_representative_surfaces_for_calculations: Literal["", "No", "Yes"] | None
-    """Automatically group surfaces with similar characteristics and perform relevant calculations only once for each group.; Default: No"""
+    """Automatically group surfaces with similar characteristics and perform relevant calculations only once for each group.; Default: No; Since: 9.6.0"""
 
 class Building(IDFObject):
     """Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
@@ -82,9 +82,9 @@ class ShadowCalculation(IDFObject):
     """This object is used to control details of the solar, shading, and daylighting models"""
 
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
-    """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic"""
+    """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic; Since: 9.3.0"""
     shading_calculation_update_frequency: int | None
-    """enter number of days this field is only used if the previous field is set to Periodic warning issued if >31; Default: 20; Range: >= 1"""
+    """enter number of days this field is only used if the previous field is set to Periodic warning issued if >31; Default: 20; Range: >= 1; Since: 9.3.0"""
     maximum_figures_in_shadow_overlap_calculations: int | None
     """Number of allowable figures in shadow overlap in PolygonClipping calculations; Default: 15000; Range: >= 200"""
     polygon_clipping_algorithm: (
@@ -92,7 +92,7 @@ class ShadowCalculation(IDFObject):
     )
     """Advanced Feature. Internal default is SutherlandHodgman Refer to InputOutput Reference and Engineering Reference for ...; Default: SutherlandHodgman"""
     pixel_counting_resolution: int | None
-    """Number of pixels in both dimensions of the surface rendering; Default: 512"""
+    """Number of pixels in both dimensions of the surface rendering; Default: 512; Since: 9.3.0"""
     sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"] | None
     """Advanced Feature. Internal default is SimpleSkyDiffuseModeling If you have shading elements that change transmittance...; Default: SimpleSkyDiffuseModeling"""
     output_external_shading_calculation_results: Literal["", "No", "Yes"] | None
@@ -133,9 +133,9 @@ class ZoneAirHeatBalanceAlgorithm(IDFObject):
     """Controls the zone/space air heat balance."""
 
     do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None
-    """If yes, space heat balance will be calculated and reported during sizing.; Default: No"""
+    """If yes, space heat balance will be calculated and reported during sizing.; Default: No; Since: 23.1.0"""
     do_space_heat_balance_for_simulation: Literal["", "No", "Yes"] | None
-    """If yes, space heat balance will be calculated and reported during simulation.; Default: No"""
+    """If yes, space heat balance will be calculated and reported during simulation.; Default: No; Since: 23.1.0"""
 
 class ZoneAirContaminantBalance(IDFObject):
     """Determines which contaminant concentration will be simulates."""
@@ -203,7 +203,7 @@ class SiteLocation(IDFObject):
     elevation: float | None
     """[m]; Default: 0.0; Range: >= -300.0, < 8900.0"""
     keep_site_location_information: Literal["", "No", "Yes"] | None
-    """Default: No"""
+    """Default: No; Since: 24.2.0"""
 
 class SiteVariableLocation(IDFObject):
     """Captures the scheduling of a moving/reorienting building, or more likely a vessel"""
@@ -301,9 +301,9 @@ class SizingPeriodDesignDay(IDFObject):
     sky_clearness: float | None
     """Used if Sky Model Indicator = ASHRAEClearSky or ZhangHuang 0.0 is totally unclear, 1.0 is totally clear; Default: 0.0; Range: >= 0.0, <= 1.2"""
     maximum_number_warmup_days: int | None
-    """If used this design day will be run with a custom limit on the maximum number of days that are repeated for warmup. L..."""
+    """If used this design day will be run with a custom limit on the maximum number of days that are repeated for warmup. L...; Since: 9.3.0"""
     begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
-    """If used this can control if you want the thermal history to be reset at the beginning of the design day. When using a...; Default: FullResetAtBeginEnvironment"""
+    """If used this can control if you want the thermal history to be reset at the beginning of the design day. When using a...; Default: FullResetAtBeginEnvironment; Since: 9.3.0"""
 
 class SizingPeriodWeatherFileDays(IDFObject):
     """Use a weather file period for design sizing calculations."""
@@ -395,13 +395,13 @@ class RunPeriod(IDFObject):
     begin_day_of_month: int | None
     """Range: >= 1, <= 31"""
     begin_year: float | None
-    """Start year of the simulation, if this field is specified it must agree with the Day of Week for Start Day If this fie..."""
+    """Start year of the simulation, if this field is specified it must agree with the Day of Week for Start Day If this fie...; Since: 9.0.1"""
     end_month: int | None
     """Range: >= 1, <= 12"""
     end_day_of_month: int | None
     """Range: >= 1, <= 31"""
     end_year: float | None
-    """end year of simulation, if specified"""
+    """end year of simulation, if specified; Since: 9.0.1"""
     day_of_week_for_start_day: (
         Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
     )
@@ -417,9 +417,9 @@ class RunPeriod(IDFObject):
     use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     treat_weather_as_actual: Literal["", "No", "Yes"] | None
-    """Default: No"""
+    """Default: No; Since: 9.0.1"""
     first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None
-    """When the weather data timestep is longer than the simulation timestep, weather data is interpolated. For the first ho...; Default: Hour24"""
+    """When the weather data timestep is longer than the simulation timestep, weather data is interpolated. For the first ho...; Default: Hour24; Since: 9.6.0"""
 
 class RunPeriodControlSpecialDays(IDFObject):
     """This object sets up holidays/special days to be used during weather file run periods. (These are not used with Sizing..."""
@@ -457,7 +457,7 @@ class WeatherPropertySkyTemperature(IDFObject):
     schedule_name: str | None
     """if name matches a SizingPeriod:DesignDay, put in a day schedule of this name if name is for a SizingPeriod:WeatherFil..."""
     use_weather_file_horizontal_ir: Literal["", "No", "Yes"] | None
-    """If yes or blank, use Horizontal IR values from weather file when present, otherwise use the specified sky model. If n...; Default: Yes"""
+    """If yes or blank, use Horizontal IR values from weather file when present, otherwise use the specified sky model. If n...; Default: Yes; Since: 9.3.0"""
 
 class SiteWeatherStation(IDFObject):
     """This object should only be used for non-standard weather data. Standard weather data such as TMY2, IWEC, and ASHRAE d..."""
@@ -623,7 +623,7 @@ class SiteGroundTemperatureUndisturbedXing(IDFObject):
     soil_specific_heat: float | None
     """[J/kg-K]; Range: > 0.0"""
     average_soil_surface_temperature: float | None
-    """[C]"""
+    """[C]; Since: 23.2.0"""
     soil_surface_temperature_amplitude_1: float | None
     """[deltaC]"""
     soil_surface_temperature_amplitude_2: float | None
@@ -781,9 +781,9 @@ class SiteWaterMainsTemperature(IDFObject):
     maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None
     """If calculation method is CorrelationFromWeatherFile or Schedule, this input field is ignored.; [deltaC]; Range: >= 0.0"""
     temperature_multiplier: float | None
-    """If calculation method is Schedule, this input field is ignored.; [dimensionless]; Default: 1.0; Range: >= 0.0"""
+    """If calculation method is Schedule, this input field is ignored.; [dimensionless]; Default: 1.0; Range: >= 0.0; Since: 25.2.0"""
     temperature_offset: float | None
-    """If calculation method is Schedule, this input field is ignored.; [deltaC]; Default: 0.0"""
+    """If calculation method is Schedule, this input field is ignored.; [deltaC]; Default: 0.0; Since: 25.2.0"""
 
 class SitePrecipitation(IDFObject):
     """Used to describe the amount of water precipitation at the building site. Precipitation includes both rain and the equ..."""
@@ -952,10 +952,15 @@ class ScheduleYear(IDFObject):
 
     schedule_type_limits_name: str | None
     schedule_week_name: str | None
+    """Since: 9.0.1"""
     start_month: float | None
+    """Since: 9.0.1"""
     start_day: float | None
+    """Since: 9.0.1"""
     end_month: float | None
+    """Since: 9.0.1"""
     end_day: float | None
+    """Since: 9.0.1"""
 
 class ScheduleCompact(IDFObject):
     """Irregular object. Does not follow the usual definition for fields. Fields A3... are: Through: Date For: Applicable da..."""
@@ -991,7 +996,7 @@ class ScheduleFile(IDFObject):
     minutes_per_item: int | None
     """Must be evenly divisible into 60; Default: 60; Range: >= 1, <= 60"""
     adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None
-    """'No' means do not include Daylight Savings Time in the schedule, instead, use the schedule directly from the Schedule...; Default: Yes"""
+    """'No' means do not include Daylight Savings Time in the schedule, instead, use the schedule directly from the Schedule...; Default: Yes; Since: 22.1.0"""
 
 class Material(IDFObject):
     """Regular materials described with full set of thermal properties"""
@@ -1590,7 +1595,7 @@ class WindowMaterialGlazingEquivalentLayer(IDFObject):
     back_side_infrared_emissivity: float | None
     """The back side long-wave hemispherical emissivity of the glazing.; [dimensionless]; Default: 0.84; Range: > 0.0, < 1.0"""
     thermal_resistance: float | None
-    """This is the R-Value in SI for the glass. The default value is an approximation for a single layer of glass at 1/4' in...; [m2-K/W]; Default: 0.158; Range: > 0.0"""
+    """This is the R-Value in SI for the glass. The default value is an approximation for a single layer of glass at 1/4' in...; [m2-K/W]; Default: 0.158; Range: > 0.0; Since: 9.2.0"""
 
 class WindowMaterialGapEquivalentLayer(IDFObject):
     """Gas material properties that are used in Windows Equivalent Layer References only WindowMaterial:Gas properties"""
@@ -1651,7 +1656,9 @@ class MaterialPropertyPhaseChange(IDFObject):
     temperature_coefficient_for_thermal_conductivity: float | None
     """The base temperature is 20C. This is the thermal conductivity change per degree excursion from 20C. This variable con...; [W/m-K2]; Default: 0.0"""
     temperature: float | None
+    """Since: 24.2.0"""
     enthalpy: float | None
+    """Since: 24.2.0"""
 
 class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) wi..."""
@@ -1687,9 +1694,13 @@ class MaterialPropertyVariableThermalConductivity(IDFObject):
     """Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
 
     temperature: float | None
+    """Since: 24.2.0"""
     thermal_conductivity: float | None
+    """Since: 24.2.0"""
 
 class MaterialPropertyVariableAbsorptance(IDFObject):
+    """Since: 23.1.0"""
+
     reference_material_name: str | None
     """Regular Material Name to which the additional properties will be added. this the material name for the basic material..."""
     control_signal: (
@@ -2305,7 +2316,7 @@ class ConstructionFfactorGroundFloor(IDFObject):
     """Enter exposed perimeter of the floor; [m]; Range: >= 0.0"""
 
 class ConstructionPropertyInternalHeatSource(IDFObject):
-    """Internal heat source to be attached to a construction layer"""
+    """Internal heat source to be attached to a construction layer; Since: 9.5.0"""
 
     construction_name: str | None
     thermal_source_present_after_layer_number: int | None
@@ -2320,7 +2331,7 @@ class ConstructionPropertyInternalHeatSource(IDFObject):
     """used in conjunction with field Temperature Calculation Requested After Layer Number this field is the location perpen...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
 
 class ConstructionAirBoundary(IDFObject):
-    """Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. The two adj..."""
+    """Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. The two adj...; Since: 9.2.0"""
 
     air_exchange_method: Literal["", "None", "SimpleMixing"] | None
     """This field controls how air exchange is modeled across this boundary.; Default: None"""
@@ -2357,7 +2368,7 @@ class WindowThermalModelParams(IDFObject):
     """This is pressure in time of window fabrication; [Pa]; Default: 101325.0; Range: > 0.0"""
 
 class WindowsCalculationEngine(IDFObject):
-    """Describes which window model will be used in calculations. Built in windows model will use algorithms that are part o..."""
+    """Describes which window model will be used in calculations. Built in windows model will use algorithms that are part o...; Since: 9.0.1"""
 
 class ConstructionComplexFenestrationState(IDFObject):
     """Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
@@ -2374,39 +2385,50 @@ class ConstructionComplexFenestrationState(IDFObject):
     visible_optical_complex_back_transmittance_matrix_name: str | None
     outside_layer_name: str | None
     outside_layer_directional_front_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     outside_layer_directional_back_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     gap_1_name: str | None
     cfs_gap_1_directional_front_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     cfs_gap_1_directional_back_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     layer_2_name: str | None
     layer_2_directional_front_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     layer_2_directional_back_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     gap_2_name: str | None
     gap_2_directional_front_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     gap_2_directional_back_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     layer_3_name: str | None
+    """Since: 9.6.0"""
     layer_3_directional_front_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     layer_3_directional_back_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     gap_3_name: str | None
     gap_3_directional_front_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     gap_3_directional_back_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     layer_4_name: str | None
     layer_4_directional_front_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     layer_4_directional_back_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     gap_4_name: str | None
     gap_4_directional_front_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     gap_4_directional_back_absorptance_matrix_name: str | None
-    """Reserved for future use. Leave it blank for this version"""
+    """Reserved for future use. Leave it blank for this version; Since: 23.2.0"""
     layer_5_name: str | None
     layer_5_directional_front_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
     layer_5_directional_back_absorptance_matrix_name: str | None
+    """Since: 23.2.0"""
 
 class ConstructionWindowEquivalentLayer(IDFObject):
     """Start with outside layer and work your way to the inside Layer Up to 11 layers total. Up to six solid layers and up t..."""
@@ -2449,13 +2471,13 @@ class GeometryTransform(IDFObject):
     """Aspect ratio to transform to during run; Range: > 0.0"""
 
 class Space(IDFObject):
-    """Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ..."""
+    """Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ...; Since: 9.6.0"""
 
     zone_name: str | None
     ceiling_height: float | Literal["", "Autocalculate"] | None
-    """If this field is 0.0, negative or autocalculate, then the average height of the space is automatically calculated and...; [m]; Default: Autocalculate"""
+    """If this field is 0.0, negative or autocalculate, then the average height of the space is automatically calculated and...; [m]; Default: Autocalculate; Since: 22.2.0"""
     volume: float | Literal["", "Autocalculate"] | None
-    """If this field is 0.0, negative or autocalculate, then the volume of the space is automatically calculated and used in...; [m3]; Default: Autocalculate"""
+    """If this field is 0.0, negative or autocalculate, then the volume of the space is automatically calculated and used in...; [m3]; Default: Autocalculate; Since: 22.2.0"""
     floor_area: float | Literal["", "Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the floor area of the space is automatically calculated and use...; [m2]; Default: Autocalculate"""
     space_type: str | None
@@ -2463,7 +2485,7 @@ class Space(IDFObject):
     tag: str | None
 
 class SpaceList(IDFObject):
-    """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to..."""
+    """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to...; Since: 9.6.0"""
 
     space_name: str | None
 
@@ -2521,7 +2543,7 @@ class BuildingSurfaceDetailed(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -2566,7 +2588,7 @@ class WallDetailed(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -2611,7 +2633,7 @@ class RoofCeilingDetailed(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -2654,7 +2676,7 @@ class FloorDetailed(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -2699,7 +2721,7 @@ class WallExterior(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """Facing direction of outside of wall (S=180,N=0,E=90,W=270); [deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2723,7 +2745,7 @@ class WallAdiabatic(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """Facing direction of outside of wall (S=180,N=0,E=90,W=270); [deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2747,7 +2769,7 @@ class WallUnderground(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """Facing direction of outside of wall (S=180,N=0,E=90,W=270); [deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2771,7 +2793,7 @@ class WallInterzone(IDFObject):
     zone_name: str | None
     """Zone for the inside face of the surface."""
     space_name: str | None
-    """Space for the inside face of the surface (optional, see description of Space object for more details)."""
+    """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition_object: str | None
     """Specify a surface name in an adjacent zone for known interior walls. Specify a zone name of an adjacent zone to autom..."""
     azimuth_angle: float | None
@@ -2797,7 +2819,7 @@ class Roof(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """Facing direction of outside of Roof; [deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2821,7 +2843,7 @@ class CeilingAdiabatic(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """Facing direction of outside of Ceiling; [deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2845,7 +2867,7 @@ class CeilingInterzone(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition_object: str | None
     """Specify a surface name in an adjacent zone for known interior floors Specify a zone name of an adjacent zone to autom..."""
     azimuth_angle: float | None
@@ -2871,7 +2893,7 @@ class FloorGroundContact(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """[deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2895,7 +2917,7 @@ class FloorAdiabatic(IDFObject):
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
-    """Space the surface is a part of (optional, see description of Space object for more details)."""
+    """Space the surface is a part of (optional, see description of Space object for more details).; Since: 9.6.0"""
     azimuth_angle: float | None
     """[deg]; Range: >= 0.0, <= 360.0"""
     tilt_angle: float | None
@@ -2919,7 +2941,7 @@ class FloorInterzone(IDFObject):
     zone_name: str | None
     """Zone for the inside face of the surface."""
     space_name: str | None
-    """Space for the inside face of the surface (optional, see description of Space object for more details)."""
+    """Space for the inside face of the surface (optional, see description of Space object for more details).; Since: 9.6.0"""
     outside_boundary_condition_object: str | None
     """Specify a surface name in an adjacent zone for known interior ceilings. Specify a zone name of an adjacent zone to au..."""
     azimuth_angle: float | None
@@ -3098,7 +3120,7 @@ class GlazedDoorInterzone(IDFObject):
     """[m]"""
 
 class WindowShadingControl(IDFObject):
-    """Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
+    """Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ...; Since: 9.0.1"""
 
     zone_name: str | None
     shading_control_sequence_number: int | None
@@ -3117,7 +3139,7 @@ class WindowShadingControl(IDFObject):
         | None
     )
     construction_with_shading_name: str | None
-    """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter..."""
+    """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter...; Since: 9.2.0"""
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -3249,7 +3271,7 @@ class WindowPropertyFrameAndDivider(IDFObject):
         ]
         | None
     )
-    """Used when computing the assembly u-factor, SHGC and visible transmittance for reporting only; Default: CurtainWall"""
+    """Used when computing the assembly u-factor, SHGC and visible transmittance for reporting only; Default: CurtainWall; Since: 22.1.0"""
 
 class WindowPropertyAirflowControl(IDFObject):
     """Used to control forced airflow through a gap between glass layers"""
@@ -3291,9 +3313,9 @@ class InternalMass(IDFObject):
     construction_name: str | None
     """To be matched with a construction in this input file"""
     zone_or_zonelist_name: str | None
-    """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified."""
+    """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified.; Since: 9.2.0"""
     space_or_spacelist_name: str | None
-    """Space(s) the surface is a part of. This field is ignored when a ZoneList Name is specified for Zone or ZoneList Name...."""
+    """Space(s) the surface is a part of. This field is ignored when a ZoneList Name is specified for Zone or ZoneList Name....; Since: 9.6.0"""
     surface_area: float | None
     """[m2]; Range: > 0.0"""
 
@@ -3609,7 +3631,7 @@ class FoundationKiva(IDFObject):
     """Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated usi..."""
 
     initial_indoor_air_temperature: float | None
-    """Indoor air temperature used for Kiva initialization (prior to warmup period) If left blank, indoor air temperature wi...; [C]"""
+    """Indoor air temperature used for Kiva initialization (prior to warmup period) If left blank, indoor air temperature wi...; [C]; Since: 9.2.0"""
     interior_horizontal_insulation_material_name: str | None
     interior_horizontal_insulation_depth: float | None
     """Distance from the slab bottom to the top of interior horizontal insulation; [m]; Default: 0.0; Range: >= 0.0"""
@@ -4600,6 +4622,8 @@ class SurfacePropertySolarIncidentInside(IDFObject):
     """Values in schedule are expected to be in W/m2"""
 
 class SurfacePropertyIncidentSolarMultiplier(IDFObject):
+    """Since: 22.2.0"""
+
     incident_solar_multiplier: float | None
     """a constant multiplier for window solar transmittance and visible transmittance. If the Shading Multiplier Schedule Na...; [dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
     incident_solar_multiplier_schedule_name: str | None
@@ -4611,13 +4635,13 @@ class SurfacePropertyLocalEnvironment(IDFObject):
     exterior_surface_name: str | None
     """Enter the name of an exterior surface object"""
     sunlit_fraction_schedule_name: str | None
-    """Enter the name of a Schedule object"""
+    """Enter the name of a Schedule object; Since: 23.2.0"""
     surrounding_surfaces_object_name: str | None
     """Enter the name of a SurfaceProperty:SurroundingSurfaces object"""
     outdoor_air_node_name: str | None
     """Enter the name of an OutdoorAir:Node object"""
     ground_surfaces_object_name: str | None
-    """Enter the name of a SurfaceProperty:GroundSurfaces object"""
+    """Enter the name of a SurfaceProperty:GroundSurfaces object; Since: 22.2.0"""
 
 class ZonePropertyLocalEnvironment(IDFObject):
     """This object defines the local environment properties of a zone object. A corresponding outdoor air node should be def..."""
@@ -4643,7 +4667,7 @@ class SurfacePropertySurroundingSurfaces(IDFObject):
     surrounding_surface_temperature_schedule_name: str | None
 
 class SurfacePropertyGroundSurfaces(IDFObject):
-    """This object defines a list of ground surfaces for use with an exterior surface."""
+    """This object defines a list of ground surfaces for use with an exterior surface.; Since: 22.2.0"""
 
     ground_surface_name: str | None
     ground_surface_view_factor: float | None
@@ -4667,7 +4691,7 @@ class ComplexFenestrationPropertySolarAbsorbedLayers(IDFObject):
     """Values in schedule are expected to be in W/m2"""
 
 class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
-    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b..."""
+    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
 
     from_surface: str | None
     to_surface: str | None
@@ -5262,6 +5286,7 @@ class People(IDFObject):
     """Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     number_of_people_schedule_name: str | None
     """units in schedule should be fraction applied to number of people (0.0 - 1.0)"""
     number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None
@@ -5269,9 +5294,9 @@ class People(IDFObject):
     number_of_people: float | None
     """Range: >= 0.0"""
     people_per_floor_area: float | None
-    """[person/m2]; Range: >= 0.0"""
+    """[person/m2]; Range: >= 0.0; Since: 9.6.0"""
     floor_area_per_person: float | None
-    """[m2/person]; Range: >= 0.0"""
+    """[m2/person]; Range: >= 0.0; Since: 9.6.0"""
     fraction_radiant: float | None
     """This is radiant fraction of the sensible heat released by people in a zone. This value will be multiplied by the tota...; Default: 0.3; Range: >= 0.0, <= 1.0"""
     sensible_heat_fraction: float | Literal["", "Autocalculate"] | None
@@ -5327,29 +5352,32 @@ class People(IDFObject):
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
         | None
     )
-    """optional (sixth thermal comfort model and report type)"""
+    """optional (sixth thermal comfort model and report type); Since: 9.5.0"""
     thermal_comfort_model_7_type: (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
         | None
     )
-    """optional (seventh thermal comfort model and report type)"""
+    """optional (seventh thermal comfort model and report type); Since: 9.5.0"""
     ankle_level_air_velocity_schedule_name: str | None
-    """units in the schedule are m/s this is the schedule of the air speed at the 0.1 m above the floor optional (only requi..."""
+    """units in the schedule are m/s this is the schedule of the air speed at the 0.1 m above the floor optional (only requi...; Since: 9.5.0"""
     cold_stress_temperature_threshold: float | None
-    """this is the indoor safe temperature threshold for cold stress; [C]; Default: 15.56"""
+    """this is the indoor safe temperature threshold for cold stress; [C]; Default: 15.56; Since: 22.2.0"""
     heat_stress_temperature_threshold: float | None
-    """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0"""
+    """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0; Since: 22.2.0"""
 
 class ComfortViewFactorAngles(IDFObject):
     """Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
 
     surface_name: str | None
+    """Since: 25.2.0"""
     angle_factor: float | None
+    """Since: 25.2.0"""
 
 class Lights(IDFObject):
     """Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in schedule should be fraction applied to design level of lights, generally (0.0 - 1.0)"""
     design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"] | None
@@ -5357,7 +5385,7 @@ class Lights(IDFObject):
     lighting_level: float | None
     """[W] (W); Range: >= 0.0"""
     watts_per_floor_area: float | None
-    """[W/m2] (W/ft2); Range: >= 0.0"""
+    """[W/m2] (W/ft2); Range: >= 0.0; Since: 24.1.0"""
     watts_per_person: float | None
     """[W/person] (W/person); Range: >= 0.0"""
     return_air_fraction: float | None
@@ -5379,12 +5407,13 @@ class Lights(IDFObject):
     return_air_heat_gain_node_name: str | None
     """Name of the return air node for this heat gain. If left blank, defaults to the first return air node for the zone. Le..."""
     exhaust_air_heat_gain_node_name: str | None
-    """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both..."""
+    """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both...; Since: 9.6.0"""
 
 class ElectricEquipment(IDFObject):
     """Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in schedule should be fraction applied to design level of electric equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"] | None
@@ -5392,7 +5421,7 @@ class ElectricEquipment(IDFObject):
     design_level: float | None
     """[W] (W); Range: >= 0.0"""
     watts_per_floor_area: float | None
-    """[W/m2] (W/ft2); Range: >= 0.0"""
+    """[W/m2] (W/ft2); Range: >= 0.0; Since: 24.1.0"""
     watts_per_person: float | None
     """[W/person] (W/person); Range: >= 0.0"""
     fraction_latent: float | None
@@ -5408,6 +5437,7 @@ class GasEquipment(IDFObject):
     """Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to design level of gas equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: (
@@ -5417,7 +5447,7 @@ class GasEquipment(IDFObject):
     design_level: float | None
     """[W] (Btu/h); Range: >= 0.0"""
     power_per_floor_area: float | None
-    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
     power_per_person: float | None
     """[W/person] (Btu/h-person); Range: >= 0.0"""
     fraction_latent: float | None
@@ -5435,6 +5465,7 @@ class HotWaterEquipment(IDFObject):
     """Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to design level of hot water equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: (
@@ -5444,7 +5475,7 @@ class HotWaterEquipment(IDFObject):
     design_level: float | None
     """[W] (Btu/h); Range: >= 0.0"""
     power_per_floor_area: float | None
-    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
     power_per_person: float | None
     """[W/person] (Btu/h-person); Range: >= 0.0"""
     fraction_latent: float | None
@@ -5460,6 +5491,7 @@ class SteamEquipment(IDFObject):
     """Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to design level of steam equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: (
@@ -5469,7 +5501,7 @@ class SteamEquipment(IDFObject):
     design_level: float | None
     """[W] (Btu/h); Range: >= 0.0"""
     power_per_floor_area: float | None
-    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0; Since: 24.1.0"""
     power_per_person: float | None
     """[W/person] (Btu/h-person); Range: >= 0.0"""
     fraction_latent: float | None
@@ -5506,6 +5538,7 @@ class OtherEquipment(IDFObject):
     )
     """Default: None"""
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to design level of other equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: (
@@ -5515,7 +5548,7 @@ class OtherEquipment(IDFObject):
     design_level: float | None
     """[W] (Btu/h)"""
     power_per_floor_area: float | None
-    """[W/m2] (Btu/h-ft2)"""
+    """[W/m2] (Btu/h-ft2); Since: 24.1.0"""
     power_per_person: float | None
     """[W/person] (Btu/h-person)"""
     fraction_latent: float | None
@@ -5530,7 +5563,7 @@ class OtherEquipment(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
 class IndoorLivingWall(IDFObject):
-    """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate..."""
+    """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
 
     surface_name: str | None
     """Name of the wall partition where indoor green is located."""
@@ -5541,6 +5574,7 @@ class IndoorLivingWall(IDFObject):
     lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None
     """Three different methods are provided here (LED; Daylight; LED-Daylight)"""
     led_intensity_schedule_name: str | None
+    """Since: 24.2.0"""
     daylighting_control_name: str | None
     """If daylighting is used in the selected lighting methods (Daylight or LED-Daylight), users should define an object of ..."""
     led_daylight_targeted_lighting_intensity_schedule_name: str | None
@@ -5548,7 +5582,7 @@ class IndoorLivingWall(IDFObject):
     total_leaf_area: float | None
     """The value is the one-sided leaf area of an indoor living wall. Based on the users' input, LAI is calculated as the ra...; [m2] (ft2)"""
     led_nominal_intensity: float | None
-    """The value represents photosynthetic photon flux density (PPFD) of LED grow light. PPFD is measured in micro-mole per ...; [umol/m2-s] (umol/ft2-s)"""
+    """The value represents photosynthetic photon flux density (PPFD) of LED grow light. PPFD is measured in micro-mole per ...; [umol/m2-s] (umol/ft2-s); Since: 24.2.0"""
     led_nominal_power: float | None
     """This field defines nominal total LED power for an indoor living wall system.; [W] (W)"""
     radiant_fraction_of_led_lights: float | None
@@ -5558,7 +5592,7 @@ class ElectricEquipmentITEAirCooled(IDFObject):
     """This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 9.6.0"""
     air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
     """The specified method is used to calculate the IT inlet temperature and zone return air temperature. If FlowFromSystem...; Default: FlowFromSystem"""
     design_power_input_calculation_method: Literal["", "Watts/Area", "Watts/Unit"] | None
@@ -5568,7 +5602,7 @@ class ElectricEquipmentITEAirCooled(IDFObject):
     number_of_units: float | None
     """Default: 1.0; Range: >= 0.0"""
     watts_per_floor_area: float | None
-    """[W/m2] (W/ft2); Range: >= 0.0"""
+    """[W/m2] (W/ft2); Range: >= 0.0; Since: 24.1.0"""
     design_power_input_schedule_name: str | None
     """Operating schedule for this equipment, fraction applied to the design power input, generally (0.0 - 1.0) If this fiel..."""
     cpu_loading_schedule_name: str | None
@@ -5624,6 +5658,7 @@ class ZoneBaseboardOutdoorTemperatureControlled(IDFObject):
     """Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to capacity of the baseboard heat equipment, generally (0.0 - 1.0)"""
     capacity_at_low_temperature: float | None
@@ -5757,6 +5792,7 @@ class DaylightingControls(IDFObject):
     """Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
     zone_or_space_name: str | None
+    """Since: 9.6.0"""
     daylighting_method: Literal["", "DElight", "SplitFlux"] | None
     """Default: SplitFlux"""
     availability_schedule_name: str | None
@@ -5779,12 +5815,14 @@ class DaylightingControls(IDFObject):
     """Maximum surface area for nodes in gridding all surfaces in the DElight zone. All reflective and transmitting surfaces...; [m2]; Range: > 0.0"""
     daylighting_reference_point_name: str | None
     fraction_of_lights_controlled_by_reference_point: float | None
+    """Since: 9.6.0"""
     illuminance_setpoint_at_reference_point: float | None
 
 class DaylightingReferencePoint(IDFObject):
     """Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
 
     zone_or_space_name: str | None
+    """Since: 9.6.0"""
     x_coordinate_of_reference_point: float | None
     """[m]"""
     y_coordinate_of_reference_point: float | None
@@ -5853,6 +5891,7 @@ class OutputIlluminanceMap(IDFObject):
     """reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
 
     zone_or_space_name: str | None
+    """Since: 24.2.0"""
     z_height: float | None
     """[m]; Default: 0.0"""
     x_minimum_coordinate: float | None
@@ -5875,6 +5914,7 @@ class ZoneInfiltrationDesignFlowRate(IDFObject):
     """Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     design_flow_rate_calculation_method: (
@@ -5884,9 +5924,9 @@ class ZoneInfiltrationDesignFlowRate(IDFObject):
     design_flow_rate: float | None
     """[m3/s] (ft3/min); Range: >= 0.0"""
     flow_rate_per_floor_area: float | None
-    """[m3/s-m2]; Range: >= 0.0"""
+    """[m3/s-m2]; Range: >= 0.0; Since: 22.2.0"""
     flow_rate_per_exterior_surface_area: float | None
-    """use key Flow/ExteriorArea for all exterior surface area use key Flow/ExteriorWallArea to include only exterior wall area; [m3/s-m2]; Range: >= 0.0"""
+    """use key Flow/ExteriorArea for all exterior surface area use key Flow/ExteriorWallArea to include only exterior wall area; [m3/s-m2]; Range: >= 0.0; Since: 22.2.0"""
     air_changes_per_hour: float | None
     """[1/hr]; Range: >= 0.0"""
     constant_term_coefficient: float | None
@@ -5898,13 +5938,13 @@ class ZoneInfiltrationDesignFlowRate(IDFObject):
     velocity_squared_term_coefficient: float | None
     """'D' in Equation; Default: 0.0"""
     density_basis: Literal["", "Indoor", "Outdoor", "Standard"] | None
-    """The air density to use when converting from volume flow to mass flow.; Default: Outdoor"""
+    """The air density to use when converting from volume flow to mass flow.; Default: Outdoor; Since: 25.1.0"""
 
 class ZoneInfiltrationEffectiveLeakageArea(IDFObject):
     """Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     effective_air_leakage_area: float | None
@@ -5918,7 +5958,7 @@ class ZoneInfiltrationFlowCoefficient(IDFObject):
     """Infiltration is specified as flow coefficient, schedule fraction, stack and wind coefficients, and is a function of t..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     flow_coefficient: float | None
@@ -5936,6 +5976,7 @@ class ZoneVentilationDesignFlowRate(IDFObject):
     """Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
     zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"] | None
@@ -5943,7 +5984,7 @@ class ZoneVentilationDesignFlowRate(IDFObject):
     design_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     flow_rate_per_floor_area: float | None
-    """[m3/s-m2]; Range: >= 0.0"""
+    """[m3/s-m2]; Range: >= 0.0; Since: 22.2.0"""
     flow_rate_per_person: float | None
     """[m3/s-person]; Range: >= 0.0"""
     air_changes_per_hour: float | None
@@ -5985,13 +6026,13 @@ class ZoneVentilationDesignFlowRate(IDFObject):
     maximum_wind_speed: float | None
     """this is the outdoor wind speed above which ventilation is shutoff; [m/s]; Default: 40.0; Range: >= 0.0, <= 40.0"""
     density_basis: Literal["", "Indoor", "Outdoor", "Standard"] | None
-    """The air density to use when converting from volume flow to mass flow.; Default: Outdoor"""
+    """The air density to use when converting from volume flow to mass flow.; Default: Outdoor; Since: 25.1.0"""
 
 class ZoneVentilationWindandStackOpenArea(IDFObject):
     """This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
     opening_area: float | None
     """This is the opening area used to calculate stack effect and wind driven ventilation.; [m2]; Default: 0.0; Range: >= 0.0"""
     opening_area_fraction_schedule_name: str | None
@@ -6042,7 +6083,7 @@ class ZoneMixing(IDFObject):
     """ZoneMixing is a simple air exchange from one zone or space to another. Note that this statement only affects the ener..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"] | None
@@ -6050,24 +6091,25 @@ class ZoneMixing(IDFObject):
     design_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     flow_rate_per_floor_area: float | None
-    """[m3/s-m2]; Range: >= 0.0"""
+    """[m3/s-m2]; Range: >= 0.0; Since: 22.2.0"""
     flow_rate_per_person: float | None
     """[m3/s-person]; Range: >= 0.0"""
     air_changes_per_hour: float | None
     """[1/hr]; Range: >= 0.0"""
     source_zone_or_space_name: str | None
+    """Since: 22.2.0"""
     delta_temperature: float | None
     """This field contains the constant temperature differential between source and receiving zone or space below which mixi...; [deltaC]; Default: 0.0"""
     delta_temperature_schedule_name: str | None
     """This schedule contains the temperature differential between source and receiving zone or space below which mixing is ..."""
     minimum_receiving_temperature_schedule_name: str | None
-    """This schedule contains the receiving zone or space temperature versus time below which mixing is shutoff."""
+    """This schedule contains the receiving zone or space temperature versus time below which mixing is shutoff.; Since: 22.2.0"""
     maximum_receiving_temperature_schedule_name: str | None
-    """This schedule contains the receiving zone or space temperature versus time above which mixing is shutoff."""
+    """This schedule contains the receiving zone or space temperature versus time above which mixing is shutoff.; Since: 22.2.0"""
     minimum_source_temperature_schedule_name: str | None
-    """This schedule contains the source zone or space temperature versus time below which mixing is shutoff."""
+    """This schedule contains the source zone or space temperature versus time below which mixing is shutoff.; Since: 22.2.0"""
     maximum_source_temperature_schedule_name: str | None
-    """This schedule contains the source zone or space temperature versus time above which mixing is shutoff."""
+    """This schedule contains the source zone or space temperature versus time above which mixing is shutoff.; Since: 22.2.0"""
     minimum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time below which mixing is shutoff."""
     maximum_outdoor_temperature_schedule_name: str | None
@@ -6077,7 +6119,7 @@ class ZoneCrossMixing(IDFObject):
     """ZoneCrossMixing exchanges an equal amount of air between two zones or spaces. Note that this statement affects the en..."""
 
     zone_or_space_name: str | None
-    """ZoneList and SpaceList names are not allowed."""
+    """ZoneList and SpaceList names are not allowed.; Since: 22.2.0"""
     schedule_name: str | None
     """If blank, defaults to always 1.0"""
     design_flow_rate_calculation_method: Literal["", "AirChanges/Hour", "Flow/Area", "Flow/Person", "Flow/Zone"] | None
@@ -6085,24 +6127,25 @@ class ZoneCrossMixing(IDFObject):
     design_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     flow_rate_per_floor_area: float | None
-    """[m3/s-m2]; Range: >= 0.0"""
+    """[m3/s-m2]; Range: >= 0.0; Since: 22.2.0"""
     flow_rate_per_person: float | None
     """[m3/s-person]; Range: >= 0.0"""
     air_changes_per_hour: float | None
     """[1/hr]; Range: >= 0.0"""
     source_zone_or_space_name: str | None
+    """Since: 22.2.0"""
     delta_temperature: float | None
     """This field contains the constant temperature differential between source and receiving zone or space below which mixi...; [deltaC]; Default: 0.0; Range: >= 0.0"""
     delta_temperature_schedule_name: str | None
     """This schedule contains the temperature differential between source and receiving zone or space below which mixing is ..."""
     minimum_receiving_temperature_schedule_name: str | None
-    """This schedule contains the receiving zone or space temperature versus time below which cross mixing is shutoff."""
+    """This schedule contains the receiving zone or space temperature versus time below which cross mixing is shutoff.; Since: 22.2.0"""
     maximum_receiving_temperature_schedule_name: str | None
-    """This schedule contains the receiving zone or space temperature versus time above which cross mixing is shutoff."""
+    """This schedule contains the receiving zone or space temperature versus time above which cross mixing is shutoff.; Since: 22.2.0"""
     minimum_source_temperature_schedule_name: str | None
-    """This schedule contains the source zone or space temperature versus time below which cross mixing is shutoff."""
+    """This schedule contains the source zone or space temperature versus time below which cross mixing is shutoff.; Since: 22.2.0"""
     maximum_source_temperature_schedule_name: str | None
-    """This schedule contains the source zone or space temperature versus time above which cross mixing is shutoff."""
+    """This schedule contains the source zone or space temperature versus time above which cross mixing is shutoff.; Since: 22.2.0"""
     minimum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time below which cross mixing is shutoff."""
     maximum_outdoor_temperature_schedule_name: str | None
@@ -6112,9 +6155,9 @@ class ZoneRefrigerationDoorMixing(IDFObject):
     """Refrigeration Door Mixing is used for an opening between two zones (or spaces) that are at the same elevation but hav..."""
 
     zone_or_space_name_1: str | None
-    """If a space name is used, it must belong to a different zone than Zone or Space Name 2."""
+    """If a space name is used, it must belong to a different zone than Zone or Space Name 2.; Since: 24.2.0"""
     zone_or_space_name_2: str | None
-    """If a space name is used, it must belong to a different zone than Zone or Space Name 1."""
+    """If a space name is used, it must belong to a different zone than Zone or Space Name 1.; Since: 24.2.0"""
     schedule_name: str | None
     """This schedule defines the fraction of the time the refrigeration door is open For example, if the warehouse is closed..."""
     door_height: float | None
@@ -6169,11 +6212,12 @@ class ZoneEarthtube(IDFObject):
     velocity_squared_term_flow_coefficient: float | None
     """'D' in Equation; Default: 0.0"""
     earth_tube_model_type: Literal["", "Basic", "Vertical"] | None
-    """Default: Basic"""
+    """Default: Basic; Since: 23.2.0"""
     earth_tube_model_parameters: str | None
+    """Since: 23.2.0"""
 
 class ZoneEarthtubeParameters(IDFObject):
-    """Parameters that apply to the vertical model for an earth tube"""
+    """Parameters that apply to the vertical model for an earth tube; Since: 23.2.0"""
 
     nodes_above_earth_tube: int | None
     """[dimensionless]; Default: 5; Range: >= 3, <= 10"""
@@ -6192,6 +6236,7 @@ class ZoneCoolTowerShower(IDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     zone_or_space_name: str | None
+    """Since: 24.2.0"""
     water_supply_storage_tank_name: str | None
     """In case of stand alone tank or underground water, leave this input blank"""
     flow_control_type: Literal["", "WaterFlowSchedule", "WindDrivenFlow"] | None
@@ -6228,143 +6273,163 @@ class ZoneThermalChimney(IDFObject):
     discharge_coefficient: float | None
     """Default: 0.8; Range: >= 0.0, <= 1.0"""
     zone_or_space_name_1: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_1: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_1: float | None
-    """Default: 1.0; Range: >= 0.0, <= 1.0"""
+    """Default: 1.0; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_1: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_2: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_2: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_2: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_2: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_3: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_3: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_3: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_3: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_4: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_4: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_4: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_4: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_5: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_5: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_5: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_5: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_6: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_6: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_6: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_6: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_7: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_7: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_7: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_7: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_8: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_8: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_8: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_8: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_9: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_9: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_9: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_9: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_10: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_10: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_10: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_10: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_11: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_11: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_11: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_11: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_12: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_12: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_12: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_12: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_13: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_13: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_13: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_13: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_14: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_14: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_14: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_14: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_15: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_15: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_15: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_15: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_16: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_16: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_16: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_16: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_17: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_17: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_17: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_17: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_18: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_18: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_18: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_18: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_19: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_19: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_19: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_19: float | None
     """[m2]; Range: >= 0.0"""
     zone_or_space_name_20: str | None
+    """Since: 24.2.0"""
     distance_from_top_of_thermal_chimney_to_inlet_20: float | None
     """[m]; Range: >= 0.0"""
     relative_ratios_of_air_flow_rates_passing_through_inlet_20: float | None
-    """Range: >= 0.0, <= 1.0"""
+    """Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     cross_sectional_areas_of_air_channel_inlet_20: float | None
     """[m2]; Range: >= 0.0"""
 
@@ -6407,9 +6472,9 @@ class AirflowNetworkSimulationControl(IDFObject):
     solver: Literal["", "ConjugateGradient", "SkylineLU"] | None
     """Select the solver to use for the pressure network solution; Default: SkylineLU"""
     allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None
-    """Set this input to Yes to have zone equipment that are currently unsupported in the AirflowNetwork model allowed in th...; Default: No"""
+    """Set this input to Yes to have zone equipment that are currently unsupported in the AirflowNetwork model allowed in th...; Default: No; Since: 9.5.0"""
     do_distribution_duct_sizing_calculation: Literal["", "No", "Yes"] | None
-    """Controls duct sizing. See AirflowNetwork:Distribution:DuctSizing for sizing options.; Default: No"""
+    """Controls duct sizing. See AirflowNetwork:Distribution:DuctSizing for sizing options.; Default: No; Since: 22.2.0"""
 
 class AirflowNetworkMultiZoneZone(IDFObject):
     """This object is used to simultaneously control a thermal zone's window and door openings, both exterior and interior."""
@@ -6518,7 +6583,7 @@ class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea(IDFObject):
     """Enter the exponent used in the air mass flow equation.; [dimensionless]; Default: 0.65; Range: >= 0.5, <= 1.0"""
 
 class AirflowNetworkMultiZoneSpecifiedFlowRate(IDFObject):
-    """This object is used to define specified flow through a linkage."""
+    """This object is used to define specified flow through a linkage.; Since: 9.6.0"""
 
     air_flow_value: float | None
     """Enter the specified flow rate."""
@@ -6943,6 +7008,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow(IDFObject):
     """This object includes the outdoor air flow rate set by the Controller:OutdoorAir object in the airflow network."""
 
     outdoor_air_mixer_name: str | None
+    """Since: 9.0.1"""
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float | None
     """Enter the air mass flow coefficient at the conditions defined in the Reference Crack Conditions object. Defined at 1 ...; [kg/s]; Range: > 0.0"""
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
@@ -6954,6 +7020,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow(IDFObject):
     """This object allows variation of air flow rate to perform pressure."""
 
     outdoor_air_mixer_name: str | None
+    """Since: 9.0.1"""
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float | None
     """Enter the air mass flow coefficient at the conditions defined in the Reference Crack Conditions object. Defined at 1 ...; [kg/s]; Range: > 0.0"""
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
@@ -6984,7 +7051,7 @@ class AirflowNetworkDistributionDuctViewFactors(IDFObject):
     surface_view_factor: float | None
 
 class AirflowNetworkDistributionDuctSizing(IDFObject):
-    """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se..."""
+    """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
 
     duct_sizing_method: Literal["", "MaximumVelocity", "PressureLoss", "PressureLossWithMaximumVelocity"] | None
     """Default: MaximumVelocity"""
@@ -7046,6 +7113,8 @@ class AirflowNetworkIntraZoneLinkage(IDFObject):
     """Only used when one of two nodes defined above are not located in the same zone, and the input of the Component Name f..."""
 
 class DuctLossConduction(IDFObject):
+    """Since: 25.2.0"""
+
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
     environment_type: Literal["", "Schedule", "Zone"] | None
@@ -7055,10 +7124,14 @@ class DuctLossConduction(IDFObject):
     ambient_humidity_ratio_schedule_name: str | None
 
 class DuctLossLeakage(IDFObject):
+    """Since: 25.2.0"""
+
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
 class DuctLossMakeupAir(IDFObject):
+    """Since: 25.2.0"""
+
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
@@ -7397,7 +7470,7 @@ class HVACTemplateZonePTAC(IDFObject):
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
-    """Default: None"""
+    """Default: None; Since: 9.0.1"""
 
 class HVACTemplateZonePTHP(IDFObject):
     """Packaged Terminal Heat Pump"""
@@ -7505,7 +7578,7 @@ class HVACTemplateZonePTHP(IDFObject):
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
-    """Default: None"""
+    """Default: None; Since: 9.0.1"""
 
 class HVACTemplateZoneWaterToAirHeatPump(IDFObject):
     """Water to Air Heat Pump to be used with HVACTemplate:Plant:MixedWaterLoop"""
@@ -7565,7 +7638,7 @@ class HVACTemplateZoneWaterToAirHeatPump(IDFObject):
     maximum_cycling_rate: float | None
     """The maximum on-off cycling rate for the compressor Suggested value is 2.5 for a typical heat pump; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
     latent_capacity_time_constant: float | None
-    """Time constant for the cooling coil's capacity to reach steady state after startup Suggested value is 60 for a typical...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0"""
+    """Time constant for the cooling coil's capacity to reach steady state after startup Suggested value is 60 for a typical...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
     heat_pump_fan_delay_time: float | None
     """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0"""
     dedicated_outdoor_air_system_name: str | None
@@ -9861,7 +9934,7 @@ class DesignSpecificationOutdoorAir(IDFObject):
     """This input is only used to calculate the minimum outdoor air flow rate when the field System Outdoor Air Method = Pro..."""
 
 class DesignSpecificationOutdoorAirSpaceList(IDFObject):
-    """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou..."""
+    """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
 
     space_name: str | None
     space_design_specification_outdoor_air_object_name: str | None
@@ -9952,35 +10025,35 @@ class SizingZone(IDFObject):
         Literal["", "Latent Load", "Sensible And Latent Load", "Sensible Load", "Sensible Load Only No Latent Load"]
         | None
     )
-    """Specifies the basis for sizing the zone supply air flow rate. Zone latent loads will not be used during sizing only w...; Default: Sensible Load Only No Latent Load"""
+    """Specifies the basis for sizing the zone supply air flow rate. Zone latent loads will not be used during sizing only w...; Default: Sensible Load Only No Latent Load; Since: 22.2.0"""
     zone_latent_cooling_design_supply_air_humidity_ratio_input_method: (
         Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
-    """Use SupplyAirHumidityRatio to enter the humidity ratio when zone dehumidification is required. The supply air humidit...; Default: HumidityRatioDifference"""
+    """Use SupplyAirHumidityRatio to enter the humidity ratio when zone dehumidification is required. The supply air humidit...; Default: HumidityRatioDifference; Since: 22.2.0"""
     zone_dehumidification_design_supply_air_humidity_ratio: float | None
-    """Zone Dehumidification Design Supply Air Humidity Ratio is only used when Zone Latent Cooling Design Supply Air Humidi...; [kgWater/kgDryAir]; Range: > 0.0"""
+    """Zone Dehumidification Design Supply Air Humidity Ratio is only used when Zone Latent Cooling Design Supply Air Humidi...; [kgWater/kgDryAir]; Range: > 0.0; Since: 22.2.0"""
     zone_cooling_design_supply_air_humidity_ratio_difference: float | None
-    """Zone Dehumidification Design Supply Air Humidity Ratio Difference is only used when Zone Latent Cooling Design Supply...; [kgWater/kgDryAir]; Default: 0.005; Range: > 0.0"""
+    """Zone Dehumidification Design Supply Air Humidity Ratio Difference is only used when Zone Latent Cooling Design Supply...; [kgWater/kgDryAir]; Default: 0.005; Range: > 0.0; Since: 22.2.0"""
     zone_latent_heating_design_supply_air_humidity_ratio_input_method: (
         Literal["", "HumidityRatioDifference", "SupplyAirHumidityRatio"] | None
     )
-    """Use SupplyAirHumidityRatio to enter the humidity ratio when zone humidification is required. The supply air humidity ...; Default: HumidityRatioDifference"""
+    """Use SupplyAirHumidityRatio to enter the humidity ratio when zone humidification is required. The supply air humidity ...; Default: HumidityRatioDifference; Since: 22.2.0"""
     zone_humidification_design_supply_air_humidity_ratio: float | None
-    """Zone Humidification Design Supply Air Humidity Ratio is only used when Zone Latent Heating Design Supply Air Humidity...; [kgWater/kgDryAir]; Range: > 0.0"""
+    """Zone Humidification Design Supply Air Humidity Ratio is only used when Zone Latent Heating Design Supply Air Humidity...; [kgWater/kgDryAir]; Range: > 0.0; Since: 22.2.0"""
     zone_humidification_design_supply_air_humidity_ratio_difference: float | None
-    """Zone Humidification Design Supply Air Humidity Ratio is only used when Zone Latent Heating Design Supply Air Humidity...; [kgWater/kgDryAir]; Default: 0.005; Range: >= 0.0"""
+    """Zone Humidification Design Supply Air Humidity Ratio is only used when Zone Latent Heating Design Supply Air Humidity...; [kgWater/kgDryAir]; Default: 0.005; Range: >= 0.0; Since: 22.2.0"""
     zone_humidistat_dehumidification_set_point_schedule_name: str | None
-    """Enter the zone relative humidity schedule used for zone latent cooling calculations. A zone humidistat will take prio..."""
+    """Enter the zone relative humidity schedule used for zone latent cooling calculations. A zone humidistat will take prio...; Since: 22.2.0"""
     zone_humidistat_humidification_set_point_schedule_name: str | None
-    """Enter the zone relative humidity schedule used for zone latent heating calculations. A zone humidistat will take prio..."""
+    """Enter the zone relative humidity schedule used for zone latent heating calculations. A zone humidistat will take prio...; Since: 22.2.0"""
     type_of_space_sum_to_use: Literal["", "Coincident", "NonCoincident"] | None
-    """NonCoincident is available only if Do Space Heat Balance for Sizing=Yes in ZoneAirHeatBalanceAlgorithm.; Default: Coincident"""
+    """NonCoincident is available only if Do Space Heat Balance for Sizing=Yes in ZoneAirHeatBalanceAlgorithm.; Default: Coincident; Since: 24.2.0"""
     heating_coil_sizing_method: (
         Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"] | None
     )
-    """Default: None"""
+    """Default: None; Since: 25.2.0"""
     maximum_heating_capacity_to_cooling_load_sizing_ratio: float | None
-    """[W/W]; Default: 1.0; Range: >= 1.0"""
+    """[W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
 class DesignSpecificationZoneHVACSizing(IDFObject):
     """This object is used to describe general scalable zone HVAC equipment sizing which are referenced by other objects."""
@@ -10183,13 +10256,13 @@ class SizingSystem(IDFObject):
     central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None
     """Method used to control the coil's output; Default: OnOff"""
     occupant_diversity: float | Literal["", "Autosize"] | None
-    """The Occupant Diversity is used to determine a multi-zone system's outdoor air intake when the System Outdoor Air Meth...; Default: Autosize"""
+    """The Occupant Diversity is used to determine a multi-zone system's outdoor air intake when the System Outdoor Air Meth...; Default: Autosize; Since: 9.6.0"""
     heating_coil_sizing_method: (
         Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity", "None"] | None
     )
-    """Size a heat pump heating coil using the Cooling, Heating or GreaterOfHeatingOrCooling capacities; Default: None"""
+    """Size a heat pump heating coil using the Cooling, Heating or GreaterOfHeatingOrCooling capacities; Default: None; Since: 25.2.0"""
     maximum_heating_capacity_to_cooling_capacity_sizing_ratio: float | None
-    """The limit of heating coil capacity to cooling coil capacity; [W/W]; Default: 1.0; Range: >= 1.0"""
+    """The limit of heating coil capacity to cooling coil capacity; [W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
 class SizingPlant(IDFObject):
     """Specifies the input needed to autosize plant loop flow rates and equipment capacities. This information is initially ..."""
@@ -10527,7 +10600,7 @@ class ZoneHVACIdealLoadsAirSystem(IDFObject):
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
     heating_fuel_efficiency_schedule_name: str | None
-    """Reference heating fuel efficiency value for converting heating ideal loads into fuel energy consumption. The minimum ..."""
+    """Reference heating fuel efficiency value for converting heating ideal loads into fuel energy consumption. The minimum ...; Since: 25.2.0"""
     heating_fuel_type: (
         Literal[
             "",
@@ -10547,9 +10620,9 @@ class ZoneHVACIdealLoadsAirSystem(IDFObject):
         ]
         | None
     )
-    """Default: DistrictHeatingWater"""
+    """Default: DistrictHeatingWater; Since: 25.2.0"""
     cooling_fuel_efficiency_schedule_name: str | None
-    """Reference cooling fuel efficiency value for converting cooling ideal loads into fuel energy consumption. The minimum ..."""
+    """Reference cooling fuel efficiency value for converting cooling ideal loads into fuel energy consumption. The minimum ...; Since: 25.2.0"""
     cooling_fuel_type: (
         Literal[
             "",
@@ -10569,7 +10642,7 @@ class ZoneHVACIdealLoadsAirSystem(IDFObject):
         ]
         | None
     )
-    """Default: DistrictCooling"""
+    """Default: DistrictCooling; Since: 25.2.0"""
 
 class ZoneHVACFourPipeFanCoil(IDFObject):
     """Four pipe fan coil system. Forced-convection hydronic heating-cooling unit with supply fan, hot water heating coil, c..."""
@@ -10699,7 +10772,7 @@ class ZoneHVACPackagedTerminalAirConditioner(IDFObject):
     no_load_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to fan size. Only used when supply air fan operating mode schedule values specify continuo...; [m3/s]"""
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
+    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
     cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to supply air flow rate during cooling operation. This field is set to zero flow when the ...; [m3/s]"""
     heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None
@@ -10763,7 +10836,7 @@ class ZoneHVACPackagedTerminalHeatPump(IDFObject):
     no_load_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to fan size. Only used when heat pump fan operating mode is continuous. This air flow rate...; [m3/s]"""
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
+    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
     cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to supply air flow rate during cooling operation. This field is set to zero flow when the ...; [m3/s]"""
     heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None
@@ -10819,7 +10892,7 @@ class ZoneHVACPackagedTerminalHeatPump(IDFObject):
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
     """For Capacity Control Method = SingleZoneVAV, enter the maximum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
     dx_heating_coil_sizing_ratio: float | None
-    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
+    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
 class ZoneHVACWaterToAirHeatPump(IDFObject):
     """Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
@@ -10839,7 +10912,7 @@ class ZoneHVACWaterToAirHeatPump(IDFObject):
     no_load_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to fan size. Only used when heat pump fan operating mode is continuous. This air flow rate...; [m3/s]"""
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes"""
+    """When Yes is selected the minimum air flow rate is used. When No is selected the maximum air flow rate is used.; Default: Yes; Since: 24.1.0"""
     cooling_outdoor_air_flow_rate: float | Literal["Autosize"] | None
     """Must be less than or equal to supply air flow rate during cooling operation. This field is set to zero flow when the ...; [m3/s]"""
     heating_outdoor_air_flow_rate: float | Literal["Autosize"] | None
@@ -10887,11 +10960,11 @@ class ZoneHVACWaterToAirHeatPump(IDFObject):
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
-    """Enter the type of performance specification object used to describe the multispeed coil or fan."""
+    """Enter the type of performance specification object used to describe the multispeed coil or fan.; Since: 23.2.0"""
     design_specification_multispeed_object_name: str | None
-    """The name of the performance specification object used to describe the multispeed coil or fan."""
+    """The name of the performance specification object used to describe the multispeed coil or fan.; Since: 23.2.0"""
     dx_heating_coil_sizing_ratio: float | None
-    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
+    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
 class ZoneHVACDehumidifierDX(IDFObject):
     """This object calculates the performance of zone (room) air dehumidifiers. Meant to model conventional direct expansion..."""
@@ -11119,7 +11192,7 @@ class ZoneHVACEvaporativeCoolerUnit(IDFObject):
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
     shut_off_relative_humidity: float | None
-    """Zone relative humidity above which the evap cooler is shut off.; [percent]; Range: >= 0.0, <= 100.0"""
+    """Zone relative humidity above which the evap cooler is shut off.; [percent]; Range: >= 0.0, <= 100.0; Since: 23.2.0"""
 
 class ZoneHVACHybridUnitaryHVAC(IDFObject):
     """Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
@@ -11151,11 +11224,11 @@ class ZoneHVACHybridUnitaryHVAC(IDFObject):
     external_static_pressure_at_system_maximum_supply_air_flow_rate: float | None
     """Input the external static pressure when the system operates at maximum supply air flow rate. Fan affinity laws are us...; [Pa]; Range: > 0.0"""
     fan_heat_included_in_lookup_tables: Literal["", "No", "Yes"] | None
-    """This field specifies if the fan heat is accounted for in the lookup tables.; Default: No"""
+    """This field specifies if the fan heat is accounted for in the lookup tables.; Default: No; Since: 9.4.0"""
     fan_heat_gain_location: Literal["", "MixedAirStream", "SupplyAirStream"] | None
-    """This field specifies where to add the fan heat in the air stream.; Default: SupplyAirStream"""
+    """This field specifies where to add the fan heat in the air stream.; Default: SupplyAirStream; Since: 9.4.0"""
     fan_heat_in_air_stream_fraction: float | None
-    """0.0 means no fan heat is added to the air stream, 1.0 means all fan heat is added to the air stream.; Default: 1.0; Range: >= 0.0, <= 1.0"""
+    """0.0 means no fan heat is added to the air stream, 1.0 means all fan heat is added to the air stream.; Default: 1.0; Range: >= 0.0, <= 1.0; Since: 9.4.0"""
     scaling_factor: float | None
     """The value in this field scales all extensive performance variables including: supply air mass flow rate, fuel uses, a...; Default: 1.0; Range: > 0.0"""
     minimum_time_between_mode_change: float | None
@@ -11533,21 +11606,23 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow(IDFObject):
     supplemental_heating_coil_object_type: (
         Literal["Coil:Heating:Electric", "Coil:Heating:Fuel", "Coil:Heating:Steam", "Coil:Heating:Water"] | None
     )
-    """works with gas, electric, hot water and steam heating coil."""
+    """works with gas, electric, hot water and steam heating coil.; Since: 9.2.0"""
     supplemental_heating_coil_name: str | None
-    """Needs to match in the supplemental heating coil object."""
+    """Needs to match in the supplemental heating coil object.; Since: 9.2.0"""
     maximum_supply_air_temperature_from_supplemental_heater: float | Literal["", "Autosize"] | None
-    """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize"""
+    """Supply air temperature from the supplemental heater will not exceed this value.; [C]; Default: Autosize; Since: 9.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
-    """Supplemental heater will not operate when outdoor temperature exceeds this value.; [C]; Default: 21.0; Range: <= 21.0"""
+    """Supplemental heater will not operate when outdoor temperature exceeds this value.; [C]; Default: 21.0; Range: <= 21.0; Since: 9.2.0"""
     controlling_zone_or_thermostat_location: str | None
-    """Used only for AirloopHVAC equipment on a main branch and defines zone name where thermostat is located. Not required ..."""
+    """Used only for AirloopHVAC equipment on a main branch and defines zone name where thermostat is located. Not required ...; Since: 9.3.0"""
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
-    """Enter the type of performance specification object used to describe the multispeed coil or fan."""
+    """Enter the type of performance specification object used to describe the multispeed coil or fan.; Since: 23.2.0"""
     design_specification_multispeed_object_name: str | None
-    """The name of the performance specification object used to describe the multispeed coil or fan."""
+    """The name of the performance specification object used to describe the multispeed coil or fan.; Since: 23.2.0"""
 
 class ZoneHVACBaseboardRadiantConvectiveWaterDesign(IDFObject):
+    """Since: 9.5.0"""
+
     heating_design_capacity_method: (
         Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
@@ -11567,6 +11642,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater(IDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     design_object: str | None
+    """Since: 9.5.0"""
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     inlet_node_name: str | None
@@ -11583,6 +11659,8 @@ class ZoneHVACBaseboardRadiantConvectiveWater(IDFObject):
     fraction_of_radiant_energy_to_surface: float | None
 
 class ZoneHVACBaseboardRadiantConvectiveSteamDesign(IDFObject):
+    """Since: 9.5.0"""
+
     heating_design_capacity_method: (
         Literal["", "CapacityPerFloorArea", "FractionOfAutosizedHeatingCapacity", "HeatingDesignCapacity"] | None
     )
@@ -11602,6 +11680,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam(IDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list."""
 
     design_object: str | None
+    """Since: 9.5.0"""
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     inlet_node_name: str | None
@@ -11738,6 +11817,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow(IDFObject):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
     design_object: str | None
+    """Since: 9.5.0"""
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     zone_name: str | None
@@ -11764,6 +11844,8 @@ class ZoneHVACLowTemperatureRadiantVariableFlow(IDFObject):
     """[m]; Default: 106.7"""
 
 class ZoneHVACLowTemperatureRadiantVariableFlowDesign(IDFObject):
+    """Since: 9.5.0"""
+
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
     hydronic_tubing_inside_diameter: float | None
@@ -11822,6 +11904,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow(IDFObject):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
     design_object: str | None
+    """Since: 9.5.0"""
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     zone_name: str | None
@@ -11858,6 +11941,8 @@ class ZoneHVACLowTemperatureRadiantConstantFlow(IDFObject):
     """[m]; Default: 106.7"""
 
 class ZoneHVACLowTemperatureRadiantConstantFlowDesign(IDFObject):
+    """Since: 9.5.0"""
+
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
     """This parameter identifies how the heat transfer between fluid being circulated through the radiant system and the rad...; Default: ConvectionOnly"""
     hydronic_tubing_inside_diameter: float | None
@@ -11928,7 +12013,7 @@ class ZoneHVACLowTemperatureRadiantElectric(IDFObject):
     )
     """Temperature used to control unit; Default: MeanAirTemperature"""
     setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None
-    """How setpoint temperature is defined; Default: HalfFlowPower"""
+    """How setpoint temperature is defined; Default: HalfFlowPower; Since: 9.4.0"""
     heating_throttling_range: float | None
     """[deltaC]; Default: 0.0; Range: >= 0.0"""
     heating_setpoint_temperature_schedule_name: str | None
@@ -12145,7 +12230,7 @@ class AirTerminalSingleDuctVAVNoReheat(IDFObject):
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ..."""
+    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
 class AirTerminalSingleDuctVAVReheat(IDFObject):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)."""
@@ -12189,7 +12274,7 @@ class AirTerminalSingleDuctVAVReheat(IDFObject):
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ..."""
+    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
 class AirTerminalSingleDuctVAVReheatVariableSpeedFan(IDFObject):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)..."""
@@ -12219,7 +12304,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan(IDFObject):
     heating_convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the fan-off minimum flow rate by multiplying it using this scheduled fraction values. This field i..."""
+    """This field adjusts the fan-off minimum flow rate by multiplying it using this scheduled fraction values. This field i...; Since: 9.3.0"""
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(IDFObject):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with no reheat coil."""
@@ -12234,7 +12319,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(IDFObject):
     zone_minimum_air_flow_fraction: float | None
     """fraction of maximum air flow; Range: >= 0.0, <= 1.0"""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ..."""
+    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
 class AirTerminalSingleDuctVAVHeatAndCoolReheat(IDFObject):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot wa..."""
@@ -12264,7 +12349,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat(IDFObject):
     maximum_reheat_air_temperature: float | None
     """Specifies the maximum allowable supply air temperature leaving the reheat coil. If left blank, there is no limit and ...; [C]; Range: > 0.0"""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ..."""
+    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
 class AirTerminalSingleDuctSeriesPIUReheat(IDFObject):
     """Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
@@ -12295,14 +12380,15 @@ class AirTerminalSingleDuctSeriesPIUReheat(IDFObject):
     convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
     fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
-    """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed"""
+    """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed; Since: 24.2.0"""
     minimum_fan_turn_down_ratio: float | None
-    """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0"""
+    """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     heating_control_type: Literal["Modulated", "Staged"] | None
+    """Since: 24.2.0"""
     design_heating_discharge_air_temperature: float | None
-    """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1"""
+    """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1; Since: 24.2.0"""
     high_limit_heating_discharge_air_temperature: float | None
-    """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7"""
+    """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7; Since: 24.2.0"""
 
 class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     """Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
@@ -12336,14 +12422,15 @@ class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
     fan_control_type: Literal["", "ConstantSpeed", "VariableSpeed"] | None
-    """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed"""
+    """If VariableSpeed, then the fan object type must be Fan:SystemModel; Default: ConstantSpeed; Since: 24.2.0"""
     minimum_fan_turn_down_ratio: float | None
-    """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0"""
+    """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     heating_control_type: Literal["Modulated", "Staged"] | None
+    """Since: 24.2.0"""
     design_heating_discharge_air_temperature: float | None
-    """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1"""
+    """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1; Since: 24.2.0"""
     high_limit_heating_discharge_air_temperature: float | None
-    """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7"""
+    """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7; Since: 24.2.0"""
 
 class AirTerminalSingleDuctConstantVolumeFourPipeInduction(IDFObject):
     """Central air system terminal unit, single duct, variable volume, induction unit with hot water reheat coil and chilled..."""
@@ -12535,7 +12622,7 @@ class AirTerminalDualDuctVAV(IDFObject):
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
     minimum_air_flow_turndown_schedule_name: str | None
-    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ..."""
+    """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
 class AirTerminalDualDuctVAVOutdoorAir(IDFObject):
     """Central air system terminal unit, dual duct, variable volume with special controls. One VAV duct is controlled to sup..."""
@@ -12588,7 +12675,7 @@ class ZoneHVACAirDistributionUnit(IDFObject):
     """This optional field is the name of a DesignSpecification:AirTerminal:Sizing object which specifies sizing adjustments..."""
 
 class ZoneHVACExhaustControl(IDFObject):
-    """Defines a controlled exhaust flow from a zone which finally feeds into one of AirLoopHVAC:ZoneMixer's inlets, which a..."""
+    """Defines a controlled exhaust flow from a zone which finally feeds into one of AirLoopHVAC:ZoneMixer's inlets, which a...; Since: 22.1.0"""
 
     availability_schedule_name: str | None
     """Availability schedule name for this exhaust system. Schedule value > 0 means it is available. If this field is blank,..."""
@@ -12623,7 +12710,9 @@ class ZoneHVACEquipmentList(IDFObject):
     zone_equipment_cooling_sequence: float | None
     zone_equipment_heating_or_no_load_sequence: float | None
     zone_equipment_sequential_cooling_fraction_schedule_name: str | None
+    """Since: 9.2.0"""
     zone_equipment_sequential_heating_fraction_schedule_name: str | None
+    """Since: 9.2.0"""
 
 class ZoneHVACEquipmentConnections(IDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
@@ -12640,7 +12729,7 @@ class ZoneHVACEquipmentConnections(IDFObject):
     """The optional basis node(s) used to calculate the base return air flow rate for the first return air node in this zone..."""
 
 class SpaceHVACEquipmentConnections(IDFObject):
-    """Specifies the HVAC equipment connections for a space. Node names are specified for the space air node, air inlet node..."""
+    """Specifies the HVAC equipment connections for a space. Node names are specified for the space air node, air inlet node...; Since: 23.2.0"""
 
     space_air_inlet_node_or_nodelist_name: str | None
     space_air_exhaust_node_or_nodelist_name: str | None
@@ -12652,7 +12741,7 @@ class SpaceHVACEquipmentConnections(IDFObject):
     """The optional basis node(s) used to calculate the base return air flow rate for the first return air node in this spac..."""
 
 class SpaceHVACZoneEquipmentSplitter(IDFObject):
-    """Distributes the output from a piece of zone equipment to one or more Spaces in the Zone. If any equipment in a zone h..."""
+    """Distributes the output from a piece of zone equipment to one or more Spaces in the Zone. If any equipment in a zone h...; Since: 23.2.0"""
 
     zone_name: str | None
     """Must be a controlled zone which has a ZoneHVAC:EquipmentConnections object."""
@@ -12709,7 +12798,7 @@ class SpaceHVACZoneEquipmentSplitter(IDFObject):
     space_supply_node_name: str | None
 
 class SpaceHVACZoneEquipmentMixer(IDFObject):
-    """Mixes the airflow from one or more Spaces into a piece of zone equipment. All spaces in the zone must also have a Spa..."""
+    """Mixes the airflow from one or more Spaces into a piece of zone equipment. All spaces in the zone must also have a Spa...; Since: 23.2.0"""
 
     zone_name: str | None
     """Must be a controlled zone which has a ZoneHVAC:EquipmentConnections object."""
@@ -12724,7 +12813,7 @@ class SpaceHVACZoneEquipmentMixer(IDFObject):
     space_node_name: str | None
 
 class SpaceHVACZoneReturnMixer(IDFObject):
-    """Mixes the return airflow from one or more Spaces into a zone return node. All spaces in the zone must also have a Spa..."""
+    """Mixes the return airflow from one or more Spaces into a zone return node. All spaces in the zone must also have a Spa...; Since: 24.2.0"""
 
     zone_name: str | None
     """Must be a controlled zone which has a ZoneHVAC:EquipmentConnections object."""
@@ -13043,10 +13132,10 @@ class CoilCoolingWaterDetailedGeometry(IDFObject):
     design_water_temperature_difference: float | None
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
     design_inlet_water_temperature: float | Literal["", "Autosize"] | None
-    """This input field is optional. If specified, it is used for sizing the coil Design Geometry Parameters. If autosized, ...; [C]; Default: Autosize"""
+    """This input field is optional. If specified, it is used for sizing the coil Design Geometry Parameters. If autosized, ...; [C]; Default: Autosize; Since: 9.6.0"""
 
 class CoilSystemCoolingWater(IDFObject):
-    """Virtual container component that consists of a water cooling coil and its associated controls. This control object su..."""
+    """Virtual container component that consists of a water cooling coil and its associated controls. This control object su...; Since: 9.6.0"""
 
     air_inlet_node_name: str | None
     air_outlet_node_name: str | None
@@ -13077,7 +13166,7 @@ class CoilSystemCoolingWater(IDFObject):
     """Only used for heat recovery loops. Entering a coil name indicates a heat recovery loop is specified. Coil listed is c..."""
 
 class CoilCoolingDX(IDFObject):
-    """New general DX cooling coil supporting on or more speeds and one or or operating modes. Includes DX evaporator coil, ..."""
+    """New general DX cooling coil supporting on or more speeds and one or or operating modes. Includes DX evaporator coil, ...; Since: 9.3.0"""
 
     evaporator_inlet_node_name: str | None
     evaporator_outlet_node_name: str | None
@@ -13094,12 +13183,12 @@ class CoilCoolingDX(IDFObject):
     evaporative_condenser_supply_water_storage_tank_name: str | None
 
 class CoilCoolingDXCurveFitPerformance(IDFObject):
-    """DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design o..."""
+    """DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design o...; Since: 9.3.0"""
 
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     """[C]; Default: -25.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
@@ -13138,7 +13227,7 @@ class CoilCoolingDXCurveFitPerformance(IDFObject):
     """The alternative operating mode is used for enhanced dehumidification. If this is blank, the coil will always operate ..."""
 
 class CoilCoolingDXCurveFitOperatingMode(IDFObject):
-    """DX cooling coil performance for a single operating mode which may have one or more speeds."""
+    """DX cooling coil performance for a single operating mode which may have one or more speeds.; Since: 9.3.0"""
 
     rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None
     """Total (sensible+latent) cooling capacity not accounting for the effect of supply air fan heat. Rating point: air ente...; [W]; Default: Autosize"""
@@ -13174,7 +13263,7 @@ class CoilCoolingDXCurveFitOperatingMode(IDFObject):
     speed_10_name: str | None
 
 class CoilCoolingDXCurveFitSpeed(IDFObject):
-    """DX cooling coil performance for a single speed within a single operating mode."""
+    """DX cooling coil performance for a single speed within a single operating mode.; Since: 9.3.0"""
 
     gross_total_cooling_capacity_fraction: float | None
     """Ratio of capacity at this speed to the operating mode Rated Gross Total Cooling Capacity; Range: > 0.0"""
@@ -13212,7 +13301,7 @@ class CoilCoolingDXCurveFitSpeed(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow I..."""
 
 class CoilDXASHRAE205Performance(IDFObject):
-    """DX coil performance specification referencing an ASHRAE Standard 205 compliant representation for air-to-air direct e..."""
+    """DX coil performance specification referencing an ASHRAE Standard 205 compliant representation for air-to-air direct e...; Since: 25.2.0"""
 
     representation_file_name: str | None
     """The name of the ASHRAE 205 RS0004 (air-to-air direct expansion refrigerant system) representation file"""
@@ -13271,7 +13360,7 @@ class CoilCoolingDXSingleSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     supply_water_storage_tank_name: str | None
@@ -13305,9 +13394,9 @@ class CoilCoolingDXTwoSpeed(IDFObject):
     high_speed_rated_air_flow_rate: float | Literal["Autosize"] | None
     """Flow rate corresponding to rated total cooling capacity, Rated SHR and Rated COP. Should be between 0.00004027 m3/s a...; [m3/s]"""
     high_speed_2017_rated_evaporator_fan_power_per_volume_flow_rate: float | None
-    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2017 version o...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
+    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2017 version o...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0; Since: 23.2.0"""
     high_speed_2023_rated_evaporator_fan_power_per_volume_flow_rate: float | None
-    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2023 version o...; [W/(m3/s)]; Default: 934.4; Range: >= 0.0, <= 1505.0"""
+    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2023 version o...; [W/(m3/s)]; Default: 934.4; Range: >= 0.0, <= 1505.0; Since: 23.2.0"""
     unit_internal_static_air_pressure: float | None
     """Enter pressure drop for the unit containing the coil. This value is only used to calculate Energy Efficiency Ratio (E...; [Pa]; Range: > 0.0"""
     air_inlet_node_name: str | None
@@ -13331,9 +13420,9 @@ class CoilCoolingDXTwoSpeed(IDFObject):
     low_speed_rated_air_flow_rate: float | Literal["Autosize"] | None
     """Flow rate corresponding to rated total cooling capacity, Rated SHR and Rated COP. Should be between 0.00004027 m3/s a...; [m3/s]"""
     low_speed_2017_rated_evaporator_fan_power_per_volume_flow_rate: float | None
-    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2017 version o...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0"""
+    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2017 version o...; [W/(m3/s)]; Default: 773.3; Range: >= 0.0, <= 1250.0; Since: 23.2.0"""
     low_speed_2023_rated_evaporator_fan_power_per_volume_flow_rate: float | None
-    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2023 version o...; [W/(m3/s)]; Default: 934.4; Range: >= 0.0, <= 1505.0"""
+    """Enter the evaporator fan power per air volume flow rate at the rated test conditions as defined in the 2023 version o...; [W/(m3/s)]; Default: 934.4; Range: >= 0.0, <= 1505.0; Since: 23.2.0"""
     low_speed_total_cooling_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*wb + c*wb**2 + d*edb + e*edb**2 + f*wb*edb wb = entering wet-bulb temperature (C) edb = dry-bulb temper..."""
     low_speed_energy_input_ratio_function_of_temperature_curve_name: str | None
@@ -13397,7 +13486,7 @@ class CoilCoolingDXMultiSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     basin_heater_capacity: float | None
@@ -13573,7 +13662,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
     number_of_speeds: int | None
@@ -13589,11 +13678,11 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None
     """[dimensionless]; Default: 0.0; Range: >= 0.0"""
     maximum_cycling_rate: float | None
-    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0"""
+    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 2.5; Range: >= 0.0, <= 5.0; Since: 23.2.0"""
     latent_capacity_time_constant: float | None
-    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0"""
+    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 60.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
     fan_delay_time: float | None
-    """Programmed time delay for fan to shut off after compressor cycle off. Enter 0 when fan operating mode is continuous; [s]; Default: 60.0; Range: >= 0.0"""
+    """Programmed time delay for fan to shut off after compressor cycle off. Enter 0 when fan operating mode is continuous; [s]; Default: 60.0; Range: >= 0.0; Since: 23.2.0"""
     energy_part_load_fraction_curve_name: str | None
     """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
     condenser_air_inlet_node_name: str | None
@@ -13605,7 +13694,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
@@ -13727,7 +13816,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     speed_6_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_6_reference_unit_rated_condenser_air_flow_rate: float | None
-    """[m3/s]; Range: >= 0.0"""
+    """[m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_6_reference_unit_rated_pad_effectiveness_of_evap_precooling: float | None
     """[dimensionless]; Range: >= 0.0, <= 1.0"""
     speed_6_total_cooling_capacity_function_of_temperature_curve_name: str | None
@@ -13747,7 +13836,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     speed_7_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_7_reference_unit_rated_condenser_air_flow_rate: float | None
-    """[m3/s]; Range: >= 0.0"""
+    """[m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_7_reference_unit_rated_pad_effectiveness_of_evap_precooling: float | None
     """[dimensionless]; Range: >= 0.0, <= 1.0"""
     speed_7_total_cooling_capacity_function_of_temperature_curve_name: str | None
@@ -13767,7 +13856,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     speed_8_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_8_reference_unit_rated_condenser_air_flow_rate: float | None
-    """[m3/s]; Range: >= 0.0"""
+    """[m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_8_reference_unit_rated_pad_effectiveness_of_evap_precooling: float | None
     """[dimensionless]; Range: >= 0.0, <= 1.0"""
     speed_8_total_cooling_capacity_function_of_temperature_curve_name: str | None
@@ -13787,7 +13876,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     speed_9_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_9_reference_unit_rated_condenser_air_flow_rate: float | None
-    """optional; [m3/s]; Range: >= 0.0"""
+    """optional; [m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_9_reference_unit_rated_pad_effectiveness_of_evap_precooling: float | None
     """optional; [dimensionless]; Range: >= 0.0, <= 1.0"""
     speed_9_total_cooling_capacity_function_of_temperature_curve_name: str | None
@@ -13807,7 +13896,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     speed_10_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_10_reference_unit_rated_condenser_air_flow_rate: float | None
-    """optional; [m3/s]; Range: >= 0.0"""
+    """optional; [m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_10_reference_unit_rated_pad_effectiveness_of_evap_precooling: float | None
     """optional; [dimensionless]; Range: >= 0.0, <= 1.0"""
     speed_10_total_cooling_capacity_function_of_temperature_curve_name: str | None
@@ -13829,7 +13918,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     number_of_capacity_stages: int | None
@@ -14089,11 +14178,11 @@ class CoilHeatingFuel(IDFObject):
     temperature_setpoint_node_name: str | None
     """optional, used if coil is temperature control and not load-base controlled"""
     on_cycle_parasitic_electric_load: float | None
-    """parasitic electric load associated with the coil operation such as an inducer fan, etc... This will be modified by th...; [W] (W)"""
+    """parasitic electric load associated with the coil operation such as an inducer fan, etc... This will be modified by th...; [W] (W); Since: 23.2.0"""
     part_load_fraction_correlation_curve_name: str | None
     """quadratic curve, PLF = a + b*PLR + c*PLR**2 cubic curve, PLF = a + b*PLR + c*PLR**2 + d*PLR**3 PLF = part load fracti..."""
     off_cycle_parasitic_fuel_load: float | None
-    """parasitic fuel load when the coil is not operating (i.e., standing pilot); [W]"""
+    """parasitic fuel load when the coil is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
 class CoilHeatingGasMultiStage(IDFObject):
     """Gas heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, t..."""
@@ -14107,7 +14196,7 @@ class CoilHeatingGasMultiStage(IDFObject):
     part_load_fraction_correlation_curve_name: str | None
     """quadratic curve, PLF = a + b*PLR + c*PLR**2 cubic curve, PLF = a + b*PLR + c*PLR**2 + d*PLR**3 PLF = part load fracti..."""
     off_cycle_parasitic_gas_load: float | None
-    """parasitic gas load when the gas coil is not operating (i.e., standing pilot); [W]"""
+    """parasitic gas load when the gas coil is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
     number_of_stages: int | None
     """Enter the number of the following sets of data for coil capacity and Gas Burner Efficiency.; Range: >= 1, <= 4"""
     stage_1_gas_burner_efficiency: float | None
@@ -14115,25 +14204,25 @@ class CoilHeatingGasMultiStage(IDFObject):
     stage_1_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     stage_1_on_cycle_parasitic_electric_load: float | None
-    """Stage 1 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
+    """Stage 1 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W); Since: 23.2.0"""
     stage_2_gas_burner_efficiency: float | None
     """[W/W]; Range: > 0.0"""
     stage_2_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     stage_2_on_cycle_parasitic_electric_load: float | None
-    """Stage 2 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
+    """Stage 2 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W); Since: 23.2.0"""
     stage_3_gas_burner_efficiency: float | None
     """[W/W]; Range: > 0.0"""
     stage_3_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     stage_3_on_cycle_parasitic_electric_load: float | None
-    """Stage 3 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
+    """Stage 3 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W); Since: 23.2.0"""
     stage_4_gas_burner_efficiency: float | None
     """[W/W]; Range: > 0.0"""
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     stage_4_on_cycle_parasitic_electric_load: float | None
-    """Stage 4 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W)"""
+    """Stage 4 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W); Since: 23.2.0"""
 
 class CoilHeatingDesuperheater(IDFObject):
     """Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
@@ -14162,7 +14251,7 @@ class CoilHeatingDesuperheater(IDFObject):
     temperature_setpoint_node_name: str | None
     """Required if coil is temperature controlled. Temperature-based control requires the use of a SetpointManager object"""
     on_cycle_parasitic_electric_load: float | None
-    """parasitic electric load associated with the desuperheater coil operation such as solenoid valves, etc.; [W] (W); Range: >= 0.0"""
+    """parasitic electric load associated with the desuperheater coil operation such as solenoid valves, etc.; [W] (W); Range: >= 0.0; Since: 23.2.0"""
 
 class CoilHeatingDXSingleSpeed(IDFObject):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
@@ -14198,7 +14287,7 @@ class CoilHeatingDXSingleSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None
@@ -14240,7 +14329,7 @@ class CoilHeatingDXMultiSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     defrost_energy_input_ratio_function_of_temperature_curve_name: str | None
@@ -14402,7 +14491,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
     number_of_speeds: int | None
@@ -14426,7 +14515,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
     defrost_strategy: Literal["", "Resistive", "ReverseCycle"] | None
@@ -14488,7 +14577,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_4_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_4_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_4_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_4_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14502,7 +14591,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_5_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_5_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_5_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_5_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14516,7 +14605,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_6_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_6_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_6_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_6_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14530,7 +14619,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_7_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_7_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_7_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_7_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14544,7 +14633,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_8_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_8_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_8_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_8_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14558,7 +14647,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_9_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_9_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_9_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_9_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14572,7 +14661,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     speed_10_heating_capacity_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_10_total_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
+    """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ...; Since: 25.2.0"""
     speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None
     """curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat db = entering air dry-bulb temperature (C) oat = air enterin..."""
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
@@ -14582,7 +14671,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation(IDFObject):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"] | None
     """Parameters 1-5 are as named below. Parameters 6-10 depend on the type of compressor and fluid. Refer to the InputOutp..."""
     refrigerant_type: str | None
@@ -14632,19 +14721,19 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation(IDFObject):
     source_side_heat_transfer_resistance2: float | None
     """Use when Source Side Fluid Name is an antifreeze Leave this field blank for Source Side Fluid is Water Previously par...; [W/K]; Range: >= 0.0"""
     part_load_fraction_correlation_curve_name: str | None
-    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
+    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l...; Since: 23.2.0"""
     maximum_cycling_rate: float | None
-    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0"""
+    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0; Since: 23.2.0"""
     latent_capacity_time_constant: float | None
-    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0"""
+    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
     fan_delay_time: float | None
-    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0"""
+    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0; Since: 23.2.0"""
 
 class CoilHeatingWaterToAirHeatPumpParameterEstimation(IDFObject):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"] | None
     """Parameters 1-4 are as named below. Parameters 5-9 depend on the type of compressor. Refer to the InputOutputReference..."""
     refrigerant_type: str | None
@@ -14688,13 +14777,13 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation(IDFObject):
     source_side_heat_transfer_resistance2: float | None
     """Use when Source Side Fluid Name is an antifreeze Leave this field blank for Source Side Fluid is Water Previously par...; [W/K]; Range: >= 0.0"""
     part_load_fraction_correlation_curve_name: str | None
-    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heating l..."""
+    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heating l...; Since: 23.2.0"""
 
 class CoilCoolingWaterToAirHeatPumpEquationFit(IDFObject):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     water_inlet_node_name: str | None
     water_outlet_node_name: str | None
     air_inlet_node_name: str | None
@@ -14710,32 +14799,35 @@ class CoilCoolingWaterToAirHeatPumpEquationFit(IDFObject):
     gross_rated_cooling_cop: float | None
     """Gross cooling COP at rated conditions; [W/W]; Range: > 0.0"""
     rated_entering_water_temperature: float | None
-    """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 30.0; Range: > 0.0"""
+    """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 30.0; Range: > 0.0; Since: 22.2.0"""
     rated_entering_air_dry_bulb_temperature: float | None
-    """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 27.0; Range: > 0.0"""
+    """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 27.0; Range: > 0.0; Since: 22.2.0"""
     rated_entering_air_wet_bulb_temperature: float | None
-    """Rated entering air wet-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 19.0; Range: > 0.0"""
+    """Rated entering air wet-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 19.0; Range: > 0.0; Since: 22.2.0"""
     total_cooling_capacity_curve_name: str | None
+    """Since: 9.5.0"""
     sensible_cooling_capacity_curve_name: str | None
+    """Since: 9.5.0"""
     cooling_power_consumption_curve_name: str | None
+    """Since: 9.5.0"""
     part_load_fraction_correlation_curve_name: str | None
-    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l..."""
+    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (cooling l...; Since: 23.2.0"""
     nominal_time_for_condensate_removal_to_begin: float | None
     """The nominal time for condensate to begin leaving the coil's condensate drain line at the coil's rated air flow and te...; [s]; Default: 0.0; Range: >= 0.0, <= 3000.0"""
     ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None
     """Ratio of the initial moisture evaporation rate from the cooling coil (when the compressor first turns off) and the co...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 5.0"""
     maximum_cycling_rate: float | None
-    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0"""
+    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0; Since: 23.2.0"""
     latent_capacity_time_constant: float | None
-    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0"""
+    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
     fan_delay_time: float | None
-    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0"""
+    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Only required when fan operating mode...; [s]; Default: 60.0; Range: >= 0.0; Since: 23.2.0"""
 
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     water_to_refrigerant_hx_water_inlet_node_name: str | None
     water_to_refrigerant_hx_water_outlet_node_name: str | None
     indoor_air_inlet_node_name: str | None
@@ -14755,11 +14847,11 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
     initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity: float | None
     """[dimensionless]; Default: 0.0; Range: >= 0.0"""
     maximum_cycling_rate: float | None
-    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0"""
+    """The maximum on-off cycling Rate for the compressor, which occurs at 50% run time fraction. Suggested value is 3; zero...; [cycles/hr]; Default: 0.0; Range: >= 0.0, <= 5.0; Since: 23.2.0"""
     latent_capacity_time_constant: float | None
-    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0"""
+    """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0; Since: 23.2.0"""
     fan_delay_time: float | None
-    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Enter 0 when fan operating mode is co...; [s]; Default: 60.0; Range: >= 0.0"""
+    """Programmed time delay for heat pump fan to shut off after compressor cycle off. Enter 0 when fan operating mode is co...; [s]; Default: 60.0; Range: >= 0.0; Since: 23.2.0"""
     flag_for_using_hot_gas_reheat_0_or_1: float | None
     """Flag for using hot gas reheat, 0 - not used, 1 - used; [dimensionless]; Default: 0.0; Range: >= 0.0"""
     energy_part_load_fraction_curve_name: str | None
@@ -15029,7 +15121,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit(IDFObject):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     water_inlet_node_name: str | None
     water_outlet_node_name: str | None
     air_inlet_node_name: str | None
@@ -15043,21 +15135,23 @@ class CoilHeatingWaterToAirHeatPumpEquationFit(IDFObject):
     gross_rated_heating_cop: float | None
     """Gross heating COP at rated conditions; [W/W]; Range: > 0.0"""
     rated_entering_water_temperature: float | None
-    """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 20.0"""
+    """Rated entering water temperature corresponding to the water-to -air application for which this coil is used. For exam...; [C]; Default: 20.0; Since: 22.2.0"""
     rated_entering_air_dry_bulb_temperature: float | None
-    """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 20.0; Range: > 0.0"""
+    """Rated entering air dry-bulb temperature corresponding to the water-to-air application for which this coil is used. Fo...; [C]; Default: 20.0; Range: > 0.0; Since: 22.2.0"""
     ratio_of_rated_heating_capacity_to_rated_cooling_capacity: float | None
-    """Ratio of rated heating capacity to rated cooling capacity. This input is used to calculate the heating or cooling cap...; Default: 1.0; Range: > 0.0"""
+    """Ratio of rated heating capacity to rated cooling capacity. This input is used to calculate the heating or cooling cap...; Default: 1.0; Range: > 0.0; Since: 22.2.0"""
     heating_capacity_curve_name: str | None
+    """Since: 9.5.0"""
     heating_power_consumption_curve_name: str | None
+    """Since: 9.5.0"""
     part_load_fraction_correlation_curve_name: str | None
-    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heat load..."""
+    """quadratic curve = a + b*PLR + c*PLR**2 cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = part load ratio (heat load...; Since: 23.2.0"""
 
 class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     water_to_refrigerant_hx_water_inlet_node_name: str | None
     water_to_refrigerant_hx_water_outlet_node_name: str | None
     indoor_air_inlet_node_name: str | None
@@ -15079,7 +15173,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
     speed_1_reference_unit_gross_rated_heating_cop: float | None
     """[W/W]; Range: > 0.0"""
     speed_1_reference_unit_rated_air_flow_rate: float | None
-    """[m3/s]; Range: >= 0.0"""
+    """[m3/s]; Range: >= 0.0; Since: 25.2.0"""
     speed_1_reference_unit_rated_water_flow_rate: float | None
     """[m3/s] (gal/min); Range: >= 0.0"""
     speed_1_heating_capacity_function_of_temperature_curve_name: str | None
@@ -15319,7 +15413,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped(IDFObject):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     rated_heating_capacity: float | None
     """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
     rated_cop: float | None
@@ -15357,7 +15451,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped(IDFObject):
     crankcase_heater_capacity: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [W]; Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_ambient_temperature_for_crankcase_heater_operation: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [C]; Default: 10.0; Range: >= 0.0"""
     evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"] | None
@@ -15381,7 +15475,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped(IDFObject):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     rated_heating_capacity: float | None
     """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
     rated_cop: float | None
@@ -15405,7 +15499,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped(IDFObject):
     crankcase_heater_capacity: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [W]; Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_ambient_temperature_for_crankcase_heater_operation: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [C]; Default: 10.0; Range: >= 0.0"""
     evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"] | None
@@ -15425,7 +15519,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     """variable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which includes..."""
 
     availability_schedule_name: str | None
-    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
+    """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,...; Since: 25.2.0"""
     number_of_speeds: int | None
     """[dimensionless]; Default: 1; Range: >= 1, <= 10"""
     nominal_speed_level: int | None
@@ -15461,7 +15555,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     crankcase_heater_capacity: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [W]; Default: 0.0; Range: >= 0.0"""
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the crankcase heater capacity and the outdoor air ...; Since: 23.2.0"""
     maximum_ambient_temperature_for_crankcase_heater_operation: float | None
     """The compressor crankcase heater only operates when the dry-bulb temperature of air surrounding the compressor is belo...; [C]; Default: 10.0; Range: >= 0.0"""
     evaporator_air_temperature_type_for_curve_objects: Literal["", "DryBulbTemperature", "WetBulbTemperature"] | None
@@ -15469,11 +15563,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     part_load_fraction_correlation_curve_name: str | None
     """Table:Lookup object can also be used Part Load Fraction Correlation (function of part load ratio) should be quadratic..."""
     speed_1_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_1_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_1_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_1_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_1_reference_unit_rated_water_flow_rate: float | None
@@ -15493,11 +15587,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_1_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_2_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_2_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_2_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_2_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_2_reference_unit_rated_water_flow_rate: float | None
@@ -15517,11 +15611,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_2_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_3_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_3_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_3_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_3_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_3_reference_unit_rated_water_flow_rate: float | None
@@ -15541,11 +15635,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_3_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_4_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_4_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_4_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_4_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_4_reference_unit_rated_water_flow_rate: float | None
@@ -15565,11 +15659,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_4_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_5_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_5_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_5_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_5_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_5_reference_unit_rated_water_flow_rate: float | None
@@ -15589,11 +15683,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_5_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_6_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_6_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_6_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_6_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_6_reference_unit_rated_water_flow_rate: float | None
@@ -15613,11 +15707,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_6_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_7_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_7_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_7_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_7_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_7_reference_unit_rated_water_flow_rate: float | None
@@ -15637,11 +15731,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_7_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_8_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_8_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_8_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_8_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_8_reference_unit_rated_water_flow_rate: float | None
@@ -15661,11 +15755,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_8_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_9_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_9_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_9_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_9_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_9_reference_unit_rated_water_flow_rate: float | None
@@ -15685,11 +15779,11 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
     speed_9_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
     speed_10_rated_water_heating_capacity: float | None
-    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0"""
+    """Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow rate, a...; [W]; Range: > 0.0; Since: 25.2.0"""
     speed_10_rated_water_heating_cop: float | None
-    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0"""
+    """Heating coefficient of performance at the rated inlet air and water temperatures, rated condenser inlet water tempera...; [W/W]; Default: 3.2; Range: > 0.0; Since: 25.2.0"""
     speed_10_rated_sensible_heat_ratio: float | None
-    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0"""
+    """Gross air-side sensible heat ratio at the rated inlet air temperatures, rated condenser inlet water temperature, rate...; Default: 0.85; Range: >= 0.5, <= 1.0; Since: 25.2.0"""
     speed_10_reference_unit_rated_air_flow_rate: float | None
     """[m3/s]; Range: >= 0.0"""
     speed_10_reference_unit_rated_water_flow_rate: float | None
@@ -16423,13 +16517,13 @@ class HeatExchangerAirToAirSensibleAndLatent(IDFObject):
     economizer_lockout: Literal["", "No", "Yes"] | None
     """Yes means that the heat exchanger will be locked out (off) when the economizer is operating or high humidity control ...; Default: Yes"""
     sensible_effectiveness_of_heating_air_flow_curve_name: str | None
-    """optional if this field has value, then the sensible effectiveness for heating will be the value in N2 multiplied by t..."""
+    """optional if this field has value, then the sensible effectiveness for heating will be the value in N2 multiplied by t...; Since: 24.1.0"""
     latent_effectiveness_of_heating_air_flow_curve_name: str | None
-    """optional if this field has value, then the latent effectiveness for heating will be the value in N3 multiplied by thi..."""
+    """optional if this field has value, then the latent effectiveness for heating will be the value in N3 multiplied by thi...; Since: 24.1.0"""
     sensible_effectiveness_of_cooling_air_flow_curve_name: str | None
-    """optional if this field has value, then the sensible effectiveness for cooling will be the value in N4 multiplied by t..."""
+    """optional if this field has value, then the sensible effectiveness for cooling will be the value in N4 multiplied by t...; Since: 24.1.0"""
     latent_effectiveness_of_cooling_air_flow_curve_name: str | None
-    """optional if this field has value, then the latent effectiveness for cooling will be the value in N5 multiplied by thi..."""
+    """optional if this field has value, then the latent effectiveness for cooling will be the value in N5 multiplied by thi...; Since: 24.1.0"""
 
 class HeatExchangerDesiccantBalancedFlow(IDFObject):
     """This object models a balanced desiccant heat exchanger. The heat exchanger transfers both sensible and latent energy ..."""
@@ -16696,7 +16790,7 @@ class AirLoopHVACUnitarySystem(IDFObject):
     no_load_supply_air_flow_rate_per_unit_of_capacity_during_heating_operation: float | None
     """Enter the supply air volume flow rate as a fraction of the heating capacity. Required field when No Load Supply Air F...; [m3/s-W]; Range: >= 0.0"""
     no_load_supply_air_flow_rate_control_set_to_low_speed: Literal["", "No", "Yes"] | None
-    """This field is not used when Design Specification Multispeed Object Type input is present When Yes is selected the min...; Default: Yes"""
+    """This field is not used when Design Specification Multispeed Object Type input is present When Yes is selected the min...; Default: Yes; Since: 24.1.0"""
     maximum_supply_air_temperature: float | Literal["", "Autosize"] | None
     """Enter the maximum supply air temperature leaving the heating coil. When Control Type = SingleZoneVAV, enter the maxim...; [C]; Default: 80.0"""
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
@@ -16948,7 +17042,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir(IDFObject):
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only Multimode = activate enhanced dehumidification mode as needed and meet sensible load. ...; Default: None"""
     dx_heating_coil_sizing_ratio: float | None
-    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
+    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir(IDFObject):
     """Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
@@ -17008,7 +17102,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir(IDFObject):
     heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None
     """used only when the heat pump coils are of the type WaterToAirHeatPump:EquationFit Constant results in 100% water flow...; Default: Cycling"""
     dx_heating_coil_sizing_ratio: float | None
-    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
+    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
 class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(IDFObject):
     """Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
@@ -17084,9 +17178,9 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(IDFObject):
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only. Multimode = activate enhanced dehumidification mode as needed and meet sensible load....; Default: None"""
     plenum_or_mixer_inlet_node_name: str | None
-    """Enter the name of the bypass duct node connected to a plenum or mixer. This field is required when this HVAC System i..."""
+    """Enter the name of the bypass duct node connected to a plenum or mixer. This field is required when this HVAC System i...; Since: 9.2.0"""
     minimum_runtime_before_operating_mode_change: float | None
-    """This is the minimum amount of time the unit operates in cooling or heating mode before changing modes.; [hr]; Default: 0.25; Range: >= 0.0"""
+    """This is the minimum amount of time the unit operates in cooling or heating mode before changing modes.; [hr]; Default: 0.25; Range: >= 0.0; Since: 9.2.0"""
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(IDFObject):
     """Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
@@ -17117,7 +17211,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(IDFObject):
     """Multi Speed DX, Electric, Gas, and Single speed Water and Steam coils"""
     heating_coil_name: str | None
     dx_heating_coil_sizing_ratio: float | None
-    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
+    """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
     cooling_coil_object_type: Literal["Coil:Cooling:DX:MultiSpeed"] | None
     """Only works with Coil:Cooling:DX:MultiSpeed"""
     cooling_coil_name: str | None
@@ -17175,9 +17269,9 @@ class AirConditionerVariableRefrigerantFlow(IDFObject):
     gross_rated_cooling_cop: float | None
     """Enter the coefficient of performance at rated conditions or leave blank to use default. COP includes compressor and c...; [W/W]; Default: 3.3; Range: > 0.0"""
     minimum_condenser_inlet_node_temperature_in_cooling_mode: float | None
-    """For cooling mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -6.0"""
+    """For cooling mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -6.0; Since: 9.6.0"""
     maximum_condenser_inlet_node_temperature_in_cooling_mode: float | None
-    """For cooling mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum ...; [C]; Default: 43.0"""
+    """For cooling mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum ...; [C]; Default: 43.0; Since: 9.6.0"""
     cooling_capacity_ratio_modifier_function_of_low_temperature_curve_name: str | None
     """Enter a curve name that represents full load cooling capacity ratio as a function of outdoor dry-bulb temperature and..."""
     cooling_capacity_ratio_boundary_curve_name: str | None
@@ -17205,9 +17299,9 @@ class AirConditionerVariableRefrigerantFlow(IDFObject):
     gross_rated_heating_cop: float | None
     """COP includes compressor and condenser fan electrical energy input COP does not include supply fan heat or supply fan ...; [W/W]; Default: 3.4; Range: > 0.0"""
     minimum_condenser_inlet_node_temperature_in_heating_mode: float | None
-    """For heating mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -20.0"""
+    """For heating mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum ...; [C]; Default: -20.0; Since: 9.6.0"""
     maximum_condenser_inlet_node_temperature_in_heating_mode: float | None
-    """For heating mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum ...; [C]; Default: 16.0"""
+    """For heating mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum ...; [C]; Default: 16.0; Since: 9.6.0"""
     heating_capacity_ratio_modifier_function_of_low_temperature_curve_name: str | None
     """Enter a curve name that represents full load heating capacity ratio as a function of outdoor wet-bulb temperature and..."""
     heating_capacity_ratio_boundary_curve_name: str | None
@@ -17318,9 +17412,9 @@ class AirConditionerVariableRefrigerantFlow(IDFObject):
     )
     """Default: Electricity"""
     minimum_condenser_inlet_node_temperature_in_heat_recovery_mode: float | None
-    """For heat recovery mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or mi...; [C]"""
+    """For heat recovery mode operation, enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or mi...; [C]; Since: 9.6.0"""
     maximum_condenser_inlet_node_temperature_in_heat_recovery_mode: float | None
-    """For heat recovery mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or ma...; [C]"""
+    """For heat recovery mode operation, enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or ma...; [C]; Since: 9.6.0"""
     heat_recovery_cooling_capacity_modifier_curve_name: str | None
     """Enter the name of a performance curve which represents the change in cooling capacity when heat recovery is active A ..."""
     initial_heat_recovery_cooling_capacity_fraction: float | None
@@ -17640,7 +17734,7 @@ class ControllerOutdoorAir(IDFObject):
     )
     """BypassWhenWithinEconomizerLimits specifies that heat recovery is active only when the economizer is off because condi...; Default: BypassWhenWithinEconomizerLimits"""
     economizer_operation_staging: Literal["", "EconomizerFirst", "InterlockedWithMechanicalCooling"] | None
-    """This input is only used when the Controller:OutdoorAir is used in conjunction with an AirLoopHVAC:UnitarySystem with ...; Default: InterlockedWithMechanicalCooling"""
+    """This input is only used when the Controller:OutdoorAir is used in conjunction with an AirLoopHVAC:UnitarySystem with ...; Default: InterlockedWithMechanicalCooling; Since: 23.2.0"""
 
 class ControllerMechanicalVentilation(IDFObject):
     """This object is used in conjunction with Controller:OutdoorAir to specify outdoor ventilation air based on outdoor air..."""
@@ -17668,6 +17762,7 @@ class ControllerMechanicalVentilation(IDFObject):
     zone_maximum_outdoor_air_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: > 0.0"""
     zone_or_zonelist_name: str | None
+    """Since: 9.3.0"""
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
@@ -17801,7 +17896,7 @@ class AirLoopHVACReturnPath(IDFObject):
     component_name: str | None
 
 class AirLoopHVACExhaustSystem(IDFObject):
-    """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n..."""
+    """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n...; Since: 22.1.0"""
 
     zone_mixer_name: str | None
     """The name of the exhaust system AirLoopHVAC:ZoneMixer"""
@@ -17809,7 +17904,7 @@ class AirLoopHVACExhaustSystem(IDFObject):
     fan_name: str | None
 
 class AirLoopHVACDedicatedOutdoorAirSystem(IDFObject):
-    """Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs."""
+    """Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.; Since: 9.2.0"""
 
     airloophvac_outdoorairsystem_name: str | None
     """Enter the name of an AirLoopHVAC:OutdoorAirSystem object."""
@@ -17832,13 +17927,13 @@ class AirLoopHVACDedicatedOutdoorAirSystem(IDFObject):
     airloophvac_name: str | None
 
 class AirLoopHVACMixer(IDFObject):
-    """Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed ..."""
+    """Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed ...; Since: 9.2.0"""
 
     outlet_node_name: str | None
     inlet_node_name: str | None
 
 class AirLoopHVACSplitter(IDFObject):
-    """Split one air stream from AirLoopHVAC:DedicatedOutdoorAirSystem outlet node into N outlet streams (currently 10 as de..."""
+    """Split one air stream from AirLoopHVAC:DedicatedOutdoorAirSystem outlet node into N outlet streams (currently 10 as de...; Since: 9.2.0"""
 
     inlet_node_name: str | None
     outlet_node_name: str | None
@@ -18137,7 +18232,7 @@ class PumpVariableSpeed(IDFObject):
     design_minimum_flow_rate_fraction: float | None
     """Used to size Design Minimum Flow Rate; Default: 0.0; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
-    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
 class PumpConstantSpeed(IDFObject):
     """This pump model is described in the ASHRAE secondary HVAC toolkit."""
@@ -18175,7 +18270,7 @@ class PumpConstantSpeed(IDFObject):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
     end_use_subcategory: str | None
-    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
 class PumpVariableSpeedCondensate(IDFObject):
     """This pump model is described in the ASHRAE secondary HVAC toolkit. Variable Speed Condensate pump for Steam Systems"""
@@ -18213,7 +18308,7 @@ class PumpVariableSpeedCondensate(IDFObject):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
     end_use_subcategory: str | None
-    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
 class HeaderedPumpsConstantSpeed(IDFObject):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
@@ -18248,7 +18343,7 @@ class HeaderedPumpsConstantSpeed(IDFObject):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
     end_use_subcategory: str | None
-    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
 class HeaderedPumpsVariableSpeed(IDFObject):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
@@ -18293,7 +18388,7 @@ class HeaderedPumpsVariableSpeed(IDFObject):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
     end_use_subcategory: str | None
-    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
 class TemperingValve(IDFObject):
     """Temperature-controlled diversion valve used to divert flow around one or more plant components such as a hot water he..."""
@@ -18319,11 +18414,11 @@ class LoadProfilePlant(IDFObject):
     """[m3/s] (gal/min)"""
     flow_rate_fraction_schedule_name: str | None
     plant_loop_fluid_type: Literal["", "Steam", "Water"] | None
-    """Default: Water"""
+    """Default: Water; Since: 23.2.0"""
     degree_of_subcooling: float | None
-    """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 5.0; Range: >= 1.0"""
+    """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 5.0; Range: >= 1.0; Since: 23.2.0"""
     degree_of_loop_subcooling: float | None
-    """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 20.0; Range: >= 10.0"""
+    """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 20.0; Range: >= 10.0; Since: 23.2.0"""
 
 class SolarCollectorPerformanceFlatPlate(IDFObject):
     """Thermal and optical performance parameters for a single flat plate solar collector module. These parameters are based..."""
@@ -18384,7 +18479,7 @@ class SolarCollectorPerformancePhotovoltaicThermalSimple(IDFObject):
     """Default: 0.84; Range: > 0.0, < 1.0"""
 
 class SolarCollectorPerformancePhotovoltaicThermalBIPVT(IDFObject):
-    """Thermal performance parameters for Building-Integrated Photovoltaic-Thermal (BIPVT) solar collector."""
+    """Thermal performance parameters for Building-Integrated Photovoltaic-Thermal (BIPVT) solar collector.; Since: 23.1.0"""
 
     boundary_conditions_model_name: str | None
     """Enter the name of a SurfaceProperty:OtherSideConditionsModel object"""
@@ -18564,13 +18659,13 @@ class BoilerHotWater(IDFObject):
     boiler_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None
     """Select operating mode for fluid flow through the boiler. 'NotModulated' is for either variable or constant pumping wi...; Default: NotModulated"""
     on_cycle_parasitic_electric_load: float | None
-    """[W]; Default: 0.0; Range: >= 0.0"""
+    """[W]; Default: 0.0; Range: >= 0.0; Since: 23.2.0"""
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
     off_cycle_parasitic_fuel_load: float | None
-    """parasitic fuel load when the boiler is not operating (i.e., standing pilot); [W]"""
+    """parasitic fuel load when the boiler is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
 class BoilerSteam(IDFObject):
     """This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
@@ -18615,7 +18710,7 @@ class BoilerSteam(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
 class ChillerElectricASHRAE205(IDFObject):
-    """This chiller model utilizes ASHRAE Standard 205 compliant representations for chillers (Representation Specification ..."""
+    """This chiller model utilizes ASHRAE Standard 205 compliant representations for chillers (Representation Specification ...; Since: 22.2.0"""
 
     representation_file_name: str | None
     """The name of the ASHRAE205 RS0001 (chiller) representation file"""
@@ -18727,17 +18822,17 @@ class ChillerElectricEIR(IDFObject):
     condenser_flow_control: (
         Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
     )
-    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow"""
+    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow; Since: 24.2.0"""
     condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
-    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens..."""
+    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens...; Since: 24.2.0"""
     temperature_difference_across_condenser_schedule_name: str | None
-    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense..."""
+    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense...; Since: 24.2.0"""
     condenser_minimum_flow_fraction: float | None
-    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f...; Default: 0.2; Range: >= 0.0, <= 1.0"""
+    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f...; Default: 0.2; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     thermosiphon_capacity_fraction_curve_name: str | None
-    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
     thermosiphon_minimum_temperature_difference: float | None
-    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0"""
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
 class ChillerElectricReformulatedEIR(IDFObject):
     """This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
@@ -18799,17 +18894,17 @@ class ChillerElectricReformulatedEIR(IDFObject):
     condenser_flow_control: (
         Literal["", "ConstantFlow", "ModulatedChillerPLR", "ModulatedDeltaTemperature", "ModulatedLoopPLR"] | None
     )
-    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow"""
+    """Select the chiller condenser flow request mode. With 'ConstantFlow' a chiller will always request its maximum condens...; Default: ConstantFlow; Since: 24.2.0"""
     condenser_loop_flow_rate_fraction_function_of_loop_part_load_ratio_curve_name: str | None
-    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens..."""
+    """Condenser loop flow rate fraction as a function of loop part load ratio CWFR = C * PLR + D Where: CWFR is the condens...; Since: 24.2.0"""
     temperature_difference_across_condenser_schedule_name: str | None
-    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense..."""
+    """A schedule that defines the temperature difference across the condenser. This input is used to calculate the condense...; Since: 24.2.0"""
     condenser_minimum_flow_fraction: float | None
-    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f...; Default: 0.2; Range: >= 0.0, <= 1.0"""
+    """This input corresponds to the minimum flow fraction to be simulated. The minimum condenser flow corresponds to this f...; Default: 0.2; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     thermosiphon_capacity_fraction_curve_name: str | None
-    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
     thermosiphon_minimum_temperature_difference: float | None
-    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0"""
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
 class ChillerElectric(IDFObject):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
@@ -18874,9 +18969,9 @@ class ChillerElectric(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
     thermosiphon_capacity_fraction_curve_name: str | None
-    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
     thermosiphon_minimum_temperature_difference: float | None
-    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0"""
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
 class ChillerAbsorptionIndirect(IDFObject):
     """This indirect absorption chiller model is an enhanced model from the Building Loads and System Thermodynamics (BLAST)..."""
@@ -19009,9 +19104,9 @@ class ChillerConstantCOP(IDFObject):
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
     thermosiphon_capacity_fraction_curve_name: str | None
-    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
     thermosiphon_minimum_temperature_difference: float | None
-    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0"""
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
 class ChillerEngineDriven(IDFObject):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
@@ -19327,7 +19422,7 @@ class ChillerHeaterAbsorptionDoubleEffect(IDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
 class HeatPumpPlantLoopEIRCooling(IDFObject):
-    """An EIR formulated water to water heat pump model, cooling operation."""
+    """An EIR formulated water to water heat pump model, cooling operation.; Since: 9.3.0"""
 
     load_side_inlet_node_name: str | None
     load_side_outlet_node_name: str | None
@@ -19336,9 +19431,9 @@ class HeatPumpPlantLoopEIRCooling(IDFObject):
     source_side_inlet_node_name: str | None
     source_side_outlet_node_name: str | None
     heat_recovery_inlet_node_name: str | None
-    """Not available with water source condenser type"""
+    """Not available with water source condenser type; Since: 24.2.0"""
     heat_recovery_outlet_node_name: str | None
-    """Not available with water source condenser type"""
+    """Not available with water source condenser type; Since: 24.2.0"""
     companion_heat_pump_name: str | None
     """This field allows the user to specify a companion heating object for this cooling object. The companion is used in si..."""
     load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
@@ -19346,7 +19441,7 @@ class HeatPumpPlantLoopEIRCooling(IDFObject):
     source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
     """[m3/s] (gal/min); Default: Autosize"""
     heat_recovery_reference_flow_rate: float | Literal["", "Autosize"] | None
-    """Not available with water source condenser type; [m3/s] (gal/min); Default: Autosize"""
+    """Not available with water source condenser type; [m3/s] (gal/min); Default: Autosize; Since: 24.2.0"""
     reference_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     reference_coefficient_of_performance: float | None
@@ -19360,32 +19455,32 @@ class HeatPumpPlantLoopEIRCooling(IDFObject):
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
     control_type: Literal["", "Load", "Setpoint"] | None
-    """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load"""
+    """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load; Since: 23.2.0"""
     flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
-    """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow"""
+    """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow; Since: 23.2.0"""
     minimum_part_load_ratio: float | None
-    """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0"""
+    """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0; Since: 23.2.0"""
     minimum_source_inlet_temperature: float | None
-    """Enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum inlet water temperature for ...; [C]; Default: -100.0"""
+    """Enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum inlet water temperature for ...; [C]; Default: -100.0; Since: 23.2.0"""
     maximum_source_inlet_temperature: float | None
-    """Enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum inlet water temperature for ...; [C]; Default: 100.0"""
+    """Enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum inlet water temperature for ...; [C]; Default: 100.0; Since: 23.2.0"""
     minimum_supply_water_temperature_curve_name: str | None
-    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature"""
+    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature; Since: 23.2.0"""
     maximum_supply_water_temperature_curve_name: str | None
-    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature"""
+    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature; Since: 23.2.0"""
     maximum_heat_recovery_outlet_temperature: float | None
-    """Enter the maximum heat recovery leaving water temperature limit The hot water temperature is not allowed to exceed th...; [C]; Default: 60.0"""
+    """Enter the maximum heat recovery leaving water temperature limit The hot water temperature is not allowed to exceed th...; [C]; Default: 60.0; Since: 24.2.0"""
     heat_recovery_capacity_modifier_function_of_temperature_curve_name: str | None
-    """Cooling capacity modifier as a function of CW supply temp and condenser entering fluid temp curve = a + b*CWS + c*CWS..."""
+    """Cooling capacity modifier as a function of CW supply temp and condenser entering fluid temp curve = a + b*CWS + c*CWS...; Since: 24.2.0"""
     heat_recovery_electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
-    """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*CWS + c*CWS**2 + d*ECT + e..."""
+    """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*CWS + c*CWS**2 + d*ECT + e...; Since: 24.2.0"""
     thermosiphon_capacity_fraction_curve_name: str | None
-    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo..."""
+    """quadratic curve = a + b * (Tevap, out - Tcond, in) is typical, other univariate curves may be used Tevap, out = evapo...; Since: 24.2.0"""
     thermosiphon_minimum_temperature_difference: float | None
-    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0"""
+    """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
 class HeatPumpPlantLoopEIRHeating(IDFObject):
-    """An EIR formulated water to water heat pump model, heating operation"""
+    """An EIR formulated water to water heat pump model, heating operation; Since: 9.3.0"""
 
     load_side_inlet_node_name: str | None
     load_side_outlet_node_name: str | None
@@ -19394,9 +19489,9 @@ class HeatPumpPlantLoopEIRHeating(IDFObject):
     source_side_inlet_node_name: str | None
     source_side_outlet_node_name: str | None
     heat_recovery_inlet_node_name: str | None
-    """Not available with water source condenser type"""
+    """Not available with water source condenser type; Since: 24.2.0"""
     heat_recovery_outlet_node_name: str | None
-    """Not available with water source condenser type"""
+    """Not available with water source condenser type; Since: 24.2.0"""
     companion_heat_pump_name: str | None
     """This field allows the user to specify a companion cooling object for this heating object. The companion is used in si..."""
     load_side_reference_flow_rate: float | Literal["", "Autosize"] | None
@@ -19404,7 +19499,7 @@ class HeatPumpPlantLoopEIRHeating(IDFObject):
     source_side_reference_flow_rate: float | Literal["", "Autosize"] | None
     """[m3/s] (gal/min); Default: Autosize"""
     heat_recovery_reference_flow_rate: float | Literal["", "Autosize"] | None
-    """Not available with water source condenser type; [m3/s] (gal/min); Default: Autosize"""
+    """Not available with water source condenser type; [m3/s] (gal/min); Default: Autosize; Since: 24.2.0"""
     reference_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     reference_coefficient_of_performance: float | None
@@ -19418,47 +19513,48 @@ class HeatPumpPlantLoopEIRHeating(IDFObject):
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
     heating_to_cooling_capacity_sizing_ratio: float | None
-    """Multiplies the autosized heating capacity; Default: 1.0; Range: >= 0.0"""
+    """Multiplies the autosized heating capacity; Default: 1.0; Range: >= 0.0; Since: 23.2.0"""
     heat_pump_sizing_method: Literal["", "CoolingCapacity", "GreaterOfHeatingOrCooling", "HeatingCapacity"] | None
-    """Specifies sizing method when companion coil exists; Default: CoolingCapacity"""
+    """Specifies sizing method when companion coil exists; Default: CoolingCapacity; Since: 23.2.0"""
     control_type: Literal["", "Load", "Setpoint"] | None
-    """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load"""
+    """Heat pump can be controlled on leaving water temperature set point or plant load; Default: Load; Since: 23.2.0"""
     flow_mode: Literal["", "ConstantFlow", "VariableSpeedPumping"] | None
-    """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow"""
+    """Select operating mode for fluid flow through the chiller. 'ConstantFlow' is for constant pumping with flow controlled...; Default: ConstantFlow; Since: 23.2.0"""
     minimum_part_load_ratio: float | None
-    """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0"""
+    """Below this operating limit compressor cycling will occur; Default: 0.0; Range: >= 0.0; Since: 23.2.0"""
     minimum_source_inlet_temperature: float | None
-    """Enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum inlet water temperature for ...; [C]; Default: -100.0"""
+    """Enter the minimum inlet outdoor air dry-bulb temperature for air-cooled units or minimum inlet water temperature for ...; [C]; Default: -100.0; Since: 23.2.0"""
     maximum_source_inlet_temperature: float | None
-    """Enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum inlet water temperature for ...; [C]; Default: 100.0"""
+    """Enter the maximum inlet outdoor air dry-bulb temperature for air-cooled units or maximum inlet water temperature for ...; [C]; Default: 100.0; Since: 23.2.0"""
     minimum_supply_water_temperature_curve_name: str | None
-    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature"""
+    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature; Since: 23.2.0"""
     maximum_supply_water_temperature_curve_name: str | None
-    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature"""
+    """quadratic curve = a + b*OAT is typical, other univariate curves may be used OAT = Outdoor Dry-Bulb Temperature; Since: 23.2.0"""
     dry_outdoor_correction_factor_curve_name: str | None
+    """Since: 23.2.0"""
     maximum_outdoor_dry_bulb_temperature_for_defrost_operation: float | None
-    """defrost operation will not be active above this outdoor temperature; Default: 10.0"""
+    """defrost operation will not be active above this outdoor temperature; Default: 10.0; Since: 23.2.0"""
     heat_pump_defrost_control: Literal["None", "OnDemand", "Timed", "TimedEmpirical"] | None
-    """A blank field is the same as None."""
+    """A blank field is the same as None.; Since: 23.2.0"""
     heat_pump_defrost_time_period_fraction: float | None
-    """Nominal fraction of time in defrost mode only applicable if Timed or TimedEmpirical heat pump defrost control is spec...; Default: 0.058333; Range: >= 0.0"""
+    """Nominal fraction of time in defrost mode only applicable if Timed or TimedEmpirical heat pump defrost control is spec...; Default: 0.058333; Range: >= 0.0; Since: 23.2.0"""
     defrost_energy_input_ratio_function_of_temperature_curve_name: str | None
-    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d..."""
+    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d...; Since: 23.2.0"""
     timed_empirical_defrost_frequency_curve_name: str | None
-    """univariate curve = a + b*OAT is typical, other univariate curves may be used OAT = outdoor air dry-bulb temperature (..."""
+    """univariate curve = a + b*OAT is typical, other univariate curves may be used OAT = outdoor air dry-bulb temperature (...; Since: 23.2.0"""
     timed_empirical_defrost_heat_load_penalty_curve_name: str | None
-    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d..."""
+    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d...; Since: 23.2.0"""
     timed_empirical_defrost_heat_input_energy_fraction_curve_name: str | None
-    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d..."""
+    """univariate curve = a + b*OAT is typical, other univariate curves may be used bivariate curve = a + b*WB + c*WB**2 + d...; Since: 23.2.0"""
     minimum_heat_recovery_outlet_temperature: float | None
-    """Enter the minimum heat recovery leaving water temperature limit The chilled water temperature is not allowed to drop ...; [C]; Default: 4.5"""
+    """Enter the minimum heat recovery leaving water temperature limit The chilled water temperature is not allowed to drop ...; [C]; Default: 4.5; Since: 24.2.0"""
     heat_recovery_capacity_modifier_function_of_temperature_curve_name: str | None
-    """Heating capacity modifier as a function of HW supply temp and entering condenser fluid temp curve = a + b*HWS + c*HWS..."""
+    """Heating capacity modifier as a function of HW supply temp and entering condenser fluid temp curve = a + b*HWS + c*HWS...; Since: 24.2.0"""
     heat_recovery_electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
-    """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*HWS + c*HWS**2 + d*ECT + e..."""
+    """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*HWS + c*HWS**2 + d*ECT + e...; Since: 24.2.0"""
 
 class HeatPumpAirToWaterFuelFiredHeating(IDFObject):
-    """The object defines a fuel-fired absorption heat pump based on equation-fit models."""
+    """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
 
     water_inlet_node_name: str | None
     """Inlet node name of the water side connection"""
@@ -19535,10 +19631,10 @@ class HeatPumpAirToWaterFuelFiredHeating(IDFObject):
     standby_electric_power: float | None
     """Standby Electric Power in [W]; [W]; Default: 0.0; Range: >= 0.0"""
     minimum_unloading_ratio: float | None
-    """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0"""
+    """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
 
 class HeatPumpAirToWaterFuelFiredCooling(IDFObject):
-    """The object defines a fuel-fired absorption heat pump based on equation-fit models."""
+    """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
 
     water_inlet_node_name: str | None
     """Inlet node name of the water side connection"""
@@ -19605,10 +19701,10 @@ class HeatPumpAirToWaterFuelFiredCooling(IDFObject):
     standby_electric_power: float | None
     """Standby Electric Power in [W]; [W]; Default: 0.0; Range: >= 0.0"""
     minimum_unloading_ratio: float | None
-    """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0"""
+    """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
 
 class HeatPumpAirToWater(IDFObject):
-    """air-to-water heat pump system which provides either chilled or hot water with single- or variable speed compressors."""
+    """air-to-water heat pump system which provides either chilled or hot water with single- or variable speed compressors.; Since: 25.2.0"""
 
     availability_schedule_name_heating: str | None
     """Enter the name of a schedule that defines the availability of the unit in heating mode Schedule values of 0 denote th..."""
@@ -19837,7 +19933,9 @@ class HeatPumpWaterToWaterEquationFitHeating(IDFObject):
     reference_heating_power_consumption: float | Literal["Autosize"] | None
     """[W]"""
     heating_capacity_curve_name: str | None
+    """Since: 9.5.0"""
     heating_compressor_power_curve_name: str | None
+    """Since: 9.5.0"""
     reference_coefficient_of_performance: float | None
     """This optional field is used to autosize Reference Heating Power Consumption COP = Reference Heating Capacity / Refere...; [W/W]; Default: 7.5; Range: > 0.0"""
     sizing_factor: float | None
@@ -19860,7 +19958,9 @@ class HeatPumpWaterToWaterEquationFitCooling(IDFObject):
     reference_cooling_power_consumption: float | Literal["Autosize"] | None
     """[W]"""
     cooling_capacity_curve_name: str | None
+    """Since: 9.5.0"""
     cooling_compressor_power_curve_name: str | None
+    """Since: 9.5.0"""
     reference_coefficient_of_performance: float | None
     """This optional field is used to autosize Reference Cooling Power Consumption COP = Rated Cooling Capacity / Rated Cool...; [W/W]; Default: 8.0; Range: > 0.0"""
     sizing_factor: float | None
@@ -19963,7 +20063,7 @@ class DistrictCooling(IDFObject):
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
 class DistrictHeatingWater(IDFObject):
-    """Centralized source of hot water, such as a district heating system."""
+    """Centralized source of hot water, such as a district heating system.; Since: 23.2.0"""
 
     hot_water_inlet_node_name: str | None
     hot_water_outlet_node_name: str | None
@@ -19973,7 +20073,7 @@ class DistrictHeatingWater(IDFObject):
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
 class DistrictHeatingSteam(IDFObject):
-    """Centralized source of Steam, such as a district heating system."""
+    """Centralized source of Steam, such as a district heating system.; Since: 23.2.0"""
 
     steam_inlet_node_name: str | None
     steam_outlet_node_name: str | None
@@ -20193,11 +20293,11 @@ class CoolingTowerSingleSpeed(IDFObject):
     design_u_factor_times_area_value: float | Literal["Autosize"] | None
     """Leave field blank if tower performance input method is NominalCapacity; [W/K]"""
     free_convection_regime_air_flow_rate: float | Literal["", "Autocalculate"] | None
-    """[m3/s]; Default: 0.0"""
+    """[m3/s]; Default: 0.0; Since: 9.2.0"""
     free_convection_regime_air_flow_rate_sizing_factor: float | None
-    """This field is only used if the previous field is set to autocalculate.; Default: 0.1; Range: > 0.0, < 1.0"""
+    """This field is only used if the previous field is set to autocalculate.; Default: 0.1; Range: > 0.0, < 1.0; Since: 9.2.0"""
     free_convection_regime_u_factor_times_area_value: float | Literal["", "Autocalculate"] | None
-    """[W/K]; Default: 0.0"""
+    """[W/K]; Default: 0.0; Since: 9.2.0"""
     free_convection_u_factor_times_area_value_sizing_factor: float | None
     """This field is only used if the previous field is set to autocalculate and the Performance Input Method is UFactorTime...; Default: 0.1; Range: > 0.0, < 1.0"""
     performance_input_method: Literal["", "NominalCapacity", "UFactorTimesAreaAndDesignWaterFlowRate"] | None
@@ -20822,15 +20922,16 @@ class GroundHeatExchangerSystem(IDFObject):
     """[J/m3-K]; Range: > 0.0"""
     ghe_vertical_responsefactors_object_name: str | None
     g_function_calculation_method: Literal["", "FullDesign", "UBHWTcalc", "UHFcalc"] | None
-    """Default: UHFcalc"""
+    """Default: UHFcalc; Since: 9.6.0"""
     ghe_vertical_sizing_object_type: Literal["GroundHeatExchanger:Vertical:Sizing:Rectangle"] | None
+    """Since: 25.2.0"""
     ghe_vertical_sizing_object_name: str | None
-    """Only needed when g-function calculation method is FullDesign"""
+    """Only needed when g-function calculation method is FullDesign; Since: 25.2.0"""
     ghe_vertical_array_object_name: str | None
     ghe_vertical_single_object_name: str | None
 
 class GroundHeatExchangerVerticalSizingRectangle(IDFObject):
-    """Specifies parameters to be used for Ground Heat Exchanger borehole field design and sizing."""
+    """Specifies parameters to be used for Ground Heat Exchanger borehole field design and sizing.; Since: 25.2.0"""
 
     sizingperiod_weatherfiledays_name: str | None
     """Specifies the SizingPeriod:WeatherFileDays required to perform GHE sizing"""
@@ -21635,7 +21736,7 @@ class ThermalStorageIceSimple(IDFObject):
     inlet_node_name: str | None
     outlet_node_name: str | None
     thermal_storage_sizing_object_name: str | None
-    """used only when tank capacity is autosized"""
+    """used only when tank capacity is autosized; Since: 25.2.0"""
 
 class ThermalStorageIceDetailed(IDFObject):
     """This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
@@ -21649,10 +21750,12 @@ class ThermalStorageIceDetailed(IDFObject):
     discharging_curve_variable_specifications: (
         Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
     )
+    """Since: 9.2.0"""
     discharging_curve_name: str | None
     charging_curve_variable_specifications: (
         Literal["FractionChargedLMTD", "FractionDischargedLMTD", "LMTDFractionCharged", "LMTDMassFlow"] | None
     )
+    """Since: 9.2.0"""
     charging_curve_name: str | None
     timestep_of_the_curve_data: float | None
     """[hr]"""
@@ -21667,7 +21770,7 @@ class ThermalStorageIceDetailed(IDFObject):
     thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None
     """This field determines whether the system uses internal or external melt during discharging. This will then have an im...; Default: OutsideMelt"""
     thermal_storage_sizing_object_name: str | None
-    """used only when tank capacity is autosized"""
+    """used only when tank capacity is autosized; Since: 25.2.0"""
 
 class ThermalStorageChilledWaterMixed(IDFObject):
     """Chilled water storage with a well-mixed, single-node tank. The chilled water is 'used' by drawing from the 'Use Side'..."""
@@ -21788,6 +21891,8 @@ class ThermalStorageChilledWaterStratified(IDFObject):
     """[W/K]; Default: 0.0"""
 
 class ThermalStorageHotWaterStratified(IDFObject):
+    """Since: 25.2.0"""
+
     tank_volume: float | None
     """[m3] (gal); Range: > 0.0"""
     tank_height: float | None
@@ -21873,7 +21978,7 @@ class ThermalStorageHotWaterStratified(IDFObject):
     """[W/K]; Default: 0.0"""
 
 class ThermalStoragePCM(IDFObject):
-    """This thermal storage model is PCM-based It requires PCM material property connection In addition to the object linkin..."""
+    """This thermal storage model is PCM-based It requires PCM material property connection In addition to the object linkin...; Since: 25.2.0"""
 
     availability_schedule_name: str | None
     plant_side_inlet_node_name: str | None
@@ -21891,7 +21996,7 @@ class ThermalStoragePCM(IDFObject):
     """[m3/s]"""
 
 class ThermalStorageSizing(IDFObject):
-    """Sizing information for thermal energy stoarge capacity."""
+    """Sizing information for thermal energy stoarge capacity.; Since: 25.2.0"""
 
     on_peak_period_start_time: float | None
     """Start time of on peak period in hours; [hr]"""
@@ -21981,13 +22086,17 @@ class PlantEquipmentList(IDFObject):
     """List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in th..."""
 
     equipment_object_type: str | None
+    """Since: 9.1.0"""
     equipment_name: str | None
+    """Since: 9.1.0"""
 
 class CondenserEquipmentList(IDFObject):
     """List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipme..."""
 
     equipment_object_type: str | None
+    """Since: 9.1.0"""
     equipment_name: str | None
+    """Since: 9.1.0"""
 
 class PlantEquipmentOperationUncontrolled(IDFObject):
     """Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is ..."""
@@ -22790,7 +22899,7 @@ class PlantEquipmentOperationOutdoorDewpointDifference(IDFObject):
     range_10_equipment_list_name: str | None
 
 class PlantEquipmentOperationChillerHeaterChangeover(IDFObject):
-    """Plant equipment operation object to control switchover between chiller and heater operation of chiller heater heat pu..."""
+    """Plant equipment operation object to control switchover between chiller and heater operation of chiller heater heat pu...; Since: 23.2.0"""
 
     primary_cooling_plant_setpoint_temperature: float | None
     """[C]; Range: >= -10.0, <= 20.0"""
@@ -24218,7 +24327,7 @@ class SetpointManagerReturnTemperatureHotWater(IDFObject):
     """This is the desired return temperature target, which is met by adjusting the supply temperature setpoint. This is a s..."""
 
 class SetpointManagerSystemNodeResetTemperature(IDFObject):
-    """This Setpoint Manager is used to place a temperature setpoint on a system node according to the reference (e.g., retu..."""
+    """This Setpoint Manager is used to place a temperature setpoint on a system node according to the reference (e.g., retu...; Since: 22.1.0"""
 
     control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None
     setpoint_at_low_reference_temperature: float | None
@@ -24235,7 +24344,7 @@ class SetpointManagerSystemNodeResetTemperature(IDFObject):
     """Node(s) at which temperature will be set"""
 
 class SetpointManagerSystemNodeResetHumidity(IDFObject):
-    """This Setpoint Manager is used to place a humidity ratio setpoint on a system node according to the reference (e.g., r..."""
+    """This Setpoint Manager is used to place a humidity ratio setpoint on a system node according to the reference (e.g., r...; Since: 22.1.0"""
 
     control_variable: Literal["HumidityRatio", "MaximumHumidityRatio", "MinimumHumidityRatio"] | None
     setpoint_at_low_reference_humidity_ratio: float | None
@@ -26112,7 +26221,7 @@ class ElectricLoadCenterStorageBattery(IDFObject):
     """Determines the number of cycles to failure in relation to cycle range. Only required when battery life calculation is..."""
 
 class ElectricLoadCenterStorageLiIonNMCBattery(IDFObject):
-    """Uses Lithium Ion NMC model to simulate rechargeable battery banks in an electrical load center. The battery bank is a..."""
+    """Uses Lithium Ion NMC model to simulate rechargeable battery banks in an electrical load center. The battery bank is a...; Since: 9.5.0"""
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
@@ -26654,29 +26763,29 @@ class HybridModelZone(IDFObject):
     calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None
     """Use measured temperature data (temperature, humidity ratio, or CO2 concentration) to calculate zone air infiltration ...; Default: No"""
     calculate_zone_people_count: Literal["", "No", "Yes"] | None
-    """Use measured humidity ratio data (temperature, humidity ratio, or CO2 concentration) to calculate zone people count. ...; Default: No"""
+    """Use measured humidity ratio data (temperature, humidity ratio, or CO2 concentration) to calculate zone people count. ...; Default: No; Since: 9.1.0"""
     zone_measured_air_temperature_schedule_name: str | None
     """from Schedule:File"""
     zone_measured_air_humidity_ratio_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     zone_measured_air_co2_concentration_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     zone_input_people_activity_schedule_name: str | None
-    """When this field is provided and valid, the default people activity level (used to calculate people count) will be ove..."""
+    """When this field is provided and valid, the default people activity level (used to calculate people count) will be ove...; Since: 9.1.0"""
     zone_input_people_sensible_heat_fraction_schedule_name: str | None
-    """When this field is provided and valid, the default sensible heat fraction from people (used to calculate people count..."""
+    """When this field is provided and valid, the default sensible heat fraction from people (used to calculate people count...; Since: 9.1.0"""
     zone_input_people_radiant_heat_fraction_schedule_name: str | None
-    """When this field is provided and valid, the default radiant heat portion of the sensible heat from people (used to cal..."""
+    """When this field is provided and valid, the default radiant heat portion of the sensible heat from people (used to cal...; Since: 9.1.0"""
     zone_input_people_co2_generation_rate_schedule_name: str | None
-    """When this field is provided and valid, the default people CO2 generation rate (used to calculate people count) will b..."""
+    """When this field is provided and valid, the default people CO2 generation rate (used to calculate people count) will b...; Since: 9.1.0"""
     zone_input_supply_air_temperature_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     zone_input_supply_air_mass_flow_rate_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     zone_input_supply_air_humidity_ratio_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     zone_input_supply_air_co2_concentration_schedule_name: str | None
-    """from Schedule:File"""
+    """from Schedule:File; Since: 9.1.0"""
     begin_month: int | None
     """Range: >= 1, <= 12"""
     begin_day_of_month: int | None
@@ -26783,7 +26892,7 @@ class CurveQuadLinear(IDFObject):
     """Default: Dimensionless"""
 
 class CurveQuintLinear(IDFObject):
-    """Linear curve with five independent variables. Input for the linear curve consists of a curve name, the two coefficien..."""
+    """Linear curve with five independent variables. Input for the linear curve consists of a curve name, the two coefficien...; Since: 9.5.0"""
 
     coefficient1_constant: float | None
     coefficient2_v: float | None
@@ -27253,7 +27362,9 @@ class CurveDoubleExponentialDecay(IDFObject):
     coefficient2_c2: float | None
     coefficient3_c3: float | None
     coefficient4_c4: float | None
+    """Since: 9.4.0"""
     coefficient5_c5: float | None
+    """Since: 9.4.0"""
     minimum_value_of_x: float | None
     maximum_value_of_x: float | None
     minimum_curve_output: float | None
@@ -27300,7 +27411,7 @@ class CurveChillerPartLoadWithLift(IDFObject):
     """Default: Dimensionless"""
 
 class TableIndependentVariable(IDFObject):
-    """An independent variable representing a single dimension of a Table:Lookup object."""
+    """An independent variable representing a single dimension of a Table:Lookup object.; Since: 9.2.0"""
 
     interpolation_method: Literal["", "Cubic", "Linear"] | None
     """Default: Linear"""
@@ -27321,12 +27432,12 @@ class TableIndependentVariable(IDFObject):
     value: float | None
 
 class TableIndependentVariableList(IDFObject):
-    """A sorted list of independent variables used by one or more Table:Lookup objects."""
+    """A sorted list of independent variables used by one or more Table:Lookup objects.; Since: 9.2.0"""
 
     independent_variable_name: str | None
 
 class TableLookup(IDFObject):
-    """Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:Ind..."""
+    """Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:Ind...; Since: 9.2.0"""
 
     independent_variable_list_name: str | None
     normalization_method: Literal["", "AutomaticWithDivisor", "DivisorOnly", "None"] | None
@@ -29595,13 +29706,13 @@ class OutputTableAnnual(IDFObject):
     digits_after_decimal: float | None
 
 class OutputTableReportPeriod(IDFObject):
-    """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi..."""
+    """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi...; Since: 22.2.0"""
 
     report_name: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
         | None
     )
-    """currently only allow for these tables, could be extended in the future"""
+    """currently only allow for these tables, could be extended in the future; Since: 25.2.0"""
     begin_year: int | None
     """start year of reporting, if specified"""
     begin_month: int | None
@@ -29625,7 +29736,7 @@ class OutputControlTableStyle(IDFObject):
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
     format_numeric_values: Literal["", "No", "Yes"] | None
-    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes"""
+    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
 class OutputControlReportingTolerances(IDFObject):
     """Calculations of the time that setpoints are not met use a tolerance of 0.2C. This object allows changing the toleranc..."""
@@ -29634,7 +29745,7 @@ class OutputControlReportingTolerances(IDFObject):
     """If the zone temperature is above the cooling setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
 
 class OutputControlResilienceSummaries(IDFObject):
-    """Specifies methods for resilience reporting variables"""
+    """Specifies methods for resilience reporting variables; Since: 25.1.0"""
 
 class OutputVariable(IDFObject):
     """each Output:Variable command picks variables to be put onto the standard output file (.eso) some variables may not be..."""
@@ -29701,6 +29812,7 @@ class MeterCustom(IDFObject):
         ]
         | None
     )
+    """Since: 9.4.0"""
     key_name: str | None
     output_variable_or_meter_name: str | None
 
@@ -29727,12 +29839,13 @@ class MeterCustomDecrement(IDFObject):
         ]
         | None
     )
+    """Since: 9.4.0"""
     source_meter_name: str | None
     key_name: str | None
     output_variable_or_meter_name: str | None
 
 class OutputControlFiles(IDFObject):
-    """Conditionally turn on/off output from EnergyPlus."""
+    """Conditionally turn on/off output from EnergyPlus.; Since: 9.4.0"""
 
     output_mtr: Literal["", "No", "Yes"] | None
     """Default: Yes"""
@@ -29749,7 +29862,7 @@ class OutputControlFiles(IDFObject):
     output_audit: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_space_sizing: Literal["", "No", "Yes"] | None
-    """Default: Yes"""
+    """Default: Yes; Since: 24.2.0"""
     output_zone_sizing: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_system_sizing: Literal["", "No", "Yes"] | None
@@ -29797,16 +29910,16 @@ class OutputControlFiles(IDFObject):
     output_tarcog: Literal["", "No", "Yes"] | None
     """Not Implemented Yet; Default: Yes"""
     output_plant_component_sizing: Literal["", "No", "Yes"] | None
-    """epluspsz.csv; Default: Yes"""
+    """epluspsz.csv; Default: Yes; Since: 25.2.0"""
 
 class OutputControlTimestamp(IDFObject):
-    """Control timestamp format, currently applies only to JSON and native CSV (not CSV via ReadVars)"""
+    """Control timestamp format, currently applies only to JSON and native CSV (not CSV via ReadVars); Since: 23.1.0"""
 
     timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None
     """Determines where the timestamp is produced, either at the beginning (Yes) or end (No) of the interval; Default: No"""
 
 class OutputJSON(IDFObject):
-    """Output from EnergyPlus can be written to JSON format files."""
+    """Output from EnergyPlus can be written to JSON format files.; Since: 9.1.0"""
 
     output_json: Literal["", "No", "Yes"] | None
     """Default: Yes"""
@@ -29827,9 +29940,9 @@ class OutputJSON(IDFObject):
         ]
         | None
     )
-    """Unit conversion option used when writing JSON Tabular Data This option applies to TabularData and TabularDatawithStri...; Default: UseOutputControlTableStyle"""
+    """Unit conversion option used when writing JSON Tabular Data This option applies to TabularData and TabularDatawithStri...; Default: UseOutputControlTableStyle; Since: 25.2.0"""
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
-    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes"""
+    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
 class OutputSQLite(IDFObject):
     """Output from EnergyPlus can be written to an SQLite format file."""
@@ -29847,9 +29960,9 @@ class OutputSQLite(IDFObject):
         ]
         | None
     )
-    """Unit conversion option used when writing SQLite Tabular Data This option applies to TabularData and TabularDatawithSt...; Default: UseOutputControlTableStyle"""
+    """Unit conversion option used when writing SQLite Tabular Data This option applies to TabularData and TabularDatawithSt...; Default: UseOutputControlTableStyle; Since: 9.5.0"""
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
-    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes"""
+    """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
 class OutputEnvironmentalImpactFactors(IDFObject):
     """This is used to Automatically report the facility meters and turn on the Environmental Impact Report calculations for..."""
@@ -29860,7 +29973,7 @@ class EnvironmentalImpactFactors(IDFObject):
     district_cooling_cop: float | None
     """District cooling COP used when converted to electricity; [W/W]; Default: 3.0; Range: > 0.0"""
     district_heating_steam_conversion_efficiency: float | None
-    """Steam conversion efficiency used to convert steam usage to natural gas; Default: 0.25; Range: > 0.0"""
+    """Steam conversion efficiency used to convert steam usage to natural gas; Default: 0.25; Range: > 0.0; Since: 23.2.0"""
     total_carbon_equivalent_emission_factor_from_n2o: float | None
     """[kg/kg]; Default: 80.7272"""
     total_carbon_equivalent_emission_factor_from_ch4: float | None
@@ -29927,6 +30040,7 @@ class OutputDiagnostics(IDFObject):
     """Special keys to produce certain warning messages or effect certain simulation characteristics."""
 
     key: str | None
+    """Since: 9.4.0"""
 
 class OutputDebuggingData(IDFObject):
     """switch eplusout.dbg file on or off"""
@@ -29951,18 +30065,19 @@ class OutputPreprocessorMessage(IDFObject):
     message_line_10: str | None
 
 class PythonPluginSearchPaths(IDFObject):
-    """Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ..."""
+    """Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ...; Since: 9.3.0"""
 
     add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None
     """Adding the current working directory allows Python to find plugin scripts in the current directory.; Default: Yes"""
     add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None
     """Enabling this will allow Python to find plugin scripts in the same directory as the running input file, even if that ...; Default: Yes"""
     add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None
-    """The 'epin' environment variable is set by some EnergyPlus interfaces in order to let EnergyPlus find external files i...; Default: Yes"""
+    """The 'epin' environment variable is set by some EnergyPlus interfaces in order to let EnergyPlus find external files i...; Default: Yes; Since: 22.1.0"""
     search_path: str | None
+    """Since: 9.4.0"""
 
 class PythonPluginInstance(IDFObject):
-    """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in..."""
+    """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in...; Since: 9.3.0"""
 
     run_during_warmup_days: Literal["", "No", "Yes"] | None
     """If this field is enabled, the plugin will be executed during warmup days, otherwise it will only be executed once war...; Default: No"""
@@ -29972,19 +30087,20 @@ class PythonPluginInstance(IDFObject):
     """This is the name of the class to be executed as a plugin during a simulation The class must inherit the EnergyPlusPlu..."""
 
 class PythonPluginVariables(IDFObject):
-    """This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P..."""
+    """This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P...; Since: 9.3.0"""
 
     variable_name: str | None
+    """Since: 9.4.0"""
 
 class PythonPluginTrendVariable(IDFObject):
-    """This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across..."""
+    """This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across...; Since: 9.3.0"""
 
     name_of_a_python_plugin_variable: str | None
     number_of_timesteps_to_be_logged: int | None
     """Range: >= 1"""
 
 class PythonPluginOutputVariable(IDFObject):
-    """This object sets up an EnergyPlus output variable from a Python Plugin variable"""
+    """This object sets up an EnergyPlus output variable from a Python Plugin variable; Since: 9.3.0"""
 
     python_plugin_variable_name: str | None
     """Must be listed in the PythonPlugin:Variables object"""
