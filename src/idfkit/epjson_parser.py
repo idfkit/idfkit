@@ -27,6 +27,7 @@ def parse_epjson(
     filepath: Path | str,
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
+    strict_fields: bool = False,
 ) -> IDFDocument:
     """
     Parse an epJSON file into an IDFDocument.
@@ -60,7 +61,7 @@ def parse_epjson(
         raise FileNotFoundError(f"epJSON file not found: {filepath}")  # noqa: TRY003
 
     parser = EpJSONParser(filepath, schema)
-    return parser.parse(version)
+    return parser.parse(version, strict_fields=strict_fields)
 
 
 class EpJSONParser:
@@ -81,7 +82,7 @@ class EpJSONParser:
         self._filepath = filepath
         self._schema = schema
 
-    def parse(self, version: tuple[int, int, int] | None = None) -> IDFDocument:
+    def parse(self, version: tuple[int, int, int] | None = None, *, strict_fields: bool = False) -> IDFDocument:
         """
         Parse the epJSON file into an IDFDocument.
 
@@ -111,7 +112,7 @@ class EpJSONParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath)  # type: ignore[reportCallIssue]
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]
 
         # Parse objects
         self._parse_objects(data, doc, schema)

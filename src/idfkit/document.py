@@ -27,9 +27,9 @@ from .versions import LATEST_VERSION
 logger = logging.getLogger(__name__)
 
 if sys.version_info >= (3, 13):
-    Strict = TypeVar("Strict", bound=bool, default=bool)
+    Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
 else:
-    Strict = TypeVar("Strict", bound=bool)
+    Strict = TypeVar("Strict", bound=bool, covariant=True)
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
@@ -534,7 +534,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             name=name,
             data=field_data,
             schema=obj_schema,
-            document=self,  # type: ignore[arg-type]  # Strict is a subtype of bool
+            document=self,  # type: ignore[reportArgumentType]  # covariant Strict ⊆ bool
             field_order=field_order,
             ref_fields=ref_fields,
         )
@@ -874,7 +874,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         from .simulation.expand import expand_objects
 
-        return expand_objects(self, energyplus=energyplus, timeout=timeout)  # type: ignore[arg-type]
+        return expand_objects(self, energyplus=energyplus, timeout=timeout)  # type: ignore[reportArgumentType,reportReturnType]  # covariant Strict ⊆ bool
 
     # -------------------------------------------------------------------------
     # Copying

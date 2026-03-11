@@ -72,6 +72,7 @@ def parse_idf(
     version: tuple[int, int, int] | None = None,
     encoding: str = "latin-1",
     strict: bool = True,
+    strict_fields: bool = False,
 ) -> IDFDocument:
     """
     Parse an IDF file into an IDFDocument.
@@ -114,7 +115,7 @@ def parse_idf(
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
     parser = IDFParser(filepath, schema, encoding, strict=strict)
-    return parser.parse(version)
+    return parser.parse(version, strict_fields=strict_fields)
 
 
 class IDFParser:
@@ -145,7 +146,7 @@ class IDFParser:
         self._strict = strict
         self._content: bytes | None = None
 
-    def parse(self, version: tuple[int, int, int] | None = None) -> IDFDocument:
+    def parse(self, version: tuple[int, int, int] | None = None, *, strict_fields: bool = False) -> IDFDocument:
         """
         Parse the IDF file into an IDFDocument.
 
@@ -174,7 +175,7 @@ class IDFParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath)  # type: ignore[reportCallIssue]
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]
 
         # Parse objects
         self._parse_objects(content, doc, schema)

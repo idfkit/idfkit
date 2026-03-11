@@ -8,8 +8,15 @@ install: ## Install the virtual environment and install the pre-commit hooks
 	@uv sync
 	@uv run pre-commit install
 
+.PHONY: check-stubs
+check-stubs: ## Verify generated type stubs are up-to-date
+	@echo "🚀 Checking type stub consistency"
+	@uv run python -m idfkit.codegen.generate_stubs
+	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi || \
+		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
+
 .PHONY: check
-check: ## Run code quality tools.
+check: check-stubs ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"

@@ -101,10 +101,6 @@ packages = ["src/idfkit"]
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
-# IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
-# All keys are total=False (the document is not a real TypedDict at runtime),
-# so we suppress the "not a required key" diagnostic globally.
-reportTypedDictNotRequiredAccess = false
 exclude = [
     "benchmarks", "src/idfkit/schemas", "src/idfkit/weather/data",
     ".venv", "**/node_modules", "**/__pycache__",
@@ -117,8 +113,16 @@ exclude = [
     "src/idfkit/document.pyi",
 ]
 
+# IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
+# All keys are total=False (the document is not a real TypedDict at runtime),
+# so we scope the suppression to the package rather than globally.
+[[tool.pyright.executionEnvironments]]
+root = "src/idfkit"
+reportTypedDictNotRequiredAccess = false
+
 [[tool.pyright.executionEnvironments]]
 root = "docs/snippets"
+reportTypedDictNotRequiredAccess = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnknownArgumentType = false

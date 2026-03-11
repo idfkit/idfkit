@@ -19,7 +19,7 @@ from .references import ReferenceGraph
 from .schema import EpJSONSchema
 from .simulation.config import EnergyPlusConfig
 
-Strict = TypeVar("Strict", bound=bool, default=bool)
+Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
 
 _PYTHON_TO_IDF: dict[str, str]
 _IDF_TO_PYTHON: dict[str, str]

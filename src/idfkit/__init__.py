@@ -201,19 +201,41 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
-    doc = parse_idf(Path(path), version=version, strict=strict)
-    if strict_fields:
-        object.__setattr__(doc, "_strict", True)
-    return doc
+    return parse_idf(Path(path), version=version, strict=strict, strict_fields=strict_fields)
 
 
-def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:
+@overload
+def load_epjson(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict_fields: Literal[True],
+) -> IDFDocument[Literal[True]]: ...
+
+
+@overload
+def load_epjson(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict_fields: Literal[False] = ...,
+) -> IDFDocument[Literal[False]]: ...
+
+
+def load_epjson(  # type: ignore[misc]  # overload implementation
+    path: str,
+    version: tuple[int, int, int] | None = None,
+    *,
+    strict_fields: bool = False,
+) -> IDFDocument[bool]:
     """
     Load an epJSON file and return an IDFDocument.
 
     Args:
         path: Path to the epJSON file
         version: Optional version override (major, minor, patch)
+        strict_fields: When ``True``, accessing an unknown field name on any
+            IDFObject raises ``AttributeError`` instead of returning ``None``.
 
     Returns:
         Parsed IDFDocument
@@ -235,7 +257,7 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
     """
     from pathlib import Path
 
-    return parse_epjson(Path(path), version=version)
+    return parse_epjson(Path(path), version=version, strict_fields=strict_fields)
 
 
 @overload

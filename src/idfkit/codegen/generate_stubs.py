@@ -262,7 +262,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("from .schema import EpJSONSchema")
     lines.append("from .simulation.config import EnergyPlusConfig")
     lines.append("")
-    lines.append("Strict = TypeVar('Strict', bound=bool, default=bool)")
+    lines.append("Strict = TypeVar('Strict', bound=bool, default=bool, covariant=True)")
     lines.append("")
     lines.append("_PYTHON_TO_IDF: dict[str, str]")
     lines.append("_IDF_TO_PYTHON: dict[str, str]")
@@ -296,7 +296,9 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
     # get_collection — typed access for dynamic string keys (avoids TypedDict Unknown)
     lines.append("    def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]: ...")
-    # __getattr__ — needed for pyright to know about attribute access
+    # __getattr__ — fallback for object types not covered by the generated @property
+    # accessors below.  Keeps the stub open to custom/uncommon EnergyPlus types;
+    # the typed properties still provide autocomplete for the ~90 most common types.
     lines.append("    def __getattr__(self, name: str) -> IDFCollection[IDFObject]: ...")
     lines.append("    def __contains__(self, obj_type: str) -> bool: ...  # type: ignore[override]")
     lines.append("    def __iter__(self) -> Iterator[str]: ...  # type: ignore[override]")

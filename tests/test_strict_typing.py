@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 
 import pytest
 
@@ -166,25 +167,49 @@ class TestStubGeneration:
 class TestLoadIdfStrictFields:
     """Test that load_idf's strict_fields parameter works."""
 
-    def test_load_idf_default_non_strict(self, tmp_path: pytest.TempPathFactory) -> None:
+    def test_load_idf_default_non_strict(self, tmp_path: Path) -> None:
         from idfkit import load_idf, write_idf
 
         # Create a minimal IDF file
         doc = new_document()
-        path = tmp_path / "test.idf"  # type: ignore[operator]
+        path = tmp_path / "test.idf"
         write_idf(doc, str(path))
 
         loaded = load_idf(str(path))
         assert loaded.strict is False
 
-    def test_load_idf_strict_fields(self, tmp_path: pytest.TempPathFactory) -> None:
+    def test_load_idf_strict_fields(self, tmp_path: Path) -> None:
         from idfkit import load_idf, write_idf
 
         doc = new_document()
-        path = tmp_path / "test.idf"  # type: ignore[operator]
+        path = tmp_path / "test.idf"
         write_idf(doc, str(path))
 
         loaded = load_idf(str(path), strict_fields=True)
+        assert loaded.strict is True
+
+
+class TestLoadEpjsonStrictFields:
+    """Test that load_epjson's strict_fields parameter works."""
+
+    def test_load_epjson_default_non_strict(self, tmp_path: Path) -> None:
+        from idfkit import load_epjson, write_epjson
+
+        doc = new_document()
+        path = tmp_path / "test.epJSON"
+        write_epjson(doc, str(path))
+
+        loaded = load_epjson(str(path))
+        assert loaded.strict is False
+
+    def test_load_epjson_strict_fields(self, tmp_path: Path) -> None:
+        from idfkit import load_epjson, write_epjson
+
+        doc = new_document()
+        path = tmp_path / "test.epJSON"
+        write_epjson(doc, str(path))
+
+        loaded = load_epjson(str(path), strict_fields=True)
         assert loaded.strict is True
 
 
