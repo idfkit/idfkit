@@ -320,7 +320,7 @@ def new_document(  # type: ignore[misc]  # overload implementation
         (24, 1, 0)
     """
     schema = get_schema(version)
-    doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]
+    doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
     # Seed core singleton objects for a minimal baseline model.
     version_identifier = f"{version[0]}.{version[1]}"

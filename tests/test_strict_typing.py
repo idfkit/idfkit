@@ -48,6 +48,24 @@ class TestIDFDocumentStrict:
         zone = doc.add("Zone", "TestZone")
         assert zone.nonexistent_field_xyz is None
 
+    def test_get_collection_returns_same_as_getitem(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z1")
+        assert doc.get_collection("Zone") is doc["Zone"]
+
+    def test_get_collection_missing_type_returns_empty(self) -> None:
+        doc = new_document()
+        coll = doc.get_collection("Zone")
+        assert len(coll) == 0
+
+    def test_copy_strict_enforces_strict_on_objects(self) -> None:
+        doc = new_document(strict=True)
+        doc.add("Zone", "Office")
+        copy = doc.copy()
+        zone = copy["Zone"]["Office"]
+        with pytest.raises(AttributeError):
+            _ = zone.nonexistent_field_xyz
+
 
 class TestIDFCollectionGeneric:
     """Test that IDFCollection is generic and properly typed."""

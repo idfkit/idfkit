@@ -175,7 +175,7 @@ class IDFParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
         # Parse objects
         self._parse_objects(content, doc, schema)

@@ -24,8 +24,8 @@ def _avg_time(cmd: list[str]) -> float:
     return sum(times) / len(times)
 
 
-def _read_pyi_parts() -> tuple[str, str, str, str]:
-    """Split document.pyi into header, getitem overloads, add overloads, footer."""
+def _read_pyi_parts() -> tuple[str, str, str, str, str]:
+    """Split document.pyi into header, getitem overloads, middle, add overloads, footer."""
     content = DOC_PYI.read_text()
     lines = content.splitlines(keepends=True)
 
@@ -54,7 +54,7 @@ def _read_pyi_parts() -> tuple[str, str, str, str]:
     add_block = "".join(lines[add_start:add_end])
     footer = "".join(lines[add_end:])
 
-    return header, getitem_block, middle, add_block, footer  # type: ignore[return-value]
+    return header, getitem_block, middle, add_block, footer
 
 
 def main() -> None:

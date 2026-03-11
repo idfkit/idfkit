@@ -119,7 +119,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _schema: EpJSONSchema | None
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
-    _strict: Strict
+    _strict: bool
 
     def __init__(
         self,
@@ -127,7 +127,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         schema: EpJSONSchema | None = None,
         filepath: Path | str | None = None,
         *,
-        strict: Strict = False,
+        strict: bool = False,
     ) -> None:
         """
         Initialize an IDFDocument.
@@ -151,7 +151,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._strict = strict
 
     @property
-    def strict(self) -> Strict:
+    def strict(self) -> bool:
         """Whether strict field access mode is enabled.
 
         When ``True``, accessing an unknown field name on objects in this
@@ -534,7 +534,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             name=name,
             data=field_data,
             schema=obj_schema,
-            document=self,  # type: ignore[reportArgumentType]  # covariant Strict ⊆ bool
+            document=self,  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
             field_order=field_order,
             ref_fields=ref_fields,
         )
@@ -874,13 +874,13 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         from .simulation.expand import expand_objects
 
-        return expand_objects(self, energyplus=energyplus, timeout=timeout)  # type: ignore[reportArgumentType,reportReturnType]  # covariant Strict ⊆ bool
+        return expand_objects(self, energyplus=energyplus, timeout=timeout)  # type: ignore[reportArgumentType,reportReturnType]  # .pyi uses covariant Strict
 
     # -------------------------------------------------------------------------
     # Copying
     # -------------------------------------------------------------------------
 
-    def copy(self) -> IDFDocument[Strict]:
+    def copy(self) -> IDFDocument[bool]:
         """Create a deep copy of the document.
 
         The copy is independent -- modifying the copy does not affect
@@ -902,7 +902,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(variant) == len(baseline) + 1
             True
         """
-        new_doc = IDFDocument[Strict](
+        new_doc: IDFDocument[bool] = IDFDocument(  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
             version=self.version,
             schema=self._schema,
             filepath=self.filepath,

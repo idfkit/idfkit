@@ -382,6 +382,7 @@ _RESERVED_ATTRS = frozenset({
 
 def _generate_attr_properties(
     python_to_idf: dict[str, str],
+    indent: str = "    ",
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
@@ -393,8 +394,8 @@ def _generate_attr_properties(
         if py_name in _RESERVED_ATTRS:
             continue
         cls_name = _to_class_name(idf_type)
-        lines.append("        @property")
-        lines.append(f"        def {py_name}(self) -> IDFCollection[{cls_name}]: ...")
+        lines.append(f"{indent}@property")
+        lines.append(f"{indent}def {py_name}(self) -> IDFCollection[{cls_name}]: ...")
     return lines
 
 
@@ -423,6 +424,8 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("DO NOT EDIT — regenerate with:")
     parts.append(f"    python -m idfkit.codegen.generate_stubs {version_str}")
     parts.append('"""')
+    parts.append("")
+    parts.append("from __future__ import annotations")
     parts.append("")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
@@ -570,9 +573,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
 
     # Attribute accessor properties
-    attr_lines = _generate_attr_properties(_PYTHON_TO_IDF)
-    for line in attr_lines:
-        lines.append(line.replace("        ", "    ", 1))
+    lines.extend(_generate_attr_properties(_PYTHON_TO_IDF, indent="    "))
     lines.append("")
 
     return "\n".join(lines)
@@ -580,7 +581,6 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
 def main() -> None:
     """CLI entry point."""
-    import importlib.resources
     from pathlib import Path
 
     version: tuple[int, int, int] | None = None
@@ -592,8 +592,7 @@ def main() -> None:
     doc_pyi = generate_document_pyi(version)
 
     # Write to src/idfkit/
-    pkg_dir = importlib.resources.files("idfkit")
-    base_path = Path(str(getattr(pkg_dir, "_path", pkg_dir)))
+    base_path = Path(__file__).resolve().parent.parent
 
     types_path = base_path / "_generated_types.pyi"
     types_path.write_text(content, encoding="utf-8")

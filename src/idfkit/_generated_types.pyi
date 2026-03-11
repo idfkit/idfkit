@@ -4,6 +4,8 @@ DO NOT EDIT — regenerate with:
     python -m idfkit.codegen.generate_stubs 25.2.0
 """
 
+from __future__ import annotations
+
 from typing import Any, Literal, TypedDict
 
 from .objects import IDFCollection, IDFObject
