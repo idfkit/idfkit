@@ -45,8 +45,8 @@ def _read_pyi_parts() -> tuple[str, str, str, str]:
         if "def add(" in line:
             add_end = i + 1
 
-    assert getitem_start is not None
-    assert add_start is not None
+    assert getitem_start is not None  # noqa: S101
+    assert add_start is not None  # noqa: S101
 
     header = "".join(lines[:getitem_start])
     getitem_block = "".join(lines[getitem_start:getitem_end])

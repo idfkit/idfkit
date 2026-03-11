@@ -25,7 +25,7 @@ def _avg_time(cmd: list[str]) -> float:
     return sum(times) / len(times)
 
 
-def main() -> None:
+def main() -> None:  # noqa: C901
     # Save originals
     gen_backup = GEN_TYPES.read_bytes() if GEN_TYPES.exists() else None
     doc_backup = DOC_PYI.read_bytes() if DOC_PYI.exists() else None
