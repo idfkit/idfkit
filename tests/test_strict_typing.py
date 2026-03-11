@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from idfkit import IDFDocument, IDFObject, new_document
+from idfkit import IDFObject, new_document
 from idfkit.objects import IDFCollection
 
 
@@ -105,12 +105,12 @@ class TestStubGeneration:
         assert "class Building(IDFObject):" in content
         assert "class Material(IDFObject):" in content
 
-    def test_generate_stubs_has_properties(self) -> None:
+    def test_generate_stubs_has_typed_fields(self) -> None:
         from idfkit.codegen.generate_stubs import generate_stubs
 
         content = generate_stubs((24, 1, 0))
-        assert "def x_origin(self)" in content
-        assert "def y_origin(self)" in content
+        assert "x_origin: float | None" in content
+        assert "y_origin: float | None" in content
 
     def test_generate_stubs_skips_invalid_identifiers(self) -> None:
         from idfkit.codegen.generate_stubs import generate_stubs

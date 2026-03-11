@@ -106,11 +106,8 @@ def _generate_object_class(
         has_any_of = field_schema is not None and "anyOf" in field_schema
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
-        # All field properties are optional (may not be set)
-        lines.append("        @property")
-        lines.append(f"        def {field_name}(self) -> {py_type} | None: ...")
-        lines.append(f"        @{field_name}.setter")
-        lines.append(f"        def {field_name}(self, value: {py_type}) -> None: ...")
+        # Use simple annotated attributes (compact, 1 line per field instead of 4)
+        lines.append(f"        {field_name}: {py_type} | None")
 
     return lines
 
@@ -126,7 +123,9 @@ def _generate_getitem_overloads(
     for obj_type in schema.object_types:
         cls_name = _to_class_name(obj_type)
         lines.append("        @overload")
-        lines.append(f'        def __getitem__(self, obj_type: Literal["{obj_type}"]) -> IDFCollection[{cls_name}]: ...')
+        lines.append(
+            f'        def __getitem__(self, obj_type: Literal["{obj_type}"]) -> IDFCollection[{cls_name}]: ...'
+        )
     # Fallback overload
     lines.append("        @overload")
     lines.append("        def __getitem__(self, obj_type: str) -> IDFCollection[IDFObject]: ...")
@@ -138,44 +137,21 @@ def _generate_add_overloads(
 ) -> list[str]:
     """Generate ``add`` overloads for IDFDocument.
 
-    Each overload has typed kwargs matching the object type's fields.
+    Each overload maps the object type literal to a typed return value.
+    Field-level kwargs are NOT generated here (they add significant type-checker
+    overhead with ~858 overloads).  Users still get typed kwargs via IDE
+    completion from the ``IDFObject`` subclass properties in ``_generated_types.pyi``.
     """
     lines: list[str] = []
     for obj_type in schema.object_types:
         cls_name = _to_class_name(obj_type)
-        has_name = schema.has_name(obj_type)
-
-        inner = schema.get_inner_schema(obj_type)
-        properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
-        field_names = schema.get_field_names(obj_type)
-
-        # Build typed kwargs
-        kwargs_parts: list[str] = []
-        for field_name in field_names:
-            if not field_name.isidentifier():
-                continue
-            field_schema = properties.get(field_name)
-            field_type = schema.get_field_type(obj_type, field_name)
-            has_any_of = field_schema is not None and "anyOf" in field_schema
-            py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
-            kwargs_parts.append(f"{field_name}: {py_type} = ...")
-
-        kwargs_str = ", ".join(kwargs_parts)
-
+        # Uniform signature: always include name param (it's optional with default)
         lines.append("        @overload")
-        if kwargs_str:
-            name_param = "name: str = ..., " if has_name else ""
-            lines.append(
-                f'        def add(self, obj_type: Literal["{obj_type}"], {name_param}'
-                f"data: dict[str, Any] | None = ..., *, validate: bool = ..., "
-                f"{kwargs_str}) -> {cls_name}: ..."
-            )
-        else:
-            name_param = "name: str = ..., " if has_name else ""
-            lines.append(
-                f'        def add(self, obj_type: Literal["{obj_type}"], {name_param}'
-                f"data: dict[str, Any] | None = ..., *, validate: bool = ...) -> {cls_name}: ..."
-            )
+        lines.append(
+            f'        def add(self, obj_type: Literal["{obj_type}"], '
+            f"name: str = ..., data: dict[str, Any] | None = ..., *, "
+            f"validate: bool = ..., **kwargs: Any) -> {cls_name}: ..."
+        )
 
     # Fallback overload
     lines.append("        @overload")
@@ -188,8 +164,16 @@ def _generate_add_overloads(
 
 
 _RESERVED_ATTRS = frozenset({
-    "version", "filepath", "strict", "schema", "collections", "references",
-    "copy", "keys", "values", "items",
+    "version",
+    "filepath",
+    "strict",
+    "schema",
+    "collections",
+    "references",
+    "copy",
+    "keys",
+    "values",
+    "items",
 })
 
 
@@ -357,7 +341,9 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("    def removeidfobject(self, obj: IDFObject) -> None: ...")
     lines.append("    def rename(self, obj_type: str, old_name: str, new_name: str) -> None: ...")
     lines.append("    def notify_name_change(self, obj: IDFObject, old_name: str, new_name: str) -> None: ...")
-    lines.append("    def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None: ...")
+    lines.append(
+        "    def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None: ..."
+    )
     lines.append("    def get_referencing(self, name: str) -> set[IDFObject]: ...")
     lines.append("    def get_references(self, obj: IDFObject) -> set[str]: ...")
     lines.append("    @property")
@@ -368,7 +354,9 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("    @property")
     lines.append("    def all_objects(self) -> Iterator[IDFObject]: ...")
     lines.append("    def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]: ...")
-    lines.append("    def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]: ...")
+    lines.append(
+        "    def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]: ..."
+    )
     lines.append("    def copy(self) -> IDFDocument[Strict]: ...")
     lines.append("")
 

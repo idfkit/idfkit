@@ -46,14 +46,11 @@ def _run_timed(cmd: list[str], label: str, *, cwd: Path | None = None) -> float:
         result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd or ROOT)
         elapsed = time.perf_counter() - start
         times.append(elapsed)
-        if i == 0:
-            # Print errors from first run only
-            if result.returncode != 0:
-                errors = [l for l in result.stdout.splitlines() if "error" in l.lower()]
-                if errors:
-                    print(f"    {label}: {len(errors)} error(s) on first run")
+        if i == 0 and result.returncode != 0:
+            errors = [line for line in result.stdout.splitlines() if "error" in line.lower()]
+            if errors:
+                print(f"    {label}: {len(errors)} error(s) on first run")
 
-    best = min(times)
     avg = sum(times) / len(times)
     return avg
 
@@ -93,7 +90,9 @@ def bench_pyright_consumer(consumer_path: Path, with_stubs: bool) -> float:
 def bench_mypy_package(with_stubs: bool) -> float:
     """Benchmark mypy on the full package."""
     cmd = [
-        sys.executable, "-m", "mypy",
+        sys.executable,
+        "-m",
+        "mypy",
         "--no-incremental",
         "--ignore-missing-imports",
         str(SRC),
@@ -105,7 +104,9 @@ def bench_mypy_package(with_stubs: bool) -> float:
 def bench_mypy_consumer(consumer_path: Path, with_stubs: bool) -> float:
     """Benchmark mypy on a small consumer script."""
     cmd = [
-        sys.executable, "-m", "mypy",
+        sys.executable,
+        "-m",
+        "mypy",
         "--no-incremental",
         "--ignore-missing-imports",
         str(consumer_path),
@@ -152,8 +153,8 @@ def _format_delta(with_val: float, without_val: float) -> str:
 def main() -> None:
     print("=" * 72)
     print("Type Checker Benchmark: idfkit with vs without generated stubs")
-    print(f"  Stubs: _generated_types.pyi + document.pyi")
-    print(f"  Stub sizes: ", end="")
+    print("  Stubs: _generated_types.pyi + document.pyi")
+    print("  Stub sizes: ", end="")
     for s in STUBS:
         if s.exists():
             print(f"{s.name}={s.stat().st_size / 1024:.0f}KB  ", end="")
@@ -218,7 +219,7 @@ def main() -> None:
 
     # ---- Results table ----
     print("\n" + "=" * 72)
-    print("RESULTS (average of {} runs)".format(RUNS))
+    print(f"RESULTS (average of {RUNS} runs)")
     print("=" * 72)
     print(f"{'Benchmark':<28} {'Without':>10} {'With':>10} {'Delta':>18}")
     print("-" * 72)
@@ -241,7 +242,7 @@ def main() -> None:
     print("-" * 72)
 
     # Stub file info
-    print(f"\nStub file sizes:")
+    print("\nStub file sizes:")
     for s in STUBS:
         if s.exists():
             size_kb = s.stat().st_size / 1024
