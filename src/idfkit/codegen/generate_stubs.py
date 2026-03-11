@@ -58,21 +58,140 @@ def _schema_type_to_python(
     """Map an epJSON schema field type to a Python type annotation.
 
     Returns the *value* type (without ``| None``).
+    Uses ``Literal[...]`` for fields with ``enum`` values.
     """
-    if has_any_of and field_schema is not None:
-        types = [
-            _ANY_OF_TYPE_MAP[sub["type"]]
-            for sub in field_schema.get("anyOf", [])
-            if sub.get("type") in _ANY_OF_TYPE_MAP
-        ]
-        if types:
-            return " | ".join(dict.fromkeys(types))
+    if field_schema is not None:
+        # Direct enum — use Literal
+        if "enum" in field_schema:
+            return _enum_to_literal(field_schema["enum"])
+
+        # anyOf — combine numeric types with Literal for string enums
+        if has_any_of:
+            return _anyof_to_python(field_schema)
+
+    if has_any_of:
         return "str | float"
 
     return _SIMPLE_TYPE_MAP.get(field_type, "str | float")
 
 
+def _enum_to_literal(values: list[Any]) -> str:
+    """Convert a list of enum values to a ``Literal[...]`` type annotation."""
+    parts: list[str] = []
+    for v in values:
+        if isinstance(v, str):
+            if v == "":
+                parts.append('""')
+            else:
+                parts.append(f'"{v}"')
+        else:
+            parts.append(repr(v))
+    return f"Literal[{', '.join(parts)}]"
+
+
+def _anyof_to_python(field_schema: dict[str, Any]) -> str:
+    """Convert an ``anyOf`` field to a Python type annotation.
+
+    Combines numeric types with ``Literal[...]`` for string enum branches.
+    """
+    numeric_types: list[str] = []
+    literal_values: list[str] = []
+    for sub in field_schema.get("anyOf", []):
+        sub_type = sub.get("type")
+        if sub_type in _ANY_OF_TYPE_MAP:
+            if "enum" in sub:
+                # String branch with specific enum values (e.g. "Autocalculate")
+                for v in sub["enum"]:
+                    if isinstance(v, str):
+                        literal_values.append('""' if v == "" else f'"{v}"')
+                    else:
+                        literal_values.append(repr(v))
+            else:
+                numeric_types.append(_ANY_OF_TYPE_MAP[sub_type])
+
+    parts: list[str] = list(dict.fromkeys(numeric_types))  # dedupe, preserve order
+    if literal_values:
+        parts.append(f"Literal[{', '.join(literal_values)}]")
+    return " | ".join(parts) if parts else "str | float"
+
+
+# ---- docstring generation --------------------------------------------------
+
+
+def _format_constraints(field_schema: dict[str, Any]) -> str | None:
+    """Format min/max constraints from a field schema, or ``None`` if unconstrained."""
+    parts: list[str] = []
+    if "minimum" in field_schema:
+        parts.append(f">= {field_schema['minimum']}")
+    if "exclusiveMinimum" in field_schema:
+        parts.append(f"> {field_schema['exclusiveMinimum']}")
+    if "maximum" in field_schema:
+        parts.append(f"<= {field_schema['maximum']}")
+    if "exclusiveMaximum" in field_schema:
+        parts.append(f"< {field_schema['exclusiveMaximum']}")
+    return f"Range: {', '.join(parts)}" if parts else None
+
+
+def _field_docstring(field_schema: dict[str, Any] | None) -> str | None:
+    """Build a single-line docstring from field metadata.
+
+    Returns ``None`` if there is nothing useful to document.
+    """
+    if field_schema is None:
+        return None
+
+    parts: list[str] = []
+
+    # Primary description
+    note = field_schema.get("note")
+    if note:
+        note_text = " ".join(note.split())
+        if len(note_text) > 120:
+            note_text = note_text[:117] + "..."
+        parts.append(note_text)
+
+    # Units
+    units = field_schema.get("units")
+    ip_units = field_schema.get("ip-units")
+    if units:
+        parts.append(f"[{units}] ({ip_units})" if ip_units else f"[{units}]")
+
+    # Default value
+    default = field_schema.get("default")
+    if default is not None:
+        parts.append(f"Default: {default}")
+
+    # Constraints
+    constraint_str = _format_constraints(field_schema)
+    if constraint_str:
+        parts.append(constraint_str)
+
+    if not parts:
+        return None
+
+    text = "; ".join(parts)
+    return _sanitize_docstring(text)
+
+
 # ---- object class generation ----------------------------------------------
+
+
+def _sanitize_docstring(text: str) -> str:
+    """Replace characters that would break triple-quoted docstrings or ruff checks."""
+    text = text.replace('"', "'")
+    # Replace ambiguous Unicode quotes/dashes with ASCII equivalents (ruff RUF001)
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    text = text.replace("\u201c", "'").replace("\u201d", "'")
+    text = text.replace("\u2013", "-").replace("\u2014", "-")
+    return text
+
+
+def _truncate_text(text: str, max_len: int = 120) -> str:
+    """Collapse whitespace and truncate *text*, replacing quotes for docstring safety."""
+    collapsed = " ".join(text.split())
+    if len(collapsed) > max_len:
+        collapsed = collapsed[: max_len - 3] + "..."
+    return _sanitize_docstring(collapsed)
 
 
 def _generate_object_class(
@@ -101,16 +220,24 @@ def _generate_object_class(
 
     body_indent = indent + "    "
 
+    # Add object-level docstring from schema memo
+    memo = schema.get_object_memo(obj_type)
+    has_body = False
+    if memo:
+        lines.append(f'{body_indent}"""{_truncate_text(memo)}"""')
+        has_body = True
+
     if not field_names:
-        # Use single-line form to match ruff formatting
-        lines[-1] = f"{indent}class {cls_name}(IDFObject): ..."
+        if not has_body:
+            lines[-1] = f"{indent}class {cls_name}(IDFObject): ..."
+        else:
+            lines.append("")
         return lines
 
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
 
     for field_name in field_names:
-        # Skip field names that aren't valid Python identifiers (e.g. "100_outdoor_air_in_cooling")
         if not field_name.isidentifier():
             continue
 
@@ -119,8 +246,11 @@ def _generate_object_class(
         has_any_of = field_schema is not None and "anyOf" in field_schema
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
-        # Use simple annotated attributes (compact, 1 line per field instead of 4)
         lines.append(f"{body_indent}{field_name}: {py_type} | None")
+
+        docstring = _field_docstring(field_schema)
+        if docstring:
+            lines.append(f'{body_indent}"""{docstring}"""')
 
     return lines
 
@@ -201,7 +331,7 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append(f"    python -m idfkit.codegen.generate_stubs {version_str}")
     parts.append('"""')
     parts.append("")
-    parts.append("from typing import Any, TypedDict")
+    parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
     parts.append("from .objects import IDFCollection, IDFObject")
     parts.append("")

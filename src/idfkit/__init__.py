@@ -25,7 +25,10 @@ Basic usage:
 from __future__ import annotations
 
 import logging
-from typing import Literal, overload
+from typing import TYPE_CHECKING, Literal, overload
+
+if TYPE_CHECKING:
+    from ._generated_types import *
 
 __version__ = "0.1.0"
 
