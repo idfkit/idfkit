@@ -34,7 +34,7 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         schema: EpJSONSchema | None = ...,
         filepath: Path | str | None = ...,
         *,
-        strict: Strict = ...,  # type: ignore[assignment]
+        strict: Strict = ...,
     ) -> None: ...
     @property
     def strict(self) -> Strict: ...

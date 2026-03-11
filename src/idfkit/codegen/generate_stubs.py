@@ -279,7 +279,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("        schema: EpJSONSchema | None = ...,")
     lines.append("        filepath: Path | str | None = ...,")
     lines.append("        *,")
-    lines.append("        strict: Strict = ...,  # type: ignore[assignment]")
+    lines.append("        strict: Strict = ...,")
     lines.append("    ) -> None: ...")
     lines.append("")
 
