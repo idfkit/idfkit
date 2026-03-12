@@ -1041,6 +1041,38 @@ class TestSetWWR:
         for win in windows:
             assert win.construction_name == "SimpleGlazing"
 
+    def test_set_wwr_blank_number_of_vertices(self) -> None:
+        """Test that set_wwr works when number_of_vertices is blank (autocalculate)."""
+        doc = new_document()
+        doc.add("Zone", "TestZone")
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Wall1",
+            surface_type="Wall",
+            construction_name="",
+            zone_name="TestZone",
+            outside_boundary_condition="Outdoors",
+            sun_exposure="SunExposed",
+            wind_exposure="WindExposed",
+            number_of_vertices="",  # blank = autocalculate
+            vertex_1_x_coordinate=0,
+            vertex_1_y_coordinate=0,
+            vertex_1_z_coordinate=3,
+            vertex_2_x_coordinate=0,
+            vertex_2_y_coordinate=0,
+            vertex_2_z_coordinate=0,
+            vertex_3_x_coordinate=10,
+            vertex_3_y_coordinate=0,
+            vertex_3_z_coordinate=0,
+            vertex_4_x_coordinate=10,
+            vertex_4_y_coordinate=0,
+            vertex_4_z_coordinate=3,
+            validate=False,
+        )
+        # Should not crash
+        windows = set_wwr(doc, 0.4)
+        assert len(windows) == 1
+
 
 # ---------------------------------------------------------------------------
 # intersect_match (surface boundary matching)
