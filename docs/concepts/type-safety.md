@@ -53,6 +53,16 @@ a safely typed `IDFCollection[IDFObject]`:
 Use `doc["Zone"]` when you know the type at write time. Use
 `doc.get_collection(obj_type)` in generic functions that accept any object type.
 
+!!! note "Why `get_collection()`?"
+    Under the hood, `doc["Zone"]` is typed via a `TypedDict` with all 858
+    EnergyPlus object types as literal keys. This gives your type checker exact
+    return types for each key — but `TypedDict` subscript access requires
+    string *literals*, so a plain `str` variable won't type-check.
+    An `@overload`-based approach was considered but rejected because 858
+    overloads cause significant performance degradation in pyright.
+    `get_collection()` is the lightweight escape hatch: it accepts any `str`
+    and returns the base `IDFCollection[IDFObject]` type.
+
 ## Version Availability
 
 Type stubs include **"Since: X.Y.Z"** annotations in docstrings for object
