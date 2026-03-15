@@ -324,6 +324,32 @@ class TestSurfaceGeometryUtils:
         assert poly is not None
         assert poly.num_vertices == 3
 
+    def test_get_surface_coords_blank_number_of_vertices(self) -> None:
+        """Test that blank number_of_vertices is treated as autocalculate."""
+        surface = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="Wall",
+            data={
+                "number_of_vertices": "",  # blank = autocalculate in EnergyPlus
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        poly = get_surface_coords(surface)
+        assert poly is not None
+        assert poly.num_vertices == 4
+        assert _close(poly.area, 30.0)
+
     def test_get_surface_coords_no_vertices(self) -> None:
         surface = IDFObject(obj_type="BuildingSurface:Detailed", name="Empty", data={})
         poly = get_surface_coords(surface)

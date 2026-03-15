@@ -497,6 +497,14 @@ def get_surface_coords(surface: IDFObject) -> Polygon3D | None:
 def _get_vertices_classic(surface: IDFObject) -> list[Vector3D]:
     """Extract vertices using ``vertex_{i}_x_coordinate`` naming."""
     num_verts = getattr(surface, "number_of_vertices", None)
+    # Treat blank or non-numeric number_of_vertices as autocalculate (same as None).
+    # EnergyPlus accepts blank values here and infers the count from actual vertices.
+    if num_verts is not None:
+        try:
+            num_verts = int(num_verts)
+        except (ValueError, TypeError):
+            num_verts = None
+
     if num_verts is None:
         i = 1
         while getattr(surface, f"vertex_{i}_x_coordinate", None) is not None:
@@ -504,7 +512,7 @@ def _get_vertices_classic(surface: IDFObject) -> list[Vector3D]:
         num_verts = i - 1
 
     vertices: list[Vector3D] = []
-    for i in range(1, int(num_verts) + 1):
+    for i in range(1, num_verts + 1):
         x = getattr(surface, f"vertex_{i}_x_coordinate", None)
         y = getattr(surface, f"vertex_{i}_y_coordinate", None)
         z = getattr(surface, f"vertex_{i}_z_coordinate", None)
