@@ -29,7 +29,7 @@ df["design_day_file"] = "s3://my-bucket/weather/USA_MA_Boston-Logan.ddy"
 # Validate and allocate
 specs = [BuildingSimInput.model_validate(row.to_dict()) for _, row in df.iterrows()]
 
-experiment = BaseExperiment(experiment=simulate_building)
+experiment = BaseExperiment(runnable=simulate_building)
 experiment.allocate(
     specs,
     version="bumpminor",
