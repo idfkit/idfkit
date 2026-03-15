@@ -108,10 +108,21 @@ exclude = [
     "docs/snippets/concepts/simulation-architecture/streaming.py",
     "docs/snippets/simulation/async/early_termination.py",
     "docs/snippets/simulation/sql-queries/error_handling.py",
+    # Generated type stubs — used as stubs by pyright, not analyzed directly
+    "src/idfkit/_generated_types.pyi",
+    "src/idfkit/document.pyi",
 ]
+
+# IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
+# All keys are total=False (the document is not a real TypedDict at runtime),
+# so we scope the suppression to the package rather than globally.
+[[tool.pyright.executionEnvironments]]
+root = "src/idfkit"
+reportTypedDictNotRequiredAccess = false
 
 [[tool.pyright.executionEnvironments]]
 root = "docs/snippets"
+reportTypedDictNotRequiredAccess = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnknownArgumentType = false
@@ -202,6 +213,9 @@ ignore = [
 "benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905"]
 "scripts/*" = ["T201"]
 "docs/snippets/*" = ["E402", "F706", "F821", "F841", "F811", "I", "S", "B", "TRY", "UP008"]
+"src/idfkit/__init__.py" = ["F403"]  # TYPE_CHECKING star import from _generated_types
+"src/idfkit/document.pyi" = ["F405"]  # star import from _generated_types
+"src/idfkit/_generated_types.pyi" = ["F401"]  # re-exports for document.pyi
 
 [tool.ruff.format]
 preview = true

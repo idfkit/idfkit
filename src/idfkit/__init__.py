@@ -25,6 +25,10 @@ Basic usage:
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING, Literal, overload
+
+if TYPE_CHECKING:
+    from ._generated_types import *
 
 __version__ = "0.1.0"
 
@@ -142,12 +146,33 @@ from .zoning import (
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+@overload
 def load_idf(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict: bool = ...,
+    strict_fields: Literal[True],
+) -> IDFDocument[Literal[True]]: ...
+
+
+@overload
+def load_idf(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict: bool = ...,
+    strict_fields: Literal[False] = ...,
+) -> IDFDocument[Literal[False]]: ...
+
+
+def load_idf(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
     strict: bool = True,
-) -> IDFDocument:
+    strict_fields: bool = False,
+) -> IDFDocument[bool]:
     """
     Load an IDF file and return an IDFDocument.
 
@@ -155,6 +180,8 @@ def load_idf(
         path: Path to the IDF file
         version: Optional version override (major, minor, patch)
         strict: If True, fail fast on malformed IDF objects (default: True)
+        strict_fields: When ``True``, accessing an unknown field name on any
+            IDFObject raises ``AttributeError`` instead of returning ``None``.
 
     Returns:
         Parsed IDFDocument
@@ -177,16 +204,41 @@ def load_idf(
     """
     from pathlib import Path
 
-    return parse_idf(Path(path), version=version, strict=strict)
+    return parse_idf(Path(path), version=version, strict=strict, strict_fields=strict_fields)
 
 
-def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDocument:
+@overload
+def load_epjson(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict_fields: Literal[True],
+) -> IDFDocument[Literal[True]]: ...
+
+
+@overload
+def load_epjson(
+    path: str,
+    version: tuple[int, int, int] | None = ...,
+    *,
+    strict_fields: Literal[False] = ...,
+) -> IDFDocument[Literal[False]]: ...
+
+
+def load_epjson(  # type: ignore[misc]  # overload implementation
+    path: str,
+    version: tuple[int, int, int] | None = None,
+    *,
+    strict_fields: bool = False,
+) -> IDFDocument[bool]:
     """
     Load an epJSON file and return an IDFDocument.
 
     Args:
         path: Path to the epJSON file
         version: Optional version override (major, minor, patch)
+        strict_fields: When ``True``, accessing an unknown field name on any
+            IDFObject raises ``AttributeError`` instead of returning ``None``.
 
     Returns:
         Parsed IDFDocument
@@ -208,14 +260,30 @@ def load_epjson(path: str, version: tuple[int, int, int] | None = None) -> IDFDo
     """
     from pathlib import Path
 
-    return parse_epjson(Path(path), version=version)
+    return parse_epjson(Path(path), version=version, strict_fields=strict_fields)
 
 
+@overload
 def new_document(
+    version: tuple[int, int, int] = ...,
+    *,
+    strict: Literal[True],
+) -> IDFDocument[Literal[True]]: ...
+
+
+@overload
+def new_document(
+    version: tuple[int, int, int] = ...,
+    *,
+    strict: Literal[False] = ...,
+) -> IDFDocument[Literal[False]]: ...
+
+
+def new_document(  # type: ignore[misc]  # overload implementation
     version: tuple[int, int, int] = LATEST_VERSION,
     *,
     strict: bool = False,
-) -> IDFDocument:
+) -> IDFDocument[bool]:
     """
     Create a new IDFDocument with baseline singleton objects populated.
 
@@ -252,7 +320,7 @@ def new_document(
         (24, 1, 0)
     """
     schema = get_schema(version)
-    doc = IDFDocument(version=version, schema=schema, strict=strict)
+    doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
     # Seed core singleton objects for a minimal baseline model.
     version_identifier = f"{version[0]}.{version[1]}"

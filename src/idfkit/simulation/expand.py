@@ -486,11 +486,11 @@ def run_preprocessing(
 
 
 def expand_objects(
-    model: IDFDocument,
+    model: IDFDocument[bool],
     *,
     energyplus: EnergyPlusConfig | None = None,
     timeout: float = 120.0,
-) -> IDFDocument:
+) -> IDFDocument[bool]:
     """Run the EnergyPlus *ExpandObjects* preprocessor and return the expanded document.
 
     ``ExpandObjects`` replaces ``HVACTemplate:*`` objects with their fully

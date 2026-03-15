@@ -168,9 +168,10 @@ def validate_document(  # noqa: C901
                 continue
             obj_schema = schema.get_object_schema(obj_type)
             if obj_schema and obj_schema.get("maxProperties") == 1:
-                count = len(doc[obj_type])
+                coll = doc.get_collection(obj_type)
+                count = len(coll)
                 if count > 1:
-                    first = doc[obj_type].first()
+                    first = coll.first()
                     obj_name = first.name if first and first.name else obj_type
                     errors.append(
                         ValidationError(
@@ -187,7 +188,7 @@ def validate_document(  # noqa: C901
         if obj_type not in doc.collections:
             continue
 
-        for obj in doc[obj_type]:
+        for obj in doc.get_collection(obj_type):
             obj_errors = _validate_object(
                 obj,
                 schema,

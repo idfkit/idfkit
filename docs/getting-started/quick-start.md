@@ -50,6 +50,11 @@ Validation is enabled by default, so typos are caught immediately:
 --8<-- "docs/snippets/getting-started/quick-start/discover_available_fields_3.py:example"
 ```
 
+!!! tip "IDE Support"
+    idfkit ships type stubs for all 858 EnergyPlus object types — your IDE
+    will autocomplete field names, show inline documentation, and catch typos.
+    See [Type-Safe Development](../concepts/type-safety.md) for details.
+
 ## Create a New Model
 
 ```python

@@ -11,9 +11,10 @@ Provides:
 from __future__ import annotations
 
 import logging
+import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat import EppyDocumentMixin
 from .exceptions import DuplicateObjectError, ValidationFailedError
@@ -24,6 +25,11 @@ from .validation import validate_object
 from .versions import LATEST_VERSION
 
 logger = logging.getLogger(__name__)
+
+if sys.version_info >= (3, 13):
+    Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
+else:
+    Strict = TypeVar("Strict", bound=bool, covariant=True)
 
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
@@ -85,7 +91,7 @@ _PYTHON_TO_IDF = {
 _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
 
 
-class IDFDocument(EppyDocumentMixin):
+class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     """
     Main container for an EnergyPlus model.
 
@@ -109,7 +115,7 @@ class IDFDocument(EppyDocumentMixin):
 
     version: tuple[int, int, int]
     filepath: Path | None
-    _collections: dict[str, IDFCollection]
+    _collections: dict[str, IDFCollection[IDFObject]]
     _schema: EpJSONSchema | None
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
@@ -134,12 +140,12 @@ class IDFDocument(EppyDocumentMixin):
                 [IDFObject][idfkit.objects.IDFObject] owned by this document raises
                 ``AttributeError`` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
-                typos early.
+                typos early.  This value is immutable after construction.
         """
         self.version = version or LATEST_VERSION
         self.filepath = Path(filepath) if filepath else None
         self._schema = schema
-        self._collections: dict[str, IDFCollection] = {}
+        self._collections: dict[str, IDFCollection[IDFObject]] = {}
         self._references = ReferenceGraph()
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
@@ -150,12 +156,10 @@ class IDFDocument(EppyDocumentMixin):
 
         When ``True``, accessing an unknown field name on objects in this
         document raises ``AttributeError`` instead of returning ``None``.
+
+        This property is read-only; set it via the constructor.
         """
         return self._strict
-
-    @strict.setter
-    def strict(self, value: bool) -> None:
-        self._strict = value
 
     @property
     def schema(self) -> EpJSONSchema | None:
@@ -163,7 +167,7 @@ class IDFDocument(EppyDocumentMixin):
         return self._schema
 
     @property
-    def collections(self) -> dict[str, IDFCollection]:
+    def collections(self) -> dict[str, IDFCollection[IDFObject]]:
         """Dict of object_type -> IDFCollection."""
         return self._collections
 
@@ -176,7 +180,7 @@ class IDFDocument(EppyDocumentMixin):
     # Collection Access
     # -------------------------------------------------------------------------
 
-    def __getitem__(self, obj_type: str) -> IDFCollection:
+    def __getitem__(self, obj_type: str) -> IDFCollection[IDFObject]:
         """
         Get collection by object type name.
 
@@ -202,11 +206,15 @@ class IDFDocument(EppyDocumentMixin):
         try:
             return self._collections[obj_type]
         except KeyError:
-            coll = IDFCollection(obj_type)
+            coll: IDFCollection[IDFObject] = IDFCollection(obj_type)
             self._collections[obj_type] = coll
             return coll
 
-    def __getattr__(self, name: str) -> IDFCollection:
+    def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
+        """Get collection by type name (typed for dynamic string keys)."""
+        return self[obj_type]
+
+    def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """
         Get collection by Python-style attribute name.
 
@@ -283,7 +291,7 @@ class IDFDocument(EppyDocumentMixin):
         """
         return [k for k, v in self._collections.items() if v]
 
-    def values(self) -> list[IDFCollection]:
+    def values(self) -> list[IDFCollection[IDFObject]]:
         """Return list of non-empty collections.
 
         Examples:
@@ -296,7 +304,7 @@ class IDFDocument(EppyDocumentMixin):
         """
         return [v for v in self._collections.values() if v]
 
-    def items(self) -> list[tuple[str, IDFCollection]]:
+    def items(self) -> list[tuple[str, IDFCollection[IDFObject]]]:
         """Return list of (object_type, collection) pairs for non-empty collections.
 
         Examples:
@@ -526,7 +534,7 @@ class IDFDocument(EppyDocumentMixin):
             name=name,
             data=field_data,
             schema=obj_schema,
-            document=self,
+            document=self,  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
             field_order=field_order,
             ref_fields=ref_fields,
         )
@@ -807,7 +815,7 @@ class IDFDocument(EppyDocumentMixin):
         for collection in self._collections.values():
             yield from collection
 
-    def objects_by_type(self) -> Iterator[tuple[str, IDFCollection]]:
+    def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""
         for obj_type, collection in self._collections.items():
             if collection:
@@ -822,7 +830,7 @@ class IDFDocument(EppyDocumentMixin):
         *,
         energyplus: EnergyPlusConfig | None = None,
         timeout: float = 120.0,
-    ) -> IDFDocument:
+    ) -> IDFDocument[bool]:
         """Run the EnergyPlus *ExpandObjects* preprocessor on this document.
 
         This replaces ``HVACTemplate:*`` objects with their fully specified
@@ -866,17 +874,17 @@ class IDFDocument(EppyDocumentMixin):
         """
         from .simulation.expand import expand_objects
 
-        return expand_objects(self, energyplus=energyplus, timeout=timeout)
+        return expand_objects(self, energyplus=energyplus, timeout=timeout)  # type: ignore[reportArgumentType,reportReturnType]  # .pyi uses covariant Strict
 
     # -------------------------------------------------------------------------
     # Copying
     # -------------------------------------------------------------------------
 
-    def copy(self) -> IDFDocument:
+    def copy(self) -> IDFDocument[bool]:
         """Create a deep copy of the document.
 
         The copy is independent -- modifying the copy does not affect
-        the original.
+        the original.  Strict mode is preserved.
 
         Examples:
             Create a copy for parametric comparison (e.g., testing
@@ -894,10 +902,11 @@ class IDFDocument(EppyDocumentMixin):
             >>> len(variant) == len(baseline) + 1
             True
         """
-        new_doc = IDFDocument(
+        new_doc: IDFDocument[bool] = IDFDocument(  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
             version=self.version,
             schema=self._schema,
             filepath=self.filepath,
+            strict=self._strict,
         )
 
         for obj in self.all_objects:

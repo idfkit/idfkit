@@ -920,7 +920,7 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
         100.0
     """
     for stype in VERTEX_SURFACE_TYPES:
-        for surface in doc[stype]:
+        for surface in doc.get_collection(stype):
             coords = get_surface_coords(surface)
             if coords is not None:
                 set_surface_coords(surface, coords.translate(offset))
@@ -943,7 +943,7 @@ def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None 
         anchor = Vector3D.origin()
 
     for stype in VERTEX_SURFACE_TYPES:
-        for surface in doc[stype]:
+        for surface in doc.get_collection(stype):
             coords = get_surface_coords(surface)
             if coords is not None:
                 set_surface_coords(surface, coords.rotate_z(angle_deg, anchor=anchor))

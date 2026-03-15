@@ -13,7 +13,7 @@ To opt out early, avoid importing or calling any symbol from this module.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -41,7 +41,7 @@ class _IDFObjectsView:
     def __init__(self, doc: EppyDocumentMixin) -> None:
         self._doc = doc
 
-    def __getitem__(self, key: str) -> IDFCollection:
+    def __getitem__(self, key: str) -> IDFCollection[IDFObject]:
         collections = self._doc.collections
         if key in collections:
             return collections[key]
@@ -68,11 +68,11 @@ class _IDFObjectsView:
         """Return object type names."""
         return list(self._doc.collections.keys())
 
-    def values(self) -> list[IDFCollection]:
+    def values(self) -> list[IDFCollection[IDFObject]]:
         """Return all collections."""
         return list(self._doc.collections.values())
 
-    def items(self) -> list[tuple[str, IDFCollection]]:
+    def items(self) -> list[tuple[str, IDFCollection[IDFObject]]]:
         """Return (type, collection) pairs."""
         return list(self._doc.collections.items())
 
@@ -93,13 +93,13 @@ class EppyDocumentMixin:
 
     # -- TYPE_CHECKING interface (attributes provided by IDFDocument) ---------
     if TYPE_CHECKING:
-        _collections: dict[str, IDFCollection]
+        _collections: dict[str, IDFCollection[IDFObject]]
         _schema: EpJSONSchema | None
         filepath: Path | None
 
         @property
-        def collections(self) -> dict[str, IDFCollection]: ...
-        def __getitem__(self, key: str) -> IDFCollection: ...
+        def collections(self) -> dict[str, IDFCollection[IDFObject]]: ...
+        def __getitem__(self, key: str) -> IDFCollection[IDFObject]: ...
         def add(self, obj_type: str, name: str = "", **kwargs: Any) -> IDFObject: ...
         def removeidfobject(self, obj: IDFObject) -> None: ...
 
@@ -257,7 +257,7 @@ class EppyDocumentMixin:
         self.removeidfobject(obj)
         return obj
 
-    def removeidfobjects(self, objects: list[IDFObject]) -> None:
+    def removeidfobjects(self, objects: Sequence[IDFObject]) -> None:
         """Remove multiple objects from the document (eppy compatibility).
 
         !!! tip

@@ -87,6 +87,7 @@ def _make_doc_with_day_schedule(day_obj: MagicMock) -> MagicMock:
         return []
 
     doc.__getitem__.side_effect = getitem
+    doc.get_collection.side_effect = getitem
     return doc
 
 
@@ -259,6 +260,7 @@ class TestFindDaySchedule:
     def test_not_found(self) -> None:
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
         assert _find_day_schedule(doc, "NonExistent") is None
 
 
@@ -339,6 +341,7 @@ class TestEvaluateWeekDaily:
         week_obj = _make_week_daily({})  # No fields set
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
         result = evaluate_week_daily(week_obj, datetime(2024, 1, 8, 12, 0), doc)
         assert result == 0.0
 
@@ -347,6 +350,7 @@ class TestEvaluateWeekDaily:
         week_obj = _make_week_daily({"Monday Schedule:Day Name": "NonExistent"})
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         with pytest.raises(ValueError, match="Day schedule not found"):
             evaluate_week_daily(week_obj, datetime(2024, 1, 8, 12, 0), doc)
@@ -359,6 +363,7 @@ class TestEvaluateWeekDaily:
         # Place in a known collection so _find_day_schedule finds it by name
         doc = MagicMock()
         doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
         week_obj = _make_week_daily({"Monday Schedule:Day Name": "DaySched"})
 
         with pytest.raises(ValueError, match="Unsupported day schedule type"):
@@ -589,6 +594,7 @@ class TestEvaluateWeekCompact:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         week_obj = self._make_week_compact([
             ("Weekdays", "WeekdaySched"),
@@ -611,6 +617,7 @@ class TestEvaluateWeekCompact:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         week_obj = self._make_week_compact([
             ("Weekdays", "WeekdaySched"),
@@ -626,6 +633,7 @@ class TestEvaluateWeekCompact:
         ])
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
         assert result == 0.0
@@ -636,6 +644,7 @@ class TestEvaluateWeekCompact:
         ])
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         with pytest.raises(ValueError, match="Day schedule not found"):
             evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
@@ -647,6 +656,7 @@ class TestEvaluateWeekCompact:
         # Place in a known collection so _find_day_schedule finds it by name
         doc = MagicMock()
         doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
 
         week_obj = self._make_week_compact([("AllDays", "BadSched")])
 
@@ -666,6 +676,7 @@ class TestEvaluateWeekCompact:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         week_obj = self._make_week_compact([
             ("SummerDesignDay", "SummerSched"),

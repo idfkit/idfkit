@@ -171,7 +171,7 @@ def set_default_constructions(doc: IDFDocument, construction_name: str = "Defaul
     """
     count = 0
     for stype in ("BuildingSurface:Detailed", "FenestrationSurface:Detailed"):
-        for srf in doc[stype]:
+        for srf in doc.get_collection(stype):
             if not srf.get("Construction Name"):
                 srf.construction_name = construction_name
                 count += 1
@@ -239,7 +239,7 @@ def scale_building(
     ax, ay, az = (anchor.x, anchor.y, anchor.z) if anchor else (0.0, 0.0, 0.0)
 
     for stype in VERTEX_SURFACE_TYPES:
-        for srf in doc[stype]:
+        for srf in doc.get_collection(stype):
             coords = get_surface_coords(srf)
             if coords is None:
                 continue

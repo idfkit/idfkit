@@ -202,8 +202,7 @@ def _find_week_schedule(doc: IDFDocument, name: str) -> IDFObject | None:
 
     name_upper = name.upper()
     for sched_type in week_types:
-        collection = doc[sched_type]
-        for obj in collection:
+        for obj in doc.get_collection(sched_type):
             if obj.name and obj.name.upper() == name_upper:
                 return obj
 

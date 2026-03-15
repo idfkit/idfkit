@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 OutputType = Literal["standard", "nocomment", "compressed"]
 
 
-def _resolve_version_identifier(doc: IDFDocument) -> str:
+def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
     """Resolve version identifier from Version object, falling back to document metadata."""
     for obj_type, collection in doc.collections.items():
         if obj_type.upper() != "VERSION" or not collection:
@@ -48,7 +48,7 @@ def _resolve_version_identifier(doc: IDFDocument) -> str:
 
 
 def write_idf(
-    doc: IDFDocument,
+    doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     encoding: str = "latin-1",
     output_type: OutputType = "standard",
@@ -106,7 +106,7 @@ def write_idf(
 
 
 def write_epjson(
-    doc: IDFDocument,
+    doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     indent: int = 2,
 ) -> str | None:

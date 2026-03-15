@@ -83,6 +83,7 @@ class TestFindWeekSchedule:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
         assert _find_week_schedule(doc, "MyWeek") is week_obj
 
     def test_found_week_compact(self) -> None:
@@ -98,6 +99,7 @@ class TestFindWeekSchedule:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
         assert _find_week_schedule(doc, "MyWeek") is week_obj
 
     def test_case_insensitive(self) -> None:
@@ -113,12 +115,14 @@ class TestFindWeekSchedule:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
         assert _find_week_schedule(doc, "myweek") is week_obj
         assert _find_week_schedule(doc, "MYWEEK") is week_obj
 
     def test_not_found(self) -> None:
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
         assert _find_week_schedule(doc, "NonExistent") is None
 
 
@@ -166,6 +170,7 @@ class TestFindWeekForDate:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("AllYear", "1", "1", "12", "31")])
 
@@ -190,6 +195,7 @@ class TestFindWeekForDate:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([
             ("FirstHalf", "1", "1", "6", "30"),
@@ -218,6 +224,7 @@ class TestFindWeekForDate:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("FirstHalf", "1", "1", "6", "30")])
 
@@ -248,6 +255,7 @@ class TestFindWeekForDate:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("WinterWeek", "11", "1", "2", "28")])
 
@@ -268,6 +276,7 @@ class TestFindWeekForDate:
 
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         name, result = _find_week_for_date(year_obj, date(2024, 1, 15), 2024, doc)
         assert name == ""
@@ -290,6 +299,7 @@ class TestFindWeekForDate:
 
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         name, result = _find_week_for_date(obj, date(2024, 3, 15), 2024, doc)
         assert name == ""
@@ -345,6 +355,7 @@ class TestEvaluateYear:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
         return year_obj, doc
 
     def test_basic_evaluation(self) -> None:
@@ -362,6 +373,7 @@ class TestEvaluateYear:
         year_obj = _make_year_obj([("NonExistent", "1", "1", "12", "31")])
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         with pytest.raises(ValueError, match="Week schedule not found"):
             evaluate_year(year_obj, datetime(2024, 6, 15, 12, 0), doc)
@@ -380,6 +392,7 @@ class TestEvaluateYear:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("BadWeek", "1", "1", "12", "31")])
 
@@ -391,6 +404,7 @@ class TestEvaluateYear:
         year_obj = _make_year_obj([("WeekSched", "6", "1", "8", "31")])
         doc = MagicMock()
         doc.__getitem__.return_value = []
+        doc.get_collection.return_value = []
 
         with pytest.raises(ValueError, match="Week schedule not found"):
             evaluate_year(year_obj, datetime(2024, 1, 15, 12, 0), doc)
@@ -422,6 +436,7 @@ class TestEvaluateYear:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("WeekSched", "1", "1", "12", "31")])
         result = evaluate_year(year_obj, datetime(2024, 6, 15, 12, 0), doc)
@@ -465,6 +480,7 @@ class TestEvaluateYear:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         # Use month names
         obj = MagicMock()
@@ -525,6 +541,7 @@ class TestEvaluateYear:
             return []
 
         doc.__getitem__.side_effect = getitem
+        doc.get_collection.side_effect = getitem
 
         year_obj = _make_year_obj([("WeekSched", "1", "1", "12", "31")])
         result = evaluate_year(

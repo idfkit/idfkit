@@ -22,6 +22,8 @@ nav:
     - Caching Strategy: concepts/caching.md
     - Logging: concepts/logging.md
     - Cloud & Remote Storage: concepts/cloud-storage.md
+    - Type-Safe Development: concepts/type-safety.md
+    - Version Compatibility: concepts/version-compatibility.md
     - Schedule Evaluator Design: design/schedule-evaluator.md
 
   - Simulation:

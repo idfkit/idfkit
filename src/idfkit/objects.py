@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat_object import EppyObjectMixin
 
@@ -97,7 +97,7 @@ class IDFObject(EppyObjectMixin):
     _name: str
     _data: dict[str, Any]
     _schema: dict[str, Any] | None
-    _document: IDFDocument | None
+    _document: IDFDocument[bool] | None
     _field_order: list[str] | None
     _ref_fields: frozenset[str] | None
 
@@ -107,7 +107,7 @@ class IDFObject(EppyObjectMixin):
         name: str,
         data: dict[str, Any] | None = None,
         schema: dict[str, Any] | None = None,
-        document: IDFDocument | None = None,
+        document: IDFDocument[bool] | None = None,
         field_order: list[str] | None = None,
         ref_fields: frozenset[str] | None = None,
     ) -> None:
@@ -377,7 +377,10 @@ class IDFObject(EppyObjectMixin):
             return None
 
 
-class IDFCollection:
+_T = TypeVar("_T", bound=IDFObject)
+
+
+class IDFCollection(Generic[_T]):
     """
     Indexed collection of IDFObjects with O(1) lookup by name.
 
@@ -410,13 +413,13 @@ class IDFCollection:
     __slots__ = ("_by_name", "_items", "_type")
 
     _type: str
-    _by_name: dict[str, IDFObject]
-    _items: list[IDFObject]
+    _by_name: dict[str, _T]
+    _items: list[_T]
 
     def __init__(self, obj_type: str) -> None:
         self._type = obj_type
-        self._by_name: dict[str, IDFObject] = {}
-        self._items: list[IDFObject] = []
+        self._by_name: dict[str, _T] = {}
+        self._items: list[_T] = []
 
     @property
     def obj_type(self) -> str:
@@ -424,11 +427,11 @@ class IDFCollection:
         return self._type
 
     @property
-    def by_name(self) -> dict[str, IDFObject]:
+    def by_name(self) -> dict[str, _T]:
         """Dict mapping uppercase names to objects."""
         return self._by_name
 
-    def add(self, obj: IDFObject) -> IDFObject:
+    def add(self, obj: _T) -> _T:
         """
         Add an object to the collection.
 
@@ -452,7 +455,7 @@ class IDFCollection:
         self._items.append(obj)
         return obj
 
-    def remove(self, obj: IDFObject) -> None:
+    def remove(self, obj: _T) -> None:
         """Remove an object from the collection."""
         key = obj.name.upper() if obj.name else ""
         if key in self._by_name:
@@ -460,7 +463,7 @@ class IDFCollection:
         if obj in self._items:
             self._items.remove(obj)
 
-    def __getitem__(self, key: str | int) -> IDFObject:
+    def __getitem__(self, key: str | int) -> _T:
         """Get object by name or index."""
         if isinstance(key, int):
             return self._items[key]
@@ -469,13 +472,13 @@ class IDFCollection:
             raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
         return result
 
-    def __iter__(self) -> Iterator[IDFObject]:
+    def __iter__(self) -> Iterator[_T]:
         return iter(self._items)
 
     def __len__(self) -> int:
         return len(self._items)
 
-    def __contains__(self, key: str | IDFObject) -> bool:
+    def __contains__(self, key: str | _T) -> bool:
         if isinstance(key, IDFObject):
             return key in self._items
         return key.upper() in self._by_name
@@ -486,7 +489,7 @@ class IDFCollection:
     def __repr__(self) -> str:
         return f"IDFCollection({self._type}, count={len(self._items)})"
 
-    def get(self, name: str, default: IDFObject | None = None) -> IDFObject | None:
+    def get(self, name: str, default: _T | None = None) -> _T | None:
         """Get object by name with default.
 
         Examples:
@@ -501,7 +504,7 @@ class IDFCollection:
         """
         return self._by_name.get(name.upper(), default)
 
-    def first(self) -> IDFObject | None:
+    def first(self) -> _T | None:
         """Get the first object or None.
 
         Examples:
@@ -518,7 +521,7 @@ class IDFCollection:
         """
         return self._items[0] if self._items else None
 
-    def to_list(self) -> list[IDFObject]:
+    def to_list(self) -> list[_T]:
         """Convert to list.
 
         Examples:
@@ -550,7 +553,7 @@ class IDFCollection:
         """
         return [obj.to_dict() for obj in self._items]
 
-    def filter(self, predicate: Callable[[IDFObject], bool]) -> list[IDFObject]:
+    def filter(self, predicate: Callable[[_T], bool]) -> list[_T]:
         """Filter objects by predicate function.
 
         Examples:
