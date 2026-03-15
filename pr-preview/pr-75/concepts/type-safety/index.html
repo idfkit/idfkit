@@ -3463,6 +3463,17 @@ a safely typed <code>IDFCollection[IDFObject]</code>:</p>
 </span></code></pre></div>
 <p>Use <code>doc["Zone"]</code> when you know the type at write time. Use
 <code>doc.get_collection(obj_type)</code> in generic functions that accept any object type.</p>
+<div class="admonition note">
+<p class="admonition-title">Why <code>get_collection()</code>?</p>
+<p>Under the hood, <code>doc["Zone"]</code> is typed via a <code>TypedDict</code> with all 858
+EnergyPlus object types as literal keys. This gives your type checker exact
+return types for each key — but <code>TypedDict</code> subscript access requires
+string <em>literals</em>, so a plain <code>str</code> variable won't type-check.
+An <code>@overload</code>-based approach was considered but rejected because 858
+overloads cause significant performance degradation in pyright.
+<code>get_collection()</code> is the lightweight escape hatch: it accepts any <code>str</code>
+and returns the base <code>IDFCollection[IDFObject]</code> type.</p>
+</div>
 <h2 id="version-availability">Version Availability<a class="headerlink" href="#version-availability" title="Permanent link">&para;</a></h2>
 <p>Type stubs include <strong>"Since: X.Y.Z"</strong> annotations in docstrings for object
 types and fields that were introduced after EnergyPlus 8.9.0. This helps you
