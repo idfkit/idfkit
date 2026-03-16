@@ -64,12 +64,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Check out gh-pages
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages-deploy
-
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
 
@@ -81,22 +75,19 @@ jobs:
       - name: Build documentation
         run: ./scripts/build_docs.sh
 
-      - name: Deploy documentation to gh-pages
+      - name: Preserve PR previews from gh-pages
         run: |
-          cd gh-pages-deploy
-          # Remove everything except .git and pr-preview
-          find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'pr-preview' -exec rm -rf {} +
-          # Copy new site content
-          cp -r ../site/. .
-          # Restore root-level gh-pages extras (e.g. CNAME)
-          cp -r ../gh-pages-extra/. .
-          touch .nojekyll
+          git fetch origin gh-pages:gh-pages || true
+          if git show gh-pages:pr-preview >/dev/null 2>&1; then
+            git worktree add --detach gh-pages-ref gh-pages
+            cp -r gh-pages-ref/pr-preview site/pr-preview
+            git worktree remove gh-pages-ref
+          fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || {
-            git commit -m "Deploy documentation"
-            git pull --rebase origin gh-pages
-            git push origin gh-pages
-          }
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          force_orphan: true
+          cname: py.idfkit.com
