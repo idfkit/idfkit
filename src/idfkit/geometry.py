@@ -1006,8 +1006,10 @@ def set_wwr(  # noqa: C901
         doc: The document to modify in-place.
         wwr: Target window-wall ratio in the range ``(0, 1)``.
         construction: Name of the window ``Construction`` to assign.
-            If ``None``, the field is left empty (EnergyPlus will
-            require it to be set before simulation).
+            If ``None`` and existing fenestration is present, the
+            construction from the existing window is preserved.
+            If ``None`` and no existing fenestration exists, the field
+            is left empty.
         surface_type: Only walls whose ``surface_type`` matches (case-
             insensitive) are considered.  Defaults to ``"Wall"``.
         orientation: Optional cardinal direction filter — one of
@@ -1073,6 +1075,7 @@ def set_wwr(  # noqa: C901
         if window_poly is None:
             continue
 
+        wall_upper = wall.name.upper()
         win_name = f"{wall.name}_Window"
         win_data: dict[str, Any] = {
             "surface_type": "Window",
@@ -1081,8 +1084,8 @@ def set_wwr(  # noqa: C901
         }
         if construction is not None:
             win_data["construction_name"] = construction
-        elif wall.name.upper() in wall_constructions:
-            win_data["construction_name"] = wall_constructions[wall.name.upper()]
+        elif wall_upper in wall_constructions:
+            win_data["construction_name"] = wall_constructions[wall_upper]
         for i, v in enumerate(window_poly.vertices, 1):
             win_data[f"vertex_{i}_x_coordinate"] = round(v.x, 6)
             win_data[f"vertex_{i}_y_coordinate"] = round(v.y, 6)
