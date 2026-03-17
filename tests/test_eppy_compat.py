@@ -1071,6 +1071,110 @@ class TestSetWWR:
         windows = set_wwr(doc, 0.4)
         assert len(windows) == 1
 
+    def test_set_wwr_preserves_construction_name(self) -> None:
+        """set_wwr preserves construction_name from existing fenestration when none specified."""
+        doc = self._make_box_model()
+        # Add fenestration with a construction name
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "SouthWall_Glz0",
+            {
+                "surface_type": "Window",
+                "construction_name": "OriginalGlazing",
+                "building_surface_name": "SouthWall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 3,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 3,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        # Call set_wwr without construction parameter
+        windows = set_wwr(doc, 0.3)
+        south_wins = [w for w in windows if "SouthWall" in w.name]
+        assert len(south_wins) == 1
+        assert south_wins[0].construction_name == "OriginalGlazing"
+
+    def test_set_wwr_explicit_construction_overrides_existing(self) -> None:
+        """Explicit construction parameter overrides preserved construction."""
+        doc = self._make_box_model()
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "SouthWall_Glz0",
+            {
+                "surface_type": "Window",
+                "construction_name": "OriginalGlazing",
+                "building_surface_name": "SouthWall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 3,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 3,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.3, construction="NewGlazing")
+        for win in windows:
+            assert win.construction_name == "NewGlazing"
+
+    def test_set_wwr_updates_cross_references(self) -> None:
+        """set_wwr updates AirflowNetwork references when replacing fenestration."""
+        doc = self._make_box_model()
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "SouthWall_Glz0",
+            {
+                "surface_type": "Window",
+                "construction_name": "SimpleGlazing",
+                "building_surface_name": "SouthWall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 3,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 3,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        # Add AirflowNetwork object referencing the old fenestration
+        afn = doc.add(
+            "AirflowNetwork:MultiZone:Surface",
+            "AFN_SouthGlz",
+            {"surface_name": "SouthWall_Glz0"},
+            validate=False,
+        )
+        assert afn.surface_name == "SouthWall_Glz0"
+
+        # Replace windows
+        set_wwr(doc, 0.3, construction="SimpleGlazing")
+
+        # Cross-reference should now point to the new window name
+        assert afn.surface_name == "SouthWall_Window"
+
 
 # ---------------------------------------------------------------------------
 # intersect_match (surface boundary matching)

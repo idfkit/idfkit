@@ -1036,10 +1036,23 @@ def set_wwr(  # noqa: C901
             continue
         wall_names.add(wall.name.upper())
 
+    # Capture construction names and cross-references before removal
+    wall_constructions: dict[str, str] = {}
+    fen_referrers: dict[str, tuple[str, set[tuple[IDFObject, str]]]] = {}
     for fen in list(doc["FenestrationSurface:Detailed"]):
         bsn = getattr(fen, "building_surface_name", None) or ""
-        if bsn.upper() in wall_names:
-            existing_fen.append(fen)
+        bsn_upper = bsn.upper()
+        if bsn_upper not in wall_names:
+            continue
+        existing_fen.append(fen)
+        # Preserve construction from the first fenestration per wall
+        fen_construction = getattr(fen, "construction_name", None) or ""
+        if fen_construction and bsn_upper not in wall_constructions:
+            wall_constructions[bsn_upper] = fen_construction
+        # Snapshot objects that reference this fenestration
+        referrers = doc.references.get_referencing_with_fields(fen.name)
+        if referrers:
+            fen_referrers[fen.name.upper()] = (bsn_upper, referrers)
     for fen in existing_fen:
         doc.removeidfobject(fen)
 
@@ -1068,6 +1081,8 @@ def set_wwr(  # noqa: C901
         }
         if construction is not None:
             win_data["construction_name"] = construction
+        elif wall.name.upper() in wall_constructions:
+            win_data["construction_name"] = wall_constructions[wall.name.upper()]
         for i, v in enumerate(window_poly.vertices, 1):
             win_data[f"vertex_{i}_x_coordinate"] = round(v.x, 6)
             win_data[f"vertex_{i}_y_coordinate"] = round(v.y, 6)
@@ -1075,6 +1090,19 @@ def set_wwr(  # noqa: C901
 
         win_obj = doc.add("FenestrationSurface:Detailed", win_name, win_data, validate=False)
         new_windows.append(win_obj)
+
+    # Re-point cross-references from old fenestration names to new windows
+    if fen_referrers:
+        wall_to_new_win: dict[str, str] = {}
+        for win in new_windows:
+            win_bsn = getattr(win, "building_surface_name", None) or ""
+            wall_to_new_win[win_bsn.upper()] = win.name
+        for _old_upper, (wall_upper, referrers) in fen_referrers.items():
+            new_win_name = wall_to_new_win.get(wall_upper)
+            if new_win_name is None:
+                continue
+            for ref_obj, field_name in referrers:
+                setattr(ref_obj, field_name, new_win_name)
 
     logger.debug("set_wwr: created %d windows at target ratio %.2f", len(new_windows), wwr)
     return new_windows
