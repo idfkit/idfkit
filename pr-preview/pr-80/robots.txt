@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://py.idfkit.com/sitemap.xml
