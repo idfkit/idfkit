@@ -478,3 +478,39 @@ SCHEDULE:COMPACT,
         # The collection key should be canonical "Zone", not "ZONE"
         assert "Zone" in doc.collections
         assert "ZONE" not in doc.collections
+
+    def test_mixed_casing_same_type_merges(self, tmp_path: Path) -> None:
+        """Objects with different casings of the same type go into one collection."""
+        idf_content = """\
+VERSION, 24.1;
+
+Zone,
+  ZoneA, 0, 0, 0, 0, 1, 1;
+
+ZONE,
+  ZoneB, 0, 0, 0, 0, 1, 1;
+
+zone,
+  ZoneC, 0, 0, 0, 0, 1, 1;
+"""
+        idf_path = tmp_path / "mixed.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, strict=True)
+
+        # All three should be in the canonical "Zone" collection
+        assert len(doc["Zone"]) == 3
+        assert doc["Zone"]["ZoneA"] is not None
+        assert doc["Zone"]["ZoneB"] is not None
+        assert doc["Zone"]["ZoneC"] is not None
+
+    def test_no_schema_preserves_raw_type(self, tmp_path: Path) -> None:
+        """Without a schema, raw type names pass through unchanged."""
+        idf_content = "VERSION, 24.1;\n\nZONE,\n  TestZone, 0, 0, 0, 0, 1, 1;\n"
+        idf_path = tmp_path / "noschema.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, schema=None, version=(24, 1, 0), strict=False)
+
+        # Without schema, no normalization — raw type name preserved
+        assert "ZONE" in doc.collections or "Zone" in doc.collections

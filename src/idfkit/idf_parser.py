@@ -228,8 +228,9 @@ class IDFParser:
         # (e.g. "!- X,Y,Z Origin" matching "X," as an object type)
         content = _COMMENT_PATTERN.sub(b"", content)
 
-        # Local per-type cache avoids repeated schema lookups
+        # Local per-type caches avoid repeated schema lookups
         type_cache: dict[str, ParsingCache | None] = {}
+        canonical_cache: dict[str, str] = {}
         encoding = self._encoding
         addidfobject = doc.addidfobject
         skipped_types: set[str] = set()
@@ -253,6 +254,7 @@ class IDFParser:
                     content=content,
                     schema=schema,
                     type_cache=type_cache,
+                    canonical_cache=canonical_cache,
                     skipped_types=skipped_types,
                     obj_type=decoded_obj_type,
                     obj_name=obj_name,
@@ -456,6 +458,7 @@ class IDFParser:
         content: bytes,
         schema: EpJSONSchema | None,
         type_cache: dict[str, ParsingCache | None],
+        canonical_cache: dict[str, str],
         skipped_types: set[str],
         obj_type: str,
         obj_name: str | None,
@@ -475,8 +478,11 @@ class IDFParser:
             type_cache[obj_type] = pc
 
         if pc is not None:
-            # Normalize to canonical schema name for consistent collection keys.
-            canonical = schema.resolve_type_name(obj_type) or obj_type
+            # Return cached canonical name (resolved once per raw type).
+            canonical = canonical_cache.get(obj_type)
+            if canonical is None:
+                canonical = schema.resolve_type_name(obj_type) or obj_type
+                canonical_cache[obj_type] = canonical
             return (pc, False, canonical)
 
         if self._strict:
