@@ -66,6 +66,7 @@ _CST_OBJECT_RE = re.compile(
     r"[A-Za-z][A-Za-z0-9:_ \t-]*\s*,"  #   Type name + first comma
     r"(?:[^;!]*(?:![^\n]*\n?)?)*"  #   Fields with inline comments
     r"[^;!]*;"  #   Final field + semicolon
+    r"[^\n]*"  #   Trailing inline comment on semicolon line
     r"[\r\n]*"  #   Trailing newlines
     r")",
 )
