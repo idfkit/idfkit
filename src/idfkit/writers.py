@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from .cst import CSTNode
     from .document import IDFDocument
     from .objects import IDFObject
 
@@ -52,6 +53,8 @@ def write_idf(
     filepath: Path | str | None = None,
     encoding: str = "latin-1",
     output_type: OutputType = "standard",
+    *,
+    preserve_formatting: bool | None = None,
 ) -> str | None:
     """
     Write document to IDF format.
@@ -63,7 +66,17 @@ def write_idf(
         output_type: Output formatting mode — ``"standard"`` (with
             comments), ``"nocomment"`` (no comments), or
             ``"compressed"`` (single-line objects).  Mirrors eppy's
-            ``idf.outputtype``.
+            ``idf.outputtype``.  Ignored when *preserve_formatting* is
+            explicitly ``True``.  When *preserve_formatting* is ``None``
+            and *output_type* is not ``"standard"``, the explicit output
+            type takes precedence and lossless mode is disabled.
+        preserve_formatting: If ``True``, reproduce the original source
+            text for unmodified objects and apply standard formatting only
+            to objects that were mutated or added after parsing.  Requires
+            the document to have been parsed with
+            ``preserve_formatting=True``.  When ``None`` (the default),
+            automatically uses lossless output if a CST is available and
+            *output_type* is ``"standard"``.
 
     Returns:
         IDF string if *filepath* is ``None``, otherwise ``None``.
@@ -90,9 +103,27 @@ def write_idf(
         >>> compressed = write_idf(model, output_type="compressed")
         >>> "\\n" not in compressed.split("Zone")[1].split(";")[0]
         True
+
+        Lossless round-trip:
+
+            ```python
+            from idfkit import load_idf, write_idf
+            model = load_idf("building.idf", preserve_formatting=True)
+            write_idf(model, "building_copy.idf")  # byte-identical
+            ```
     """
-    writer = IDFWriter(doc, output_type=output_type)
-    content = writer.to_string()
+    if preserve_formatting is not None:
+        use_preserve = preserve_formatting
+    elif output_type != "standard":
+        use_preserve = False
+    else:
+        use_preserve = doc.cst is not None
+
+    if use_preserve and doc.cst is not None:
+        content = _write_idf_lossless(doc)
+    else:
+        writer = IDFWriter(doc, output_type=output_type)
+        content = writer.to_string()
 
     if filepath:
         filepath = Path(filepath)
@@ -109,6 +140,8 @@ def write_epjson(
     doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     indent: int = 2,
+    *,
+    preserve_formatting: bool | None = None,
 ) -> str | None:
     """
     Write document to epJSON format.
@@ -117,6 +150,10 @@ def write_epjson(
         doc: The document to write
         filepath: Output path (if None, returns string)
         indent: JSON indentation
+        preserve_formatting: If ``True``, return the original JSON text
+            verbatim when no objects have been modified.  When ``None``
+            (the default), automatically uses lossless output if raw text
+            is available and no objects were mutated.
 
     Returns:
         JSON string if filepath is None, otherwise None
@@ -138,6 +175,27 @@ def write_epjson(
             write_epjson(model, "in.epJSON")
             ```
     """
+    # Note: epJSON preservation is all-or-nothing (any mutation or addition
+    # falls back to the standard JSON writer), unlike IDF which has per-object
+    # granularity via CST nodes.
+    use_preserve = preserve_formatting if preserve_formatting is not None else doc.raw_text is not None
+
+    # If preserve_formatting and we have raw text, check whether any object
+    # was mutated.  If not, emit the original text verbatim.
+    if use_preserve and doc.raw_text is not None:
+        all_clean = all(obj.source_text is not None for obj in doc.all_objects)
+        if all_clean:
+            content = doc.raw_text
+            if filepath:
+                filepath = Path(filepath)
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(content)
+                logger.info("Wrote epJSON (%d objects, lossless) to %s", len(doc), filepath)
+                return None
+            logger.debug("Serialized epJSON (%d objects, lossless) to string", len(doc))
+            return content
+
+    # Fall back to standard writer.
     writer = EpJSONWriter(doc)
     data = writer.to_dict()
 
@@ -150,6 +208,63 @@ def write_epjson(
 
     logger.debug("Serialized epJSON (%d objects) to string", len(doc))
     return json.dumps(data, indent=indent)
+
+
+def _emit_cst_node(
+    node: CSTNode,
+    formatter: IDFWriter,
+    parts: list[str],
+    emitted: set[int],
+    live_ids: set[int],
+) -> None:
+    """Emit a single CST node — verbatim for clean objects, reformatted for dirty ones."""
+    if node.obj is None:
+        parts.append(node.text)
+        return
+
+    obj = node.obj
+    if id(obj) not in live_ids:
+        return  # removed — skip
+
+    emitted.add(id(obj))
+
+    if obj.source_text is not None:
+        parts.append(obj.source_text)
+    else:
+        parts.append(formatter.format_object(obj))
+        parts.append("\n\n")
+
+
+def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
+    """Produce IDF output that preserves original formatting via the CST.
+
+    Unmodified objects are emitted verbatim.  Mutated or new objects use
+    the standard :class:`IDFWriter` formatter.  Removed objects are dropped.
+    """
+    cst = doc.cst
+    if cst is None:
+        msg = "Document has no CST — parse with preserve_formatting=True"
+        raise ValueError(msg)
+
+    parts: list[str] = []
+    formatter = IDFWriter(doc, output_type="standard")
+    emitted: set[int] = set()
+    live_ids = {id(o) for o in doc.all_objects}
+
+    for node in cst.nodes:
+        _emit_cst_node(node, formatter, parts, emitted, live_ids)
+
+    # Append objects added after parsing (not in any CST node).
+    new_objs = [formatter.format_object(o) for o in doc.all_objects if id(o) not in emitted]
+    if new_objs:
+        tail = parts[-1] if parts else ""
+        if tail and not tail.endswith("\n"):
+            parts.append("\n")
+        for obj_str in new_objs:
+            parts.append(obj_str)
+            parts.append("\n\n")
+
+    return "".join(parts)
 
 
 class IDFWriter:
@@ -207,7 +322,7 @@ class IDFWriter:
                 continue
 
             for obj in collection:
-                obj_str = self._object_to_string(obj)
+                obj_str = self.format_object(obj)
                 lines.append(obj_str)
                 if self._output_type != "compressed":
                     lines.append("")
@@ -253,7 +368,7 @@ class IDFWriter:
 
         return values, comments
 
-    def _object_to_string(self, obj: IDFObject) -> str:
+    def format_object(self, obj: IDFObject) -> str:
         """Convert a single object to IDF string."""
         values, comments = self._get_field_values_and_comments(obj)
         obj_type = obj.obj_type

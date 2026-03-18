@@ -153,6 +153,7 @@ def load_idf(
     *,
     strict: bool = ...,
     strict_fields: Literal[True],
+    preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
 
@@ -163,6 +164,7 @@ def load_idf(
     *,
     strict: bool = ...,
     strict_fields: Literal[False] = ...,
+    preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
 
@@ -172,6 +174,7 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     *,
     strict: bool = True,
     strict_fields: bool = False,
+    preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
     Load an IDF file and return an IDFDocument.
@@ -182,6 +185,9 @@ def load_idf(  # type: ignore[misc]  # overload implementation
         strict: If True, fail fast on malformed IDF objects (default: True)
         strict_fields: When ``True``, accessing an unknown field name on any
             IDFObject raises ``AttributeError`` instead of returning ``None``.
+        preserve_formatting: When ``True``, build a Concrete Syntax Tree
+            (CST) so that :func:`write_idf` reproduces the original
+            formatting, comments, and whitespace for unmodified objects.
 
     Returns:
         Parsed IDFDocument
@@ -201,10 +207,23 @@ def load_idf(  # type: ignore[misc]  # overload implementation
             ```python
             model = load_idf("pre_v9_building.idf", version=(9, 6, 0))
             ```
+
+        Lossless round-trip:
+
+            ```python
+            model = load_idf("building.idf", preserve_formatting=True)
+            write_idf(model, "building_copy.idf")  # byte-identical
+            ```
     """
     from pathlib import Path
 
-    return parse_idf(Path(path), version=version, strict=strict, strict_fields=strict_fields)
+    return parse_idf(
+        Path(path),
+        version=version,
+        strict=strict,
+        strict_fields=strict_fields,
+        preserve_formatting=preserve_formatting,
+    )
 
 
 @overload
@@ -213,6 +232,7 @@ def load_epjson(
     version: tuple[int, int, int] | None = ...,
     *,
     strict_fields: Literal[True],
+    preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
 
@@ -222,6 +242,7 @@ def load_epjson(
     version: tuple[int, int, int] | None = ...,
     *,
     strict_fields: Literal[False] = ...,
+    preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
 
@@ -230,6 +251,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     version: tuple[int, int, int] | None = None,
     *,
     strict_fields: bool = False,
+    preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
     Load an epJSON file and return an IDFDocument.
@@ -239,6 +261,9 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
         version: Optional version override (major, minor, patch)
         strict_fields: When ``True``, accessing an unknown field name on any
             IDFObject raises ``AttributeError`` instead of returning ``None``.
+        preserve_formatting: When ``True``, store the raw JSON text so
+            that :func:`write_epjson` can reproduce it byte-for-byte
+            when no objects have been modified.
 
     Returns:
         Parsed IDFDocument
@@ -260,7 +285,9 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
-    return parse_epjson(Path(path), version=version, strict_fields=strict_fields)
+    return parse_epjson(
+        Path(path), version=version, strict_fields=strict_fields, preserve_formatting=preserve_formatting
+    )
 
 
 @overload

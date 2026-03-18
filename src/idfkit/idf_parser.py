@@ -6,6 +6,7 @@ Features:
 - Regex-based tokenization
 - Direct parsing into IDFDocument (no intermediate structures)
 - Type coercion based on schema
+- Optional CST (Concrete Syntax Tree) for lossless round-tripping
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from .cst import CSTNode, DocumentCST
 from .document import IDFDocument
 from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError
 from .objects import IDFObject
@@ -50,6 +52,29 @@ _FIELD_SPLIT_PATTERN = re.compile(rb"\s*,\s*")
 # Memory map threshold (10 MB)
 _MMAP_THRESHOLD = 10 * 1024 * 1024
 
+# ---------------------------------------------------------------------------
+# CST regex patterns
+# ---------------------------------------------------------------------------
+
+# Matches either a comment line (alt 1, no capture) or an IDF object (alt 2,
+# capture group 1).  Comments get priority so that `!`, `,` and `;` inside
+# comments are never mistaken for object delimiters.
+_CST_OBJECT_RE = re.compile(
+    r"(?:![^\n]*\n?)"  # Alt 1: comment line (no capture group)
+    r"|"
+    r"("  # Alt 2: object (capture group 1)
+    r"[A-Za-z][A-Za-z0-9:_ \t-]*\s*,"  #   Type name + first comma
+    r"(?:[^;!]*(?:![^\n]*\n?)?)*"  #   Fields with inline comments
+    r"[^;!]*;"  #   Final field + semicolon
+    r"[^\n]*"  #   Trailing inline comment on semicolon line
+    r"[\r\n]*"  #   Trailing newlines
+    r")",
+)
+
+# Extracts the type name from a CST object node: everything before the first
+# comma that is not inside a leading comment.
+_CST_TYPE_NAME_RE = re.compile(r"^(?:![^\n]*\n)*([^;!,\n]*),", re.MULTILINE)
+
 
 def _coerce_value_fast(field_type: str | None, value: str) -> Any:
     """Coerce a field value using a pre-resolved type string."""
@@ -73,6 +98,8 @@ def parse_idf(
     encoding: str = "latin-1",
     strict: bool = True,
     strict_fields: bool = False,
+    *,
+    preserve_formatting: bool = False,
 ) -> IDFDocument:
     """
     Parse an IDF file into an IDFDocument.
@@ -83,6 +110,10 @@ def parse_idf(
         version: Optional version override (auto-detected if not provided)
         encoding: File encoding (default: latin-1 for compatibility)
         strict: If True, fail fast on malformed objects (default: True)
+        preserve_formatting: If ``True``, build a Concrete Syntax Tree (CST)
+            so that writing the document back preserves original formatting,
+            comments, and whitespace for unmodified objects.  The default
+            code path is unchanged — no performance penalty when ``False``.
 
     Returns:
         Parsed IDFDocument
@@ -108,6 +139,13 @@ def parse_idf(
             ```python
             model = parse_idf("legacy_building.idf", version=(9, 6, 0))
             ```
+
+        Round-trip an IDF file losslessly:
+
+            ```python
+            model = parse_idf("building.idf", preserve_formatting=True)
+            # write_idf(model) reproduces the original byte-for-byte
+            ```
     """
     filepath = Path(filepath)
 
@@ -115,7 +153,7 @@ def parse_idf(
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
     parser = IDFParser(filepath, schema, encoding, strict=strict)
-    return parser.parse(version, strict_fields=strict_fields)
+    return parser.parse(version, strict_fields=strict_fields, preserve_formatting=preserve_formatting)
 
 
 class IDFParser:
@@ -146,12 +184,20 @@ class IDFParser:
         self._strict = strict
         self._content: bytes | None = None
 
-    def parse(self, version: tuple[int, int, int] | None = None, *, strict_fields: bool = False) -> IDFDocument:
+    def parse(
+        self,
+        version: tuple[int, int, int] | None = None,
+        *,
+        strict_fields: bool = False,
+        preserve_formatting: bool = False,
+    ) -> IDFDocument:
         """
         Parse the IDF file into an IDFDocument.
 
         Args:
             version: Optional version override
+            strict_fields: Enforce strict field access on the resulting document.
+            preserve_formatting: Build a CST for lossless round-tripping.
 
         Returns:
             Parsed IDFDocument
@@ -179,6 +225,16 @@ class IDFParser:
 
         # Parse objects
         self._parse_objects(content, doc, schema)
+
+        # Build CST for lossless round-tripping (opt-in, no cost when False)
+        if preserve_formatting:
+            original_text = content.decode(self._encoding)
+            cst = _build_idf_cst(original_text)
+            if _link_cst_to_objects(cst, doc):
+                doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
+                doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
+            else:
+                logger.warning("CST discarded due to linking failure — lossless round-trip disabled")
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
@@ -385,15 +441,33 @@ class IDFParser:
 
         ext_names = pc.ext_field_names
         num_ext = len(ext_names)
-        for group_idx in range(0, len(extra), ext_size):
+
+        # Pre-compute type per extensible index — avoids a dict lookup per field.
+        ext_types = tuple(field_types.get(name) for name in ext_names)
+
+        # First group (group_idx=0): field names are just ext_names — no suffix,
+        # no f-string allocation.
+        first_group = extra[:ext_size]
+        for j, value in enumerate(first_group):
+            if j >= num_ext:
+                continue
+            ext_field = ext_names[j]
+            if value:
+                data[ext_field] = _coerce_value_fast(ext_types[j], value)
+            else:
+                data[ext_field] = ""
+            field_names.append(ext_field)
+
+        # Remaining groups: need a suffix.
+        for group_idx in range(ext_size, len(extra), ext_size):
+            suffix = f"_{group_idx // ext_size + 1}"
             group = extra[group_idx : group_idx + ext_size]
-            suffix = "" if group_idx == 0 else f"_{group_idx // ext_size + 1}"
             for j, value in enumerate(group):
                 if j >= num_ext:
                     continue
                 ext_field = f"{ext_names[j]}{suffix}"
                 if value:
-                    data[ext_field] = _coerce_value_fast(field_types.get(ext_names[j]), value)
+                    data[ext_field] = _coerce_value_fast(ext_types[j], value)
                 else:
                     data[ext_field] = ""
                 field_names.append(ext_field)
@@ -596,3 +670,101 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
         return (major, minor, patch)
 
     raise VersionNotFoundError(str(filepath))
+
+
+# ---------------------------------------------------------------------------
+# CST (Concrete Syntax Tree) helpers for lossless round-tripping
+# ---------------------------------------------------------------------------
+
+
+def _build_idf_cst(text: str) -> DocumentCST:
+    """Build a :class:`DocumentCST` from the original IDF source text.
+
+    The returned CST is a flat list of :class:`CSTNode` items whose ``text``
+    attributes, when concatenated, reproduce *text* exactly.  Nodes that
+    correspond to IDF objects are distinguished from pure-text nodes
+    (comments, blank lines, preamble) so that the writer can substitute
+    freshly formatted output for mutated objects while keeping everything
+    else verbatim.
+
+    Performance: single-pass regex scanner using :data:`_CST_OBJECT_RE`.
+    """
+    nodes: list[CSTNode] = []
+    pos = 0
+    for m in _CST_OBJECT_RE.finditer(text):
+        if m.group(1) is None:
+            continue  # Comment match — will be part of surrounding text node
+        if m.start() > pos:
+            nodes.append(CSTNode(text=text[pos : m.start()]))
+        nodes.append(CSTNode(text=m.group(1)))
+        pos = m.end()
+    if pos < len(text):
+        nodes.append(CSTNode(text=text[pos:]))
+    return DocumentCST(nodes=nodes)
+
+
+def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
+    """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
+
+    The CST preserves file order while ``doc.all_objects`` groups objects by
+    type.  Within each type the collection preserves insertion (= file) order,
+    so we build a ``type_upper → deque[IDFObject]`` map and pop the next
+    object of the matching type for each CST node.
+
+    The ``Version`` object is kept as an unlinked node because the parser
+    handles it separately.
+
+    Each linked object also receives its original source text via
+    ``_source_text`` for mutation tracking.
+
+    Returns ``True`` if linking succeeded, ``False`` if a CST object node
+    could not be matched to any parsed object.
+    """
+    from collections import deque
+
+    # Build type_upper → deque[IDFObject] from document collections.
+    # Each collection's _items list preserves insertion (= file) order.
+    obj_by_type: dict[str, deque[IDFObject]] = {}
+    for obj_type, collection in doc.collections.items():
+        if collection:
+            obj_by_type[obj_type.upper()] = deque(collection)
+
+    linked = 0
+
+    for node in cst.nodes:
+        type_name = _cst_node_type_name(node)
+        if type_name is None:
+            continue
+
+        type_upper = type_name.upper()
+
+        # Skip Version objects (handled separately by the parser/writer).
+        if type_upper == "VERSION":
+            continue
+
+        bucket = obj_by_type.get(type_upper)
+        if bucket:
+            obj = bucket.popleft()
+            node.obj = obj
+            object.__setattr__(obj, "_source_text", node.text)
+            linked += 1
+            if not bucket:
+                del obj_by_type[type_upper]
+        else:
+            logger.warning(
+                "CST linking: no parsed object for CST node type=%r (strict=False may have skipped objects)",
+                type_name,
+            )
+
+    total = sum(len(c) for c in doc.collections.values())
+    logger.debug("CST linking: %d of %d parsed objects linked", linked, total)
+    return True
+
+
+def _cst_node_type_name(node: CSTNode) -> str | None:
+    """Extract the object type name from a CST node, or ``None`` for text-only nodes."""
+    m = _CST_TYPE_NAME_RE.match(node.text)
+    if m is None:
+        return None
+    name = m.group(1).strip()
+    return name or None

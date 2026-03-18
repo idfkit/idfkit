@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat import EppyDocumentMixin
+from .cst import DocumentCST
 from .exceptions import DuplicateObjectError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
@@ -105,6 +106,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
     __slots__ = (
         "_collections",
+        "_cst",
+        "_raw_text",
         "_references",
         "_schedules_cache",
         "_schema",
@@ -120,6 +123,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
+    _cst: DocumentCST | None
+    _raw_text: str | None
 
     def __init__(
         self,
@@ -149,6 +154,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._references = ReferenceGraph()
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
+        self._cst: DocumentCST | None = None
+        self._raw_text: str | None = None
 
     @property
     def strict(self) -> bool:
@@ -165,6 +172,16 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def schema(self) -> EpJSONSchema | None:
         """The EpJSON schema for validation and field info."""
         return self._schema
+
+    @property
+    def cst(self) -> DocumentCST | None:
+        """The concrete syntax tree, if the document was parsed with ``preserve_formatting=True``."""
+        return self._cst
+
+    @property
+    def raw_text(self) -> str | None:
+        """The original source text, if the document was parsed with ``preserve_formatting=True``."""
+        return self._raw_text
 
     @property
     def collections(self) -> dict[str, IDFCollection[IDFObject]]:
@@ -564,6 +581,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # Remove from reference graph
         self._references.unregister(obj)
 
+        # Detach from CST so the object can be garbage-collected
+        if self._cst is not None:
+            for node in self._cst.nodes:
+                if node.obj is obj:
+                    node.obj = None
+                    node.text = ""
+                    break
+
         # Invalidate caches
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
@@ -636,6 +661,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             current = ref_obj.data.get(field_name, "")
             if isinstance(current, str) and current.upper() == old_name.upper():
                 ref_obj.data[field_name] = new_name
+                object.__setattr__(ref_obj, "_source_text", None)
 
         # 3. Update graph indexes
         self._references.rename_target(old_name, new_name)

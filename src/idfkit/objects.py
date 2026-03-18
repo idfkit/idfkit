@@ -89,6 +89,7 @@ class IDFObject(EppyObjectMixin):
         "_name",
         "_ref_fields",
         "_schema",
+        "_source_text",
         "_type",
         "_version",
     )
@@ -100,6 +101,7 @@ class IDFObject(EppyObjectMixin):
     _document: IDFDocument[bool] | None
     _field_order: list[str] | None
     _ref_fields: frozenset[str] | None
+    _source_text: str | None
 
     def __init__(
         self,
@@ -110,6 +112,7 @@ class IDFObject(EppyObjectMixin):
         document: IDFDocument[bool] | None = None,
         field_order: list[str] | None = None,
         ref_fields: frozenset[str] | None = None,
+        source_text: str | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
@@ -118,6 +121,7 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_document", document)
         object.__setattr__(self, "_field_order", field_order)
         object.__setattr__(self, "_ref_fields", ref_fields)
+        object.__setattr__(self, "_source_text", source_text)
         object.__setattr__(self, "_version", 0)
 
     @property
@@ -143,6 +147,11 @@ class IDFObject(EppyObjectMixin):
     def schema_dict(self) -> dict[str, Any] | None:
         """The schema dict for this object type."""
         return self._schema
+
+    @property
+    def source_text(self) -> str | None:
+        """Original source text from parsing, or ``None`` if the object was mutated or created programmatically."""
+        return self._source_text
 
     @property
     def field_order(self) -> list[str] | None:
@@ -256,6 +265,7 @@ class IDFObject(EppyObjectMixin):
             return
         object.__setattr__(self, "_name", value)
         object.__setattr__(self, "_version", self._version + 1)
+        object.__setattr__(self, "_source_text", None)
         doc = self._document
         if doc is not None:
             doc.notify_name_change(self, old, value)
@@ -272,6 +282,7 @@ class IDFObject(EppyObjectMixin):
         else:
             self._data[python_key] = value
         object.__setattr__(self, "_version", self._version + 1)
+        object.__setattr__(self, "_source_text", None)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation.
@@ -318,6 +329,7 @@ class IDFObject(EppyObjectMixin):
             document=None,  # Don't copy document reference
             field_order=self._field_order,
             ref_fields=self._ref_fields,
+            source_text=None,  # copy is a new object; don't carry over verbatim text
         )
 
     def __dir__(self) -> list[str]:

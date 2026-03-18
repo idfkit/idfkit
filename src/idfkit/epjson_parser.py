@@ -28,6 +28,8 @@ def parse_epjson(
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
     strict_fields: bool = False,
+    *,
+    preserve_formatting: bool = False,
 ) -> IDFDocument:
     """
     Parse an epJSON file into an IDFDocument.
@@ -36,6 +38,9 @@ def parse_epjson(
         filepath: Path to the epJSON file
         schema: Optional EpJSONSchema for validation
         version: Optional version override (auto-detected if not provided)
+        preserve_formatting: If ``True``, store the raw JSON text so that
+            :func:`~idfkit.writers.write_epjson` can reproduce it
+            byte-for-byte when no objects have been modified.
 
     Returns:
         Parsed IDFDocument
@@ -61,7 +66,7 @@ def parse_epjson(
         raise FileNotFoundError(f"epJSON file not found: {filepath}")  # noqa: TRY003
 
     parser = EpJSONParser(filepath, schema)
-    return parser.parse(version, strict_fields=strict_fields)
+    return parser.parse(version, strict_fields=strict_fields, preserve_formatting=preserve_formatting)
 
 
 class EpJSONParser:
@@ -82,12 +87,20 @@ class EpJSONParser:
         self._filepath = filepath
         self._schema = schema
 
-    def parse(self, version: tuple[int, int, int] | None = None, *, strict_fields: bool = False) -> IDFDocument:
+    def parse(
+        self,
+        version: tuple[int, int, int] | None = None,
+        *,
+        strict_fields: bool = False,
+        preserve_formatting: bool = False,
+    ) -> IDFDocument:
         """
         Parse the epJSON file into an IDFDocument.
 
         Args:
             version: Optional version override
+            strict_fields: Enforce strict field access on the resulting document.
+            preserve_formatting: Store raw JSON text for lossless round-tripping.
 
         Returns:
             Parsed IDFDocument
@@ -97,7 +110,8 @@ class EpJSONParser:
 
         # Load JSON
         with open(self._filepath, encoding="utf-8") as f:
-            data = json.load(f)
+            raw_text = f.read()
+        data: dict[str, Any] = json.loads(raw_text)
 
         # Detect version if not provided
         if version is None:
@@ -116,6 +130,14 @@ class EpJSONParser:
 
         # Parse objects
         self._parse_objects(data, doc, schema)
+
+        # Store raw text for lossless round-tripping (opt-in).
+        if preserve_formatting:
+            doc._raw_text = raw_text  # pyright: ignore[reportAttributeAccessIssue]
+            # Mark all objects as "pristine" with a sentinel source_text so
+            # that the writer can detect mutations.
+            for obj in doc.all_objects:
+                object.__setattr__(obj, "_source_text", "")
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
