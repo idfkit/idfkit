@@ -106,7 +106,15 @@ class EpJSONSchema:
         _properties: Object definitions
     """
 
-    __slots__ = ("_object_lists", "_parsing_cache", "_properties", "_raw", "_reference_lists", "version")
+    __slots__ = (
+        "_object_lists",
+        "_parsing_cache",
+        "_properties",
+        "_raw",
+        "_reference_lists",
+        "_upper_to_canonical",
+        "version",
+    )
 
     version: tuple[int, int, int]
     _raw: dict[str, Any]
@@ -114,11 +122,15 @@ class EpJSONSchema:
     _reference_lists: dict[str, list[str]]
     _object_lists: dict[str, set[str]]
     _parsing_cache: dict[str, ParsingCache]
+    _upper_to_canonical: dict[str, str]
 
     def __init__(self, version: tuple[int, int, int], schema_data: dict[str, Any]) -> None:
         self.version = version
         self._raw = schema_data
         self._properties: dict[str, Any] = schema_data.get("properties", {})
+
+        # Case-insensitive lookup: UPPER → canonical type name
+        self._upper_to_canonical: dict[str, str] = {k.upper(): k for k in self._properties}
 
         # Build reference indexes
         self._reference_lists: dict[str, list[str]] = {}
@@ -283,21 +295,43 @@ class EpJSONSchema:
         """Check if a field is a reference to another object."""
         return self.get_field_object_list(obj_type, field_name) is not None
 
+    def resolve_type_name(self, obj_type: str) -> str | None:
+        """Resolve a possibly-miscased type name to its canonical schema form.
+
+        EnergyPlus is case-insensitive for object type names, so IDF files may
+        use ``ZONE``, ``zone``, or ``Zone`` interchangeably.  This method
+        returns the canonical PascalCase name from the schema, or ``None`` if
+        the type is not recognised.
+        """
+        if obj_type in self._properties:
+            return obj_type  # Fast path: already canonical
+        return self._upper_to_canonical.get(obj_type.upper())
+
     def get_parsing_cache(self, obj_type: str) -> ParsingCache | None:
         """Get or lazily build pre-computed parsing metadata for an object type.
 
-        Returns None if *obj_type* is not in the schema.
+        The lookup is case-insensitive: ``ZONE``, ``zone``, and ``Zone`` all
+        resolve to the same cache entry.  Returns ``None`` if *obj_type* is
+        not in the schema.
         """
         cached = self._parsing_cache.get(obj_type)
         if cached is not None:
             return cached
 
-        obj_schema = self._properties.get(obj_type)
-        if obj_schema is None:
+        canonical = self.resolve_type_name(obj_type)
+        if canonical is None:
             return None
 
-        cached = self._build_parsing_cache(obj_type, obj_schema)
-        self._parsing_cache[obj_type] = cached
+        # Check if the canonical form is already cached (different casing was
+        # looked up before).
+        cached = self._parsing_cache.get(canonical)
+        if cached is None:
+            cached = self._build_parsing_cache(canonical, self._properties[canonical])
+            self._parsing_cache[canonical] = cached
+
+        # Also cache under the original key for future fast-path hits.
+        if obj_type != canonical:
+            self._parsing_cache[obj_type] = cached
         return cached
 
     def _build_parsing_cache(self, obj_type: str, obj_schema: dict[str, Any]) -> ParsingCache:
