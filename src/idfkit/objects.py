@@ -329,7 +329,7 @@ class IDFObject(EppyObjectMixin):
             document=None,  # Don't copy document reference
             field_order=self._field_order,
             ref_fields=self._ref_fields,
-            source_text=self._source_text,
+            source_text=None,  # copy is a new object; don't carry over verbatim text
         )
 
     def __dir__(self) -> list[str]:

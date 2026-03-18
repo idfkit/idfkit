@@ -792,4 +792,5 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
             object.__setattr__(obj, "_source_text", node.text)
             obj_idx += 1
 
+    logger.debug("CST linking: %d of %d parsed objects linked", obj_idx, len(all_objects))
     return True

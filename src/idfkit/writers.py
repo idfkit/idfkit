@@ -175,6 +175,9 @@ def write_epjson(
             write_epjson(model, "in.epJSON")
             ```
     """
+    # Note: epJSON preservation is all-or-nothing (any mutation or addition
+    # falls back to the standard JSON writer), unlike IDF which has per-object
+    # granularity via CST nodes.
     use_preserve = preserve_formatting if preserve_formatting is not None else doc.raw_text is not None
 
     # If preserve_formatting and we have raw text, check whether any object

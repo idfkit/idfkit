@@ -172,6 +172,18 @@ class TestIdfRoundTrip:
         # New zone at the end
         assert "NewZone" in result
 
+    def test_copy_clears_source_text(self, tmp_path: Path) -> None:
+        """Copying an object should not carry over source_text."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        zone = doc["Zone"]["TestZone"]
+        assert zone.source_text is not None
+
+        clone = zone.copy()
+        assert clone.source_text is None
+
     def test_removed_object_excluded(self, tmp_path: Path) -> None:
         """Removed objects should not appear in the output."""
         idf_path = tmp_path / "input.idf"
@@ -427,6 +439,26 @@ class TestEpJsonRoundTrip:
         assert data["Zone"]["TestZone"]["x_origin"] == 10.0
 
         # But it won't be byte-identical to input
+        assert result != EPJSON_CONTENT
+
+    def test_added_object_disables_lossless(self, tmp_path: Path) -> None:
+        """Adding an object should prevent lossless epJSON output."""
+        from idfkit.epjson_parser import parse_epjson
+
+        epjson_path = tmp_path / "input.epJSON"
+        epjson_path.write_text(EPJSON_CONTENT)
+
+        doc = parse_epjson(epjson_path, preserve_formatting=True)
+        doc.add("Zone", "NewZone", validate=False)
+
+        result = write_epjson(doc)
+
+        # Should be valid JSON with the new zone included
+        data = json.loads(result or "{}")
+        assert "NewZone" in data["Zone"]
+        assert "TestZone" in data["Zone"]
+
+        # But not byte-identical to input (standard writer was used)
         assert result != EPJSON_CONTENT
 
     def test_no_raw_text_when_preserve_false(self, tmp_path: Path) -> None:
