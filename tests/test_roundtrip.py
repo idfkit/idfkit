@@ -275,7 +275,12 @@ class TestIdfRoundTrip:
         assert "TestMaterial" not in result
 
     def test_strict_false_with_unknown_type(self, tmp_path: Path) -> None:
-        """CST should be discarded when strict=False skips unknown object types."""
+        """CST survives when strict=False skips unknown object types.
+
+        The unknown type's CST node stays unlinked (no ``obj``), but the
+        remaining objects are linked correctly and their formatting is
+        preserved.
+        """
         idf_content = """\
 Version, 24.1;
 
@@ -303,10 +308,14 @@ Material,
 
         doc = parse_idf(idf_path, strict=False, preserve_formatting=True)
 
-        # CST should be discarded because the unknown type causes a mismatch
-        assert doc.cst is None
+        # CST is preserved; known objects are linked, unknown node is unlinked.
+        assert doc.cst is not None
+        zone = doc["Zone"]["TestZone"]
+        assert zone.source_text is not None
+        mat = doc["Material"]["TestMaterial"]
+        assert mat.source_text is not None
 
-        # The document should still be usable (standard formatting)
+        # The document should still be usable and preserve formatting
         result = write_idf(doc)
         assert "TestZone" in result
         assert "TestMaterial" in result

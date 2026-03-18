@@ -733,64 +733,74 @@ def _build_idf_cst(text: str) -> DocumentCST:
 def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
     """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
 
-    Both the CST and the document store objects in file order, so a simple
-    sequential walk suffices.  The ``Version`` object is kept as an
-    unlinked node because the parser handles it separately.
+    The CST preserves file order while ``doc.all_objects`` groups objects by
+    type.  Within each type the collection preserves insertion (= file) order,
+    so we build a ``type_upper → deque[IDFObject]`` map and pop the next
+    object of the matching type for each CST node.
+
+    The ``Version`` object is kept as an unlinked node because the parser
+    handles it separately.
 
     Each linked object also receives its original source text via
     ``_source_text`` for mutation tracking.
 
-    Returns ``True`` if linking succeeded, ``False`` if a type mismatch was
-    detected (e.g. when ``strict=False`` caused some objects to be skipped
-    during parsing but their CST nodes still exist).
+    Returns ``True`` if linking succeeded, ``False`` if a CST object node
+    could not be matched to any parsed object.
     """
-    # Gather all parsed objects in insertion (= file) order.
-    all_objects = list(doc.all_objects)
-    obj_idx = 0
+    from collections import deque
+
+    # Build type_upper → deque[IDFObject] from document collections.
+    # Each collection's _items list preserves insertion (= file) order.
+    obj_by_type: dict[str, deque[IDFObject]] = {}
+    for obj_type, collection in doc.collections.items():
+        if collection:
+            obj_by_type[obj_type.upper()] = deque(collection)
+
+    linked = 0
 
     for node in cst.nodes:
-        # Identify object nodes: they contain a comma *before* a semicolon
-        # outside of comments (the CST builder guarantees this structure).
-        first_comma = -1
-        k = 0
-        text = node.text
-        text_len = len(text)
-        while k < text_len:
-            if text[k] == "!":
-                nl = text.find("\n", k)
-                k = nl + 1 if nl >= 0 else text_len
-            elif text[k] == ",":
-                first_comma = k
-                break
-            elif text[k] == ";":
-                break
-            else:
-                k += 1
-
-        if first_comma < 0:
-            continue  # pure text node
-
-        # Extract the type name (text before the first comma, stripped).
-        type_name = text[:first_comma].strip()
-
-        # Skip Version objects (handled separately by the parser/writer).
-        if type_name.upper() == "VERSION":
+        type_name = _cst_node_type_name(node)
+        if type_name is None:
             continue
 
-        if obj_idx < len(all_objects):
-            obj = all_objects[obj_idx]
-            # Validate that the CST node type matches the parsed object type.
-            if obj.obj_type.upper() != type_name.upper():
-                logger.warning(
-                    "CST linking aborted: expected type '%s' but CST node has '%s' "
-                    "(strict=False may have skipped objects)",
-                    obj.obj_type,
-                    type_name,
-                )
-                return False
+        type_upper = type_name.upper()
+
+        # Skip Version objects (handled separately by the parser/writer).
+        if type_upper == "VERSION":
+            continue
+
+        bucket = obj_by_type.get(type_upper)
+        if bucket:
+            obj = bucket.popleft()
             node.obj = obj
             object.__setattr__(obj, "_source_text", node.text)
-            obj_idx += 1
+            linked += 1
+            if not bucket:
+                del obj_by_type[type_upper]
+        else:
+            logger.warning(
+                "CST linking: no parsed object for CST node type=%r (strict=False may have skipped objects)",
+                type_name,
+            )
 
-    logger.debug("CST linking: %d of %d parsed objects linked", obj_idx, len(all_objects))
+    total = sum(len(c) for c in doc.collections.values())
+    logger.debug("CST linking: %d of %d parsed objects linked", linked, total)
     return True
+
+
+def _cst_node_type_name(node: CSTNode) -> str | None:
+    """Extract the object type name from a CST node, or ``None`` for text-only nodes."""
+    k = 0
+    text = node.text
+    text_len = len(text)
+    while k < text_len:
+        if text[k] == "!":
+            nl = text.find("\n", k)
+            k = nl + 1 if nl >= 0 else text_len
+        elif text[k] == ",":
+            return text[:k].strip()
+        elif text[k] == ";":
+            return None
+        else:
+            k += 1
+    return None
