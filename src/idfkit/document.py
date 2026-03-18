@@ -653,6 +653,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             current = ref_obj.data.get(field_name, "")
             if isinstance(current, str) and current.upper() == old_name.upper():
                 ref_obj.data[field_name] = new_name
+                object.__setattr__(ref_obj, "_source_text", None)
 
         # 3. Update graph indexes
         self._references.rename_target(old_name, new_name)

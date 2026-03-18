@@ -201,10 +201,10 @@ def write_epjson(
 
 def _emit_cst_node(
     node: CSTNode,
-    doc: IDFDocument[bool],
     formatter: IDFWriter,
     parts: list[str],
     emitted: set[int],
+    live_ids: set[int],
 ) -> None:
     """Emit a single CST node — verbatim for clean objects, reformatted for dirty ones."""
     if node.obj is None:
@@ -212,7 +212,7 @@ def _emit_cst_node(
         return
 
     obj = node.obj
-    if not _object_in_document(doc, obj):
+    if id(obj) not in live_ids:
         return  # removed — skip
 
     emitted.add(id(obj))
@@ -238,9 +238,10 @@ def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
     parts: list[str] = []
     formatter = IDFWriter(doc, output_type="standard")
     emitted: set[int] = set()
+    live_ids = {id(o) for o in doc.all_objects}
 
     for node in cst.nodes:
-        _emit_cst_node(node, doc, formatter, parts, emitted)
+        _emit_cst_node(node, formatter, parts, emitted, live_ids)
 
     # Append objects added after parsing (not in any CST node).
     new_objs = [formatter.format_object(o) for o in doc.all_objects if id(o) not in emitted]
@@ -253,15 +254,6 @@ def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
             parts.append("\n\n")
 
     return "".join(parts)
-
-
-def _object_in_document(doc: IDFDocument[bool], obj: IDFObject) -> bool:
-    """Check whether *obj* is still present in *doc*."""
-    obj_type = obj.obj_type
-    collection = doc.collections.get(obj_type)
-    if collection is None:
-        return False
-    return obj in collection
 
 
 class IDFWriter:

@@ -5,12 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from idfkit.cst import CSTNode, DocumentCST
-from idfkit.idf_parser import _build_idf_cst, _link_cst_to_objects, parse_idf
+from idfkit.idf_parser import _build_idf_cst, parse_idf
 from idfkit.writers import write_epjson, write_idf
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -241,6 +237,67 @@ class TestIdfRoundTrip:
         result2 = write_idf(doc2)
 
         assert result1 == result2
+
+    def test_rename_invalidates_referencing_objects(self, tmp_path: Path) -> None:
+        """Renaming a referenced object should update referencing objects' output."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        # Construction references TestMaterial — verify source_text is set
+        constr = doc["Construction"]["TestConstruction"]
+        assert constr.source_text is not None
+
+        # Rename the material
+        mat = doc["Material"]["TestMaterial"]
+        mat.name = "RenamedMaterial"
+
+        # The construction's source_text should be invalidated
+        assert constr.source_text is None
+
+        result = write_idf(doc)
+
+        # The construction must use the new name, not the old one
+        assert "RenamedMaterial" in result
+        assert "TestMaterial" not in result
+
+    def test_strict_false_with_unknown_type(self, tmp_path: Path) -> None:
+        """CST should be discarded when strict=False skips unknown object types."""
+        idf_content = """\
+Version, 24.1;
+
+Zone,
+  TestZone,              !- Name
+  0,                     !- Direction of Relative North
+  0, 0, 0,               !- X,Y,Z Origin
+  1,                     !- Type
+  1;                     !- Multiplier
+
+UnknownFakeObject,
+  SomeName,
+  SomeValue;
+
+Material,
+  TestMaterial,           !- Name
+  MediumSmooth,           !- Roughness
+  0.1,                    !- Thickness
+  1.0,                    !- Conductivity
+  2000,                   !- Density
+  1000;                   !- Specific Heat
+"""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, strict=False, preserve_formatting=True)
+
+        # CST should be discarded because the unknown type causes a mismatch
+        assert doc.cst is None
+
+        # The document should still be usable (standard formatting)
+        result = write_idf(doc)
+        assert "TestZone" in result
+        assert "TestMaterial" in result
 
 
 # ---------------------------------------------------------------------------

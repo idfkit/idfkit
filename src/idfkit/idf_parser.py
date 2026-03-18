@@ -207,9 +207,11 @@ class IDFParser:
         if preserve_formatting:
             original_text = content.decode(self._encoding)
             cst = _build_idf_cst(original_text)
-            _link_cst_to_objects(cst, doc)
-            doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
-            doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
+            if _link_cst_to_objects(cst, doc):
+                doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
+                doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
+            else:
+                logger.warning("CST discarded due to linking failure — lossless round-trip disabled")
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
@@ -728,7 +730,7 @@ def _build_idf_cst(text: str) -> DocumentCST:
     return DocumentCST(nodes=nodes)
 
 
-def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> None:
+def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
     """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
 
     Both the CST and the document store objects in file order, so a simple
@@ -737,6 +739,10 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> None:
 
     Each linked object also receives its original source text via
     ``_source_text`` for mutation tracking.
+
+    Returns ``True`` if linking succeeded, ``False`` if a type mismatch was
+    detected (e.g. when ``strict=False`` caused some objects to be skipped
+    during parsing but their CST nodes still exist).
     """
     # Gather all parsed objects in insertion (= file) order.
     all_objects = list(doc.all_objects)
@@ -773,6 +779,17 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> None:
 
         if obj_idx < len(all_objects):
             obj = all_objects[obj_idx]
+            # Validate that the CST node type matches the parsed object type.
+            if obj.obj_type.upper() != type_name.upper():
+                logger.warning(
+                    "CST linking aborted: expected type '%s' but CST node has '%s' "
+                    "(strict=False may have skipped objects)",
+                    obj.obj_type,
+                    type_name,
+                )
+                return False
             node.obj = obj
             object.__setattr__(obj, "_source_text", node.text)
             obj_idx += 1
+
+    return True
