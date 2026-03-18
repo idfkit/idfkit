@@ -6,6 +6,7 @@ Features:
 - Regex-based tokenization
 - Direct parsing into IDFDocument (no intermediate structures)
 - Type coercion based on schema
+- Optional CST (Concrete Syntax Tree) for lossless round-tripping
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from .cst import CSTNode, DocumentCST
 from .document import IDFDocument
 from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError
 from .objects import IDFObject
@@ -73,6 +75,8 @@ def parse_idf(
     encoding: str = "latin-1",
     strict: bool = True,
     strict_fields: bool = False,
+    *,
+    preserve_formatting: bool = False,
 ) -> IDFDocument:
     """
     Parse an IDF file into an IDFDocument.
@@ -83,6 +87,10 @@ def parse_idf(
         version: Optional version override (auto-detected if not provided)
         encoding: File encoding (default: latin-1 for compatibility)
         strict: If True, fail fast on malformed objects (default: True)
+        preserve_formatting: If ``True``, build a Concrete Syntax Tree (CST)
+            so that writing the document back preserves original formatting,
+            comments, and whitespace for unmodified objects.  The default
+            code path is unchanged — no performance penalty when ``False``.
 
     Returns:
         Parsed IDFDocument
@@ -108,6 +116,13 @@ def parse_idf(
             ```python
             model = parse_idf("legacy_building.idf", version=(9, 6, 0))
             ```
+
+        Round-trip an IDF file losslessly:
+
+            ```python
+            model = parse_idf("building.idf", preserve_formatting=True)
+            # write_idf(model) reproduces the original byte-for-byte
+            ```
     """
     filepath = Path(filepath)
 
@@ -115,7 +130,7 @@ def parse_idf(
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
     parser = IDFParser(filepath, schema, encoding, strict=strict)
-    return parser.parse(version, strict_fields=strict_fields)
+    return parser.parse(version, strict_fields=strict_fields, preserve_formatting=preserve_formatting)
 
 
 class IDFParser:
@@ -146,12 +161,20 @@ class IDFParser:
         self._strict = strict
         self._content: bytes | None = None
 
-    def parse(self, version: tuple[int, int, int] | None = None, *, strict_fields: bool = False) -> IDFDocument:
+    def parse(
+        self,
+        version: tuple[int, int, int] | None = None,
+        *,
+        strict_fields: bool = False,
+        preserve_formatting: bool = False,
+    ) -> IDFDocument:
         """
         Parse the IDF file into an IDFDocument.
 
         Args:
             version: Optional version override
+            strict_fields: Enforce strict field access on the resulting document.
+            preserve_formatting: Build a CST for lossless round-tripping.
 
         Returns:
             Parsed IDFDocument
@@ -179,6 +202,14 @@ class IDFParser:
 
         # Parse objects
         self._parse_objects(content, doc, schema)
+
+        # Build CST for lossless round-tripping (opt-in, no cost when False)
+        if preserve_formatting:
+            original_text = content.decode(self._encoding)
+            cst = _build_idf_cst(original_text)
+            _link_cst_to_objects(cst, doc)
+            doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
+            doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
@@ -596,3 +627,152 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
         return (major, minor, patch)
 
     raise VersionNotFoundError(str(filepath))
+
+
+# ---------------------------------------------------------------------------
+# CST (Concrete Syntax Tree) helpers for lossless round-tripping
+# ---------------------------------------------------------------------------
+
+
+def _skip_comment(text: str, pos: int, n: int) -> int:
+    """Advance *pos* past a ``!`` comment to the start of the next line."""
+    nl = text.find("\n", pos)
+    return nl + 1 if nl >= 0 else n
+
+
+def _find_first_comma_or_semi(text: str, start: int, n: int) -> tuple[bool, int]:
+    """Scan forward from *start* looking for ``,`` or ``;`` outside comments.
+
+    Returns ``(found_comma, end_pos)`` where *found_comma* is ``True`` when a
+    comma was found first, and *end_pos* is the position of that delimiter.
+    """
+    j = start
+    while j < n:
+        ch = text[j]
+        if ch == "!":
+            j = _skip_comment(text, j, n)
+        elif ch == ",":
+            return True, j
+        elif ch == ";":
+            return False, j
+        else:
+            j += 1
+    return False, j
+
+
+def _scan_to_semicolon(text: str, start: int, n: int) -> int:
+    """Return the position *after* the next ``;`` outside of comments."""
+    j = start
+    while j < n:
+        ch = text[j]
+        if ch == "!":
+            j = _skip_comment(text, j, n)
+        elif ch == ";":
+            return j + 1
+        else:
+            j += 1
+    return j
+
+
+def _build_idf_cst(text: str) -> DocumentCST:
+    """Build a :class:`DocumentCST` from the original IDF source text.
+
+    The returned CST is a flat list of :class:`CSTNode` items whose ``text``
+    attributes, when concatenated, reproduce *text* exactly.  Nodes that
+    correspond to IDF objects are distinguished from pure-text nodes
+    (comments, blank lines, preamble) so that the writer can substitute
+    freshly formatted output for mutated objects while keeping everything
+    else verbatim.
+
+    Performance: single-pass O(n) scanner — no regex, no copies.
+    """
+    nodes: list[CSTNode] = []
+    pos = 0
+    n = len(text)
+    segment_start = 0
+
+    while pos < n:
+        ch = text[pos]
+
+        if ch == "!":
+            pos = _skip_comment(text, pos, n)
+            continue
+
+        if ch in " \t\r\n":
+            pos += 1
+            continue
+
+        if ch.isalpha():
+            found_comma, _delim_pos = _find_first_comma_or_semi(text, pos + 1, n)
+            if found_comma:
+                if pos > segment_start:
+                    nodes.append(CSTNode(text=text[segment_start:pos]))
+
+                j = _scan_to_semicolon(text, _delim_pos + 1, n)
+
+                # Include trailing newlines so blank lines stay with the object.
+                while j < n and text[j] in "\r\n":
+                    j += 1
+
+                nodes.append(CSTNode(text=text[pos:j]))
+                pos = j
+                segment_start = j
+            else:
+                pos += 1
+        else:
+            pos += 1
+
+    if segment_start < n:
+        nodes.append(CSTNode(text=text[segment_start:n]))
+
+    return DocumentCST(nodes=nodes)
+
+
+def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> None:
+    """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
+
+    Both the CST and the document store objects in file order, so a simple
+    sequential walk suffices.  The ``Version`` object is kept as an
+    unlinked node because the parser handles it separately.
+
+    Each linked object also receives its original source text via
+    ``_source_text`` for mutation tracking.
+    """
+    # Gather all parsed objects in insertion (= file) order.
+    all_objects = list(doc.all_objects)
+    obj_idx = 0
+
+    for node in cst.nodes:
+        # Identify object nodes: they contain a comma *before* a semicolon
+        # outside of comments (the CST builder guarantees this structure).
+        first_comma = -1
+        k = 0
+        text = node.text
+        text_len = len(text)
+        while k < text_len:
+            if text[k] == "!":
+                nl = text.find("\n", k)
+                k = nl + 1 if nl >= 0 else text_len
+            elif text[k] == ",":
+                first_comma = k
+                break
+            elif text[k] == ";":
+                break
+            else:
+                k += 1
+
+        if first_comma < 0:
+            continue  # pure text node
+
+        # Extract the type name (text before the first comma, stripped).
+        type_name = text[:first_comma].strip()
+
+        # Skip Version objects (handled separately by the parser/writer).
+        if type_name.upper() == "VERSION":
+            continue
+
+        if obj_idx < len(all_objects):
+            obj = all_objects[obj_idx]
+            node.obj = obj
+            object.__setattr__(obj, "_source_text", node.text)
+            obj_idx += 1

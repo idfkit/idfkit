@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat import EppyDocumentMixin
+from .cst import DocumentCST
 from .exceptions import DuplicateObjectError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
@@ -105,6 +106,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
     __slots__ = (
         "_collections",
+        "_cst",
+        "_raw_text",
         "_references",
         "_schedules_cache",
         "_schema",
@@ -120,6 +123,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _references: ReferenceGraph
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
+    _cst: DocumentCST | None
+    _raw_text: str | None
 
     def __init__(
         self,
@@ -149,6 +154,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._references = ReferenceGraph()
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
+        self._cst: DocumentCST | None = None
+        self._raw_text: str | None = None
 
     @property
     def strict(self) -> bool:
@@ -165,6 +172,16 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def schema(self) -> EpJSONSchema | None:
         """The EpJSON schema for validation and field info."""
         return self._schema
+
+    @property
+    def cst(self) -> DocumentCST | None:
+        """The concrete syntax tree, if the document was parsed with ``preserve_formatting=True``."""
+        return self._cst
+
+    @property
+    def raw_text(self) -> str | None:
+        """The original source text, if the document was parsed with ``preserve_formatting=True``."""
+        return self._raw_text
 
     @property
     def collections(self) -> dict[str, IDFCollection[IDFObject]]:

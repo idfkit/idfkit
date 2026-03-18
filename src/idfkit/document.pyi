@@ -13,6 +13,7 @@ from typing import Any, Generic, TypeVar
 from ._compat import EppyDocumentMixin
 from ._generated_types import *  # noqa: F403
 from ._generated_types import _ObjectTypeMap
+from .cst import DocumentCST
 from .introspection import ObjectDescription
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
@@ -40,6 +41,10 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def strict(self) -> Strict: ...
     @property
     def schema(self) -> EpJSONSchema | None: ...
+    @property
+    def cst(self) -> DocumentCST | None: ...
+    @property
+    def raw_text(self) -> str | None: ...
     @property
     def collections(self) -> dict[str, IDFCollection[IDFObject]]: ...
     @property
