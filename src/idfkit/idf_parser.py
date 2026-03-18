@@ -52,6 +52,28 @@ _FIELD_SPLIT_PATTERN = re.compile(rb"\s*,\s*")
 # Memory map threshold (10 MB)
 _MMAP_THRESHOLD = 10 * 1024 * 1024
 
+# ---------------------------------------------------------------------------
+# CST regex patterns
+# ---------------------------------------------------------------------------
+
+# Matches either a comment line (alt 1, no capture) or an IDF object (alt 2,
+# capture group 1).  Comments get priority so that `!`, `,` and `;` inside
+# comments are never mistaken for object delimiters.
+_CST_OBJECT_RE = re.compile(
+    r"(?:![^\n]*\n?)"  # Alt 1: comment line (no capture group)
+    r"|"
+    r"("  # Alt 2: object (capture group 1)
+    r"[A-Za-z][A-Za-z0-9:_ \t-]*\s*,"  #   Type name + first comma
+    r"(?:[^;!]*(?:![^\n]*\n?)?)*"  #   Fields with inline comments
+    r"[^;!]*;"  #   Final field + semicolon
+    r"[\r\n]*"  #   Trailing newlines
+    r")",
+)
+
+# Extracts the type name from a CST object node: everything before the first
+# comma that is not inside a leading comment.
+_CST_TYPE_NAME_RE = re.compile(r"^(?:![^\n]*\n)*([^;!,\n]*),", re.MULTILINE)
+
 
 def _coerce_value_fast(field_type: str | None, value: str) -> Any:
     """Coerce a field value using a pre-resolved type string."""
@@ -418,15 +440,33 @@ class IDFParser:
 
         ext_names = pc.ext_field_names
         num_ext = len(ext_names)
-        for group_idx in range(0, len(extra), ext_size):
+
+        # Pre-compute type per extensible index — avoids a dict lookup per field.
+        ext_types = tuple(field_types.get(name) for name in ext_names)
+
+        # First group (group_idx=0): field names are just ext_names — no suffix,
+        # no f-string allocation.
+        first_group = extra[:ext_size]
+        for j, value in enumerate(first_group):
+            if j >= num_ext:
+                continue
+            ext_field = ext_names[j]
+            if value:
+                data[ext_field] = _coerce_value_fast(ext_types[j], value)
+            else:
+                data[ext_field] = ""
+            field_names.append(ext_field)
+
+        # Remaining groups: need a suffix.
+        for group_idx in range(ext_size, len(extra), ext_size):
+            suffix = f"_{group_idx // ext_size + 1}"
             group = extra[group_idx : group_idx + ext_size]
-            suffix = "" if group_idx == 0 else f"_{group_idx // ext_size + 1}"
             for j, value in enumerate(group):
                 if j >= num_ext:
                     continue
                 ext_field = f"{ext_names[j]}{suffix}"
                 if value:
-                    data[ext_field] = _coerce_value_fast(field_types.get(ext_names[j]), value)
+                    data[ext_field] = _coerce_value_fast(ext_types[j], value)
                 else:
                     data[ext_field] = ""
                 field_names.append(ext_field)
@@ -636,46 +676,6 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
 # ---------------------------------------------------------------------------
 
 
-def _skip_comment(text: str, pos: int, n: int) -> int:
-    """Advance *pos* past a ``!`` comment to the start of the next line."""
-    nl = text.find("\n", pos)
-    return nl + 1 if nl >= 0 else n
-
-
-def _find_first_comma_or_semi(text: str, start: int, n: int) -> tuple[bool, int]:
-    """Scan forward from *start* looking for ``,`` or ``;`` outside comments.
-
-    Returns ``(found_comma, end_pos)`` where *found_comma* is ``True`` when a
-    comma was found first, and *end_pos* is the position of that delimiter.
-    """
-    j = start
-    while j < n:
-        ch = text[j]
-        if ch == "!":
-            j = _skip_comment(text, j, n)
-        elif ch == ",":
-            return True, j
-        elif ch == ";":
-            return False, j
-        else:
-            j += 1
-    return False, j
-
-
-def _scan_to_semicolon(text: str, start: int, n: int) -> int:
-    """Return the position *after* the next ``;`` outside of comments."""
-    j = start
-    while j < n:
-        ch = text[j]
-        if ch == "!":
-            j = _skip_comment(text, j, n)
-        elif ch == ";":
-            return j + 1
-        else:
-            j += 1
-    return j
-
-
 def _build_idf_cst(text: str) -> DocumentCST:
     """Build a :class:`DocumentCST` from the original IDF source text.
 
@@ -686,47 +686,19 @@ def _build_idf_cst(text: str) -> DocumentCST:
     freshly formatted output for mutated objects while keeping everything
     else verbatim.
 
-    Performance: single-pass O(n) scanner — no regex, no copies.
+    Performance: single-pass regex scanner using :data:`_CST_OBJECT_RE`.
     """
     nodes: list[CSTNode] = []
     pos = 0
-    n = len(text)
-    segment_start = 0
-
-    while pos < n:
-        ch = text[pos]
-
-        if ch == "!":
-            pos = _skip_comment(text, pos, n)
-            continue
-
-        if ch in " \t\r\n":
-            pos += 1
-            continue
-
-        if ch.isalpha():
-            found_comma, _delim_pos = _find_first_comma_or_semi(text, pos + 1, n)
-            if found_comma:
-                if pos > segment_start:
-                    nodes.append(CSTNode(text=text[segment_start:pos]))
-
-                j = _scan_to_semicolon(text, _delim_pos + 1, n)
-
-                # Include trailing newlines so blank lines stay with the object.
-                while j < n and text[j] in "\r\n":
-                    j += 1
-
-                nodes.append(CSTNode(text=text[pos:j]))
-                pos = j
-                segment_start = j
-            else:
-                pos += 1
-        else:
-            pos += 1
-
-    if segment_start < n:
-        nodes.append(CSTNode(text=text[segment_start:n]))
-
+    for m in _CST_OBJECT_RE.finditer(text):
+        if m.group(1) is None:
+            continue  # Comment match — will be part of surrounding text node
+        if m.start() > pos:
+            nodes.append(CSTNode(text=text[pos : m.start()]))
+        nodes.append(CSTNode(text=m.group(1)))
+        pos = m.end()
+    if pos < len(text):
+        nodes.append(CSTNode(text=text[pos:]))
     return DocumentCST(nodes=nodes)
 
 
@@ -790,17 +762,8 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
 
 def _cst_node_type_name(node: CSTNode) -> str | None:
     """Extract the object type name from a CST node, or ``None`` for text-only nodes."""
-    k = 0
-    text = node.text
-    text_len = len(text)
-    while k < text_len:
-        if text[k] == "!":
-            nl = text.find("\n", k)
-            k = nl + 1 if nl >= 0 else text_len
-        elif text[k] == ",":
-            return text[:k].strip()
-        elif text[k] == ";":
-            return None
-        else:
-            k += 1
-    return None
+    m = _CST_TYPE_NAME_RE.match(node.text)
+    if m is None:
+        return None
+    name = m.group(1).strip()
+    return name or None

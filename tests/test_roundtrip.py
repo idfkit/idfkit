@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from idfkit.idf_parser import _build_idf_cst, parse_idf
+from idfkit.cst import CSTNode
+from idfkit.idf_parser import _build_idf_cst, _cst_node_type_name, parse_idf
 from idfkit.writers import write_epjson, write_idf
 
 # ---------------------------------------------------------------------------
@@ -73,6 +74,50 @@ class TestBuildIdfCst:
         """An empty file should produce no nodes."""
         cst = _build_idf_cst("")
         assert len(cst.nodes) == 0
+
+    def test_comment_with_semicolon_and_comma(self) -> None:
+        """Comments containing `;` and `,` must not be matched as objects."""
+        text = "! This comment has ; and , in it\nVersion, 24.1;\n"
+        cst = _build_idf_cst(text)
+        reconstructed = "".join(n.text for n in cst.nodes)
+        assert reconstructed == text
+        obj_nodes = [n for n in cst.nodes if "," in n.text and ";" in n.text and not n.text.lstrip().startswith("!")]
+        assert len(obj_nodes) == 1
+
+    def test_object_no_trailing_newline(self) -> None:
+        """Object at EOF with no trailing newline should still be captured."""
+        text = "Version, 24.1;"
+        cst = _build_idf_cst(text)
+        assert len(cst.nodes) == 1
+        assert cst.nodes[0].text == text
+
+    def test_comment_before_first_comma_in_body(self) -> None:
+        """An inline comment before the first comma in an object body."""
+        text = "Zone,\n  !- inline comment\n  TestZone, 0, 0, 0, 0, 1, 1;\n"
+        cst = _build_idf_cst(text)
+        reconstructed = "".join(n.text for n in cst.nodes)
+        assert reconstructed == text
+
+
+class TestCstNodeTypeName:
+    """Unit tests for _cst_node_type_name."""
+
+    def test_normal_object(self) -> None:
+        node = CSTNode(text="Zone,\n  TestZone, 0;\n")
+        assert _cst_node_type_name(node) == "Zone"
+
+    def test_text_only_node(self) -> None:
+        node = CSTNode(text="! just a comment\n\n")
+        assert _cst_node_type_name(node) is None
+
+    def test_semicolon_only_node(self) -> None:
+        node = CSTNode(text=";")
+        assert _cst_node_type_name(node) is None
+
+    def test_comment_before_type(self) -> None:
+        """A leading comment line before the type name comma."""
+        node = CSTNode(text="! comment\nZone, TestZone;\n")
+        assert _cst_node_type_name(node) == "Zone"
 
 
 # ---------------------------------------------------------------------------
