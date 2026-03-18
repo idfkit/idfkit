@@ -581,6 +581,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # Remove from reference graph
         self._references.unregister(obj)
 
+        # Detach from CST so the object can be garbage-collected
+        if self._cst is not None:
+            for node in self._cst.nodes:
+                if node.obj is obj:
+                    node.obj = None
+                    node.text = ""
+                    break
+
         # Invalidate caches
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None

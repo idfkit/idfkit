@@ -299,6 +299,68 @@ Material,
         assert "TestZone" in result
         assert "TestMaterial" in result
 
+    def test_removed_object_cst_reference_cleared(self, tmp_path: Path) -> None:
+        """Removing an object should clear its CST node reference for GC."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        constr = doc["Construction"]["TestConstruction"]
+
+        # Before removal, CST should reference this object
+        assert doc.cst is not None
+        cst_refs = [n for n in doc.cst.nodes if n.obj is constr]
+        assert len(cst_refs) == 1
+
+        doc.removeidfobject(constr)
+
+        # After removal, no CST node should reference the object
+        cst_refs_after = [n for n in doc.cst.nodes if n.obj is constr]
+        assert len(cst_refs_after) == 0
+
+        # Output should still be correct
+        result = write_idf(doc)
+        assert "TestConstruction" not in result
+        assert "TestZone" in result
+
+    def test_output_type_overrides_auto_detect(self, tmp_path: Path) -> None:
+        """Explicit output_type should disable lossless auto-detection."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        assert doc.cst is not None
+
+        # Request compressed output without explicit preserve_formatting
+        result = write_idf(doc, output_type="compressed")
+
+        # Should use compressed format, not lossless
+        assert "! File header comment" not in result
+        assert "Zone," in result
+
+    def test_nocomment_overrides_auto_detect(self, tmp_path: Path) -> None:
+        """output_type='nocomment' should also disable lossless auto-detection."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        result = write_idf(doc, output_type="nocomment")
+
+        # Original comments should not be preserved
+        assert "! File header comment" not in result
+
+    def test_explicit_preserve_ignores_output_type(self, tmp_path: Path) -> None:
+        """Explicit preserve_formatting=True should take precedence over output_type."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        result = write_idf(doc, output_type="compressed", preserve_formatting=True)
+
+        # Lossless mode should win
+        assert "! File header comment" in result
+        assert result == IDF_WITH_COMMENTS
+
 
 # ---------------------------------------------------------------------------
 # epJSON round-trip tests

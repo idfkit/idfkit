@@ -67,13 +67,16 @@ def write_idf(
             comments), ``"nocomment"`` (no comments), or
             ``"compressed"`` (single-line objects).  Mirrors eppy's
             ``idf.outputtype``.  Ignored when *preserve_formatting* is
-            active.
+            explicitly ``True``.  When *preserve_formatting* is ``None``
+            and *output_type* is not ``"standard"``, the explicit output
+            type takes precedence and lossless mode is disabled.
         preserve_formatting: If ``True``, reproduce the original source
             text for unmodified objects and apply standard formatting only
             to objects that were mutated or added after parsing.  Requires
             the document to have been parsed with
             ``preserve_formatting=True``.  When ``None`` (the default),
-            automatically uses lossless output if a CST is available.
+            automatically uses lossless output if a CST is available and
+            *output_type* is ``"standard"``.
 
     Returns:
         IDF string if *filepath* is ``None``, otherwise ``None``.
@@ -109,7 +112,12 @@ def write_idf(
             write_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
-    use_preserve = preserve_formatting if preserve_formatting is not None else doc.cst is not None
+    if preserve_formatting is not None:
+        use_preserve = preserve_formatting
+    elif output_type != "standard":
+        use_preserve = False
+    else:
+        use_preserve = doc.cst is not None
 
     if use_preserve and doc.cst is not None:
         content = _write_idf_lossless(doc)
