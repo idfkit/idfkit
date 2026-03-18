@@ -504,6 +504,11 @@ def iter_idf_objects(
 
     This is useful for quick scanning or filtering without full parsing.
 
+    Note:
+        Type names are returned exactly as they appear in the IDF file
+        (no schema-based case normalization).  Use case-insensitive
+        comparisons when filtering: ``obj_type.upper() == "ZONE"``.
+
     Examples:
         Count thermal zones without loading the full document
         (useful for quickly sizing batch runs):

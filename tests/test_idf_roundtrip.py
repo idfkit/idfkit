@@ -504,13 +504,14 @@ zone,
         assert doc["Zone"]["ZoneB"] is not None
         assert doc["Zone"]["ZoneC"] is not None
 
-    def test_no_schema_preserves_raw_type(self, tmp_path: Path) -> None:
-        """Without a schema, raw type names pass through unchanged."""
+    def test_schema_none_still_normalizes(self, tmp_path: Path) -> None:
+        """Passing schema=None with a version still resolves the schema and normalizes."""
         idf_content = "VERSION, 24.1;\n\nZONE,\n  TestZone, 0, 0, 0, 0, 1, 1;\n"
         idf_path = tmp_path / "noschema.idf"
         idf_path.write_text(idf_content)
 
         doc = parse_idf(idf_path, schema=None, version=(24, 1, 0), strict=False)
 
-        # Without schema, no normalization — raw type name preserved
-        assert "ZONE" in doc.collections or "Zone" in doc.collections
+        # schema=None triggers auto-load from version, so normalization still applies
+        assert "Zone" in doc.collections
+        assert "ZONE" not in doc.collections
