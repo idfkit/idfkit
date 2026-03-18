@@ -37,6 +37,38 @@ jobs:
       - name: Build documentation
         run: ./scripts/build_docs.sh
 
+      - name: Fetch base branch for diff
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+
+      - name: Find changed doc pages
+        id: diff-docs
+        run: |
+          base="origin/${{ github.event.pull_request.base.ref }}"
+          pages=""
+
+          # Markdown files map directly to pages
+          md_pages=$(git diff --name-only "$base" -- docs/ \
+            | grep '\.md$' \
+            | sed 's|^docs/||; s|/index\.md$|/|; s|\.md$|/|')
+          pages="${pages}${md_pages}"$'\n'
+
+          # Snippets/notebooks: find which .md files include each changed non-md file
+          non_md=$(git diff --name-only "$base" -- docs/snippets/ docs/*.ipynb || true)
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            # Search for markdown files that reference this snippet path
+            includers=$(grep -Frl "$f" docs/ --include='*.md' 2>/dev/null \
+              | sed 's|^docs/||; s|/index\.md$|/|; s|\.md$|/|' || true)
+            pages="${pages}${includers}"$'\n'
+          done <<< "$non_md"
+
+          pages=$(echo "$pages" | grep -v '^$' | sort -u)
+          {
+            echo "pages<<EOF"
+            echo "$pages"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Deploy preview to gh-pages
         run: |
           rm -rf "gh-pages-deploy/pr-preview/pr-${{ github.event.number }}"
@@ -55,14 +87,25 @@ jobs:
 
       - name: Add or update preview comment
         uses: actions/github-script@v7
+        env:
+          CHANGED_PAGES: ${{ steps.diff-docs.outputs.pages }}
         with:
           script: |
             const previewUrl = `https://py.idfkit.com/pr-preview/pr-${context.issue.number}/`;
             const marker = '<!-- docs-preview-comment -->';
+
+            const changedPages = (process.env.CHANGED_PAGES || '').trim();
+            let changedSection = '';
+            if (changedPages) {
+              const links = changedPages.split('\n').map(p => `- ${previewUrl}${p}`).join('\n');
+              changedSection = `\n\n**Changed pages:**\n${links}`;
+            }
+
             const body = [
               marker,
               `**Docs preview** for this PR is available at:`,
               previewUrl,
+              changedSection,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
