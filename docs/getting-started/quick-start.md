@@ -91,6 +91,16 @@ Validation is enabled by default, so typos are caught immediately:
 --8<-- "docs/snippets/getting-started/quick-start/apply_design_days.py:example"
 ```
 
+## Lossless Round-Trip
+
+Pass `preserve_formatting=True` to build a Concrete Syntax Tree (CST) so that
+`write_idf` reproduces the original formatting, comments, and whitespace for
+unmodified objects:
+
+```python
+--8<-- "docs/snippets/getting-started/quick-start/lossless_roundtrip.py:example"
+```
+
 ## Next Steps
 
 - [Core Tutorial](core-tutorial.ipynb) - Complete interactive walkthrough

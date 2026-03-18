@@ -258,6 +258,11 @@ Translate or rotate all surfaces in the model:
 --8<-- "docs/snippets/migration/set_wwr_2.py:example"
 ```
 
+!!! tip "Construction preservation"
+    When `construction` is not specified, `set_wwr` preserves the construction
+    from any existing fenestration on each wall. Cross-references (e.g. from
+    output variables) are also re-pointed to the new windows.
+
 ### Surface intersection and matching
 
 **geomeppy** matches adjacent surfaces as a method on the IDF:
