@@ -412,16 +412,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Resolve object type casing against schema definitions."""
         if self._schema is None:
             return obj_type
-
-        if self._schema.get_object_schema(obj_type) is not None:
-            return obj_type
-
-        obj_type_upper = obj_type.upper()
-        for candidate in self._schema.object_types:
-            if candidate.upper() == obj_type_upper:
-                return candidate
-
-        return obj_type
+        return self._schema.resolve_type_name(obj_type) or obj_type
 
     def _find_existing_collection_type(self, obj_type: str) -> str | None:
         """Find existing non-empty collection type by case-insensitive name."""

@@ -398,3 +398,83 @@ class TestFullRoundtrip:
         assert len(doc2["Output:Variable"]) == 3
         assert doc2["Zone"][0].name == "ZONE ONE"
         assert doc2["BuildingSurface:Detailed"][0].data.get("vertex_z_coordinate") == 3.048
+
+
+# ---------------------------------------------------------------------------
+# Case-insensitive type name parsing
+# ---------------------------------------------------------------------------
+
+
+class TestCaseInsensitiveTypes:
+    """IDF files may use ALL-CAPS or mixed-case type names."""
+
+    def test_all_caps_types_parsed_strict(self, tmp_path: Path) -> None:
+        """Parser should accept ALL-CAPS type names like ZONE, MATERIAL."""
+        idf_content = """\
+VERSION, 24.1;
+
+ZONE,
+  TestZone,              !- Name
+  0,                     !- Direction of Relative North
+  0, 0, 0,              !- X,Y,Z Origin
+  1,                     !- Type
+  1;                     !- Multiplier
+
+MATERIAL,
+  TestMaterial,          !- Name
+  MediumSmooth,          !- Roughness
+  0.1,                   !- Thickness
+  1.0,                   !- Conductivity
+  2000,                  !- Density
+  1000;                  !- Specific Heat
+
+CONSTRUCTION,
+  TestConstruction,      !- Name
+  TestMaterial;          !- Outside Layer
+"""
+        idf_path = tmp_path / "caps.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, strict=True)
+
+        # Objects should be accessible under canonical PascalCase names
+        assert doc["Zone"]["TestZone"] is not None
+        assert doc["Material"]["TestMaterial"] is not None
+        assert doc["Construction"]["TestConstruction"] is not None
+
+    def test_mixed_case_colon_types(self, tmp_path: Path) -> None:
+        """Types with colons like SCHEDULE:COMPACT should resolve."""
+        idf_content = """\
+VERSION, 24.1;
+
+SCHEDULETYPELIMITS,
+  Temperature,           !- Name
+  -100,                  !- Lower Limit Value
+  200,                   !- Upper Limit Value
+  Continuous;            !- Numeric Type
+
+SCHEDULE:COMPACT,
+  TestSchedule,          !- Name
+  Temperature,           !- Schedule Type Limits Name
+  Through: 12/31,        !- Field 1
+  For: AllDays,          !- Field 2
+  Until: 24:00, 21.0;   !- Field 3
+"""
+        idf_path = tmp_path / "schedule.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, strict=True)
+
+        assert doc["Schedule:Compact"]["TestSchedule"] is not None
+
+    def test_canonical_names_in_collections(self, tmp_path: Path) -> None:
+        """Collections should use canonical PascalCase keys, not raw IDF casing."""
+        idf_content = "VERSION, 24.1;\n\nZONE,\n  TestZone, 0, 0, 0, 0, 1, 1;\n"
+        idf_path = tmp_path / "caps.idf"
+        idf_path.write_text(idf_content)
+
+        doc = parse_idf(idf_path, strict=True)
+
+        # The collection key should be canonical "Zone", not "ZONE"
+        assert "Zone" in doc.collections
+        assert "ZONE" not in doc.collections

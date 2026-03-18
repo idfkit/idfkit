@@ -249,7 +249,7 @@ class IDFParser:
 
                 obj_name = self._extract_object_name(match, encoding)
 
-                pc, should_skip = self._resolve_type_cache(
+                pc, should_skip, decoded_obj_type = self._resolve_type_cache(
                     content=content,
                     schema=schema,
                     type_cache=type_cache,
@@ -261,7 +261,7 @@ class IDFParser:
                 if should_skip:
                     continue
 
-                obj = self._parse_object_cached(match, pc, encoding)
+                obj = self._parse_object_cached(match, pc, encoding, obj_type_override=decoded_obj_type)
                 if obj:
                     addidfobject(obj)
             except IDFParseError:
@@ -287,9 +287,11 @@ class IDFParser:
         match: re.Match[bytes],
         pc: ParsingCache | None,
         encoding: str,
+        *,
+        obj_type_override: str | None = None,
     ) -> IDFObject | None:
         """Parse a single object from regex match using cached metadata."""
-        obj_type = match.group(1).decode(encoding).strip()
+        obj_type = obj_type_override or match.group(1).decode(encoding).strip()
         fields_raw = match.group(2).decode(encoding)
 
         fields = self._parse_fields(fields_raw)
@@ -458,10 +460,14 @@ class IDFParser:
         obj_type: str,
         obj_name: str | None,
         match_offset: int,
-    ) -> tuple[ParsingCache | None, bool]:
-        """Resolve and cache parsing metadata for an object type."""
+    ) -> tuple[ParsingCache | None, bool, str]:
+        """Resolve and cache parsing metadata for an object type.
+
+        Returns ``(cache, should_skip, canonical_type)`` where *canonical_type*
+        is the PascalCase schema name (may differ from the raw IDF casing).
+        """
         if schema is None:
-            return (None, False)
+            return (None, False, obj_type)
 
         pc = type_cache.get(obj_type)
         if pc is None and obj_type not in type_cache:
@@ -469,13 +475,15 @@ class IDFParser:
             type_cache[obj_type] = pc
 
         if pc is not None:
-            return (pc, False)
+            # Normalize to canonical schema name for consistent collection keys.
+            canonical = schema.resolve_type_name(obj_type) or obj_type
+            return (pc, False, canonical)
 
         if self._strict:
             msg = f"Unknown object type '{obj_type}'"
             self._raise_parse_error(content, match_offset, msg, obj_type=obj_type, obj_name=obj_name)
         skipped_types.add(obj_type)
-        return (None, True)
+        return (None, True, obj_type)
 
 
 def iter_idf_objects(

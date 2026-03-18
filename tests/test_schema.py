@@ -161,6 +161,37 @@ class TestEpJSONSchema:
 
 
 # ---------------------------------------------------------------------------
+# Case-insensitive type resolution
+# ---------------------------------------------------------------------------
+
+
+class TestResolveTypeName:
+    def test_canonical_name(self, schema: EpJSONSchema) -> None:
+        assert schema.resolve_type_name("Zone") == "Zone"
+
+    def test_uppercase(self, schema: EpJSONSchema) -> None:
+        assert schema.resolve_type_name("ZONE") == "Zone"
+
+    def test_lowercase(self, schema: EpJSONSchema) -> None:
+        assert schema.resolve_type_name("zone") == "Zone"
+
+    def test_mixed_case_with_colon(self, schema: EpJSONSchema) -> None:
+        assert schema.resolve_type_name("SCHEDULE:COMPACT") == "Schedule:Compact"
+
+    def test_unknown_type(self, schema: EpJSONSchema) -> None:
+        assert schema.resolve_type_name("FakeType") is None
+
+    def test_parsing_cache_case_insensitive(self, schema: EpJSONSchema) -> None:
+        """get_parsing_cache should resolve miscased type names."""
+        pc_canonical = schema.get_parsing_cache("Zone")
+        pc_upper = schema.get_parsing_cache("ZONE")
+        pc_lower = schema.get_parsing_cache("zone")
+        assert pc_canonical is not None
+        assert pc_canonical is pc_upper
+        assert pc_canonical is pc_lower
+
+
+# ---------------------------------------------------------------------------
 # SchemaManager
 # ---------------------------------------------------------------------------
 
