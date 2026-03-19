@@ -17,7 +17,7 @@ The fixture creates a minimal EnergyPlus-schema database with:
 - TabularDataWithStrings: Tabular report data
 
 This mirrors the real EnergyPlus SQLite output structure documented at:
-https://bigladdersoftware.com/epx/docs/latest/output-details-and-examples/output-sql.html
+https://docs.idfkit.com/v25.2/output-details/output-files/eplusout-sql/
 """
 
 from __future__ import annotations

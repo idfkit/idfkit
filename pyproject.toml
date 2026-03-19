@@ -23,9 +23,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://samuelduchesne.github.io/idfkit/"
+Homepage = "https://py.idfkit.com/"
 Repository = "https://github.com/idfkit/idfkit"
-Documentation = "https://samuelduchesne.github.io/idfkit/"
+Documentation = "https://py.idfkit.com/"
 
 [project.optional-dependencies]
 # Core simulation requires no extras

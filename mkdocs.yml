@@ -5,7 +5,7 @@ site_description: A fast, modern EnergyPlus IDF/epJSON toolkit for Python with O
 site_author: Samuel Letellier-Duchesne
 edit_uri: edit/main/docs/
 repo_name: idfkit/idfkit
-copyright: Maintained by <a href="https://samuelduchesne.com">samuelduchesne</a>.
+copyright: Maintained by <a href="https://samuelduchesne.github.io">samuelduchesne</a>.
 
 nav:
   - Home: index.md

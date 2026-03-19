@@ -85,7 +85,7 @@ def format_sarif(diagnostics: list[Diagnostic], *, tool_version: str = "0.1.0") 
                 "tool": {
                     "driver": {
                         "name": "idfkit",
-                        "informationUri": "https://github.com/samuelduchesne/idfkit",
+                        "informationUri": "https://github.com/idfkit/idfkit",
                         "version": tool_version,
                         "rules": _build_rules(),
                     },
