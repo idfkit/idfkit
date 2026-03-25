@@ -132,7 +132,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         schema: EpJSONSchema | None = None,
         filepath: Path | str | None = None,
         *,
-        strict: bool = False,
+        strict: bool = True,
     ) -> None:
         """
         Initialize an IDFDocument.

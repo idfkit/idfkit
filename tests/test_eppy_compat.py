@@ -860,7 +860,7 @@ class TestStrictFieldAccess:
         assert zone.x_origin == 5.0
 
     def test_non_strict_returns_none_for_unknown(self) -> None:
-        doc = new_document(version=(24, 1, 0))
+        doc = new_document(version=(24, 1, 0), strict=False)
         zone = doc.add("Zone", "Office")
         assert zone.x_orgin is None  # typo returns None
 

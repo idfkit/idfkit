@@ -23,8 +23,8 @@ For example, hovering over `zone.ceiling_height` in your IDE will show:
 
 ## Strict Field Access
 
-By default, accessing a misspelled field name returns `None`. Enable **strict
-mode** to catch typos at runtime with an `AttributeError`:
+By default, accessing a misspelled field name raises an `InvalidFieldError`.
+Disable **strict mode** to fall back to returning `None` for unknown fields:
 
 ```python
 --8<-- "docs/snippets/concepts/type-safety/strict_fields.py:example"
@@ -32,12 +32,12 @@ mode** to catch typos at runtime with an `AttributeError`:
 
 | Function | Parameter |
 |----------|-----------|
-| `new_document()` | `strict=True` |
-| `load_idf()` | `strict=True` |
-| `load_epjson()` | `strict=True` |
+| `new_document()` | `strict=True` (default) |
+| `load_idf()` | `strict=True` (default) |
+| `load_epjson()` | `strict=True` (default) |
 
 !!! tip
-    Strict mode is recommended during development. Disable it when loading
+    Strict mode is on by default. Disable it with `strict=False` when loading
     third-party IDF files that may contain non-standard fields.
 
 ## Dynamic Key Access

@@ -20,6 +20,9 @@ if TYPE_CHECKING:
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 
+# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate"
+_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
+
 
 def to_python_name(idf_name: str) -> str:
     """Convert IDF field name to Python-friendly name.
@@ -159,6 +162,34 @@ class IDFObject(EppyObjectMixin):
         """Ordered list of field names from schema."""
         return self._field_order
 
+    def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
+        """Check if a field name is valid for this object type.
+
+        Checks the base field order first, then extensible field patterns.
+        Handles both ``vertex_1_x_coordinate`` -> ``vertex_x_coordinate``
+        and ``field_1`` -> ``field``.
+        """
+        if python_key in field_order:
+            return True
+        schema = self._schema
+        if schema is None:
+            return False
+        legacy: dict[str, Any] = schema.get("legacy_idd", {})
+        extensibles: list[str] = legacy.get("extensibles", [])
+        if not extensibles:
+            return False
+        # Try "prefix_N_suffix" -> "prefix_suffix" (e.g. vertex_1_x_coordinate -> vertex_x_coordinate)
+        m = _EXTENSIBLE_NUMBER_PATTERN.match(python_key)
+        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
+            return True
+        # Try "base_N" -> "base" (e.g. field_1461 -> field)
+        last_underscore = python_key.rfind("_")
+        if last_underscore > 0 and python_key[last_underscore + 1 :].isdigit():
+            base = python_key[:last_underscore]
+            if base in extensibles:
+                return True
+        return False
+
     @property
     def name(self) -> str:
         """The object's name."""
@@ -200,7 +231,7 @@ class IDFObject(EppyObjectMixin):
         if doc is not None and getattr(doc, "_strict", False):
             # In strict mode, only allow known schema fields
             field_order = object.__getattribute__(self, "_field_order")
-            if field_order is not None and python_key not in field_order:
+            if field_order is not None and not self._is_known_field(python_key, field_order):
                 obj_type = object.__getattribute__(self, "_type")
                 ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
                 raise InvalidFieldError(
@@ -226,7 +257,7 @@ class IDFObject(EppyObjectMixin):
             doc = self._document
             if doc is not None and getattr(doc, "_strict", False):
                 field_order = self._field_order
-                if field_order is not None and python_key not in field_order:
+                if field_order is not None and not self._is_known_field(python_key, field_order):
                     ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
                     raise InvalidFieldError(
                         self._type,
