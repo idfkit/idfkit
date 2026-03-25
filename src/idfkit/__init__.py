@@ -45,12 +45,14 @@ from .exceptions import (
     ExpandObjectsError,
     IdfKitError,
     IDFParseError,
+    InvalidFieldError,
     NoDesignDaysError,
     ParseError,
     RangeError,
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
+    UnsupportedVersionError,
     ValidationFailedError,
     VersionNotFoundError,
 )
@@ -148,6 +150,12 @@ from .zoning import (
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+def _check_version(version: tuple[int, int, int]) -> None:
+    """Raise UnsupportedVersionError if *version* is not a known EnergyPlus release."""
+    if not is_supported_version(version):
+        raise UnsupportedVersionError(version, ENERGYPLUS_VERSIONS)
+
+
 @overload
 def load_idf(
     path: str,
@@ -219,6 +227,8 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
+    if version is not None:
+        _check_version(version)
     return parse_idf(
         Path(path),
         version=version,
@@ -287,6 +297,8 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
+    if version is not None:
+        _check_version(version)
     return parse_epjson(
         Path(path), version=version, strict_fields=strict_fields, preserve_formatting=preserve_formatting
     )
@@ -348,6 +360,7 @@ def new_document(  # type: ignore[misc]  # overload implementation
         >>> model_v24.version
         (24, 1, 0)
     """
+    _check_version(version)
     schema = get_schema(version)
     doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
@@ -383,6 +396,7 @@ __all__ = [
     "IDFParseError",
     "IDFParser",
     "IdfKitError",
+    "InvalidFieldError",
     "NoDesignDaysError",
     "ObjectDescription",
     "ParseError",
@@ -393,6 +407,7 @@ __all__ = [
     "SchemaNotFoundError",
     "SimulationError",
     "UnknownObjectTypeError",
+    "UnsupportedVersionError",
     "ValidationError",
     "ValidationFailedError",
     "ValidationResult",

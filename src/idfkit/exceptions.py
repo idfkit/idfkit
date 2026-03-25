@@ -58,6 +58,22 @@ class IDFParseError(IdfKitError):
 ParseError = IdfKitError
 
 
+class UnsupportedVersionError(IdfKitError):
+    """Raised when a non-existent EnergyPlus version is requested.
+
+    Attributes:
+        version: The requested version tuple.
+        supported_versions: Tuple of all supported version tuples.
+    """
+
+    def __init__(self, version: tuple[int, int, int], supported_versions: Sequence[tuple[int, int, int]]) -> None:
+        self.version = version
+        self.supported_versions = tuple(supported_versions)
+        version_str = f"{version[0]}.{version[1]}.{version[2]}"
+        supported_strs = ", ".join(f"{v[0]}.{v[1]}.{v[2]}" for v in self.supported_versions)
+        super().__init__(f"EnergyPlus version {version_str} is not supported.\nSupported versions: {supported_strs}")
+
+
 class SchemaNotFoundError(IdfKitError):
     """Raised when the EpJSON schema file cannot be found."""
 
@@ -80,26 +96,56 @@ class DuplicateObjectError(IdfKitError):
         super().__init__(f"Duplicate {obj_type} object with name '{name}'")
 
 
-class UnknownObjectTypeError(IdfKitError):
-    """Raised when an unknown object type is encountered."""
+class UnknownObjectTypeError(IdfKitError, KeyError):
+    """Raised when an unknown object type is encountered.
 
-    def __init__(self, obj_type: str) -> None:
+    Inherits from ``KeyError`` so that existing code catching ``KeyError``
+    for missing object types continues to work.
+    """
+
+    def __init__(self, obj_type: str, version: tuple[int, int, int] | None = None) -> None:
         self.obj_type = obj_type
-        super().__init__(f"Unknown object type: '{obj_type}'")
+        self.version = version
+        msg = f"Unknown object type: '{obj_type}'"
+        if version:
+            from .docs import search_url
+
+            s_url = search_url(obj_type, version)
+            if s_url:
+                msg += f"\n  Search docs: {s_url.url}"
+        super().__init__(msg)
 
 
-class InvalidFieldError(IdfKitError):
-    """Raised when an invalid field is accessed or set."""
+class InvalidFieldError(IdfKitError, AttributeError):
+    """Raised when an invalid field is accessed or set.
 
-    def __init__(self, obj_type: str, field_name: str, available_fields: list[str] | None = None) -> None:
+    Inherits from ``AttributeError`` so that Python's attribute access
+    protocol (``hasattr``, ``getattr`` with default) continues to work
+    correctly when this is raised from ``__getattr__``.
+    """
+
+    def __init__(
+        self,
+        obj_type: str,
+        field_name: str,
+        available_fields: list[str] | None = None,
+        version: tuple[int, int, int] | None = None,
+    ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
         self.available_fields = available_fields
+        self.version = version
         msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:
                 msg += f" ... and {len(available_fields) - 10} more"
+        if version:
+            from .docs import io_reference_url
+
+            doc_url = io_reference_url(obj_type, version)
+            if doc_url:
+                msg += f"\n  Docs: {doc_url.url}"
         super().__init__(msg)
 
 
