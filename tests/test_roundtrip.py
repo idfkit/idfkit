@@ -351,7 +351,7 @@ Material,
         idf_path = tmp_path / "input.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, strict=False, preserve_formatting=True)
+        doc = parse_idf(idf_path, strict_parsing=False, preserve_formatting=True)
 
         # CST is preserved; known objects are linked, unknown node is unlinked.
         assert doc.cst is not None

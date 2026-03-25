@@ -281,9 +281,9 @@ Translate or rotate all surfaces in the model:
 
 idfkit has two different strictness settings:
 
-- **Strict parsing** (`load_idf(..., strict=True)`) validates IDF input while
+- **Strict parsing** (`load_idf(..., strict_parsing=True)`) validates IDF input while
   reading and is enabled by default.
-- **Strict field access** (`doc.strict = True`) raises on mistyped attribute
+- **Strict field access** (`load_idf(..., strict=True)`) raises on mistyped attribute
   names when reading or writing object fields.
 
 eppy silently returns an empty string when you mistype a field name,
