@@ -27,7 +27,7 @@ def parse_epjson(
     filepath: Path | str,
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
-    strict: bool = False,
+    strict: bool = True,
     *,
     preserve_formatting: bool = False,
 ) -> IDFDocument:
@@ -94,7 +94,7 @@ class EpJSONParser:
         self,
         version: tuple[int, int, int] | None = None,
         *,
-        strict: bool = False,
+        strict: bool = True,
         preserve_formatting: bool = False,
     ) -> IDFDocument:
         """

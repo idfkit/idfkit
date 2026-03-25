@@ -162,7 +162,7 @@ def load_idf(
     version: tuple[int, int, int] | None = ...,
     *,
     strict_parsing: bool = ...,
-    strict: Literal[True],
+    strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -173,7 +173,7 @@ def load_idf(
     version: tuple[int, int, int] | None = ...,
     *,
     strict_parsing: bool = ...,
-    strict: Literal[False] = ...,
+    strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -183,7 +183,7 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     version: tuple[int, int, int] | None = None,
     *,
     strict_parsing: bool = True,
-    strict: bool = False,
+    strict: bool = True,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -244,7 +244,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: Literal[True],
+    strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -254,7 +254,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: Literal[False] = ...,
+    strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -263,7 +263,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
-    strict: bool = False,
+    strict: bool = True,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -308,7 +308,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
 def new_document(
     version: tuple[int, int, int] = ...,
     *,
-    strict: Literal[True],
+    strict: Literal[True] = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
 
@@ -316,22 +316,23 @@ def new_document(
 def new_document(
     version: tuple[int, int, int] = ...,
     *,
-    strict: Literal[False] = ...,
+    strict: Literal[False],
 ) -> IDFDocument[Literal[False]]: ...
 
 
 def new_document(  # type: ignore[misc]  # overload implementation
     version: tuple[int, int, int] = LATEST_VERSION,
     *,
-    strict: bool = False,
+    strict: bool = True,
 ) -> IDFDocument[bool]:
     """
     Create a new IDFDocument with baseline singleton objects populated.
 
     Args:
         version: EnergyPlus version (default: latest supported version)
-        strict: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
 
     Returns:
         IDFDocument with schema loaded and baseline objects seeded
