@@ -33,8 +33,8 @@ mode** to catch typos at runtime with an `AttributeError`:
 | Function | Parameter |
 |----------|-----------|
 | `new_document()` | `strict=True` |
-| `load_idf()` | `strict_fields=True` |
-| `load_epjson()` | `strict_fields=True` |
+| `load_idf()` | `strict=True` |
+| `load_epjson()` | `strict=True` |
 
 !!! tip
     Strict mode is recommended during development. Disable it when loading

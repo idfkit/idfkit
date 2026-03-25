@@ -141,9 +141,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             version: EnergyPlus version tuple
             schema: EpJSONSchema for validation
             filepath: Source file path
-            strict: When ``True``, accessing an unknown field name on any
+            strict: When ``True``, accessing or setting an unknown field name on any
                 [IDFObject][idfkit.objects.IDFObject] owned by this document raises
-                ``AttributeError`` instead of returning ``None``.  This
+                :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
         """
@@ -161,8 +161,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def strict(self) -> bool:
         """Whether strict field access mode is enabled.
 
-        When ``True``, accessing an unknown field name on objects in this
-        document raises ``AttributeError`` instead of returning ``None``.
+        When ``True``, accessing or setting an unknown field name on objects in this
+        document raises :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.
 
         This property is read-only; set it via the constructor.
         """

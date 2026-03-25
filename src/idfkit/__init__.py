@@ -161,8 +161,8 @@ def load_idf(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: bool = ...,
-    strict_fields: Literal[True],
+    strict_parsing: bool = ...,
+    strict: Literal[True],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -172,8 +172,8 @@ def load_idf(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: bool = ...,
-    strict_fields: Literal[False] = ...,
+    strict_parsing: bool = ...,
+    strict: Literal[False] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -182,8 +182,8 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
-    strict: bool = True,
-    strict_fields: bool = False,
+    strict_parsing: bool = True,
+    strict: bool = False,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -192,9 +192,10 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     Args:
         path: Path to the IDF file
         version: Optional version override (major, minor, patch)
-        strict: If True, fail fast on malformed IDF objects (default: True)
-        strict_fields: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict_parsing: If True, fail fast on malformed IDF objects (default: True)
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
             (CST) so that :func:`write_idf` reproduces the original
             formatting, comments, and whitespace for unmodified objects.
@@ -232,8 +233,8 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     return parse_idf(
         Path(path),
         version=version,
+        strict_parsing=strict_parsing,
         strict=strict,
-        strict_fields=strict_fields,
         preserve_formatting=preserve_formatting,
     )
 
@@ -243,7 +244,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict_fields: Literal[True],
+    strict: Literal[True],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -253,7 +254,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict_fields: Literal[False] = ...,
+    strict: Literal[False] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -262,7 +263,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
-    strict_fields: bool = False,
+    strict: bool = False,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -271,8 +272,9 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     Args:
         path: Path to the epJSON file
         version: Optional version override (major, minor, patch)
-        strict_fields: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: When ``True``, store the raw JSON text so
             that :func:`write_epjson` can reproduce it byte-for-byte
             when no objects have been modified.
@@ -299,9 +301,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
 
     if version is not None:
         _check_version(version)
-    return parse_epjson(
-        Path(path), version=version, strict_fields=strict_fields, preserve_formatting=preserve_formatting
-    )
+    return parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)
 
 
 @overload

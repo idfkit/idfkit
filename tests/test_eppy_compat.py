@@ -851,7 +851,7 @@ class TestStrictFieldAccess:
     def test_strict_raises_on_unknown_field(self) -> None:
         doc = new_document(version=(24, 1, 0), strict=True)
         zone = doc.add("Zone", "Office")
-        with pytest.raises(AttributeError, match="no field"):
+        with pytest.raises(AttributeError, match="Invalid field"):
             _ = zone.x_orgin  # intentional typo
 
     def test_strict_allows_known_field(self) -> None:

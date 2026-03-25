@@ -435,7 +435,7 @@ CONSTRUCTION,
         idf_path = tmp_path / "caps.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, strict=True)
+        doc = parse_idf(idf_path, strict_parsing=True)
 
         # Objects should be accessible under canonical PascalCase names
         assert doc["Zone"]["TestZone"] is not None
@@ -463,7 +463,7 @@ SCHEDULE:COMPACT,
         idf_path = tmp_path / "schedule.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, strict=True)
+        doc = parse_idf(idf_path, strict_parsing=True)
 
         assert doc["Schedule:Compact"]["TestSchedule"] is not None
 
@@ -473,7 +473,7 @@ SCHEDULE:COMPACT,
         idf_path = tmp_path / "caps.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, strict=True)
+        doc = parse_idf(idf_path, strict_parsing=True)
 
         # The collection key should be canonical "Zone", not "ZONE"
         assert "Zone" in doc.collections
@@ -496,7 +496,7 @@ zone,
         idf_path = tmp_path / "mixed.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, strict=True)
+        doc = parse_idf(idf_path, strict_parsing=True)
 
         # All three should be in the canonical "Zone" collection
         assert len(doc["Zone"]) == 3
@@ -510,7 +510,7 @@ zone,
         idf_path = tmp_path / "noschema.idf"
         idf_path.write_text(idf_content)
 
-        doc = parse_idf(idf_path, schema=None, version=(24, 1, 0), strict=False)
+        doc = parse_idf(idf_path, schema=None, version=(24, 1, 0), strict_parsing=False)
 
         # schema=None triggers auto-load from version, so normalization still applies
         assert "Zone" in doc.collections

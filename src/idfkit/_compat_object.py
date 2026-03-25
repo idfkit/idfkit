@@ -262,7 +262,7 @@ class EppyObjectMixin:
             return None
 
         python_key = to_python_name(field_name)
-        ref_name = getattr(self, python_key)
+        ref_name = getattr(self, python_key, None)
         if not ref_name or not isinstance(ref_name, str):
             return None
 

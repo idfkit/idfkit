@@ -9,8 +9,8 @@ operations you'll use every day.
 --8<-- "docs/snippets/getting-started/quick-start/load_a_model.py:example"
 ```
 
-`load_idf()` uses strict parsing by default (`strict=True`) and raises
-`IDFParseError` for malformed objects. Use `strict=False` only as a
+`load_idf()` uses strict parsing by default (`strict_parsing=True`) and raises
+`IDFParseError` for malformed objects. Use `strict_parsing=False` only as a
 migration/compatibility fallback for legacy or noisy files.
 
 ## Query Objects
