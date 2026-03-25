@@ -198,7 +198,7 @@ intersect_match(doc)
 - **Snake-case fields**: Use `zone.x_origin`, not `zone["X Origin"]` (both work, attributes preferred).
 - **Validation is opt-in**: Call `validate_document()` explicitly; parsing does not validate.
 - **Rename cascades**: `doc.rename()` updates all cross-references automatically.
-- **Strict mode**: `doc.strict = True` raises `AttributeError` on field typos (useful for debugging).
+- **Strict mode**: Strict field access is on by default; raises `InvalidFieldError` on field typos. Disable with `strict=False`.
 - **Optional extras**: Core features (simulation, schedules, thermal, geometry) need no extras. Install `idfkit[weather]` for index refresh, `idfkit[pandas]` for DataFrames, `idfkit[plot]`/`idfkit[plotly]` for plotting, `idfkit[progress]` for tqdm bars, `idfkit[s3]` for cloud storage, or `idfkit[all]`.
 
 ### Exception Hierarchy

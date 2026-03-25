@@ -97,7 +97,7 @@ def parse_idf(
     version: tuple[int, int, int] | None = None,
     encoding: str = "latin-1",
     strict_parsing: bool = True,
-    strict: bool = False,
+    strict: bool = True,
     *,
     preserve_formatting: bool = False,
 ) -> IDFDocument:
@@ -191,7 +191,7 @@ class IDFParser:
         self,
         version: tuple[int, int, int] | None = None,
         *,
-        strict: bool = False,
+        strict: bool = True,
         preserve_formatting: bool = False,
     ) -> IDFDocument:
         """
