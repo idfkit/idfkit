@@ -15,8 +15,19 @@ check-stubs: ## Verify generated type stubs are up-to-date
 	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi || \
 		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
 
+.PHONY: check-doc-locations
+check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit-docs build)
+	@if [ -d "../idfkit-docs/dist" ]; then \
+		echo "🚀 Checking doc_locations.json consistency"; \
+		uv run python -m idfkit.codegen.generate_doc_locations; \
+		git diff --exit-code src/idfkit/schemas/doc_locations.json || \
+			(echo "❌ doc_locations.json is out of date. Run: uv run python -m idfkit.codegen.generate_doc_locations" && exit 1); \
+	else \
+		echo "⏭️  Skipping doc_locations check (../idfkit-docs/dist not found)"; \
+	fi
+
 .PHONY: check
-check: check-stubs ## Run code quality tools.
+check: check-stubs check-doc-locations ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"
