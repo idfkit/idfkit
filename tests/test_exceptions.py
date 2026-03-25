@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from idfkit.exceptions import (
     DanglingReferenceError,
     DuplicateObjectError,
@@ -12,10 +14,12 @@ from idfkit.exceptions import (
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
+    UnsupportedVersionError,
     ValidationFailedError,
     VersionNotFoundError,
 )
 from idfkit.objects import IDFObject
+from idfkit.versions import ENERGYPLUS_VERSIONS
 
 
 class TestIdfKitError:
@@ -181,3 +185,64 @@ class TestExpandObjectsError:
         assert sim_err.exit_code == 2
         assert expand_err.stderr == "err1"
         assert sim_err.stderr == "err2"
+
+
+class TestUnsupportedVersionError:
+    def test_basic(self) -> None:
+        err = UnsupportedVersionError((9, 8, 0), ENERGYPLUS_VERSIONS)
+        assert err.version == (9, 8, 0)
+        assert "9.8.0" in str(err)
+        assert "is not supported" in str(err)
+
+    def test_lists_supported_versions(self) -> None:
+        err = UnsupportedVersionError((99, 0, 0), ENERGYPLUS_VERSIONS)
+        assert "8.9.0" in str(err)
+        assert "25.2.0" in str(err)
+
+    def test_stores_supported_versions(self) -> None:
+        err = UnsupportedVersionError((9, 8, 0), ENERGYPLUS_VERSIONS)
+        assert err.supported_versions == ENERGYPLUS_VERSIONS
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(UnsupportedVersionError((1, 0, 0), ()), IdfKitError)
+
+
+class TestUnsupportedVersionIntegration:
+    def test_new_document_rejects_unsupported_version(self) -> None:
+        from idfkit import new_document
+
+        with pytest.raises(UnsupportedVersionError, match=r"9\.8\.0"):
+            new_document(version=(9, 8, 0))
+
+    def test_new_document_rejects_nonexistent_version(self) -> None:
+        from idfkit import new_document
+
+        with pytest.raises(UnsupportedVersionError, match=r"99\.0\.0"):
+            new_document(version=(99, 0, 0))
+
+    def test_new_document_accepts_supported_version(self) -> None:
+        from idfkit import new_document
+
+        doc = new_document(version=(24, 1, 0))
+        assert doc.version == (24, 1, 0)
+
+    def test_load_idf_rejects_unsupported_version(self, tmp_path: object) -> None:
+        import pathlib
+
+        from idfkit import load_idf
+
+        idf_path = pathlib.Path(str(tmp_path)) / "test.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        with pytest.raises(UnsupportedVersionError, match=r"9\.8\.0"):
+            load_idf(str(idf_path), version=(9, 8, 0))
+
+    def test_load_idf_allows_none_version(self, tmp_path: object) -> None:
+        """Auto-detected versions from files should still use closest-version fallback."""
+        import pathlib
+
+        from idfkit import load_idf
+
+        idf_path = pathlib.Path(str(tmp_path)) / "test.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        doc = load_idf(str(idf_path))
+        assert doc.version == (24, 1, 0)
