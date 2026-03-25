@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 __version__ = "0.1.0"
 
 # Core classes
+# Documentation URL builder
+from .docs import DocsUrl, docs_url_for_object, engineering_reference_url, io_reference_url, search_url
 from .document import IDFDocument
 from .epjson_parser import parse_epjson
 
@@ -368,6 +370,7 @@ __all__ = [
     "ENERGYPLUS_VERSIONS",
     "LATEST_VERSION",
     "MINIMUM_VERSION",
+    "DocsUrl",
     "DuplicateObjectError",
     "EnergyPlusNotFoundError",
     "EpJSONSchema",
@@ -413,6 +416,8 @@ __all__ = [
     "create_constant_schedule",
     "create_schedule_type_limits",
     "detect_horizontal_adjacencies",
+    "docs_url_for_object",
+    "engineering_reference_url",
     "find_closest_version",
     "footprint_courtyard",
     "footprint_h_shape",
@@ -424,6 +429,7 @@ __all__ = [
     "get_schema",
     "get_schema_manager",
     "intersect_match",
+    "io_reference_url",
     "is_supported_version",
     "link_blocks",
     "link_horizontal_surfaces",
@@ -438,6 +444,7 @@ __all__ = [
     "polygon_intersection_2d",
     "rotate_building",
     "scale_building",
+    "search_url",
     "set_default_constructions",
     "set_wwr",
     "split_horizontal_surface",
