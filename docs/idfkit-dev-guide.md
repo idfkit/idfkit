@@ -206,9 +206,14 @@ intersect_match(doc)
 All exceptions inherit from `IdfKitError`:
 
 - `IDFParseError`, `ParseError` — parsing failures
-- `UnknownObjectTypeError` — invalid IDF object type
+- `UnknownObjectTypeError` (also `KeyError`) — invalid IDF object type name
+- `InvalidFieldError` — invalid field name on an object (strict mode, on by default)
 - `DuplicateObjectError` — singleton constraint violation
+- `DanglingReferenceError` — object references a non-existent target
+- `RangeError` — field value outside valid range
 - `ValidationFailedError` — validation errors
-- `SimulationError`, `EnergyPlusNotFoundError` — simulation failures
+- `SimulationError`, `EnergyPlusNotFoundError`, `ExpandObjectsError` — simulation failures
+- `NoDesignDaysError` — DDY file has no design day objects
+- `UnsupportedVersionError` — requested version not in supported range
 - `VersionNotFoundError`, `SchemaNotFoundError` — version/schema issues
 ````

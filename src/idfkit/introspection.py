@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from .exceptions import UnknownObjectTypeError
+
 if TYPE_CHECKING:
     from .schema import EpJSONSchema
 
@@ -187,12 +189,11 @@ def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescripti
         ObjectDescription with detailed field information
 
     Raises:
-        KeyError: If the object type is not found in the schema
+        UnknownObjectTypeError: If the object type is not found in the schema
     """
     obj_schema = schema.get_object_schema(obj_type)
     if not obj_schema:
-        msg = f"Unknown object type: {obj_type}"
-        raise KeyError(msg)
+        raise UnknownObjectTypeError(obj_type, version=schema.version)
 
     inner_schema = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner_schema.get("properties", {}) if inner_schema else {}
