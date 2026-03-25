@@ -12,6 +12,7 @@ from collections.abc import Callable, Iterator
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat_object import EppyObjectMixin
+from .exceptions import InvalidFieldError
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -201,9 +202,12 @@ class IDFObject(EppyObjectMixin):
             field_order = object.__getattribute__(self, "_field_order")
             if field_order is not None and python_key not in field_order:
                 obj_type = object.__getattribute__(self, "_type")
-                raise AttributeError(  # noqa: TRY003
-                    f"'{obj_type}' object has no field '{key}'. "
-                    f"Known fields: {', '.join(field_order[:10])}{'...' if len(field_order) > 10 else ''}"
+                ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
+                raise InvalidFieldError(
+                    obj_type,
+                    key,
+                    available_fields=list(field_order),
+                    version=ver,
                 )
 
         # Default: return None (eppy behaviour)
@@ -218,6 +222,18 @@ class IDFObject(EppyObjectMixin):
         else:
             # Normalize key to python style
             python_key = to_python_name(key)
+            # Validate in strict mode
+            doc = self._document
+            if doc is not None and getattr(doc, "_strict", False):
+                field_order = self._field_order
+                if field_order is not None and python_key not in field_order:
+                    ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
+                    raise InvalidFieldError(
+                        self._type,
+                        key,
+                        available_fields=list(field_order),
+                        version=ver,
+                    )
             self._set_field(python_key, value)
 
     def __getitem__(self, key: str | int) -> Any:

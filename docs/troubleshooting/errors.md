@@ -197,7 +197,7 @@ IDFParseError: Failed to parse object
 ```
 
 **Cause:** `load_idf()` uses strict parsing by default
-(`strict=True`) and found malformed content (for example unknown object
+(`strict_parsing=True`) and found malformed content (for example unknown object
 types, invalid bytes, or extra fields on non-extensible objects).
 
 **Solutions:**
@@ -211,9 +211,9 @@ types, invalid bytes, or extra fields on non-extensible objects).
    from idfkit import IDFParseError, load_idf
 
    try:
-       doc = load_idf("file.idf")  # strict=True (default)
+       doc = load_idf("file.idf")  # strict_parsing=True (default)
    except IDFParseError:
-       doc = load_idf("file.idf", strict=False)
+       doc = load_idf("file.idf", strict_parsing=False)
    ```
 
 ### Version Mismatch
