@@ -550,6 +550,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             document=self,  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
             field_order=field_order,
             ref_fields=ref_fields,
+            extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
         )
 
         # Validate if requested

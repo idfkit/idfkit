@@ -89,6 +89,7 @@ class IDFObject(EppyObjectMixin):
         "__weakref__",
         "_data",
         "_document",
+        "_extensibles",
         "_field_order",
         "_name",
         "_ref_fields",
@@ -117,12 +118,14 @@ class IDFObject(EppyObjectMixin):
         field_order: list[str] | None = None,
         ref_fields: frozenset[str] | None = None,
         source_text: str | None = None,
+        extensibles: frozenset[str] | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
         object.__setattr__(self, "_data", data if data is not None else {})
         object.__setattr__(self, "_schema", schema)
         object.__setattr__(self, "_document", document)
+        object.__setattr__(self, "_extensibles", extensibles or frozenset())
         object.__setattr__(self, "_field_order", field_order)
         object.__setattr__(self, "_ref_fields", ref_fields)
         object.__setattr__(self, "_source_text", source_text)
@@ -171,11 +174,7 @@ class IDFObject(EppyObjectMixin):
         """
         if python_key in field_order:
             return True
-        schema = self._schema
-        if schema is None:
-            return False
-        legacy: dict[str, Any] = schema.get("legacy_idd", {})
-        extensibles: list[str] = legacy.get("extensibles", [])
+        extensibles = self._extensibles
         if not extensibles:
             return False
         # Try "prefix_N_suffix" -> "prefix_suffix" (e.g. vertex_1_x_coordinate -> vertex_x_coordinate)
@@ -377,6 +376,7 @@ class IDFObject(EppyObjectMixin):
             field_order=self._field_order,
             ref_fields=self._ref_fields,
             source_text=None,  # copy is a new object; don't carry over verbatim text
+            extensibles=self._extensibles,
         )
 
     def __dir__(self) -> list[str]:

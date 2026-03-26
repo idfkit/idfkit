@@ -8,7 +8,7 @@ for improved user experience in REPLs and Jupyter notebooks.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from .exceptions import UnknownObjectTypeError
 
@@ -178,6 +178,23 @@ class ObjectDescription:
         return "\n".join(html_parts)
 
 
+def _merge_extensible_properties(properties: dict[str, Any]) -> dict[str, Any]:
+    """Merge extensible field schemas from array items into the properties dict.
+
+    Extension arrays (e.g. ``vertices``, ``blocks``) store their sub-field
+    schemas under ``items.properties``.  Flattening them into the top-level
+    dict lets callers look up extensible fields the same way as regular ones.
+    """
+    for prop_key in list(properties):
+        prop_val: dict[str, Any] = properties[prop_key]
+        items_val = prop_val.get("items")
+        if isinstance(items_val, dict):
+            ext_val = cast("dict[str, Any]", items_val).get("properties")
+            if isinstance(ext_val, dict):
+                properties = {**properties, **ext_val}
+    return properties
+
+
 def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescription:
     """Get a detailed description of an EnergyPlus object type.
 
@@ -196,7 +213,9 @@ def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescripti
         raise UnknownObjectTypeError(obj_type, version=schema.version)
 
     inner_schema = schema.get_inner_schema(obj_type)
-    properties: dict[str, Any] = inner_schema.get("properties", {}) if inner_schema else {}
+    properties: dict[str, Any] = _merge_extensible_properties(
+        inner_schema.get("properties", {}) if inner_schema else {}
+    )
     required_list: list[str] = inner_schema.get("required", []) if inner_schema else []
     required_set: set[str] = set(required_list)
 
