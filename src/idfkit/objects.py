@@ -526,6 +526,12 @@ class IDFCollection(Generic[_T]):
         """Get object by name or index."""
         if isinstance(key, int):
             return self._items[key]
+        if not key:
+            # Unnamed/singleton objects are not indexed in _by_name;
+            # fall back to the first item in the ordered list.
+            if self._items:
+                return self._items[0]
+            raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
         result = self._by_name.get(key.upper())
         if result is None:
             raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
@@ -540,6 +546,9 @@ class IDFCollection(Generic[_T]):
     def __contains__(self, key: str | _T) -> bool:
         if isinstance(key, IDFObject):
             return key in self._items
+        if not key:
+            # Unnamed/singleton objects: check if any items exist
+            return len(self._items) > 0
         return key.upper() in self._by_name
 
     def __bool__(self) -> bool:
@@ -551,6 +560,9 @@ class IDFCollection(Generic[_T]):
     def get(self, name: str, default: _T | None = None) -> _T | None:
         """Get object by name with default.
 
+        For unnamed/singleton object types (e.g. SimulationControl), pass an
+        empty string to retrieve the first object in the collection.
+
         Examples:
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -560,7 +572,11 @@ class IDFCollection(Generic[_T]):
             'Perimeter_ZN_1'
             >>> model["Zone"].get("NonExistent") is None
             True
+            >>> model["SimulationControl"].get("") is not None
+            True
         """
+        if not name:
+            return self._items[0] if self._items else default
         return self._by_name.get(name.upper(), default)
 
     def first(self) -> _T | None:
