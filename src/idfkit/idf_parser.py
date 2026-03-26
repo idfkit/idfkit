@@ -375,6 +375,7 @@ class IDFParser:
                 schema=pc.obj_schema,
                 field_order=field_names,
                 ref_fields=pc.ref_fields,
+                extensibles=frozenset(pc.ext_field_names),
             )
 
         # No-schema fallback

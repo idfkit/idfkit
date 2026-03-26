@@ -221,6 +221,7 @@ class EpJSONParser:
                     schema=obj_schema,
                     field_order=field_order,
                     ref_fields=ref_fields,
+                    extensibles=frozenset(pc.ext_field_names) if pc else None,
                 )
 
                 addidfobject(obj)

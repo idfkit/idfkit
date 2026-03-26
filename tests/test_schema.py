@@ -181,6 +181,19 @@ class TestResolveTypeName:
     def test_unknown_type(self, schema: EpJSONSchema) -> None:
         assert schema.resolve_type_name("FakeType") is None
 
+    def test_extensible_field_types_in_parsing_cache(self, schema: EpJSONSchema) -> None:
+        """Extensible field types should be resolved from JSON schema, not just legacy_idd."""
+        pc = schema.get_parsing_cache("Foundation:Kiva")
+        assert pc is not None
+        assert pc.field_types.get("custom_block_material_name") == "string"
+        assert pc.field_types.get("custom_block_depth") == "number"
+
+    def test_extensible_ref_fields_in_parsing_cache(self, schema: EpJSONSchema) -> None:
+        """Extensible reference fields must appear in ref_fields (GH-92)."""
+        pc = schema.get_parsing_cache("Foundation:Kiva")
+        assert pc is not None
+        assert "custom_block_material_name" in pc.ref_fields
+
     def test_parsing_cache_case_insensitive(self, schema: EpJSONSchema) -> None:
         """get_parsing_cache should resolve miscased type names."""
         pc_canonical = schema.get_parsing_cache("Zone")

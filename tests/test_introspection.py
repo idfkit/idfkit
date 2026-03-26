@@ -145,6 +145,19 @@ class TestDescribeObjectType:
         assert "vertex_y_coordinate" in field_names
         assert "vertex_z_coordinate" in field_names
 
+    def test_extensible_fields_have_field_type(self, schema: EpJSONSchema) -> None:
+        """Extensible fields must have field_type populated (GH-92)."""
+        desc = describe_object_type(schema, "Foundation:Kiva")
+        ext_fields = {f.name: f for f in desc.fields if f.name.startswith("custom_block_")}
+        assert len(ext_fields) == 4
+        for name, field in ext_fields.items():
+            assert field.field_type is not None, f"{name} has field_type=None"
+
+        # Also verify BuildingSurface:Detailed vertex fields
+        desc2 = describe_object_type(schema, "BuildingSurface:Detailed")
+        vertex_fields = [f for f in desc2.fields if f.name.startswith("vertex_")]
+        assert all(f.field_type == "number" for f in vertex_fields)
+
     def test_nameless_object(self, schema: EpJSONSchema) -> None:
         desc = describe_object_type(schema, "Timestep")
         assert desc.has_name is False
