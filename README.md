@@ -60,7 +60,7 @@ thanks to O(1) dict-based indexing:
   <img alt="benchmark chart" src="docs/assets/benchmark.svg">
 </picture>
 
-See [full benchmark results](https://samuelduchesne.github.io/idfkit/benchmarks/)
+See [full benchmark results](https://py.idfkit/benchmarks/)
 for all six operations (load, get by type, get by name, add, modify, write) across four tools.
 
 ## Installation
