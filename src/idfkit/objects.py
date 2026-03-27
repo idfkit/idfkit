@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError
 
+__all__ = ["IDFCollection", "IDFObject", "to_python_name"]
+
 if TYPE_CHECKING:
     from .document import IDFDocument
 
