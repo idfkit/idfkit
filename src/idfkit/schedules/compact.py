@@ -91,7 +91,6 @@ class _ParseState:
 
 def _process_through(state: _ParseState, match: re.Match[str]) -> None:
     """Process a Through: keyword."""
-    # Save previous period if exists
     if state.current_period is not None:
         if state.current_rule is not None:
             state.current_period.day_rules.append(state.current_rule)
@@ -105,7 +104,6 @@ def _process_through(state: _ParseState, match: re.Match[str]) -> None:
 
 def _process_for(state: _ParseState, match: re.Match[str]) -> None:
     """Process a For: keyword."""
-    # Save previous rule if exists
     if state.current_rule is not None and state.current_period is not None:
         state.current_period.day_rules.append(state.current_rule)
 
@@ -114,31 +112,31 @@ def _process_for(state: _ParseState, match: re.Match[str]) -> None:
     state.current_rule = CompactDayRule(day_types=day_types, time_values=[])
 
 
-def _process_until(state: _ParseState, match: re.Match[str], obj: IDFObject) -> None:
+def _process_until(state: _ParseState, match: re.Match[str], ext_fields: list[str]) -> None:
     """Process an Until: keyword."""
     hour = int(match.group(1))
     minute = int(match.group(2))
     second = int(match.group(3)) if match.group(3) else 0
 
-    # Handle "24:00" as end of day
     until_time = END_OF_DAY if hour == 24 else time(hour, minute, second)
 
     # Next field should be the value
     state.field_index += 1
-    value_field = _get_extensible_field(obj, state.field_index)
-    if value_field is not None and state.current_rule is not None:
-        schedule_value = float(value_field)
-        state.current_rule.time_values.append(TimeValue(until_time=until_time, value=schedule_value))
+    if state.field_index < len(ext_fields) and state.current_rule is not None:
+        value_str = ext_fields[state.field_index]
+        if value_str:
+            schedule_value = float(value_str)
+            state.current_rule.time_values.append(TimeValue(until_time=until_time, value=schedule_value))
 
 
-def _process_field(state: _ParseState, value_str: str, obj: IDFObject) -> None:
+def _process_field(state: _ParseState, value_str: str, ext_fields: list[str]) -> None:
     """Process a single field value in Schedule:Compact."""
     if match := _THROUGH_PATTERN.match(value_str):
         _process_through(state, match)
     elif match := _FOR_PATTERN.match(value_str):
         _process_for(state, match)
     elif match := _UNTIL_PATTERN.match(value_str):
-        _process_until(state, match, obj)
+        _process_until(state, match, ext_fields)
     elif (match := _INTERPOLATE_PATTERN.match(value_str)) and match.group(1).lower() in ("yes", "average", "linear"):
         state.interpolation = Interpolation.AVERAGE
 
@@ -153,6 +151,9 @@ def _finalize_parse_state(state: _ParseState) -> None:
 
 def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
     """Parse a Schedule:Compact object into structured data.
+
+    Uses ``field_order`` to read extensible fields in their stored sequence,
+    avoiding any dependency on naming conventions (``field`` vs ``field_1``).
 
     Results are cached per object identity (the cache uses a WeakKeyDictionary
     so entries are automatically cleaned up when the object is garbage-collected).
@@ -172,6 +173,15 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         if version == obj.mutation_version:
             return result
 
+    # Build the ordered list of extensible field values from field_order.
+    # The first entry is always schedule_type_limits_name (non-extensible);
+    # everything after it is compact DSL data.
+    ext_fields: list[str] = []
+    field_order = obj.field_order or []
+    for name in field_order[1:]:
+        raw = obj.data.get(name)
+        ext_fields.append(str(raw).strip() if raw is not None else "")
+
     state = _ParseState(
         periods=[],
         interpolation=Interpolation.NO,
@@ -180,15 +190,11 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         field_index=0,
         consecutive_none=0,
     )
-    max_fields = 500
 
-    while state.field_index < max_fields:
-        try:
-            value = _get_extensible_field(obj, state.field_index)
-        except (IndexError, KeyError):
-            break
+    while state.field_index < len(ext_fields):
+        value_str = ext_fields[state.field_index]
 
-        if value is None:
+        if not value_str:
             state.consecutive_none += 1
             if state.consecutive_none >= 3:
                 break
@@ -196,36 +202,13 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
             continue
 
         state.consecutive_none = 0
-        value_str = str(value).strip()
-        if value_str:
-            _process_field(state, value_str, obj)
+        _process_field(state, value_str, ext_fields)
         state.field_index += 1
 
     _finalize_parse_state(state)
     result: _ParseResult = (state.periods, state.interpolation)
     _parse_cache[obj] = (result, obj.mutation_version)
     return result
-
-
-def _get_extensible_field(obj: IDFObject, index: int) -> str | None:
-    """Get an extensible field by index from Schedule:Compact.
-
-    Schedule:Compact has fields:
-    - Name (field 0)
-    - Schedule Type Limits Name (field 1)
-    - Field 1, Field 2, ... (extensible, starting at index 2)
-
-    Args:
-        obj: The Schedule:Compact object.
-        index: The extensible field index (0-based from first extensible field).
-
-    Returns:
-        The field value as a string, or None.
-    """
-    # Field names in Schedule:Compact are "Field 1", "Field 2", etc.
-    field_name = f"Field {index + 1}"
-    value = obj.get(field_name)
-    return str(value) if value is not None else None
 
 
 def _parse_day_types(day_types_str: str) -> set[str]:

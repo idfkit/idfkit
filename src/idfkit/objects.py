@@ -317,7 +317,12 @@ class IDFObject(EppyObjectMixin):
             doc.notify_name_change(self, old, value)
 
     def _set_field(self, python_key: str, value: Any) -> None:
-        """Centralized data-field write with reference graph notification."""
+        """Centralized data-field write with reference graph notification.
+
+        When an extensible field is written that is not yet in ``field_order``,
+        all intermediate gap fields are created (with ``None`` values) so that
+        writers and iterators see a contiguous sequence.
+        """
         doc = self._document
         ref_fields = self._ref_fields
         if doc is not None and ref_fields is not None and python_key in ref_fields:
@@ -327,8 +332,137 @@ class IDFObject(EppyObjectMixin):
                 doc.notify_reference_change(self, python_key, old, value)
         else:
             self._data[python_key] = value
+
+        # Maintain field_order for new extensible fields, filling any gaps.
+        field_order = self._field_order
+        if field_order is not None and python_key not in field_order:
+            extensibles = self._extensibles
+            if extensibles and self._is_known_field(python_key, field_order):
+                self._fill_extensible_gap(python_key, field_order, extensibles)
+
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
+
+    def _fill_extensible_gap(
+        self,
+        python_key: str,
+        field_order: list[str],
+        extensibles: frozenset[str],
+    ) -> None:
+        """Append extensible fields to ``field_order``, filling gaps with ``None``.
+
+        Given a new extensible field like ``field_41``, determines the group
+        index (41 for a single-field group), finds the current highest group
+        index in ``field_order``, and generates all intermediate groups so
+        that the field sequence is contiguous.
+
+        For multi-field groups (e.g. vertices with x/y/z), all fields in each
+        gap group are created.
+        """
+        ext_names = sorted(extensibles)  # stable order
+
+        # Parse the target field to find its base name and group index.
+        target_base, target_group = self._parse_extensible_index(python_key, extensibles)
+        if target_base is None:
+            # Couldn't parse — just append as-is.
+            field_order.append(python_key)
+            return
+
+        # Detect the naming convention used by existing extensible fields.
+        # "prefix_N_suffix" (user) vs "base_N" (schema).
+        name_fn = self._detect_naming_convention(field_order, extensibles, python_key)
+
+        # Find the current highest group index already in field_order.
+        max_group = 0
+        for name in field_order:
+            base, group = self._parse_extensible_index(name, extensibles)
+            if base is not None and group > max_group:
+                max_group = group
+
+        # Generate all groups from max_group+1 through target_group.
+        existing = set(field_order)
+        for g in range(max_group + 1, target_group + 1):
+            for base in ext_names:
+                field_name = name_fn(base, g)
+                if field_name not in existing:
+                    field_order.append(field_name)
+                    existing.add(field_name)
+                    # Fill gap fields with None in data (don't overwrite the
+                    # target field which was already written above).
+                    if field_name != python_key and field_name not in self._data:
+                        self._data[field_name] = None
+
+    @staticmethod
+    def _parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tuple[str | None, int]:
+        """Extract the base name and 1-based group index from an extensible field name.
+
+        Handles both naming conventions:
+        - ``field_1`` / ``field_2`` (user style, base ``field``)
+        - ``vertex_1_x_coordinate`` / ``vertex_2_x_coordinate`` (user style, base ``vertex_x_coordinate``)
+        - ``field`` / ``field_2`` (schema style, first group has no number)
+        - ``vertex_x_coordinate`` / ``vertex_x_coordinate_2`` (schema style)
+
+        Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
+        """
+        # Direct match: base name without number (schema first-group)
+        if field_name in extensibles:
+            return field_name, 1
+
+        # Try "base_N" pattern (e.g. field_1, field_2)
+        last_underscore = field_name.rfind("_")
+        if last_underscore > 0 and field_name[last_underscore + 1 :].isdigit():
+            base = field_name[:last_underscore]
+            num = int(field_name[last_underscore + 1 :])
+            if base in extensibles:
+                return base, num
+
+        # Try "prefix_N_suffix" pattern (e.g. vertex_1_x_coordinate)
+        m = _EXTENSIBLE_NUMBER_PATTERN.match(field_name)
+        if m:
+            base = f"{m.group(1)}_{m.group(3)}"
+            if base in extensibles:
+                return base, int(m.group(2))
+
+        return None, 0
+
+    @staticmethod
+    def _detect_naming_convention(
+        field_order: list[str],
+        extensibles: frozenset[str],
+        new_key: str,
+    ) -> Callable[[str, int], str]:
+        """Detect whether existing fields use user or schema naming and return a name generator.
+
+        User convention: ``vertex_1_x_coordinate``, ``field_1``
+        Schema convention: ``vertex_x_coordinate_2``, ``field_2``
+
+        Prefers the convention of the incoming ``new_key`` so that the gap
+        fields match the style the caller is using.
+        """
+        # Check if the new key uses prefix_N_suffix style
+        m = _EXTENSIBLE_NUMBER_PATTERN.match(new_key)
+        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
+            # User convention: vertex_N_x_coordinate
+            def user_style(base: str, group: int) -> str:
+                parts = base.split("_", 1)
+                return f"{parts[0]}_{group}_{parts[1]}" if len(parts) > 1 else f"{base}_{group}"
+
+            return user_style
+
+        # Default: schema/simple convention (base_N)
+        return IDFObject._extensible_field_name
+
+    @staticmethod
+    def _extensible_field_name(base: str, group: int) -> str:
+        """Generate the field name for a given base and 1-based group index.
+
+        Uses the simple suffix convention: ``field_1``, ``field_2``, ...
+        and ``vertex_x_coordinate_1``, ``vertex_x_coordinate_2``, ...
+
+        This matches how ``add()`` and the IDF parser generate field names
+        for extensible groups beyond the first.
+        """
+        return f"{base}_{group}"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation.
