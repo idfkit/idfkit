@@ -425,6 +425,23 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         return field_order
 
+    @staticmethod
+    def _normalize_extensible_kwargs(
+        field_data: dict[str, Any],
+        extensibles: frozenset[str],
+    ) -> dict[str, Any]:
+        """Normalize user-style extensible kwargs to epJSON schema convention.
+
+        Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
+        etc. Non-extensible keys pass through unchanged.
+        """
+        from .objects import normalize_extensible_name
+
+        normalized: dict[str, Any] = {}
+        for key, value in field_data.items():
+            normalized[normalize_extensible_name(key, extensibles)] = value
+        return normalized
+
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
         if self._schema is None:
@@ -521,6 +538,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if self._schema:
             resolved_obj_type = self._resolve_schema_obj_type(obj_type)
             obj_schema = self._schema.get_object_schema(resolved_obj_type)
+
+            # Normalize user-style extensible field names to schema convention.
+            pc = self._schema.get_parsing_cache(resolved_obj_type)
+            if pc and pc.ext_field_names:
+                field_data = self._normalize_extensible_kwargs(field_data, frozenset(pc.ext_field_names))
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)

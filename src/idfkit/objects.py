@@ -24,6 +24,54 @@ _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 _EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
 
 
+def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tuple[str | None, int]:
+    """Extract the base name and 1-based group index from an extensible field name.
+
+    Handles both naming conventions:
+    - ``field_1`` / ``field_2`` (user style, base ``field``)
+    - ``vertex_1_x_coordinate`` / ``vertex_2_x_coordinate`` (user style)
+    - ``field`` / ``field_2`` (schema style, first group has no number)
+    - ``vertex_x_coordinate`` / ``vertex_x_coordinate_2`` (schema style)
+
+    Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
+    """
+    if field_name in extensibles:
+        return field_name, 1
+
+    last_underscore = field_name.rfind("_")
+    if last_underscore > 0 and field_name[last_underscore + 1 :].isdigit():
+        base = field_name[:last_underscore]
+        num = int(field_name[last_underscore + 1 :])
+        if base in extensibles:
+            return base, num
+
+    m = _EXTENSIBLE_NUMBER_PATTERN.match(field_name)
+    if m:
+        base = f"{m.group(1)}_{m.group(3)}"
+        if base in extensibles:
+            return base, int(m.group(2))
+
+    return None, 0
+
+
+def extensible_schema_name(base: str, group: int) -> str:
+    """Generate the epJSON schema-convention name: base for group 1, base_N for N>=2."""
+    return base if group == 1 else f"{base}_{group}"
+
+
+def normalize_extensible_name(field_name: str, extensibles: frozenset[str]) -> str:
+    """Normalize an extensible field name to the epJSON schema convention.
+
+    Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
+    ``vertex_2_x_coordinate`` → ``vertex_x_coordinate_2``, etc.
+    Returns the name unchanged if it is not extensible.
+    """
+    base, group = parse_extensible_index(field_name, extensibles)
+    if base is None:
+        return field_name
+    return extensible_schema_name(base, group)
+
+
 def to_python_name(idf_name: str) -> str:
     """Convert IDF field name to Python-friendly name.
 
@@ -225,6 +273,11 @@ class IDFObject(EppyObjectMixin):
         if python_key in data:
             return data[python_key]
 
+        # Try normalizing extensible field name to schema convention
+        schema_key = self._normalize_extensible_key(python_key)
+        if schema_key != python_key and schema_key in data:
+            return data[schema_key]
+
         # Field not found — check strict mode
         doc = object.__getattribute__(self, "_document")
         if doc is not None and getattr(doc, "_strict", False):
@@ -238,13 +291,18 @@ class IDFObject(EppyObjectMixin):
                     key,
                     available_fields=list(field_order),
                     version=ver,
+                    extensible_fields=object.__getattribute__(self, "_extensibles"),
                 )
 
         # Default: return None (eppy behaviour)
         return None
 
     def __setattr__(self, key: str, value: Any) -> None:
-        """Set field value by attribute name."""
+        """Set field value by attribute name.
+
+        Extensible field names are normalized to the epJSON schema convention
+        (``field``, ``field_2``; ``vertex_x_coordinate``, ``vertex_x_coordinate_2``).
+        """
         if key.startswith("_"):
             object.__setattr__(self, key, value)
         elif key.lower() == "name":
@@ -263,7 +321,10 @@ class IDFObject(EppyObjectMixin):
                         key,
                         available_fields=list(field_order),
                         version=ver,
+                        extensible_fields=self._extensibles,
                     )
+            # Normalize extensible field names to schema convention.
+            python_key = self._normalize_extensible_key(python_key)
             self._set_field(python_key, value)
 
     def __getitem__(self, key: str | int) -> Any:
@@ -362,107 +423,40 @@ class IDFObject(EppyObjectMixin):
         ext_names = sorted(extensibles)  # stable order
 
         # Parse the target field to find its base name and group index.
-        target_base, target_group = self._parse_extensible_index(python_key, extensibles)
+        target_base, target_group = parse_extensible_index(python_key, extensibles)
         if target_base is None:
             # Couldn't parse — just append as-is.
             field_order.append(python_key)
             return
 
-        # Detect the naming convention used by existing extensible fields.
-        # "prefix_N_suffix" (user) vs "base_N" (schema).
-        name_fn = self._detect_naming_convention(field_order, extensibles, python_key)
-
         # Find the current highest group index already in field_order.
         max_group = 0
         for name in field_order:
-            base, group = self._parse_extensible_index(name, extensibles)
+            base, group = parse_extensible_index(name, extensibles)
             if base is not None and group > max_group:
                 max_group = group
 
-        # Generate all groups from max_group+1 through target_group.
+        # Generate all groups from max_group+1 through target_group
+        # using the epJSON schema naming convention.
         existing = set(field_order)
+        schema_key = extensible_schema_name(target_base, target_group)
         for g in range(max_group + 1, target_group + 1):
             for base in ext_names:
-                field_name = name_fn(base, g)
+                field_name = extensible_schema_name(base, g)
                 if field_name not in existing:
                     field_order.append(field_name)
                     existing.add(field_name)
                     # Fill gap fields with None in data (don't overwrite the
                     # target field which was already written above).
-                    if field_name != python_key and field_name not in self._data:
+                    if field_name != schema_key and field_name not in self._data:
                         self._data[field_name] = None
 
-    @staticmethod
-    def _parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tuple[str | None, int]:
-        """Extract the base name and 1-based group index from an extensible field name.
-
-        Handles both naming conventions:
-        - ``field_1`` / ``field_2`` (user style, base ``field``)
-        - ``vertex_1_x_coordinate`` / ``vertex_2_x_coordinate`` (user style, base ``vertex_x_coordinate``)
-        - ``field`` / ``field_2`` (schema style, first group has no number)
-        - ``vertex_x_coordinate`` / ``vertex_x_coordinate_2`` (schema style)
-
-        Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
-        """
-        # Direct match: base name without number (schema first-group)
-        if field_name in extensibles:
-            return field_name, 1
-
-        # Try "base_N" pattern (e.g. field_1, field_2)
-        last_underscore = field_name.rfind("_")
-        if last_underscore > 0 and field_name[last_underscore + 1 :].isdigit():
-            base = field_name[:last_underscore]
-            num = int(field_name[last_underscore + 1 :])
-            if base in extensibles:
-                return base, num
-
-        # Try "prefix_N_suffix" pattern (e.g. vertex_1_x_coordinate)
-        m = _EXTENSIBLE_NUMBER_PATTERN.match(field_name)
-        if m:
-            base = f"{m.group(1)}_{m.group(3)}"
-            if base in extensibles:
-                return base, int(m.group(2))
-
-        return None, 0
-
-    @staticmethod
-    def _detect_naming_convention(
-        field_order: list[str],
-        extensibles: frozenset[str],
-        new_key: str,
-    ) -> Callable[[str, int], str]:
-        """Detect whether existing fields use user or schema naming and return a name generator.
-
-        User convention: ``vertex_1_x_coordinate``, ``field_1``
-        Schema convention: ``vertex_x_coordinate_2``, ``field_2``
-
-        Prefers the convention of the incoming ``new_key`` so that the gap
-        fields match the style the caller is using.
-        """
-        # Check if the new key uses prefix_N_suffix style
-        m = _EXTENSIBLE_NUMBER_PATTERN.match(new_key)
-        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
-            # User convention: vertex_N_x_coordinate
-            def user_style(base: str, group: int) -> str:
-                parts = base.split("_", 1)
-                return f"{parts[0]}_{group}_{parts[1]}" if len(parts) > 1 else f"{base}_{group}"
-
-            return user_style
-
-        # Default: schema/simple convention (base_N)
-        return IDFObject._extensible_field_name
-
-    @staticmethod
-    def _extensible_field_name(base: str, group: int) -> str:
-        """Generate the field name for a given base and 1-based group index.
-
-        Uses the simple suffix convention: ``field_1``, ``field_2``, ...
-        and ``vertex_x_coordinate_1``, ``vertex_x_coordinate_2``, ...
-
-        This matches how ``add()`` and the IDF parser generate field names
-        for extensible groups beyond the first.
-        """
-        return f"{base}_{group}"
+    def _normalize_extensible_key(self, python_key: str) -> str:
+        """Normalize an extensible field name to the epJSON schema convention."""
+        extensibles = self._extensibles
+        if not extensibles:
+            return python_key
+        return normalize_extensible_name(python_key, extensibles)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation.
