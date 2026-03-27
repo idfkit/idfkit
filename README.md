@@ -1,9 +1,9 @@
 # idfkit
 
-[![Release](https://img.shields.io/github/v/release/samuelduchesne/idfkit)](https://github.com/idfkit/idfkit/releases)
-[![Build status](https://img.shields.io/github/actions/workflow/status/samuelduchesne/idfkit/main.yml?branch=main)](https://github.com/idfkit/idfkit/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/samuelduchesne/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/samuelduchesne/idfkit)
-[![License](https://img.shields.io/github/license/samuelduchesne/idfkit)](https://github.com/idfkit/idfkit/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/idfkit/idfkit)](https://github.com/idfkit/idfkit/releases)
+[![Build status](https://img.shields.io/github/actions/workflow/status/idfkit/idfkit/main.yml?branch=main)](https://github.com/idfkit/idfkit/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/idfkit/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/idfkit/idfkit)
+[![License](https://img.shields.io/github/license/idfkit/idfkit)](https://github.com/idfkit/idfkit/blob/main/LICENSE)
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
@@ -60,7 +60,7 @@ thanks to O(1) dict-based indexing:
   <img alt="benchmark chart" src="docs/assets/benchmark.svg">
 </picture>
 
-See [full benchmark results](https://py.idfkit/benchmarks/)
+See [full benchmark results](https://py.idfkit.com/benchmarks/)
 for all six operations (load, get by type, get by name, add, modify, write) across four tools.
 
 ## Installation
@@ -142,7 +142,7 @@ print(f"Max temp: {max(ts.values):.1f}°C")
 ```
 
 > **Note:** `result.sql` requires EnergyPlus to produce SQLite output (the
-> default). See the [Simulation Guide](https://samuelduchesne.github.io/idfkit/simulation/)
+> default). See the [Simulation Guide](https://py.idfkit.com/simulation/)
 > for details on output configuration.
 
 ## Weather
@@ -158,15 +158,15 @@ print(results[0].station.display_name)
 ## Documentation
 
 Full documentation is available at
-**[samuelduchesne.github.io/idfkit](https://samuelduchesne.github.io/idfkit/)**.
+**[py.idfkit.com](https://py.idfkit.com/)**.
 
 Key sections:
 
-- [Getting Started](https://samuelduchesne.github.io/idfkit/getting-started/installation/) — Installation, quick start, interactive tutorial
-- [Simulation Guide](https://samuelduchesne.github.io/idfkit/simulation/) — Run EnergyPlus, parse results, batch processing
-- [Weather Guide](https://samuelduchesne.github.io/idfkit/weather/) — Station search, downloads, design days
-- [API Reference](https://samuelduchesne.github.io/idfkit/api/document/) — Complete API documentation
-- [Migrating from eppy](https://samuelduchesne.github.io/idfkit/migration/) — Side-by-side comparison
+- [Getting Started](https://py.idfkit.com/getting-started/installation/) — Installation, quick start, interactive tutorial
+- [Simulation Guide](https://py.idfkit.com/simulation/) — Run EnergyPlus, parse results, batch processing
+- [Weather Guide](https://py.idfkit.com/weather/) — Station search, downloads, design days
+- [API Reference](https://py.idfkit.com/api/document/) — Complete API documentation
+- [Migrating from eppy](https://py.idfkit.com/migration/) — Side-by-side comparison
 
 ## Development
 
