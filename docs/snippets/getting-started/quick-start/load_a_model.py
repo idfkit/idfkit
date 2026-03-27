@@ -11,6 +11,6 @@ model = load_idf("building.idf")
 print(f"Loaded {len(model)} objects")
 
 # For migration-only tolerant loading of legacy/noisy files:
-model = load_idf("legacy_building.idf", strict=False)
+model = load_idf("legacy_building.idf", strict_parsing=False)
 print(f"Tolerant load parsed {len(model)} objects")
 # --8<-- [end:example]

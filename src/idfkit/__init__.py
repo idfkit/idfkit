@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 __version__ = "0.1.0"
 
 # Core classes
+# Documentation URL builder
+from .docs import DocsUrl, docs_url_for_object, engineering_reference_url, io_reference_url, search_url
 from .document import IDFDocument
 from .epjson_parser import parse_epjson
 
@@ -43,12 +45,14 @@ from .exceptions import (
     ExpandObjectsError,
     IdfKitError,
     IDFParseError,
+    InvalidFieldError,
     NoDesignDaysError,
     ParseError,
     RangeError,
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
+    UnsupportedVersionError,
     ValidationFailedError,
     VersionNotFoundError,
 )
@@ -146,13 +150,19 @@ from .zoning import (
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+def _check_version(version: tuple[int, int, int]) -> None:
+    """Raise UnsupportedVersionError if *version* is not a known EnergyPlus release."""
+    if not is_supported_version(version):
+        raise UnsupportedVersionError(version, ENERGYPLUS_VERSIONS)
+
+
 @overload
 def load_idf(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: bool = ...,
-    strict_fields: Literal[True],
+    strict_parsing: bool = ...,
+    strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -162,8 +172,8 @@ def load_idf(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict: bool = ...,
-    strict_fields: Literal[False] = ...,
+    strict_parsing: bool = ...,
+    strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -172,8 +182,8 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
+    strict_parsing: bool = True,
     strict: bool = True,
-    strict_fields: bool = False,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -182,9 +192,10 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     Args:
         path: Path to the IDF file
         version: Optional version override (major, minor, patch)
-        strict: If True, fail fast on malformed IDF objects (default: True)
-        strict_fields: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict_parsing: If True, fail fast on malformed IDF objects (default: True)
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
             (CST) so that :func:`write_idf` reproduces the original
             formatting, comments, and whitespace for unmodified objects.
@@ -217,11 +228,13 @@ def load_idf(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
+    if version is not None:
+        _check_version(version)
     return parse_idf(
         Path(path),
         version=version,
+        strict_parsing=strict_parsing,
         strict=strict,
-        strict_fields=strict_fields,
         preserve_formatting=preserve_formatting,
     )
 
@@ -231,7 +244,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict_fields: Literal[True],
+    strict: Literal[True] = ...,
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
@@ -241,7 +254,7 @@ def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = ...,
     *,
-    strict_fields: Literal[False] = ...,
+    strict: Literal[False],
     preserve_formatting: bool = ...,
 ) -> IDFDocument[Literal[False]]: ...
 
@@ -250,7 +263,7 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
-    strict_fields: bool = False,
+    strict: bool = True,
     preserve_formatting: bool = False,
 ) -> IDFDocument[bool]:
     """
@@ -259,8 +272,9 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     Args:
         path: Path to the epJSON file
         version: Optional version override (major, minor, patch)
-        strict_fields: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: When ``True``, store the raw JSON text so
             that :func:`write_epjson` can reproduce it byte-for-byte
             when no objects have been modified.
@@ -285,16 +299,16 @@ def load_epjson(  # type: ignore[misc]  # overload implementation
     """
     from pathlib import Path
 
-    return parse_epjson(
-        Path(path), version=version, strict_fields=strict_fields, preserve_formatting=preserve_formatting
-    )
+    if version is not None:
+        _check_version(version)
+    return parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)
 
 
 @overload
 def new_document(
     version: tuple[int, int, int] = ...,
     *,
-    strict: Literal[True],
+    strict: Literal[True] = ...,
 ) -> IDFDocument[Literal[True]]: ...
 
 
@@ -302,22 +316,23 @@ def new_document(
 def new_document(
     version: tuple[int, int, int] = ...,
     *,
-    strict: Literal[False] = ...,
+    strict: Literal[False],
 ) -> IDFDocument[Literal[False]]: ...
 
 
 def new_document(  # type: ignore[misc]  # overload implementation
     version: tuple[int, int, int] = LATEST_VERSION,
     *,
-    strict: bool = False,
+    strict: bool = True,
 ) -> IDFDocument[bool]:
     """
     Create a new IDFDocument with baseline singleton objects populated.
 
     Args:
         version: EnergyPlus version (default: latest supported version)
-        strict: When ``True``, accessing an unknown field name on any
-            IDFObject raises ``AttributeError`` instead of returning ``None``.
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
 
     Returns:
         IDFDocument with schema loaded and baseline objects seeded
@@ -346,6 +361,7 @@ def new_document(  # type: ignore[misc]  # overload implementation
         >>> model_v24.version
         (24, 1, 0)
     """
+    _check_version(version)
     schema = get_schema(version)
     doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
@@ -368,6 +384,7 @@ __all__ = [
     "ENERGYPLUS_VERSIONS",
     "LATEST_VERSION",
     "MINIMUM_VERSION",
+    "DocsUrl",
     "DuplicateObjectError",
     "EnergyPlusNotFoundError",
     "EpJSONSchema",
@@ -380,6 +397,7 @@ __all__ = [
     "IDFParseError",
     "IDFParser",
     "IdfKitError",
+    "InvalidFieldError",
     "NoDesignDaysError",
     "ObjectDescription",
     "ParseError",
@@ -390,6 +408,7 @@ __all__ = [
     "SchemaNotFoundError",
     "SimulationError",
     "UnknownObjectTypeError",
+    "UnsupportedVersionError",
     "ValidationError",
     "ValidationFailedError",
     "ValidationResult",
@@ -413,6 +432,8 @@ __all__ = [
     "create_constant_schedule",
     "create_schedule_type_limits",
     "detect_horizontal_adjacencies",
+    "docs_url_for_object",
+    "engineering_reference_url",
     "find_closest_version",
     "footprint_courtyard",
     "footprint_h_shape",
@@ -424,6 +445,7 @@ __all__ = [
     "get_schema",
     "get_schema_manager",
     "intersect_match",
+    "io_reference_url",
     "is_supported_version",
     "link_blocks",
     "link_horizontal_surfaces",
@@ -438,6 +460,7 @@ __all__ = [
     "polygon_intersection_2d",
     "rotate_building",
     "scale_building",
+    "search_url",
     "set_default_constructions",
     "set_wwr",
     "split_horizontal_surface",

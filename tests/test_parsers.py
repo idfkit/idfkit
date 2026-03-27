@@ -376,7 +376,7 @@ TotallyMadeUpObject, Foo;
         filepath = tmp_path / "bad_bytes.idf"
         filepath.write_bytes(content)
 
-        doc = parse_idf(filepath, encoding="utf-8", strict=False)
+        doc = parse_idf(filepath, encoding="utf-8", strict_parsing=False)
         assert len(doc["Zone"]) == 0
 
     def test_invalid_field_bytes_strict_true_wrapped(self, tmp_path: Path) -> None:
@@ -386,6 +386,6 @@ TotallyMadeUpObject, Foo;
         filepath.write_bytes(content)
 
         with pytest.raises(IDFParseError, match="Failed to parse object") as exc_info:
-            parse_idf(filepath, encoding="utf-8", strict=True)
+            parse_idf(filepath, encoding="utf-8", strict_parsing=True)
         assert exc_info.value.diagnostics
         assert exc_info.value.diagnostics[0].obj_type == "Zone"

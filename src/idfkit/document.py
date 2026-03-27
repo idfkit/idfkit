@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat import EppyDocumentMixin
 from .cst import DocumentCST
-from .exceptions import DuplicateObjectError, ValidationFailedError
+from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
@@ -132,7 +132,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         schema: EpJSONSchema | None = None,
         filepath: Path | str | None = None,
         *,
-        strict: bool = False,
+        strict: bool = True,
     ) -> None:
         """
         Initialize an IDFDocument.
@@ -141,9 +141,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             version: EnergyPlus version tuple
             schema: EpJSONSchema for validation
             filepath: Source file path
-            strict: When ``True``, accessing an unknown field name on any
+            strict: When ``True``, accessing or setting an unknown field name on any
                 [IDFObject][idfkit.objects.IDFObject] owned by this document raises
-                ``AttributeError`` instead of returning ``None``.  This
+                :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
         """
@@ -161,8 +161,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def strict(self) -> bool:
         """Whether strict field access mode is enabled.
 
-        When ``True``, accessing an unknown field name on objects in this
-        document raises ``AttributeError`` instead of returning ``None``.
+        When ``True``, accessing or setting an unknown field name on objects in this
+        document raises :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.
 
         This property is read-only; set it via the constructor.
         """
@@ -352,7 +352,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Raises:
             ValueError: If no schema is loaded
-            KeyError: If the object type is not found in the schema
+            UnknownObjectTypeError: If the object type is not found in the schema
 
         Examples:
             Discover which fields are needed for a new Material:
@@ -469,6 +469,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             The created IDFObject
 
         Raises:
+            UnknownObjectTypeError: If the object type is not recognised by
+                the schema
             DuplicateObjectError: If a singleton object type (marked with
                 schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
@@ -520,8 +522,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             resolved_obj_type = self._resolve_schema_obj_type(obj_type)
             obj_schema = self._schema.get_object_schema(resolved_obj_type)
 
+            if obj_schema is None:
+                raise UnknownObjectTypeError(obj_type, version=self.version)
+
             # Enforce singleton object types (schema marker: maxProperties == 1).
-            if obj_schema and obj_schema.get("maxProperties") == 1:
+            if obj_schema.get("maxProperties") == 1:
                 existing_type = self._find_existing_collection_type(resolved_obj_type)
                 if existing_type is not None:
                     existing = self._collections[existing_type].first()
@@ -545,6 +550,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             document=self,  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
             field_order=field_order,
             ref_fields=ref_fields,
+            extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
         )
 
         # Validate if requested

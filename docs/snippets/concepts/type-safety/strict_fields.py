@@ -3,15 +3,15 @@ from __future__ import annotations
 # --8<-- [start:example]
 from idfkit import new_document
 
-# Enable strict field access on a new document
-doc = new_document(strict=True)
+# Strict field access is on by default
+doc = new_document()
 
 zone = doc.add("Zone", "Office")
 zone.x_origin = 0.0  # OK — valid field
 
-# zone.x_orgin = 0.0  # AttributeError! Typo caught immediately
+# zone.x_orgin = 0.0  # InvalidFieldError! Typo caught immediately
 
-# Also available when loading files
-# model = load_idf("building.idf", strict_fields=True)
-# model = load_epjson("building.epJSON", strict_fields=True)
+# Also the default when loading files
+# model = load_idf("building.idf")
+# model = load_epjson("building.epJSON")
 # --8<-- [end:example]

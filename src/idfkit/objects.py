@@ -12,12 +12,16 @@ from collections.abc import Callable, Iterator
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat_object import EppyObjectMixin
+from .exceptions import InvalidFieldError
 
 if TYPE_CHECKING:
     from .document import IDFDocument
 
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
+
+# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate"
+_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
 
 
 def to_python_name(idf_name: str) -> str:
@@ -85,6 +89,7 @@ class IDFObject(EppyObjectMixin):
         "__weakref__",
         "_data",
         "_document",
+        "_extensibles",
         "_field_order",
         "_name",
         "_ref_fields",
@@ -113,12 +118,14 @@ class IDFObject(EppyObjectMixin):
         field_order: list[str] | None = None,
         ref_fields: frozenset[str] | None = None,
         source_text: str | None = None,
+        extensibles: frozenset[str] | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
         object.__setattr__(self, "_data", data if data is not None else {})
         object.__setattr__(self, "_schema", schema)
         object.__setattr__(self, "_document", document)
+        object.__setattr__(self, "_extensibles", extensibles or frozenset())
         object.__setattr__(self, "_field_order", field_order)
         object.__setattr__(self, "_ref_fields", ref_fields)
         object.__setattr__(self, "_source_text", source_text)
@@ -157,6 +164,30 @@ class IDFObject(EppyObjectMixin):
     def field_order(self) -> list[str] | None:
         """Ordered list of field names from schema."""
         return self._field_order
+
+    def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
+        """Check if a field name is valid for this object type.
+
+        Checks the base field order first, then extensible field patterns.
+        Handles both ``vertex_1_x_coordinate`` -> ``vertex_x_coordinate``
+        and ``field_1`` -> ``field``.
+        """
+        if python_key in field_order:
+            return True
+        extensibles = self._extensibles
+        if not extensibles:
+            return False
+        # Try "prefix_N_suffix" -> "prefix_suffix" (e.g. vertex_1_x_coordinate -> vertex_x_coordinate)
+        m = _EXTENSIBLE_NUMBER_PATTERN.match(python_key)
+        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
+            return True
+        # Try "base_N" -> "base" (e.g. field_1461 -> field)
+        last_underscore = python_key.rfind("_")
+        if last_underscore > 0 and python_key[last_underscore + 1 :].isdigit():
+            base = python_key[:last_underscore]
+            if base in extensibles:
+                return True
+        return False
 
     @property
     def name(self) -> str:
@@ -199,11 +230,14 @@ class IDFObject(EppyObjectMixin):
         if doc is not None and getattr(doc, "_strict", False):
             # In strict mode, only allow known schema fields
             field_order = object.__getattribute__(self, "_field_order")
-            if field_order is not None and python_key not in field_order:
+            if field_order is not None and not self._is_known_field(python_key, field_order):
                 obj_type = object.__getattribute__(self, "_type")
-                raise AttributeError(  # noqa: TRY003
-                    f"'{obj_type}' object has no field '{key}'. "
-                    f"Known fields: {', '.join(field_order[:10])}{'...' if len(field_order) > 10 else ''}"
+                ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
+                raise InvalidFieldError(
+                    obj_type,
+                    key,
+                    available_fields=list(field_order),
+                    version=ver,
                 )
 
         # Default: return None (eppy behaviour)
@@ -218,6 +252,18 @@ class IDFObject(EppyObjectMixin):
         else:
             # Normalize key to python style
             python_key = to_python_name(key)
+            # Validate in strict mode
+            doc = self._document
+            if doc is not None and getattr(doc, "_strict", False):
+                field_order = self._field_order
+                if field_order is not None and not self._is_known_field(python_key, field_order):
+                    ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
+                    raise InvalidFieldError(
+                        self._type,
+                        key,
+                        available_fields=list(field_order),
+                        version=ver,
+                    )
             self._set_field(python_key, value)
 
     def __getitem__(self, key: str | int) -> Any:
@@ -330,6 +376,7 @@ class IDFObject(EppyObjectMixin):
             field_order=self._field_order,
             ref_fields=self._ref_fields,
             source_text=None,  # copy is a new object; don't carry over verbatim text
+            extensibles=self._extensibles,
         )
 
     def __dir__(self) -> list[str]:
@@ -479,6 +526,12 @@ class IDFCollection(Generic[_T]):
         """Get object by name or index."""
         if isinstance(key, int):
             return self._items[key]
+        if not key:
+            # Unnamed/singleton objects are not indexed in _by_name;
+            # fall back to the first item in the ordered list.
+            if self._items:
+                return self._items[0]
+            raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
         result = self._by_name.get(key.upper())
         if result is None:
             raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
@@ -493,6 +546,9 @@ class IDFCollection(Generic[_T]):
     def __contains__(self, key: str | _T) -> bool:
         if isinstance(key, IDFObject):
             return key in self._items
+        if not key:
+            # Unnamed/singleton objects: check if any items exist
+            return len(self._items) > 0
         return key.upper() in self._by_name
 
     def __bool__(self) -> bool:
@@ -504,6 +560,9 @@ class IDFCollection(Generic[_T]):
     def get(self, name: str, default: _T | None = None) -> _T | None:
         """Get object by name with default.
 
+        For unnamed/singleton object types (e.g. SimulationControl), pass an
+        empty string to retrieve the first object in the collection.
+
         Examples:
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -513,7 +572,11 @@ class IDFCollection(Generic[_T]):
             'Perimeter_ZN_1'
             >>> model["Zone"].get("NonExistent") is None
             True
+            >>> model["SimulationControl"].get("") is not None
+            True
         """
+        if not name:
+            return self._items[0] if self._items else default
         return self._by_name.get(name.upper(), default)
 
     def first(self) -> _T | None:

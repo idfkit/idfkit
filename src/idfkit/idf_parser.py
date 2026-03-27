@@ -96,8 +96,8 @@ def parse_idf(
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
     encoding: str = "latin-1",
+    strict_parsing: bool = True,
     strict: bool = True,
-    strict_fields: bool = False,
     *,
     preserve_formatting: bool = False,
 ) -> IDFDocument:
@@ -109,7 +109,10 @@ def parse_idf(
         schema: Optional EpJSONSchema for field ordering and type coercion
         version: Optional version override (auto-detected if not provided)
         encoding: File encoding (default: latin-1 for compatibility)
-        strict: If True, fail fast on malformed objects (default: True)
+        strict_parsing: If True, fail fast on malformed objects (default: True)
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: If ``True``, build a Concrete Syntax Tree (CST)
             so that writing the document back preserves original formatting,
             comments, and whitespace for unmodified objects.  The default
@@ -152,8 +155,8 @@ def parse_idf(
     if not filepath.exists():
         raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
 
-    parser = IDFParser(filepath, schema, encoding, strict=strict)
-    return parser.parse(version, strict_fields=strict_fields, preserve_formatting=preserve_formatting)
+    parser = IDFParser(filepath, schema, encoding, strict_parsing=strict_parsing)
+    return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
 
 
 class IDFParser:
@@ -163,32 +166,32 @@ class IDFParser:
     Uses memory mapping for large files and regex for tokenization.
     """
 
-    __slots__ = ("_content", "_encoding", "_filepath", "_schema", "_strict")
+    __slots__ = ("_content", "_encoding", "_filepath", "_schema", "_strict_parsing")
 
     _filepath: Path
     _schema: EpJSONSchema | None
     _encoding: str
     _content: bytes | None
-    _strict: bool
+    _strict_parsing: bool
 
     def __init__(
         self,
         filepath: Path,
         schema: EpJSONSchema | None = None,
         encoding: str = "latin-1",
-        strict: bool = True,
+        strict_parsing: bool = True,
     ):
         self._filepath = filepath
         self._schema = schema
         self._encoding = encoding
-        self._strict = strict
+        self._strict_parsing = strict_parsing
         self._content: bytes | None = None
 
     def parse(
         self,
         version: tuple[int, int, int] | None = None,
         *,
-        strict_fields: bool = False,
+        strict: bool = True,
         preserve_formatting: bool = False,
     ) -> IDFDocument:
         """
@@ -196,7 +199,7 @@ class IDFParser:
 
         Args:
             version: Optional version override
-            strict_fields: Enforce strict field access on the resulting document.
+            strict: Enforce strict field access on the resulting document.
             preserve_formatting: Build a CST for lossless round-tripping.
 
         Returns:
@@ -221,7 +224,7 @@ class IDFParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
         # Parse objects
         self._parse_objects(content, doc, schema)
@@ -325,7 +328,7 @@ class IDFParser:
             except IDFParseError:
                 raise
             except Exception as exc:
-                if self._strict:
+                if self._strict_parsing:
                     self._raise_parse_error(
                         content,
                         match_offset,
@@ -372,6 +375,7 @@ class IDFParser:
                 schema=pc.obj_schema,
                 field_order=field_names,
                 ref_fields=pc.ref_fields,
+                extensibles=frozenset(pc.ext_field_names),
             )
 
         # No-schema fallback
@@ -402,7 +406,7 @@ class IDFParser:
                 else:
                     data[field_name] = ""
 
-        if not pc.extensible and len(remaining_fields) > num_named and self._strict:
+        if not pc.extensible and len(remaining_fields) > num_named and self._strict_parsing:
             overflow = len(remaining_fields) - num_named
             msg = (
                 f"Object has {overflow} extra field(s) but type is not extensible "
@@ -434,7 +438,7 @@ class IDFParser:
         """Append extensible field groups to parsed data."""
         ext_size = pc.ext_size
         if ext_size <= 0:
-            if self._strict:
+            if self._strict_parsing:
                 msg = "Object is marked extensible but extensible group size is invalid"
                 raise ValueError(msg)
             return
@@ -559,7 +563,7 @@ class IDFParser:
                 canonical_cache[obj_type] = canonical
             return (pc, False, canonical)
 
-        if self._strict:
+        if self._strict_parsing:
             msg = f"Unknown object type '{obj_type}'"
             self._raise_parse_error(content, match_offset, msg, obj_type=obj_type, obj_name=obj_name)
         skipped_types.add(obj_type)

@@ -2,7 +2,7 @@
 name = "idfkit"
 version = "0.1.0"
 description = "A fast, modern EnergyPlus IDF/epJSON parser with O(1) lookups and reference tracking"
-authors = [{ name = "Samuel Letellier-Duchesne", email = "samuelduchesne@me.com" }]
+authors = [{ name = "Samuel Letellier-Duchesne", email = "developers@idfkit.com" }]
 readme = "README.md"
 keywords = ["energyplus", "idf", "epjson", "parser", "building simulation", "energy modeling"]
 requires-python = ">=3.10,<4.0"

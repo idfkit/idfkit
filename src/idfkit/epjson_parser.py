@@ -27,7 +27,7 @@ def parse_epjson(
     filepath: Path | str,
     schema: EpJSONSchema | None = None,
     version: tuple[int, int, int] | None = None,
-    strict_fields: bool = False,
+    strict: bool = True,
     *,
     preserve_formatting: bool = False,
 ) -> IDFDocument:
@@ -38,6 +38,9 @@ def parse_epjson(
         filepath: Path to the epJSON file
         schema: Optional EpJSONSchema for validation
         version: Optional version override (auto-detected if not provided)
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
         preserve_formatting: If ``True``, store the raw JSON text so that
             :func:`~idfkit.writers.write_epjson` can reproduce it
             byte-for-byte when no objects have been modified.
@@ -66,7 +69,7 @@ def parse_epjson(
         raise FileNotFoundError(f"epJSON file not found: {filepath}")  # noqa: TRY003
 
     parser = EpJSONParser(filepath, schema)
-    return parser.parse(version, strict_fields=strict_fields, preserve_formatting=preserve_formatting)
+    return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
 
 
 class EpJSONParser:
@@ -91,7 +94,7 @@ class EpJSONParser:
         self,
         version: tuple[int, int, int] | None = None,
         *,
-        strict_fields: bool = False,
+        strict: bool = True,
         preserve_formatting: bool = False,
     ) -> IDFDocument:
         """
@@ -99,7 +102,7 @@ class EpJSONParser:
 
         Args:
             version: Optional version override
-            strict_fields: Enforce strict field access on the resulting document.
+            strict: Enforce strict field access on the resulting document.
             preserve_formatting: Store raw JSON text for lossless round-tripping.
 
         Returns:
@@ -126,7 +129,7 @@ class EpJSONParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict_fields)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
 
         # Parse objects
         self._parse_objects(data, doc, schema)
@@ -218,6 +221,7 @@ class EpJSONParser:
                     schema=obj_schema,
                     field_order=field_order,
                     ref_fields=ref_fields,
+                    extensibles=frozenset(pc.ext_field_names) if pc else None,
                 )
 
                 addidfobject(obj)

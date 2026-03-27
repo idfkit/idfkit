@@ -16,7 +16,7 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 from .exceptions import SchemaNotFoundError
 from .versions import (
@@ -348,6 +348,15 @@ class EpJSONSchema:
         default_dict: dict[str, Any] = {}
         inner: dict[str, Any] = next(iter(pattern_props.values()), default_dict) if pattern_props else default_dict
         props: dict[str, Any] = inner.get("properties", {})
+        # Extract extensible field schemas from array items (for reference detection)
+        ext_props: dict[str, Any] = {}
+        for _pk in list(props):
+            _pv: dict[str, Any] = props[_pk]
+            _items = _pv.get("items")
+            if isinstance(_items, dict):
+                _ep = cast("dict[str, Any]", _items).get("properties")
+                if isinstance(_ep, dict):
+                    ext_props = cast("dict[str, Any]", _ep)
 
         field_info: dict[str, Any] = legacy.get("field_info", {})
 
@@ -366,10 +375,13 @@ class EpJSONSchema:
         ext_size = int(obj_schema.get("extensible_size", 0))
         ext_field_names_list: list[str] = legacy.get("extensibles", [])
 
-        # Pre-compute field types for extensible base names
+        # Pre-compute field types and reference fields for extensible base names
         for ext_fname in ext_field_names_list:
             if ext_fname not in field_types:
                 field_types[ext_fname] = _resolve_field_type(ext_fname, props, field_info)
+            ext_field_schema = ext_props.get(ext_fname)
+            if ext_field_schema is not None and "object_list" in ext_field_schema:
+                ref_fields_set.add(ext_fname)
 
         return ParsingCache(
             obj_schema=obj_schema,
