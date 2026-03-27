@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from idfkit.objects import IDFObject
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
     ScheduleEvaluationError,
@@ -169,33 +170,30 @@ class TestIntegration:
     """Integration tests with realistic schedules."""
 
     @pytest.fixture
-    def compact_office_schedule(self) -> MagicMock:
+    def compact_office_schedule(self) -> IDFObject:
         """Create a realistic office schedule."""
-        obj = MagicMock()
-        obj.obj_type = "Schedule:Compact"
+        from idfkit import new_document
 
-        fields = {
-            "Field 1": "Through: 12/31",
-            "Field 2": "For: Weekdays",
-            "Field 3": "Until: 08:00",
-            "Field 4": "0.0",
-            "Field 5": "Until: 18:00",
-            "Field 6": "1.0",
-            "Field 7": "Until: 24:00",
-            "Field 8": "0.0",
-            "Field 9": "For: AllOtherDays",
-            "Field 10": "Until: 24:00",
-            "Field 11": "0.0",
-        }
+        doc = new_document()
+        doc.add(
+            "Schedule:Compact",
+            "Office",
+            validate=False,
+            field_1="Through: 12/31",
+            field_2="For: Weekdays",
+            field_3="Until: 08:00",
+            field_4="0.0",
+            field_5="Until: 18:00",
+            field_6="1.0",
+            field_7="Until: 24:00",
+            field_8="0.0",
+            field_9="For: AllOtherDays",
+            field_10="Until: 24:00",
+            field_11="0.0",
+        )
+        return doc.get_collection("Schedule:Compact").get("Office")
 
-        def get_field(name: str) -> str | None:
-            return fields.get(name)
-
-        obj.get.side_effect = get_field
-        del obj._document
-        return obj
-
-    def test_office_schedule_weekday_pattern(self, compact_office_schedule: MagicMock) -> None:
+    def test_office_schedule_weekday_pattern(self, compact_office_schedule: IDFObject) -> None:
         """Test office schedule produces expected weekday pattern."""
         # Get values for a single Monday (Jan 8, 2024)
         result = values(
@@ -210,7 +208,7 @@ class TestIntegration:
         assert result[8:18] == [1.0] * 10
         assert result[18:] == [0.0] * 6
 
-    def test_office_schedule_weekend_pattern(self, compact_office_schedule: MagicMock) -> None:
+    def test_office_schedule_weekend_pattern(self, compact_office_schedule: IDFObject) -> None:
         """Test office schedule produces expected weekend pattern."""
         # Get values for a single Saturday (Jan 6, 2024)
         result = values(
@@ -223,7 +221,7 @@ class TestIntegration:
         # All hours should be 0.0 on weekend
         assert result == [0.0] * 24
 
-    def test_office_schedule_week_sum(self, compact_office_schedule: MagicMock) -> None:
+    def test_office_schedule_week_sum(self, compact_office_schedule: IDFObject) -> None:
         """Test total occupied hours in a week."""
         # Get values for a full week (Mon Jan 8 - Sun Jan 14, 2024)
         result = values(
