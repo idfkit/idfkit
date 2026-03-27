@@ -130,16 +130,22 @@ class InvalidFieldError(IdfKitError, AttributeError):
         field_name: str,
         available_fields: list[str] | None = None,
         version: tuple[int, int, int] | None = None,
+        extensible_fields: frozenset[str] | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
         self.available_fields = available_fields
         self.version = version
+        self.extensible_fields = extensible_fields
         msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:
                 msg += f" ... and {len(available_fields) - 10} more"
+        if extensible_fields:
+            sorted_ext = sorted(extensible_fields)
+            group = ", ".join(sorted_ext)
+            msg += f"\n  (extensible: additional groups of ({group}) are allowed)"
         if version:
             from .docs import io_reference_url
 

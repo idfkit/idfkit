@@ -291,6 +291,7 @@ class IDFObject(EppyObjectMixin):
                     key,
                     available_fields=list(field_order),
                     version=ver,
+                    extensible_fields=object.__getattribute__(self, "_extensibles"),
                 )
 
         # Default: return None (eppy behaviour)
@@ -320,6 +321,7 @@ class IDFObject(EppyObjectMixin):
                         key,
                         available_fields=list(field_order),
                         version=ver,
+                        extensible_fields=self._extensibles,
                     )
             # Normalize extensible field names to schema convention.
             python_key = self._normalize_extensible_key(python_key)
