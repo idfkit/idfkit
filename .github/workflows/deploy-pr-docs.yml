@@ -35,7 +35,10 @@ jobs:
           sudo apt-get install -y libcairo2
 
       - name: Build documentation
-        run: ./scripts/build_docs.sh
+        run: |
+          PREVIEW_URL="https://py.idfkit.com/pr-preview/pr-${{ github.event.number }}/"
+          sed -i "s|^site_url:.*|site_url: ${PREVIEW_URL}|" mkdocs.yml
+          ./scripts/build_docs.sh
 
       - name: Fetch base branch for diff
         run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
