@@ -441,8 +441,6 @@ class TestProcessUntilEdgeCases:
 
     def test_until_at_end_of_fields_no_value(self) -> None:
         """Until: as the last field with no following value (field_index past end)."""
-        from idfkit import new_document
-
         doc = new_document()
         # Until is last field; no value follows it
         doc.add(
@@ -462,8 +460,6 @@ class TestProcessUntilEdgeCases:
 
     def test_until_followed_by_empty_value(self) -> None:
         """Until: followed by an empty value string (line 127->exit branch)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add(
             "Schedule:Compact",
@@ -566,8 +562,6 @@ class TestConsecutiveNoneLimit:
 
     def test_three_consecutive_blanks_stop_parsing(self) -> None:
         """Three consecutive empty fields break the parsing loop."""
-        from idfkit import new_document
-
         doc = new_document()
         # Add a schedule with blanks embedded after valid data
         doc.add(
@@ -608,8 +602,6 @@ class TestNoPeriods:
 
     def test_empty_compact_returns_zero(self) -> None:
         """A compact schedule with no data returns 0.0."""
-        from idfkit import new_document
-
         doc = new_document()
         # Add a schedule with no extensible fields at all
         doc.add("Schedule:Compact", "Empty", validate=False)
