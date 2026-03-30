@@ -477,8 +477,6 @@ class TestEvaluateDayListEndOfDay:
         """A 24th hourly value that hits 1440 minutes uses END_OF_DAY."""
         obj = MagicMock()
 
-        call_count: list[int] = [0]
-
         def get_field(field: str) -> object:
             if field == "Minutes per Item":
                 return 60
@@ -492,7 +490,6 @@ class TestEvaluateDayListEndOfDay:
             return None
 
         obj.get.side_effect = get_field
-        _ = call_count  # suppress unused warning
         result = evaluate_day_list(obj, datetime(2024, 1, 1, 23, 0))
         assert result == 1.0
 

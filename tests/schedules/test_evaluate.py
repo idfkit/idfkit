@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
+from idfkit import new_document
 from idfkit.objects import IDFObject
 from idfkit.schedules.evaluate import (
     MalformedScheduleError,
@@ -16,7 +18,7 @@ from idfkit.schedules.evaluate import (
     evaluate,
     values,
 )
-from idfkit.schedules.types import Interpolation
+from idfkit.schedules.types import DayType, Interpolation
 
 
 class TestExceptions:
@@ -172,8 +174,6 @@ class TestIntegration:
     @pytest.fixture
     def compact_office_schedule(self) -> IDFObject:
         """Create a realistic office schedule."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add(
             "Schedule:Compact",
@@ -329,8 +329,6 @@ class TestEvaluateDocumentSchedules:
 
     def test_week_daily_evaluation(self) -> None:
         """Exercise _eval_document_schedule for Schedule:Week:Daily (line 150)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.5")
         doc.add(
@@ -356,9 +354,6 @@ class TestEvaluateDocumentSchedules:
 
     def test_schedule_file_evaluation(self) -> None:
         """Exercise evaluate_schedule_file path in evaluate() (line 158)."""
-        from pathlib import Path
-        from unittest.mock import MagicMock
-
         obj = MagicMock()
         obj.obj_type = "Schedule:File"
 
@@ -384,7 +379,6 @@ class TestEvaluateDocumentSchedules:
     def test_eval_document_schedule_not_document_raises(self) -> None:
         """_eval_document_schedule with unknown type raises ValueError."""
         from idfkit.schedules.evaluate import _eval_document_schedule  # pyright: ignore[reportPrivateUsage]
-        from idfkit.schedules.types import DayType
 
         obj = MagicMock()
         obj.obj_type = "Schedule:Unknown"
@@ -394,8 +388,6 @@ class TestEvaluateDocumentSchedules:
 
     def test_eval_document_week_compact(self) -> None:
         """Exercise Schedule:Week:Compact through evaluate() (line 184)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.3")
         doc.add(
@@ -411,8 +403,6 @@ class TestEvaluateDocumentSchedules:
 
     def test_eval_document_year(self) -> None:
         """Exercise Schedule:Year through evaluate() (line 186)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.8")
         doc.add(
@@ -452,8 +442,6 @@ class TestValuesWithDocument:
 
     def test_values_with_document(self) -> None:
         """values() fetches holidays from document when document is provided."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add(
             "Schedule:Compact",
@@ -475,8 +463,6 @@ class TestValuesScheduleFile:
 
     def test_values_schedule_file_cache_created(self) -> None:
         """Verify Schedule:File path in values() creates a cache (line 259)."""
-        from pathlib import Path
-
         obj = MagicMock()
         obj.obj_type = "Schedule:File"
 
@@ -540,8 +526,6 @@ class TestEvaluateWithInterpolation:
 
     def test_schedule_file_in_values_with_interpolation(self) -> None:
         """Exercise Schedule:File path in _evaluate_with_interpolation (line 305)."""
-        from pathlib import Path
-
         obj = MagicMock()
         obj.obj_type = "Schedule:File"
 
@@ -584,8 +568,6 @@ class TestEvaluateWithInterpolation:
 
     def test_week_compact_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Week:Compact (line 337)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.6")
         doc.add(
@@ -610,8 +592,6 @@ class TestEvaluateWithInterpolation:
 
     def test_year_schedule_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Year (line 341)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.9")
         doc.add(
@@ -657,7 +637,6 @@ class TestEvaluateWithInterpolation:
     def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
         """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
         from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]
-        from idfkit.schedules.types import DayType, Interpolation
 
         obj = MagicMock()
         obj.obj_type = "Schedule:Unknown"
@@ -669,8 +648,6 @@ class TestEvaluateWithInterpolation:
 
     def test_week_daily_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Week:Daily (line 333)."""
-        from idfkit import new_document
-
         doc = new_document()
         doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.4")
         doc.add(

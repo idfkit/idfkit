@@ -77,6 +77,19 @@ def _make_day_schedule(name: str, obj_type: str, hourly_value: float = 1.0) -> M
     return obj
 
 
+def _make_week_compact(pairs: list[tuple[str, str]]) -> MagicMock:
+    """Create a mock Schedule:Week:Compact object with DayType/Schedule pairs."""
+    obj = MagicMock()
+    obj.obj_type = "Schedule:Week:Compact"
+    fields: dict[str, str | None] = {}
+    for i, (day_types, sched_name) in enumerate(pairs, 1):
+        fields[f"DayType List {i}"] = day_types
+        fields[f"Schedule:Day Name {i}"] = sched_name
+    fields[f"DayType List {len(pairs) + 1}"] = None
+    obj.get.side_effect = lambda f: fields.get(f)
+    return obj
+
+
 def _make_doc_with_day_schedule(day_obj: MagicMock) -> MagicMock:
     """Create a mock document containing a single day schedule."""
     doc = MagicMock()
@@ -479,26 +492,13 @@ class TestGetApplicableDayTypes:
 class TestFindMatchingDayInWeekCompact:
     """Tests for _find_matching_day_in_week_compact."""
 
-    def _make_week_compact(self, pairs: list[tuple[str, str]]) -> MagicMock:
-        """Create a mock Schedule:Week:Compact with DayType/Schedule pairs."""
-        obj = MagicMock()
-        obj.obj_type = "Schedule:Week:Compact"
-        fields: dict[str, str | None] = {}
-        for i, (day_types, sched_name) in enumerate(pairs, 1):
-            fields[f"DayType List {i}"] = day_types
-            fields[f"Schedule:Day Name {i}"] = sched_name
-        # Terminate the loop
-        fields[f"DayType List {len(pairs) + 1}"] = None
-        obj.get.side_effect = lambda f: fields.get(f)
-        return obj
-
     def test_simple_alldays(self) -> None:
-        obj = self._make_week_compact([("AllDays", "AllDaySched")])
+        obj = _make_week_compact([("AllDays", "AllDaySched")])
         types = {DAY_TYPE_MONDAY, DAY_TYPE_WEEKDAYS, DAY_TYPE_ALLDAYS, DAY_TYPE_ALL_OTHER_DAYS}
         assert _find_matching_day_in_week_compact(obj, types) == "AllDaySched"
 
     def test_weekday_vs_weekend(self) -> None:
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("Weekdays", "WeekdaySched"),
             ("Weekends", "WeekendSched"),
         ])
@@ -510,7 +510,7 @@ class TestFindMatchingDayInWeekCompact:
 
     def test_specific_day_beats_weekdays(self) -> None:
         """Monday is more specific than Weekdays in priority."""
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("Weekdays", "WeekdaySched"),
             ("Monday", "MondaySched"),
         ])
@@ -518,7 +518,7 @@ class TestFindMatchingDayInWeekCompact:
         assert _find_matching_day_in_week_compact(obj, types) == "MondaySched"
 
     def test_holiday_beats_weekday(self) -> None:
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("Weekdays", "WeekdaySched"),
             ("Holiday", "HolidaySched"),
         ])
@@ -526,7 +526,7 @@ class TestFindMatchingDayInWeekCompact:
         assert _find_matching_day_in_week_compact(obj, types) == "HolidaySched"
 
     def test_summer_design_highest_priority(self) -> None:
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("AllDays", "AllDaySched"),
             ("SummerDesignDay", "SummerSched"),
         ])
@@ -535,7 +535,7 @@ class TestFindMatchingDayInWeekCompact:
 
     def test_space_separated_day_types(self) -> None:
         """DayType List can contain multiple space-separated types."""
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("Weekdays SummerDesignDay", "WorkSched"),
             ("Weekends WinterDesignDay", "OffSched"),
         ])
@@ -544,7 +544,7 @@ class TestFindMatchingDayInWeekCompact:
 
     def test_all_other_days_fallback(self) -> None:
         """AllOtherDays is returned when no other match exists."""
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("SummerDesignDay", "SummerSched"),
             ("AllOtherDays", "FallbackSched"),
         ])
@@ -555,7 +555,7 @@ class TestFindMatchingDayInWeekCompact:
         assert _find_matching_day_in_week_compact(obj, types) == "FallbackSched"
 
     def test_no_match_returns_none(self) -> None:
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("SummerDesignDay", "SummerSched"),
         ])
         types = {DAY_TYPE_MONDAY, DAY_TYPE_WEEKDAYS}
@@ -569,17 +569,6 @@ class TestFindMatchingDayInWeekCompact:
 
 class TestEvaluateWeekCompact:
     """Tests for evaluate_week_compact."""
-
-    def _make_week_compact(self, pairs: list[tuple[str, str]]) -> MagicMock:
-        obj = MagicMock()
-        obj.obj_type = "Schedule:Week:Compact"
-        fields: dict[str, str | None] = {}
-        for i, (day_types, sched_name) in enumerate(pairs, 1):
-            fields[f"DayType List {i}"] = day_types
-            fields[f"Schedule:Day Name {i}"] = sched_name
-        fields[f"DayType List {len(pairs) + 1}"] = None
-        obj.get.side_effect = lambda f: fields.get(f)
-        return obj
 
     def test_weekday_evaluation(self) -> None:
         day_obj = _make_day_schedule("WeekdaySched", "Schedule:Constant", 1.0)
@@ -596,7 +585,7 @@ class TestEvaluateWeekCompact:
         doc.__getitem__.side_effect = getitem
         doc.get_collection.side_effect = getitem
 
-        week_obj = self._make_week_compact([
+        week_obj = _make_week_compact([
             ("Weekdays", "WeekdaySched"),
             ("AllOtherDays", "OffSched"),
         ])
@@ -619,7 +608,7 @@ class TestEvaluateWeekCompact:
         doc.__getitem__.side_effect = getitem
         doc.get_collection.side_effect = getitem
 
-        week_obj = self._make_week_compact([
+        week_obj = _make_week_compact([
             ("Weekdays", "WeekdaySched"),
             ("AllOtherDays", "OffSched"),
         ])
@@ -628,7 +617,7 @@ class TestEvaluateWeekCompact:
         assert result == 0.0
 
     def test_no_matching_rule_returns_zero(self) -> None:
-        week_obj = self._make_week_compact([
+        week_obj = _make_week_compact([
             ("SummerDesignDay", "SummerSched"),
         ])
         doc = MagicMock()
@@ -639,7 +628,7 @@ class TestEvaluateWeekCompact:
         assert result == 0.0
 
     def test_day_schedule_not_found_raises(self) -> None:
-        week_obj = self._make_week_compact([
+        week_obj = _make_week_compact([
             ("AllDays", "NonExistent"),
         ])
         doc = MagicMock()
@@ -658,7 +647,7 @@ class TestEvaluateWeekCompact:
         doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
         doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
 
-        week_obj = self._make_week_compact([("AllDays", "BadSched")])
+        week_obj = _make_week_compact([("AllDays", "BadSched")])
 
         with pytest.raises(ValueError, match="Unsupported day schedule type"):
             evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
@@ -678,7 +667,7 @@ class TestEvaluateWeekCompact:
         doc.__getitem__.side_effect = getitem
         doc.get_collection.side_effect = getitem
 
-        week_obj = self._make_week_compact([
+        week_obj = _make_week_compact([
             ("SummerDesignDay", "SummerSched"),
             ("AllOtherDays", "OtherSched"),
         ])
@@ -690,7 +679,7 @@ class TestEvaluateWeekCompact:
         """evaluate_week_compact dispatches to Schedule:Day:Hourly (line 269)."""
         day_obj = _make_day_schedule("HourlySched", "Schedule:Day:Hourly", 0.4)
         doc = _make_doc_with_day_schedule(day_obj)
-        week_obj = self._make_week_compact([("AllDays", "HourlySched")])
+        week_obj = _make_week_compact([("AllDays", "HourlySched")])
 
         result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
         assert result == 0.4
@@ -699,7 +688,7 @@ class TestEvaluateWeekCompact:
         """evaluate_week_compact dispatches to Schedule:Day:Interval (line 271)."""
         day_obj = _make_day_schedule("IntervalSched", "Schedule:Day:Interval", 0.6)
         doc = _make_doc_with_day_schedule(day_obj)
-        week_obj = self._make_week_compact([("AllDays", "IntervalSched")])
+        week_obj = _make_week_compact([("AllDays", "IntervalSched")])
 
         result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
         assert result == 0.6
@@ -708,7 +697,7 @@ class TestEvaluateWeekCompact:
         """evaluate_week_compact dispatches to Schedule:Day:List (line 273)."""
         day_obj = _make_day_schedule("ListSched", "Schedule:Day:List", 0.7)
         doc = _make_doc_with_day_schedule(day_obj)
-        week_obj = self._make_week_compact([("AllDays", "ListSched")])
+        week_obj = _make_week_compact([("AllDays", "ListSched")])
 
         result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
         assert result == 0.7
@@ -777,20 +766,9 @@ class TestFindMatchingDayInWeekCompactLoopExhaustion:
 class TestFindMatchingDayInWeekCompactAllOtherDays:
     """Tests for AllOtherDays fallback in _find_matching_day_in_week_compact (line 321)."""
 
-    def _make_week_compact(self, pairs: list[tuple[str, str]]) -> MagicMock:
-        obj = MagicMock()
-        obj.obj_type = "Schedule:Week:Compact"
-        fields: dict[str, str | None] = {}
-        for i, (day_types, sched_name) in enumerate(pairs, 1):
-            fields[f"DayType List {i}"] = day_types
-            fields[f"Schedule:Day Name {i}"] = sched_name
-        fields[f"DayType List {len(pairs) + 1}"] = None
-        obj.get.side_effect = lambda f: fields.get(f)
-        return obj
-
     def test_all_other_days_fallback_when_no_priority_match(self) -> None:
         """AllOtherDays is returned when no priority type matches (line 321)."""
-        obj = self._make_week_compact([
+        obj = _make_week_compact([
             ("SummerDesignDay", "SummerSched"),
             ("AllOtherDays", "FallbackSched"),
         ])
