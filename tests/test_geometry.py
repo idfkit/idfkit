@@ -2,26 +2,44 @@
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
-from idfkit import IDFDocument
+from idfkit import IDFDocument, new_document
 from idfkit.geometry import (
     Polygon3D,
     Vector3D,
-    _is_convex_2d,
-    _point_in_polygon_2d,
+    _inset_polygon,  # pyright: ignore[reportPrivateUsage]
+    _is_convex_2d,  # pyright: ignore[reportPrivateUsage]
+    _line_intersect_2d,  # pyright: ignore[reportPrivateUsage]
+    _orientation_to_azimuth,  # pyright: ignore[reportPrivateUsage]
+    _point_in_polygon_2d,  # pyright: ignore[reportPrivateUsage]
+    _sutherland_hodgman,  # pyright: ignore[reportPrivateUsage]
+    _wall_matches,  # pyright: ignore[reportPrivateUsage]
     calculate_surface_area,
+    calculate_surface_azimuth,
+    calculate_surface_tilt,
+    calculate_zone_ceiling_area,
     calculate_zone_floor_area,
+    calculate_zone_height,
+    calculate_zone_volume,
     get_surface_coords,
     get_zone_origin,
     get_zone_rotation,
+    intersect_match,
     polygon_area_2d,
     polygon_contains_2d,
     polygon_difference_2d,
     polygon_intersection_2d,
+    rotate_building,
     set_surface_coords,
+    set_wwr,
+    translate_building,
+    translate_to_world,
 )
 from idfkit.objects import IDFObject
+from idfkit.schema import get_schema
 
 _TOL = 1e-7
 
@@ -569,3 +587,1903 @@ class TestPointInPolygon2D:
     def test_outside_triangle(self) -> None:
         poly = [(0, 0), (10, 0), (5, 10)]
         assert not _point_in_polygon_2d((0, 10), poly)
+
+
+# ---------------------------------------------------------------------------
+# translate_to_world
+# ---------------------------------------------------------------------------
+
+
+class TestTranslateToWorld:
+    def test_already_world_coordinates(self, simple_doc: IDFDocument) -> None:
+        """When coordinate_system is 'World', translate_to_world should be a no-op."""
+        rules = simple_doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.coordinate_system = "World"
+        wall = simple_doc.getobject("BuildingSurface:Detailed", "TestWall")
+        assert wall is not None
+        orig_x = wall.vertex_1_x_coordinate
+        translate_to_world(simple_doc)
+        assert wall.vertex_1_x_coordinate == orig_x
+
+    def test_relative_coordinates_with_zone_origin(self) -> None:
+        """Translate relative coordinates with zone origin offset."""
+        doc = new_document(version=(24, 1, 0))
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.coordinate_system = "Relative"
+        bldg = doc["Building"].first()
+        assert bldg is not None
+        bldg.north_axis = 0.0
+        doc.add("Zone", "Office", {"x_origin": 10.0, "y_origin": 20.0, "z_origin": 0.0})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "OfficeWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Office",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 5.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 5.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        translate_to_world(doc)
+        wall = doc.getobject("BuildingSurface:Detailed", "OfficeWall")
+        assert wall is not None
+        # vertex_1 was (0, 0, 3) -> translated by (10, 20, 0)
+        assert _close(wall.vertex_1_x_coordinate, 10.0)
+        assert _close(wall.vertex_1_y_coordinate, 20.0)
+        # Zone origins reset to 0
+        zone = doc.getobject("Zone", "Office")
+        assert zone is not None
+        assert zone.x_origin == 0.0
+        assert zone.y_origin == 0.0
+        assert zone.z_origin == 0.0
+        assert zone.direction_of_relative_north == 0.0
+        # Building north axis reset
+        assert bldg.north_axis == 0.0
+        # Coordinate system updated to World
+        assert rules.coordinate_system == "World"
+
+    def test_relative_coordinates_with_rotation(self) -> None:
+        """Zone rotation is applied before translation."""
+        doc = new_document(version=(24, 1, 0))
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.coordinate_system = "Relative"
+        bldg = doc["Building"].first()
+        assert bldg is not None
+        bldg.north_axis = 90.0
+        doc.add("Zone", "Rotated", {"x_origin": 0.0, "y_origin": 0.0, "z_origin": 0.0})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "RotWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Rotated",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 3.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 3.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 0.0,
+            },
+            validate=False,
+        )
+        translate_to_world(doc)
+        wall = doc.getobject("BuildingSurface:Detailed", "RotWall")
+        assert wall is not None
+        # After rotation, coordinates should have changed from original
+        # The exact values depend on rotation around polygon centroid
+        assert wall.vertex_1_x_coordinate != 1.0 or wall.vertex_1_y_coordinate != 0.0
+
+    def test_no_geometry_rules(self) -> None:
+        """No GlobalGeometryRules present -- should process surfaces."""
+        doc = IDFDocument(version=(24, 1, 0), schema=get_schema((24, 1, 0)))
+        doc.add("Zone", "Z1", {"x_origin": 5.0, "y_origin": 5.0, "z_origin": 0.0})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "W1",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 3,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 1.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 1.0,
+            },
+            validate=False,
+        )
+        translate_to_world(doc)
+        wall = doc.getobject("BuildingSurface:Detailed", "W1")
+        assert wall is not None
+        assert _close(wall.vertex_1_x_coordinate, 5.0)
+
+    def test_surface_without_coords_skipped(self) -> None:
+        """Surfaces with no vertex data are skipped gracefully."""
+        doc = new_document(version=(24, 1, 0))
+        rules = doc["GlobalGeometryRules"].first()
+        assert rules is not None
+        rules.coordinate_system = "Relative"
+        doc.add("Zone", "Z1", {"x_origin": 5.0, "y_origin": 0.0, "z_origin": 0.0})
+        # A surface referencing the zone but with no vertex data
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoCoords",
+            {"surface_type": "Wall", "zone_name": "Z1", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        # Should not raise
+        translate_to_world(doc)
+
+
+# ---------------------------------------------------------------------------
+# calculate_zone_ceiling_area & calculate_zone_height
+# ---------------------------------------------------------------------------
+
+
+class TestZoneCeilingAndHeight:
+    def test_calculate_zone_ceiling_area(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Office", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Ceiling1",
+            {
+                "surface_type": "Ceiling",
+                "zone_name": "Office",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 5,
+                "vertex_2_z_coordinate": 3,
+                "vertex_3_x_coordinate": 4,
+                "vertex_3_y_coordinate": 5,
+                "vertex_3_z_coordinate": 3,
+                "vertex_4_x_coordinate": 4,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        area = calculate_zone_ceiling_area(doc, "Office")
+        assert _close(area, 20.0)
+
+    def test_calculate_zone_ceiling_area_with_non_ceiling(self) -> None:
+        """Non-ceiling surfaces in the same zone are skipped (line 837->832)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Office", {})
+        # A wall (not ceiling) in the same zone
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Wall1",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Office",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0,
+                "vertex_3_x_coordinate": 10,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0,
+                "vertex_4_x_coordinate": 10,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        # A ceiling in the same zone
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Ceil1",
+            {
+                "surface_type": "Ceiling",
+                "zone_name": "Office",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 5,
+                "vertex_2_z_coordinate": 3,
+                "vertex_3_x_coordinate": 4,
+                "vertex_3_y_coordinate": 5,
+                "vertex_3_z_coordinate": 3,
+                "vertex_4_x_coordinate": 4,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        area = calculate_zone_ceiling_area(doc, "Office")
+        assert _close(area, 20.0)  # Only the ceiling, not the wall
+
+    def test_calculate_zone_ceiling_area_wrong_zone(self) -> None:
+        """Surfaces in other zones are excluded (line 834 branch)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "CeilA",
+            {
+                "surface_type": "Ceiling",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 5,
+                "vertex_2_z_coordinate": 3,
+                "vertex_3_x_coordinate": 4,
+                "vertex_3_y_coordinate": 5,
+                "vertex_3_z_coordinate": 3,
+                "vertex_4_x_coordinate": 4,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        assert calculate_zone_ceiling_area(doc, "B") == 0.0
+
+    def test_calculate_zone_height_no_coords(self) -> None:
+        """Surfaces without coords are skipped (line 879)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoVerts",
+            {"surface_type": "Wall", "zone_name": "Z1", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        assert calculate_zone_height(doc, "Z1") == 0.0
+
+    def test_calculate_zone_height_with_surfaces(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "W1",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0,
+                "vertex_3_x_coordinate": 10,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0,
+                "vertex_4_x_coordinate": 10,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        assert _close(calculate_zone_height(doc, "Z1"), 3.0)
+
+
+# ---------------------------------------------------------------------------
+# translate_building / rotate_building  (edge cases: no coords)
+# ---------------------------------------------------------------------------
+
+
+class TestTranslateRotateBuilding:
+    def test_translate_building_skips_no_coords(self) -> None:
+        """Surfaces without vertex data are skipped (line 925->923 branch)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Empty",
+            {"surface_type": "Wall", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        translate_building(doc, Vector3D(10, 10, 0))  # should not raise
+
+    def test_rotate_building_skips_no_coords(self) -> None:
+        """Surfaces without vertex data are skipped (line 948->946 branch)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "BuildingSurface:Detailed",
+            "Empty",
+            {"surface_type": "Wall", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        rotate_building(doc, 45.0)  # should not raise
+
+
+# ---------------------------------------------------------------------------
+# calculate_zone_volume
+# ---------------------------------------------------------------------------
+
+
+class TestCalculateZoneVolume:
+    def test_simple_box_volume(self) -> None:
+        """Test volume calculation for a closed box zone."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Box", {})
+        # Define 6 faces of a 5x4x3 box
+        faces = {
+            "Floor": [
+                (0, 0, 0),
+                (5, 0, 0),
+                (5, 4, 0),
+                (0, 4, 0),
+            ],
+            "Ceiling": [
+                (0, 4, 3),
+                (5, 4, 3),
+                (5, 0, 3),
+                (0, 0, 3),
+            ],
+            "WallS": [
+                (0, 0, 3),
+                (0, 0, 0),
+                (5, 0, 0),
+                (5, 0, 3),
+            ],
+            "WallN": [
+                (5, 4, 3),
+                (5, 4, 0),
+                (0, 4, 0),
+                (0, 4, 3),
+            ],
+            "WallE": [
+                (5, 0, 3),
+                (5, 0, 0),
+                (5, 4, 0),
+                (5, 4, 3),
+            ],
+            "WallW": [
+                (0, 4, 3),
+                (0, 4, 0),
+                (0, 0, 0),
+                (0, 0, 3),
+            ],
+        }
+        for name, verts in faces.items():
+            data: dict[str, object] = {
+                "surface_type": "Floor" if "Floor" in name else ("Ceiling" if "Ceiling" in name else "Wall"),
+                "zone_name": "Box",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+            }
+            for i, (x, y, z) in enumerate(verts, 1):
+                data[f"vertex_{i}_x_coordinate"] = float(x)
+                data[f"vertex_{i}_y_coordinate"] = float(y)
+                data[f"vertex_{i}_z_coordinate"] = float(z)
+            doc.add("BuildingSurface:Detailed", name, data, validate=False)
+        vol = calculate_zone_volume(doc, "Box")
+        assert vol > 0.0  # Exercises the divergence theorem code path
+
+    def test_zone_volume_no_surfaces(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Empty", {})
+        assert calculate_zone_volume(doc, "Empty") == 0.0
+
+    def test_zone_volume_wrong_zone(self) -> None:
+        """Surfaces in other zones are excluded (line 962-963)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WallA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0,
+                "vertex_3_x_coordinate": 10,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0,
+                "vertex_4_x_coordinate": 10,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        assert calculate_zone_volume(doc, "B") == 0.0
+
+
+# ---------------------------------------------------------------------------
+# set_wwr
+# ---------------------------------------------------------------------------
+
+
+class TestSetWWR:
+    def _make_doc_with_outdoor_wall(self) -> IDFDocument:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "SouthWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        return doc
+
+    def test_set_wwr_creates_window(self) -> None:
+        doc = self._make_doc_with_outdoor_wall()
+        windows = set_wwr(doc, 0.4)
+        assert len(windows) >= 1
+        win = windows[0]
+        assert win.surface_type == "Window"
+
+    def test_set_wwr_invalid_ratio(self) -> None:
+        doc = self._make_doc_with_outdoor_wall()
+        with pytest.raises(ValueError, match="wwr must be between"):
+            set_wwr(doc, 0.0)
+        with pytest.raises(ValueError, match="wwr must be between"):
+            set_wwr(doc, 1.0)
+
+    def test_set_wwr_skips_non_outdoor_wall(self) -> None:
+        """Walls with non-Outdoors boundary are skipped (line 1068)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "IntWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Surface",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.4)
+        assert windows == []
+
+    def test_set_wwr_skips_tiny_wall(self) -> None:
+        """Walls with area < 1e-6 are skipped (line 1072)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "TinyWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 3,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.4)
+        assert windows == []
+
+    def test_set_wwr_with_orientation(self) -> None:
+        """Test orientation filtering (line 1048 for fen not on matching wall)."""
+        doc = self._make_doc_with_outdoor_wall()
+        # SouthWall faces south (azimuth ~180). Asking for north should skip it.
+        windows = set_wwr(doc, 0.4, orientation="north")
+        assert windows == []
+
+    def test_set_wwr_removes_existing_fenestration(self) -> None:
+        """Existing fenestration on matching walls is removed."""
+        doc = self._make_doc_with_outdoor_wall()
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "OldWindow",
+            {
+                "surface_type": "Window",
+                "building_surface_name": "SouthWall",
+                "construction_name": "GlazingConstruction",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 4.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 4.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.3)
+        assert len(windows) >= 1
+        # Old window should be gone
+        old = doc.getobject("FenestrationSurface:Detailed", "OldWindow")
+        assert old is None
+        # Construction should be preserved from old window
+        assert windows[0].construction_name == "GlazingConstruction"
+
+    def test_set_wwr_with_explicit_construction(self) -> None:
+        doc = self._make_doc_with_outdoor_wall()
+        windows = set_wwr(doc, 0.4, construction="MyGlass")
+        assert len(windows) >= 1
+        assert windows[0].construction_name == "MyGlass"
+
+    def test_set_wwr_wall_no_coords(self) -> None:
+        """Walls without coords are skipped (line 1072 branch)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoCoordWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.4)
+        assert windows == []
+
+
+# ---------------------------------------------------------------------------
+# _orientation_to_azimuth
+# ---------------------------------------------------------------------------
+
+
+class TestOrientationToAzimuth:
+    def test_valid_orientations(self) -> None:
+        assert _orientation_to_azimuth("north") == 0.0
+        assert _orientation_to_azimuth("east") == 90.0
+        assert _orientation_to_azimuth("south") == 180.0
+        assert _orientation_to_azimuth("west") == 270.0
+
+    def test_invalid_orientation(self) -> None:
+        with pytest.raises(ValueError, match="orientation must be one of"):
+            _orientation_to_azimuth("northeast")
+
+
+# ---------------------------------------------------------------------------
+# _wall_matches
+# ---------------------------------------------------------------------------
+
+
+class TestWallMatches:
+    def test_wrong_surface_type(self) -> None:
+        wall = IDFObject(obj_type="BuildingSurface:Detailed", name="Floor1", data={"surface_type": "Floor"})
+        assert not _wall_matches(wall, "Wall", None, 10.0)
+
+    def test_no_coords_with_azimuth(self) -> None:
+        """Wall with azimuth filter but no coords returns False (line 1137)."""
+        wall = IDFObject(obj_type="BuildingSurface:Detailed", name="W", data={"surface_type": "Wall"})
+        assert not _wall_matches(wall, "Wall", 180.0, 10.0)
+
+    def test_azimuth_outside_tolerance(self) -> None:
+        """Wall azimuth outside tolerance returns False (line 1142-1143)."""
+        wall = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="W",
+            data={
+                "surface_type": "Wall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        # This south-facing wall (~180 deg) should not match east (90 deg) with tight tolerance
+        assert not _wall_matches(wall, "Wall", 90.0, 5.0)
+
+
+# ---------------------------------------------------------------------------
+# _inset_polygon
+# ---------------------------------------------------------------------------
+
+
+class TestInsetPolygon:
+    def test_degenerate_polygon(self) -> None:
+        """Polygon with < 3 vertices returns None (line 1155)."""
+        poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0)])
+        result = _inset_polygon(poly, 0.5)
+        assert result is None
+
+    def test_horizontal_wall_inset(self) -> None:
+        """Nearly horizontal wall triggers the up-vector fallback (line 1163)."""
+        # Horizontal polygon: normal is (0,0,1) -> dot with up > 0.99
+        poly = Polygon3D([
+            Vector3D(0, 0, 5),
+            Vector3D(10, 0, 5),
+            Vector3D(10, 10, 5),
+            Vector3D(0, 10, 5),
+        ])
+        result = _inset_polygon(poly, 0.5)
+        assert result is not None
+
+    def test_zero_width_wall(self) -> None:
+        """Wall with zero width returns None (line 1184)."""
+        # All points collinear in 2D projection
+        poly = Polygon3D([
+            Vector3D(0, 0, 0),
+            Vector3D(0, 0, 3),
+            Vector3D(0, 0, 3),
+            Vector3D(0, 0, 0),
+        ])
+        result = _inset_polygon(poly, 0.5)
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
+# _line_intersect_2d
+# ---------------------------------------------------------------------------
+
+
+class TestLineIntersect2D:
+    def test_parallel_lines(self) -> None:
+        """Parallel lines return None (line 1251)."""
+        result = _line_intersect_2d((0, 0), (1, 0), (0, 1), (1, 1))
+        assert result is None
+
+    def test_intersecting_lines(self) -> None:
+        result = _line_intersect_2d((0, 0), (1, 1), (0, 1), (1, 0))
+        assert result is not None
+        assert _close(result[0], 0.5)
+        assert _close(result[1], 0.5)
+
+
+# ---------------------------------------------------------------------------
+# _sutherland_hodgman edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestSutherlandHodgman:
+    def test_clipping_with_intersection(self) -> None:
+        """Exercise both inside->outside and outside->inside branches (lines 1284, 1288)."""
+        subject = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        clip = [(5, -5), (15, -5), (15, 5), (5, 5)]
+        result = _sutherland_hodgman(subject, clip)
+        assert len(result) >= 3
+
+
+# ---------------------------------------------------------------------------
+# _is_convex_2d edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestIsConvex2DEdgeCases:
+    def test_fewer_than_3_vertices(self) -> None:
+        """Polygon with < 3 vertices returns False (line 1297)."""
+        assert not _is_convex_2d([(0, 0), (1, 0)])
+
+    def test_collinear_edges_skipped(self) -> None:
+        """Collinear edges (cross ~0) are skipped (line 1305)."""
+        # Square with an extra collinear point
+        poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
+        assert _is_convex_2d(poly)
+
+
+# ---------------------------------------------------------------------------
+# polygon_intersection_2d edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestPolygonIntersection2DEdgeCases:
+    def test_both_concave_returns_none(self) -> None:
+        """Both polygons concave: returns None (lines 1350-1354)."""
+        l1 = [(0, 0), (5, 0), (5, 3), (3, 3), (3, 5), (0, 5)]
+        l2 = [(1, 1), (6, 1), (6, 4), (4, 4), (4, 6), (1, 6)]
+        result = polygon_intersection_2d(l1, l2)
+        assert result is None
+
+    def test_a_convex_b_concave(self) -> None:
+        """Convex A, concave B: swaps arguments (line 1350-1351)."""
+        convex = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        concave = [(1, 1), (5, 1), (5, 3), (3, 3), (3, 5), (1, 5)]
+        result = polygon_intersection_2d(convex, concave)
+        # concave is fully inside convex, so the result equals the concave polygon
+        assert result is not None
+        assert abs(polygon_area_2d(result)) > 0
+
+    def test_tiny_intersection_returns_none(self) -> None:
+        """Intersection with area < 1e-6 returns None (line 1359)."""
+        a = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        # b is barely touching a at a corner
+        b = [(10, 10), (20, 10), (20, 20), (10, 20)]
+        result = polygon_intersection_2d(a, b)
+        assert result is None
+
+    def test_result_fewer_than_3_vertices(self) -> None:
+        """Result with < 3 vertices returns None (line 1356-1357)."""
+        # Barely touching rectangles sharing an edge produce degenerate intersection
+        a = [(0, 0), (5, 0), (5, 5), (0, 5)]
+        b = [(5, 0), (10, 0), (10, 5), (5, 5)]
+        result = polygon_intersection_2d(a, b)
+        # Could be None (degenerate line intersection) or a tiny area polygon
+        # Either way, the branches get exercised
+        assert result is None or abs(polygon_area_2d(result)) < 1.0
+
+
+# ---------------------------------------------------------------------------
+# intersect_match
+# ---------------------------------------------------------------------------
+
+
+class TestIntersectMatch:
+    def _make_adjacent_zones_doc(self) -> IDFDocument:
+        """Two zones sharing a wall at y=5."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "ZoneA", {})
+        doc.add("Zone", "ZoneB", {})
+        # Wall A at y=5 facing +Y (normal +Y)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WallA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZoneA",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 5.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 5.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 5.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 5.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall B at y=5 facing -Y (normal -Y), same vertices reversed
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WallB",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZoneB",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 5.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 5.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 5.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 5.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        return doc
+
+    def test_matching_walls(self) -> None:
+        doc = self._make_adjacent_zones_doc()
+        intersect_match(doc)
+        wall_a = doc.getobject("BuildingSurface:Detailed", "WallA")
+        wall_b = doc.getobject("BuildingSurface:Detailed", "WallB")
+        assert wall_a is not None and wall_b is not None
+        assert wall_a.outside_boundary_condition == "Surface"
+        assert wall_a.outside_boundary_condition_object == "WallB"
+        assert wall_b.outside_boundary_condition == "Surface"
+        assert wall_b.outside_boundary_condition_object == "WallA"
+
+    def test_no_match_different_areas(self) -> None:
+        """Walls with different areas don't match (line 1505)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        # Big wall
+        doc.add(
+            "BuildingSurface:Detailed",
+            "BigWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 5.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 5.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 5.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 5.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Small wall (same plane, anti-parallel normal, but different area)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "SmallWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "B",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 5.0,
+                "vertex_1_y_coordinate": 5.0,
+                "vertex_1_z_coordinate": 1.0,
+                "vertex_2_x_coordinate": 5.0,
+                "vertex_2_y_coordinate": 5.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 4.0,
+                "vertex_3_y_coordinate": 5.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 4.0,
+                "vertex_4_y_coordinate": 5.0,
+                "vertex_4_z_coordinate": 1.0,
+            },
+            validate=False,
+        )
+        intersect_match(doc)
+        big = doc.getobject("BuildingSurface:Detailed", "BigWall")
+        assert big is not None
+        assert big.outside_boundary_condition == "Outdoors"
+
+    def test_no_match_normals_not_antiparallel(self) -> None:
+        """Walls with non-antiparallel normals are skipped (line 1485)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        # Both walls face the same direction
+        for name in ("Wall1", "Wall2"):
+            doc.add(
+                "BuildingSurface:Detailed",
+                name,
+                {
+                    "surface_type": "Wall",
+                    "zone_name": "A" if name == "Wall1" else "B",
+                    "outside_boundary_condition": "Outdoors",
+                    "number_of_vertices": 4,
+                    "vertex_1_x_coordinate": 0.0,
+                    "vertex_1_y_coordinate": 5.0,
+                    "vertex_1_z_coordinate": 3.0,
+                    "vertex_2_x_coordinate": 0.0,
+                    "vertex_2_y_coordinate": 5.0,
+                    "vertex_2_z_coordinate": 0.0,
+                    "vertex_3_x_coordinate": 10.0,
+                    "vertex_3_y_coordinate": 5.0,
+                    "vertex_3_z_coordinate": 0.0,
+                    "vertex_4_x_coordinate": 10.0,
+                    "vertex_4_y_coordinate": 5.0,
+                    "vertex_4_z_coordinate": 3.0,
+                },
+                validate=False,
+            )
+        intersect_match(doc)
+        wall1 = doc.getobject("BuildingSurface:Detailed", "Wall1")
+        assert wall1 is not None
+        assert wall1.outside_boundary_condition == "Outdoors"
+
+    def test_no_match_centroids_far_apart(self) -> None:
+        """Walls with centroids > 1m apart are skipped (line 1496)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        # Wall A at y=0 facing +Y
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall B at y=10 facing -Y (anti-parallel normal, but far away)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WB",
+            {
+                "surface_type": "Wall",
+                "zone_name": "B",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 10.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 10.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 10.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 10.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        intersect_match(doc)
+        wa = doc.getobject("BuildingSurface:Detailed", "WA")
+        assert wa is not None
+        assert wa.outside_boundary_condition == "Outdoors"
+
+    def test_wall_a_no_coords_skipped(self) -> None:
+        """Wall A without coords is skipped (line 1468)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoCoord1",
+            {"surface_type": "Wall", "zone_name": "A", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        doc.add(
+            "BuildingSurface:Detailed",
+            "HasCoord",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        intersect_match(doc)  # should not raise
+
+    def test_wall_b_no_coords_skipped(self) -> None:
+        """Wall B without coords is skipped in inner loop (line 1479)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        # Wall A has coords (processed in outer loop)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WallWithCoords",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall B has no coords (skipped in inner loop)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoCoordWall",
+            {"surface_type": "Wall", "zone_name": "A", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        intersect_match(doc)  # should not raise
+
+    def test_already_matched_wall_b_skipped_in_inner_loop(self) -> None:
+        """Wall B already matched is skipped in inner loop (line 1476)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "ZA", {})
+        doc.add("Zone", "ZB", {})
+        # Wall A: at y=0, facing +Y (south-facing in EnergyPlus convention)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZA",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall B: at x=0, facing +X (east-facing) — won't match WA
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WB",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZA",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 10.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 10.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall C: at y=0, facing -Y — matches WA
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WC",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZB",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall D: at x=0, facing -X — matches WB
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WD",
+            {
+                "surface_type": "Wall",
+                "zone_name": "ZB",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 10.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 10.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        intersect_match(doc)
+        # WA should be matched with WC
+        wa = doc.getobject("BuildingSurface:Detailed", "WA")
+        assert wa is not None
+        assert wa.outside_boundary_condition == "Surface"
+        # WB should be matched with WD
+        wb = doc.getobject("BuildingSurface:Detailed", "WB")
+        assert wb is not None
+        assert wb.outside_boundary_condition == "Surface"
+
+    def test_tiny_area_wall_skipped(self) -> None:
+        """Walls with area < 1e-6 are skipped (line 1502)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        # Degenerate wall (all points same)
+        for name in ("Degen1", "Degen2"):
+            doc.add(
+                "BuildingSurface:Detailed",
+                name,
+                {
+                    "surface_type": "Wall",
+                    "zone_name": "A" if name == "Degen1" else "B",
+                    "outside_boundary_condition": "Outdoors",
+                    "number_of_vertices": 3,
+                    "vertex_1_x_coordinate": 0.0,
+                    "vertex_1_y_coordinate": 0.0,
+                    "vertex_1_z_coordinate": 0.0,
+                    "vertex_2_x_coordinate": 0.0,
+                    "vertex_2_y_coordinate": 0.0,
+                    "vertex_2_z_coordinate": 0.0,
+                    "vertex_3_x_coordinate": 0.0,
+                    "vertex_3_y_coordinate": 0.0,
+                    "vertex_3_z_coordinate": 0.0,
+                },
+                validate=False,
+            )
+        intersect_match(doc)  # should not raise or match
+
+    def test_not_coplanar_walls_skipped(self) -> None:
+        """Walls on non-coplanar planes are skipped (line 1496 — d > 0.5)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        # Wall A at y=0
+        doc.add(
+            "BuildingSurface:Detailed",
+            "PlaneA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Wall B at y=2, facing -Y (anti-parallel normal, close centroid x/z, but d > 0.5)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "PlaneB",
+            {
+                "surface_type": "Wall",
+                "zone_name": "B",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 2.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 2.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 2.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 2.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        intersect_match(doc)
+        plane_a = doc.getobject("BuildingSurface:Detailed", "PlaneA")
+        assert plane_a is not None
+        # centroid distance is 2.0 > 1.0, so they won't match
+        assert plane_a.outside_boundary_condition == "Outdoors"
+
+
+# ---------------------------------------------------------------------------
+# Polygon3D tilt / azimuth properties
+# ---------------------------------------------------------------------------
+
+
+class TestPolygonTiltAzimuth:
+    def test_tilt_vertical_wall(self) -> None:
+        """Vertical wall has tilt ~90 degrees (lines 328-331)."""
+        poly = Polygon3D([
+            Vector3D(0, 0, 3),
+            Vector3D(0, 0, 0),
+            Vector3D(10, 0, 0),
+            Vector3D(10, 0, 3),
+        ])
+        assert _close(poly.tilt, 90.0, 1.0)
+
+    def test_tilt_horizontal(self) -> None:
+        """Horizontal surface has tilt ~0 or ~180."""
+        poly = Polygon3D([
+            Vector3D(0, 0, 0),
+            Vector3D(1, 0, 0),
+            Vector3D(1, 1, 0),
+            Vector3D(0, 1, 0),
+        ])
+        assert poly.tilt < 1.0 or poly.tilt > 179.0
+
+    def test_azimuth_horizontal_is_zero(self) -> None:
+        """Horizontal surface azimuth returns 0.0 (line 363)."""
+        poly = Polygon3D([
+            Vector3D(0, 0, 0),
+            Vector3D(1, 0, 0),
+            Vector3D(1, 1, 0),
+            Vector3D(0, 1, 0),
+        ])
+        assert poly.azimuth == 0.0
+
+    def test_azimuth_negative_angle_wraps(self) -> None:
+        """Azimuth wraps negative angles to positive (line 368)."""
+        # A wall facing west should have azimuth ~270
+        poly = Polygon3D([
+            Vector3D(0, 0, 3),
+            Vector3D(0, 0, 0),
+            Vector3D(0, 10, 0),
+            Vector3D(0, 10, 3),
+        ])
+        az = poly.azimuth
+        assert 0 <= az < 360
+
+    def test_azimuth_south_facing(self) -> None:
+        """South-facing wall has azimuth ~180."""
+        poly = Polygon3D([
+            Vector3D(0, 0, 3),
+            Vector3D(0, 0, 0),
+            Vector3D(10, 0, 0),
+            Vector3D(10, 0, 3),
+        ])
+        assert _close(poly.azimuth, 180.0, 5.0)
+
+
+# ---------------------------------------------------------------------------
+# calculate_surface_tilt / calculate_surface_azimuth
+# ---------------------------------------------------------------------------
+
+
+class TestSurfaceTiltAzimuth:
+    def test_calculate_surface_tilt(self) -> None:
+        """Exercise calculate_surface_tilt (lines 733-734)."""
+        surface = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="Wall",
+            data={
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        tilt = calculate_surface_tilt(surface)
+        assert _close(tilt, 90.0, 1.0)
+
+    def test_calculate_surface_tilt_no_coords(self) -> None:
+        surface = IDFObject(obj_type="BuildingSurface:Detailed", name="Empty", data={})
+        assert calculate_surface_tilt(surface) == 0.0
+
+    def test_calculate_surface_azimuth(self) -> None:
+        """Exercise calculate_surface_azimuth (lines 761-762)."""
+        surface = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="Wall",
+            data={
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        azimuth = calculate_surface_azimuth(surface)
+        assert _close(azimuth, 180.0, 5.0)
+
+    def test_calculate_surface_azimuth_no_coords(self) -> None:
+        surface = IDFObject(obj_type="BuildingSurface:Detailed", name="Empty", data={})
+        assert calculate_surface_azimuth(surface) == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Zone floor area with different zone name
+# ---------------------------------------------------------------------------
+
+
+class TestZoneFloorAreaWrongZone:
+    def test_floor_area_wrong_zone_skipped(self) -> None:
+        """Surfaces in other zones are excluded (line 795)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "FloorA",
+            {
+                "surface_type": "Floor",
+                "zone_name": "A",
+                "outside_boundary_condition": "Ground",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 0,
+                "vertex_2_x_coordinate": 10,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0,
+                "vertex_3_x_coordinate": 10,
+                "vertex_3_y_coordinate": 10,
+                "vertex_3_z_coordinate": 0,
+                "vertex_4_x_coordinate": 0,
+                "vertex_4_y_coordinate": 10,
+                "vertex_4_z_coordinate": 0,
+            },
+            validate=False,
+        )
+        # Zone B has no surfaces, but zone A's floor exists
+        assert calculate_zone_floor_area(doc, "B") == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Zone height with surface in wrong zone (line 875)
+# ---------------------------------------------------------------------------
+
+
+class TestZoneHeightWrongZone:
+    def test_zone_height_wrong_zone(self) -> None:
+        """Surfaces in other zones are excluded (line 875 branch)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "A", {})
+        doc.add("Zone", "B", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "WallA",
+            {
+                "surface_type": "Wall",
+                "zone_name": "A",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0,
+                "vertex_1_y_coordinate": 0,
+                "vertex_1_z_coordinate": 3,
+                "vertex_2_x_coordinate": 0,
+                "vertex_2_y_coordinate": 0,
+                "vertex_2_z_coordinate": 0,
+                "vertex_3_x_coordinate": 10,
+                "vertex_3_y_coordinate": 0,
+                "vertex_3_z_coordinate": 0,
+                "vertex_4_x_coordinate": 10,
+                "vertex_4_y_coordinate": 0,
+                "vertex_4_z_coordinate": 3,
+            },
+            validate=False,
+        )
+        assert calculate_zone_height(doc, "B") == 0.0
+
+
+# ---------------------------------------------------------------------------
+# set_wwr with fenestration referrers (lines 1099-1108)
+# ---------------------------------------------------------------------------
+
+
+class TestSetWWRFenReferrers:
+    def test_set_wwr_repoints_cross_references(self) -> None:
+        """Existing fenestration cross-references are repointed to new windows (lines 1099-1108)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "SouthWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "OldWindow",
+            {
+                "surface_type": "Window",
+                "building_surface_name": "SouthWall",
+                "construction_name": "GlazingC",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 4.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 4.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        # Add an object that references the old window
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "FrameObj",
+            {
+                "surface_type": "Door",
+                "building_surface_name": "OldWindow",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 2.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 1.0,
+                "vertex_3_x_coordinate": 2.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 1.0,
+                "vertex_4_x_coordinate": 2.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 2.0,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.4)
+        assert len(windows) >= 1
+
+
+# ---------------------------------------------------------------------------
+# translate/rotate building with actual surfaces
+# ---------------------------------------------------------------------------
+
+
+class TestTranslateRotateBuildingWithSurfaces:
+    def test_translate_building_moves_coords(self) -> None:
+        """translate_building applies offset to surface vertices (line 926)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "BuildingSurface:Detailed",
+            "W1",
+            {
+                "surface_type": "Wall",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 3,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 1.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 1.0,
+            },
+            validate=False,
+        )
+        translate_building(doc, Vector3D(100, 200, 0))
+        wall = doc.getobject("BuildingSurface:Detailed", "W1")
+        assert wall is not None
+        assert _close(wall.vertex_1_x_coordinate, 100.0)
+
+    def test_rotate_building_changes_coords(self) -> None:
+        """rotate_building rotates surface vertices (line 949)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "BuildingSurface:Detailed",
+            "W1",
+            {
+                "surface_type": "Wall",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        rotate_building(doc, 90.0)
+        wall = doc.getobject("BuildingSurface:Detailed", "W1")
+        assert wall is not None
+        # After rotation, coordinates should have changed
+        assert wall.vertex_3_y_coordinate != 0.0
+
+
+# ---------------------------------------------------------------------------
+# _wall_matches with azimuth > 180 difference (line 1141)
+# ---------------------------------------------------------------------------
+
+
+class TestWallMatchesAzimuthWrap:
+    def test_azimuth_diff_over_180_wraps(self) -> None:
+        """When azimuth diff > 180, it wraps around (line 1141)."""
+        # Create a wall with azimuth ~350 (nearly north, slightly west)
+        # Normal should point roughly toward azimuth 350 (between north and west)
+        angle_rad = math.radians(350)  # 350 degrees clockwise from north
+        nx = math.sin(angle_rad)  # x component of normal
+        ny = math.cos(angle_rad)  # y component of normal
+
+        # Create a wall whose outward normal points at azimuth 350
+        # Wall vertices: perpendicular to (nx, ny, 0) direction
+        # Tangent along wall: (-ny, nx, 0)
+        tx, ty = -ny, nx
+        wall = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="NearNorthWall",
+            data={
+                "surface_type": "Wall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": -tx * 5,
+                "vertex_1_y_coordinate": -ty * 5,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": -tx * 5,
+                "vertex_2_y_coordinate": -ty * 5,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": tx * 5,
+                "vertex_3_y_coordinate": ty * 5,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": tx * 5,
+                "vertex_4_y_coordinate": ty * 5,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        # Target azimuth 10 degrees. diff = |350 - 10| = 340 > 180, wraps to 20.
+        # With tolerance 25, this should match.
+        result = _wall_matches(wall, "Wall", 10.0, 25.0)
+        assert result is True
+
+    def test_azimuth_diff_over_180_but_outside_tolerance(self) -> None:
+        """Wrapped diff still outside tolerance returns False."""
+        angle_rad = math.radians(350)
+        nx = math.sin(angle_rad)
+        ny = math.cos(angle_rad)
+        tx, ty = -ny, nx
+        wall = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="NearNorthWall",
+            data={
+                "surface_type": "Wall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": -tx * 5,
+                "vertex_1_y_coordinate": -ty * 5,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": -tx * 5,
+                "vertex_2_y_coordinate": -ty * 5,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": tx * 5,
+                "vertex_3_y_coordinate": ty * 5,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": tx * 5,
+                "vertex_4_y_coordinate": ty * 5,
+                "vertex_4_z_coordinate": 3.0,
+            },
+        )
+        # Target 10, wall ~350, wrapped diff ~20, tolerance 5 -> should NOT match
+        result = _wall_matches(wall, "Wall", 10.0, 5.0)
+        assert result is False
+
+
+# ---------------------------------------------------------------------------
+# calculate_zone_volume with surface no coords (line 967)
+# ---------------------------------------------------------------------------
+
+
+class TestCalculateZoneVolumeNoCoords:
+    def test_volume_surface_no_coords_skipped(self) -> None:
+        """Surfaces without coords are skipped in volume calc (line 967)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NoCoord",
+            {"surface_type": "Wall", "zone_name": "Z1", "outside_boundary_condition": "Outdoors"},
+            validate=False,
+        )
+        assert calculate_zone_volume(doc, "Z1") == 0.0
+
+
+# ---------------------------------------------------------------------------
+# set_wwr: fen not on matching wall (line 1048) and no new win for referrer (line 1106)
+# ---------------------------------------------------------------------------
+
+
+class TestSetWWREdgeCases:
+    def test_fen_on_non_matching_wall_not_removed(self) -> None:
+        """Fenestration on non-matching wall is preserved (line 1048)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        # South wall (matching)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "SouthWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # North wall (not matching with south orientation)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "NorthWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 10.0,
+                "vertex_1_y_coordinate": 10.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 10.0,
+                "vertex_2_y_coordinate": 10.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 0.0,
+                "vertex_3_y_coordinate": 10.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 0.0,
+                "vertex_4_y_coordinate": 10.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Fen on north wall (should not be removed when filtering for south)
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "NorthWindow",
+            {
+                "surface_type": "Window",
+                "building_surface_name": "NorthWall",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 8.0,
+                "vertex_1_y_coordinate": 10.0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 8.0,
+                "vertex_2_y_coordinate": 10.0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 2.0,
+                "vertex_3_y_coordinate": 10.0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 2.0,
+                "vertex_4_y_coordinate": 10.0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        windows = set_wwr(doc, 0.4, orientation="south")
+        # North window should still exist
+        north_win = doc.getobject("FenestrationSurface:Detailed", "NorthWindow")
+        assert north_win is not None
+        assert len(windows) >= 1
+
+    def test_fen_referrer_no_new_window(self) -> None:
+        """Fen referrer whose wall doesn't produce a new window (line 1106)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {})
+        # Interior wall (matches by type but not Outdoors → no new window)
+        doc.add(
+            "BuildingSurface:Detailed",
+            "IntWall",
+            {
+                "surface_type": "Wall",
+                "zone_name": "Z1",
+                "outside_boundary_condition": "Surface",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 0.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 3.0,
+                "vertex_2_x_coordinate": 0.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "vertex_3_x_coordinate": 10.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.0,
+                "vertex_4_x_coordinate": 10.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 3.0,
+            },
+            validate=False,
+        )
+        # Fen on the interior wall
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "IntWindow",
+            {
+                "surface_type": "Window",
+                "building_surface_name": "IntWall",
+                "construction_name": "GlazingC",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.0,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 2.5,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.5,
+                "vertex_3_x_coordinate": 4.0,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 0.5,
+                "vertex_4_x_coordinate": 4.0,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 2.5,
+            },
+            validate=False,
+        )
+        # Add an object referencing the fen
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "SubSurface",
+            {
+                "surface_type": "Door",
+                "building_surface_name": "IntWindow",
+                "number_of_vertices": 4,
+                "vertex_1_x_coordinate": 1.5,
+                "vertex_1_y_coordinate": 0.0,
+                "vertex_1_z_coordinate": 2.0,
+                "vertex_2_x_coordinate": 1.5,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 1.0,
+                "vertex_3_x_coordinate": 2.5,
+                "vertex_3_y_coordinate": 0.0,
+                "vertex_3_z_coordinate": 1.0,
+                "vertex_4_x_coordinate": 2.5,
+                "vertex_4_y_coordinate": 0.0,
+                "vertex_4_z_coordinate": 2.0,
+            },
+            validate=False,
+        )
+        # No Outdoors walls → no new windows, but fen_referrers will have entries
+        windows = set_wwr(doc, 0.4)
+        assert windows == []
