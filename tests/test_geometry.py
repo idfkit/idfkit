@@ -780,7 +780,7 @@ class TestZoneCeilingAndHeight:
         assert _close(area, 20.0)
 
     def test_calculate_zone_ceiling_area_with_non_ceiling(self) -> None:
-        """Non-ceiling surfaces in the same zone are skipped (line 837->832)."""
+        """Non-ceiling surfaces in the same zone are skipped when summing ceiling area."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {})
         # A wall (not ceiling) in the same zone
@@ -835,7 +835,7 @@ class TestZoneCeilingAndHeight:
         assert _close(area, 20.0)  # Only the ceiling, not the wall
 
     def test_calculate_zone_ceiling_area_wrong_zone(self) -> None:
-        """Surfaces in other zones are excluded (line 834 branch)."""
+        """Surfaces in other zones are excluded when calculating ceiling area."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -865,7 +865,7 @@ class TestZoneCeilingAndHeight:
         assert calculate_zone_ceiling_area(doc, "B") == 0.0
 
     def test_calculate_zone_height_no_coords(self) -> None:
-        """Surfaces without coords are skipped (line 879)."""
+        """Surfaces without valid coordinates are skipped when calculating zone height."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add(
@@ -912,7 +912,7 @@ class TestZoneCeilingAndHeight:
 
 class TestTranslateRotateBuilding:
     def test_translate_building_skips_no_coords(self) -> None:
-        """Surfaces without vertex data are skipped (line 925->923 branch)."""
+        """Surfaces without vertex data are skipped when translating building surfaces."""
         doc = new_document(version=(24, 1, 0))
         doc.add(
             "BuildingSurface:Detailed",
@@ -923,7 +923,7 @@ class TestTranslateRotateBuilding:
         translate_building(doc, Vector3D(10, 10, 0))  # should not raise
 
     def test_rotate_building_skips_no_coords(self) -> None:
-        """Surfaces without vertex data are skipped (line 948->946 branch)."""
+        """Surfaces without vertex data are skipped when rotating building surfaces."""
         doc = new_document(version=(24, 1, 0))
         doc.add(
             "BuildingSurface:Detailed",
@@ -953,10 +953,10 @@ class TestCalculateZoneVolume:
                 (0, 4, 0),
             ],
             "Ceiling": [
-                (0, 4, 3),
-                (5, 4, 3),
-                (5, 0, 3),
                 (0, 0, 3),
+                (5, 0, 3),
+                (5, 4, 3),
+                (0, 4, 3),
             ],
             "WallS": [
                 (0, 0, 3),
@@ -996,7 +996,7 @@ class TestCalculateZoneVolume:
                 data[f"vertex_{i}_z_coordinate"] = float(z)
             doc.add("BuildingSurface:Detailed", name, data, validate=False)
         vol = calculate_zone_volume(doc, "Box")
-        assert vol > 0.0  # Exercises the divergence theorem code path
+        assert _close(vol, 60.0, 1e-6)
 
     def test_zone_volume_no_surfaces(self) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -1004,7 +1004,7 @@ class TestCalculateZoneVolume:
         assert calculate_zone_volume(doc, "Empty") == 0.0
 
     def test_zone_volume_wrong_zone(self) -> None:
-        """Surfaces in other zones are excluded (line 962-963)."""
+        """Surfaces in other zones are excluded when calculating zone volume."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1083,7 +1083,7 @@ class TestSetWWR:
             set_wwr(doc, 1.0)
 
     def test_set_wwr_skips_non_outdoor_wall(self) -> None:
-        """Walls with non-Outdoors boundary are skipped (line 1068)."""
+        """Walls with non-Outdoors boundary condition are skipped when setting WWR."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add(
@@ -1113,7 +1113,7 @@ class TestSetWWR:
         assert windows == []
 
     def test_set_wwr_skips_tiny_wall(self) -> None:
-        """Walls with area < 1e-6 are skipped (line 1072)."""
+        """Walls with negligible area are skipped when setting WWR."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add(
@@ -1140,7 +1140,7 @@ class TestSetWWR:
         assert windows == []
 
     def test_set_wwr_with_orientation(self) -> None:
-        """Test orientation filtering (line 1048 for fen not on matching wall)."""
+        """Fenestrations on walls not matching the target orientation are preserved."""
         doc = self._make_doc_with_outdoor_wall()
         # SouthWall faces south (azimuth ~180). Asking for north should skip it.
         windows = set_wwr(doc, 0.4, orientation="north")
@@ -1187,7 +1187,7 @@ class TestSetWWR:
         assert windows[0].construction_name == "MyGlass"
 
     def test_set_wwr_wall_no_coords(self) -> None:
-        """Walls without coords are skipped (line 1072 branch)."""
+        """Walls without valid coordinates are skipped when setting WWR."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add(
@@ -1232,12 +1232,12 @@ class TestWallMatches:
         assert not _wall_matches(wall, "Wall", None, 10.0)
 
     def test_no_coords_with_azimuth(self) -> None:
-        """Wall with azimuth filter but no coords returns False (line 1137)."""
+        """A wall surface without valid coordinates returns False when checking azimuth match."""
         wall = IDFObject(obj_type="BuildingSurface:Detailed", name="W", data={"surface_type": "Wall"})
         assert not _wall_matches(wall, "Wall", 180.0, 10.0)
 
     def test_azimuth_outside_tolerance(self) -> None:
-        """Wall azimuth outside tolerance returns False (line 1142-1143)."""
+        """A wall with azimuth outside the target tolerance returns False."""
         wall = IDFObject(
             obj_type="BuildingSurface:Detailed",
             name="W",
@@ -1269,13 +1269,13 @@ class TestWallMatches:
 
 class TestInsetPolygon:
     def test_degenerate_polygon(self) -> None:
-        """Polygon with < 3 vertices returns None (line 1155)."""
+        """A polygon with fewer than 3 vertices returns None for the inset polygon."""
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0)])
         result = _inset_polygon(poly, 0.5)
         assert result is None
 
     def test_horizontal_wall_inset(self) -> None:
-        """Nearly horizontal wall triggers the up-vector fallback (line 1163)."""
+        """A nearly horizontal wall uses the up-vector fallback for the 2D coordinate system."""
         # Horizontal polygon: normal is (0,0,1) -> dot with up > 0.99
         poly = Polygon3D([
             Vector3D(0, 0, 5),
@@ -1287,7 +1287,7 @@ class TestInsetPolygon:
         assert result is not None
 
     def test_zero_width_wall(self) -> None:
-        """Wall with zero width returns None (line 1184)."""
+        """A wall with zero width returns None when computing the inset polygon."""
         # All points collinear in 2D projection
         poly = Polygon3D([
             Vector3D(0, 0, 0),
@@ -1306,7 +1306,7 @@ class TestInsetPolygon:
 
 class TestLineIntersect2D:
     def test_parallel_lines(self) -> None:
-        """Parallel lines return None (line 1251)."""
+        """Parallel lines return None when computing their 2D intersection."""
         result = _line_intersect_2d((0, 0), (1, 0), (0, 1), (1, 1))
         assert result is None
 
@@ -1324,7 +1324,7 @@ class TestLineIntersect2D:
 
 class TestSutherlandHodgman:
     def test_clipping_with_intersection(self) -> None:
-        """Exercise both inside->outside and outside->inside branches (lines 1284, 1288)."""
+        """Both inside-to-outside and outside-to-inside edge crossings are handled in polygon clipping."""
         subject = [(0, 0), (10, 0), (10, 10), (0, 10)]
         clip = [(5, -5), (15, -5), (15, 5), (5, 5)]
         result = _sutherland_hodgman(subject, clip)
@@ -1338,11 +1338,11 @@ class TestSutherlandHodgman:
 
 class TestIsConvex2DEdgeCases:
     def test_fewer_than_3_vertices(self) -> None:
-        """Polygon with < 3 vertices returns False (line 1297)."""
+        """A polygon with fewer than 3 vertices returns False for the inside-polygon check."""
         assert not _is_convex_2d([(0, 0), (1, 0)])
 
     def test_collinear_edges_skipped(self) -> None:
-        """Collinear edges (cross ~0) are skipped (line 1305)."""
+        """Collinear edges with near-zero cross product are skipped in the inside-polygon check."""
         # Square with an extra collinear point
         poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
         assert _is_convex_2d(poly)
@@ -1362,7 +1362,7 @@ class TestPolygonIntersection2DEdgeCases:
         assert result is None
 
     def test_a_convex_b_concave(self) -> None:
-        """Convex A, concave B: swaps arguments (line 1350-1351)."""
+        """When polygon A is convex and B is concave, arguments are swapped for intersection."""
         convex = [(0, 0), (10, 0), (10, 10), (0, 10)]
         concave = [(1, 1), (5, 1), (5, 3), (3, 3), (3, 5), (1, 5)]
         result = polygon_intersection_2d(convex, concave)
@@ -1371,7 +1371,7 @@ class TestPolygonIntersection2DEdgeCases:
         assert abs(polygon_area_2d(result)) > 0
 
     def test_tiny_intersection_returns_none(self) -> None:
-        """Intersection with area < 1e-6 returns None (line 1359)."""
+        """An intersection with negligible area returns None."""
         a = [(0, 0), (10, 0), (10, 10), (0, 10)]
         # b is barely touching a at a corner
         b = [(10, 10), (20, 10), (20, 20), (10, 20)]
@@ -1379,7 +1379,7 @@ class TestPolygonIntersection2DEdgeCases:
         assert result is None
 
     def test_result_fewer_than_3_vertices(self) -> None:
-        """Result with < 3 vertices returns None (line 1356-1357)."""
+        """An intersection result with fewer than 3 vertices returns None."""
         # Barely touching rectangles sharing an edge produce degenerate intersection
         a = [(0, 0), (5, 0), (5, 5), (0, 5)]
         b = [(5, 0), (10, 0), (10, 5), (5, 5)]
@@ -1462,7 +1462,7 @@ class TestIntersectMatch:
         assert wall_b.outside_boundary_condition_object == "WallA"
 
     def test_no_match_different_areas(self) -> None:
-        """Walls with different areas don't match (line 1505)."""
+        """Walls with significantly different areas are not matched as adjacent surfaces."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1520,7 +1520,7 @@ class TestIntersectMatch:
         assert big.outside_boundary_condition == "Outdoors"
 
     def test_no_match_normals_not_antiparallel(self) -> None:
-        """Walls with non-antiparallel normals are skipped (line 1485)."""
+        """Walls with non-antiparallel normals are not matched as adjacent surfaces."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1555,7 +1555,7 @@ class TestIntersectMatch:
         assert wall1.outside_boundary_condition == "Outdoors"
 
     def test_no_match_centroids_far_apart(self) -> None:
-        """Walls with centroids > 1m apart are skipped (line 1496)."""
+        """Walls whose centroids are more than 1m apart are not matched as adjacent surfaces."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1613,7 +1613,7 @@ class TestIntersectMatch:
         assert wa.outside_boundary_condition == "Outdoors"
 
     def test_wall_a_no_coords_skipped(self) -> None:
-        """Wall A without coords is skipped (line 1468)."""
+        """Wall A without valid coordinates is skipped in intersection matching."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add(
@@ -1648,7 +1648,7 @@ class TestIntersectMatch:
         intersect_match(doc)  # should not raise
 
     def test_wall_b_no_coords_skipped(self) -> None:
-        """Wall B without coords is skipped in inner loop (line 1479)."""
+        """Wall B without valid coordinates is skipped in the inner matching loop."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         # Wall A has coords (processed in outer loop)
@@ -1685,7 +1685,7 @@ class TestIntersectMatch:
         intersect_match(doc)  # should not raise
 
     def test_already_matched_wall_b_skipped_in_inner_loop(self) -> None:
-        """Wall B already matched is skipped in inner loop (line 1476)."""
+        """Wall B that is already matched is skipped in the inner matching loop."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "ZA", {})
         doc.add("Zone", "ZB", {})
@@ -1796,7 +1796,7 @@ class TestIntersectMatch:
         assert wb.outside_boundary_condition == "Surface"
 
     def test_tiny_area_wall_skipped(self) -> None:
-        """Walls with area < 1e-6 are skipped (line 1502)."""
+        """Walls with negligible area are skipped in intersection matching."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1825,7 +1825,7 @@ class TestIntersectMatch:
         intersect_match(doc)  # should not raise or match
 
     def test_not_coplanar_walls_skipped(self) -> None:
-        """Walls on non-coplanar planes are skipped (line 1496 — d > 0.5)."""
+        """Walls that pass the centroid-distance check but fail the coplanarity check are not matched."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -1853,7 +1853,7 @@ class TestIntersectMatch:
             },
             validate=False,
         )
-        # Wall B at y=2, facing -Y (anti-parallel normal, close centroid x/z, but d > 0.5)
+        # Wall B at y=0.7, facing -Y: centroid distance 0.7 m ≤ 1.0 but coplanarity check d > 0.5
         doc.add(
             "BuildingSurface:Detailed",
             "PlaneB",
@@ -1863,16 +1863,16 @@ class TestIntersectMatch:
                 "outside_boundary_condition": "Outdoors",
                 "number_of_vertices": 4,
                 "vertex_1_x_coordinate": 10.0,
-                "vertex_1_y_coordinate": 2.0,
+                "vertex_1_y_coordinate": 0.7,
                 "vertex_1_z_coordinate": 3.0,
                 "vertex_2_x_coordinate": 10.0,
-                "vertex_2_y_coordinate": 2.0,
+                "vertex_2_y_coordinate": 0.7,
                 "vertex_2_z_coordinate": 0.0,
                 "vertex_3_x_coordinate": 0.0,
-                "vertex_3_y_coordinate": 2.0,
+                "vertex_3_y_coordinate": 0.7,
                 "vertex_3_z_coordinate": 0.0,
                 "vertex_4_x_coordinate": 0.0,
-                "vertex_4_y_coordinate": 2.0,
+                "vertex_4_y_coordinate": 0.7,
                 "vertex_4_z_coordinate": 3.0,
             },
             validate=False,
@@ -1880,7 +1880,7 @@ class TestIntersectMatch:
         intersect_match(doc)
         plane_a = doc.getobject("BuildingSurface:Detailed", "PlaneA")
         assert plane_a is not None
-        # centroid distance is 2.0 > 1.0, so they won't match
+        # centroid distance is 0.7 m (passes dist check) but abs(d)=0.7 > 0.5 (fails coplanarity)
         assert plane_a.outside_boundary_condition == "Outdoors"
 
 
@@ -1911,7 +1911,7 @@ class TestPolygonTiltAzimuth:
         assert poly.tilt < 1.0 or poly.tilt > 179.0
 
     def test_azimuth_horizontal_is_zero(self) -> None:
-        """Horizontal surface azimuth returns 0.0 (line 363)."""
+        """A horizontal surface has an azimuth of 0.0."""
         poly = Polygon3D([
             Vector3D(0, 0, 0),
             Vector3D(1, 0, 0),
@@ -1921,7 +1921,7 @@ class TestPolygonTiltAzimuth:
         assert poly.azimuth == 0.0
 
     def test_azimuth_negative_angle_wraps(self) -> None:
-        """Azimuth wraps negative angles to positive (line 368)."""
+        """Negative azimuth angles are wrapped to the positive range [0, 360)."""
         # A wall facing west should have azimuth ~270
         poly = Polygon3D([
             Vector3D(0, 0, 3),
@@ -2013,7 +2013,7 @@ class TestSurfaceTiltAzimuth:
 
 class TestZoneFloorAreaWrongZone:
     def test_floor_area_wrong_zone_skipped(self) -> None:
-        """Surfaces in other zones are excluded (line 795)."""
+        """Surfaces in other zones are excluded when calculating zone floor area."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -2045,13 +2045,13 @@ class TestZoneFloorAreaWrongZone:
 
 
 # ---------------------------------------------------------------------------
-# Zone height with surface in wrong zone (line 875)
+# Zone height with surface in wrong zone
 # ---------------------------------------------------------------------------
 
 
 class TestZoneHeightWrongZone:
     def test_zone_height_wrong_zone(self) -> None:
-        """Surfaces in other zones are excluded (line 875 branch)."""
+        """Surfaces in other zones are excluded when calculating zone height."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
@@ -2162,6 +2162,13 @@ class TestSetWWRFenReferrers:
         )
         windows = set_wwr(doc, 0.4)
         assert len(windows) >= 1
+        # The referrer should now point to one of the newly created windows,
+        # not the original "OldWindow" surface.
+        frame = doc.getobject("FenestrationSurface:Detailed", "FrameObj")
+        assert frame is not None
+        window_names = [w.name for w in windows]
+        assert frame.building_surface_name in window_names
+        assert frame.building_surface_name != "OldWindow"
 
 
 # ---------------------------------------------------------------------------
@@ -2171,7 +2178,7 @@ class TestSetWWRFenReferrers:
 
 class TestTranslateRotateBuildingWithSurfaces:
     def test_translate_building_moves_coords(self) -> None:
-        """translate_building applies offset to surface vertices (line 926)."""
+        """translate_building applies a translation offset to all surface vertices."""
         doc = new_document(version=(24, 1, 0))
         doc.add(
             "BuildingSurface:Detailed",
@@ -2198,7 +2205,7 @@ class TestTranslateRotateBuildingWithSurfaces:
         assert _close(wall.vertex_1_x_coordinate, 100.0)
 
     def test_rotate_building_changes_coords(self) -> None:
-        """rotate_building rotates surface vertices (line 949)."""
+        """rotate_building rotates all surface vertices around the Z axis."""
         doc = new_document(version=(24, 1, 0))
         doc.add(
             "BuildingSurface:Detailed",
@@ -2230,13 +2237,13 @@ class TestTranslateRotateBuildingWithSurfaces:
 
 
 # ---------------------------------------------------------------------------
-# _wall_matches with azimuth > 180 difference (line 1141)
+# _wall_matches azimuth > 180 difference wraps around
 # ---------------------------------------------------------------------------
 
 
 class TestWallMatchesAzimuthWrap:
     def test_azimuth_diff_over_180_wraps(self) -> None:
-        """When azimuth diff > 180, it wraps around (line 1141)."""
+        """When azimuth difference exceeds 180 degrees, it wraps to find the true angle."""
         # Create a wall with azimuth ~350 (nearly north, slightly west)
         # Normal should point roughly toward azimuth 350 (between north and west)
         angle_rad = math.radians(350)  # 350 degrees clockwise from north
@@ -2304,13 +2311,13 @@ class TestWallMatchesAzimuthWrap:
 
 
 # ---------------------------------------------------------------------------
-# calculate_zone_volume with surface no coords (line 967)
+# calculate_zone_volume with surface no coords
 # ---------------------------------------------------------------------------
 
 
 class TestCalculateZoneVolumeNoCoords:
     def test_volume_surface_no_coords_skipped(self) -> None:
-        """Surfaces without coords are skipped in volume calc (line 967)."""
+        """Surfaces without valid coordinates are skipped when calculating zone volume."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add(
@@ -2323,13 +2330,13 @@ class TestCalculateZoneVolumeNoCoords:
 
 
 # ---------------------------------------------------------------------------
-# set_wwr: fen not on matching wall (line 1048) and no new win for referrer (line 1106)
+# set_wwr: fenestration on non-matching wall and no new window for referrer
 # ---------------------------------------------------------------------------
 
 
 class TestSetWWREdgeCases:
     def test_fen_on_non_matching_wall_not_removed(self) -> None:
-        """Fenestration on non-matching wall is preserved (line 1048)."""
+        """Fenestrations on walls that don't match the target orientation are preserved."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         # South wall (matching)
@@ -2410,7 +2417,7 @@ class TestSetWWREdgeCases:
         assert len(windows) >= 1
 
     def test_fen_referrer_no_new_window(self) -> None:
-        """Fen referrer whose wall doesn't produce a new window (line 1106)."""
+        """A fenestration referrer whose parent wall doesn't produce a new window is handled gracefully."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         # Interior wall (matches by type but not Outdoors → no new window)
@@ -2487,3 +2494,7 @@ class TestSetWWREdgeCases:
         # No Outdoors walls → no new windows, but fen_referrers will have entries
         windows = set_wwr(doc, 0.4)
         assert windows == []
+        # The referrer should remain unchanged since no new window was created
+        sub_surface = doc.getobject("FenestrationSurface:Detailed", "SubSurface")
+        assert sub_surface is not None
+        assert sub_surface.building_surface_name == "IntWindow"
