@@ -135,3 +135,84 @@ class TestDiffSchemas:
         # Both should still have Zone
         assert "Zone" not in diff.removed_types
         assert "Zone" not in diff.added_types
+
+
+# ---------------------------------------------------------------------------
+# Additional tests for uncovered branches in _diff.py
+# ---------------------------------------------------------------------------
+
+
+class TestExtractEnumValues:
+    """Tests for _extract_enum_values edge cases."""
+
+    def test_non_string_enum_value_ignored(self) -> None:
+        """Non-string values in an ``enum`` array are silently skipped."""
+        from idfkit.compat._diff import _extract_enum_values  # pyright: ignore[reportPrivateUsage]
+
+        result = _extract_enum_values({"enum": [1, 2, "ValidString", None]})
+        assert result == {"ValidString"}
+
+    def test_anyof_with_non_string_values(self) -> None:
+        """Non-string values in anyOf enum branches are silently skipped."""
+        from idfkit.compat._diff import _extract_enum_values  # pyright: ignore[reportPrivateUsage]
+
+        field_schema = {"anyOf": [{"enum": [1, "Choice1"]}, {"enum": ["Choice2", 3.14]}]}
+        result = _extract_enum_values(field_schema)
+        assert result == {"Choice1", "Choice2"}
+
+
+class TestBuildSchemaIndexEdgeCases:
+    """Edge-case tests for build_schema_index."""
+
+    def test_object_type_with_none_inner_schema(self) -> None:
+        """Object types whose inner schema is None are added to object_types but skipped for choices."""
+        from unittest.mock import MagicMock
+
+        from idfkit.compat._diff import build_schema_index  # pyright: ignore[reportPrivateUsage]
+
+        mock_schema = MagicMock()
+        mock_schema.version = (24, 1, 0)
+        mock_schema.object_types = ["Zone", "FakeType"]
+        mock_schema.get_group.return_value = "Some Group"
+        # FakeType returns None inner schema
+        mock_schema.get_inner_schema.side_effect = lambda t: None if t == "FakeType" else {"properties": {}}  # pyright: ignore[reportUnknownLambdaType]
+
+        index = build_schema_index(mock_schema)
+        assert "Zone" in index.object_types
+        assert "FakeType" in index.object_types
+        # No choices since neither has enum fields
+        assert len(index.choices) == 0
+
+    def test_field_with_non_dict_value_skipped(self) -> None:
+        """A properties entry that is not a dict is skipped without error."""
+        from unittest.mock import MagicMock
+
+        from idfkit.compat._diff import build_schema_index  # pyright: ignore[reportPrivateUsage]
+
+        mock_schema = MagicMock()
+        mock_schema.version = (24, 1, 0)
+        mock_schema.object_types = ["Zone"]
+        mock_schema.get_group.return_value = "Thermal Zones and Surfaces"
+        # properties contains a non-dict value for one field
+        mock_schema.get_inner_schema.return_value = {"properties": {"name": "not-a-dict", "area": {"type": "number"}}}
+
+        index = build_schema_index(mock_schema)
+        assert "Zone" in index.object_types
+        # "not-a-dict" string field should be skipped; "area" has no enum, so no choices
+        assert len(index.choices) == 0
+
+    def test_object_type_with_no_group(self) -> None:
+        """Object types where get_group returns None are added without a group mapping."""
+        from unittest.mock import MagicMock
+
+        from idfkit.compat._diff import build_schema_index  # pyright: ignore[reportPrivateUsage]
+
+        mock_schema = MagicMock()
+        mock_schema.version = (24, 1, 0)
+        mock_schema.object_types = ["UngroupedType"]
+        mock_schema.get_group.return_value = None
+        mock_schema.get_inner_schema.return_value = {"properties": {}}
+
+        index = build_schema_index(mock_schema)
+        assert "UngroupedType" in index.object_types
+        assert "UngroupedType" not in index.groups
