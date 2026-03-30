@@ -685,3 +685,177 @@ class TestEvaluateWeekCompact:
 
         result = evaluate_week_compact(week_obj, datetime(2024, 7, 15, 12, 0), doc, day_type=DayType.SUMMER_DESIGN)
         assert result == 0.99
+
+    def test_compact_with_day_list(self) -> None:
+        """evaluate_week_compact with a Schedule:Day:List day schedule."""
+        day_obj = _make_day_schedule("DaySched", "Schedule:Day:List", 0.4)
+        doc = MagicMock()
+        doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:List" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:List" else []
+
+        week_obj = self._make_week_compact([("AllDays", "DaySched")])
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
+        assert result == 0.4
+
+    def test_compact_with_day_hourly(self) -> None:
+        """evaluate_week_compact with a Schedule:Day:Hourly day schedule."""
+        day_obj = _make_day_schedule("DaySched", "Schedule:Day:Hourly", 0.6)
+        doc = MagicMock()
+        doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Hourly" else []
+
+        week_obj = self._make_week_compact([("AllDays", "DaySched")])
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
+        assert result == 0.6
+
+    def test_compact_with_day_constant(self) -> None:
+        """evaluate_week_compact with a Schedule:Constant day schedule."""
+        # Already covered, but explicitly test for completeness
+        day_obj = _make_day_schedule("DaySched", "Schedule:Constant", 0.8)
+        doc = MagicMock()
+        doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Constant" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Constant" else []
+
+        week_obj = self._make_week_compact([("AllDays", "DaySched")])
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc)
+        assert result == 0.8
+
+    def test_compact_with_interpolation_interval(self) -> None:
+        """evaluate_week_compact with a Schedule:Day:Interval day schedule and interpolation."""
+        day_obj = _make_day_schedule("DaySched", "Schedule:Day:Interval", 0.9)
+        doc = MagicMock()
+        doc.__getitem__.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Interval" else []
+        doc.get_collection.side_effect = lambda t: [day_obj] if t == "Schedule:Day:Interval" else []
+
+        week_obj = self._make_week_compact([("AllDays", "DaySched")])
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 12, 0), doc, interpolation=Interpolation.AVERAGE)
+        assert isinstance(result, float)
+
+
+class TestGetDayScheduleNameDayTypeNotInMap:
+    """Tests for _get_day_schedule_name_for_date when DayType has no field-index mapping."""
+
+    def test_day_type_not_in_map_falls_through_to_calendar(self) -> None:
+        """When DayType override is not in _DAY_TYPE_TO_FIELD_INDEX, fall through to calendar."""
+        from idfkit.schedules.week import _get_day_schedule_name_for_date  # pyright: ignore[reportPrivateUsage]
+
+        # DayType.NORMAL is not in _DAY_TYPE_TO_FIELD_INDEX, so it falls through to calendar
+        week_obj = _make_week_daily({
+            "Monday Schedule:Day Name": "MondaySched",
+            "Sunday Schedule:Day Name": "SundaySched",
+            "Tuesday Schedule:Day Name": "TuesdaySched",
+            "Wednesday Schedule:Day Name": "WednesdaySched",
+            "Thursday Schedule:Day Name": "ThursdaySched",
+            "Friday Schedule:Day Name": "FridaySched",
+            "Saturday Schedule:Day Name": "SaturdaySched",
+        })
+        d = date(2024, 1, 8)  # Monday
+        result = _get_day_schedule_name_for_date(week_obj, d, DayType.NORMAL, set(), set(), set())
+        assert result == "MondaySched"
+
+    def test_day_type_override_not_in_field_index_falls_through(self) -> None:
+        """DayType with no field-index mapping falls through to calendar-based lookup."""
+        from unittest.mock import patch
+
+        from idfkit.schedules import week as week_module
+        from idfkit.schedules.week import _get_day_schedule_name_for_date  # pyright: ignore[reportPrivateUsage]
+
+        week_obj = _make_week_daily({
+            "Monday Schedule:Day Name": "MondaySched",
+            "Sunday Schedule:Day Name": "SundaySched",
+            "Tuesday Schedule:Day Name": "TuesdaySched",
+            "Wednesday Schedule:Day Name": "WednesdaySched",
+            "Thursday Schedule:Day Name": "ThursdaySched",
+            "Friday Schedule:Day Name": "FridaySched",
+            "Saturday Schedule:Day Name": "SaturdaySched",
+        })
+        d = date(2024, 1, 8)  # Monday
+
+        patched_map: dict[DayType, int] = {}
+        with patch.object(week_module, "_DAY_TYPE_TO_FIELD_INDEX", patched_map):
+            result = _get_day_schedule_name_for_date(week_obj, d, DayType.SUMMER_DESIGN, set(), set(), set())
+        assert result == "MondaySched"
+
+
+class TestFindMatchingDayLoopExhaustion:
+    """Test _find_matching_day_in_week_compact when all 12 pairs are populated."""
+
+    def test_all_12_pairs_exhausted(self) -> None:
+        """Loop iterates all 12 DayType/Schedule pairs and returns a match."""
+        # Build a compact with exactly 12 non-None DayType/Schedule pairs
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Compact"
+        fields: dict[str, str | None] = {}
+        day_names = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+            "Holiday",
+            "SummerDesignDay",
+            "WinterDesignDay",
+            "AllOtherDays",
+            "AllDays",
+        ]
+        for i, name in enumerate(day_names, 1):
+            fields[f"DayType List {i}"] = name
+            fields[f"Schedule:Day Name {i}"] = f"Sched{i}"
+        obj.get.side_effect = lambda f: fields.get(f)
+
+        applicable_types = {DAY_TYPE_ALLDAYS, DAY_TYPE_ALL_OTHER_DAYS}
+        result = _find_matching_day_in_week_compact(obj, applicable_types)
+        assert result is not None
+
+
+class TestFindMatchingDayAllOtherDaysFallback:
+    """Test the AllOtherDays fallback in _find_matching_day_in_week_compact."""
+
+    def test_all_other_days_in_schedule_not_in_applicable_types(self) -> None:
+        """AllOtherDays is returned as a fallback when no priority type matches."""
+        # Pass a custom applicable_types that does NOT include ALL_OTHER_DAYS
+        # but type_to_schedule has it as a key
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Compact"
+        fields: dict[str, str | None] = {
+            "DayType List 1": "AllOtherDays",
+            "Schedule:Day Name 1": "FallbackSched",
+            "DayType List 2": None,
+        }
+        obj.get.side_effect = lambda f: fields.get(f)
+
+        applicable_types_no_aod = {"SomeUnknownType"}
+        result = _find_matching_day_in_week_compact(obj, applicable_types_no_aod)
+        assert result == "FallbackSched"
+
+
+class TestEvaluateWeekDailyAllTypes:
+    """Test evaluate_week_daily with a Schedule:Day:Interval day schedule and interpolation."""
+
+    def test_evaluate_week_daily_with_compact_daily_interpolation(self) -> None:
+        """evaluate_week_daily forwards interpolation to the underlying interval evaluator."""
+        day_obj = _make_day_schedule("DaySched", "Schedule:Day:Interval", 0.55)
+        doc = _make_doc_with_day_schedule(day_obj)
+        week_obj = _make_week_daily({
+            "Sunday Schedule:Day Name": "DaySched",
+            "Monday Schedule:Day Name": "DaySched",
+            "Tuesday Schedule:Day Name": "DaySched",
+            "Wednesday Schedule:Day Name": "DaySched",
+            "Thursday Schedule:Day Name": "DaySched",
+            "Friday Schedule:Day Name": "DaySched",
+            "Saturday Schedule:Day Name": "DaySched",
+            "Holiday Schedule:Day Name": "DaySched",
+            "SummerDesignDay Schedule:Day Name": "DaySched",
+            "WinterDesignDay Schedule:Day Name": "DaySched",
+            "CustomDay1 Schedule:Day Name": "DaySched",
+            "CustomDay2 Schedule:Day Name": "DaySched",
+        })
+        result = evaluate_week_daily(
+            week_obj,
+            datetime(2024, 1, 8, 12, 0),
+            doc,
+            interpolation=Interpolation.AVERAGE,
+        )
+        assert isinstance(result, float)

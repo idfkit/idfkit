@@ -63,6 +63,13 @@ class TestFreqToTimestep:
     def test_unparseable_defaults_to_hourly(self) -> None:
         assert _freq_to_timestep("garbage") == 1
 
+    def test_custom_minute_evenly_divisible_via_regex(self) -> None:
+        """Custom minute via regex that is evenly divisible returns correct timestep."""
+        # "12min" matches the regex and 60 % 12 == 0, so returns 5
+        assert _freq_to_timestep("12min") == 5
+        # "4min" -> 60 % 4 == 0, returns 15
+        assert _freq_to_timestep("4min") == 15
+
 
 # ---------------------------------------------------------------------------
 # to_series
@@ -240,3 +247,13 @@ class TestPlotFunctions:
         for week_num in [1, 26, 52]:
             ax = plot_week(constant_schedule, year=2024, week=week_num)
             assert ax is not None
+
+    def test_plot_week_jan1_is_friday(self, constant_schedule: MagicMock) -> None:
+        """plot_week correctly computes week 1 start when Jan 1 falls on a Friday."""
+        pytest.importorskip("pandas")
+        pytest.importorskip("matplotlib")
+        from idfkit.schedules.series import plot_week
+
+        # 2021: Jan 1 is a Friday (weekday=4 > 3), so week1_monday += timedelta(days=7)
+        ax = plot_week(constant_schedule, year=2021, week=1)
+        assert ax is not None
