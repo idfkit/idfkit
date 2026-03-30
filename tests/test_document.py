@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument, new_document
+from idfkit import IDFDocument, load_idf, new_document
 from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 
@@ -547,3 +547,483 @@ class TestAddWithValidation:
         # By default, validation is enabled to catch errors early
         with pytest.raises(ValidationFailedError):
             empty_doc.add("Zone", "TestZone", unknown_param=42)
+
+
+class TestDocumentProperties:
+    """Tests for document property accessors."""
+
+    def test_strict_property_default_true(self) -> None:
+        doc = IDFDocument()
+        assert doc.strict is True
+
+    def test_strict_property_false(self) -> None:
+        doc = IDFDocument(strict=False)
+        assert doc.strict is False
+
+    def test_cst_property_none_by_default(self, empty_doc: IDFDocument) -> None:
+        assert empty_doc.cst is None
+
+    def test_raw_text_property_none_by_default(self, empty_doc: IDFDocument) -> None:
+        assert empty_doc.raw_text is None
+
+    def test_cst_property_populated_by_preserve_formatting(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        assert doc.cst is not None
+
+    def test_raw_text_property_populated_by_preserve_formatting(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        assert doc.raw_text is not None
+
+    def test_get_collection(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "Z1")
+        coll = empty_doc.get_collection("Zone")
+        assert isinstance(coll, IDFCollection)
+        assert len(coll) == 1
+
+    def test_keys_returns_nonempty_types(self, simple_doc: IDFDocument) -> None:
+        keys = simple_doc.keys()
+        assert "Zone" in keys
+        assert "Material" in keys
+
+    def test_values_returns_nonempty_collections(self, simple_doc: IDFDocument) -> None:
+        vals = simple_doc.values()
+        assert len(vals) > 0
+        assert all(isinstance(v, IDFCollection) for v in vals)
+
+    def test_items_returns_pairs(self, simple_doc: IDFDocument) -> None:
+        items = simple_doc.items()
+        types = [k for k, _ in items]
+        assert "Zone" in types
+
+    def test_getattr_raises_for_unknown(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(AttributeError):
+            _ = empty_doc.totally_unknown_attribute_xyz
+
+    def test_getattr_raises_after_loop_with_no_match(self, empty_doc: IDFDocument) -> None:
+        # Populate a collection so the __getattr__ loop iterates at least once
+        empty_doc.add("Zone", "Z1", validate=False)
+        with pytest.raises(AttributeError):
+            _ = empty_doc.xyznonexistent123  # not in _PYTHON_TO_IDF, not matching 'Zone'
+
+    def test_describe_raises_without_schema(self) -> None:
+        doc = IDFDocument(version=(24, 1, 0))  # no schema
+        with pytest.raises(ValueError, match="No schema"):
+            doc.describe("Zone")
+
+    def test_str_contains_sorted_types(self, simple_doc: IDFDocument) -> None:
+        s = str(simple_doc)
+        assert "Zone" in s
+        # Sorted ensures alphabetical order
+        zone_pos = s.index("Zone")
+        material_pos = s.index("Material")
+        assert material_pos < zone_pos  # "Material" < "Zone" alphabetically
+
+
+class TestDocumentAddNoSchema:
+    """Tests for add() when no schema is loaded."""
+
+    def test_add_without_schema_does_not_validate(self) -> None:
+        doc = IDFDocument(version=(24, 1, 0))  # no schema
+        obj = doc.add("Zone", "TestZone", validate=False)
+        assert obj.name == "TestZone"
+
+    def test_resolve_schema_obj_type_no_schema(self) -> None:
+        doc = IDFDocument(version=(24, 1, 0))
+        result = doc._resolve_schema_obj_type("SomeType")  # pyright: ignore[reportPrivateUsage]
+        assert result == "SomeType"
+
+    def test_find_existing_collection_type_not_found(self, empty_doc: IDFDocument) -> None:
+        result = empty_doc._find_existing_collection_type("NonExistent")  # pyright: ignore[reportPrivateUsage]
+        assert result is None
+
+
+class TestBuildFieldOrderForAdd:
+    """Tests for _build_field_order_for_add static method."""
+
+    def test_returns_none_when_base_is_none(self) -> None:
+        result = IDFDocument._build_field_order_for_add(None, {}, None)  # pyright: ignore[reportPrivateUsage]
+        assert result is None
+
+    def test_extensible_with_user_extra_fields(self, empty_doc: IDFDocument) -> None:
+        # Add a BuildingSurface:Detailed with an extra field not in schema
+        obj = empty_doc.add(
+            "BuildingSurface:Detailed",
+            "Wall1",
+            {
+                "surface_type": "Wall",
+                "construction_name": "",
+                "zone_name": "",
+                "outside_boundary_condition": "Outdoors",
+                "number_of_vertices": 2,
+                "vertex_x_coordinate": 0.0,
+                "vertex_y_coordinate": 0.0,
+                "vertex_z_coordinate": 0.0,
+                "vertex_2_x_coordinate": 1.0,
+                "vertex_2_y_coordinate": 0.0,
+                "vertex_2_z_coordinate": 0.0,
+                "extra_nonschema_field": 42.0,
+            },
+            validate=False,
+        )
+        assert obj.field_order is not None
+        assert "extra_nonschema_field" in obj.field_order
+
+
+class TestRemoveIdfObjectEdgeCases:
+    """Extra remove tests to cover edge cases."""
+
+    def test_remove_obj_not_in_collections(self, empty_doc: IDFDocument) -> None:
+        obj = IDFObject(obj_type="GhostType", name="Ghost")
+        # Should not raise even when type not in collections
+        empty_doc.removeidfobject(obj)
+
+    def test_remove_invalidates_schedule_cache(self, empty_doc: IDFDocument) -> None:
+        sched = empty_doc.add("Schedule:Constant", "S1", {"hourly_value": 1.0})
+        _ = empty_doc.schedules_dict  # populate cache
+        empty_doc.removeidfobject(sched)
+        assert empty_doc._schedules_cache is None  # pyright: ignore[reportPrivateUsage]
+
+    def test_remove_with_cst(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        assert doc.cst is not None
+        zone = doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        nodes_before = len(doc.cst.nodes)
+        doc.removeidfobject(zone)
+        # Node text should be cleared but node count stays the same
+        assert len(doc.cst.nodes) == nodes_before
+
+
+class TestNotifyNameChangeEdgeCases:
+    """Tests for notify_name_change edge cases."""
+
+    def test_schedule_rename_invalidates_cache(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Schedule:Constant", "OldSched", {"hourly_value": 1.0})
+        _ = empty_doc.schedules_dict  # populate cache
+        empty_doc.rename("Schedule:Constant", "OldSched", "NewSched")
+        assert empty_doc._schedules_cache is None  # pyright: ignore[reportPrivateUsage]
+
+    def test_rename_when_old_key_not_in_by_name(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "TestZone")
+        zone = empty_doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        # Manually remove from by_name to simulate stale state
+        del empty_doc._collections["Zone"].by_name["TESTZONE"]  # pyright: ignore[reportPrivateUsage]
+        # Rename should not crash even if old key is missing
+        zone.name = "NewName"
+        assert empty_doc.getobject("Zone", "NewName") is zone
+
+    def test_rename_to_empty_string(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "TestZone")
+        zone = empty_doc.getobject("Zone", "TestZone")
+        assert zone is not None
+        zone.name = ""
+        assert zone.name == ""
+        assert "TESTZONE" not in empty_doc._collections["Zone"].by_name  # pyright: ignore[reportPrivateUsage]
+
+    def test_notify_name_change_obj_type_not_in_collections(self, empty_doc: IDFDocument) -> None:
+        obj = IDFObject(obj_type="GhostType", name="Ghost")
+        # Should not crash when the object type is not registered in any collection
+        empty_doc.notify_name_change(obj, "OldName", "NewName")
+
+
+class TestIndexObjectReferences:
+    """Tests for _index_object_references fallback path."""
+
+    def test_fallback_index_without_precomputed_ref_fields(self, empty_doc: IDFDocument) -> None:
+        # Create an IDFObject without pre-computed ref_fields (no document set)
+        obj = IDFObject(obj_type="Construction", name="C1", data={"outside_layer": "SomeMat"})
+        # _ref_fields should be None for a raw IDFObject
+        assert object.__getattribute__(obj, "_ref_fields") is None  # pyright: ignore[reportPrivateUsage]
+        empty_doc._index_object_references(obj)  # pyright: ignore[reportPrivateUsage]
+        refs = empty_doc.references.get_referencing("SomeMat")
+        assert obj in refs
+
+    def test_fallback_skips_non_reference_fields(self, empty_doc: IDFDocument) -> None:
+        # ZoneAirContaminantBalance has both ref and non-ref fields.
+        # The fallback loop should skip non-ref fields (734->733 branch).
+        obj = IDFObject(
+            obj_type="ZoneAirContaminantBalance",
+            name="Test",
+            data={
+                "outdoor_carbon_dioxide_schedule_name": "MySched",
+                "generic_contaminant_concentration": 0.5,
+            },
+        )
+        assert object.__getattribute__(obj, "_ref_fields") is None  # pyright: ignore[reportPrivateUsage]
+        empty_doc._index_object_references(obj)  # pyright: ignore[reportPrivateUsage]
+        # Reference field should be registered
+        refs = empty_doc.references.get_referencing("MySched")
+        assert obj in refs
+
+
+class TestGetReferencesAndSurfaces:
+    """Tests for get_references and get_zone_surfaces."""
+
+    def test_get_referencing(self, simple_doc: IDFDocument) -> None:
+        # Call IDFDocument.get_referencing (not doc.references.get_referencing)
+        refs = simple_doc.get_referencing("TestZone")
+        assert len(refs) > 0
+
+    def test_get_references(self, simple_doc: IDFDocument) -> None:
+        wall = simple_doc.getobject("BuildingSurface:Detailed", "TestWall")
+        assert wall is not None
+        refs = simple_doc.get_references(wall)
+        assert len(refs) > 0
+
+    def test_get_zone_surfaces(self, simple_doc: IDFDocument) -> None:
+        surfaces = simple_doc.get_zone_surfaces("TestZone")
+        assert len(surfaces) >= 1
+        names = [s.name for s in surfaces]
+        assert "TestWall" in names
+
+
+class TestDocumentDescribeUnknownType:
+    """Test describe() with unknown type (raises UnknownObjectTypeError)."""
+
+    def test_describe_unknown_type_raises(self, empty_doc: IDFDocument) -> None:
+        from idfkit.exceptions import UnknownObjectTypeError
+
+        with pytest.raises(UnknownObjectTypeError):
+            empty_doc.describe("TotallyFakeTypeXYZ")
+
+
+class TestDocumentFindExistingCollectionTypeCaseInsensitive:
+    """Test _find_existing_collection_type via case-insensitive loop."""
+
+    def test_case_insensitive_match(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "Z1", validate=False)
+        # 'zone' doesn't match directly but matches via the case-insensitive loop
+        result = empty_doc._find_existing_collection_type("zone")  # pyright: ignore[reportPrivateUsage]
+        assert result == "Zone"
+
+
+class TestDocumentAddNoSchemaValidateTrue:
+    """Test add() with no schema and validate=True (skips validation)."""
+
+    def test_add_no_schema_validate_true(self) -> None:
+        doc = IDFDocument(version=(24, 1, 0))  # no schema
+        # With no schema, validation is skipped even when validate=True
+        obj = doc.add("Zone", "TestZone", validate=True)
+        assert obj.name == "TestZone"
+
+
+class TestBuildFieldOrderExtensibleEarlyBreak:
+    """Test extensible loop path where first group is not in field_data."""
+
+    def test_extensible_no_data_fields_early_break(self) -> None:
+        from idfkit.schema import ParsingCache
+
+        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
+            ["name", "x_origin"],
+            {},  # empty - first group not in data, loop breaks immediately
+            ParsingCache(
+                obj_schema={},
+                has_name=True,
+                field_names=("x_origin",),
+                all_field_names=("name", "x_origin"),
+                field_types={},
+                ref_fields=frozenset(),
+                extensible=True,
+                ext_size=1,
+                ext_field_names=("vertex_x", "vertex_y"),
+            ),
+        )
+        assert result == ["name", "x_origin"]
+
+    def test_extensible_field_already_in_known(self) -> None:
+        from idfkit.schema import ParsingCache
+
+        # base_field_order already contains 'vertex_x' — skip append for it
+        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
+            ["name", "vertex_x"],
+            {"vertex_x": 0.0, "vertex_y": 1.0},
+            ParsingCache(
+                obj_schema={},
+                has_name=True,
+                field_names=("vertex_x",),
+                all_field_names=("name", "vertex_x"),
+                field_types={},
+                ref_fields=frozenset(),
+                extensible=True,
+                ext_size=2,
+                ext_field_names=("vertex_x", "vertex_y"),
+            ),
+        )
+        assert "vertex_y" in result
+        assert result.count("vertex_x") == 1  # not duplicated
+
+    def test_extensible_multiple_groups_iterated(self) -> None:
+        from idfkit.schema import ParsingCache
+
+        # Two groups both present in field_data — loop must iterate twice (404->421 hit)
+        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
+            ["name"],
+            {"vertex_x": 0.0, "vertex_y": 0.0, "vertex_x_2": 1.0, "vertex_y_2": 1.0},
+            ParsingCache(
+                obj_schema={},
+                has_name=True,
+                field_names=(),
+                all_field_names=("name",),
+                field_types={},
+                ref_fields=frozenset(),
+                extensible=True,
+                ext_size=2,
+                ext_field_names=("vertex_x", "vertex_y"),
+            ),
+        )
+        assert "vertex_x" in result
+        assert "vertex_y" in result
+        assert "vertex_x_2" in result
+        assert "vertex_y_2" in result
+
+    def test_extensible_empty_ext_field_names_skips_group_loop(self) -> None:
+        from idfkit.schema import ParsingCache
+
+        # ext_field_names is empty — the 'if parsing_cache.ext_field_names:' branch is False (404->421)
+        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
+            ["name"],
+            {"extra_field": 42},
+            ParsingCache(
+                obj_schema={},
+                has_name=True,
+                field_names=(),
+                all_field_names=("name",),
+                field_types={},
+                ref_fields=frozenset(),
+                extensible=True,
+                ext_size=1,
+                ext_field_names=(),  # empty -> skips the while True group loop
+            ),
+        )
+        # 'extra_field' should still be added via the user-provided aliases section
+        assert "extra_field" in result
+
+
+class TestRemoveCSTNoMatch:
+    """Test CST removal when added object not in CST nodes."""
+
+    def test_remove_programmatic_obj_with_cst(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        assert doc.cst is not None
+        # Add a new object programmatically — it won't be in CST nodes
+        new_zone = doc.add("Zone", "ProgrammaticZone", validate=False)
+        assert not any(n.obj is new_zone for n in doc.cst.nodes)
+        # Removing it should traverse the CST loop without finding a match
+        nodes_before = len(doc.cst.nodes)
+        doc.removeidfobject(new_zone)
+        assert len(doc.cst.nodes) == nodes_before  # no new node added/removed
+
+
+class TestNotifyReferenceChangeNonString:
+    """Test notify_reference_change when old/new values are not strings."""
+
+    def test_non_string_old_value(self, empty_doc: IDFDocument) -> None:
+        zone = empty_doc.add("Zone", "Z1", validate=False)
+        # old_value is not a string -> old_str becomes None
+        empty_doc.notify_reference_change(zone, "some_field", 42, "NewName")
+
+    def test_non_string_new_value(self, empty_doc: IDFDocument) -> None:
+        zone = empty_doc.add("Zone", "Z1", validate=False)
+        # new_value is not a string -> new_str becomes None
+        empty_doc.notify_reference_change(zone, "some_field", "OldName", 99)
+
+
+class TestIndexObjectReferencesFallbackEmpty:
+    """Test _index_object_references fallback with empty/None reference values."""
+
+    def test_fallback_with_empty_reference_value(self, empty_doc: IDFDocument) -> None:
+        obj = IDFObject(obj_type="Construction", name="C2", data={"outside_layer": ""})
+        empty_doc._index_object_references(obj)  # pyright: ignore[reportPrivateUsage]
+        refs = empty_doc.references.get_referencing("")
+        assert obj not in refs
+
+    def test_fallback_with_missing_reference_field(self, empty_doc: IDFDocument) -> None:
+        obj = IDFObject(obj_type="Construction", name="C3", data={})
+        empty_doc._index_object_references(obj)  # pyright: ignore[reportPrivateUsage]
+
+
+class TestSchedulesDictEdgeCases:
+    """Test _build_schedules_dict with empty-named schedules."""
+
+    def test_schedule_with_empty_name_skipped(self, empty_doc: IDFDocument) -> None:
+        # Add a schedule with empty name directly into the collection
+        empty_sched = IDFObject(obj_type="Schedule:Constant", name="", data={"hourly_value": 1.0})
+        empty_doc["Schedule:Constant"].add(empty_sched)
+        sd = empty_doc.schedules_dict
+        assert "" not in sd
+
+
+class TestObjectsByTypeEdgeCases:
+    """Test objects_by_type with empty collections."""
+
+    def test_empty_collection_not_yielded(self, empty_doc: IDFDocument) -> None:
+        _ = empty_doc["Zone"]  # creates empty collection
+        pairs = list(empty_doc.objects_by_type())
+        types = [t for t, _ in pairs]
+        assert "Zone" not in types
+
+
+class TestStrWithEmptyCollections:
+    """Test __str__ skips empty collections."""
+
+    def test_str_skips_empty_collections(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "Z1", validate=False)
+        _ = empty_doc["Material"]  # creates empty Material collection
+        s = str(empty_doc)
+        assert "Zone" in s
+        assert "Material" not in s
+
+    def test_str_alphabetical_order(self, simple_doc: IDFDocument) -> None:
+        s = str(simple_doc)
+        # Types appear in sorted order
+        assert s.index("Material") < s.index("Zone")
+
+
+class TestAddUnknownObjectType:
+    """Test add() raises when object type is unknown in schema."""
+
+    def test_add_unknown_type_raises(self, empty_doc: IDFDocument) -> None:
+        from idfkit.exceptions import UnknownObjectTypeError
+
+        with pytest.raises(UnknownObjectTypeError):
+            empty_doc.add("TotallyFakeType12345", "test")
+
+
+class TestComputeRefFieldsFallback:
+    """Test _compute_ref_fields when parsing cache is None (type not in schema)."""
+
+    def test_fallback_when_no_parsing_cache(self) -> None:
+        from idfkit.schema import EpJSONSchema
+
+        # Schema with no properties -> get_parsing_cache returns None for any type
+        schema = EpJSONSchema((24, 1, 0), {"properties": {}})
+        result = IDFDocument._compute_ref_fields(schema, "Zone")  # pyright: ignore[reportPrivateUsage]
+        assert result == frozenset()
+
+
+class TestNotifyNameChangeStaledReferenceSkipped:
+    """Test notify_name_change when referencing object's field value doesn't match."""
+
+    def test_stale_reference_in_graph_skipped(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "Zone1")
+        w1 = empty_doc.add(
+            "BuildingSurface:Detailed",
+            "W1",
+            {
+                "surface_type": "Wall",
+                "construction_name": "",
+                "zone_name": "Zone1",
+                "outside_boundary_condition": "Outdoors",
+            },
+            validate=False,
+        )
+        # Register a stale reference so w1 shows as referencing Zone1 via a field
+        # that doesn't actually have Zone1 as its value
+        empty_doc.references.register(w1, "nonexistent_field", "Zone1")
+        zone = empty_doc.getobject("Zone", "Zone1")
+        assert zone is not None
+        # Calling notify_name_change: w1.data.get('nonexistent_field') is None
+        # so isinstance(None, str) is False -> line 690->688 branch
+        empty_doc.notify_name_change(zone, "Zone1", "Zone2")
+        # Should not crash
