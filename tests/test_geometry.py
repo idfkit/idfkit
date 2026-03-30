@@ -1338,11 +1338,11 @@ class TestSutherlandHodgman:
 
 class TestIsConvex2DEdgeCases:
     def test_fewer_than_3_vertices(self) -> None:
-        """A polygon with fewer than 3 vertices returns False for the inside-polygon check."""
+        """A polygon with fewer than 3 vertices returns False for the convexity check."""
         assert not _is_convex_2d([(0, 0), (1, 0)])
 
     def test_collinear_edges_skipped(self) -> None:
-        """Collinear edges with near-zero cross product are skipped in the inside-polygon check."""
+        """Collinear edges with near-zero cross product are skipped in the convexity check."""
         # Square with an extra collinear point
         poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
         assert _is_convex_2d(poly)
