@@ -8,7 +8,7 @@ import pytest
 
 from idfkit import new_document
 from idfkit.objects import IDFObject
-from idfkit.schedules.compact import (
+from idfkit.schedules.compact import (  # pyright: ignore[reportPrivateUsage]
     _find_matching_rule,
     _find_period_for_date,
     _parse_cache,
@@ -45,6 +45,12 @@ class TestParseDayTypes:
     def test_single_type(self) -> None:
         """Test parsing single day type."""
         result = _parse_day_types("Weekdays")
+        assert result == {"Weekdays"}
+
+    def test_unrecognized_type_ignored(self) -> None:
+        """Unrecognized day type part is silently ignored (line 232->230)."""
+        result = _parse_day_types("Weekdays UnknownDayType")
+        # UnknownDayType is not in _DAY_TYPE_MAP, only Weekdays should be in result
         assert result == {"Weekdays"}
 
     def test_multiple_types(self) -> None:
@@ -375,3 +381,309 @@ class TestBoundaryTimes:
         """Test value at 23:59."""
         result = evaluate_compact(boundary_schedule, datetime(2024, 1, 1, 23, 59))
         assert result == 0.5
+
+
+class TestMultiplePeriods:
+    """Tests that exercise multi-period compact schedules (lines 95-97)."""
+
+    def test_two_periods_appends_first(self) -> None:
+        """A second Through: keyword finalizes and stores the first period."""
+        sched = _make_compact(
+            "Through: 06/30",
+            "For: AllDays",
+            "Until: 24:00",
+            "0.5",
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 24:00",
+            "1.0",
+        )
+        periods, _ = parse_compact(sched)
+        assert len(periods) == 2
+        assert periods[0].end_month == 6
+        assert periods[1].end_month == 12
+
+    def test_two_periods_evaluates_correct_period(self) -> None:
+        """Date in first period returns its value; date in second returns the other."""
+        sched = _make_compact(
+            "Through: 06/30",
+            "For: AllDays",
+            "Until: 24:00",
+            "0.25",
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 24:00",
+            "0.75",
+        )
+        assert evaluate_compact(sched, datetime(2024, 3, 1, 12, 0)) == 0.25
+        assert evaluate_compact(sched, datetime(2024, 9, 1, 12, 0)) == 0.75
+
+    def test_two_through_no_for_in_first(self) -> None:
+        """Second Through: with no rule in first period (current_rule=None branch, line 95->97)."""
+        # Two Through: keywords with no For: in the first period
+        # This exercises the branch where current_period is not None but current_rule IS None
+        sched = _make_compact(
+            "Through: 06/30",
+            # No For:/Until: for first period
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 24:00",
+            "1.0",
+        )
+        periods, _ = parse_compact(sched)
+        # First period has no rules (empty), second has the AllDays rule
+        assert len(periods) == 2
+        assert len(periods[0].day_rules) == 0
+
+
+class TestProcessUntilEdgeCases:
+    """Tests for _process_until edge cases (lines 125->exit, 127->exit)."""
+
+    def test_until_at_end_of_fields_no_value(self) -> None:
+        """Until: as the last field with no following value (field_index past end)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        # Until is last field; no value follows it
+        doc.add(
+            "Schedule:Compact",
+            "NoValueAfterUntil",
+            validate=False,
+            field_1="Through: 12/31",
+            field_2="For: AllDays",
+            field_3="Until: 24:00",
+            # No value field
+        )
+        obj = doc.get_collection("Schedule:Compact").get("NoValueAfterUntil")
+        periods, _ = parse_compact(obj)
+        # The Until: was processed but no time_value could be added
+        assert len(periods) == 1
+        assert len(periods[0].day_rules[0].time_values) == 0
+
+    def test_until_followed_by_empty_value(self) -> None:
+        """Until: followed by an empty value string (line 127->exit branch)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add(
+            "Schedule:Compact",
+            "EmptyValue",
+            validate=False,
+            field_1="Through: 12/31",
+            field_2="For: AllDays",
+            field_3="Until: 24:00",
+            field_4="",  # Empty value string
+        )
+        obj = doc.get_collection("Schedule:Compact").get("EmptyValue")
+        periods, _ = parse_compact(obj)
+        assert len(periods) == 1
+        # Empty value → no time_value appended
+        assert len(periods[0].day_rules[0].time_values) == 0
+
+
+class TestInterpolateKeyword:
+    """Tests for Interpolate: Yes/Average/Linear branch (lines 140-141)."""
+
+    def test_interpolate_yes_sets_average(self) -> None:
+        """Interpolate: Yes sets interpolation mode to AVERAGE."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Interpolate: Yes",
+            "Until: 24:00",
+            "1.0",
+        )
+        _, interp = parse_compact(sched)
+        assert interp == Interpolation.AVERAGE
+
+    def test_interpolate_average_sets_average(self) -> None:
+        """Interpolate: Average sets interpolation mode."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Interpolate: Average",
+            "Until: 24:00",
+            "1.0",
+        )
+        _, interp = parse_compact(sched)
+        assert interp == Interpolation.AVERAGE
+
+    def test_interpolate_linear_sets_average(self) -> None:
+        """Interpolate: Linear sets interpolation mode."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Interpolate: Linear",
+            "Until: 24:00",
+            "1.0",
+        )
+        _, interp = parse_compact(sched)
+        assert interp == Interpolation.AVERAGE
+
+    def test_interpolate_no_keeps_no(self) -> None:
+        """Interpolate: No does not change to AVERAGE."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Interpolate: No",
+            "Until: 24:00",
+            "1.0",
+        )
+        _, interp = parse_compact(sched)
+        assert interp == Interpolation.NO
+
+
+class TestCacheStaleness:
+    """Tests that a mutated object invalidates the parse cache (lines 173-179)."""
+
+    def test_stale_cache_re_parses(self) -> None:
+        """After mutation_version changes, parse_compact re-parses the object."""
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 24:00",
+            "1.0",
+        )
+        _parse_cache.clear()
+
+        # Prime cache
+        result1, _ = parse_compact(sched)
+        assert result1[0].day_rules[0].time_values[0].value == 1.0
+
+        # Trigger a real mutation (sets field, bumps _version)
+        sched.schedule_type_limits_name = "Fraction"  # pyright: ignore[reportAttributeAccessIssue]
+
+        # Now parse again — stale cache entry should be discarded
+        # (The DSL data is unchanged, so result should still parse correctly)
+        result2, _ = parse_compact(sched)
+        assert result2[0].day_rules[0].time_values[0].value == 1.0
+
+        _parse_cache.clear()
+
+
+class TestConsecutiveNoneLimit:
+    """Tests for consecutive None termination (lines 198-202)."""
+
+    def test_three_consecutive_blanks_stop_parsing(self) -> None:
+        """Three consecutive empty fields break the parsing loop."""
+        from idfkit import new_document
+
+        doc = new_document()
+        # Add a schedule with blanks embedded after valid data
+        doc.add(
+            "Schedule:Compact",
+            "BlankTest",
+            validate=False,
+            field_1="Through: 12/31",
+            field_2="For: AllDays",
+            field_3="Until: 24:00",
+            field_4="1.0",
+            # Three trailing blank fields
+            field_5="",
+            field_6="",
+            field_7="",
+        )
+        obj = doc.get_collection("Schedule:Compact").get("BlankTest")
+        periods, _ = parse_compact(obj)
+        assert len(periods) == 1
+
+
+class TestFinalizeWithNoRule:
+    """Tests for _finalize_parse_state when current_rule is None (line 147->149)."""
+
+    def test_period_with_no_rule_is_finalized(self) -> None:
+        """A period that has no For: rule still gets appended in finalization."""
+        sched = _make_compact(
+            "Through: 12/31",
+            # No For:/Until: at all
+        )
+        periods, _ = parse_compact(sched)
+        # Period exists but has no rules
+        assert len(periods) == 1
+        assert len(periods[0].day_rules) == 0
+
+
+class TestNoPeriods:
+    """Tests for evaluate_compact with no periods (line 262)."""
+
+    def test_empty_compact_returns_zero(self) -> None:
+        """A compact schedule with no data returns 0.0."""
+        from idfkit import new_document
+
+        doc = new_document()
+        # Add a schedule with no extensible fields at all
+        doc.add("Schedule:Compact", "Empty", validate=False)
+        obj = doc.get_collection("Schedule:Compact").get("Empty")
+        result = evaluate_compact(obj, datetime(2024, 1, 1, 12, 0))
+        assert result == 0.0
+
+
+class TestNoMatchingRule:
+    """Tests for evaluate_compact when no rule matches (lines 270, 280)."""
+
+    def test_no_matching_rule_returns_zero(self) -> None:
+        """When no day rule matches the day type, returns 0.0."""
+        # SummerDesignDay-only schedule evaluated on a normal Monday
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: SummerDesignDay",
+            "Until: 24:00",
+            "1.0",
+        )
+        result = evaluate_compact(sched, datetime(2024, 1, 8, 12, 0))  # Monday
+        assert result == 0.0
+
+    def test_period_none_returns_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """period=None from _find_period_for_date returns 0.0 (line 270)."""
+        import idfkit.schedules.compact as compact_module
+
+        monkeypatch.setattr(compact_module, "_find_period_for_date", lambda periods, d: None)
+
+        sched = _make_compact(
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 24:00",
+            "1.0",
+        )
+        result = evaluate_compact(sched, datetime(2024, 1, 1, 12, 0))
+        assert result == 0.0
+
+
+class TestAllOtherDaysFallback:
+    """Tests for AllOtherDays fallback in _find_matching_rule (line 335)."""
+
+    def test_all_other_days_fallback(self) -> None:
+        """AllOtherDays rule is used when no specific match exists."""
+        rules = [
+            CompactDayRule(day_types={DAY_TYPE_SUMMER_DESIGN}, time_values=[]),
+            CompactDayRule(day_types={"AllOtherDays"}, time_values=[]),
+        ]
+        # Monday day types won't match SummerDesignDay but will fall back to AllOtherDays
+        from idfkit.schedules.day_types import get_applicable_day_types
+
+        day_types = get_applicable_day_types(
+            date(2024, 1, 8),  # Monday
+            DayType.NORMAL,
+            holidays=set(),
+            custom_day_1=set(),
+            custom_day_2=set(),
+        )
+        result = _find_matching_rule(rules, day_types)
+        assert result == rules[1]
+
+    def test_all_other_days_fallback_for_design_day(self) -> None:
+        """AllOtherDays fallback when applicable_types is a design-day set (line 335).
+
+        When evaluating a summer design day, applicable_types = {SummerDesignDay, AllDays}.
+        If no rule has SummerDesignDay or AllDays, but a rule has AllOtherDays,
+        the fallback code at line 335 should fire.
+        """
+        rules = [
+            CompactDayRule(day_types={"AllOtherDays"}, time_values=[]),
+        ]
+        # Summer design day types: only {SummerDesignDay, AllDays}
+        # AllOtherDays is NOT in these applicable_types, so priority loop won't find it
+        # The fallback at line 333-335 should pick up the AllOtherDays rule
+        applicable_types = {DAY_TYPE_SUMMER_DESIGN}  # No AllDays, no AllOtherDays
+        result = _find_matching_rule(rules, applicable_types)
+        assert result == rules[0]

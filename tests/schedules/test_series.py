@@ -240,3 +240,16 @@ class TestPlotFunctions:
         for week_num in [1, 26, 52]:
             ax = plot_week(constant_schedule, year=2024, week=week_num)
             assert ax is not None
+
+    def test_plot_week_jan1_is_friday(self, constant_schedule: MagicMock) -> None:
+        """plot_week for a year where Jan 1 is Friday advances week1_monday by 7 (line 227)."""
+        pytest.importorskip("pandas")
+        pytest.importorskip("matplotlib")
+        from datetime import date
+
+        from idfkit.schedules.series import plot_week
+
+        # 2021: Jan 1 is Friday (weekday=4 > 3), so line 227 is triggered
+        assert date(2021, 1, 1).weekday() == 4  # Friday
+        ax = plot_week(constant_schedule, year=2021, week=1)
+        assert ax is not None

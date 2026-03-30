@@ -290,3 +290,415 @@ class TestLeapYearValues:
 
         result = values(obj, year=2023)
         assert len(result) == 8760  # 365 days * 24 hours
+
+
+class TestEvalSimpleDay:
+    """Tests for _eval_simple_day covering all branches."""
+
+    def test_day_list_branch(self) -> None:
+        """Test _eval_simple_day dispatches to Schedule:Day:List correctly."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:List"
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": None,
+                "Value 1": 0.7,
+                "Value 2": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        result = evaluate(obj, datetime(2024, 1, 1, 0, 0))
+        assert result == 0.7
+
+    def test_not_a_simple_day_raises(self) -> None:
+        """Directly calling _eval_simple_day with unknown type raises ValueError."""
+        from idfkit.schedules.evaluate import _eval_simple_day  # pyright: ignore[reportPrivateUsage]
+
+        obj = MagicMock()
+        with pytest.raises(ValueError, match="Not a simple day schedule"):
+            _eval_simple_day(obj, datetime(2024, 1, 1), "Schedule:NotAType")
+
+
+class TestEvaluateDocumentSchedules:
+    """Tests that exercise document-requiring schedule evaluation paths."""
+
+    def test_week_daily_evaluation(self) -> None:
+        """Exercise _eval_document_schedule for Schedule:Week:Daily (line 150)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.5")
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            sunday_schedule_day_name="DaySched",
+            monday_schedule_day_name="DaySched",
+            tuesday_schedule_day_name="DaySched",
+            wednesday_schedule_day_name="DaySched",
+            thursday_schedule_day_name="DaySched",
+            friday_schedule_day_name="DaySched",
+            saturday_schedule_day_name="DaySched",
+            holiday_schedule_day_name="DaySched",
+            summerdesignday_schedule_day_name="DaySched",
+            winterdesignday_schedule_day_name="DaySched",
+            customday1_schedule_day_name="DaySched",
+            customday2_schedule_day_name="DaySched",
+        )
+        week_obj = doc.get_collection("Schedule:Week:Daily").get("WeekSched")
+        result = evaluate(week_obj, datetime(2024, 1, 8, 12, 0), document=doc)
+        assert result == 0.5
+
+    def test_schedule_file_evaluation(self) -> None:
+        """Exercise evaluate_schedule_file path in evaluate() (line 158)."""
+        from pathlib import Path
+        from unittest.mock import MagicMock
+
+        obj = MagicMock()
+        obj.obj_type = "Schedule:File"
+
+        def get_field(field: str) -> object:
+            return {
+                "File Name": "sched.csv",
+                "Column Number": 1,
+                "Rows to Skip at Top": 0,
+                "Column Separator": "Comma",
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": None,
+            }.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        fs = MagicMock()
+        fs.read_text.return_value = "\n".join(["1.0"] * 8784)
+
+        result = evaluate(obj, datetime(2024, 1, 1, 0, 0), fs=fs, base_path=Path("/base"))
+        assert result == 1.0
+
+    def test_eval_document_schedule_not_document_raises(self) -> None:
+        """_eval_document_schedule with unknown type raises ValueError."""
+        from idfkit.schedules.evaluate import _eval_document_schedule  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schedules.types import DayType
+
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Unknown"
+        doc = MagicMock()
+        with pytest.raises(ValueError, match="Not a document schedule"):
+            _eval_document_schedule(obj, datetime(2024, 1, 1), doc, DayType.NORMAL, set(), set(), set())
+
+    def test_eval_document_week_compact(self) -> None:
+        """Exercise Schedule:Week:Compact through evaluate() (line 184)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.3")
+        doc.add(
+            "Schedule:Week:Compact",
+            "WeekCompact",
+            validate=False,
+            daytype_list_1="AllDays",
+            schedule_day_name_1="DaySched",
+        )
+        week_obj = doc.get_collection("Schedule:Week:Compact").get("WeekCompact")
+        result = evaluate(week_obj, datetime(2024, 1, 8, 12, 0), document=doc)
+        assert result == 0.3
+
+    def test_eval_document_year(self) -> None:
+        """Exercise Schedule:Year through evaluate() (line 186)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.8")
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            sunday_schedule_day_name="DaySched",
+            monday_schedule_day_name="DaySched",
+            tuesday_schedule_day_name="DaySched",
+            wednesday_schedule_day_name="DaySched",
+            thursday_schedule_day_name="DaySched",
+            friday_schedule_day_name="DaySched",
+            saturday_schedule_day_name="DaySched",
+            holiday_schedule_day_name="DaySched",
+            summerdesignday_schedule_day_name="DaySched",
+            winterdesignday_schedule_day_name="DaySched",
+            customday1_schedule_day_name="DaySched",
+            customday2_schedule_day_name="DaySched",
+        )
+        doc.add(
+            "Schedule:Year",
+            "YearSched",
+            validate=False,
+            schedule_week_name="WeekSched",
+            start_month="1",
+            start_day="1",
+            end_month="12",
+            end_day="31",
+        )
+        year_obj = doc.get_collection("Schedule:Year").get("YearSched")
+        result = evaluate(year_obj, datetime(2024, 6, 15, 12, 0), document=doc)
+        assert result == 0.8
+
+
+class TestValuesWithDocument:
+    """Tests for values() that exercise the document-based holiday path (line 228->232)."""
+
+    def test_values_with_document(self) -> None:
+        """values() fetches holidays from document when document is provided."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add(
+            "Schedule:Compact",
+            "Sched",
+            validate=False,
+            field_1="Through: 12/31",
+            field_2="For: AllDays",
+            field_3="Until: 24:00",
+            field_4="1.0",
+        )
+        sched_obj = doc.get_collection("Schedule:Compact").get("Sched")
+        result = values(sched_obj, year=2024, start_date=(1, 1), end_date=(1, 1), document=doc)
+        assert len(result) == 24
+        assert all(v == 1.0 for v in result)
+
+
+class TestValuesScheduleFile:
+    """Tests for values() with Schedule:File type (line 259)."""
+
+    def test_values_schedule_file_cache_created(self) -> None:
+        """Verify Schedule:File path in values() creates a cache (line 259)."""
+        from pathlib import Path
+
+        obj = MagicMock()
+        obj.obj_type = "Schedule:File"
+
+        def get_field(field: str) -> object:
+            return {
+                "File Name": "sched.csv",
+                "Column Number": 1,
+                "Rows to Skip at Top": 0,
+                "Column Separator": "Comma",
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": None,
+            }.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        fs = MagicMock()
+        fs.read_text.return_value = "\n".join(["0.5"] * 8784)
+
+        result = values(
+            obj,
+            year=2024,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            fs=fs,
+            base_path=Path("/base"),
+        )
+        assert len(result) == 24
+        assert all(v == 0.5 for v in result)
+
+
+class TestEvaluateWithInterpolation:
+    """Tests for _evaluate_with_interpolation covering missing branches."""
+
+    def test_day_list_with_interpolation(self) -> None:
+        """Exercise Schedule:Day:List path in _evaluate_with_interpolation (line 301)."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:List"
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": None,
+                "Value 1": 1.0,
+                "Value 2": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        result = values(
+            obj,
+            year=2024,
+            timestep=1,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            interpolation="no",
+        )
+        assert result[0] == 1.0
+
+    def test_schedule_file_in_values_with_interpolation(self) -> None:
+        """Exercise Schedule:File path in _evaluate_with_interpolation (line 305)."""
+        from pathlib import Path
+
+        obj = MagicMock()
+        obj.obj_type = "Schedule:File"
+
+        def get_field(field: str) -> object:
+            return {
+                "File Name": "sched.csv",
+                "Column Number": 1,
+                "Rows to Skip at Top": 0,
+                "Column Separator": "Comma",
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": None,
+            }.get(field)
+
+        obj.get.side_effect = get_field
+        del obj._document
+
+        fs = MagicMock()
+        fs.read_text.return_value = "\n".join(["0.5"] * 8784)
+
+        result = values(
+            obj,
+            year=2024,
+            timestep=1,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            interpolation="average",
+            fs=fs,
+            base_path=Path("/base"),
+        )
+        assert len(result) == 24
+
+    def test_week_schedule_requires_document_in_values(self) -> None:
+        """Exercise document-required check in _evaluate_with_interpolation (lines 309-312)."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Daily"
+        del obj._document
+
+        with pytest.raises(ScheduleReferenceError, match="Document required"):
+            values(obj, year=2024, start_date=(1, 1), end_date=(1, 1))
+
+    def test_week_compact_with_interpolation_in_values(self) -> None:
+        """Exercise _eval_document_with_interp for Schedule:Week:Compact (line 337)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.6")
+        doc.add(
+            "Schedule:Week:Compact",
+            "WeekCompact",
+            validate=False,
+            daytype_list_1="AllDays",
+            schedule_day_name_1="DaySched",
+        )
+        week_obj = doc.get_collection("Schedule:Week:Compact").get("WeekCompact")
+        result = values(
+            week_obj,
+            year=2024,
+            timestep=1,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            interpolation="average",
+            document=doc,
+        )
+        assert len(result) == 24
+        assert all(isinstance(v, float) for v in result)
+
+    def test_year_schedule_with_interpolation_in_values(self) -> None:
+        """Exercise _eval_document_with_interp for Schedule:Year (line 341)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.9")
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            sunday_schedule_day_name="DaySched",
+            monday_schedule_day_name="DaySched",
+            tuesday_schedule_day_name="DaySched",
+            wednesday_schedule_day_name="DaySched",
+            thursday_schedule_day_name="DaySched",
+            friday_schedule_day_name="DaySched",
+            saturday_schedule_day_name="DaySched",
+            holiday_schedule_day_name="DaySched",
+            summerdesignday_schedule_day_name="DaySched",
+            winterdesignday_schedule_day_name="DaySched",
+            customday1_schedule_day_name="DaySched",
+            customday2_schedule_day_name="DaySched",
+        )
+        doc.add(
+            "Schedule:Year",
+            "YearSched",
+            validate=False,
+            schedule_week_name="WeekSched",
+            start_month="1",
+            start_day="1",
+            end_month="12",
+            end_day="31",
+        )
+        year_obj = doc.get_collection("Schedule:Year").get("YearSched")
+        result = values(
+            year_obj,
+            year=2024,
+            timestep=1,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            interpolation="average",
+            document=doc,
+        )
+        assert len(result) == 24
+        assert all(isinstance(v, float) for v in result)
+
+    def test_eval_document_with_interp_not_document_schedule_raises(self) -> None:
+        """_eval_document_with_interp with unknown type raises ValueError (line 343)."""
+        from idfkit.schedules.evaluate import _eval_document_with_interp  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schedules.types import DayType, Interpolation
+
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Unknown"
+        doc = MagicMock()
+        with pytest.raises(ValueError, match="Not a document schedule"):
+            _eval_document_with_interp(
+                obj, datetime(2024, 1, 1), doc, DayType.NORMAL, set(), set(), set(), Interpolation.NO
+            )
+
+    def test_week_daily_with_interpolation_in_values(self) -> None:
+        """Exercise _eval_document_with_interp for Schedule:Week:Daily (line 333)."""
+        from idfkit import new_document
+
+        doc = new_document()
+        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.4")
+        doc.add(
+            "Schedule:Week:Daily",
+            "WeekSched",
+            validate=False,
+            sunday_schedule_day_name="DaySched",
+            monday_schedule_day_name="DaySched",
+            tuesday_schedule_day_name="DaySched",
+            wednesday_schedule_day_name="DaySched",
+            thursday_schedule_day_name="DaySched",
+            friday_schedule_day_name="DaySched",
+            saturday_schedule_day_name="DaySched",
+            holiday_schedule_day_name="DaySched",
+            summerdesignday_schedule_day_name="DaySched",
+            winterdesignday_schedule_day_name="DaySched",
+            customday1_schedule_day_name="DaySched",
+            customday2_schedule_day_name="DaySched",
+        )
+        week_obj = doc.get_collection("Schedule:Week:Daily").get("WeekSched")
+        result = values(
+            week_obj,
+            year=2024,
+            timestep=1,
+            start_date=(1, 1),
+            end_date=(1, 1),
+            interpolation="average",
+            document=doc,
+        )
+        assert len(result) == 24
+        assert all(isinstance(v, float) for v in result)

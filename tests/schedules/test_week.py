@@ -685,3 +685,117 @@ class TestEvaluateWeekCompact:
 
         result = evaluate_week_compact(week_obj, datetime(2024, 7, 15, 12, 0), doc, day_type=DayType.SUMMER_DESIGN)
         assert result == 0.99
+
+    def test_hourly_day_schedule(self) -> None:
+        """evaluate_week_compact dispatches to Schedule:Day:Hourly (line 269)."""
+        day_obj = _make_day_schedule("HourlySched", "Schedule:Day:Hourly", 0.4)
+        doc = _make_doc_with_day_schedule(day_obj)
+        week_obj = self._make_week_compact([("AllDays", "HourlySched")])
+
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
+        assert result == 0.4
+
+    def test_interval_day_schedule(self) -> None:
+        """evaluate_week_compact dispatches to Schedule:Day:Interval (line 271)."""
+        day_obj = _make_day_schedule("IntervalSched", "Schedule:Day:Interval", 0.6)
+        doc = _make_doc_with_day_schedule(day_obj)
+        week_obj = self._make_week_compact([("AllDays", "IntervalSched")])
+
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
+        assert result == 0.6
+
+    def test_list_day_schedule(self) -> None:
+        """evaluate_week_compact dispatches to Schedule:Day:List (line 273)."""
+        day_obj = _make_day_schedule("ListSched", "Schedule:Day:List", 0.7)
+        doc = _make_doc_with_day_schedule(day_obj)
+        week_obj = self._make_week_compact([("AllDays", "ListSched")])
+
+        result = evaluate_week_compact(week_obj, datetime(2024, 1, 8, 10, 0), doc)
+        assert result == 0.7
+
+
+class TestGetDayScheduleNameForDateUnmapped:
+    """Test _get_day_schedule_name_for_date with a DayType not in _DAY_TYPE_TO_FIELD_INDEX (line 83->87)."""
+
+    def test_normal_day_type_not_in_map_falls_through(self) -> None:
+        """DayType.NORMAL is not in _DAY_TYPE_TO_FIELD_INDEX so falls through to calendar."""
+        obj = _make_week_daily({"Monday Schedule:Day Name": "MondaySched"})
+        # NORMAL is not in the override map so should fall through to weekday logic
+        d = date(2024, 1, 8)  # Monday
+        result = _get_day_schedule_name_for_date(obj, d, DayType.NORMAL, set(), set(), set())
+        assert result == "MondaySched"
+
+    def test_non_normal_day_type_not_in_index_map_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """DayType not in _DAY_TYPE_TO_FIELD_INDEX returns None for field_index (83->87 branch)."""
+        import idfkit.schedules.week as week_module
+
+        # Patch the map to be empty so ALL non-NORMAL types produce field_index=None
+        monkeypatch.setattr(week_module, "_DAY_TYPE_TO_FIELD_INDEX", {})
+
+        obj = _make_week_daily({"Monday Schedule:Day Name": "MondaySched"})
+        d = date(2024, 1, 8)  # Monday
+        # SUMMER_DESIGN is non-NORMAL, patched map returns None → falls through to calendar day
+        result = _get_day_schedule_name_for_date(obj, d, DayType.SUMMER_DESIGN, set(), set(), set())
+        assert result == "MondaySched"
+
+
+class TestFindMatchingDayInWeekCompactLoopExhaustion:
+    """Test that the for i in range(1, 13) loop exits naturally when all 12 pairs are filled (line 297->315)."""
+
+    def test_all_12_pairs_filled_loop_exhaustion(self) -> None:
+        """With 12 valid DayType/Schedule pairs, the for-loop exhausts range(1, 13) naturally."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Compact"
+        # Fill all 12 slots with unique day type / schedule pairs
+        day_names = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+            "Holiday",
+            "SummerDesignDay",
+            "WinterDesignDay",
+            "CustomDay1",
+            "CustomDay2",
+        ]
+        fields: dict[str, str | None] = {}
+        for i, dt in enumerate(day_names, 1):
+            fields[f"DayType List {i}"] = dt
+            fields[f"Schedule:Day Name {i}"] = f"Sched{i}"
+        # No terminating None — range(1, 13) exhausts all 12 slots naturally (297->315 branch)
+        obj.get.side_effect = lambda f: fields.get(f)  # returns None for slot 13
+
+        # Requesting a type that IS in one of the 12 slots
+        types = {DAY_TYPE_MONDAY}
+        result = _find_matching_day_in_week_compact(obj, types)
+        assert result == "Sched1"
+
+
+class TestFindMatchingDayInWeekCompactAllOtherDays:
+    """Tests for AllOtherDays fallback in _find_matching_day_in_week_compact (line 321)."""
+
+    def _make_week_compact(self, pairs: list[tuple[str, str]]) -> MagicMock:
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Week:Compact"
+        fields: dict[str, str | None] = {}
+        for i, (day_types, sched_name) in enumerate(pairs, 1):
+            fields[f"DayType List {i}"] = day_types
+            fields[f"Schedule:Day Name {i}"] = sched_name
+        fields[f"DayType List {len(pairs) + 1}"] = None
+        obj.get.side_effect = lambda f: fields.get(f)
+        return obj
+
+    def test_all_other_days_fallback_when_no_priority_match(self) -> None:
+        """AllOtherDays is returned when no priority type matches (line 321)."""
+        obj = self._make_week_compact([
+            ("SummerDesignDay", "SummerSched"),
+            ("AllOtherDays", "FallbackSched"),
+        ])
+        # Types that don't include SummerDesignDay or anything that maps to it
+        # but do include AllOtherDays via fallback
+        non_matching_types = {"SomeOtherType"}
+        result = _find_matching_day_in_week_compact(obj, non_matching_types)
+        assert result == "FallbackSched"

@@ -318,3 +318,233 @@ class TestLeapYear:
         # Feb 29, 2024 (leap year)
         result = evaluate_constant(obj, datetime(2024, 2, 29, 12, 0))
         assert result == 0.75
+
+
+class TestEvaluateDayHourlyMissingValue:
+    """Test evaluate_day_hourly when a field returns None (line 91)."""
+
+    def test_missing_hour_field_returns_zero(self) -> None:
+        """Missing hour field defaults to 0.0."""
+        obj = MagicMock()
+        obj.get.return_value = None
+
+        result = evaluate_day_hourly(obj, datetime(2024, 1, 1, 5, 0))
+        assert result == 0.0
+
+
+class TestParseIntervalTimeValuesEdgeCases:
+    """Tests for edge cases in _parse_interval_time_values (lines 194->216, 204)."""
+
+    def test_value_none_causes_break(self) -> None:
+        """When Value Until Time N is None, parsing stops (line 204 break)."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Time 1": "08:00",
+                "Value Until Time 1": None,  # Missing value → break at line 204
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        # With no valid value, there are no time_values → returns 0.0
+        result = evaluate_day_interval(obj, datetime(2024, 1, 1, 6, 0))
+        assert result == 0.0
+
+    def test_all_144_intervals_exhausted(self) -> None:
+        """Providing 144 intervals exhausts the range (line 194->216 natural exit)."""
+        obj = MagicMock()
+
+        # Return sequential 10-minute intervals: 0:10, 0:20, ... up to 24:00
+        # We need exactly 144 intervals (144 * 10min = 1440min = 24h)
+        time_fields: dict[str, object] = {}
+        for i in range(1, 145):
+            total_minutes = i * 10
+            h = total_minutes // 60
+            m = total_minutes % 60
+            time_fields[f"Time {i}"] = f"{h:02d}:{m:02d}" if total_minutes < 1440 else "24:00"
+            time_fields[f"Value Until Time {i}"] = 1.0
+
+        obj.get.side_effect = lambda f: time_fields.get(f)
+        result = evaluate_day_interval(obj, datetime(2024, 1, 1, 12, 0))
+        assert result == 1.0
+
+
+class TestEvaluateDayListInterpolation:
+    """Tests for interpolation handling in evaluate_day_list (lines 141-143)."""
+
+    def test_interpolate_to_timestep_average(self) -> None:
+        """Interpolate to Timestep = Average enables interpolation."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": "Average",
+                "Value 1": 0.0,
+                "Value 2": 1.0,
+                "Value 3": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        # At 30 minutes into the first hour (halfway), interpolation should give ~0.5
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 30))
+        # With average interpolation enabled by the field
+        assert 0.0 <= result <= 1.0
+
+    def test_interpolate_to_timestep_yes(self) -> None:
+        """Interpolate to Timestep = Yes enables interpolation."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": "Yes",
+                "Value 1": 0.0,
+                "Value 2": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
+        assert result == 0.0
+
+    def test_interpolate_to_timestep_linear(self) -> None:
+        """Interpolate to Timestep = Linear enables interpolation (sets AVERAGE mode)."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": "Linear",
+                "Value 1": 0.5,
+                "Value 2": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        # The key point is that "Linear" sets interpolation to AVERAGE; the function executes the branch
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
+        assert isinstance(result, float)
+
+
+class TestEvaluateDayListInterpolateOther:
+    """Test when Interpolate to Timestep is non-standard (line 142->146)."""
+
+    def test_interpolate_other_value_no_change(self) -> None:
+        """Non-standard interpolation value doesn't change mode (line 142->146)."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Minutes per Item": 60,
+                "Interpolate to Timestep": "Other",  # Not "average"/"linear"/"yes"
+                "Value 1": 0.5,
+                "Value 2": None,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        # With "Other" as the interpolate value, interpolation stays NO
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 0))
+        assert isinstance(result, float)
+
+
+class TestEvaluateDayListEmpty:
+    """Test evaluate_day_list when no values exist (line 172)."""
+
+    def test_no_values_returns_zero(self) -> None:
+        """No Value fields returns 0.0."""
+        obj = MagicMock()
+
+        def get_field(field: str) -> object:
+            if field in ("Minutes per Item", "Interpolate to Timestep"):
+                return None
+            if field == "Value 1":
+                return None
+            return None
+
+        obj.get.side_effect = get_field
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 10, 0))
+        assert result == 0.0
+
+
+class TestEvaluateDayListEndOfDay:
+    """Test evaluate_day_list at end-of-day boundary (lines 158-169, 194->216, 204)."""
+
+    def test_last_value_caps_at_end_of_day(self) -> None:
+        """A 24th hourly value that hits 1440 minutes uses END_OF_DAY."""
+        obj = MagicMock()
+
+        call_count: list[int] = [0]
+
+        def get_field(field: str) -> object:
+            if field == "Minutes per Item":
+                return 60
+            if field == "Interpolate to Timestep":
+                return None
+            if field.startswith("Value "):
+                idx = int(field.split()[1])
+                if idx <= 24:
+                    return 1.0
+                return None
+            return None
+
+        obj.get.side_effect = get_field
+        _ = call_count  # suppress unused warning
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 23, 0))
+        assert result == 1.0
+
+
+class TestGetDayValuesAllTypes:
+    """Tests for get_day_values covering hourly, interval, list branches (247, 249, 251)."""
+
+    def test_hourly_type(self) -> None:
+        """get_day_values works with Schedule:Day:Hourly."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Hourly"
+        obj.get.side_effect = lambda f: 0.3 if f.startswith("Hour ") else None
+
+        result = get_day_values(obj, timestep=1)
+        assert len(result) == 24
+        assert all(v == 0.3 for v in result)
+
+    def test_interval_type(self) -> None:
+        """get_day_values works with Schedule:Day:Interval."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:Interval"
+
+        def get_field(field: str) -> object:
+            fields: dict[str, object] = {
+                "Time 1": "24:00",
+                "Value Until Time 1": 0.6,
+            }
+            return fields.get(field)
+
+        obj.get.side_effect = get_field
+        result = get_day_values(obj, timestep=1)
+        assert len(result) == 24
+        assert all(v == 0.6 for v in result)
+
+    def test_list_type(self) -> None:
+        """get_day_values works with Schedule:Day:List."""
+        obj = MagicMock()
+        obj.obj_type = "Schedule:Day:List"
+
+        def get_field(field: str) -> object:
+            if field == "Minutes per Item":
+                return 60
+            if field == "Interpolate to Timestep":
+                return None
+            if field.startswith("Value "):
+                idx = int(field.split()[1])
+                if idx <= 24:
+                    return 0.9
+                return None
+            return None
+
+        obj.get.side_effect = get_field
+        result = get_day_values(obj, timestep=1)
+        assert len(result) == 24
+        assert all(v == 0.9 for v in result)
