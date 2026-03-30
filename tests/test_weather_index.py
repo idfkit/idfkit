@@ -121,7 +121,7 @@ class TestDefaultCacheDir:
         with patch("idfkit.weather.index.sys") as mock_sys:
             mock_sys.platform = "darwin"
             result = default_cache_dir()
-            assert "Library/Caches/idfkit/weather" in str(result)
+            assert "Library/Caches/idfkit/weather" in result.as_posix()
 
     def test_linux_default(self) -> None:
         with patch("idfkit.weather.index.sys") as mock_sys:
@@ -130,7 +130,7 @@ class TestDefaultCacheDir:
             env.pop("XDG_CACHE_HOME", None)
             with patch.dict(os.environ, env, clear=True):
                 result = default_cache_dir()
-                assert ".cache/idfkit/weather" in str(result)
+                assert ".cache/idfkit/weather" in result.as_posix()
 
     def test_linux_xdg(self) -> None:
         with patch("idfkit.weather.index.sys") as mock_sys:
@@ -234,7 +234,7 @@ class TestParseExcel:
 
         mock_wb = MagicMock()
         mock_wb.sheetnames = ["Sheet1"]
-        mock_wb.__getitem__ = lambda self, key: mock_ws  # pyright: ignore[reportUnusedParameter]
+        mock_wb.__getitem__ = MagicMock(return_value=mock_ws)
 
         mock_openpyxl = MagicMock()
         mock_openpyxl.load_workbook.return_value = mock_wb
@@ -258,7 +258,7 @@ class TestParseExcel:
         mock_ws.iter_rows.return_value = rows
         mock_wb = MagicMock()
         mock_wb.sheetnames = ["Sheet1"]
-        mock_wb.__getitem__ = lambda self, key: mock_ws  # pyright: ignore[reportUnusedParameter]
+        mock_wb.__getitem__ = MagicMock(return_value=mock_ws)
         mock_openpyxl = MagicMock()
         mock_openpyxl.load_workbook.return_value = mock_wb
 

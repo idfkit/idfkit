@@ -317,15 +317,21 @@ class TestGetEpwByFilename:
     @patch("idfkit.weather.download.urlopen")
     def test_resolve_filename_loads_default_index(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
         """_resolve_filename with index=None loads default StationIndex (lines 180-182)."""
+        from idfkit.weather.index import StationIndex
+
         mock_resp = MagicMock()
         mock_resp.read.return_value = _make_zip_bytes()
         mock_resp.__enter__ = MagicMock(return_value=mock_resp)
         mock_resp.__exit__ = MagicMock(return_value=False)
         mock_urlopen.return_value = mock_resp
 
+        controlled_index = StationIndex.from_stations([_make_station()])
+
         downloader = WeatherDownloader(cache_dir=tmp_path)
-        # Call with index=None to trigger the auto-load path
-        epw = downloader.get_epw_by_filename(
-            "USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023",
-        )
+        with patch.object(StationIndex, "load", return_value=controlled_index) as mock_load:
+            # Call with index=None to trigger the auto-load path
+            epw = downloader.get_epw_by_filename(
+                "USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023",
+            )
+        mock_load.assert_called_once()
         assert epw.suffix == ".epw"
