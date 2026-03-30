@@ -109,7 +109,7 @@ class Vector3D:
             >>> Vector3D(1, 0, 0).length()
             1.0
         """
-        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+        return math.hypot(self.x, self.y, self.z)
 
     def normalize(self) -> Vector3D:
         """Return unit vector.

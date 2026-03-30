@@ -401,10 +401,9 @@ class IDFWriter:
         if isinstance(value, bool):
             return "Yes" if value else "No"
         if isinstance(value, float):
-            # Avoid scientific notation for small numbers
-            abs_val = abs(value)
-            if abs_val < 1e-10:
+            if value == 0.0:
                 return "0"
+            abs_val = abs(value)
             if abs_val >= 1e10 or abs_val < 0.0001:
                 return f"{value:.6e}"
             return f"{value:g}"
@@ -412,7 +411,14 @@ class IDFWriter:
             # Handle vertex lists etc.
             items = cast(list[Any], value)
             return ", ".join(str(v) for v in items)
-        return str(value)
+        text = str(value)
+        if any(ch in text for ch in (",", ";", "!")):
+            logger.warning(
+                "Field value %r contains IDF delimiter characters (comma, semicolon, or exclamation mark) "
+                "that will produce invalid IDF output",
+                text,
+            )
+        return text
 
     def write_to_file(self, filepath: Path | str, encoding: str = "latin-1") -> None:
         """Write to file."""

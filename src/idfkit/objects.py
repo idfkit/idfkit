@@ -503,7 +503,7 @@ class IDFObject(EppyObjectMixin):
             data=dict(self._data),
             schema=self._schema,
             document=None,  # Don't copy document reference
-            field_order=self._field_order,
+            field_order=list(self._field_order) if self._field_order is not None else None,
             ref_fields=self._ref_fields,
             source_text=None,  # copy is a new object; don't carry over verbatim text
             extensibles=self._extensibles,
