@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
-from idfkit import IDFDocument
+from unittest.mock import patch
+
+from idfkit import IDFDocument, new_document
+from idfkit.objects import IDFCollection, IDFObject
+from idfkit.schema import get_schema
 from idfkit.validation import (
     Severity,
     ValidationError,
     ValidationResult,
+    _validate_field_range,  # pyright: ignore[reportPrivateUsage]
+    _validate_field_type,  # pyright: ignore[reportPrivateUsage]
+    _validate_object,  # pyright: ignore[reportPrivateUsage]
     validate_document,
+    validate_object,
 )
 
 # ---------------------------------------------------------------------------
@@ -76,6 +84,19 @@ class TestValidationResult:
         result = ValidationResult(errors=[], warnings=[], info=[])
         s = str(result)
         assert "0 errors" in s
+
+    def test_str_many_errors_shows_overflow_message(self) -> None:
+        errors = [ValidationError(Severity.ERROR, "Zone", "Z1", None, f"Error {i}", "E001") for i in range(15)]
+        result = ValidationResult(errors=errors, warnings=[], info=[])
+        s = str(result)
+        assert "15 errors" in s
+        assert "5 more errors" in s
+
+    def test_str_exactly_ten_errors_no_overflow(self) -> None:
+        errors = [ValidationError(Severity.ERROR, "Zone", "Z1", None, f"Error {i}", "E001") for i in range(10)]
+        result = ValidationResult(errors=errors, warnings=[], info=[])
+        s = str(result)
+        assert "more errors" not in s
 
     def test_bool_valid(self) -> None:
         result = ValidationResult(errors=[], warnings=[], info=[])
@@ -158,8 +179,6 @@ class TestValidateSingletons:
 
     def _force_duplicate_singleton(self, doc: IDFDocument, obj_type: str) -> None:
         """Bypass add() singleton guard by inserting directly into the collection."""
-        from idfkit.objects import IDFCollection, IDFObject
-
         key = obj_type.upper()
         if key not in {k.upper(): k for k in doc.collections}:
             collection = IDFCollection(obj_type)
@@ -211,3 +230,281 @@ class TestSeverityEnum:
         assert Severity.ERROR.value == "error"
         assert Severity.WARNING.value == "warning"
         assert Severity.INFO.value == "info"
+
+
+# ---------------------------------------------------------------------------
+# validate_object (public API)
+# ---------------------------------------------------------------------------
+
+
+class TestValidateObjectPublicApi:
+    def test_valid_object_returns_no_errors(self) -> None:
+        schema = get_schema((24, 1, 0))
+        doc = new_document(version=(24, 1, 0))
+        zone = doc.add("Zone", "Z1")
+        errors = validate_object(zone, schema)
+        assert isinstance(errors, list)
+
+    def test_unknown_type_returns_warning(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="FakeObjectType999", name="x")
+        errors = validate_object(obj, schema)
+        assert any(e.code == "W002" for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# _validate_object (unknown type / unknown field)
+# ---------------------------------------------------------------------------
+
+
+class TestValidateObjectUnknownType:
+    def test_unknown_object_type_produces_w002(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="NotARealType", name="test")
+        errors = _validate_object(obj, schema)
+        assert len(errors) == 1
+        assert errors[0].code == "W002"
+        assert errors[0].severity == Severity.WARNING
+
+
+class TestValidateObjectUnknownField:
+    def test_unknown_field_on_non_extensible_produces_w003(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"not_a_real_field": "value"})
+        errors = _validate_object(obj, schema, check_unknown=True)
+        assert any(e.code == "W003" for e in errors)
+
+    def test_unknown_field_on_extensible_no_w003(self) -> None:
+        schema = get_schema((24, 1, 0))
+        # BuildingSurface:Detailed is extensible; extra vertex fields should not warn
+        obj = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="Wall1",
+            data={"vertex_999_x_coordinate": 1.0},
+        )
+        errors = _validate_object(obj, schema, check_unknown=True)
+        assert not any(e.code == "W003" for e in errors)
+
+    def test_unknown_field_skipped_when_check_unknown_false(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"not_a_real_field": "value"})
+        errors = _validate_object(obj, schema, check_unknown=False)
+        assert not any(e.code == "W003" for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# validate_document severity routing (warnings / info to correct buckets)
+# ---------------------------------------------------------------------------
+
+
+class TestValidateDocumentSeverityRouting:
+    def test_object_warning_goes_to_warnings_list(self) -> None:
+        """Objects of unknown type produce W002 warnings routed to result.warnings."""
+        doc = new_document(version=(24, 1, 0))
+        fake_type = "FakeObjectType999"
+        coll: IDFCollection[IDFObject] = IDFCollection(fake_type)  # pyright: ignore[reportUnknownVariableType]
+        coll._items.append(IDFObject(obj_type=fake_type, name="fake1"))  # pyright: ignore[reportPrivateUsage]
+        doc._collections[fake_type] = coll  # pyright: ignore[reportPrivateUsage]
+
+        result = validate_document(doc, object_types=[fake_type])
+        assert any(e.code == "W002" for e in result.warnings)
+
+    def test_info_severity_goes_to_info_list(self) -> None:
+        """ValidationErrors with INFO severity end up in result.info."""
+        info_err = ValidationError(Severity.INFO, "Zone", "Z1", None, "Info msg", "I001")
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1")  # add before patching so add-time validation runs normally
+
+        with patch("idfkit.validation._validate_object", return_value=[info_err]):
+            result = validate_document(doc, object_types=["Zone"])
+
+        assert any(e.code == "I001" for e in result.info)
+
+    def test_reference_warning_goes_to_warnings_list(self) -> None:
+        """Reference errors with WARNING severity end up in result.warnings."""
+        warn_err = ValidationError(Severity.WARNING, "Zone", "Z1", "field", "Ref warning", "W099")
+        doc = new_document(version=(24, 1, 0))
+
+        with patch("idfkit.validation._validate_references", return_value=[warn_err]):
+            result = validate_document(doc, object_types=[])
+
+        assert any(e.code == "W099" for e in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# _validate_field_type
+# ---------------------------------------------------------------------------
+
+
+class TestValidateFieldType:
+    def _obj(self) -> IDFObject:
+        return IDFObject(obj_type="Zone", name="Z1")
+
+    def test_anyof_valid_value(self) -> None:
+        field_schema: dict[str, object] = {"anyOf": [{"type": "number"}, {"type": "string"}]}
+        errors = _validate_field_type(self._obj(), "f", 42.0, field_schema)
+        assert errors == []
+
+    def test_anyof_invalid_value(self) -> None:
+        field_schema: dict[str, object] = {"anyOf": [{"type": "number"}]}
+        errors = _validate_field_type(self._obj(), "f", "not_a_number", field_schema)
+        assert any(e.code == "E002" for e in errors)
+
+    def test_single_type_mismatch(self) -> None:
+        field_schema: dict[str, object] = {"type": "number"}
+        errors = _validate_field_type(self._obj(), "f", "not_a_number", field_schema)
+        assert any(e.code == "E003" for e in errors)
+
+    def test_enum_valid_case_insensitive(self) -> None:
+        field_schema: dict[str, object] = {"enum": ["Yes", "No"]}
+        errors = _validate_field_type(self._obj(), "f", "yes", field_schema)
+        assert errors == []
+
+    def test_enum_invalid_string(self) -> None:
+        field_schema: dict[str, object] = {"enum": ["Yes", "No"]}
+        errors = _validate_field_type(self._obj(), "f", "Maybe", field_schema)
+        assert any(e.code == "E004" for e in errors)
+
+    def test_enum_invalid_non_string(self) -> None:
+        field_schema: dict[str, object] = {"enum": [1, 2, 3]}
+        errors = _validate_field_type(self._obj(), "f", 99, field_schema)
+        assert any(e.code == "E004" for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# _value_matches_type (exercised via _validate_field_type)
+# ---------------------------------------------------------------------------
+
+
+class TestValueMatchesType:
+    def _obj(self) -> IDFObject:
+        return IDFObject(obj_type="Zone", name="Z1")
+
+    def test_number_accepts_int_and_float(self) -> None:
+        for val in (1, 1.5):
+            errors = _validate_field_type(self._obj(), "f", val, {"type": "number"})
+            assert errors == [], f"Expected no errors for {val!r}"
+
+    def test_number_rejects_string(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", "oops", {"type": "number"})
+        assert any(e.code == "E003" for e in errors)
+
+    def test_integer_accepts_whole_float(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", 3.0, {"type": "integer"})
+        assert errors == []
+
+    def test_integer_rejects_fractional_float(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", 3.5, {"type": "integer"})
+        assert any(e.code == "E003" for e in errors)
+
+    def test_string_rejects_int(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", 42, {"type": "string"})
+        assert any(e.code == "E003" for e in errors)
+
+    def test_boolean_accepts_bool(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", True, {"type": "boolean"})
+        assert errors == []
+
+    def test_boolean_rejects_int(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", 1, {"type": "boolean"})
+        assert any(e.code == "E003" for e in errors)
+
+    def test_array_accepts_list(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", [1, 2], {"type": "array"})
+        assert errors == []
+
+    def test_array_rejects_dict(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", {}, {"type": "array"})
+        assert any(e.code == "E003" for e in errors)
+
+    def test_object_accepts_dict(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", {"key": "val"}, {"type": "object"})
+        assert errors == []
+
+    def test_object_rejects_list(self) -> None:
+        errors = _validate_field_type(self._obj(), "f", [], {"type": "object"})
+        assert any(e.code == "E003" for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# _validate_field_range
+# ---------------------------------------------------------------------------
+
+
+class TestValidateObjectNullFieldSkipped:
+    def test_none_value_in_data_is_skipped(self) -> None:
+        """Fields with None value in obj.data are skipped (no type/range checks)."""
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"x_origin": None, "y_origin": 0.0})
+        errors = _validate_object(obj, schema)
+        assert not any(e.field == "x_origin" for e in errors)
+
+    def test_empty_string_value_in_data_is_skipped(self) -> None:
+        """Fields with empty string value are skipped."""
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"x_origin": "", "y_origin": 0.0})
+        errors = _validate_object(obj, schema)
+        assert not any(e.field == "x_origin" for e in errors)
+
+
+class TestValueMatchesTypeEnumBranch:
+    """Tests for the enum-only branch in _value_matches_type (no 'type' key, has 'enum')."""
+
+    def _obj(self) -> IDFObject:
+        return IDFObject(obj_type="Zone", name="Z1")
+
+    def test_anyof_subschema_enum_match(self) -> None:
+        """anyOf sub-schema with only 'enum' (no 'type') should match via enum check."""
+        field_schema: dict[str, object] = {"anyOf": [{"enum": ["Yes", "No"]}, {"type": "string"}]}
+        errors = _validate_field_type(self._obj(), "f", "Yes", field_schema)
+        assert errors == []
+
+    def test_anyof_subschema_enum_no_match_falls_through(self) -> None:
+        """Value not in enum sub-schema causes the sub-schema to be invalid."""
+        field_schema: dict[str, object] = {"anyOf": [{"enum": ["Yes", "No"]}]}
+        errors = _validate_field_type(self._obj(), "f", "Maybe", field_schema)
+        assert any(e.code == "E002" for e in errors)
+
+    def test_anyof_subschema_no_type_no_enum_assumes_valid(self) -> None:
+        """anyOf sub-schema with no 'type' and no 'enum' returns True (unknown type)."""
+        # A sub-schema with only a description (no type, no enum) matches any value
+        field_schema: dict[str, object] = {"anyOf": [{"description": "anything goes"}]}
+        errors = _validate_field_type(self._obj(), "f", "anything", field_schema)
+        assert errors == []
+
+
+class TestValidateFieldRange:
+    def _obj(self) -> IDFObject:
+        return IDFObject(obj_type="Zone", name="Z1")
+
+    def test_below_minimum(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", -1.0, {"minimum": 0.0})
+        assert any(e.code == "E005" for e in errors)
+
+    def test_at_minimum_passes(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 0.0, {"minimum": 0.0})
+        assert errors == []
+
+    def test_at_exclusive_minimum_fails(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 0.0, {"exclusiveMinimum": 0.0})
+        assert any(e.code == "E006" for e in errors)
+
+    def test_above_exclusive_minimum_passes(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 0.1, {"exclusiveMinimum": 0.0})
+        assert errors == []
+
+    def test_above_maximum(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 11.0, {"maximum": 10.0})
+        assert any(e.code == "E007" for e in errors)
+
+    def test_at_maximum_passes(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 10.0, {"maximum": 10.0})
+        assert errors == []
+
+    def test_at_exclusive_maximum_fails(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 10.0, {"exclusiveMaximum": 10.0})
+        assert any(e.code == "E008" for e in errors)
+
+    def test_below_exclusive_maximum_passes(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 9.9, {"exclusiveMaximum": 10.0})
+        assert errors == []
