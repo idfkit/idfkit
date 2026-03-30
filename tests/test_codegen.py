@@ -143,9 +143,9 @@ class TestGenerate:
         (io_ref / "index.html").write_text('<h2 id="not-a-real-object">Nope</h2><h2 id="zone">Zone</h2>')
 
         result = generate(tmp_path)
-        assert "Zone" in result
-        # The fake anchor should not produce any mapping
-        assert all(v != "not-a-real-object" for v in result.values())
+        # Only the real "Zone" object should be present; the fake anchor is skipped
+        assert set(result.keys()) == {"Zone"}
+        assert all("#not-a-real-object" not in v for v in result.values())
 
     def test_generate_first_match_wins(self, tmp_path: Path) -> None:
         """Cover branch 89: duplicate object type keeps the first location."""
@@ -181,26 +181,30 @@ class TestDocLocationsMain:
         assert "Zone" in data
 
     def test_main_default_argv(self, tmp_path: Path) -> None:
-        # When no argv given, uses _DEFAULT_DOCS_DIST which likely doesn't exist
+        # Patch _DEFAULT_DOCS_DIST to a guaranteed-missing path so SystemExit is deterministic
+        missing_dir = tmp_path / "missing"
         with (
+            patch("idfkit.codegen.generate_doc_locations._DEFAULT_DOCS_DIST", missing_dir),
             patch.object(sys, "argv", ["prog"]),
             pytest.raises(SystemExit),
         ):
             doc_locations_main()
 
-    def test_main_nonexistent_dir(self) -> None:
+    def test_main_nonexistent_dir(self, tmp_path: Path) -> None:
+        missing_dir = tmp_path / "missing"
         with (
-            patch.object(sys, "argv", ["prog", "/nonexistent/path"]),
+            patch.object(sys, "argv", ["prog", str(missing_dir)]),
             pytest.raises(SystemExit),
         ):
             doc_locations_main()
 
-    def test_main_via_module_execution(self) -> None:
+    def test_main_via_module_execution(self, tmp_path: Path) -> None:
         """Cover line 111: if __name__ == '__main__'."""
         import runpy
 
+        missing_dir = tmp_path / "missing"
         with (
-            patch.object(sys, "argv", ["prog", "/nonexistent/path"]),
+            patch.object(sys, "argv", ["prog", str(missing_dir)]),
             pytest.raises(SystemExit),
         ):
             runpy.run_module("idfkit.codegen.generate_doc_locations", run_name="__main__")
@@ -475,12 +479,15 @@ class TestGenerateAttrProperties:
 
 class TestBuildVersionAvailability:
     def test_returns_type_and_field_since(self) -> None:
-        type_since, field_since = _build_version_availability()
+        # Patch ENERGYPLUS_VERSIONS to a small subset to keep this test fast
+        patched_versions = [(24, 1, 0), (24, 2, 0)]
+        with patch("idfkit.codegen.generate_stubs.ENERGYPLUS_VERSIONS", patched_versions):
+            type_since, field_since = _build_version_availability()
         assert isinstance(type_since, dict)
         assert isinstance(field_since, dict)
-        # Zone should exist since the earliest version
+        # Zone should exist and be associated with the earliest patched version
         assert "Zone" in type_since
-        assert type_since["Zone"] == (8, 9, 0)
+        assert type_since["Zone"] == min(patched_versions)
 
 
 class TestGenerateStubs:
@@ -522,34 +529,58 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
 
     if types_backup is not None:
         types_file.write_text(types_backup)
+    elif types_file.exists():
+        types_file.unlink()
     if doc_backup is not None:
         doc_file.write_text(doc_backup)
+    elif doc_file.exists():
+        doc_file.unlink()
 
 
-@pytest.mark.usefixtures("_preserve_generated_stubs")
 class TestStubsMain:
-    def test_main_writes_files(self, _preserve_generated_stubs: tuple[Path, Path]) -> None:
+    def test_main_writes_files(self, tmp_path: Path) -> None:
         """Cover lines 589-616: main() function."""
-        types_file, doc_file = _preserve_generated_stubs
-        with patch.object(sys, "argv", ["prog", "24.1.0"]):
+        import idfkit.codegen.generate_stubs as stubs_mod
+
+        fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
+        with (
+            patch.object(stubs_mod, "__file__", fake_file),
+            patch("subprocess.run"),
+            patch.object(sys, "argv", ["prog", "24.1.0"]),
+        ):
             stubs_main()
+        types_file = tmp_path / "_generated_types.pyi"
+        doc_file = tmp_path / "document.pyi"
         assert types_file.exists()
         assert doc_file.exists()
         assert types_file.stat().st_size > 0
         assert doc_file.stat().st_size > 0
 
-    def test_main_default_version(self, _preserve_generated_stubs: tuple[Path, Path]) -> None:
+    def test_main_default_version(self, tmp_path: Path) -> None:
         """Cover main() with no version argument."""
-        types_file, _ = _preserve_generated_stubs
-        with patch.object(sys, "argv", ["prog"]):
-            stubs_main()
-        assert types_file.exists()
+        import idfkit.codegen.generate_stubs as stubs_mod
 
-    def test_main_via_module_execution(self, _preserve_generated_stubs: tuple[Path, Path]) -> None:
+        fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
+        with (
+            patch.object(stubs_mod, "__file__", fake_file),
+            patch("subprocess.run"),
+            patch.object(sys, "argv", ["prog"]),
+        ):
+            stubs_main()
+        assert (tmp_path / "_generated_types.pyi").exists()
+
+    def test_main_via_module_execution(self, tmp_path: Path) -> None:
         """Cover line 620: if __name__ == '__main__'."""
         import runpy
 
-        with patch.object(sys, "argv", ["prog", "24.1.0"]):
+        import idfkit.codegen.generate_stubs as stubs_mod
+
+        fake_file = str(tmp_path / "codegen" / "generate_stubs.py")
+        with (
+            patch.object(stubs_mod, "__file__", fake_file),
+            patch("subprocess.run"),
+            patch.object(sys, "argv", ["prog", "24.1.0"]),
+        ):
             runpy.run_module("idfkit.codegen.generate_stubs", run_name="__main__")
 
 

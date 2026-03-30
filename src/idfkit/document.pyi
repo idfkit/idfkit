@@ -1,7 +1,7 @@
-"""Auto-generated type stub for IDFDocument (EnergyPlus 25.2.0).
+"""Auto-generated type stub for IDFDocument (EnergyPlus 24.1.0).
 
 DO NOT EDIT — regenerate with:
-    python -m idfkit.codegen.generate_stubs 25.2.0
+    python -m idfkit.codegen.generate_stubs 24.1.0
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from .references import ReferenceGraph
 from .schema import EpJSONSchema
 from .simulation.config import EnergyPlusConfig
 
-Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
+Strict = TypeVar('Strict', bound=bool, default=bool, covariant=True)
 
 _PYTHON_TO_IDF: dict[str, str]
 _IDF_TO_PYTHON: dict[str, str]
@@ -36,6 +36,7 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         *,
         strict: Strict = ...,
     ) -> None: ...
+
     @property
     def version(self) -> tuple[int, int, int]: ...
     @property
@@ -50,6 +51,7 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def collections(self) -> dict[str, IDFCollection[IDFObject]]: ...
     @property
     def references(self) -> ReferenceGraph: ...
+
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]: ...
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]: ...
     def __contains__(self, obj_type: str) -> bool: ...  # type: ignore[override]
@@ -79,6 +81,7 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]: ...
     def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]: ...
     def copy(self) -> IDFDocument[Strict]: ...
+
     @property
     def zones(self) -> IDFCollection[Zone]: ...
     @property
