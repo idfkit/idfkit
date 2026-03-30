@@ -539,3 +539,113 @@ class TestTimeSeriesResultFrozen:
             ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
         with pytest.raises(AttributeError):
             ts.variable_name = "changed"  # type: ignore[misc]
+
+
+class TestTimeSeriesResultToDataframe:
+    """Tests for TimeSeriesResult.to_dataframe() and SQLResult.to_dataframe()."""
+
+    def test_no_pandas_raises_import_error(self, sql_db: Path) -> None:
+        """to_dataframe() raises ImportError when pandas is not installed."""
+        import sys
+
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+
+        saved = sys.modules.get("pandas")
+        sys.modules["pandas"] = None  # type: ignore[assignment]
+        try:
+            with pytest.raises(ImportError, match="pandas is required"):
+                ts.to_dataframe()
+        finally:
+            if saved is None:
+                del sys.modules["pandas"]
+            else:
+                sys.modules["pandas"] = saved
+
+    def test_to_dataframe_with_pandas(self, sql_db: Path) -> None:
+        """to_dataframe() returns a DataFrame when pandas is installed."""
+        pytest.importorskip("pandas")
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="annual")
+        df = ts.to_dataframe()
+        assert hasattr(df, "index")
+        assert len(df) == 4
+
+    def test_sql_result_to_dataframe_no_pandas(self, sql_db: Path) -> None:
+        """SQLResult.to_dataframe() raises ImportError when pandas is not installed."""
+        import sys
+
+        saved = sys.modules.get("pandas")
+        sys.modules["pandas"] = None  # type: ignore[assignment]
+        try:
+            with SQLResult(sql_db) as sql, pytest.raises(ImportError, match="pandas is required"):
+                sql.to_dataframe("Site Outdoor Air Drybulb Temperature")
+        finally:
+            if saved is None:
+                del sys.modules["pandas"]
+            else:
+                sys.modules["pandas"] = saved
+
+    def test_sql_result_to_dataframe_with_pandas(self, sql_db: Path) -> None:
+        """SQLResult.to_dataframe() returns a DataFrame when pandas is installed."""
+        pytest.importorskip("pandas")
+        with SQLResult(sql_db) as sql:
+            df = sql.to_dataframe("Site Outdoor Air Drybulb Temperature", environment="annual")
+        assert hasattr(df, "index")
+        assert len(df) == 4
+
+
+class TestTimeSeriesResultPlot:
+    """Tests for TimeSeriesResult.plot()."""
+
+    def test_plot_calls_backend(self, sql_db: Path) -> None:
+        """plot() delegates to the backend's line() method."""
+        from unittest.mock import MagicMock
+
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="annual")
+
+        backend = MagicMock()
+        backend.line.return_value = MagicMock()
+        ts.plot(backend=backend)
+        backend.line.assert_called_once()
+        call_kwargs = backend.line.call_args[1]
+        assert "title" in call_kwargs
+        assert "xlabel" in call_kwargs
+        assert "ylabel" in call_kwargs
+
+    def test_plot_auto_detects_backend(self, sql_db: Path) -> None:
+        """plot() calls get_default_backend() when no backend is provided."""
+        from unittest.mock import MagicMock, patch
+
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries("Site Outdoor Air Drybulb Temperature", environment="annual")
+
+        mock_backend = MagicMock()
+        mock_backend.line.return_value = MagicMock()
+        with patch("idfkit.simulation.plotting.get_default_backend", return_value=mock_backend) as mock_get:
+            ts.plot()
+        mock_get.assert_called_once()
+        mock_backend.line.assert_called_once()
+
+
+class TestGetTimeseriesInvalidEnvironment:
+    """Tests for get_timeseries() with invalid environment parameter."""
+
+    def test_invalid_environment_raises_value_error(self, sql_db: Path) -> None:
+        """Passing an unrecognized environment string raises ValueError."""
+        with SQLResult(sql_db) as sql, pytest.raises(ValueError, match="environment must be"):
+            sql.get_timeseries(
+                "Site Outdoor Air Drybulb Temperature",
+                environment="bogus",  # type: ignore[arg-type]
+            )
+
+    def test_get_timeseries_with_frequency_filter(self, sql_db: Path) -> None:
+        """Passing frequency filters by reporting frequency."""
+        with SQLResult(sql_db) as sql:
+            ts = sql.get_timeseries(
+                "Site Outdoor Air Drybulb Temperature",
+                environment="annual",
+                frequency="Hourly",
+            )
+        assert len(ts.values) == 4

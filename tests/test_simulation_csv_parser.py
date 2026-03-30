@@ -108,3 +108,28 @@ class TestFrozen:
         result = CSVResult.from_file(FIXTURES / "sample.csv")
         with pytest.raises(AttributeError):
             result.columns[0].header = "changed"  # type: ignore[misc]
+
+
+class TestEdgeCases:
+    """Tests for edge cases not covered by the main tests."""
+
+    def test_empty_row_skipped(self) -> None:
+        """Empty rows (L87) should be silently skipped."""
+        text = "Date/Time,Env:Var [C](Hourly)\n 01/01  01:00:00,1.0\n\n 01/01  02:00:00,2.0\n"
+        result = CSVResult.from_string(text)
+        # The empty row is skipped; only two data rows
+        assert len(result.timestamps) == 2
+
+    def test_non_numeric_value_becomes_zero(self) -> None:
+        """Non-numeric cell values (L94-95) should be stored as 0.0."""
+        text = "Date/Time,Env:Var [C](Hourly)\n 01/01  01:00:00,N/A\n"
+        result = CSVResult.from_string(text)
+        assert result.columns[0].values == (0.0,)
+
+    def test_short_row_pads_with_zero(self) -> None:
+        """Rows shorter than the header (L96-99) should be padded with 0.0."""
+        text = "Date/Time,ColA [C](Hourly),ColB [C](Hourly)\n 01/01  01:00:00,1.5\n"
+        result = CSVResult.from_string(text)
+        assert result.columns[0].values == (1.5,)
+        # ColB has no value in the short row — should be padded with 0.0
+        assert result.columns[1].values == (0.0,)

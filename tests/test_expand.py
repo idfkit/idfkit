@@ -314,6 +314,18 @@ class TestHasBasementObjects:
         doc.add("Zone", "Office", {"x_origin": 0.0})
         assert _has_basement_objects(doc) is False
 
+    def test_prefix_fallback_without_schema(self) -> None:
+        """_has_basement_objects falls back to prefix matching when model has no schema (L161)."""
+        doc = IDFDocument(version=(24, 1, 0), schema=None)
+        doc.addidfobject(IDFObject(obj_type="GroundHeatTransfer:Basement:SimParameters", name="", data={}))
+        assert _has_basement_objects(doc) is True
+
+    def test_prefix_fallback_without_schema_false(self) -> None:
+        """Returns False via prefix fallback when no basement objects exist."""
+        doc = IDFDocument(version=(24, 1, 0), schema=None)
+        doc.addidfobject(IDFObject(obj_type="Zone", name="Office", data={}))
+        assert _has_basement_objects(doc) is False
+
 
 # ---------------------------------------------------------------------------
 # needs_ground_heat_preprocessing tests

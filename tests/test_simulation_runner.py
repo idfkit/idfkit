@@ -405,3 +405,51 @@ class TestSimulatePreprocessing:
 
         assert set(model.keys()) == original_types
         assert "Output:SQLite" not in model
+
+
+# ---------------------------------------------------------------------------
+# _run_simple: OSError path (L248-250)
+# ---------------------------------------------------------------------------
+
+
+class TestRunSimpleOSError:
+    """Tests for the OSError exception path in _run_simple()."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_os_error_raises_simulation_error(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """subprocess.run raising OSError should raise SimulationError."""
+        mock_run.side_effect = OSError("No such file or directory")
+        model = new_document()
+        with pytest.raises(SimulationError, match="Failed to start EnergyPlus"):
+            simulate(model, weather_file, energyplus=mock_config)
+
+
+# ---------------------------------------------------------------------------
+# resolve_config: auto-discovery path (_common.py L31)
+# ---------------------------------------------------------------------------
+
+
+class TestResolveConfig:
+    """Tests for resolve_config() auto-discovery path."""
+
+    def test_auto_discovers_energyplus(self, mock_config: EnergyPlusConfig) -> None:
+        """resolve_config(None) calls find_energyplus() when no config is provided."""
+        from idfkit.simulation._common import resolve_config  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.simulation._common.find_energyplus", return_value=mock_config) as mock_find:
+            result = resolve_config(None)
+
+        mock_find.assert_called_once()
+        assert result is mock_config
+
+    def test_returns_provided_config(self, mock_config: EnergyPlusConfig) -> None:
+        """resolve_config(config) returns the config without calling find_energyplus."""
+        from idfkit.simulation._common import resolve_config  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.simulation._common.find_energyplus") as mock_find:
+            result = resolve_config(mock_config)
+
+        mock_find.assert_not_called()
+        assert result is mock_config
