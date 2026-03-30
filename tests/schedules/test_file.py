@@ -309,3 +309,205 @@ class TestEmptyFile:
 
         result = _read_schedule_file(obj, fs, Path("empty.csv"))
         assert result == []
+
+
+class TestMissingFileName:
+    """Tests for missing File Name field (lines 92-93)."""
+
+    def test_missing_file_name_raises(self) -> None:
+        """_resolve_path raises ValueError when File Name is absent."""
+        cache = ScheduleFileCache()
+        obj = MagicMock()
+        obj.get.return_value = None  # All fields return None
+        fs = MagicMock()
+
+        with pytest.raises(ValueError, match="missing 'File Name'"):
+            cache.get_values(obj, fs, None)
+
+
+class TestRelativePathResolution:
+    """Tests for relative path resolution (lines 98->103, 100)."""
+
+    def test_relative_path_with_base(self) -> None:
+        """Relative path is resolved against base_path (line 101)."""
+        cache = ScheduleFileCache()
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "data.csv",  # relative
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = "0.5\n1.0"
+
+        result = cache.get_values(obj, fs, base_path=Path("/some/dir"))
+        assert result == [0.5, 1.0]
+        # Verify the resolved path was used
+        fs.read_text.assert_called_once_with(Path("/some/dir/data.csv"))
+
+    def test_relative_path_without_base_uses_cwd(self) -> None:
+        """Relative path without base_path uses cwd (line 100)."""
+        import os
+
+        cache = ScheduleFileCache()
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "data.csv",
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = "0.3"
+
+        result = cache.get_values(obj, fs, base_path=None)
+        assert result == [0.3]
+        expected_path = Path(os.getcwd()) / "data.csv"
+        fs.read_text.assert_called_once_with(expected_path)
+
+    def test_absolute_path_not_modified(self) -> None:
+        """Absolute file path is used as-is without prepending base_path (line 98->103)."""
+        cache = ScheduleFileCache()
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "/absolute/path/data.csv",  # absolute path
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = "0.7"
+
+        result = cache.get_values(obj, fs, base_path=Path("/some/other/dir"))
+        assert result == [0.7]
+        # Verify the absolute path was used directly
+        fs.read_text.assert_called_once_with(Path("/absolute/path/data.csv"))
+
+
+class TestGetInterpolationFromObj:
+    """Tests for _get_interpolation_from_obj (line 189)."""
+
+    def test_interpolate_yes_returns_average(self) -> None:
+        """Interpolate field 'yes' returns AVERAGE interpolation."""
+        from idfkit.schedules.file import _get_interpolation_from_obj  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schedules.types import Interpolation
+
+        obj = MagicMock()
+        obj.get.return_value = "Yes"
+        result = _get_interpolation_from_obj(obj, Interpolation.NO)
+        assert result == Interpolation.AVERAGE
+
+    def test_interpolate_average_returns_average(self) -> None:
+        """Interpolate field 'average' returns AVERAGE interpolation."""
+        from idfkit.schedules.file import _get_interpolation_from_obj  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schedules.types import Interpolation
+
+        obj = MagicMock()
+        obj.get.return_value = "average"
+        result = _get_interpolation_from_obj(obj, Interpolation.NO)
+        assert result == Interpolation.AVERAGE
+
+    def test_interpolate_no_returns_no(self) -> None:
+        """Interpolate field 'no' returns NO interpolation."""
+        from idfkit.schedules.file import _get_interpolation_from_obj  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schedules.types import Interpolation
+
+        obj = MagicMock()
+        obj.get.return_value = "no"
+        result = _get_interpolation_from_obj(obj, Interpolation.AVERAGE)
+        assert result == Interpolation.NO
+
+
+class TestInterpolateValueBoundary:
+    """Tests for _interpolate_value out-of-bounds (line 195)."""
+
+    def test_index_beyond_list_returns_last(self) -> None:
+        """Index beyond list length returns last element."""
+        from idfkit.schedules.file import _interpolate_value  # pyright: ignore[reportPrivateUsage]
+
+        result = _interpolate_value([1.0, 2.0, 3.0], index=10, fraction=0.5, interpolate=False)
+        assert result == 3.0
+
+    def test_empty_list_returns_zero(self) -> None:
+        """Empty list returns 0.0."""
+        from idfkit.schedules.file import _interpolate_value  # pyright: ignore[reportPrivateUsage]
+
+        result = _interpolate_value([], index=0, fraction=0.0, interpolate=False)
+        assert result == 0.0
+
+
+class TestEvaluateScheduleFileEmpty:
+    """Tests for evaluate_schedule_file with empty values (line 231)."""
+
+    def test_empty_schedule_file_returns_zero(self) -> None:
+        """Empty schedule file returns 0.0."""
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "empty.csv",
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+            "Minutes per Item": 60,
+            "Interpolate to Timestep": None,
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = ""
+
+        cache = ScheduleFileCache()
+        result = evaluate_schedule_file(obj, datetime(2024, 1, 1, 0, 0), fs, Path("/base"), cache)
+        assert result == 0.0
+
+
+class TestGetScheduleFileValuesDefaults:
+    """Tests for get_schedule_file_values without fs/cache (lines 264-265->268)."""
+
+    def test_without_cache_uses_default_cache(self) -> None:
+        """get_schedule_file_values with cache=None exercises the default-cache branch (line 265->268)."""
+        from idfkit.schedules.file import _default_cache  # pyright: ignore[reportPrivateUsage]
+
+        # Clear the global cache so prior tests don't interfere
+        _default_cache.clear()
+
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "unique_file_for_default_cache_test.csv",
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        fs = MagicMock()
+        fs.read_text.return_value = "0.5\n1.0"
+
+        # Provide fs but not cache to exercise the cache=None branch (line 265->268)
+        result = get_schedule_file_values(obj, fs=fs, base_path=Path("/base"), cache=None)
+        assert result == [0.5, 1.0]
+
+    def test_without_fs_uses_local_filesystem(self) -> None:
+        """get_schedule_file_values with fs=None creates LocalFileSystem (line 264)."""
+        from unittest.mock import patch
+
+        from idfkit.schedules import file as file_module
+
+        obj = MagicMock()
+        obj.get.side_effect = lambda f: {
+            "File Name": "/absolute/test_264.csv",
+            "Column Number": 1,
+            "Rows to Skip at Top": 0,
+            "Column Separator": "Comma",
+        }.get(f)
+
+        cache = ScheduleFileCache()
+        mock_fs = MagicMock()
+        mock_fs.read_text.return_value = "0.9"
+
+        # Patch LocalFileSystem to return our mock_fs so we don't touch real files
+        with patch.object(file_module, "LocalFileSystem", return_value=mock_fs):
+            result = get_schedule_file_values(obj, fs=None, base_path=None, cache=cache)
+
+        assert result == [0.9]

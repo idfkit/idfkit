@@ -281,3 +281,164 @@ class TestMalformedDateWarning:
             assert len(result) == 0  # Malformed entry skipped
             assert len(w) == 1
             assert "cannot parse date" in str(w[0].message).lower()
+
+
+class TestParseDateSpecEdgeCases:
+    """Tests for edge cases in _parse_date_spec (lines 99->114, 110->114, 124->130, 139->144)."""
+
+    def test_single_word_falls_to_nth_pattern(self) -> None:
+        """A single word with no spaces falls through to nth/last match then raises."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("NotADate", 2024)
+
+    def test_two_parts_non_month_non_digit(self) -> None:
+        """Two words where first is not a month name and not a digit falls through."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("foo bar", 2024)
+
+    def test_nth_pattern_with_unrecognized_weekday(self) -> None:
+        """nth pattern that matches regex but has unknown weekday falls through (line 124->130)."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("3rd NotADay in January", 2024)
+
+    def test_nth_pattern_with_unrecognized_month(self) -> None:
+        """nth pattern that matches regex but has unknown month falls through (line 124->130)."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("3rd Monday in NotAMonth", 2024)
+
+    def test_last_pattern_with_unrecognized_weekday(self) -> None:
+        """Last pattern that matches regex but has unknown weekday falls through (line 139->144)."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("Last NotADay in January", 2024)
+
+    def test_last_pattern_with_unrecognized_month(self) -> None:
+        """Last pattern that matches regex but has unknown month falls through (line 139->144)."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("Last Monday in NotAMonth", 2024)
+
+    def test_two_parts_digit_then_unrecognized_month(self) -> None:
+        """'1 NotAMonth' falls through the Day Month branch (line 110->114)."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            _parse_date_spec("1 NotAMonth", 2024)
+
+
+class TestExtractSpecialDaysEdgeCases:
+    """Tests for edge cases in extract_special_days (lines 220, 238)."""
+
+    def test_missing_start_date_skips(self) -> None:
+        """An entry with no Start Date field is skipped (line 220)."""
+        doc = MagicMock()
+
+        obj = MagicMock()
+        obj.name = "NoDate"
+        obj.get.side_effect = lambda f: {
+            "Start Date": None,  # Missing
+            "Duration": 1,
+            "Special Day Type": "Holiday",
+        }.get(f)
+
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter([obj])
+        collection.__len__ = lambda self: 1
+        doc.__getitem__.return_value = collection
+
+        result = extract_special_days(doc, 2024)
+        assert result == []
+
+    def test_missing_duration_defaults_to_one(self) -> None:
+        """Missing Duration defaults to 1 (line 233)."""
+        doc = MagicMock()
+
+        obj = MagicMock()
+        obj.name = "NoDuration"
+        obj.get.side_effect = lambda f: {
+            "Start Date": "January 1",
+            "Duration": None,  # Missing
+            "Special Day Type": "Holiday",
+        }.get(f)
+
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter([obj])
+        collection.__len__ = lambda self: 1
+        doc.__getitem__.return_value = collection
+
+        result = extract_special_days(doc, 2024)
+        assert len(result) == 1
+        assert result[0].duration == 1
+
+    def test_missing_day_type_defaults_to_holiday(self) -> None:
+        """Missing Special Day Type defaults to 'Holiday' (line 237-238)."""
+        doc = MagicMock()
+
+        obj = MagicMock()
+        obj.name = "NoType"
+        obj.get.side_effect = lambda f: {
+            "Start Date": "January 1",
+            "Duration": 1,
+            "Special Day Type": None,  # Missing
+        }.get(f)
+
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter([obj])
+        collection.__len__ = lambda self: 1
+        doc.__getitem__.return_value = collection
+
+        result = extract_special_days(doc, 2024)
+        assert len(result) == 1
+        assert result[0].day_type == "Holiday"
+
+
+class TestGetHolidaysZeroDuration:
+    """Test that a special day with zero duration produces no holiday dates (line 266->265)."""
+
+    def test_zero_duration_no_holiday_dates(self) -> None:
+        """Duration 0 means no dates are added to the holidays set."""
+        doc = MagicMock()
+
+        obj = MagicMock()
+        obj.name = "ZeroDuration"
+        obj.get.side_effect = lambda f: {
+            "Start Date": "January 1",
+            "Duration": "0",  # String "0" is truthy, so int("0") = 0 (no iteration)
+            "Special Day Type": "Holiday",
+        }.get(f)
+
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter([obj])
+        collection.__len__ = lambda self: 1
+        doc.__getitem__.return_value = collection
+
+        holidays = get_holidays(doc, 2024)
+        assert len(holidays) == 0
+
+    def test_non_holiday_day_type_not_added(self) -> None:
+        """A special day with day_type != 'Holiday' skips the inner loop (line 266->265)."""
+        doc = MagicMock()
+
+        # One CustomDay1 (not a Holiday) and one Holiday
+        custom_obj = MagicMock()
+        custom_obj.name = "CompanyDay"
+        custom_obj.get.side_effect = lambda f: {
+            "Start Date": "June 15",
+            "Duration": 1,
+            "Special Day Type": "CustomDay1",
+        }.get(f)
+
+        holiday_obj = MagicMock()
+        holiday_obj.name = "Christmas"
+        holiday_obj.get.side_effect = lambda f: {
+            "Start Date": "December 25",
+            "Duration": 1,
+            "Special Day Type": "Holiday",
+        }.get(f)
+
+        collection = MagicMock()
+        collection.__iter__ = lambda self: iter([custom_obj, holiday_obj])
+        collection.__len__ = lambda self: 2
+        doc.__getitem__.return_value = collection
+
+        holidays = get_holidays(doc, 2024)
+        # CustomDay1 is skipped; only Holiday date is included
+        assert date(2024, 6, 15) not in holidays
+        assert date(2024, 12, 25) in holidays
+        assert len(holidays) == 1
