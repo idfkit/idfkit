@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from idfkit import new_document
-from idfkit.geometry import Vector3D, get_surface_coords, set_wwr
+from idfkit.geometry import Polygon3D, Vector3D, get_surface_coords, set_surface_coords, set_wwr
 from idfkit.geometry_builders import (
     add_shading_block,
     bounding_box,
@@ -470,23 +470,112 @@ class TestBoundingBoxNoCoords:
         assert bb is None
 
 
-class TestDetectHorizontalAdjacenciesNonHorizontal:
-    """Cover line 245: non-horizontal surface is skipped."""
+class TestScaleBuildingNoCoords:
+    """Cover line 245: scale_building skips surfaces that have no coordinates."""
 
-    def test_tilted_surface_not_included(self) -> None:
+    def test_surface_without_coords_is_skipped(self) -> None:
+        from idfkit.geometry_builders import scale_building
+
         doc = new_document()
-        fp = [(0, 0), (10, 0), (10, 10), (0, 10)]
-        create_block(doc, "A", fp, 3.5, num_stories=1)
-        # The walls are vertical — they should not produce adjacencies
+        # A BuildingSurface:Detailed with no geometry (coords is None → continue at line 245)
+        doc.add("BuildingSurface:Detailed", "NoCoordsWall", validate=False)
+        scale_building(doc, 2.0)  # Should complete without error
+
+
+class TestCollectOutdoorHorizontalOtherType:
+    """Cover line 342->330: OUTDOORS horizontal surface with type != ROOF and != FLOOR."""
+
+    def test_ceiling_type_is_ignored(self) -> None:
+        """A horizontal Ceiling with OUTDOORS BC hits the else-branch (line 342->330)."""
+        doc = new_document()
+        srf = doc.add(
+            "BuildingSurface:Detailed",
+            "HorizCeiling",
+            surface_type="Ceiling",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        set_surface_coords(
+            srf,
+            Polygon3D([Vector3D(0, 0, 3), Vector3D(10, 0, 3), Vector3D(10, 10, 3), Vector3D(0, 10, 3)]),
+        )
         adjs = detect_horizontal_adjacencies(doc)
-        assert len(adjs) == 0
+        assert adjs == []
+
+
+class TestDetectHorizontalAdjacenciesEdgeCases:
+    """Cover lines 376 (None intersection) and 379 (tiny area)."""
+
+    def test_non_overlapping_polygons_produce_no_adjacency(self) -> None:
+        """Roof and floor at same z but no spatial overlap → inter is None (line 376)."""
+        doc = new_document()
+        roof = doc.add(
+            "BuildingSurface:Detailed",
+            "FarRoof",
+            surface_type="Roof",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        set_surface_coords(
+            roof,
+            Polygon3D([Vector3D(0, 0, 3), Vector3D(5, 0, 3), Vector3D(5, 5, 3), Vector3D(0, 5, 3)]),
+        )
+        floor = doc.add(
+            "BuildingSurface:Detailed",
+            "FarFloor",
+            surface_type="Floor",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        set_surface_coords(
+            floor,
+            Polygon3D([Vector3D(20, 0, 3), Vector3D(25, 0, 3), Vector3D(25, 5, 3), Vector3D(20, 5, 3)]),
+        )
+        adjs = detect_horizontal_adjacencies(doc)
+        assert adjs == []
+
+    def test_tiny_intersection_not_recorded(self) -> None:
+        """Overlap area < 0.01 m² → adjacency discarded (line 379)."""
+        doc = new_document()
+        roof = doc.add(
+            "BuildingSurface:Detailed",
+            "SmallRoof",
+            surface_type="Roof",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        set_surface_coords(
+            roof,
+            Polygon3D([Vector3D(0, 0, 3), Vector3D(1, 0, 3), Vector3D(1, 1, 3), Vector3D(0, 1, 3)]),
+        )
+        floor_srf = doc.add(
+            "BuildingSurface:Detailed",
+            "SmallFloor",
+            surface_type="Floor",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        # Tiny overlap: 0.05 x 0.05 = 0.0025 m² < threshold
+        set_surface_coords(
+            floor_srf,
+            Polygon3D([Vector3D(0.95, 0.95, 3), Vector3D(2, 0.95, 3), Vector3D(2, 2, 3), Vector3D(0.95, 2, 3)]),
+        )
+        adjs = detect_horizontal_adjacencies(doc)
+        assert adjs == []
 
 
 class TestSplitHorizontalSurfaceCoverageEdges:
     """Cover lines 415-416, 423-424, 441-442, and 466."""
 
+    def test_no_coordinates_raises(self) -> None:
+        """Surface with no geometry raises ValueError (lines 415-416)."""
+        doc = new_document()
+        srf = doc.add("BuildingSurface:Detailed", "NoCoordsRoof", validate=False)
+        with pytest.raises(ValueError, match="has no coordinates"):
+            split_horizontal_surface(doc, srf, [(0, 0), (5, 0), (5, 5), (0, 5)])
+
     def test_name_collision_increments_counter(self) -> None:
-        """When a Split surface already exists, a numbered suffix is used."""
+        """When a Split surface already exists, a numbered suffix is used (lines 441-442)."""
         doc = new_document()
         create_block(doc, "B", [(0, 0), (20, 0), (20, 20), (0, 20)], 3.5, num_stories=1)
         roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
@@ -498,41 +587,45 @@ class TestSplitHorizontalSurfaceCoverageEdges:
         assert new_srf.name == "B Roof Split 2"
 
     def test_no_overlap_raises(self) -> None:
-        """When region doesn't overlap surface at all, ValueError is raised."""
+        """When region doesn't overlap surface at all, ValueError is raised (lines 423-424)."""
         doc = new_document()
         create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1)
         roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof is not None
-        # Region completely outside the surface
         with pytest.raises(ValueError, match="overlap"):
             split_horizontal_surface(doc, roof, [(50, 50), (60, 50), (60, 60), (50, 60)])
 
     def test_region_covers_full_surface_returns_none_remaining(self) -> None:
-        """When region equals the full surface footprint, no remaining surface."""
+        """When region equals the full surface footprint, no remaining surface (lines 459-460)."""
         doc = new_document()
         create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1)
         roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
         assert roof is not None
-        # Region exactly matches the footprint
         region = [(0, 0), (10, 0), (10, 10), (0, 10)]
         new_srf, remaining = split_horizontal_surface(doc, roof, region)
         assert new_srf is not None
         assert remaining is None
 
     def test_tiny_remaining_returns_none_remaining(self) -> None:
-        """When the remaining area is negligible (<0.01 m²), remaining is None."""
+        """When polygon_difference leaves negligible area, remaining is None (line 466)."""
         doc = new_document()
-        # 10x10 = 100 m² surface, split by almost the full area
-        create_block(doc, "B", [(0, 0), (10, 0), (10, 10), (0, 10)], 3.5, num_stories=1)
-        roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
-        assert roof is not None
-        # Region = 9.99x9.99 leaving 0.01m strip - but easier to use exact match
-        # Use a polygon_difference_2d result that produces tiny area
-        # Just rely on exact-match test above; here test partial split always gets remaining
-        region = [(1, 1), (9, 1), (9, 9), (1, 9)]
-        new_srf, remaining = split_horizontal_surface(doc, roof, region)
+        srf = doc.add(
+            "BuildingSurface:Detailed",
+            "TinyRemain",
+            surface_type="Roof",
+            outside_boundary_condition="Outdoors",
+            validate=False,
+        )
+        # 1x1 m surface
+        set_surface_coords(
+            srf,
+            Polygon3D([Vector3D(0, 0, 3), Vector3D(1, 0, 3), Vector3D(1, 1, 3), Vector3D(0, 1, 3)]),
+        )
+        # Region 0.999x0.999 -> remaining ~0.002 m2 < 0.01 m2 threshold
+        region = [(0.0, 0.0), (0.999, 0.0), (0.999, 0.999), (0.0, 0.999)]
+        new_srf, remaining = split_horizontal_surface(doc, srf, region)
         assert new_srf is not None
-        assert remaining is not None  # frame should exist
+        assert remaining is None
 
 
 class TestSvgScaledLayers:

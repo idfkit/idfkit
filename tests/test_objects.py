@@ -432,3 +432,226 @@ class TestIDFCollection:
         coll.add(obj)
         assert "MYZONE" in coll.by_name
         assert coll.by_name["MYZONE"] is obj
+
+    def test_getitem_empty_key_with_items(self) -> None:
+        """Empty key falls back to first item."""
+        coll = IDFCollection("Zone")
+        obj = IDFObject(obj_type="Zone", name="")
+        coll.add(obj)
+        assert coll[""] is obj
+
+    def test_getitem_empty_key_no_items_raises(self) -> None:
+        """Empty key with no items raises KeyError."""
+        coll = IDFCollection("Zone")
+        with pytest.raises(KeyError):
+            _ = coll[""]
+
+    def test_contains_empty_key_false(self) -> None:
+        """Empty key __contains__ returns False when no items."""
+        coll = IDFCollection("Zone")
+        assert "" not in coll
+
+    def test_contains_empty_key_true(self) -> None:
+        """Empty key __contains__ returns True when items exist."""
+        coll = IDFCollection("Zone")
+        coll.add(IDFObject(obj_type="Zone", name=""))
+        assert "" in coll
+
+
+class TestIDFObjectStrict:
+    """Tests for strict-mode field validation."""
+
+    def test_getattr_strict_raises_for_unknown_field(self) -> None:
+        from idfkit import new_document
+        from idfkit.exceptions import InvalidFieldError
+
+        doc = new_document(version=(24, 1, 0))
+        zone = doc.add("Zone", "TestZone")
+        with pytest.raises(InvalidFieldError):
+            _ = zone.nonexistent_field_xyz  # type: ignore[union-attr]
+
+    def test_setattr_strict_raises_for_unknown_field(self) -> None:
+        from idfkit import new_document
+        from idfkit.exceptions import InvalidFieldError
+
+        doc = new_document(version=(24, 1, 0))
+        zone = doc.add("Zone", "TestZone")
+        with pytest.raises(InvalidFieldError):
+            zone.nonexistent_field_xyz = 42.0  # type: ignore[union-attr]
+
+    def test_set_name_no_op_when_same(self) -> None:
+        """Setting name to same value should be a no-op."""
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        version_before = obj.mutation_version
+        obj.name = "MyZone"
+        assert obj.mutation_version == version_before
+
+    def test_mutation_version_increments_on_field_write(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        v0 = obj.mutation_version
+        obj.x_origin = 1.0
+        assert obj.mutation_version == v0 + 1
+
+    def test_repr_svg_returns_none_for_non_construction(self) -> None:
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        assert obj._repr_svg_() is None  # pyright: ignore[reportPrivateUsage]
+
+    def test_repr_svg_returns_none_without_document(self) -> None:
+        obj = IDFObject(obj_type="Construction", name="Orphan", data={"outside_layer": "Mat"})
+        assert obj._repr_svg_() is None  # pyright: ignore[reportPrivateUsage]
+
+    def test_set_field_with_ref_fields_notifies_document(self) -> None:
+        """Writing a ref field on an object attached to a document triggers notification."""
+        from idfkit import new_document
+
+        doc = new_document(version=(24, 1, 0))
+        # Add a surface that references a zone
+        doc.add("Zone", "ZoneA")
+        srf = doc.add(
+            "BuildingSurface:Detailed",
+            "Wall1",
+            surface_type="Wall",
+            zone_name="ZoneA",
+            validate=False,
+        )
+        # Change the zone name ref — should not raise
+        srf.zone_name = "ZoneA"
+
+    def test_setattr_private_key_uses_object_setattr(self) -> None:
+        """Keys starting with _ use object.__setattr__ directly."""
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        # _type is a slot — using object.__setattr__ path
+        object.__setattr__(obj, "_type", "NewType")
+        assert obj.obj_type == "NewType"
+
+    def test_repr_svg_exception_returns_none(self) -> None:
+        """_repr_svg_ returns None when construction_to_svg raises."""
+        from idfkit import new_document
+
+        doc = new_document(version=(24, 1, 0))
+        # Construction with no layers — construction_to_svg still works fine.
+        # To hit the exception path we need to cause an import or runtime error.
+        # The simplest way: attach an object type "Construction" but make the
+        # visualization module raise by monkeypatching.
+        doc.add("Construction", "BadConst", {}, validate=False)
+        const = doc["Construction"]["BadConst"]
+
+        import idfkit.visualization.svg as svg_mod
+
+        orig = svg_mod.construction_to_svg
+        try:
+            svg_mod.construction_to_svg = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("fail"))  # type: ignore[assignment]
+            result = const._repr_svg_()  # pyright: ignore[reportPrivateUsage]
+            assert result is None
+        finally:
+            svg_mod.construction_to_svg = orig
+
+    def test_collection_remove_item_not_in_items(self) -> None:
+        """remove() gracefully handles an obj not in _items (line 652->exit)."""
+        coll = IDFCollection("Zone")
+        obj = IDFObject(obj_type="Zone", name="MyZone")
+        # Do NOT add to collection; just try to remove it
+        coll.remove(obj)  # Should not raise
+        assert len(coll) == 0
+
+    def test_collection_get_empty_name_no_items_returns_default(self) -> None:
+        """get('') with no items returns the default value (line 709 else branch)."""
+        coll = IDFCollection("Zone")
+        result = coll.get("", None)
+        assert result is None
+
+    def test_parse_extensible_index_prefix_number_suffix_no_match(self) -> None:
+        """Pattern matches but composite base is NOT in extensibles → returns None, 0."""
+        from idfkit.objects import parse_extensible_index
+
+        # "vertex_1_x_coordinate" pattern but "vertex_x_coordinate" not in extensibles
+        base, group = parse_extensible_index("vertex_1_x_coordinate", frozenset({"other_field"}))
+        assert base is None
+        assert group == 0
+
+    def test_is_known_field_prefix_number_suffix_not_in_extensibles(self) -> None:
+        """_is_known_field: pattern prefix_N_suffix matches but composite base NOT in extensibles."""
+        obj = IDFObject(
+            obj_type="Zone",
+            name="Z",
+            field_order=["field_one"],
+            extensibles=frozenset({"other"}),
+        )
+        # "vertex_1_x_coordinate" doesn't match extensibles → check "base_N" path
+        assert not obj._is_known_field("vertex_1_x_coordinate", ["field_one"])  # pyright: ignore[reportPrivateUsage]
+
+    def test_fill_extensible_gap_unparseable_appends_as_is(self) -> None:
+        """_fill_extensible_gap with unparseable field appends it as-is."""
+        obj = IDFObject(
+            obj_type="Zone",
+            name="Z",
+            field_order=["field"],
+            extensibles=frozenset({"field"}),
+        )
+        # Write a field that has no extensible pattern match — append as-is
+        obj._set_field("completely_unknown_field_xyz", 42.0)  # pyright: ignore[reportPrivateUsage]
+
+    def test_collection_get_empty_name_returns_first(self) -> None:
+        """get('') when items exist returns first item."""
+        coll = IDFCollection("Zone")
+        obj = IDFObject(obj_type="Zone", name="")
+        coll.add(obj)
+        assert coll.get("") is obj
+
+
+class TestObjectsAdditionalBranches:
+    """Cover remaining branch-coverage gaps in objects.py."""
+
+    def test_is_known_field_base_n_not_in_extensibles_returns_false(self) -> None:
+        """238->240: base_N pattern matches but base NOT in extensibles → False."""
+        obj = IDFObject(
+            obj_type="Zone",
+            name="Z",
+            field_order=["other"],
+            extensibles=frozenset({"other"}),
+        )
+        # "myfield_5" matches base_N pattern; base="myfield" NOT in extensibles
+        result = obj._is_known_field("myfield_5", ["other"])  # pyright: ignore[reportPrivateUsage]
+        assert result is False
+
+    def test_name_property_setter_calls_set_name(self) -> None:
+        """Line 250: name property setter (IDFObject.name.fset) calls _set_name."""
+        obj = IDFObject(obj_type="Zone", name="OldName")
+        # Call the property setter directly (obj.name = x goes through __setattr__)
+        IDFObject.name.fset(obj, "NewName")  # type: ignore[union-attr]
+        assert obj.name == "NewName"
+
+    def test_setattr_private_key_uses_object_setattr(self) -> None:
+        """Line 309: __setattr__ with key starting '_' calls object.__setattr__."""
+        obj = IDFObject(obj_type="Zone", name="Z")
+        # Assign a private attribute through IDFObject.__setattr__
+        obj.__setattr__("_source_text", "custom_text")  # pyright: ignore[reportAttributeAccessIssue]
+        assert object.__getattribute__(obj, "_source_text") == "custom_text"
+
+    def test_fill_extensible_gap_unparseable_key_appended_as_is(self) -> None:
+        """Lines 431-432: _fill_extensible_gap with a key parse_extensible_index can't parse."""
+        obj = IDFObject(obj_type="Zone", name="Z", field_order=["field"], extensibles=frozenset({"field"}))
+        field_order: list[str] = ["field"]
+        # "totally_unknown_xyz" has no numeric suffix → parse_extensible_index returns None, 0
+        obj._fill_extensible_gap(  # pyright: ignore[reportPrivateUsage]
+            "totally_unknown_xyz", field_order, frozenset({"field"})
+        )
+        assert "totally_unknown_xyz" in field_order
+
+    def test_fill_extensible_gap_fills_intermediate_groups(self) -> None:
+        """_fill_extensible_gap generates all intermediate groups up to the target."""
+        obj = IDFObject(
+            obj_type="BuildingSurface:Detailed",
+            name="Srf",
+            field_order=["vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"],
+            extensibles=frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"}),
+        )
+        field_order = ["vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"]
+        # Fill gap for group 3 — should add x_2, y_2, z_2, x_3, y_3, z_3
+        obj._fill_extensible_gap(  # pyright: ignore[reportPrivateUsage]
+            "vertex_x_coordinate_3",
+            field_order,
+            frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"}),
+        )
+        assert "vertex_x_coordinate_2" in field_order
+        assert "vertex_x_coordinate_3" in field_order

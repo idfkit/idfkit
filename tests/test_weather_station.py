@@ -33,6 +33,11 @@ class TestWeatherStation:
         s = _make_station(state="")
         assert s.display_name == "Chicago Ohare Intl AP, USA"
 
+    def test_display_name_empty_city_skips_name(self) -> None:
+        """81->83: city is empty after stripping → name is falsy, not appended."""
+        s = _make_station(city="")
+        assert s.display_name == "IL, USA"
+
     def test_dataset_variant_with_year_range(self) -> None:
         s = _make_station()
         assert s.dataset_variant == "TMYx.2009-2023"
@@ -129,3 +134,10 @@ class TestSpatialResult:
         s = _make_station()
         r = SpatialResult(station=s, distance_km=12.5)
         assert r.distance_km == 12.5
+
+
+class TestDatasetVariantFallback:
+    def test_no_underscore_in_stem_returns_full_stem(self) -> None:
+        """When the filename stem has no underscore, return the full stem (line 111)."""
+        s = _make_station(url="https://climate.onebuilding.org/test/noseparator.zip")
+        assert s.dataset_variant == "noseparator"

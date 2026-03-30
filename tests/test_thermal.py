@@ -528,3 +528,90 @@ class TestEdgeCases:
         layers = get_construction_layers(obj)
         # Can't resolve material without document
         assert layers == []
+
+    def test_gas_gap_resistance_invalid_thickness_raises(self) -> None:
+        with pytest.raises(ValueError, match="thickness"):
+            gas_gap_resistance("Air", thickness=0.0)
+
+    def test_gas_gap_resistance_invalid_emissivity_raises(self) -> None:
+        with pytest.raises(ValueError, match="Emissivities"):
+            gas_gap_resistance("Air", thickness=0.012, emissivity_1=0.0)
+
+    def test_typical_gap_r_value_below_min_clamps(self) -> None:
+        """Thickness below table minimum clamps to lowest value."""
+        r = typical_gap_r_value("Air", 1.0)  # 1mm < 6mm min
+        assert r == pytest.approx(0.11, rel=0.1)
+
+    def test_typical_gap_r_value_above_max_clamps(self) -> None:
+        """Thickness above table maximum clamps to highest value."""
+        r = typical_gap_r_value("Air", 100.0)  # 100mm > 15mm max
+        assert r == pytest.approx(0.14, rel=0.1)
+
+    def test_calculate_r_value_empty_construction_returns_zero(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Construction", "Empty", {}, validate=False)
+        r = calculate_r_value(doc["Construction"]["Empty"])
+        assert r == 0.0
+
+    def test_calculate_shgc_empty_construction_returns_none(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Construction", "Empty", {}, validate=False)
+        assert calculate_shgc(doc["Construction"]["Empty"]) is None
+
+    def test_calculate_visible_transmittance_empty_returns_none(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Construction", "Empty", {}, validate=False)
+        assert calculate_visible_transmittance(doc["Construction"]["Empty"]) is None
+
+    def test_calculate_u_value_empty_construction_returns_zero(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Construction", "Empty", {}, validate=False)
+        assert calculate_u_value(doc["Construction"]["Empty"]) == 0.0
+
+    def test_glazing_shgc_without_reflectance_returns_tau_direct(self) -> None:
+        """SHGC falls back to tau_direct when no solar_reflectance_front."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "WindowMaterial:Glazing",
+            "NoReflGlass",
+            {
+                "optical_data_type": "SpectralAverage",
+                "thickness": 0.006,
+                "conductivity": 1.0,
+                "solar_transmittance_at_normal_incidence": 0.8,
+                # no solar_reflectance_front → falls back to tau_direct
+                "visible_transmittance_at_normal_incidence": 0.9,
+            },
+        )
+        doc.add("Construction", "NoReflGlazing", {"outside_layer": "NoReflGlass"})
+        shgc = calculate_shgc(doc["Construction"]["NoReflGlazing"])
+        assert shgc is not None
+        assert pytest.approx(shgc, rel=0.01) == 0.8  # tau_direct = 0.8
+
+    def test_unknown_material_type_yields_zero_r(self) -> None:
+        """Unknown material obj_type produces LayerThermalProperties with r_value=0."""
+        from idfkit.thermal.properties import _extract_layer_properties  # pyright: ignore[reportPrivateUsage]
+
+        obj = IDFObject(obj_type="Material:UnknownType", name="Weird")
+        layer = _extract_layer_properties(obj)
+        assert layer.r_value == 0.0
+        assert layer.obj_type == "Material:UnknownType"
+
+    def test_glazing_layer_without_solar_transmittance_skipped(self) -> None:
+        """393->392: glazing layer with solar_transmittance=None is skipped in SHGC product."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "WindowMaterial:Glazing",
+            "NoTauGlass",
+            {
+                "optical_data_type": "SpectralAverage",
+                "thickness": 0.006,
+                "conductivity": 1.0,
+                # No solar_transmittance_at_normal_incidence → solar_transmittance is None
+                "visible_transmittance_at_normal_incidence": 0.9,
+            },
+        )
+        doc.add("Construction", "NoTauGlazing", {"outside_layer": "NoTauGlass"})
+        shgc = calculate_shgc(doc["Construction"]["NoTauGlazing"])
+        # With solar_transmittance=None, tau_direct stays 1.0 and SHGC returns tau_direct
+        assert shgc is not None

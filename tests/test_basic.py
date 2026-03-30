@@ -1,5 +1,7 @@
 """Basic tests for idfkit."""
 
+from __future__ import annotations
+
 import tempfile
 from pathlib import Path
 
@@ -101,7 +103,7 @@ def test_reference_tracking():
         temp_path.unlink()
 
 
-def test_write_idf():
+def test_write_idf() -> None:
     """Test writing IDF content."""
     from idfkit import new_document, write_idf
 
@@ -112,3 +114,61 @@ def test_write_idf():
     assert output is not None
     assert "Zone," in output
     assert "MyZone" in output
+
+
+def test_load_idf_unsupported_version_raises() -> None:
+    """load_idf with a bad version tuple should raise UnsupportedVersionError."""
+    import pytest
+
+    from idfkit import load_idf
+    from idfkit.exceptions import UnsupportedVersionError
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".idf", delete=False) as f:
+        f.write("Version, 99.9;\n")
+        temp_path = Path(f.name)
+
+    try:
+        with pytest.raises(UnsupportedVersionError):
+            load_idf(str(temp_path), version=(99, 9, 0))
+    finally:
+        temp_path.unlink()
+
+
+def test_load_epjson_unsupported_version_raises() -> None:
+    """load_epjson with a bad version tuple should raise UnsupportedVersionError."""
+    import json
+
+    import pytest
+
+    from idfkit import load_epjson
+    from idfkit.exceptions import UnsupportedVersionError
+
+    data = {
+        "Version": {"Version 1": {"version_identifier": "24.1"}},
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".epJSON", delete=False) as f:
+        json.dump(data, f)
+        temp_path = Path(f.name)
+
+    try:
+        with pytest.raises(UnsupportedVersionError):
+            load_epjson(str(temp_path), version=(99, 9, 0))
+    finally:
+        temp_path.unlink()
+
+
+def test_cst_node_creation() -> None:
+    """Cover DocumentCST and CSTNode creation (cst.py line 25 default factory)."""
+    from idfkit.cst import CSTNode, DocumentCST
+
+    node = CSTNode(text="some text")
+    assert node.text == "some text"
+    assert node.obj is None
+
+    cst = DocumentCST()
+    assert cst.nodes == []
+    assert cst.encoding == "latin-1"
+
+    cst2 = DocumentCST(nodes=[node], encoding="utf-8")
+    assert len(cst2.nodes) == 1
+    assert cst2.encoding == "utf-8"
