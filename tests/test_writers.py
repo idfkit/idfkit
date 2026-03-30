@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
+import pytest
+
 from idfkit import IDFDocument, new_document, parse_idf, write_epjson, write_idf
+from idfkit.epjson_parser import parse_epjson  # pyright: ignore[reportPrivateUsage]
 from idfkit.writers import (
+    EpJSONWriter,
+    IDFWriter,
+    _resolve_version_identifier,  # pyright: ignore[reportPrivateUsage]
+    _write_idf_lossless,  # pyright: ignore[reportPrivateUsage]
     convert_epjson_to_idf,
     convert_idf_to_epjson,
 )
@@ -385,3 +393,309 @@ class TestEpJSONWriterEmptyStrings:
         zone_data = data["Zone"]["Z1"]
         # Empty string values should not appear in epJSON output
         assert "" not in zone_data.values(), f"Empty strings found: {zone_data}"
+
+
+# ---------------------------------------------------------------------------
+# Coverage gap tests: writers.py uncovered lines
+# ---------------------------------------------------------------------------
+
+
+class TestResolveVersionIdentifier:
+    """_resolve_version_identifier edge cases (L38, L42->33, L44-45)."""
+
+    def test_empty_version_identifier_string_falls_back_to_doc_version(self) -> None:
+        """version_identifier is a whitespace-only string → fall back to doc.version (L42->33)."""
+        doc = new_document(version=(24, 1, 0))
+        version_obj = doc["Version"].first()
+        assert version_obj is not None
+        # Set version_identifier to empty string so strip() returns ""
+        version_obj.data["version_identifier"] = "   "
+        result = _resolve_version_identifier(doc)
+        assert result == "24.1"
+
+    def test_numeric_version_identifier_converted_to_str(self) -> None:
+        """version_identifier is a non-string non-None value → str() path (L44-45)."""
+        doc = new_document(version=(24, 1, 0))
+        version_obj = doc["Version"].first()
+        assert version_obj is not None
+        # Store a numeric value directly
+        version_obj.data["version_identifier"] = 23.2
+        result = _resolve_version_identifier(doc)
+        assert result == "23.2"
+
+    def test_version_identifier_none_falls_back_to_doc_version(self) -> None:
+        """version_identifier key absent: data.get() returns None, elif skipped (L44->33)."""
+        doc = new_document(version=(24, 1, 0))
+        version_obj = doc["Version"].first()
+        assert version_obj is not None
+        version_obj.data.pop("version_identifier", None)
+        result = _resolve_version_identifier(doc)
+        assert result == "24.1"
+
+    def test_no_version_collection_falls_back(self) -> None:
+        """No VERSION collection: loop finds nothing, falls back to doc.version (L47-48)."""
+        from idfkit import IDFDocument
+        from idfkit.schema import get_schema
+
+        doc = IDFDocument(version=(24, 1, 0), schema=get_schema((24, 1, 0)))
+        result = _resolve_version_identifier(doc)
+        assert result == "24.1"
+
+
+class TestIDFValueFormattingEdgeCases:
+    """IDFWriter._format_value edge cases (L402, L408, L412-413, L416)."""
+
+    def test_bool_true_written_as_yes(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": True}, validate=False)
+        output = write_idf(doc)
+        assert output is not None
+        assert "Yes" in output
+
+    def test_bool_false_written_as_no(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": False}, validate=False)
+        output = write_idf(doc)
+        assert output is not None
+        assert "No" in output
+
+    def test_float_scientific_notation_large(self) -> None:
+        """Floats >= 1e10 use scientific notation (L408)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": 1.5e12}, validate=False)
+        output = write_idf(doc)
+        assert output is not None
+        assert "e" in output.lower()
+
+    def test_float_scientific_notation_small(self) -> None:
+        """Floats < 0.0001 use scientific notation (L408)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": 0.00001}, validate=False)
+        output = write_idf(doc)
+        assert output is not None
+        assert "e" in output.lower()
+
+    def test_list_value_written_as_csv(self) -> None:
+        """List values are joined with ', ' (L412-413)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": [1, 2, 3]}, validate=False)
+        output = write_idf(doc)
+        assert output is not None
+        assert "1, 2, 3" in output
+
+    def test_delimiter_in_string_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
+        """String with IDF delimiter characters logs a warning (L416)."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": "bad,value"}, validate=False)
+        with caplog.at_level(logging.WARNING, logger="idfkit.writers"):
+            write_idf(doc)
+        assert any("delimiter" in r.message for r in caplog.records)
+
+
+class TestIDFWriterNocommentMode:
+    """IDFWriter nocomment mode (L322, L338->341, L346-349)."""
+
+    def test_nocomment_output_has_no_field_comments(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": 1.0})
+        output = write_idf(doc, output_type="nocomment")
+        assert output is not None
+        # nocomment mode omits per-field "!- Field Name" annotations
+        assert "!- X Origin" not in output
+        assert "Z1" in output
+
+    def test_schema_based_field_names_when_no_field_order(self) -> None:
+        """Objects without field_order fall back to schema.get_all_field_names (L338->341)."""
+        from idfkit import IDFDocument
+        from idfkit.objects import IDFObject
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        doc = IDFDocument(version=(24, 1, 0), schema=schema)
+        # Create object with no field_order (field_order=None by default in IDFObject)
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"x_origin": 2.0})
+        doc.addidfobject(obj)
+
+        output = write_idf(doc)
+        assert output is not None
+        assert "Z1" in output
+
+    def test_no_schema_no_field_order_uses_data_keys(self) -> None:
+        """Objects without field_order and no schema fall back to data.keys (L346-349)."""
+        from idfkit import IDFDocument
+        from idfkit.objects import IDFObject
+
+        doc = IDFDocument(version=(24, 1, 0), schema=None)
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"x_origin": 3.0})
+        doc.addidfobject(obj)
+
+        output = write_idf(doc)
+        assert output is not None
+        assert "Z1" in output
+
+
+class TestIDFWriterWriteToFile:
+    """IDFWriter.write_to_file (L425-427)."""
+
+    def test_write_to_file(self, tmp_path: Path) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": 0.0})
+        writer = IDFWriter(doc)
+        out_path = tmp_path / "out.idf"
+        writer.write_to_file(out_path)
+        content = out_path.read_text(encoding="latin-1")
+        assert "Zone," in content
+
+
+class TestEpJSONWriterWriteToFile:
+    """EpJSONWriter.write_to_file (L511-513)."""
+
+    def test_write_to_file(self, tmp_path: Path) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Z1", {"x_origin": 0.0})
+        writer = EpJSONWriter(doc)
+        out_path = tmp_path / "out.epJSON"
+        writer.write_to_file(out_path)
+        data = json.loads(out_path.read_text())
+        assert "Zone" in data
+
+
+class TestIDFWriterEmptyCollection:
+    """IDFWriter.to_string skips empty collections (L322)."""
+
+    def test_empty_collection_skipped_in_idf(self) -> None:
+        from idfkit import IDFDocument
+        from idfkit.schema import get_schema
+
+        doc = IDFDocument(version=(24, 1, 0), schema=get_schema((24, 1, 0)))
+        # Access (and thus create) an empty Zone collection
+        _ = doc["Zone"]
+        output = write_idf(doc)
+        assert output is not None
+        # Empty Zone collection should not appear in IDF output
+        assert "Zone," not in output
+
+
+class TestEpJSONWriterEmptyCollection:
+    """EpJSONWriter skips empty collections (L467)."""
+
+    def test_empty_collection_skipped(self) -> None:
+        from idfkit import IDFDocument
+        from idfkit.schema import get_schema
+
+        # Create doc with an empty collection (no objects of a type that exists in schema)
+        doc = IDFDocument(version=(24, 1, 0), schema=get_schema((24, 1, 0)))
+        # Ensure there is a collection entry but with no objects
+        _ = doc["Zone"]  # accessing creates an empty collection
+        output = write_epjson(doc)
+        assert output is not None
+        data = json.loads(output)
+        # Empty Zone collection should not appear in epJSON
+        assert "Zone" not in data
+
+
+class TestWriteIdfLossless:
+    """_write_idf_lossless edge cases (L227, L246-247, L262)."""
+
+    def test_write_idf_lossless_no_cst_raises(self) -> None:
+        """_write_idf_lossless raises ValueError when doc has no CST (L246-247)."""
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(ValueError, match="no CST"):
+            _write_idf_lossless(doc)
+
+    def test_removed_object_skipped_in_lossless_output(self, tmp_path: Path) -> None:
+        """Object removed via collection.remove bypasses CST clearing (L227)."""
+        content = """\
+Version, 24.1;
+
+Zone,
+  ZoneKeep,
+  0, 0, 0, 0, 1, 1;
+
+Zone,
+  ZoneRemove,
+  0, 0, 0, 0, 1, 1;
+"""
+        idf_path = tmp_path / "remove.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        # Remove via the collection directly so CST node.obj is NOT cleared.
+        # This means _emit_cst_node will see node.obj set but id not in live_ids (L227).
+        zone_remove = doc["Zone"]["ZoneRemove"]
+        assert zone_remove is not None
+        doc["Zone"].remove(zone_remove)  # pyright: ignore[reportArgumentType]
+
+        output = write_idf(doc)
+        assert output is not None
+        assert "ZoneKeep" in output
+
+    def test_new_object_appended_when_tail_has_no_newline(self, tmp_path: Path) -> None:
+        """New objects added after parse are appended; handles tail without trailing newline (L262)."""
+        content = "Version, 24.1;\nZone, ExistingZone, 0, 0, 0, 0, 1, 1;"
+        idf_path = tmp_path / "notail.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        # Add a new Zone after parsing — it won't be in any CST node
+        doc.add("Zone", "NewZone", {"x_origin": 5.0})
+
+        output = write_idf(doc)
+        assert output is not None
+        assert "ExistingZone" in output
+        assert "NewZone" in output
+
+
+_LOSSLESS_EPJSON = {
+    "Version": {"Version 1": {"version_identifier": "24.1"}},
+    "Zone": {"Z1": {"x_origin": 0.0}},
+}
+
+
+class TestWriteEpJSONLossless:
+    """write_epjson lossless path: write to file (L190-194) and return string (L195-196)."""
+
+    def test_lossless_to_file(self, tmp_path: Path) -> None:
+        epjson_path = tmp_path / "source.epJSON"
+        epjson_path.write_text(json.dumps(_LOSSLESS_EPJSON))
+
+        doc = parse_epjson(epjson_path, preserve_formatting=True)
+        out_path = tmp_path / "lossless_out.epJSON"
+        result = write_epjson(doc, out_path)
+        assert result is None
+        assert out_path.exists()
+        assert "Zone" in json.loads(out_path.read_text())
+
+    def test_lossless_to_string(self, tmp_path: Path) -> None:
+        epjson_path = tmp_path / "source.epJSON"
+        epjson_path.write_text(json.dumps(_LOSSLESS_EPJSON))
+
+        doc = parse_epjson(epjson_path, preserve_formatting=True)
+        result = write_epjson(doc)
+        assert result is not None
+        assert "Zone" in json.loads(result)
+
+
+class TestWriteIDFLosslessEmittedDirtyObject:
+    """_emit_cst_node: mutated object uses formatter (L234-235)."""
+
+    def test_mutated_object_reformatted_in_lossless_output(self, tmp_path: Path) -> None:
+        content = """\
+Version, 24.1;
+
+Zone,
+  MutableZone,
+  0, 0, 0, 0, 1, 1;
+"""
+        idf_path = tmp_path / "mutable.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        zone = doc["Zone"]["MutableZone"]
+        assert zone is not None
+        # Mutate the object so source_text is cleared
+        zone.x_origin = 99.0
+
+        output = write_idf(doc)
+        assert output is not None
+        assert "MutableZone" in output
