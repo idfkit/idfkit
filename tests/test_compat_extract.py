@@ -160,3 +160,92 @@ doc.add(f"My{name}", "Z1")
     def test_no_relevant_code(self) -> None:
         source = 'x = 1\ny = "hello"\nprint(x + y)\n'
         assert extract_literals(source) == []
+
+
+# ---------------------------------------------------------------------------
+# Additional edge-case tests for uncovered branches
+# ---------------------------------------------------------------------------
+
+
+class TestExtractImportDetection:
+    """Tests for _has_idfkit_import edge cases."""
+
+    def test_import_idfkit_submodule(self) -> None:
+        """``import idfkit.schema`` counts as an idfkit import."""
+        source = """import idfkit.schema
+zones = model["Zone"]
+"""
+        literals = extract_literals(source)
+        obj_types = [lit for lit in literals if lit.kind == LiteralKind.OBJECT_TYPE]
+        assert len(obj_types) == 1
+        assert obj_types[0].value == "Zone"
+
+    def test_from_idfkit_submodule_import(self) -> None:
+        """``from idfkit.schema import get_schema`` counts as an idfkit import."""
+        source = """from idfkit.schema import get_schema
+zones = model["Zone"]
+"""
+        literals = extract_literals(source)
+        obj_types = [lit for lit in literals if lit.kind == LiteralKind.OBJECT_TYPE]
+        assert len(obj_types) == 1
+        assert obj_types[0].value == "Zone"
+
+    def test_non_idfkit_import_not_detected(self) -> None:
+        """A regular ``import os`` does not count as an idfkit import."""
+        source = """import os
+import pathlib
+zones = model["Zone"]
+"""
+        literals = extract_literals(source)
+        # No idfkit import, so subscripts should not be extracted
+        assert len(literals) == 0
+
+    def test_multiple_imports_only_non_idfkit(self) -> None:
+        """Multiple import aliases that are all non-idfkit do not trigger detection."""
+        source = """import os, sys
+zones = model["Zone"]
+"""
+        literals = extract_literals(source)
+        assert len(literals) == 0
+
+
+class TestExtractEndCol:
+    """Tests for the _end_col fallback paths."""
+
+    def test_end_col_fallback_for_constant(self) -> None:
+        """_end_col returns a reasonable value for a Constant node."""
+        import ast
+
+        from idfkit.compat._extract import _end_col  # pyright: ignore[reportPrivateUsage]
+
+        node = ast.parse('"hello"', mode="eval").body
+        assert isinstance(node, ast.Constant)
+        # In modern Python end_col_offset is always set, but we can test the fallback by
+        # temporarily clearing it.
+        node.end_col_offset = None  # type: ignore[assignment]
+        result = _end_col(node)
+        # Fallback: col_offset + len("hello") + 2 = 0 + 5 + 2 = 7
+        assert isinstance(node.value, str)
+        assert result == node.col_offset + len(node.value) + 2
+
+    def test_end_col_non_string_constant_fallback(self) -> None:
+        """_end_col returns col_offset for a non-string Constant with no end_col_offset."""
+        import ast
+
+        from idfkit.compat._extract import _end_col  # pyright: ignore[reportPrivateUsage]
+
+        node = ast.parse("42", mode="eval").body
+        assert isinstance(node, ast.Constant)
+        node.end_col_offset = None  # type: ignore[assignment]
+        result = _end_col(node)
+        assert result == node.col_offset
+
+
+class TestExtractAddEdgeCases:
+    """Edge cases for _handle_add_call."""
+
+    def test_add_call_with_no_args(self) -> None:
+        """doc.add() with no arguments produces no literals."""
+        source = "doc.add()\n"
+        literals = extract_literals(source)
+        assert len(literals) == 0
