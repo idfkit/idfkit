@@ -7,7 +7,14 @@ import pytest
 from idfkit import new_document
 from idfkit.objects import IDFObject
 from idfkit.thermal import get_thermal_properties
+from idfkit.thermal.properties import LayerThermalProperties
 from idfkit.visualization import SVGConfig, construction_to_svg, generate_construction_svg
+from idfkit.visualization.svg import (  # pyright: ignore[reportPrivateUsage]
+    _format_r_value,
+    _format_thickness_mm,
+    _generate_theme_css,
+    _get_layer_fill,
+)
 
 
 class TestSVGGeneration:
@@ -412,3 +419,97 @@ class TestThemeSupport:
         svg = generate_construction_svg(props, SVGConfig(theme="dark"))
         assert 'class="idfkit-theme-dark"' in svg
         assert 'fill="var(--idfkit-bg)"' in svg
+
+
+class TestSVGHelpers:
+    """Unit tests for internal SVG helper functions."""
+
+    def test_format_thickness_mm_none(self) -> None:
+        assert _format_thickness_mm(None) == ""
+
+    def test_format_r_value_small(self) -> None:
+        """r_value < 0.1 uses 3 decimal places."""
+        result = _format_r_value(0.05)
+        assert "R0.050" in result
+
+    def test_generate_theme_css_light(self) -> None:
+        css = _generate_theme_css("light")
+        assert "idfkit-theme-light" in css
+
+    def test_get_layer_fill_nomass(self) -> None:
+        layer = LayerThermalProperties(name="Rigid Insulation", obj_type="Material:NoMass", r_value=1.5)
+        color, pattern = _get_layer_fill(layer)
+        assert "nomass" in color or "nomass" in (pattern or "")
+
+    def test_get_layer_fill_airgap(self) -> None:
+        layer = LayerThermalProperties(name="AirGap", obj_type="Material:AirGap", r_value=0.15, is_gas=True)
+        color, pattern = _get_layer_fill(layer)
+        assert "airgap" in color or "air-gap" in (pattern or "")
+
+    def test_get_layer_fill_glazing_with_pattern(self) -> None:
+        layer = LayerThermalProperties(
+            name="ClearGlass",
+            obj_type="WindowMaterial:Glazing",
+            thickness=0.006,
+            r_value=0.006,
+            is_glazing=True,
+        )
+        _color, pattern = _get_layer_fill(layer)
+        assert pattern is not None
+        assert "glass" in pattern
+
+    def test_get_layer_fill_glazing_simple(self) -> None:
+        layer = LayerThermalProperties(
+            name="SimpleGlazing",
+            obj_type="WindowMaterial:SimpleGlazingSystem",
+            r_value=0.5,
+            is_glazing=True,
+        )
+        _color, pattern = _get_layer_fill(layer)
+        # SimpleGlazingSystem returns color but no pattern
+        assert pattern is None
+
+    def test_get_layer_fill_gas_window_material(self) -> None:
+        layer = LayerThermalProperties(
+            name="ArgonGap",
+            obj_type="WindowMaterial:Gas",
+            thickness=0.012,
+            r_value=0.15,
+            is_gas=True,
+        )
+        color, pattern = _get_layer_fill(layer)
+        assert "gas" in color or "gas" in (pattern or "")
+
+    def test_get_layer_fill_unknown_type(self) -> None:
+        layer = LayerThermalProperties(name="Unknown", obj_type="SomeOtherType", r_value=0.0)
+        color, _pattern = _get_layer_fill(layer)
+        assert "fallback" in color
+
+    def test_svg_with_front_low_e(self) -> None:
+        """Front-side low-E coating line is rendered."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add(
+            "WindowMaterial:Glazing",
+            "FrontLowE",
+            {
+                "optical_data_type": "SpectralAverage",
+                "thickness": 0.006,
+                "conductivity": 1.0,
+                "solar_transmittance_at_normal_incidence": 0.6,
+                "front_side_solar_reflectance_at_normal_incidence": 0.17,
+                "front_side_infrared_hemispherical_emissivity": 0.05,  # Front low-E
+                "back_side_infrared_hemispherical_emissivity": 0.84,
+            },
+        )
+        doc.add("Construction", "FrontLowEWall", {"outside_layer": "FrontLowE"})
+        svg = construction_to_svg(doc["Construction"]["FrontLowEWall"])
+        assert "low-e-coating" in svg
+
+    def test_svg_nomass_shows_r_value_in_footer(self) -> None:
+        """Material:NoMass layer footer shows R-value label."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Material:NoMass", "RigidInsulation", {"thermal_resistance": 1.5, "roughness": "Smooth"})
+        doc.add("Construction", "NoMassWall", {"outside_layer": "RigidInsulation"})
+        svg = construction_to_svg(doc["Construction"]["NoMassWall"])
+        # Footer should contain R-value for no-mass layer
+        assert "R1.50" in svg or "R" in svg

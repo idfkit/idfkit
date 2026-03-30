@@ -314,3 +314,24 @@ class TestTqdmCleanupOnEarlyError:
             simulate(model, "/nonexistent/weather.epw", energyplus=mock_config, on_progress="tqdm")
 
         mock_bar.close.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# _import_tqdm: success path (L144)
+# ---------------------------------------------------------------------------
+
+
+class TestImportTqdmSuccess:
+    """Tests for _import_tqdm() success return path."""
+
+    def test_returns_tqdm_when_available(self) -> None:
+        """_import_tqdm returns the tqdm class when tqdm is installed."""
+        try:
+            from tqdm.auto import tqdm as real_tqdm  # type: ignore[import-not-found]
+        except ImportError:
+            pytest.skip("tqdm not installed")
+
+        from idfkit.simulation.progress_bars import _import_tqdm  # pyright: ignore[reportPrivateUsage]
+
+        result = _import_tqdm()
+        assert result is real_tqdm
