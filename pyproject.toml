@@ -131,6 +131,7 @@ reportUnknownParameterType = false
 reportOptionalMemberAccess = false
 reportMissingParameterType = false
 reportMissingImports = false
+reportMissingTypeStubs = false
 reportUntypedFunctionDecorator = false
 reportUntypedBaseClass = false
 reportMissingTypeArgument = false
