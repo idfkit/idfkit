@@ -48,6 +48,7 @@ class TestExtractAddCalls:
 
         assert len(choices) == 1
         assert choices[0].value == "Yes"
+        assert choices[0].obj_type == "SimulationControl"
         assert choices[0].field_name == "run_simulation_for_sizing_periods"
 
     def test_add_no_string_arg(self) -> None:

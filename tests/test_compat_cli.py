@@ -249,8 +249,8 @@ class TestCLI:
                 "24.2",
             ])
         # Exit 0 = no issues, Exit 1 = issues found
-        # Zone/Material are stable so we expect 0
-        assert exc_info.value.code in (0, 1)
+        # Zone/Material are stable across 24.1→24.2 so we expect 0
+        assert exc_info.value.code == 0
 
     def test_cli_json_output(self, simple_script_file: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """CLI --json produces valid JSON output."""
