@@ -388,10 +388,11 @@ class TestEvaluateDayListInterpolation:
             return fields.get(field)
 
         obj.get.side_effect = get_field
-        # At 30 minutes into the first hour (halfway), interpolation should give ~0.5
-        result = evaluate_day_list(obj, datetime(2024, 1, 1, 0, 30))
-        # With average interpolation enabled by the field
-        assert 0.0 <= result <= 1.0
+        # At 1:30 (halfway through the second interval [1:00→2:00]), interpolation
+        # blends prev_value=0.0 (end of first interval) with tv.value=1.0 → 0.5.
+        # Without interpolation the step function would return 1.0.
+        result = evaluate_day_list(obj, datetime(2024, 1, 1, 1, 30))
+        assert result == pytest.approx(0.5)
 
     def test_interpolate_to_timestep_yes(self) -> None:
         """Interpolate to Timestep = Yes enables interpolation."""
