@@ -303,10 +303,6 @@ class IDFParser:
                 decoded_obj_type = match.group(1).decode(encoding).strip()
                 obj_type = decoded_obj_type
 
-                # Skip version object (handled separately)
-                if decoded_obj_type.upper() == "VERSION":
-                    continue
-
                 obj_name = self._extract_object_name(match, encoding)
 
                 pc, should_skip, decoded_obj_type = self._resolve_type_cache(
@@ -741,10 +737,6 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
             continue
 
         type_upper = type_name.upper()
-
-        # Skip Version objects (handled separately by the parser/writer).
-        if type_upper == "VERSION":
-            continue
 
         bucket = obj_by_type.get(type_upper)
         if bucket:
