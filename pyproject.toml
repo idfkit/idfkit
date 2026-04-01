@@ -1,6 +1,6 @@
 [project]
 name = "idfkit"
-version = "0.1.0"
+version = "0.6.4"
 description = "A fast, modern EnergyPlus IDF/epJSON parser with O(1) lookups and reference tracking"
 authors = [{ name = "Samuel Letellier-Duchesne", email = "developers@idfkit.com" }]
 readme = "README.md"
