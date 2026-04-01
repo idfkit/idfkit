@@ -503,7 +503,6 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
     # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
     lines.append("class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: ignore[misc]")
-    lines.append("    version: tuple[int, int, int]")
     lines.append("    filepath: Path | None")
     lines.append("")
     lines.append("    def __init__(")
@@ -517,6 +516,8 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
 
     # Properties
+    lines.append("    @property")
+    lines.append("    def version(self) -> tuple[int, int, int]: ...")
     lines.append("    @property")
     lines.append("    def strict(self) -> Strict: ...")
     lines.append("    @property")
@@ -555,6 +556,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
 
     # Remaining methods
+    lines.append("    def addidfobject(self, obj: IDFObject) -> IDFObject: ...")
     lines.append("    def removeidfobject(self, obj: IDFObject) -> None: ...")
     lines.append("    def rename(self, obj_type: str, old_name: str, new_name: str) -> None: ...")
     lines.append("    def notify_name_change(self, obj: IDFObject, old_name: str, new_name: str) -> None: ...")

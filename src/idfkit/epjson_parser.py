@@ -180,10 +180,6 @@ class EpJSONParser:
         addidfobject = doc.addidfobject
 
         for obj_type, objects in data.items():
-            # Skip Version (handled separately)
-            if obj_type == "Version":
-                continue
-
             if not isinstance(objects, dict):
                 continue
 

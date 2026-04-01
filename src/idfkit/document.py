@@ -10,6 +10,7 @@ Provides:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import sys
 from collections.abc import Iterator
@@ -35,6 +36,20 @@ else:
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
     from .simulation.config import EnergyPlusConfig
+
+
+def _parse_version_identifier(version_str: str) -> tuple[int, int, int]:
+    """Parse a Version object's ``version_identifier`` string to a version tuple.
+
+    Handles both ``"major.minor"`` (e.g. ``"24.1"``) and ``"major.minor.patch"``
+    (e.g. ``"9.2.0"``).
+    """
+    parts = version_str.strip().split(".")
+    return (
+        int(parts[0]) if len(parts) > 0 else 0,
+        int(parts[1]) if len(parts) > 1 else 0,
+        int(parts[2]) if len(parts) > 2 else 0,
+    )
 
 
 # Common object type mappings for attribute access
@@ -112,11 +127,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_schedules_cache",
         "_schema",
         "_strict",
+        "_version",
         "filepath",
-        "version",
     )
 
-    version: tuple[int, int, int]
     filepath: Path | None
     _collections: dict[str, IDFCollection[IDFObject]]
     _schema: EpJSONSchema | None
@@ -147,7 +161,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
         """
-        self.version = version or LATEST_VERSION
+        self._version = version or LATEST_VERSION
         self.filepath = Path(filepath) if filepath else None
         self._schema = schema
         self._collections: dict[str, IDFCollection[IDFObject]] = {}
@@ -167,6 +181,18 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         This property is read-only; set it via the constructor.
         """
         return self._strict
+
+    @property
+    def version(self) -> tuple[int, int, int]:
+        """EnergyPlus version tuple ``(major, minor, patch)``.
+
+        Reflects the version the document was loaded or created with.  It is
+        kept in sync with the ``Version`` object's ``version_identifier`` field
+        at parse/add time, but direct mutation of ``version_identifier`` on the
+        object after load will *not* update this value — the written output will
+        change while schema operations remain coherent.
+        """
+        return self._version
 
     @property
     def schema(self) -> EpJSONSchema | None:
@@ -594,6 +620,21 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         logger.debug("Added %s '%s'", resolved_obj_type, name)
         return obj
 
+    def addidfobject(self, obj: IDFObject) -> IDFObject:
+        """Add an existing IDFObject to the document.
+
+        Overrides the eppy-compatibility method from
+        :class:`~idfkit._compat.EppyDocumentMixin` to keep ``_version`` in sync
+        when a ``Version`` object is added (e.g. during parsing or copy).
+        """
+        result = super().addidfobject(obj)
+        if obj.obj_type.upper() == "VERSION":
+            vi = obj.data.get("version_identifier")
+            if isinstance(vi, str) and vi.strip():
+                with contextlib.suppress(ValueError, IndexError):
+                    self._version = _parse_version_identifier(vi)
+        return result
+
     def removeidfobject(self, obj: IDFObject) -> None:
         """Remove an object from the document.
 
@@ -948,7 +989,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             True
         """
         new_doc: IDFDocument[bool] = IDFDocument(  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
-            version=self.version,
+            version=self._version,
             schema=self._schema,
             filepath=self.filepath,
             strict=self._strict,

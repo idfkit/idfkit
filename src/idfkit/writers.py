@@ -29,23 +29,16 @@ OutputType = Literal["standard", "nocomment", "compressed"]
 
 
 def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
-    """Resolve version identifier from Version object, falling back to document metadata."""
-    for obj_type, collection in doc.collections.items():
-        if obj_type.upper() != "VERSION" or not collection:
-            continue
-        version_obj = collection.first()
-        if version_obj is None:
-            continue
-        version_identifier = version_obj.data.get("version_identifier")
-        if isinstance(version_identifier, str):
-            version_identifier = version_identifier.strip()
-            if version_identifier:
-                return version_identifier
-        elif version_identifier is not None:
-            return str(version_identifier)
-
-    version = doc.version
-    return f"{version[0]}.{version[1]}"
+    """Read version_identifier from the Version object, falling back to doc.version."""
+    version_coll = doc.collections.get("Version")
+    if version_coll:
+        obj = version_coll.first()
+        if obj is not None:
+            vi = obj.data.get("version_identifier")
+            if isinstance(vi, str) and vi.strip():
+                return vi.strip()
+    v = doc.version
+    return f"{v[0]}.{v[1]}"
 
 
 def write_idf(

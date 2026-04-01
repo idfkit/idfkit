@@ -257,7 +257,8 @@ class TestParserEdgeCases:
         filepath = tmp_path / "comments.idf"
         filepath.write_text(content)
         doc = parse_idf(filepath)
-        assert len(doc) == 0  # Only version, no objects
+        assert len(doc) == 1  # Only a Version object, no other objects
+        assert "Version" in doc
 
     def test_epjson_with_non_dict_value(self, tmp_path: Path) -> None:
         """Test that non-dict values in the object type are skipped."""
