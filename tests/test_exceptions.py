@@ -7,10 +7,15 @@ import pytest
 from idfkit.exceptions import (
     DanglingReferenceError,
     DuplicateObjectError,
+    EnergyPlusNotFoundError,
     ExpandObjectsError,
     IdfKitError,
+    IDFParseError,
     InvalidFieldError,
+    NoDesignDaysError,
+    ParseDiagnostic,
     ParseError,
+    RangeError,
     SchemaNotFoundError,
     SimulationError,
     UnknownObjectTypeError,
@@ -30,6 +35,49 @@ class TestIdfKitError:
 
     def test_parse_error_alias(self) -> None:
         assert ParseError is IdfKitError
+
+
+class TestIDFParseError:
+    def test_no_diagnostics(self) -> None:
+        err = IDFParseError("parse failed")
+        assert "parse failed" in str(err)
+        assert err.diagnostics == ()
+
+    def test_with_diagnostic_full_location(self) -> None:
+        diag = ParseDiagnostic(message="unexpected token", filepath="/a/b.idf", line=10, column=5)
+        err = IDFParseError("parse failed", diagnostics=[diag])
+        s = str(err)
+        assert "/a/b.idf:10:5" in s
+        assert "unexpected token" in s
+
+    def test_with_diagnostic_filepath_and_line(self) -> None:
+        diag = ParseDiagnostic(message="bad value", filepath="/a/b.idf", line=3)
+        err = IDFParseError("parse failed", diagnostics=[diag])
+        s = str(err)
+        assert "/a/b.idf:3" in s
+        assert "bad value" in s
+
+    def test_with_diagnostic_filepath_only(self) -> None:
+        diag = ParseDiagnostic(message="error", filepath="/a/b.idf")
+        err = IDFParseError("parse failed", diagnostics=[diag])
+        s = str(err)
+        assert "/a/b.idf" in s
+
+    def test_with_diagnostic_no_location(self) -> None:
+        diag = ParseDiagnostic(message="mystery error")
+        err = IDFParseError("parse failed", diagnostics=[diag])
+        s = str(err)
+        assert "unknown location" in s
+
+    def test_with_diagnostic_obj_type_and_name(self) -> None:
+        diag = ParseDiagnostic(message="err", filepath="/f.idf", line=1, column=1, obj_type="Zone", obj_name="Z1")
+        err = IDFParseError("parse failed", diagnostics=[diag])
+        s = str(err)
+        assert "[object: Zone]" in s
+        assert "[name: Z1]" in s
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(IDFParseError("x"), IdfKitError)
 
 
 class TestSchemaNotFoundError:
@@ -66,8 +114,21 @@ class TestUnknownObjectTypeError:
         assert err.obj_type == "FakeType"
         assert "FakeType" in str(err)
 
+    def test_with_version_known_type(self) -> None:
+        """With a version, the error may append a docs URL for recognised types."""
+        err = UnknownObjectTypeError("Zone", version=(24, 1, 0))
+        assert "Zone" in str(err)
+
+    def test_with_version_unknown_type(self) -> None:
+        """With a version but unknown type, no URL is added but no crash either."""
+        err = UnknownObjectTypeError("TotallyMadeUpType", version=(24, 1, 0))
+        assert "TotallyMadeUpType" in str(err)
+
     def test_is_idfkit_error(self) -> None:
         assert isinstance(UnknownObjectTypeError("X"), IdfKitError)
+
+    def test_is_key_error(self) -> None:
+        assert isinstance(UnknownObjectTypeError("X"), KeyError)
 
 
 class TestInvalidFieldError:
@@ -88,8 +149,27 @@ class TestInvalidFieldError:
         err = InvalidFieldError("Zone", "bad", available_fields=fields)
         assert "... and 5 more" in str(err)
 
+    def test_with_extensible_fields(self) -> None:
+        err = InvalidFieldError("Zone", "bad", extensible_fields=frozenset(["x_coord", "y_coord"]))
+        s = str(err)
+        assert "extensible" in s
+        assert "x_coord" in s
+
+    def test_with_version_known_type(self) -> None:
+        """With a version for a recognised type, docs URL may be appended."""
+        err = InvalidFieldError("Zone", "bad_field", version=(24, 1, 0))
+        assert "bad_field" in str(err)
+
+    def test_with_version_unknown_type(self) -> None:
+        """With a version for an unknown type, no URL but no crash."""
+        err = InvalidFieldError("MadeUpType", "bad_field", version=(24, 1, 0))
+        assert "bad_field" in str(err)
+
     def test_is_idfkit_error(self) -> None:
         assert isinstance(InvalidFieldError("Z", "f"), IdfKitError)
+
+    def test_is_attribute_error(self) -> None:
+        assert isinstance(InvalidFieldError("Z", "f"), AttributeError)
 
 
 class TestVersionNotFoundError:
@@ -115,6 +195,18 @@ class TestDanglingReferenceError:
     def test_is_idfkit_error(self) -> None:
         obj = IDFObject(obj_type="X", name="Y")
         assert isinstance(DanglingReferenceError(obj, "f", "t"), IdfKitError)
+
+
+class TestRangeError:
+    def test_basic(self) -> None:
+        err = RangeError("Zone", "MyZone", "thickness", "Value out of range")
+        assert err.obj_type == "Zone"
+        assert err.obj_name == "MyZone"
+        assert err.field_name == "thickness"
+        assert "Value out of range" in str(err)
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(RangeError("Z", "N", "f", "msg"), IdfKitError)
 
 
 class TestValidationFailedError:
@@ -185,6 +277,73 @@ class TestExpandObjectsError:
         assert sim_err.exit_code == 2
         assert expand_err.stderr == "err1"
         assert sim_err.stderr == "err2"
+
+
+class TestSimulationError:
+    def test_basic(self) -> None:
+        err = SimulationError("sim failed")
+        assert "sim failed" in str(err)
+        assert err.exit_code is None
+        assert err.stderr is None
+
+    def test_with_exit_code(self) -> None:
+        err = SimulationError("failed", exit_code=2)
+        assert "(exit code 2)" in str(err)
+
+    def test_with_stderr(self) -> None:
+        err = SimulationError("failed", stderr="some error output")
+        assert "stderr: some error output" in str(err)
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(SimulationError("x"), IdfKitError)
+
+
+class TestEnergyPlusNotFoundError:
+    def test_no_locations(self) -> None:
+        err = EnergyPlusNotFoundError()
+        s = str(err)
+        assert "Could not find an EnergyPlus installation" in s
+        assert "ENERGYPLUS_DIR" in s
+
+    def test_with_searched_locations(self) -> None:
+        err = EnergyPlusNotFoundError(searched_locations=["/usr/local/EnergyPlus", "/opt/EnergyPlus"])
+        s = str(err)
+        assert "/usr/local/EnergyPlus" in s
+        assert "/opt/EnergyPlus" in s
+        assert "Searched in:" in s
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(EnergyPlusNotFoundError(), IdfKitError)
+
+
+class TestNoDesignDaysError:
+    def test_with_station_name(self) -> None:
+        err = NoDesignDaysError(station_name="Denver International Airport")
+        s = str(err)
+        assert "Denver International Airport" in s
+        assert "SizingPeriod:DesignDay" in s
+
+    def test_with_ddy_path(self) -> None:
+        err = NoDesignDaysError(ddy_path="/path/to/station.ddy")
+        s = str(err)
+        assert "/path/to/station.ddy" in s
+
+    def test_neither_name_nor_path(self) -> None:
+        err = NoDesignDaysError()
+        s = str(err)
+        assert "DDY file contains no SizingPeriod:DesignDay objects." in s
+
+    def test_with_nearby_suggestions(self) -> None:
+        err = NoDesignDaysError(
+            station_name="TestStation",
+            nearby_suggestions=["StationA", "StationB", "StationC"],
+        )
+        s = str(err)
+        assert "StationA" in s
+        assert "Nearby stations" in s
+
+    def test_is_idfkit_error(self) -> None:
+        assert isinstance(NoDesignDaysError(), IdfKitError)
 
 
 class TestUnsupportedVersionError:
