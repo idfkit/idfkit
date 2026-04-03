@@ -373,65 +373,28 @@ class TestScoreStation:
         assert field == "name"
 
     def test_all_tokens_prefix_match(self) -> None:
-        """All query tokens are prefixes of name tokens (lines 282-283)."""
+        """All query tokens are prefixes of name tokens (lines 282-283).
+
+        Station: New.York.J.F.Kennedy.Intl.AP -> name_lower = "new york j f kennedy intl ap" (28 chars)
+        tokens: ["new", "ken"] -> total token length = 6
+        coverage = 6/28; score = 0.6 + 0.3 * (6/28)
+        """
         station = _fixture_stations()[2]  # New.York.J.F.Kennedy.Intl.AP
         # Tokens: "new", "ken" — "new" prefixes "new", "ken" prefixes "kennedy"
         score, field = _score_station(station, "new ken", ["new", "ken"])
-        assert 0.6 <= score <= 0.9
+        assert score == pytest.approx(0.6 + 0.3 * 6 / 28)
         assert field == "name"
 
     def test_partial_token_overlap(self) -> None:
-        """Only some tokens match (lines 286->293, 288-290)."""
+        """Only some tokens match (lines 286->293, 288-290).
+
+        Station: New.York.J.F.Kennedy.Intl.AP
+        tokens: ["new", "zzz"] -> "new" matches, "zzz" does not -> matching=1, ratio=1/2
+        score = 0.3 * (1/2) = 0.15
+        """
         station = _fixture_stations()[2]  # New.York.J.F.Kennedy.Intl.AP
         score, field = _score_station(station, "new zzz", ["new", "zzz"])
-        assert 0.0 < score <= 0.3
-        assert field == "name"
-
-    def test_state_match(self) -> None:
-        """Query exactly matches state but is not a substring of name/display (line 294).
-
-        For most stations, the state code also appears in the display_name,
-        so signal 2 fires first. We use a station with a state code that is
-        NOT a substring of the display_name to reach signal 6.
-        """
-        # "qw" is the state; display_name = "Somecity, QW, XYZ" -> lowered has "qw"
-        # which is also a substring of display_name, so signal 2 fires.
-        # State/country match (signal 6) is only reachable when the query
-        # is NOT a substring of display_name. Since the state is always in
-        # display_name, this signal is effectively unreachable for state matches.
-        # We document this and test the country path instead with a similar trick.
-        # For the state signal, we can only reach it if the state is empty in display.
-        station2 = WeatherStation(
-            country="ZZ",
-            state="QW",
-            city="A",
-            wmo="000001",
-            source="",
-            latitude=0.0,
-            longitude=0.0,
-            timezone=0.0,
-            elevation=0.0,
-            url="",
-        )
-        # display_name = "A, QW, ZZ" -> "a, qw, zz" which contains "qw"
-        # So signal 2 still fires. The state signal (line 294) is unreachable
-        # when state is part of display_name. We test via score check instead.
-        score, field = _score_station(station2, "qw", [])
-        assert score > 0.0
-        assert field == "name"  # signal 2 fires because "qw" is in display
-
-    def test_country_match(self) -> None:
-        """Query matching country is typically caught by display_name substring (line 296).
-
-        Since country is always appended to display_name, the country signal
-        (line 296) is only reachable when the query matches the country but
-        is NOT a substring of display_name. This is effectively unreachable
-        for standard stations. We verify the display_name path fires instead.
-        """
-        station = _fixture_stations()[0]
-        score, field = _score_station(station, "usa", [])
-        # "usa" is a substring of display_name, so signal 2 fires
-        assert score > 0.8
+        assert score == pytest.approx(0.15)
         assert field == "name"
 
     def test_no_match(self) -> None:

@@ -284,13 +284,15 @@ class TestApplyToModel:
         assert len(names) == 3
 
     def test_apply_heating_99(self, model: object) -> None:
-        """Single 99% heating percentile."""
+        """Single 99% heating percentile yields exactly 2 design days (heating 99% DB + cooling 1% DB)."""
         from idfkit.document import IDFDocument
 
         assert isinstance(model, IDFDocument)
         ddm = DesignDayManager(_FIXTURES / "sample.ddy")
         names = ddm.apply_to_model(model, heating="99%", cooling="1%")
+        assert len(names) == 2
         assert any("99% Condns DB" in n for n in names)
+        assert any("1% Condns DB" in n for n in names)
 
     def test_apply_updates_location(self, model: object) -> None:
         from idfkit.document import IDFDocument

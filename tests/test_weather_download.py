@@ -110,8 +110,11 @@ class TestWeatherDownloader:
 
     def test_clear_cache_no_files_dir(self, tmp_path: Path) -> None:
         """clear_cache when files dir doesn't exist is a no-op (line 240->exit)."""
+        files_dir = tmp_path / "files"
+        assert not files_dir.exists()
         downloader = WeatherDownloader(cache_dir=tmp_path)
         downloader.clear_cache()  # Should not raise
+        assert not files_dir.exists()  # Still doesn't exist — no side effects
 
     @patch("idfkit.weather.download.urlopen")
     def test_get_epw(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
