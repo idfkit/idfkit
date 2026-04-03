@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from idfkit import IDFDocument, load_idf, new_document
+from idfkit.cst import DocumentCST
 from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 
@@ -568,11 +569,13 @@ class TestDocumentProperties:
 
     def test_cst_property_populated_by_preserve_formatting(self, idf_file: Path) -> None:
         doc = load_idf(str(idf_file), preserve_formatting=True)
-        assert doc.cst is not None
+        assert isinstance(doc.cst, DocumentCST)
+        assert len(doc.cst.nodes) > 0
 
     def test_raw_text_property_populated_by_preserve_formatting(self, idf_file: Path) -> None:
         doc = load_idf(str(idf_file), preserve_formatting=True)
-        assert doc.raw_text is not None
+        assert isinstance(doc.raw_text, str)
+        assert len(doc.raw_text) > 0
 
     def test_get_collection(self, empty_doc: IDFDocument) -> None:
         empty_doc.add("Zone", "Z1")
@@ -679,9 +682,10 @@ class TestRemoveIdfObjectEdgeCases:
 
     def test_remove_invalidates_schedule_cache(self, empty_doc: IDFDocument) -> None:
         sched = empty_doc.add("Schedule:Constant", "S1", {"hourly_value": 1.0})
-        _ = empty_doc.schedules_dict  # populate cache
+        assert empty_doc.get_schedule("S1") is sched  # populate cache and verify present
         empty_doc.removeidfobject(sched)
-        assert empty_doc._schedules_cache is None  # pyright: ignore[reportPrivateUsage]
+        # After removal the schedule must no longer appear in the lookup result
+        assert empty_doc.get_schedule("S1") is None
 
     def test_remove_with_cst(self, idf_file: Path) -> None:
         doc = load_idf(str(idf_file), preserve_formatting=True)
@@ -699,9 +703,11 @@ class TestNotifyNameChangeEdgeCases:
 
     def test_schedule_rename_invalidates_cache(self, empty_doc: IDFDocument) -> None:
         empty_doc.add("Schedule:Constant", "OldSched", {"hourly_value": 1.0})
-        _ = empty_doc.schedules_dict  # populate cache
+        assert empty_doc.get_schedule("OldSched") is not None  # populate cache and verify present
         empty_doc.rename("Schedule:Constant", "OldSched", "NewSched")
-        assert empty_doc._schedules_cache is None  # pyright: ignore[reportPrivateUsage]
+        # After rename the old name must be gone and the new name must be found
+        assert empty_doc.get_schedule("OldSched") is None
+        assert empty_doc.get_schedule("NewSched") is not None
 
     def test_rename_when_old_key_not_in_by_name(self, empty_doc: IDFDocument) -> None:
         empty_doc.add("Zone", "TestZone")
@@ -773,9 +779,11 @@ class TestGetReferencesAndSurfaces:
 
     def test_get_zone_surfaces(self, simple_doc: IDFDocument) -> None:
         surfaces = simple_doc.get_zone_surfaces("TestZone")
-        assert len(surfaces) >= 1
+        # simple_doc fixture defines exactly 2 surfaces for TestZone: TestWall and TestFloor
+        assert len(surfaces) == 2
         names = [s.name for s in surfaces]
         assert "TestWall" in names
+        assert "TestFloor" in names
 
 
 class TestDocumentDescribeUnknownType:
@@ -920,13 +928,17 @@ class TestNotifyReferenceChangeNonString:
 
     def test_non_string_old_value(self, empty_doc: IDFDocument) -> None:
         zone = empty_doc.add("Zone", "Z1", validate=False)
-        # old_value is not a string -> old_str becomes None
+        # old_value is not a string -> old_str becomes None, call must not raise
         empty_doc.notify_reference_change(zone, "some_field", 42, "NewName")
+        # Document state is unchanged: the zone is still present under its original name
+        assert empty_doc.getobject("Zone", "Z1") is zone
 
     def test_non_string_new_value(self, empty_doc: IDFDocument) -> None:
         zone = empty_doc.add("Zone", "Z1", validate=False)
-        # new_value is not a string -> new_str becomes None
+        # new_value is not a string -> new_str becomes None, call must not raise
         empty_doc.notify_reference_change(zone, "some_field", "OldName", 99)
+        # Document state is unchanged: the zone is still present under its original name
+        assert empty_doc.getobject("Zone", "Z1") is zone
 
 
 class TestIndexObjectReferencesFallbackEmpty:
