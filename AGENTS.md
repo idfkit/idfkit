@@ -177,7 +177,7 @@ idfkit searches for EnergyPlus in this order (see `src/idfkit/simulation/config.
 4. Platform default directories (newest version first):
    - Linux: `~/.local/EnergyPlus-*`, `~/EnergyPlus-*`, `/usr/local/EnergyPlus-*`, `/opt/EnergyPlus-*`
    - macOS: `~/Applications/EnergyPlus-*`, `/Applications/EnergyPlus-*`
-   - Windows: `%ProgramFiles%/EnergyPlus-*`
+   - Windows: `%ProgramFiles%/EnergyPlus-*`, `%SystemDrive%\EnergyPlusV*` (e.g. `C:\EnergyPlusV25-2-0`)
 
 ### Verifying the Installation
 

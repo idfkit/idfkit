@@ -187,3 +187,32 @@ class TestGlobSorted:
 
     def test_nonexistent_dir(self) -> None:
         assert _glob_sorted([Path("/nonexistent/path")]) == []
+
+
+class TestPlatformSearchDirs:
+    """Tests for _platform_search_dirs()."""
+
+    def test_windows_includes_system_drive_root(self, tmp_path: Path) -> None:
+        """Drive root (e.g. C:\\) should be included on Windows for default installs."""
+        from idfkit.simulation.config import _platform_search_dirs
+
+        with (
+            patch("idfkit.simulation.config.platform.system", return_value="Windows"),
+            patch.dict("os.environ", {"SystemDrive": "C:", "ProgramFiles": str(tmp_path)}, clear=True),
+        ):
+            dirs = _platform_search_dirs()
+
+        assert Path("C:\\") in dirs
+
+    def test_windows_system_drive_fallback(self) -> None:
+        """When SystemDrive is absent, fall back to C:\\."""
+        from idfkit.simulation.config import _platform_search_dirs
+
+        env_without_system_drive = {k: v for k, v in __import__("os").environ.items() if k != "SystemDrive"}
+        with (
+            patch("idfkit.simulation.config.platform.system", return_value="Windows"),
+            patch.dict("os.environ", env_without_system_drive, clear=True),
+        ):
+            dirs = _platform_search_dirs()
+
+        assert Path("C:\\") in dirs
