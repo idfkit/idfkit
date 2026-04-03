@@ -539,6 +539,12 @@ class TestMatplotlibBackend:
 
         fig = backend.line([1, 2, 3], [10, 20, 30], title="T", xlabel="X", ylabel="Y", label="L")
         assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
+        legend = ax.get_legend()
+        assert legend is not None
         plt.close(fig)
 
     def test_multi_line_without_optional_params(self, backend: Any) -> None:
@@ -555,6 +561,10 @@ class TestMatplotlibBackend:
 
         fig = backend.multi_line([1, 2], {"A": [10, 20]}, title="T", xlabel="X", ylabel="Y")
         assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
         plt.close(fig)
 
     def test_multi_line_empty_series(self, backend: Any) -> None:
@@ -579,6 +589,7 @@ class TestMatplotlibBackend:
 
         fig = backend.heatmap([[1, 2], [3, 4]], colorbar_label="Energy", title="T")
         assert isinstance(fig, plt.Figure)
+        assert len(fig.axes) >= 2
         plt.close(fig)
 
     def test_heatmap_with_y_labels_only(self, backend: Any) -> None:
@@ -603,6 +614,10 @@ class TestMatplotlibBackend:
 
         fig = backend.bar(["A", "B"], [10, 20], title="T", xlabel="X", ylabel="Y")
         assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
         plt.close(fig)
 
     def test_stacked_bar_without_optional_params(self, backend: Any) -> None:
