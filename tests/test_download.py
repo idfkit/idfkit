@@ -14,6 +14,7 @@ from urllib.error import HTTPError, URLError
 import pytest
 
 from idfkit.download import (
+    _GITHUB_API_BASE,
     _SCHEMA_FILENAME,
     _SCHEMA_FILENAME_GZ,
     _extract_schema_from_tarball,
@@ -22,6 +23,7 @@ from idfkit.download import (
     download_all_schemas,
     download_schema,
 )
+from idfkit.versions import ENERGYPLUS_VERSIONS
 
 
 def _make_tarball_bytes(schema_content: bytes, member_name: str = "EnergyPlus/Energy+.schema.epJSON") -> bytes:
@@ -68,6 +70,11 @@ def test_get_release_assets(mock_urlopen: MagicMock) -> None:
 
     result = _get_release_assets((24, 1, 0))
     assert result == [{"name": "file.tar.gz"}]
+
+    # Verify the constructed URL contains the expected version tag (v24.1.0)
+    called_url: str = mock_urlopen.call_args[0][0].full_url
+    assert called_url.startswith(_GITHUB_API_BASE)
+    assert "v24.1.0" in called_url
 
 
 @patch("idfkit.download.urlopen")
@@ -285,6 +292,8 @@ def test_download_all_schemas_success(mock_download: MagicMock, tmp_path: Path) 
     results = download_all_schemas(target_dir=tmp_path, compress=True)
     assert all(isinstance(v, Path) for v in results.values())
     assert mock_download.call_count > 0
+    # Keys must be exactly the supported version tuples
+    assert set(results.keys()) == set(ENERGYPLUS_VERSIONS)
 
 
 @patch("idfkit.download.download_schema")
@@ -298,9 +307,17 @@ def test_download_all_schemas_with_failures(mock_download: MagicMock, tmp_path: 
 def test_download_all_schemas_default_target_dir(mock_download: MagicMock, tmp_path: Path) -> None:
     """When target_dir is None, the base_dir logic branches differently."""
     mock_download.return_value = tmp_path / "schema.epJSON.gz"
-    with patch("idfkit.download.Path.home", return_value=tmp_path / "fakehome"):
+    fake_home = tmp_path / "fakehome"
+    with patch("idfkit.download.Path.home", return_value=fake_home):
         results = download_all_schemas(target_dir=None, compress=True)
     assert all(isinstance(v, Path) for v in results.values())
-    # Verify download_schema was called with base_dir.parent when target_dir is None
-    for call_args in mock_download.call_args_list:
-        assert call_args.kwargs.get("target_dir") or call_args[1].get("target_dir") is not None
+    # Verify download_schema was called with the expected target_dir derived from Path.home()
+    expected_target_dir = fake_home / ".idfkit"
+    for call in mock_download.call_args_list:
+        if "target_dir" in call.kwargs:
+            target_dir = call.kwargs["target_dir"]
+        elif len(call.args) >= 2:
+            target_dir = call.args[1]
+        else:
+            target_dir = None
+        assert target_dir == expected_target_dir
