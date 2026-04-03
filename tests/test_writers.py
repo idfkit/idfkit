@@ -413,15 +413,15 @@ class TestResolveVersionIdentifier:
         result = _resolve_version_identifier(doc)
         assert result == "24.1"
 
-    def test_numeric_version_identifier_converted_to_str(self) -> None:
-        """version_identifier is a non-string non-None value → str() path (L44-45)."""
+    def test_numeric_version_identifier_falls_back_to_doc_version(self) -> None:
+        """version_identifier is a non-string (e.g. float) → isinstance guard fails, falls back to doc.version."""
         doc = new_document(version=(24, 1, 0))
         version_obj = doc["Version"].first()
         assert version_obj is not None
-        # Store a numeric value directly
+        # Store a numeric value directly; the function only accepts str, so this falls back
         version_obj.data["version_identifier"] = 23.2
         result = _resolve_version_identifier(doc)
-        assert result == "23.2"
+        assert result == "24.1"
 
     def test_version_identifier_none_falls_back_to_doc_version(self) -> None:
         """version_identifier key absent: data.get() returns None, elif skipped (L44->33)."""
@@ -629,6 +629,7 @@ Zone,
         output = write_idf(doc)
         assert output is not None
         assert "ZoneKeep" in output
+        assert "ZoneRemove" not in output
 
     def test_new_object_appended_when_tail_has_no_newline(self, tmp_path: Path) -> None:
         """New objects added after parse are appended; handles tail without trailing newline (L262)."""

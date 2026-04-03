@@ -821,6 +821,9 @@ class TestCSTLinkingEmptyCollection:
 
         result = _link_cst_to_objects(cst, doc)
         assert result is True
+        # The zone node should be linked to the Z1 object
+        assert zone_node.obj is not None
+        assert zone_node.obj.name == "Z1"
 
 
 class TestCSTLinkingMultipleSameType:
@@ -847,4 +850,6 @@ Zone, ZoneB, 0, 0, 0, 0, 1, 1;
         result = _link_cst_to_objects(cst, doc)
         assert result is True
         assert node_a.obj is not None
+        assert node_a.obj.name == "ZoneA"
         assert node_b.obj is not None
+        assert node_b.obj.name == "ZoneB"
