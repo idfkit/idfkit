@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import sys
 from collections.abc import Iterator
@@ -148,8 +149,14 @@ class TestGenerate:
         assert all("#not-a-real-object" not in v for v in result.values())
 
     def test_generate_first_match_wins(self, tmp_path: Path) -> None:
-        """Cover branch 89: duplicate object type keeps the first location."""
+        """Cover branch 89: duplicate object type keeps the first location.
+
+        generate() iterates HTML files via sorted(rglob(...)), so "aaa" comes
+        before "bbb" alphabetically — the winner is deterministic regardless of
+        filesystem iteration order.
+        """
         version_dir = tmp_path / "v25.2"
+        # Directory names are chosen so that sorted order is aaa < bbb
         page1 = version_dir / "io-reference" / "aaa"
         page2 = version_dir / "io-reference" / "bbb"
         page1.mkdir(parents=True)
@@ -366,7 +373,9 @@ class TestFieldDocstring:
         long_note = "A" * 200
         result = _field_docstring({"note": long_note})
         assert result is not None
-        assert len(result) <= 130  # truncated + other fields
+        # _truncate_text caps at max_len=120: first 117 chars + "..."
+        assert len(result) == 120
+        assert result.endswith("...")
 
 
 class TestSanitizeDocstring:
@@ -483,11 +492,14 @@ class TestBuildVersionAvailability:
         patched_versions = [(24, 1, 0), (24, 2, 0)]
         with patch("idfkit.codegen.generate_stubs.ENERGYPLUS_VERSIONS", patched_versions):
             type_since, field_since = _build_version_availability()
-        assert isinstance(type_since, dict)
-        assert isinstance(field_since, dict)
-        # Zone should exist and be associated with the earliest patched version
+        # Both dicts must be non-empty
+        assert len(type_since) > 0
+        assert len(field_since) > 0
+        # "Zone" is a well-known type present in every EnergyPlus version
         assert "Zone" in type_since
         assert type_since["Zone"] == min(patched_versions)
+        # At least one well-known Zone field should be present in field_since
+        assert any(obj_type == "Zone" for obj_type, _ in field_since)
 
 
 class TestGenerateStubs:
@@ -498,6 +510,8 @@ class TestGenerateStubs:
         assert "class Zone(IDFObject):" in content
         assert "_ObjectTypeMap" in content
         assert "from __future__ import annotations" in content
+        # Validate that the output is syntactically valid Python
+        ast.parse(content)
 
     def test_default_version(self) -> None:
         content = generate_stubs()
@@ -511,6 +525,8 @@ class TestGenerateDocumentPyi:
         assert "def __init__" in content
         assert "@property" in content
         assert "from __future__ import annotations" in content
+        # Validate that the output is syntactically valid Python
+        ast.parse(content)
 
 
 @pytest.fixture
