@@ -80,6 +80,7 @@ dev = [
     "types-aiobotocore-s3>=2.5",
     "boto3>=1.26",
     "aiobotocore>=2.5",
+    "plotly>=5.0",
 ]
 benchmark = [
     "eppy>=0.5.63",
@@ -130,6 +131,7 @@ reportUnknownParameterType = false
 reportOptionalMemberAccess = false
 reportMissingParameterType = false
 reportMissingImports = false
+reportMissingTypeStubs = false
 reportUntypedFunctionDecorator = false
 reportUntypedBaseClass = false
 reportMissingTypeArgument = false
