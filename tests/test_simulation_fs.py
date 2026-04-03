@@ -644,3 +644,57 @@ class TestAsyncS3FileSystemOperations:
         client.delete_object = AsyncMock()
         await fs.remove("file.txt")
         client.delete_object.assert_called_once_with(Bucket="bkt", Key="pfx/file.txt")
+
+    @pytest.mark.asyncio
+    async def test_context_manager_exercises_ensure_client(self) -> None:
+        """Entering via 'async with' wires up _client so _ensure_client succeeds."""
+        fake_mod = _make_fake_aiobotocore()
+        fake_parent = ModuleType("aiobotocore")
+        with patch.dict(sys.modules, {"aiobotocore": fake_parent, "aiobotocore.session": fake_mod}):
+            fs = AsyncS3FileSystem(bucket="bkt", prefix="pfx")
+
+        # Confirm client is None before entering the context manager.
+        assert fs._client is None
+
+        mock_client = MagicMock()
+        mock_ctx = MagicMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_ctx.__aexit__ = AsyncMock(return_value=None)
+        fs._session = MagicMock()
+        fs._session.create_client = MagicMock(return_value=mock_ctx)
+
+        # Enter via the context-manager protocol (async with), not __aenter__ directly.
+        async with fs:
+            # _ensure_client must now return the live client without raising.
+            assert fs._ensure_client() is mock_client
+
+        # After exit the client is cleaned up.
+        assert fs._client is None
+
+
+# ---------------------------------------------------------------------------
+# makedirs no-op / return-value tests
+# ---------------------------------------------------------------------------
+
+
+class TestMakedirsNoop:
+    """Ensure makedirs is a no-op and returns None for S3 backends."""
+
+    def test_s3_makedirs_returns_none(self) -> None:
+        fake_boto3 = _make_fake_boto3()
+        mock_client = MagicMock()
+        fake_boto3.client = MagicMock(return_value=mock_client)  # type: ignore[attr-defined]
+        with patch.dict(sys.modules, {"boto3": fake_boto3}):
+            fs = S3FileSystem(bucket="bkt")
+        result = fs.makedirs("any/path", exist_ok=True)
+        assert result is None
+        mock_client.put_object.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_async_s3_makedirs_returns_none(self) -> None:
+        fake_mod = _make_fake_aiobotocore()
+        fake_parent = ModuleType("aiobotocore")
+        with patch.dict(sys.modules, {"aiobotocore": fake_parent, "aiobotocore.session": fake_mod}):
+            fs = AsyncS3FileSystem(bucket="bkt")
+        result = await fs.makedirs("any/path", exist_ok=True)
+        assert result is None
