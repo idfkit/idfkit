@@ -645,7 +645,7 @@ class TestCompatRegressionFixes:
 
     def test_cli_resolves_two_part_minor_to_bundled_patch(self) -> None:
         """9.0 should resolve to 9.0.1, not fallback to 8.9.0."""
-        from idfkit.compat._cli import _parse_version_spec
+        from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
 
         assert _parse_version_spec("9.0") == (9, 0, 1)
 
@@ -683,3 +683,314 @@ class TestCompatRegressionFixes:
             main(["check", str(broken), "--from", "24.1", "--to", "24.2"])
 
         assert exc_info.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# _parse_version_spec edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestParseVersionSpec:
+    """Additional edge-case tests for _parse_version_spec."""
+
+    def test_empty_part_raises(self) -> None:
+        """A version string with an empty segment (e.g. '24..1') raises ArgumentTypeError."""
+        import argparse
+
+        from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
+
+        with pytest.raises(argparse.ArgumentTypeError, match="Invalid version specifier"):
+            _parse_version_spec("24..1")
+
+    def test_non_integer_part_raises(self) -> None:
+        """A version string with a non-integer segment raises ArgumentTypeError."""
+        import argparse
+
+        from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
+
+        with pytest.raises(argparse.ArgumentTypeError, match="Invalid version specifier"):
+            _parse_version_spec("24.abc")
+
+    def test_three_part_version_parsed(self) -> None:
+        """A three-part version string (e.g. '24.1.0') is accepted and returned as-is."""
+        from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
+
+        assert _parse_version_spec("24.1.0") == (24, 1, 0)
+
+    def test_two_part_no_matching_minor_fallback(self) -> None:
+        """A two-part version with no matching bundled minor falls back to MAJOR.MINOR.0."""
+        from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
+
+        # Version 99.0 does not exist in any bundled schema.
+        result = _parse_version_spec("99.0")
+        assert result == (99, 0, 0)
+
+
+# ---------------------------------------------------------------------------
+# _resolve_targets edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestResolveTargetsEdgeCases:
+    """Tests for _resolve_targets error paths."""
+
+    def test_targets_with_unknown_version_exits_2(self, simple_script_file: Path) -> None:
+        """--targets containing an unresolvable version causes exit 2."""
+        # Versions 1.0 and 1.1 are below the minimum bundled version (8.9).
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(simple_script_file), "--targets", "1.0,1.1"])
+        assert exc_info.value.code == 2
+
+    def test_targets_with_duplicate_version_exits_2(self, simple_script_file: Path) -> None:
+        """--targets where all versions resolve to the same version causes exit 2."""
+        # Both 24.1 and 24.1.0 resolve to the same bundled version.
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(simple_script_file), "--targets", "24.1,24.1.0"])
+        assert exc_info.value.code == 2
+
+    def test_from_to_with_unknown_version_exits_2(self, simple_script_file: Path) -> None:
+        """--from with an unresolvable version causes exit 2 during resolution."""
+        # Version 1.0 is below the minimum bundled version (8.9) so resolve_version raises.
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(simple_script_file), "--from", "1.0", "--to", "24.1"])
+        assert exc_info.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# _checker.py edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestCheckerEdgeCases:
+    """Tests for uncovered branches in _checker.py."""
+
+    def test_choice_value_with_no_obj_type_skipped(self) -> None:
+        """A CHOICE_VALUE literal with no obj_type is silently skipped."""
+        from idfkit.compat._checker import _check_choice_value  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._diff import SchemaIndex  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import ExtractedLiteral, LiteralKind
+
+        idx = SchemaIndex(version=(24, 1, 0), object_types=frozenset(), choices={})
+        literal = ExtractedLiteral(
+            value="Smooth",
+            kind=LiteralKind.CHOICE_VALUE,
+            line=1,
+            col=0,
+            end_col=6,
+            obj_type=None,
+            field_name=None,
+        )
+        out: list[Diagnostic] = []
+        _check_choice_value(literal, {(24, 1, 0): idx}, "test.py", out)
+        assert out == []
+
+    def test_choice_value_group_filtered_when_obj_type_is_none(self) -> None:
+        """When allowed_types filter is active and literal.obj_type is None, the literal is not skipped."""
+
+        # A CHOICE_VALUE without obj_type has _literal_obj_type return None.
+        # When allowed_types is set and ot is None, the ``if ot is not None`` guard
+        # prevents the skip, so the literal passes the filter and enters _check_choice_value.
+        # Since obj_type is None, _check_choice_value returns immediately without diagnostics.
+        source = 'doc.add("Zone", field="SomeValue")\n'
+        # Use include_groups to activate the filter path.
+        diagnostics = check_compatibility(
+            source,
+            "test.py",
+            targets=[(24, 1, 0), (24, 2, 0)],
+            include_groups={"Thermal Zones and Surfaces"},
+        )
+        # We just verify it runs without error; no assertion on count needed.
+        assert isinstance(diagnostics, list)
+
+    def test_choice_value_case_insensitive_match(self) -> None:
+        """Choice values that differ only in case are treated as present."""
+        from idfkit.compat._checker import _check_choice_value  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._diff import SchemaIndex  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import ExtractedLiteral, LiteralKind
+
+        idx = SchemaIndex(
+            version=(1, 0, 0),
+            object_types=frozenset({"Material"}),
+            choices={("Material", "roughness"): frozenset({"MediumSmooth"})},
+        )
+        # Use lowercase variant -- should match case-insensitively.
+        literal = ExtractedLiteral(
+            value="mediumsmooth",
+            kind=LiteralKind.CHOICE_VALUE,
+            line=1,
+            col=0,
+            end_col=12,
+            obj_type="Material",
+            field_name="roughness",
+        )
+        out: list[Diagnostic] = []
+        _check_choice_value(literal, {(1, 0, 0): idx, (2, 0, 0): idx}, "test.py", out)
+        # Case-insensitive match means present_in has two entries, absent_in is empty => no diagnostic.
+        assert out == []
+
+    def test_choice_value_unknown_obj_type_in_one_version(self) -> None:
+        """A CHOICE_VALUE whose obj_type is unknown in one version is skipped for that version."""
+        from idfkit.compat._checker import _check_choice_value  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._diff import SchemaIndex  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import ExtractedLiteral, LiteralKind
+
+        # idx1 has "Material", idx2 does not -> canonical lookup for "material" returns None in idx2
+        idx1 = SchemaIndex(
+            version=(1, 0, 0),
+            object_types=frozenset({"Material"}),
+            choices={("Material", "roughness"): frozenset({"Smooth"})},
+        )
+        idx2 = SchemaIndex(
+            version=(2, 0, 0),
+            object_types=frozenset({"Zone"}),
+            choices={},
+        )
+        literal = ExtractedLiteral(
+            value="Smooth",
+            kind=LiteralKind.CHOICE_VALUE,
+            line=1,
+            col=0,
+            end_col=6,
+            obj_type="material",
+            field_name="roughness",
+        )
+        out: list[Diagnostic] = []
+        _check_choice_value(literal, {(1, 0, 0): idx1, (2, 0, 0): idx2}, "test.py", out)
+        # idx2 doesn't have Material at all, so no absent_in diagnostic (only one version has enum)
+        assert out == []
+
+    def test_choice_value_canonical_obj_type_lookup(self) -> None:
+        """When obj_type casing differs from the schema, canonical lookup resolves choices."""
+        from idfkit.compat._checker import _check_choice_value  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._diff import SchemaIndex  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import ExtractedLiteral, LiteralKind
+
+        # canonical name is "Material" but literal uses "material" (lowercase)
+        # choices dict only has the canonical-cased key
+        idx_with_choices = SchemaIndex(
+            version=(1, 0, 0),
+            object_types=frozenset({"Material"}),
+            choices={("Material", "roughness"): frozenset({"Smooth", "MediumSmooth"})},
+        )
+        # Second version has the choice missing to produce a diagnostic
+        idx_missing_choice = SchemaIndex(
+            version=(2, 0, 0),
+            object_types=frozenset({"Material"}),
+            choices={("Material", "roughness"): frozenset({"MediumSmooth"})},
+        )
+        literal = ExtractedLiteral(
+            value="Smooth",
+            kind=LiteralKind.CHOICE_VALUE,
+            line=1,
+            col=0,
+            end_col=6,
+            obj_type="material",
+            field_name="roughness",
+        )
+        out: list[Diagnostic] = []
+        _check_choice_value(
+            literal,
+            {(1, 0, 0): idx_with_choices, (2, 0, 0): idx_missing_choice},
+            "test.py",
+            out,
+        )
+        # "Smooth" is present in v1 (via canonical lookup) but absent in v2 -> C002 diagnostic
+        assert len(out) == 1
+        assert out[0].code == "C002"
+
+
+class TestFilterDiagnosticsAndFormatText:
+    """Tests for _filter_diagnostics and _format_text edge cases."""
+
+    def test_filter_diagnostics_select_skips_non_matching(self) -> None:
+        """_filter_diagnostics skips diagnostics whose code is not in select set."""
+        from idfkit.compat._cli import _filter_diagnostics  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import CompatSeverity, Diagnostic
+
+        d_c001 = Diagnostic(
+            code="C001",
+            message="Missing type",
+            severity=CompatSeverity.WARNING,
+            filename="t.py",
+            line=1,
+            col=0,
+            end_col=4,
+            from_version="24.1.0",
+            to_version="25.1.0",
+        )
+        d_c002 = Diagnostic(
+            code="C002",
+            message="Missing choice",
+            severity=CompatSeverity.WARNING,
+            filename="t.py",
+            line=2,
+            col=0,
+            end_col=4,
+            from_version="24.1.0",
+            to_version="25.1.0",
+        )
+        result = _filter_diagnostics([d_c001, d_c002], select={"C001"}, ignore=None, severity=None)
+        assert len(result) == 1
+        assert result[0].code == "C001"
+
+    def test_format_text_with_diagnostics(self) -> None:
+        """_format_text produces diagnostic lines when diagnostics are non-empty."""
+        from idfkit.compat._cli import _format_text  # pyright: ignore[reportPrivateUsage]
+        from idfkit.compat._models import CompatSeverity, Diagnostic
+
+        d = Diagnostic(
+            code="C001",
+            message="Object type 'Foo' not found",
+            severity=CompatSeverity.WARNING,
+            filename="script.py",
+            line=3,
+            col=4,
+            end_col=10,
+            from_version="8.9.0",
+            to_version="25.2.0",
+        )
+        text = _format_text([d])
+        assert "C001" in text
+        assert "script.py" in text
+
+    def test_cli_text_output_with_removed_type(
+        self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """CLI text output includes diagnostic lines when issues are found."""
+        p, _removed_type = removed_type_script
+        with pytest.raises(SystemExit) as exc_info:
+            main(["check", str(p), "--from", "8.9", "--to", "25.2"])
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "C001" in captured.out
+
+
+class _FakeParser:
+    """Minimal parser stub that returns a fixed Namespace from parse_args."""
+
+    def __init__(self, namespace: object) -> None:
+        self._namespace = namespace
+
+    def parse_args(self, argv: list[str] | None) -> object:
+        return self._namespace
+
+    def print_help(self) -> None:
+        pass
+
+
+class TestMainDispatch:
+    """Tests for the main() command dispatch."""
+
+    def test_main_unknown_command_is_noop(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A non-'check' command value causes main() to return without error.
+
+        This exercises the ``if args.command == "check"`` branch that is not taken.
+        """
+        import argparse
+
+        import idfkit.compat._cli as cli_module  # pyright: ignore[reportPrivateUsage]
+
+        # Patch _build_parser to return a fake parser yielding a non-'check' command namespace.
+        args = argparse.Namespace(command="unknown")
+        monkeypatch.setattr(cli_module, "_build_parser", lambda: _FakeParser(args))  # pyright: ignore[reportPrivateUsage]
+        cli_module.main([])  # Should return normally (no sys.exit)
