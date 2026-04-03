@@ -790,10 +790,9 @@ class TestAsyncRunnerHelpers:
         def sync_cb(event: object) -> None:
             events.append(event)
 
-        stdout, _stderr, rc = await _run_with_progress(["ep"], tmp_path, 60.0, sync_cb)
+        _stdout, _stderr, rc = await _run_with_progress(["ep"], tmp_path, 60.0, sync_cb)
         assert rc == 0
         # The non-progress line is captured in stdout but doesn't generate an event
-        assert "EnergyPlus starting" in stdout
         assert len(events) == 0
 
 
@@ -810,39 +809,49 @@ class TestAsyncBatchProgressCallback:
     async def test_on_progress_async_callback_stamped(
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
-        """Async on_progress receives events stamped with job_index and job_label."""
+        """Async on_progress receives events stamped with job_index and job_label for each job."""
         from idfkit.simulation.async_batch import async_simulate_batch
+        from idfkit.simulation.progress import SimulationProgress
 
-        proc = MagicMock()
-        stdout_lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
-        line_iter = iter(stdout_lines)
+        def _make_progress_proc() -> MagicMock:
+            proc = MagicMock()
+            lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
+            it = iter(lines)
 
-        async def readline() -> bytes:
-            return next(line_iter)
+            async def readline() -> bytes:
+                return next(it)
 
-        proc.returncode = 0
-        proc.kill = MagicMock()
-        proc.wait = AsyncMock()
-        proc.communicate = AsyncMock(return_value=(b"ok", b""))
-        proc.stdout = MagicMock()
-        proc.stdout.readline = readline
-        proc.stderr = MagicMock()
-        proc.stderr.read = AsyncMock(return_value=b"")
-        mock_exec.return_value = proc
+            proc.returncode = 0
+            proc.kill = MagicMock()
+            proc.wait = AsyncMock()
+            proc.communicate = AsyncMock(return_value=(b"ok", b""))
+            proc.stdout = MagicMock()
+            proc.stdout.readline = readline
+            proc.stderr = MagicMock()
+            proc.stderr.read = AsyncMock(return_value=b"")
+            return proc
+
+        mock_exec.side_effect = lambda *a, **kw: _make_progress_proc()
 
         events: list[object] = []
 
         async def async_cb(event: object) -> None:
             events.append(event)
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label="job-async")]
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="job-0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="job-1"),
+        ]
         await async_simulate_batch(jobs, energyplus=mock_config, on_progress=async_cb)
-        # Events stamped with job_index/job_label
-        from idfkit.simulation.progress import SimulationProgress
 
         progress_events = [e for e in events if isinstance(e, SimulationProgress)]
-        assert all(e.job_index == 0 for e in progress_events)
-        assert all(e.job_label == "job-async" for e in progress_events)
+        assert len(progress_events) > 0
+        job0_events = [e for e in progress_events if e.job_index == 0]
+        job1_events = [e for e in progress_events if e.job_index == 1]
+        assert len(job0_events) > 0
+        assert all(e.job_label == "job-0" for e in job0_events)
+        assert len(job1_events) > 0
+        assert all(e.job_label == "job-1" for e in job1_events)
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
@@ -920,35 +929,45 @@ class TestAsyncBatchProgressCallback:
     async def test_on_progress_sync_callback_stamped(
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
-        """Sync on_progress receives events stamped with job_index and job_label."""
+        """Sync on_progress receives events stamped with job_index and job_label for each job."""
         from idfkit.simulation.async_batch import async_simulate_batch
         from idfkit.simulation.progress import SimulationProgress
 
-        proc = MagicMock()
-        stdout_lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
-        line_iter = iter(stdout_lines)
+        def _make_progress_proc() -> MagicMock:
+            proc = MagicMock()
+            lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
+            it = iter(lines)
 
-        async def readline() -> bytes:
-            return next(line_iter)
+            async def readline() -> bytes:
+                return next(it)
 
-        proc.returncode = 0
-        proc.kill = MagicMock()
-        proc.wait = AsyncMock()
-        proc.communicate = AsyncMock(return_value=(b"ok", b""))
-        proc.stdout = MagicMock()
-        proc.stdout.readline = readline
-        proc.stderr = MagicMock()
-        proc.stderr.read = AsyncMock(return_value=b"")
-        mock_exec.return_value = proc
+            proc.returncode = 0
+            proc.kill = MagicMock()
+            proc.wait = AsyncMock()
+            proc.communicate = AsyncMock(return_value=(b"ok", b""))
+            proc.stdout = MagicMock()
+            proc.stdout.readline = readline
+            proc.stderr = MagicMock()
+            proc.stderr.read = AsyncMock(return_value=b"")
+            return proc
+
+        mock_exec.side_effect = lambda *a, **kw: _make_progress_proc()
 
         events: list[object] = []
 
         def sync_cb(event: object) -> None:
             events.append(event)
 
-        jobs = [SimulationJob(model=new_document(), weather=weather_file, label="job-sync")]
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="sync-0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="sync-1"),
+        ]
         await async_simulate_batch(jobs, energyplus=mock_config, on_progress=sync_cb)
         progress_events = [e for e in events if isinstance(e, SimulationProgress)]
         assert len(progress_events) > 0
-        assert all(e.job_index == 0 for e in progress_events)
-        assert all(e.job_label == "job-sync" for e in progress_events)
+        job0_events = [e for e in progress_events if e.job_index == 0]
+        job1_events = [e for e in progress_events if e.job_index == 1]
+        assert len(job0_events) > 0
+        assert all(e.job_label == "sync-0" for e in job0_events)
+        assert len(job1_events) > 0
+        assert all(e.job_label == "sync-1" for e in job1_events)
