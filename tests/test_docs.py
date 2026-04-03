@@ -135,3 +135,60 @@ class TestDocsUrlDataclass:
         url = DocsUrl(url="https://example.com", doc_set="test", version="v1.0", label="Test")
         with pytest.raises(AttributeError):
             url.url = "changed"  # type: ignore[misc]
+
+
+class TestFallbackGroupSlug:
+    """Cover lines 70, 111-114: fallback slug when object is not in doc_locations mapping."""
+
+    def test_object_not_in_mapping_uses_schema_group(self, schema: EpJSONSchema) -> None:
+        from idfkit.docs import (
+            _get_doc_locations,  # pyright: ignore[reportPrivateUsage]
+            io_reference_url,
+        )
+
+        # Patch the locations dict to exclude "Zone" temporarily
+        locations = _get_doc_locations()
+        original_zone = locations.pop("Zone", None)
+        try:
+            result = io_reference_url("Zone", (25, 2, 0), schema)
+            # Should still resolve via schema group fallback
+            assert result is not None
+            assert "group-" in result.url
+            assert "#zone" in result.url
+        finally:
+            if original_zone is not None:
+                locations["Zone"] = original_zone
+
+    def test_object_anchor_strips_special_chars(self) -> None:
+        from idfkit.docs import _object_anchor  # pyright: ignore[reportPrivateUsage]
+
+        assert _object_anchor("BuildingSurface:Detailed") == "buildingsurfacedetailed"
+        assert _object_anchor("Coil:Cooling:DX") == "coilcoolingdx"
+        assert _object_anchor("Zone") == "zone"
+
+
+class TestResolveGroupFallback:
+    """Cover lines 177-184: _resolve_group loads default schema when schema=None."""
+
+    def test_resolve_group_no_schema_loads_default(self) -> None:
+        from idfkit.docs import _resolve_group  # pyright: ignore[reportPrivateUsage]
+
+        # Pass schema=None to trigger the LATEST_VERSION schema auto-load path
+        group = _resolve_group("Zone", None)
+        assert group is not None
+
+    def test_resolve_group_unknown_type_returns_none(self) -> None:
+        from idfkit.docs import _resolve_group  # pyright: ignore[reportPrivateUsage]
+
+        group = _resolve_group("AbsolutelyFakeObjectType", None)
+        assert group is None
+
+    def test_resolve_group_schema_load_error_returns_none(self) -> None:
+        """Lines 183-184: when get_schema raises, except clause returns None."""
+        from unittest.mock import patch
+
+        from idfkit.docs import _resolve_group  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.schema.get_schema", side_effect=RuntimeError("schema unavailable")):
+            group = _resolve_group("Zone", None)
+        assert group is None

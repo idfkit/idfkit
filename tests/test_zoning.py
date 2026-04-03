@@ -973,3 +973,213 @@ class TestLinkBlocks:
         doc = new_document()
         with pytest.raises(ValueError, match="lower and upper"):
             link_blocks(doc, "Base")
+
+
+# =========================================================================
+# Edge-case coverage for internal helpers
+# =========================================================================
+
+
+class TestOffsetEdgeDegenerate:
+    """Cover the zero-length edge branch in _offset_edge."""
+
+    def test_zero_length_edge_returns_same_points(self) -> None:
+        from idfkit.zoning import _offset_edge  # pyright: ignore[reportPrivateUsage]
+
+        p = (3.0, 5.0)
+        r1, r2 = _offset_edge(p, p, dist=2.0)
+        assert r1 == p
+        assert r2 == p
+
+
+class TestLineIntersectionParallel:
+    """Cover the parallel-lines branch in _line_intersection."""
+
+    def test_parallel_horizontal_lines_return_none(self) -> None:
+        from idfkit.zoning import _line_intersection  # pyright: ignore[reportPrivateUsage]
+
+        result = _line_intersection((0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0))
+        assert result is None
+
+
+class TestInsetPolygonEdgeCases:
+    """Cover branches in _inset_polygon_2d."""
+
+    def test_fewer_than_3_vertices_returns_none(self) -> None:
+        result = _inset_polygon_2d([(0.0, 0.0), (1.0, 0.0)], depth=0.1)
+        assert result is None
+
+    def test_collinear_edges_produce_none(self) -> None:
+        """A polygon with collinear consecutive edges → parallel offsets → _line_intersection returns None.
+
+        _inset_polygon_2d returns None when _line_intersection encounters parallel offset edges.
+        """
+        # A degenerate polygon with two adjacent collinear edges shares the same
+        # inward offset direction, so their intersect denominator is ~0.
+        # Create a 'flat' polygon where two adjacent edges point in the same direction.
+        fp = [
+            (0.0, 0.0),
+            (5.0, 0.0),
+            (10.0, 0.0),  # collinear with previous edge
+            (10.0, 5.0),
+            (0.0, 5.0),
+        ]
+        result = _inset_polygon_2d(fp, depth=1.0)
+        # Two adjacent edges along y=0 are collinear: their offset lines are parallel
+        # so _line_intersection returns None → _inset_polygon_2d returns None
+        assert result is None
+
+
+class TestSegmentsIntersectParallel:
+    """Cover the parallel branch in _segments_intersect."""
+
+    def test_parallel_segments_return_false(self) -> None:
+        from idfkit.zoning import _segments_intersect  # pyright: ignore[reportPrivateUsage]
+
+        # Two horizontal parallel segments
+        result = _segments_intersect((0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0))
+        assert result is False
+
+
+class TestIsConvexEdgeCases:
+    """Cover edge cases in _is_convex."""
+
+    def test_fewer_than_3_vertices_returns_false(self) -> None:
+        assert _is_convex([(0.0, 0.0), (1.0, 0.0)]) is False
+
+    def test_collinear_edges_are_skipped(self) -> None:
+        """Polygon with collinear consecutive edges is still treated as convex."""
+        # Square with an extra collinear point on one edge
+        fp = [(0.0, 0.0), (5.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]
+        # The edge from (0,0)→(5,0)→(10,0) is collinear, so cross=0 → skip
+        assert _is_convex(fp) is True
+
+
+class TestSplitCorePerimeterConvexInnerNone:
+    """Cover the 'inner is None' branch in _split_core_perimeter_convex."""
+
+    def test_degenerate_polygon_inner_none_falls_back_to_whole(self) -> None:
+        """A polygon with fewer than 3 vertices causes _inset_polygon_2d to return None."""
+        from idfkit.zoning import _split_core_perimeter_convex  # pyright: ignore[reportPrivateUsage]
+
+        # A 2-vertex polygon triggers n<3 in _inset_polygon_2d → returns None
+        # which hits line 534: return [ZoneFootprint("Whole", footprint)]
+        fp = [(0.0, 0.0), (1.0, 0.0)]
+        zones = _split_core_perimeter_convex(fp, depth=0.5)
+        assert len(zones) == 1
+        assert zones[0].name_suffix == "Whole"
+
+    def test_self_intersecting_quad_falls_back_to_whole(self) -> None:
+        """Large depth creates a bowtie perimeter quad → _quad_is_self_intersecting returns True."""
+        from idfkit.zoning import _split_core_perimeter_convex  # pyright: ignore[reportPrivateUsage]
+
+        fp = footprint_rectangle(10, 10)
+        # depth larger than half width → inner vertices swap, quads become bowties
+        zones = _split_core_perimeter_convex(fp, depth=200.0)
+        assert len(zones) == 1
+        assert zones[0].name_suffix == "Whole"
+
+
+class TestQuadIsSelfIntersecting:
+    """Cover line 491: _quad_is_self_intersecting returns True for first edge pair."""
+
+    def test_bowtie_quad_first_pair_intersects(self) -> None:
+        """Edges 0-1 and 2-3 cross each other → returns True immediately."""
+        from idfkit.zoning import _quad_is_self_intersecting  # pyright: ignore[reportPrivateUsage]
+
+        # Bowtie shape: edges (0,0)-(1,1) and (0,1)-(1,0) cross at (0.5,0.5)
+        result = _quad_is_self_intersecting([(0.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1.0, 0.0)])
+        assert result is True
+
+
+class TestDuplicateOrientationRenaming:
+    """Cover lines 566-570: rename first occurrence when duplicate orientations exist."""
+
+    def test_first_zone_not_matching_target_triggers_loop_continue(self) -> None:
+        """567->564: inner for-loop iterates past non-matching zones before finding target."""
+        from idfkit.zoning import _split_core_perimeter_convex  # pyright: ignore[reportPrivateUsage]
+
+        # L-shaped polygon: West edge first, then South, then two East edges and two North edges.
+        # The first zone is Perimeter_West; when renaming Perimeter_East duplicates, the inner
+        # loop checks Perimeter_West first (False → 567->564), then finds Perimeter_East.
+        fp = [
+            (0.0, 10.0),
+            (0.0, 0.0),  # West edge
+            (30.0, 0.0),  # South edge
+            (30.0, 5.0),  # East edge (first)
+            (15.0, 5.0),  # North edge (first)
+            (15.0, 10.0),  # East edge (second)
+        ]
+        zones = _split_core_perimeter_convex(fp, depth=2.0)
+        suffixes = [z.name_suffix for z in zones]
+        # Duplicate East and North orientations → renaming triggered
+        assert any("East_1" in s for s in suffixes)
+
+    def test_non_rectangular_polygon_duplicate_orientations(self) -> None:
+        """A polygon with more edges than 4 can produce duplicate orientation labels."""
+        fp = [
+            (0.0, 0.0),
+            (30.0, 0.0),
+            (35.0, 5.0),
+            (35.0, 15.0),
+            (30.0, 20.0),
+            (0.0, 20.0),
+        ]
+        zones = _split_core_perimeter(fp, depth=3.0)
+        assert len(zones) >= 1
+
+
+class TestFindMatchingZoneFallback:
+    """Cover lines 801 and 814: zone-below/above fallback when suffix not found."""
+
+    def test_multi_story_with_different_zone_counts_per_story(self) -> None:
+        """Story 1 uses BY_STOREY, story 2 uses a different custom layout.
+
+        This exercises the fallback path in _find_matching_zone_below and
+        _find_matching_zone_above since the suffix 'Whole' won't exist in
+        the perimeter layout.
+        """
+        # We need to manually call _find_matching_zone_below with a suffix
+        # that is not present in the spec's zones.
+        from idfkit.zoning import (  # pyright: ignore[reportPrivateUsage]
+            ZoneFootprint,
+            _find_matching_zone_above,
+            _find_matching_zone_below,
+            _StorySpec,
+        )
+
+        zones_a = [ZoneFootprint("Whole", [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)])]
+        spec_a = _StorySpec(story=1, z_bot=0.0, z_top=3.5, zones=zones_a)
+
+        zones_b = [ZoneFootprint("Core", [(2.0, 2.0), (8.0, 2.0), (8.0, 8.0), (2.0, 8.0)])]
+        spec_b = _StorySpec(story=2, z_bot=3.5, z_top=7.0, zones=zones_b)
+
+        # "NotPresent" is not in spec_a.zones → fallback to first zone ("Whole")
+        # _make_zone_name strips "Whole" from the name, so just check it contains "Building Story 1"
+        result_below = _find_matching_zone_below("NotPresent", spec_a, "Building", 2)
+        assert "Building" in result_below
+        assert "Story 1" in result_below
+
+        # "NotPresent" is not in spec_b.zones → fallback to first zone ("Core")
+        result_above = _find_matching_zone_above("NotPresent", spec_b, "Building", 2)
+        assert "Building" in result_above
+        assert "Core" in result_above
+
+
+class TestApplyAirBoundariesExisting:
+    """Cover lines 858->861: _apply_air_boundaries when boundary already exists."""
+
+    def test_reuses_existing_air_boundary_object(self) -> None:
+        """If Construction:AirBoundary already exists, don't create a duplicate."""
+        doc = new_document()
+        doc.add("Construction:AirBoundary", "Air Boundary", validate=False)
+        create_block(
+            doc,
+            "Open",
+            footprint_rectangle(50, 30),
+            floor_to_floor=3,
+            zoning=ZoningScheme.CORE_PERIMETER,
+            air_boundary=True,
+        )
+        air_boundaries = list(doc["Construction:AirBoundary"])
+        assert len(air_boundaries) == 1

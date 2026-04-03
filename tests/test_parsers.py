@@ -390,3 +390,106 @@ TotallyMadeUpObject, Foo;
             parse_idf(filepath, encoding="utf-8", strict_parsing=True)
         assert exc_info.value.diagnostics
         assert exc_info.value.diagnostics[0].obj_type == "Zone"
+
+
+# ---------------------------------------------------------------------------
+# Additional epJSON parser branch coverage
+# ---------------------------------------------------------------------------
+
+
+class TestEpJSONParserBranchCoverage:
+    """Cover missing branches in epjson_parser.py."""
+
+    def test_parse_with_schema_parameter_skips_auto_load(self, tmp_path: Path) -> None:
+        """126->132: if schema is None → False, schema is used as provided."""
+        from idfkit.epjson_parser import EpJSONParser
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        data = {"Version": {"Version 1": {"version_identifier": "24.1"}}, "Zone": {"Z1": {}}}
+        filepath = tmp_path / "schema_provided.epJSON"
+        filepath.write_text(json.dumps(data))
+        parser = EpJSONParser(filepath, schema)
+        doc = parser.parse((24, 1, 0))
+        assert len(doc["Zone"]) == 1
+
+    def test_detect_version_empty_identifier_raises(self, tmp_path: Path) -> None:
+        """157->162 + 159->157: version_identifier is empty string → VersionNotFoundError."""
+        data = {"Version": {"Version 1": {"version_identifier": ""}}}
+        filepath = tmp_path / "empty_version.epJSON"
+        filepath.write_text(json.dumps(data))
+        with pytest.raises(VersionNotFoundError):
+            parse_epjson(filepath)
+
+    def test_parse_objects_without_schema_skips_schema_lookup(self, tmp_path: Path) -> None:
+        """196->205: _parse_objects called with schema=None → if schema: is False, skip to line 205."""
+        from idfkit import new_document
+        from idfkit.epjson_parser import EpJSONParser
+
+        filepath = tmp_path / "dummy.epJSON"
+        filepath.write_text("{}")
+        parser = EpJSONParser(filepath, None)
+        doc = new_document()
+        # Call _parse_objects directly with schema=None to exercise the 196->205 branch
+        parser._parse_objects({"Zone": {"Z1": {}}}, doc, None)  # pyright: ignore[reportPrivateUsage]
+        assert len(doc["Zone"]) == 1
+
+    def test_parse_unknown_object_type_with_schema(self, tmp_path: Path) -> None:
+        """198->205: pc is None for unknown object type (schema present but type unrecognised)."""
+        from idfkit.epjson_parser import EpJSONParser
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Totally:UnknownType": {"Obj1": {"field": "value"}},
+        }
+        filepath = tmp_path / "unknown_type.epJSON"
+        filepath.write_text(json.dumps(data))
+        parser = EpJSONParser(filepath, schema)
+        doc = parser.parse((24, 1, 0), strict=False)
+        # Unknown type parsed without schema cache
+        assert len(doc) >= 1
+
+    def test_build_field_order_none_when_no_base_names(self, tmp_path: Path) -> None:
+        """Line 237: _build_field_order returns None when base_field_names is None."""
+        from idfkit.epjson_parser import EpJSONParser
+
+        # With no schema, base_field_names is None → returns None
+        data = {"Version": {"Version 1": {"version_identifier": "24.1"}}, "Zone": {"Z1": {"x_origin": 1.0}}}
+        filepath = tmp_path / "no_schema_build.epJSON"
+        filepath.write_text(json.dumps(data))
+        parser = EpJSONParser(filepath, None)
+        doc = parser.parse((24, 1, 0), strict=False)
+        assert len(doc["Zone"]) == 1
+
+    def test_build_field_order_skips_existing_base_fields(self, tmp_path: Path) -> None:
+        """255->254: group-0 extensible field already in base_set is not re-appended."""
+        from idfkit.epjson_parser import EpJSONParser
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        # Site:SpectrumData: ext_field_names includes 'wavelength' AND 'wavelength' is in field_names
+        data = {
+            "Version": {"Version 1": {"version_identifier": "24.1"}},
+            "Site:SpectrumData": {
+                "Solar": {
+                    "spectrum_data_type": "Solar",
+                    "wavelength": 0.3,
+                    "spectrum": 0.8,
+                }
+            },
+        }
+        filepath = tmp_path / "spectrum.epJSON"
+        filepath.write_text(json.dumps(data))
+        parser = EpJSONParser(filepath, schema)
+        doc = parser.parse((24, 1, 0), strict=False)
+        assert len(doc) >= 1
+
+    def test_get_epjson_version_empty_identifier_raises(self, tmp_path: Path) -> None:
+        """316->325 + 318->316: version_identifier empty → VersionNotFoundError in get_epjson_version."""
+        data = {"Version": {"Version 1": {"version_identifier": ""}}}
+        filepath = tmp_path / "empty_ver.epJSON"
+        filepath.write_text(json.dumps(data))
+        with pytest.raises(VersionNotFoundError):
+            get_epjson_version(filepath)
