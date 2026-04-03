@@ -463,6 +463,8 @@ class TestViewModelIntegration:
 
         fig = view_model(multi_zone_doc)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_has_mesh3d_traces(self, multi_zone_doc):
         go = pytest.importorskip("plotly.graph_objects")
@@ -511,6 +513,8 @@ class TestViewFloorPlanIntegration:
 
         fig = view_floor_plan(multi_zone_doc)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) >= 1
+        assert any(isinstance(t, go.Scatter) for t in fig.data)
 
     def test_aspect_ratio(self, multi_zone_doc):
         pytest.importorskip("plotly.graph_objects")
@@ -530,6 +534,8 @@ class TestViewExplodedIntegration:
 
         fig = view_exploded(multi_zone_doc)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_has_traces(self, multi_zone_doc):
         pytest.importorskip("plotly.graph_objects")
@@ -548,6 +554,8 @@ class TestViewNormalsIntegration:
 
         fig = view_normals(multi_zone_doc)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_has_cone_traces(self, multi_zone_doc):
         go = pytest.importorskip("plotly.graph_objects")
@@ -1335,6 +1343,8 @@ class TestViewModelFullCoverage:
 
         fig = view_model(multi_zone_doc, title=None)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_with_fenestration(self, fenestration_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1358,12 +1368,14 @@ class TestViewFloorPlanFullCoverage:
         assert len(scatter_traces) > 0
 
     def test_z_cut_excludes_walls_above(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
-        pytest.importorskip("plotly.graph_objects")
+        go = pytest.importorskip("plotly.graph_objects")
         from idfkit.visualization.model import view_floor_plan
 
         fig_high = view_floor_plan(multi_zone_doc, z_cut=10.0)
         fig_low = view_floor_plan(multi_zone_doc, z_cut=-1.0)
-        assert len(fig_high.data) >= len(fig_low.data)
+        scatter_high = sum(1 for t in fig_high.data if isinstance(t, go.Scatter))
+        scatter_low = sum(1 for t in fig_low.data if isinstance(t, go.Scatter))
+        assert scatter_high >= scatter_low
 
     def test_color_by_surface_type(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1372,6 +1384,8 @@ class TestViewFloorPlanFullCoverage:
         cfg = ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)
         fig = view_floor_plan(multi_zone_doc, config=cfg)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Scatter) for t in fig.data)
 
     def test_zones_filter(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1379,6 +1393,8 @@ class TestViewFloorPlanFullCoverage:
 
         fig = view_floor_plan(multi_zone_doc, zones=["ZoneA"])
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Scatter) for t in fig.data)
 
     def test_fenestration_and_shading_excluded(self, fenestration_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1386,6 +1402,8 @@ class TestViewFloorPlanFullCoverage:
 
         fig = view_floor_plan(fenestration_doc)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Scatter) for t in fig.data)
 
     def test_legend_dedup(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1415,6 +1433,8 @@ class TestViewExplodedFullCoverage:
         cfg = ModelViewConfig(show_edges=False, show_labels=False)
         fig = view_exploded(multi_zone_doc, config=cfg)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_zones_filter(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1422,6 +1442,8 @@ class TestViewExplodedFullCoverage:
 
         fig = view_exploded(multi_zone_doc, zones=["ZoneA"])
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
 
 class TestViewNormalsFullCoverage:
@@ -1443,6 +1465,8 @@ class TestViewNormalsFullCoverage:
         cfg = ModelViewConfig(show_edges=False)
         fig = view_normals(multi_zone_doc, config=cfg)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_zones_filter(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
@@ -1450,6 +1474,8 @@ class TestViewNormalsFullCoverage:
 
         fig = view_normals(multi_zone_doc, zones=["ZoneA"])
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert any(isinstance(t, go.Mesh3d) for t in fig.data)
 
     def test_reduced_opacity(self, multi_zone_doc) -> None:  # type: ignore[no-untyped-def]
         go = pytest.importorskip("plotly.graph_objects")
