@@ -628,3 +628,346 @@ class TestAsyncFileSystem:
                 fs=InMemoryFileSystem(),
                 async_fs=InMemoryAsyncFileSystem(),
             )
+
+
+# ---------------------------------------------------------------------------
+# Low-level async runner helpers
+# ---------------------------------------------------------------------------
+
+
+class TestAsyncRunnerHelpers:
+    """Tests for internal async runner helper functions."""
+
+    @pytest.mark.asyncio
+    async def test_run_simple_os_error(self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path) -> None:
+        """_run_simple raises SimulationError when subprocess.exec raises OSError."""
+        from idfkit.simulation.async_runner import _run_simple  # pyright: ignore[reportPrivateUsage]
+
+        with (
+            patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec", side_effect=OSError("no such exe")),
+            pytest.raises(SimulationError, match="Failed to start EnergyPlus"),
+        ):
+            await _run_simple(["nonexistent"], tmp_path, 10.0)
+
+    @pytest.mark.asyncio
+    async def test_start_process_os_error(self, tmp_path: Path) -> None:
+        """_start_process raises SimulationError when subprocess start fails."""
+        from idfkit.simulation.async_runner import _start_process  # pyright: ignore[reportPrivateUsage]
+
+        with (
+            patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec", side_effect=OSError("bad")),
+            pytest.raises(SimulationError, match="Failed to start EnergyPlus"),
+        ):
+            await _start_process(["nonexistent"], tmp_path)
+
+    @pytest.mark.asyncio
+    async def test_gather_with_timeout_raises_simulation_error(self) -> None:
+        """_gather_with_timeout raises SimulationError on asyncio.TimeoutError."""
+        from idfkit.simulation.async_runner import _gather_with_timeout  # pyright: ignore[reportPrivateUsage]
+
+        proc = MagicMock()
+        proc.kill = MagicMock()
+        proc.wait = AsyncMock()
+
+        async def slow_stdout() -> None:
+            await asyncio.sleep(10)
+
+        async def quick_stderr() -> bytes:
+            return b"some stderr"
+
+        with pytest.raises(SimulationError, match="timed out"):
+            await _gather_with_timeout(proc, slow_stdout(), quick_stderr(), timeout=0.01)
+
+        proc.kill.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_gather_with_timeout_cancelled_error(self) -> None:
+        """_gather_with_timeout propagates CancelledError after killing the process."""
+        from idfkit.simulation.async_runner import _gather_with_timeout  # pyright: ignore[reportPrivateUsage]
+
+        proc = MagicMock()
+        proc.kill = MagicMock()
+        proc.wait = AsyncMock()
+
+        async def cancellable_stdout() -> None:
+            await asyncio.sleep(10)
+
+        async def quick_stderr() -> bytes:
+            return b""
+
+        gather_coro = _gather_with_timeout(proc, cancellable_stdout(), quick_stderr(), timeout=10.0)
+        task = asyncio.create_task(gather_coro)
+        # Give it a moment to start, then cancel
+        await asyncio.sleep(0)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+        proc.kill.assert_called()
+
+    def test_get_stderr_result_not_done(self) -> None:
+        """_get_stderr_result returns b'' when task is not done."""
+        from idfkit.simulation.async_runner import _get_stderr_result  # pyright: ignore[reportPrivateUsage]
+
+        task: asyncio.Task[bytes] = MagicMock(spec=asyncio.Task)
+        task.done.return_value = False
+        task.cancelled.return_value = False
+        result = _get_stderr_result(task)
+        assert result == b""
+
+    def test_get_stderr_result_exception(self) -> None:
+        """_get_stderr_result returns b'' when task.result() raises."""
+        from idfkit.simulation.async_runner import _get_stderr_result  # pyright: ignore[reportPrivateUsage]
+
+        task: asyncio.Task[bytes] = MagicMock(spec=asyncio.Task)
+        task.done.return_value = True
+        task.cancelled.return_value = False
+        task.result.side_effect = RuntimeError("task failed")
+        result = _get_stderr_result(task)
+        assert result == b""
+
+    def test_decode_stderr_non_empty(self) -> None:
+        """_decode_stderr returns a decoded string for non-empty bytes."""
+        from idfkit.simulation.async_runner import _decode_stderr  # pyright: ignore[reportPrivateUsage]
+
+        result = _decode_stderr(b"some error text")
+        assert result == "some error text"
+
+    def test_decode_stderr_empty(self) -> None:
+        """_decode_stderr returns None for empty bytes."""
+        from idfkit.simulation.async_runner import _decode_stderr  # pyright: ignore[reportPrivateUsage]
+
+        result = _decode_stderr(b"")
+        assert result is None
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_progress_cleanup_called_on_error(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """progress_cleanup is called even when simulation raises early."""
+        cleanup_called = False
+
+        def _cleanup() -> None:
+            nonlocal cleanup_called
+            cleanup_called = True
+
+        with patch("idfkit.simulation.async_runner.resolve_on_progress", return_value=(None, _cleanup)):
+            mock_exec.side_effect = OSError("won't be reached anyway")
+            model = new_document()
+            with pytest.raises(SimulationError):
+                await async_simulate(model, "/nonexistent/weather.epw", energyplus=mock_config)
+
+        assert cleanup_called
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_run_with_progress_non_event_line(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """Lines that don't parse to a progress event are collected but don't invoke callback."""
+        from idfkit.simulation.async_runner import _run_with_progress  # pyright: ignore[reportPrivateUsage]
+
+        proc = MagicMock()
+        # "EnergyPlus starting..." is not a recognised progress line — parser returns None
+        stdout_lines = [b"EnergyPlus starting non-progress line\n", b""]
+        line_iter = iter(stdout_lines)
+
+        async def readline() -> bytes:
+            return next(line_iter)
+
+        proc.returncode = 0
+        proc.kill = MagicMock()
+        proc.wait = AsyncMock()
+        proc.stdout = MagicMock()
+        proc.stdout.readline = readline
+        proc.stderr = MagicMock()
+        proc.stderr.read = AsyncMock(return_value=b"")
+        mock_exec.return_value = proc
+
+        events: list[object] = []
+
+        def sync_cb(event: object) -> None:
+            events.append(event)
+
+        _stdout, _stderr, rc = await _run_with_progress(["ep"], tmp_path, 60.0, sync_cb)
+        assert rc == 0
+        # The non-progress line is captured in stdout but doesn't generate an event
+        assert len(events) == 0
+
+
+# ---------------------------------------------------------------------------
+# async_batch: progress_cleanup and on_progress callback paths
+# ---------------------------------------------------------------------------
+
+
+class TestAsyncBatchProgressCallback:
+    """Tests for async_simulate_batch on_progress callback wiring."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_on_progress_async_callback_stamped(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """Async on_progress receives events stamped with job_index and job_label for each job."""
+        from idfkit.simulation.async_batch import async_simulate_batch
+        from idfkit.simulation.progress import SimulationProgress
+
+        def _make_progress_proc() -> MagicMock:
+            proc = MagicMock()
+            lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
+            it = iter(lines)
+
+            async def readline() -> bytes:
+                return next(it)
+
+            proc.returncode = 0
+            proc.kill = MagicMock()
+            proc.wait = AsyncMock()
+            proc.communicate = AsyncMock(return_value=(b"ok", b""))
+            proc.stdout = MagicMock()
+            proc.stdout.readline = readline
+            proc.stderr = MagicMock()
+            proc.stderr.read = AsyncMock(return_value=b"")
+            return proc
+
+        mock_exec.side_effect = lambda *a, **kw: _make_progress_proc()
+
+        events: list[object] = []
+
+        async def async_cb(event: object) -> None:
+            events.append(event)
+
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="job-0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="job-1"),
+        ]
+        await async_simulate_batch(jobs, energyplus=mock_config, on_progress=async_cb)
+
+        progress_events = [e for e in events if isinstance(e, SimulationProgress)]
+        assert len(progress_events) > 0
+        job0_events = [e for e in progress_events if e.job_index == 0]
+        job1_events = [e for e in progress_events if e.job_index == 1]
+        assert len(job0_events) > 0
+        assert all(e.job_label == "job-0" for e in job0_events)
+        assert len(job1_events) > 0
+        assert all(e.job_label == "job-1" for e in job1_events)
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_batch_progress_cleanup_called(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """async_simulate_batch calls progress_cleanup in finally block."""
+        from idfkit.simulation.async_batch import async_simulate_batch
+
+        cleanup_called = False
+
+        def _cleanup() -> None:
+            nonlocal cleanup_called
+            cleanup_called = True
+
+        mock_exec.return_value = _make_mock_process()
+
+        with patch("idfkit.simulation.async_batch.resolve_on_progress", return_value=(None, _cleanup)):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            await async_simulate_batch(jobs, energyplus=mock_config)
+
+        assert cleanup_called
+
+    @pytest.mark.asyncio
+    async def test_batch_stream_tqdm_rejected(self) -> None:
+        """async_simulate_batch_stream rejects on_progress='tqdm'."""
+        from idfkit.simulation.async_batch import async_simulate_batch_stream
+
+        jobs = [SimulationJob(model=new_document(), weather="/fake.epw")]
+        with pytest.raises(ValueError, match="not supported for batch"):
+            async for _ in async_simulate_batch_stream(jobs, on_progress="tqdm"):  # type: ignore[arg-type]
+                pass
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_batch_stream_progress_cleanup_called(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """async_simulate_batch_stream calls progress_cleanup in finally block."""
+        from idfkit.simulation.async_batch import async_simulate_batch_stream
+
+        cleanup_called = False
+
+        def _cleanup() -> None:
+            nonlocal cleanup_called
+            cleanup_called = True
+
+        mock_exec.return_value = _make_mock_process()
+
+        with patch("idfkit.simulation.async_batch.resolve_on_progress", return_value=(None, _cleanup)):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            async for _ in async_simulate_batch_stream(jobs, energyplus=mock_config):
+                pass
+
+        assert cleanup_called
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_async_run_job_exception_uses_output_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """When a job fails, output_dir is used as run_dir in the failed result."""
+        from idfkit.simulation.async_batch import async_simulate_batch
+
+        mock_exec.side_effect = OSError("boom")
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+        result = await async_simulate_batch(jobs, energyplus=mock_config)
+        assert not result[0].success
+        assert result[0].run_dir == out_dir
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_on_progress_sync_callback_stamped(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        """Sync on_progress receives events stamped with job_index and job_label for each job."""
+        from idfkit.simulation.async_batch import async_simulate_batch
+        from idfkit.simulation.progress import SimulationProgress
+
+        def _make_progress_proc() -> MagicMock:
+            proc = MagicMock()
+            lines = [b"Warming up {1}\n", b"EnergyPlus Completed Successfully.\n", b""]
+            it = iter(lines)
+
+            async def readline() -> bytes:
+                return next(it)
+
+            proc.returncode = 0
+            proc.kill = MagicMock()
+            proc.wait = AsyncMock()
+            proc.communicate = AsyncMock(return_value=(b"ok", b""))
+            proc.stdout = MagicMock()
+            proc.stdout.readline = readline
+            proc.stderr = MagicMock()
+            proc.stderr.read = AsyncMock(return_value=b"")
+            return proc
+
+        mock_exec.side_effect = lambda *a, **kw: _make_progress_proc()
+
+        events: list[object] = []
+
+        def sync_cb(event: object) -> None:
+            events.append(event)
+
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="sync-0"),
+            SimulationJob(model=new_document(), weather=weather_file, label="sync-1"),
+        ]
+        await async_simulate_batch(jobs, energyplus=mock_config, on_progress=sync_cb)
+        progress_events = [e for e in events if isinstance(e, SimulationProgress)]
+        assert len(progress_events) > 0
+        job0_events = [e for e in progress_events if e.job_index == 0]
+        job1_events = [e for e in progress_events if e.job_index == 1]
+        assert len(job0_events) > 0
+        assert all(e.job_label == "sync-0" for e in job0_events)
+        assert len(job1_events) > 0
+        assert all(e.job_label == "sync-1" for e in job1_events)

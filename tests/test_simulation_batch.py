@@ -261,3 +261,32 @@ class TestSimulateBatch:
         result = simulate_batch([job], energyplus=mock_config, fs=fs, max_workers=1)
         assert result[0].success
         assert result[0].fs is fs
+
+    def test_job_exception_uses_output_dir(
+        self, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """When _run_job raises, output_dir is used as run_dir for the failed result."""
+        with patch("idfkit.simulation.batch.simulate", side_effect=OSError("boom")):
+            out_dir = tmp_path / "out"
+            out_dir.mkdir()
+            jobs = [SimulationJob(model=new_document(), weather=weather_file, output_dir=str(out_dir))]
+            result = simulate_batch(jobs, energyplus=mock_config)
+        assert not result[0].success
+        assert result[0].run_dir == out_dir
+
+    def test_progress_cleanup_called_on_error(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        """progress_cleanup is called when simulate_batch raises after resolve_on_progress."""
+        cleanup_called = False
+
+        def _cleanup() -> None:
+            nonlocal cleanup_called
+            cleanup_called = True
+
+        with (
+            patch("idfkit.simulation.batch.resolve_on_progress", return_value=(None, _cleanup)),
+            patch("idfkit.simulation.batch.simulate", side_effect=RuntimeError("boom")),
+        ):
+            jobs = [SimulationJob(model=new_document(), weather=weather_file)]
+            simulate_batch(jobs, energyplus=mock_config)
+
+        assert cleanup_called

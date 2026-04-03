@@ -337,3 +337,26 @@ class TestGetPut:
         assert cache.contains(key)
         for child in entry_dir.iterdir():
             assert not child.name.startswith(".tmp_"), f"Leaked temp dir: {child}"
+
+    def test_put_os_error_on_rename_cleans_up_tmp(self, cache: SimulationCache, run_dir: Path) -> None:
+        """When os.rename raises OSError, the temporary directory is cleaned up."""
+        key = CacheKey(hex_digest="os_error_rename")
+        result = SimulationResult(
+            run_dir=run_dir,
+            success=True,
+            exit_code=0,
+            stdout="",
+            stderr="",
+            runtime_seconds=1.0,
+        )
+
+        # Patch os.rename inside the cache module to raise OSError
+        with patch("idfkit.simulation.cache.os.rename", side_effect=OSError("rename failed")):
+            cache.put(key, result)  # should not raise
+
+        # The entry should NOT have been created (rename failed)
+        assert not cache.contains(key)
+        # No .tmp_ directories should be left
+        if cache.cache_dir.is_dir():
+            for child in cache.cache_dir.iterdir():
+                assert not child.name.startswith(".tmp_"), f"Leaked temp dir: {child}"

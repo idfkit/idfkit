@@ -190,12 +190,112 @@ class TestGlobSorted:
         assert _glob_sorted([Path("/nonexistent/path")]) == []
 
 
+# ---------------------------------------------------------------------------
+# Additional coverage for uncovered branches
+# ---------------------------------------------------------------------------
+
+
+class TestFromPathVersionFallback:
+    """Tests for EnergyPlusConfig.from_path version extraction edge cases."""
+
+    def _setup_install(self, tmp_path: Path, dirname: str = "energyplus-install") -> Path:
+        """Create an install dir with no version in the name (forces IDD fallback)."""
+        install_dir = tmp_path / dirname
+        install_dir.mkdir()
+        exe_name = "energyplus.exe" if platform.system() == "Windows" else "energyplus"
+        (install_dir / exe_name).touch()
+        (install_dir / exe_name).chmod(0o755)
+        return install_dir
+
+    def test_version_not_in_dir_or_idd_raises(self, tmp_path: Path) -> None:
+        """When neither the dir name nor IDD contain a version, raise."""
+        install_dir = self._setup_install(tmp_path)
+        idd = install_dir / "Energy+.idd"
+        idd.write_text("! No version here\n")
+        with pytest.raises(EnergyPlusNotFoundError):
+            EnergyPlusConfig.from_path(install_dir)
+
+
+class TestExtractVersionFromIDD:
+    """Tests for _extract_version_from_idd()."""
+
+    def test_oserror_returns_none(self, tmp_path: Path) -> None:
+        """OSError reading the IDD should return None."""
+        from idfkit.simulation.config import _extract_version_from_idd  # pyright: ignore[reportPrivateUsage]
+
+        result = _extract_version_from_idd(tmp_path / "nonexistent.idd")
+        assert result is None
+
+    def test_no_header_returns_none(self, tmp_path: Path) -> None:
+        """IDD without the version header returns None."""
+        from idfkit.simulation.config import _extract_version_from_idd  # pyright: ignore[reportPrivateUsage]
+
+        idd = tmp_path / "Energy+.idd"
+        idd.write_text("! IDD file without version\n")
+        result = _extract_version_from_idd(idd)
+        assert result is None
+
+
+class TestTryCandidate:
+    """Tests for _try_candidate() helper."""
+
+    def _setup_install(self, tmp_path: Path, dirname: str = "EnergyPlusV24-1-0") -> Path:
+        install_dir = tmp_path / dirname
+        install_dir.mkdir()
+        exe_name = "energyplus.exe" if platform.system() == "Windows" else "energyplus"
+        (install_dir / exe_name).touch()
+        (install_dir / exe_name).chmod(0o755)
+        (install_dir / "Energy+.idd").write_text("!IDD_Version 24.1.0\n")
+        return install_dir
+
+    def test_version_mismatch_returns_none(self, tmp_path: Path) -> None:
+        """_try_candidate returns None when version doesn't match."""
+        from idfkit.simulation.config import _try_candidate  # pyright: ignore[reportPrivateUsage]
+
+        install_dir = self._setup_install(tmp_path)
+        result = _try_candidate(install_dir, (23, 2, 0))
+        assert result is None
+
+    def test_invalid_path_returns_none(self, tmp_path: Path) -> None:
+        """_try_candidate returns None when path doesn't contain EnergyPlus."""
+        from idfkit.simulation.config import _try_candidate  # pyright: ignore[reportPrivateUsage]
+
+        result = _try_candidate(tmp_path / "nonexistent", None)
+        assert result is None
+
+
 class TestPlatformSearchDirs:
-    """Tests for _platform_search_dirs()."""
+    """Tests for _platform_search_dirs() on all platforms."""
+
+    def test_linux_dirs(self) -> None:
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.simulation.config.platform.system", return_value="Linux"):
+            dirs = _platform_search_dirs()
+        assert len(dirs) >= 2
+        assert any(".local" in str(d) or "EnergyPlus" in str(d) for d in dirs)
+
+    def test_darwin_dirs(self) -> None:
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.simulation.config.platform.system", return_value="Darwin"):
+            dirs = _platform_search_dirs()
+        assert any("Applications" in str(d) for d in dirs)
+
+    def test_windows_dirs(self) -> None:
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
+
+        with (
+            patch("idfkit.simulation.config.platform.system", return_value="Windows"),
+            patch.dict("os.environ", {"ProgramFiles": "C:\\Program Files", "ProgramW6432": "C:\\Program Files"}),
+        ):
+            dirs = _platform_search_dirs()
+        assert len(dirs) >= 1
+        assert any("Program Files" in str(d) for d in dirs)
 
     def test_windows_includes_system_drive_root(self, tmp_path: Path) -> None:
         """Drive root (e.g. C:\\) should be included on Windows for default installs."""
-        from idfkit.simulation.config import _platform_search_dirs
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
 
         with (
             patch("idfkit.simulation.config.platform.system", return_value="Windows"),
@@ -207,7 +307,7 @@ class TestPlatformSearchDirs:
 
     def test_windows_system_drive_fallback(self) -> None:
         """When SystemDrive is absent, fall back to C:\\."""
-        from idfkit.simulation.config import _platform_search_dirs
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
 
         env_without_system_drive = {k: v for k, v in os.environ.items() if k != "SystemDrive"}
         with (
@@ -217,3 +317,37 @@ class TestPlatformSearchDirs:
             dirs = _platform_search_dirs()
 
         assert Path("C:" + os.sep) in dirs
+
+    def test_unknown_platform_empty(self) -> None:
+        from idfkit.simulation.config import _platform_search_dirs  # pyright: ignore[reportPrivateUsage]
+
+        with patch("idfkit.simulation.config.platform.system", return_value="FreeBSD"):
+            dirs = _platform_search_dirs()
+        assert dirs == []
+
+
+class TestFindEnergyPlusPathDiscovery:
+    """Tests for find_energyplus() discovery ordering."""
+
+    def _setup_install(self, tmp_path: Path, dirname: str = "EnergyPlusV24-1-0") -> Path:
+        install_dir = tmp_path / dirname
+        install_dir.mkdir()
+        exe_name = "energyplus.exe" if platform.system() == "Windows" else "energyplus"
+        exe = install_dir / exe_name
+        exe.touch()
+        exe.chmod(0o755)
+        (install_dir / "Energy+.idd").write_text("!IDD_Version 24.1.0\n")
+        return install_dir
+
+    def test_which_discovery(self, tmp_path: Path) -> None:
+        """find_energyplus finds EnergyPlus via shutil.which."""
+        install_dir = self._setup_install(tmp_path)
+        exe_name = "energyplus.exe" if platform.system() == "Windows" else "energyplus"
+        exe_path = str(install_dir / exe_name)
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            patch("idfkit.simulation.config.shutil.which", return_value=exe_path),
+            patch("idfkit.simulation.config._platform_search_dirs", return_value=[]),
+        ):
+            config = find_energyplus()
+        assert config.version == (24, 1, 0)

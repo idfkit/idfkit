@@ -135,6 +135,12 @@ class TestDateToDayOfYear:
         assert _date_to_day_of_year("") == 1
         assert _date_to_day_of_year("xx/yy") == 1
 
+    def test_out_of_range_returns_1(self) -> None:
+        """Month or day out of valid range returns 1."""
+        assert _date_to_day_of_year("13/01") == 1
+        assert _date_to_day_of_year("00/01") == 1
+        assert _date_to_day_of_year("01/32") == 1
+
 
 # ---------------------------------------------------------------------------
 # _day_span
@@ -377,6 +383,32 @@ class TestProgressParser:
         assert event is not None
         assert event.sim_total_days is None
         assert event.percent is None
+
+    def test_estimate_percent_none_when_start_day_none(self) -> None:
+        """_estimate_percent returns None when sim_start_day is None."""
+        parser = ProgressParser()
+        # sim_start_day is None before any Starting Simulation line
+        result = parser._estimate_percent(182)  # pyright: ignore[reportPrivateUsage]
+        assert result is None
+
+    def test_estimate_percent_none_when_total_days_zero(self) -> None:
+        """_estimate_percent returns None when sim_total_days is zero."""
+        parser = ProgressParser()
+        parser._sim_start_day = 1  # pyright: ignore[reportPrivateUsage]
+        parser._sim_total_days = 0  # pyright: ignore[reportPrivateUsage]
+        result = parser._estimate_percent(50)  # pyright: ignore[reportPrivateUsage]
+        assert result is None
+
+    def test_estimate_percent_wrap_around(self) -> None:
+        """_estimate_percent handles day wrap-around across year boundary."""
+        parser = ProgressParser()
+        # Start at day 350, total 30 days, current day is 10 (next year)
+        parser._sim_start_day = 350  # pyright: ignore[reportPrivateUsage]
+        parser._sim_total_days = 30  # pyright: ignore[reportPrivateUsage]
+        result = parser._estimate_percent(10)  # pyright: ignore[reportPrivateUsage]
+        assert result is not None
+        # elapsed = (365 - 350) + 10 = 25 days; 25/30 * 100 ≈ 83.3%
+        assert abs(result - (25 / 30 * 100)) < 0.1
 
 
 # ---------------------------------------------------------------------------
