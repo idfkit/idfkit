@@ -581,15 +581,16 @@ class TestIDFObjectStrict:
         assert not obj._is_known_field("vertex_1_x_coordinate", ["field_one"])  # pyright: ignore[reportPrivateUsage]
 
     def test_fill_extensible_gap_unparseable_appends_as_is(self) -> None:
-        """_fill_extensible_gap with unparseable field appends it as-is."""
+        """_set_field with an unknown field stores the value in data even when no extensible pattern matches."""
         obj = IDFObject(
             obj_type="Zone",
             name="Z",
             field_order=["field"],
             extensibles=frozenset({"field"}),
         )
-        # Write a field that has no extensible pattern match — append as-is
+        # Write a field that has no extensible pattern match — value stored in _data
         obj._set_field("completely_unknown_field_xyz", 42.0)  # pyright: ignore[reportPrivateUsage]
+        assert obj._data["completely_unknown_field_xyz"] == 42.0  # pyright: ignore[reportPrivateUsage]
 
     def test_collection_get_empty_name_returns_first(self) -> None:
         """get('') when items exist returns first item."""
