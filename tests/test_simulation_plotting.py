@@ -407,6 +407,26 @@ class TestPlotComfortHours:
         assert kwargs["y_labels"] == ["ZONE 1"]
         assert result["type"] == "heatmap"
 
+    def test_mixed_comfort_temperatures(self) -> None:
+        """Temperatures outside comfort range are correctly excluded from comfort percentage."""
+        from idfkit.simulation.plotting.visualizations import plot_comfort_hours
+
+        timestamps = (
+            datetime(2017, 1, 1, 1),
+            datetime(2017, 1, 1, 2),
+            datetime(2017, 1, 1, 3),
+        )
+        values = (22.0, 23.0, 30.0)  # Two in range, one out
+        ts = TimeSeriesResult("Zone Mean Air Temperature", "ZONE 1", "C", "Hourly", timestamps, values)
+        sql = MockSQLResult(timeseries_data={"Zone Mean Air Temperature:ZONE 1": ts})
+        backend = MockBackend()
+
+        result = plot_comfort_hours(sql, ["ZONE 1"], backend=backend, comfort_min=20.0, comfort_max=26.0)  # type: ignore[arg-type]
+
+        assert result["type"] == "heatmap"
+        data = backend.calls[0][1][0]
+        assert 60.0 < data[0][0] < 70.0  # January: 2/3 ~ 66.67%
+
 
 # ---------------------------------------------------------------------------
 # Backend import error tests
@@ -504,3 +524,465 @@ class TestMatplotlibBackend:
         fig = backend.stacked_bar(["A", "B"], {"X": [10, 20], "Y": [5, 10]}, title="Test")
         assert isinstance(fig, plt.Figure)
         plt.close(fig)
+
+    def test_line_without_optional_params(self, backend: Any) -> None:
+        """line() works without optional title/xlabel/ylabel/label."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.line([1, 2, 3], [10, 20, 30])
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_line_with_all_params(self, backend: Any) -> None:
+        """line() applies title, xlabel, ylabel, and label when provided."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.line([1, 2, 3], [10, 20, 30], title="T", xlabel="X", ylabel="Y", label="L")
+        assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
+        legend = ax.get_legend()
+        assert legend is not None
+        plt.close(fig)
+
+    def test_multi_line_without_optional_params(self, backend: Any) -> None:
+        """multi_line() works without optional title/xlabel/ylabel."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.multi_line([1, 2], {"A": [10, 20]})
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_multi_line_with_all_params(self, backend: Any) -> None:
+        """multi_line() applies title, xlabel, ylabel when provided."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.multi_line([1, 2], {"A": [10, 20]}, title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
+        plt.close(fig)
+
+    def test_multi_line_empty_series(self, backend: Any) -> None:
+        """multi_line() with empty y_series skips legend."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.multi_line([1, 2], {})
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_heatmap_without_optional_params(self, backend: Any) -> None:
+        """heatmap() works without optional labels/title/colorbar."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.heatmap([[1, 2], [3, 4]])
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_heatmap_with_colorbar_label(self, backend: Any) -> None:
+        """heatmap() applies colorbar label when provided."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.heatmap([[1, 2], [3, 4]], colorbar_label="Energy", title="T")
+        assert isinstance(fig, plt.Figure)
+        assert len(fig.axes) >= 2
+        plt.close(fig)
+
+    def test_heatmap_with_y_labels_only(self, backend: Any) -> None:
+        """heatmap() works with y_labels but no x_labels."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.heatmap([[1, 2], [3, 4]], y_labels=["R1", "R2"])
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_bar_without_optional_params(self, backend: Any) -> None:
+        """bar() works without optional title/xlabel/ylabel."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.bar(["A", "B"], [10, 20])
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_bar_with_all_params(self, backend: Any) -> None:
+        """bar() applies title, xlabel, ylabel when provided."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.bar(["A", "B"], [10, 20], title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, plt.Figure)
+        ax = fig.axes[0]
+        assert ax.get_title() == "T"
+        assert ax.get_xlabel() == "X"
+        assert ax.get_ylabel() == "Y"
+        plt.close(fig)
+
+    def test_stacked_bar_without_optional_params(self, backend: Any) -> None:
+        """stacked_bar() works without optional title/xlabel/ylabel."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.stacked_bar(["A", "B"], {"X": [10, 20]})
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_stacked_bar_with_all_params(self, backend: Any) -> None:
+        """stacked_bar() applies title, xlabel, ylabel when provided."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.stacked_bar(["A", "B"], {"X": [10, 20]}, title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_stacked_bar_empty_series(self, backend: Any) -> None:
+        """stacked_bar() with empty series skips legend."""
+        import matplotlib.pyplot as plt
+
+        fig = backend.stacked_bar(["A", "B"], {})
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
+# PlotlyBackend tests (mocked since plotly is not a dev dependency)
+# ---------------------------------------------------------------------------
+
+
+class _FakeTrace:
+    """Fake plotly trace object."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        self.kwargs = kwargs
+
+
+class _FakeFigure:
+    """Fake plotly Figure that records calls."""
+
+    def __init__(self, data: Any = None) -> None:
+        self.data = data
+        self.traces: list[Any] = []
+        self.layout: dict[str, Any] = {}
+
+    def add_trace(self, trace: Any) -> None:
+        self.traces.append(trace)
+
+    def update_layout(self, **kwargs: Any) -> None:
+        self.layout.update(kwargs)
+
+
+class _FakeGO:
+    """Fake plotly.graph_objects module."""
+
+    Figure = _FakeFigure
+    Scatter = _FakeTrace
+    Heatmap = _FakeTrace
+    Bar = _FakeTrace
+
+
+class TestPlotlyBackend:
+    """Tests for PlotlyBackend using a mocked plotly module."""
+
+    @pytest.fixture
+    def _plotly_env(self) -> Any:
+        """Set up mocked plotly environment and return (backend, fake_go)."""
+        fake_go = _FakeGO()
+        fake_plotly = type(sys)("plotly")
+        fake_plotly.graph_objects = fake_go  # type: ignore[attr-defined]
+        with patch.dict(sys.modules, {"plotly": fake_plotly, "plotly.graph_objects": fake_go}):
+            from idfkit.simulation.plotting.plotly import PlotlyBackend
+
+            yield PlotlyBackend(), fake_go
+
+    def test_satisfies_protocol(self, _plotly_env: tuple[Any, Any]) -> None:
+        """PlotlyBackend satisfies PlotBackend protocol."""
+        backend, _ = _plotly_env
+        assert isinstance(backend, PlotBackend)
+
+    def test_line(self, _plotly_env: tuple[Any, Any]) -> None:
+        """line() creates a figure with a scatter trace."""
+        backend, _ = _plotly_env
+        fig = backend.line([1, 2, 3], [10, 20, 30], title="T", xlabel="X", ylabel="Y", label="L")
+        assert isinstance(fig, _FakeFigure)
+        assert len(fig.traces) == 1
+        assert fig.layout["title"] == "T"
+        assert fig.layout["showlegend"] is True
+
+    def test_line_without_label(self, _plotly_env: tuple[Any, Any]) -> None:
+        """line() without label sets showlegend to False."""
+        backend, _ = _plotly_env
+        fig = backend.line([1, 2], [10, 20])
+        assert fig.layout["showlegend"] is False
+
+    def test_multi_line(self, _plotly_env: tuple[Any, Any]) -> None:
+        """multi_line() creates a figure with multiple scatter traces."""
+        backend, _ = _plotly_env
+        fig = backend.multi_line([1, 2], {"A": [10, 20], "B": [30, 40]}, title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, _FakeFigure)
+        assert len(fig.traces) == 2
+        assert fig.layout["showlegend"] is True
+
+    def test_heatmap(self, _plotly_env: tuple[Any, Any]) -> None:
+        """heatmap() creates a figure with heatmap data."""
+        backend, _ = _plotly_env
+        fig = backend.heatmap(
+            [[1, 2], [3, 4]], x_labels=["X1", "X2"], y_labels=["Y1", "Y2"], title="T", colorbar_label="CB"
+        )
+        assert isinstance(fig, _FakeFigure)
+        assert fig.layout["title"] == "T"
+
+    def test_heatmap_without_optional_params(self, _plotly_env: tuple[Any, Any]) -> None:
+        """heatmap() works without optional labels."""
+        backend, _ = _plotly_env
+        fig = backend.heatmap([[1, 2], [3, 4]])
+        assert isinstance(fig, _FakeFigure)
+
+    def test_bar(self, _plotly_env: tuple[Any, Any]) -> None:
+        """bar() creates a figure with bar data."""
+        backend, _ = _plotly_env
+        fig = backend.bar(["A", "B"], [10, 20], title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, _FakeFigure)
+        assert fig.layout["title"] == "T"
+
+    def test_stacked_bar(self, _plotly_env: tuple[Any, Any]) -> None:
+        """stacked_bar() creates a figure with stacked bar data."""
+        backend, _ = _plotly_env
+        fig = backend.stacked_bar(["A", "B"], {"X": [10, 20], "Y": [5, 10]}, title="T", xlabel="X", ylabel="Y")
+        assert isinstance(fig, _FakeFigure)
+        assert len(fig.traces) == 2
+        assert fig.layout["barmode"] == "stack"
+
+
+# ---------------------------------------------------------------------------
+# Visualization default backend and edge-case tests
+# ---------------------------------------------------------------------------
+
+
+class TestVisualizationsDefaultBackend:
+    """Tests for visualization functions using default backend auto-detection."""
+
+    def test_plot_energy_balance_default_backend(self) -> None:
+        """plot_energy_balance auto-detects backend when none provided."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "100.5",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+
+        try:
+            result = plot_energy_balance(sql)  # type: ignore[arg-type]
+            # If matplotlib is available, we get a figure back
+            assert result is not None
+        except ImportError:
+            pytest.skip("No plotting backend available")
+
+    def test_plot_temperature_profile_default_backend(self) -> None:
+        """plot_temperature_profile auto-detects backend when none provided."""
+        from idfkit.simulation.plotting.visualizations import plot_temperature_profile
+
+        ts = TimeSeriesResult(
+            "Zone Mean Air Temperature",
+            "ZONE 1",
+            "C",
+            "Hourly",
+            (datetime(2017, 1, 1, 1), datetime(2017, 1, 1, 2)),
+            (20.0, 21.0),
+        )
+        sql = MockSQLResult(timeseries_data={"Zone Mean Air Temperature:ZONE 1": ts})
+
+        try:
+            result = plot_temperature_profile(sql, ["ZONE 1"])  # type: ignore[arg-type]
+            assert result is not None
+        except ImportError:
+            pytest.skip("No plotting backend available")
+
+    def test_plot_comfort_hours_default_backend(self) -> None:
+        """plot_comfort_hours auto-detects backend when none provided."""
+        from idfkit.simulation.plotting.visualizations import plot_comfort_hours
+
+        timestamps = tuple(datetime(2017, m, 1, h) for m in range(1, 4) for h in range(1, 3))
+        values = tuple(22.0 for _ in timestamps)
+        ts = TimeSeriesResult("Zone Mean Air Temperature", "ZONE 1", "C", "Hourly", timestamps, values)
+        sql = MockSQLResult(timeseries_data={"Zone Mean Air Temperature:ZONE 1": ts})
+
+        try:
+            result = plot_comfort_hours(sql, ["ZONE 1"])  # type: ignore[arg-type]
+            assert result is not None
+        except ImportError:
+            pytest.skip("No plotting backend available")
+
+
+class TestPlotEnergyBalanceEdgeCases:
+    """Tests for edge cases in plot_energy_balance."""
+
+    def test_skips_empty_row_names(self) -> None:
+        """Rows with empty row_name are skipped."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "",
+                "Electricity",
+                "GJ",
+                "999.0",
+            ),
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "50.0",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+        backend = MockBackend()
+
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, _ = backend.calls[0]
+        assert "" not in args[0]
+
+    def test_skips_total_end_uses_row(self) -> None:
+        """Rows with row_name 'Total End Uses' are skipped."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Total End Uses",
+                "Electricity",
+                "GJ",
+                "999.0",
+            ),
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "50.0",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+        backend = MockBackend()
+
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, _ = backend.calls[0]
+        assert "Total End Uses" not in args[0]
+
+    def test_skips_non_numeric_values(self) -> None:
+        """Rows with non-numeric values are skipped."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "not-a-number",
+            ),
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Cooling",
+                "Electricity",
+                "GJ",
+                "30.0",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+        backend = MockBackend()
+
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, _ = backend.calls[0]
+        assert "Heating" not in args[0]
+        assert "Cooling" in args[0]
+
+    def test_skips_zero_values(self) -> None:
+        """Rows with zero values are skipped."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "0",
+            ),
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Cooling",
+                "Electricity",
+                "GJ",
+                "30.0",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+        backend = MockBackend()
+
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, _ = backend.calls[0]
+        assert "Heating" not in args[0]
+
+    def test_accumulates_same_end_use(self) -> None:
+        """Multiple rows for the same end-use category are accumulated."""
+        from idfkit.simulation.plotting.visualizations import plot_energy_balance
+
+        tabular_data = [
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Electricity",
+                "GJ",
+                "50.0",
+            ),
+            TabularRow(
+                "AnnualBuildingUtilityPerformanceSummary",
+                "Entire Facility",
+                "End Uses",
+                "Heating",
+                "Natural Gas",
+                "GJ",
+                "30.0",
+            ),
+        ]
+        sql = MockSQLResult(tabular_data=tabular_data)
+        backend = MockBackend()
+
+        plot_energy_balance(sql, backend=backend)  # type: ignore[arg-type]
+
+        _, args, _ = backend.calls[0]
+        assert args[0] == ["Heating"]
+        assert args[1] == [80.0]
