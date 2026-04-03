@@ -11,14 +11,34 @@ Covers:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from dataclasses import field as dc_field
 from pathlib import Path
 
 import pytest
 
 from idfkit.exceptions import IDFParseError
-from idfkit.idf_parser import parse_idf
+from idfkit.idf_parser import (  # pyright: ignore[reportPrivateUsage]
+    IDFParser,
+    _coerce_value_fast,
+    iter_idf_objects,
+    parse_idf,
+)
 from idfkit.schema import get_schema
 from idfkit.writers import write_idf
+
+# ---------------------------------------------------------------------------
+# Shared helpers for coverage gap tests
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class _FakePC:
+    """Minimal stand-in for ParsingCache used in extensible-field tests."""
+
+    ext_size: int = 0
+    ext_field_names: list[str] = dc_field(default_factory=list)
+    field_types: dict[str, str | None] = dc_field(default_factory=dict)
 
 
 @pytest.fixture
@@ -515,3 +535,321 @@ zone,
         # schema=None triggers auto-load from version, so normalization still applies
         assert "Zone" in doc.collections
         assert "ZONE" not in doc.collections
+
+
+# ---------------------------------------------------------------------------
+# Coverage gap tests: idf_parser.py uncovered lines
+# ---------------------------------------------------------------------------
+
+
+class TestCoerceValueFast:
+    """_coerce_value_fast: integer type with non-numeric value falls back to string (L89-90)."""
+
+    def test_integer_non_numeric_returns_string(self) -> None:
+        result = _coerce_value_fast("integer", "AutoSize")
+        assert result == "AutoSize"
+
+    def test_integer_numeric_returns_int(self) -> None:
+        result = _coerce_value_fast("integer", "5")
+        assert result == 5
+
+    def test_number_non_numeric_returns_string(self) -> None:
+        result = _coerce_value_fast("number", "AutoSize")
+        assert result == "AutoSize"
+
+
+class TestMmapLargeFile:
+    """_load_content uses mmap for files > 10 MB (L253-258)."""
+
+    def test_large_file_parsed_via_mmap(self, tmp_path: Path) -> None:
+        # Build a minimal valid IDF then pad it past the mmap threshold (10 MB)
+        header = "Version, 24.1;\nZone, BigZone, 0, 0, 0, 0, 1, 1;\n"
+        padding = "! " + "x" * 100 + "\n"
+        # Need > 10 * 1024 * 1024 bytes
+        repeat = (10 * 1024 * 1024 // len(padding)) + 1
+        content = header + padding * repeat
+        idf_path = tmp_path / "large.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+
+        doc = parse_idf(idf_path)
+        assert doc["Zone"]["BigZone"] is not None
+
+
+class TestParseFieldsSlowPath:
+    """_parse_fields slow path: '!' in fields_raw after comment stripping (L486-493)."""
+
+    def test_inline_comment_in_fields_raw(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path)
+        raw = "  ZoneA,  ! comment\n  0"
+        result = parser._parse_fields(raw)  # pyright: ignore[reportPrivateUsage]
+        assert result[0].strip() == "ZoneA"
+
+
+class TestLineAndColumnNoNewline:
+    """_line_and_column with no prior newline returns (1, offset+1) (L501)."""
+
+    def test_offset_zero_no_newline(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        content = b"ZoneType, Name;"
+        line, col = IDFParser._line_and_column(content, 0)
+        assert line == 1
+        assert col == 1
+
+
+class TestResolveCacheSchemaIsNone:
+    """_resolve_type_cache returns (None, False, obj_type) when schema is None (L551)."""
+
+    def test_schema_none_returns_none_cache(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path)
+        cache: dict[str, object] = {}
+        canonical: dict[str, str] = {}
+        skipped: set[str] = set()
+        pc, skip, canonical_type = parser._resolve_type_cache(  # pyright: ignore[reportPrivateUsage]
+            content=b"",
+            schema=None,
+            type_cache=cache,
+            canonical_cache=canonical,
+            skipped_types=skipped,
+            obj_type="Zone",
+            obj_name="Z1",
+            match_offset=0,
+        )
+        assert pc is None
+        assert not skip
+        assert canonical_type == "Zone"
+
+
+class TestIterIDFObjectsInlineComment:
+    """iter_idf_objects: field with '!' inside (L630)."""
+
+    def test_inline_comment_in_field_stripped(self, tmp_path: Path) -> None:
+        content = "Version, 24.1;\nZone, MyZone, 0 ! inline comment\n, 0, 0;\n"
+        idf_path = tmp_path / "inline.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+
+        objects = list(iter_idf_objects(idf_path))
+        # Zone object should be present; the inline comment should be stripped
+        zone_entries = [(t, n, f) for t, n, f in objects if t.upper() == "ZONE"]
+        assert zone_entries, "Expected at least one Zone entry"
+        # First field after name ('0 ! inline comment') should be stripped to '0'
+        fields = zone_entries[0][2]
+        assert fields[0] == "0"
+
+
+class TestPreserveFormattingCST:
+    """CST linking: unmatched CST node logs a warning (L733->732, L755->738)."""
+
+    def test_preserve_formatting_roundtrip(self, tmp_path: Path) -> None:
+        content = """\
+Version, 24.1;
+
+Zone,
+  CST Zone,
+  0, 0, 0, 0, 1, 1;
+"""
+        idf_path = tmp_path / "cst.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        assert doc.cst is not None
+
+        # Round-trip should produce output with the zone
+        output = write_idf(doc)
+        assert output is not None
+        assert "CST Zone" in output
+
+    def test_cst_unmatched_node_warning(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """A CST node for an unknown type logs a warning rather than failing."""
+        import logging
+
+        from idfkit.cst import CSTNode, DocumentCST
+        from idfkit.idf_parser import _link_cst_to_objects  # pyright: ignore[reportPrivateUsage]
+
+        # Build a minimal doc
+        content = "Version, 24.1;\nZone, Z1, 0, 0, 0, 0, 1, 1;\n"
+        idf_path = tmp_path / "cst2.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        # Create a CST with a node that won't match any parsed object
+        orphan_node = CSTNode(text="UnknownType, Some Value;\n")
+        cst = DocumentCST(nodes=[orphan_node])
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            result = _link_cst_to_objects(cst, doc)
+
+        assert result is True
+        assert any("CST linking" in r.message for r in caplog.records)
+
+
+class TestExtensibleInvalidGroupSize:
+    """_append_extensible_fields: ext_size <= 0 raises ValueError in strict mode (L441-444)."""
+
+    def test_invalid_ext_size_strict(self, tmp_path: Path) -> None:
+        """ext_size=0 with strict_parsing=True raises ValueError."""
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path, strict_parsing=True)
+
+        with pytest.raises(ValueError, match="extensible group size is invalid"):
+            parser._append_extensible_fields(  # pyright: ignore[reportPrivateUsage]
+                data={},
+                extra=["v1"],
+                field_names=[],
+                field_types={},
+                pc=_FakePC(),  # type: ignore[arg-type]
+            )
+
+    def test_invalid_ext_size_non_strict(self, tmp_path: Path) -> None:
+        """ext_size=0 with strict_parsing=False returns early without storing anything."""
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path, strict_parsing=False)
+        data: dict[str, object] = {}
+        parser._append_extensible_fields(  # pyright: ignore[reportPrivateUsage]
+            data=data,
+            extra=["v1"],
+            field_names=[],
+            field_types={},
+            pc=_FakePC(),  # type: ignore[arg-type]
+        )
+        assert data == {}
+
+
+class TestExtensibleJGeNumExt:
+    """_append_extensible_fields: j >= num_ext guard skips excess values (L457, L471)."""
+
+    def test_extra_values_beyond_ext_names_skipped(self, tmp_path: Path) -> None:
+        """ext_size=2 but only one ext_name: second value per group is silently skipped."""
+        # _FakePC.ext_size=2 means groups of 2; ext_field_names has only 1 entry,
+        # so j=1 (the second slot) hits the `j >= num_ext` guard and is dropped.
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path, strict_parsing=True)
+        data: dict[str, object] = {}
+        field_names: list[str] = []
+        pc = _FakePC(ext_size=2, ext_field_names=["field_a"])
+        parser._append_extensible_fields(  # pyright: ignore[reportPrivateUsage]
+            data=data,
+            extra=["val_a", "val_b", "val_c", "val_d"],
+            field_names=field_names,
+            field_types={},
+            pc=pc,  # type: ignore[arg-type]
+        )
+        assert "field_a" in data
+        assert "field_a_2" in data
+        assert "field_b" not in data
+
+
+class TestNonStrictSkipsUnknownType:
+    """With strict_parsing=False, unknown object types are skipped (L569-570)."""
+
+    def test_unknown_type_skipped_non_strict(self, tmp_path: Path) -> None:
+        content = """\
+Version, 24.1;
+
+Zone, GoodZone, 0, 0, 0, 0, 1, 1;
+
+NotARealType, SomeValue;
+"""
+        idf_path = tmp_path / "skip.idf"
+        idf_path.write_text(content)
+
+        doc = parse_idf(idf_path, strict_parsing=False)
+        assert doc["Zone"]["GoodZone"] is not None
+        assert "NotARealType" not in doc.collections
+
+
+class TestParseObjectCachedNoSchema:
+    """_parse_object_cached with pc=None uses no-schema fallback (L382-388)."""
+
+    def test_no_schema_fallback(self, tmp_path: Path) -> None:
+        """pc=None triggers the no-schema branch; fields are stored as field_N keys."""
+        from idfkit.idf_parser import _OBJECT_PATTERN  # pyright: ignore[reportPrivateUsage]
+
+        idf_path = tmp_path / "dummy.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path)
+
+        matches = list(_OBJECT_PATTERN.finditer(b"Zone, TestZone, 0, 0, 0;"))
+        assert matches
+        obj = parser._parse_object_cached(matches[0], None, "latin-1")  # pyright: ignore[reportPrivateUsage]
+        assert obj is not None
+        assert obj.name == "TestZone"
+
+    def test_no_schema_fallback_with_empty_field(self, tmp_path: Path) -> None:
+        """Empty field in no-schema fallback is not stored (falsy guard in loop body)."""
+        from idfkit.idf_parser import _OBJECT_PATTERN  # pyright: ignore[reportPrivateUsage]
+
+        idf_path = tmp_path / "dummy2.idf"
+        idf_path.write_text("Version, 24.1;\n")
+        parser = IDFParser(idf_path)
+
+        matches = list(_OBJECT_PATTERN.finditer(b"Zone, TestZone, , 1;"))
+        assert matches
+        obj = parser._parse_object_cached(matches[0], None, "latin-1")  # pyright: ignore[reportPrivateUsage]
+        assert obj is not None
+        assert obj.name == "TestZone"
+        assert "field_1" not in obj.data  # empty slot skipped
+        assert "field_2" in obj.data
+
+
+class TestCSTLinkingEmptyCollection:
+    """_link_cst_to_objects: empty collection in doc skipped during obj_by_type build (L733->732)."""
+
+    def test_empty_collection_not_added_to_obj_by_type(self, tmp_path: Path) -> None:
+        """A document with an accessed-but-empty collection doesn't crash CST linking."""
+        from idfkit.cst import CSTNode, DocumentCST
+        from idfkit.idf_parser import _link_cst_to_objects  # pyright: ignore[reportPrivateUsage]
+
+        content = "Version, 24.1;\nZone, Z1, 0, 0, 0, 0, 1, 1;\n"
+        idf_path = tmp_path / "empty_coll.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        # Access an empty collection (e.g. Material) to create it
+        _ = doc["Material"]
+
+        # Build a CST that only has a Zone node
+        zone_node = CSTNode(text="Zone,\n  Z1,\n  0, 0, 0, 0, 1, 1;\n")
+        cst = DocumentCST(nodes=[zone_node])
+
+        result = _link_cst_to_objects(cst, doc)
+        assert result is True
+        # The zone node should be linked to the Z1 object
+        assert zone_node.obj is not None
+        assert zone_node.obj.name == "Z1"
+
+
+class TestCSTLinkingMultipleSameType:
+    """_link_cst_to_objects: bucket not deleted when objects remain (L755->738)."""
+
+    def test_multiple_objects_same_type_linked(self, tmp_path: Path) -> None:
+        """Two objects of the same type: bucket persists after first popleft (L755->738)."""
+        from idfkit.cst import CSTNode, DocumentCST
+        from idfkit.idf_parser import _link_cst_to_objects  # pyright: ignore[reportPrivateUsage]
+
+        content = """\
+Version, 24.1;
+Zone, ZoneA, 0, 0, 0, 0, 1, 1;
+Zone, ZoneB, 0, 0, 0, 0, 1, 1;
+"""
+        idf_path = tmp_path / "multi_zone.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        node_a = CSTNode(text="Zone,\n  ZoneA,\n  0, 0, 0, 0, 1, 1;\n")
+        node_b = CSTNode(text="Zone,\n  ZoneB,\n  0, 0, 0, 0, 1, 1;\n")
+        cst = DocumentCST(nodes=[node_a, node_b])
+
+        result = _link_cst_to_objects(cst, doc)
+        assert result is True
+        assert node_a.obj is not None
+        assert node_a.obj.name == "ZoneA"
+        assert node_b.obj is not None
+        assert node_b.obj.name == "ZoneB"
