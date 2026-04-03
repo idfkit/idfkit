@@ -1173,7 +1173,7 @@ class TestSetWWR:
             validate=False,
         )
         windows = set_wwr(doc, 0.3)
-        assert len(windows) >= 1
+        assert len(windows) == 1
         # Old window should be gone
         old = doc.getobject("FenestrationSurface:Detailed", "OldWindow")
         assert old is None
@@ -1384,9 +1384,9 @@ class TestPolygonIntersection2DEdgeCases:
         a = [(0, 0), (5, 0), (5, 5), (0, 5)]
         b = [(5, 0), (10, 0), (10, 5), (5, 5)]
         result = polygon_intersection_2d(a, b)
-        # Could be None (degenerate line intersection) or a tiny area polygon
-        # Either way, the branches get exercised
-        assert result is None or abs(polygon_area_2d(result)) < 1.0
+        # Sutherland-Hodgman returns a 4-point degenerate polygon (all at x=5),
+        # which has near-zero area; polygon_intersection_2d discards it as None.
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
@@ -1898,7 +1898,7 @@ class TestPolygonTiltAzimuth:
             Vector3D(10, 0, 0),
             Vector3D(10, 0, 3),
         ])
-        assert _close(poly.tilt, 90.0, 1.0)
+        assert _close(poly.tilt, 90.0, 0.001)
 
     def test_tilt_horizontal(self) -> None:
         """Horizontal surface has tilt ~0 or ~180."""
@@ -1940,7 +1940,7 @@ class TestPolygonTiltAzimuth:
             Vector3D(10, 0, 0),
             Vector3D(10, 0, 3),
         ])
-        assert _close(poly.azimuth, 180.0, 5.0)
+        assert _close(poly.azimuth, 180.0, 0.001)
 
 
 # ---------------------------------------------------------------------------
@@ -2232,8 +2232,8 @@ class TestTranslateRotateBuildingWithSurfaces:
         rotate_building(doc, 90.0)
         wall = doc.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        # After rotation, coordinates should have changed
-        assert wall.vertex_3_y_coordinate != 0.0
+        # After 90-degree rotation: vertex_3 was (10, 0, 0), should be (0, 10, 0)
+        assert wall.vertex_3_y_coordinate == pytest.approx(10.0)
 
 
 # ---------------------------------------------------------------------------
