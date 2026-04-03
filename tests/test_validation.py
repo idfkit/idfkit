@@ -99,8 +99,8 @@ class TestValidateDocument:
 
     def test_validate_simple_doc(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc)
-        # May have warnings but should not crash
-        assert isinstance(result, ValidationResult)
+        # simple_doc has valid references and required fields — no errors expected
+        assert result.errors == []
 
     def test_validate_no_schema(self) -> None:
         doc = IDFDocument()  # No schema loaded
@@ -111,11 +111,14 @@ class TestValidateDocument:
 
     def test_validate_specific_object_types(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc, object_types=["Zone"])
-        assert isinstance(result, ValidationResult)
+        # Scoping to Zone only: no errors expected for a well-formed zone
+        assert result.errors == []
 
     def test_validate_check_references_disabled(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc, check_references=False)
-        assert isinstance(result, ValidationResult)
+        # With reference checking disabled, no E009 errors should appear
+        ref_errors = [e for e in result.errors if e.code == "E009"]
+        assert ref_errors == []
 
     def test_validate_all_checks_disabled(self, simple_doc: IDFDocument) -> None:
         result = validate_document(
@@ -125,7 +128,8 @@ class TestValidateDocument:
             check_types=False,
             check_ranges=False,
         )
-        assert isinstance(result, ValidationResult)
+        # With every check disabled, no errors should be produced
+        assert result.errors == []
 
 
 class TestValidateReferences:
@@ -149,8 +153,9 @@ class TestValidateReferences:
 
     def test_valid_references_pass(self, simple_doc: IDFDocument) -> None:
         result = validate_document(simple_doc, check_references=True)
-        # TestConstruction -> TestMaterial is valid, TestWall -> TestZone is valid
-        assert isinstance(result, ValidationResult)
+        # TestConstruction→TestMaterial and TestWall→TestZone are all valid references
+        ref_errors = [e for e in result.errors if e.code == "E009"]
+        assert ref_errors == []
 
 
 class TestValidateSingletons:

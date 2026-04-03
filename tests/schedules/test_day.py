@@ -160,11 +160,17 @@ class TestEvaluateDayInterval:
         assert result == 0.0
 
     def test_interpolation(self, interval_schedule: MagicMock) -> None:
-        """Test interpolation between values."""
-        # At 8am boundary with interpolation
+        """Test interpolation at the 08:00 boundary.
+
+        At exactly 08:00 the first interval (until 08:00, value=0.0) is closed
+        (boundary is exclusive: current < until is False at equality).  We fall
+        into the second interval [08:00, 18:00) with prev_value=0.0.
+        fraction = (480-480)/(1080-480) = 0.0, so interpolation returns 0.0.
+        Without interpolation the step function would return 1.0 (the second
+        interval's value), confirming interpolation is active.
+        """
         result = evaluate_day_interval(interval_schedule, datetime(2024, 1, 1, 8, 0), Interpolation.AVERAGE)
-        # At exactly 8:00, should be interpolated
-        assert 0.0 <= result <= 1.0
+        assert result == 0.0
 
 
 class TestEvaluateDayList:
