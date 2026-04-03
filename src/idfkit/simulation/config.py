@@ -322,7 +322,7 @@ def _platform_search_dirs() -> list[Path]:
                 dirs.append(Path(val))
         # Default EnergyPlus installer places dirs at drive root (e.g. C:\EnergyPlusV25-2-0)
         drive = os.environ.get("SystemDrive", "C:")
-        dirs.append(Path(drive + "\\"))
+        dirs.append(Path(drive + os.sep))
 
     return dirs
 
