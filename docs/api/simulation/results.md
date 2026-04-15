@@ -30,6 +30,7 @@ Simulation result container and output file access.
         - html_path
         - rdd_path
         - mdd_path
+        - migration_report
         - from_directory
 
 ## ErrorReport

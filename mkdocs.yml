@@ -82,6 +82,7 @@ nav:
       - Cache: api/simulation/cache.md
       - Plotting: api/simulation/plotting.md
       - File Systems: api/simulation/fs.md
+    - Migration: api/migration.md
     - Schedules:
       - Overview: api/schedules/index.md
     - Weather:

@@ -20,7 +20,7 @@ def normalize_target(target_version: tuple[int, int, int] | str) -> tuple[int, i
     Raises:
         ValueError: If the string cannot be parsed.
         UnsupportedVersionError: If the parsed version is not in
-            [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS].
+            `ENERGYPLUS_VERSIONS`.
     """
     normalized = normalize_version(target_version)
     if not is_supported_version(normalized):
@@ -34,7 +34,7 @@ def plan_migration_chain(
 ) -> tuple[TransitionStep, ...]:
     """Plan the ordered list of transition steps from *source* to *target*.
 
-    The chain walks forward through [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS]
+    The chain walks forward through `ENERGYPLUS_VERSIONS`
     from *source* to *target*, emitting a ``(from, to)`` pair for each
     consecutive version boundary.
 

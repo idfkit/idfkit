@@ -83,7 +83,7 @@ def migrate(
     Raises:
         idfkit.exceptions.UnsupportedVersionError: If either the source or
             target version is not in
-            [ENERGYPLUS_VERSIONS][idfkit.versions.ENERGYPLUS_VERSIONS].
+            `ENERGYPLUS_VERSIONS`.
         ValueError: If *target_version* is older than ``model.version``
             (backward migration is not supported).
         idfkit.exceptions.MigrationError: If any transition step fails. The
