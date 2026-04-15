@@ -175,6 +175,30 @@ def test_accepts_custom_work_dir(tmp_path: Path) -> None:
     assert report.success is True
 
 
+def test_silent_garbage_output_is_caught() -> None:
+    """If a backend returns garbage IDF text but claims success, the orchestrator
+    must raise ``MigrationError`` instead of returning an empty document."""
+    from idfkit.migration.protocol import MigrationStepResult
+
+    class _GarbageMigrator:
+        def migrate_step(
+            self,
+            idf_text: str,
+            from_version: tuple[int, int, int],
+            to_version: tuple[int, int, int],
+            *,
+            work_dir: Path,
+        ) -> MigrationStepResult:
+            return MigrationStepResult(idf_text="!!! NOT VALID IDF !!!", stdout="", stderr="")
+
+    # Seed the source doc with a real object so the source_count > 0 guard fires.
+    doc = new_document(version=(24, 1, 0))
+    doc.add("Zone", "Office")
+
+    with pytest.raises(MigrationError, match="empty document"):
+        migrate(doc, target_version=(24, 2, 0), migrator=_GarbageMigrator())
+
+
 def test_migration_report_type() -> None:
     doc = new_document(version=(24, 1, 0))
     report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]))

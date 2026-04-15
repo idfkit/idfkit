@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from .chain import normalize_target, plan_migration_chain
-from .diff import document_diff
+from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
 from .subprocess_backend import SubprocessMigrator
@@ -238,6 +238,12 @@ def _run_chain(
     final_idf = work_root / "migrated.idf"
     final_idf.write_text(current_text, encoding="latin-1")
     migrated = parse_idf(final_idf, version=target)
+    verify_migration_output(
+        model,
+        migrated,
+        target_version=target,
+        completed_steps=tuple(completed_pairs),
+    )
 
     _emit(
         on_progress,

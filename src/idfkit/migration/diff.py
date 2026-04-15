@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from ..exceptions import MigrationError
 from .report import FieldDelta, MigrationDiff
 
 if TYPE_CHECKING:
@@ -77,6 +78,36 @@ def _compute_field_changes(
         if added_fields or removed_fields:
             changes[obj_type] = FieldDelta(added=added_fields, removed=removed_fields)
     return changes
+
+
+def verify_migration_output(
+    source: IDFDocument,
+    migrated: IDFDocument,
+    *,
+    target_version: tuple[int, int, int],
+    completed_steps: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],
+) -> None:
+    """Raise ``MigrationError`` if the re-parsed migrated document is suspect.
+
+    Catches the case where a transition binary exits 0 but emits garbage —
+    ``parse_idf`` silently produces an empty document for non-IDF input, so
+    the only way to detect it is to compare object counts against the source.
+    """
+    source_count = sum(len(c) for c in source.collections.values())
+    migrated_count = sum(len(c) for c in migrated.collections.values())
+
+    if source_count > 0 and migrated_count == 0:
+        from_v, to_v = completed_steps[-1] if completed_steps else (target_version, target_version)
+        msg = (
+            f"Migration produced an empty document (source had {source_count} objects). "
+            "The transition binary likely emitted malformed IDF without signaling an error."
+        )
+        raise MigrationError(
+            msg,
+            from_version=from_v,
+            to_version=to_v,
+            completed_steps=completed_steps,
+        )
 
 
 def _schema_field_names(schema: EpJSONSchema, obj_type: str) -> set[str] | None:

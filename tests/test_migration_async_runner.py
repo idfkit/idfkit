@@ -236,6 +236,28 @@ async def test_accepts_custom_work_dir(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_silent_garbage_output_is_caught() -> None:
+    """Same invariant as the sync runner test — garbage-output must raise."""
+
+    class _GarbageAsyncMigrator:
+        async def migrate_step(
+            self,
+            idf_text: str,
+            from_version: tuple[int, int, int],
+            to_version: tuple[int, int, int],
+            *,
+            work_dir: Path,
+        ) -> MigrationStepResult:
+            return MigrationStepResult(idf_text="!!! NOT VALID IDF !!!", stdout="", stderr="")
+
+    doc = new_document(version=(24, 1, 0))
+    doc.add("Zone", "Office")
+
+    with pytest.raises(MigrationError, match="empty document"):
+        await async_migrate(doc, target_version=(24, 2, 0), migrator=_GarbageAsyncMigrator())
+
+
+@pytest.mark.asyncio
 async def test_returns_migration_report() -> None:
     doc = new_document(version=(24, 1, 0))
     report = await async_migrate(
