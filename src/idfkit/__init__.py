@@ -46,6 +46,7 @@ from .exceptions import (
     IdfKitError,
     IDFParseError,
     InvalidFieldError,
+    MigrationError,
     NoDesignDaysError,
     ParseError,
     RangeError,
@@ -54,6 +55,7 @@ from .exceptions import (
     UnknownObjectTypeError,
     UnsupportedVersionError,
     ValidationFailedError,
+    VersionMismatchError,
     VersionNotFoundError,
 )
 
@@ -95,6 +97,9 @@ from .idf_parser import IDFParser, get_idf_version, parse_idf
 
 # Introspection
 from .introspection import FieldDescription, ObjectDescription
+
+# Migration
+from .migration import MigrationReport, async_migrate, migrate
 from .objects import IDFCollection, IDFObject
 
 # Reference graph
@@ -398,6 +403,8 @@ __all__ = [
     "IDFParser",
     "IdfKitError",
     "InvalidFieldError",
+    "MigrationError",
+    "MigrationReport",
     "NoDesignDaysError",
     "ObjectDescription",
     "ParseError",
@@ -413,12 +420,14 @@ __all__ = [
     "ValidationFailedError",
     "ValidationResult",
     "Vector3D",
+    "VersionMismatchError",
     "VersionNotFoundError",
     "ZoneFootprint",
     "ZonedBlock",
     "ZoningScheme",
     "__version__",
     "add_shading_block",
+    "async_migrate",
     "bounding_box",
     "calculate_surface_area",
     "calculate_surface_azimuth",
@@ -451,6 +460,7 @@ __all__ = [
     "link_horizontal_surfaces",
     "load_epjson",
     "load_idf",
+    "migrate",
     "new_document",
     "parse_epjson",
     "parse_idf",
