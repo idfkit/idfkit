@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from idfkit import new_document
+from idfkit import LATEST_VERSION, new_document
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.progress import SimulationProgress
 from idfkit.simulation.progress_bars import resolve_on_progress, tqdm_progress
@@ -26,7 +26,7 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
     idd.write_text("!IDD_Version 24.1.0\n")
     return EnergyPlusConfig(
         executable=exe,
-        version=(24, 1, 0),
+        version=LATEST_VERSION,
         install_dir=tmp_path,
         idd_path=idd,
     )

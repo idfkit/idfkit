@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from conftest import InMemoryFileSystem
 
-from idfkit import new_document
+from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import ExpandObjectsError, SimulationError
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import _build_command, _ensure_sql_output, _prepare_run_directory, simulate
@@ -43,7 +43,7 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
 
     return EnergyPlusConfig(
         executable=exe,
-        version=(24, 1, 0),
+        version=LATEST_VERSION,
         install_dir=tmp_path,
         idd_path=idd,
     )
@@ -290,11 +290,11 @@ class TestSimulatePreprocessing:
 
     def test_auto_preprocesses_slab_model(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """simulate() calls _run_preprocessing for models with slab objects."""
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
-        preprocessed = new_document(version=(24, 1, 0))
+        preprocessed = new_document(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -313,11 +313,11 @@ class TestSimulatePreprocessing:
 
     def test_auto_preprocesses_basement_model(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """simulate() calls _run_preprocessing for models with basement objects."""
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
-        preprocessed = new_document(version=(24, 1, 0))
+        preprocessed = new_document(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")
@@ -339,7 +339,7 @@ class TestSimulatePreprocessing:
     ) -> None:
         """simulate() does not run preprocessing for models without GHT objects."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
         with patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess:
@@ -357,7 +357,7 @@ class TestSimulatePreprocessing:
     ) -> None:
         """simulate(expand_objects=False) skips preprocessing even with GHT objects."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
@@ -371,7 +371,7 @@ class TestSimulatePreprocessing:
 
     def test_preprocessing_error_propagates(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """ExpandObjectsError from preprocessing propagates through simulate()."""
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
@@ -386,13 +386,13 @@ class TestSimulatePreprocessing:
 
     def test_model_not_mutated_with_preprocessing(self, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
         """Original model is not mutated when preprocessing runs."""
-        model = new_document(version=(24, 1, 0))
+        model = new_document(version=LATEST_VERSION)
         model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
         model.add("Zone", "Office", {"x_origin": 0.0})
 
         original_types = set(model.keys())
 
-        preprocessed = new_document(version=(24, 1, 0))
+        preprocessed = new_document(version=LATEST_VERSION)
         preprocessed.add("Zone", "Office", {"x_origin": 0.0})
 
         sim_proc = MagicMock(returncode=0, stdout="ok", stderr="")

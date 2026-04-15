@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
 
-from idfkit import new_document
+from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from idfkit.simulation.async_runner import async_simulate
@@ -46,7 +46,7 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
 
     return EnergyPlusConfig(
         executable=exe,
-        version=(24, 1, 0),
+        version=LATEST_VERSION,
         install_dir=tmp_path,
         idd_path=idd,
     )
