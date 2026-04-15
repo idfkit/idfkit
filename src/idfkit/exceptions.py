@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from .objects import IDFObject
@@ -14,6 +14,24 @@ class IdfKitError(Exception):
     """Base exception for all idfkit errors."""
 
     pass
+
+
+def _format_subprocess_failure(
+    message: str,
+    *,
+    exit_code: int | None = None,
+    stderr: str | None = None,
+) -> str:
+    """Shared subprocess-failure message formatter.
+
+    Appends ``(exit code N)`` and a 500-char-truncated stderr tail to *message*.
+    """
+    msg = message
+    if exit_code is not None:
+        msg += f" (exit code {exit_code})"
+    if stderr:
+        msg += f"\nstderr: {stderr.strip()[:500]}"
+    return msg
 
 
 @dataclass(frozen=True, slots=True)
@@ -244,13 +262,7 @@ class ExpandObjectsError(IdfKitError):
         self.preprocessor = preprocessor
         self.exit_code = exit_code
         self.stderr = stderr
-        msg = message
-        if exit_code is not None:
-            msg += f" (exit code {exit_code})"
-        if stderr:
-            trimmed = stderr.strip()[:500]
-            msg += f"\nstderr: {trimmed}"
-        super().__init__(msg)
+        super().__init__(_format_subprocess_failure(message, exit_code=exit_code, stderr=stderr))
 
 
 class SimulationError(IdfKitError):
@@ -265,12 +277,81 @@ class SimulationError(IdfKitError):
     ) -> None:
         self.exit_code = exit_code
         self.stderr = stderr
-        msg = message
-        if exit_code is not None:
-            msg += f" (exit code {exit_code})"
-        if stderr:
-            trimmed = stderr.strip()[:500]
-            msg += f"\nstderr: {trimmed}"
+        super().__init__(_format_subprocess_failure(message, exit_code=exit_code, stderr=stderr))
+
+
+class VersionMismatchError(IdfKitError):
+    """Raised when an IDF model's version differs from the installed EnergyPlus version.
+
+    Carries structured context so callers (including MCP tools and LSP clients) can
+    decide whether to migrate the model or surface the mismatch to the user.
+
+    Attributes:
+        current: The model's version tuple.
+        target: The installed EnergyPlus version tuple.
+        migration_chain: Ordered pairs ``((from, to), ...)`` describing the transition
+            steps that would be run to forward-migrate ``current`` to ``target``.
+            Empty when migration is not possible (e.g. target is older than current).
+        direction: ``"forward"`` when ``current < target``, ``"backward"`` otherwise.
+    """
+
+    def __init__(
+        self,
+        *,
+        current: tuple[int, int, int],
+        target: tuple[int, int, int],
+        migration_chain: Sequence[tuple[tuple[int, int, int], tuple[int, int, int]]] = (),
+    ) -> None:
+        self.current = current
+        self.target = target
+        self.migration_chain = tuple(migration_chain)
+        self.direction: Literal["forward", "backward"] = "forward" if current < target else "backward"
+        current_str = f"{current[0]}.{current[1]}.{current[2]}"
+        target_str = f"{target[0]}.{target[1]}.{target[2]}"
+        msg = f"Model version {current_str} does not match target EnergyPlus version {target_str}."
+        if self.direction == "backward":
+            msg += "\nBackward migration is not supported: EnergyPlus ships no reverse transition binaries."
+        elif self.migration_chain:
+            steps = " -> ".join(f"{a[0]}.{a[1]}.{a[2]}->{b[0]}.{b[1]}.{b[2]}" for a, b in self.migration_chain)
+            msg += f"\nMigration chain: {steps}"
+            msg += "\nCall idfkit.migrate(model, target_version=...) to migrate explicitly."
+        super().__init__(msg)
+
+
+class MigrationError(IdfKitError):
+    """Raised when an IDF migration step fails.
+
+    Attributes:
+        from_version: Version the failing step started from (if known).
+        to_version: Version the failing step targeted (if known).
+        exit_code: Process exit code of the transition binary (if available).
+        stderr: Captured stderr of the transition binary (truncated to 500 chars).
+        completed_steps: Ordered ``(from, to)`` pairs that ran successfully before
+            the failure. Empty when the chain failed on its first step.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        from_version: tuple[int, int, int] | None = None,
+        to_version: tuple[int, int, int] | None = None,
+        exit_code: int | None = None,
+        stderr: str | None = None,
+        completed_steps: Sequence[tuple[tuple[int, int, int], tuple[int, int, int]]] = (),
+    ) -> None:
+        self.from_version = from_version
+        self.to_version = to_version
+        self.exit_code = exit_code
+        self.stderr = stderr
+        self.completed_steps = tuple(completed_steps)
+        head = message
+        if from_version is not None and to_version is not None:
+            a, b = from_version, to_version
+            head += f" ({a[0]}.{a[1]}.{a[2]} -> {b[0]}.{b[1]}.{b[2]})"
+        msg = _format_subprocess_failure(head, exit_code=exit_code, stderr=stderr)
+        if self.completed_steps:
+            msg += f"\nCompleted steps before failure: {len(self.completed_steps)}"
         super().__init__(msg)
 
 
