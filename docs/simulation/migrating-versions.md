@@ -42,6 +42,50 @@ exposes:
 | `success` | `True` only when every step succeeded. |
 | `summary()` | Short human-readable summary suitable for logs or CLI. |
 
+## CLI
+
+The `idfkit migrate` subcommand is a thin wrapper over `migrate()` for shell
+users. It loads the input IDF, forward-migrates it through the installed
+`IDFVersionUpdater` transition binaries, and writes the result to disk.
+
+### Basic usage
+
+```bash
+# Migrate to the latest supported version; writes old-v25-2-0.idf next to input
+idfkit migrate old.idf
+
+# Explicit target and output path
+idfkit migrate old.idf --to 25.2 -o new.idf
+
+# Machine-readable report (suppresses stderr progress output)
+idfkit migrate old.idf --to 25.2 --json
+```
+
+When `--to` is omitted the target is the latest supported version. When
+`--output` is omitted the result is written to `<stem>-v<major>-<minor>-<patch>.idf`
+next to the input.
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Migration succeeded (or source version equals target — no-op) |
+| `1` | Migration runtime failure (a transition binary exited non-zero) |
+| `2` | Argument or configuration error (bad version, missing input, EnergyPlus not found) |
+
+### Flag reference
+
+| Flag | Description |
+|------|-------------|
+| `INPUT` | Path to the source IDF file (positional, required) |
+| `-o`, `--output OUTPUT` | Output IDF path. Defaults to `<stem>-v<target>.idf` next to the input. |
+| `--to VERSION` | Target EnergyPlus version (e.g. `25.2`). Defaults to the latest supported. |
+| `--energyplus PATH` | Path to the EnergyPlus install or executable. Auto-discovered via `$ENERGYPLUS_DIR`, `PATH`, and platform defaults when omitted. |
+| `--work-dir DIR` | Directory in which to stage per-step transition output. Defaults to a temporary directory. |
+| `--keep-work-dir` | Preserve intermediate files for inspection (only meaningful with the default temp directory). |
+| `--json` | Emit a JSON report on stdout instead of the human-readable summary. Also suppresses stderr progress output. |
+| `-q`, `--quiet` | Suppress progress output. |
+
 ## Transparent Migration During `simulate()`
 
 When you only want a simulation result, pass `auto_migrate=True` and
@@ -81,6 +125,6 @@ which transition broke.
 ## See Also
 
 - [Migration API](../api/migration.md) — full reference for `migrate`, `MigrationReport`, and the `Migrator` protocol.
-- [Version Compatibility](../concepts/version-compatibility.md) — the *static* `idfkit check` linter for catching cross-version breakage in your code before you migrate.
+- [Version Compatibility](../concepts/version-compatibility.md) — the sibling `idfkit check` subcommand for *statically* linting your Python code for cross-version breakage before you migrate.
 - [Running Simulations](running.md) — full `simulate()` parameter reference.
 - [Error Handling](errors.md) — handling `VersionMismatchError` from `simulate()`.

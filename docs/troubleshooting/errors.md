@@ -263,6 +263,11 @@ from the installed EnergyPlus, and `auto_migrate` is `False` (the default).
    result = simulate(report.migrated_model, weather)
    ```
 
+3. From the shell (no Python session required):
+   ```bash
+   idfkit migrate path/to/model.idf --to 25.2
+   ```
+
 !!! warning "Backward migration is not supported"
     EnergyPlus ships no reverse transition binaries, so a model *newer*
     than the installed EnergyPlus cannot be downgraded. Install a newer
