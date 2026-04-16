@@ -14,9 +14,9 @@ different EnergyPlus versions.
     *statically* — it tells you which lines of your code reference object
     types or choice values that won't exist in another EnergyPlus version.
     To actually upgrade an existing IDF model, see
-    [Migrating Versions](../simulation/migrating-versions.md), which uses
-    `idfkit.migrate()` to forward-migrate models through the
-    `IDFVersionUpdater` transition binaries.
+    [Migrating Versions](../simulation/migrating-versions.md), which exposes
+    the sibling `idfkit migrate` CLI and the `idfkit.migrate()` Python
+    API — both drive the `IDFVersionUpdater` transition binaries.
 
 ## What it detects
 

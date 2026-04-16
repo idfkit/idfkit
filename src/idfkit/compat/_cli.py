@@ -1,17 +1,19 @@
-"""CLI entry point for the idfkit compatibility linter.
+"""CLI entry points for idfkit.
 
-The ``idfkit check`` command statically lints Python source files that use
-idfkit and reports EnergyPlus object types or enumerated choice values that
-differ between schema versions.
+Subcommands:
+
+- ``idfkit check`` — statically lint Python source files that use idfkit and
+  report object types or enumerated choice values that differ between
+  EnergyPlus schema versions.
+- ``idfkit migrate`` — forward-migrate an IDF model to a newer EnergyPlus
+  version via the installed ``IDFVersionUpdater`` transition binaries.
 
 Usage examples::
 
     idfkit check script.py --from 24.2 --to 25.1
-    idfkit check script.py --targets 24.2,25.1,25.2
     idfkit check script.py --targets 24.2,25.1,25.2 --json
-    idfkit check script.py --from 24.2 --to 25.1 --sarif
-    idfkit check script.py --from 24.2 --to 25.1 --select C001
-    idfkit check script.py --from 24.2 --to 25.1 --group "Thermal Zones and Surfaces"
+    idfkit migrate old.idf --to 25.2
+    idfkit migrate old.idf --output new.idf --to 25.2 --json
 """
 
 from __future__ import annotations
@@ -19,12 +21,21 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Callable
+from dataclasses import asdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from ..versions import ENERGYPLUS_VERSIONS, version_string
+from ..exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
+from ..migration import MigrationProgress, MigrationReport, migrate
+from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 from ._checker import check_compatibility, resolve_version
 from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 from ._sarif import format_sarif
+
+if TYPE_CHECKING:
+    from ..document import IDFDocument
+    from ..simulation.config import EnergyPlusConfig
 
 
 def _parse_version_spec(spec: str) -> tuple[int, int, int]:
@@ -165,6 +176,75 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Minimum severity level to report (warning or error). Default: report all.",
     )
 
+    migrate_cmd = sub.add_parser(
+        "migrate",
+        help="Forward-migrate an IDF model to a newer EnergyPlus version",
+        description=(
+            "Forward-migrate an IDF model through EnergyPlus IDFVersionUpdater "
+            "transition binaries. Requires a local EnergyPlus installation."
+        ),
+    )
+    migrate_cmd.add_argument(
+        "input",
+        metavar="INPUT",
+        help="Path to the source IDF file",
+    )
+    migrate_cmd.add_argument(
+        "-o",
+        "--output",
+        dest="output",
+        default=None,
+        metavar="OUTPUT",
+        help="Output IDF path. Defaults to '<input_stem>-v<target>.idf' next to the input.",
+    )
+    migrate_cmd.add_argument(
+        "--to",
+        dest="to_version",
+        type=_parse_version_spec,
+        default=None,
+        metavar="VERSION",
+        help=f"Target EnergyPlus version (e.g. 25.2). Defaults to the latest supported ({version_string(LATEST_VERSION)}).",
+    )
+    migrate_cmd.add_argument(
+        "--energyplus",
+        dest="energyplus_path",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Path to the EnergyPlus installation directory or executable. "
+            "When omitted, idfkit auto-discovers via $ENERGYPLUS_DIR, PATH, and platform defaults."
+        ),
+    )
+    migrate_cmd.add_argument(
+        "--work-dir",
+        dest="work_dir",
+        default=None,
+        metavar="DIR",
+        help="Directory in which to stage per-step transition output. Defaults to a temporary directory.",
+    )
+    migrate_cmd.add_argument(
+        "--keep-work-dir",
+        dest="keep_work_dir",
+        action="store_true",
+        default=False,
+        help="Preserve intermediate files for inspection (only meaningful for the default temp directory).",
+    )
+    migrate_cmd.add_argument(
+        "--json",
+        dest="json_output",
+        action="store_true",
+        default=False,
+        help="Emit a JSON report on stdout instead of a human-readable summary.",
+    )
+    migrate_cmd.add_argument(
+        "-q",
+        "--quiet",
+        dest="quiet",
+        action="store_true",
+        default=False,
+        help="Suppress progress output (final report is still written unless --json is off).",
+    )
+
     return top
 
 
@@ -276,6 +356,8 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.command == "check":
         _run_check(args)
+    elif args.command == "migrate":
+        _run_migrate(args)
 
 
 def _run_check(args: argparse.Namespace) -> None:
@@ -341,3 +423,180 @@ def _run_check(args: argparse.Namespace) -> None:
 
     # Exit code: 1 if any issues, 0 otherwise
     sys.exit(1 if all_diagnostics else 0)
+
+
+def _default_output_path(input_path: Path, target: tuple[int, int, int]) -> Path:
+    """Compute the default output path next to *input_path*."""
+    tag = f"v{target[0]}-{target[1]}-{target[2]}"
+    return input_path.with_name(f"{input_path.stem}-{tag}{input_path.suffix or '.idf'}")
+
+
+def _progress_printer() -> Callable[[MigrationProgress], None]:
+    """Return a callable that prints migration progress events to stderr."""
+
+    def _print(event: MigrationProgress) -> None:
+        prefix = f"[{event.phase}]"
+        if event.step_index is not None and event.total_steps:
+            prefix += f" {event.step_index + 1}/{event.total_steps}"
+        print(f"{prefix} {event.message}", file=sys.stderr)
+
+    return _print
+
+
+def _format_migrate_json(report: MigrationReport, *, input_path: Path, output_path: Path | None) -> str:
+    """Serialize a MigrationReport for ``--json`` output."""
+    payload: dict[str, object] = {
+        "input": str(input_path),
+        "output": str(output_path) if output_path is not None else None,
+        "success": report.success,
+        "source_version": version_string(report.source_version),
+        "target_version": version_string(report.target_version),
+        "requested_target": version_string(report.requested_target),
+        "steps": [
+            {
+                "from": version_string(s.from_version),
+                "to": version_string(s.to_version),
+                "success": s.success,
+                "runtime_seconds": s.runtime_seconds,
+                "binary": str(s.binary) if s.binary is not None else None,
+            }
+            for s in report.steps
+        ],
+        "diff": {
+            "added_object_types": list(report.diff.added_object_types),
+            "removed_object_types": list(report.diff.removed_object_types),
+            "object_count_delta": dict(report.diff.object_count_delta),
+            "field_changes": {k: asdict(v) for k, v in report.diff.field_changes.items()},
+        },
+    }
+    return json.dumps(payload, indent=2)
+
+
+def _resolve_migrate_target(spec: tuple[int, int, int] | None) -> tuple[int, int, int]:
+    """Resolve the requested target to a bundled schema version, exiting on failure."""
+    target = spec if spec is not None else LATEST_VERSION
+    try:
+        return resolve_version(target)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
+def _invoke_migrate(
+    *,
+    model: IDFDocument,
+    target: tuple[int, int, int],
+    energyplus: EnergyPlusConfig | None,
+    on_progress: Callable[[MigrationProgress], None] | None,
+    work_dir: str | None,
+    keep_work_dir: bool,
+) -> MigrationReport:
+    """Call ``migrate`` and translate raised exceptions into CLI exits."""
+    try:
+        return migrate(
+            model,
+            target_version=target,
+            energyplus=energyplus,
+            on_progress=on_progress,
+            work_dir=work_dir,
+            keep_work_dir=keep_work_dir,
+        )
+    except UnsupportedVersionError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        sys.exit(2)
+    except EnergyPlusNotFoundError as exc:
+        print(f"error: no EnergyPlus installation found ({exc})", file=sys.stderr)
+        sys.exit(2)
+    except MigrationError as exc:
+        print(f"error: migration failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _write_migrate_output(
+    report: MigrationReport,
+    *,
+    input_path: Path,
+    fallback_model: IDFDocument,
+    resolved_target: tuple[int, int, int],
+    explicit_output: str | None,
+) -> Path | None:
+    """Write the migrated IDF to disk and return the resulting path, if any."""
+    from ..writers import write_idf
+
+    if report.migrated_model is not None:
+        output_path = Path(explicit_output) if explicit_output else _default_output_path(input_path, resolved_target)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_idf(report.migrated_model, output_path)
+        return output_path
+    if explicit_output is not None:
+        # No-op migration: still honor an explicit --output by copying the input model.
+        output_path = Path(explicit_output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_idf(fallback_model, output_path)
+        return output_path
+    return None
+
+
+def _load_source_idf(input_path: Path) -> IDFDocument:
+    """Load the source IDF, exiting on any parse/IO error."""
+    from .. import load_idf
+
+    try:
+        return load_idf(str(input_path))
+    except Exception as exc:
+        print(f"error: failed to load {input_path}: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
+def _resolve_energyplus_arg(path_arg: str | None) -> EnergyPlusConfig | None:
+    """Resolve an optional ``--energyplus`` path into a config, exiting on failure."""
+    if path_arg is None:
+        return None
+    from ..simulation.config import find_energyplus
+
+    try:
+        return find_energyplus(path=path_arg)
+    except EnergyPlusNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
+def _run_migrate(args: argparse.Namespace) -> None:
+    """Execute the ``migrate`` subcommand."""
+    input_path = Path(args.input)
+    if not input_path.is_file():
+        print(f"error: file not found: {input_path}", file=sys.stderr)
+        sys.exit(2)
+
+    resolved_target = _resolve_migrate_target(args.to_version)
+    model = _load_source_idf(input_path)
+    energyplus = _resolve_energyplus_arg(args.energyplus_path)
+    on_progress = None if (args.quiet or args.json_output) else _progress_printer()
+
+    report = _invoke_migrate(
+        model=model,
+        target=resolved_target,
+        energyplus=energyplus,
+        on_progress=on_progress,
+        work_dir=args.work_dir,
+        keep_work_dir=args.keep_work_dir,
+    )
+
+    output_path = _write_migrate_output(
+        report,
+        input_path=input_path,
+        fallback_model=model,
+        resolved_target=resolved_target,
+        explicit_output=args.output,
+    )
+
+    if args.json_output:
+        print(_format_migrate_json(report, input_path=input_path, output_path=output_path))
+    elif not args.quiet:
+        print(report.summary())
+        if output_path is not None:
+            print(f"Wrote: {output_path}")
+        elif report.migrated_model is None:
+            print("No migration needed (source equals target).")
+
+    sys.exit(0 if report.success else 1)
