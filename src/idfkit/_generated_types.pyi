@@ -1,7 +1,7 @@
-"""Auto-generated type stubs for EnergyPlus 25.2.0 object types.
+"""Auto-generated type stubs for EnergyPlus 26.1.0 object types.
 
 DO NOT EDIT — regenerate with:
-    python -m idfkit.codegen.generate_stubs 25.2.0
+    python -m idfkit.codegen.generate_stubs 26.1.0
 """
 
 from __future__ import annotations
@@ -12367,7 +12367,6 @@ class AirTerminalSingleDuctSeriesPIUReheat(IDFObject):
     supply_air_inlet_node_name: str | None
     secondary_air_inlet_node_name: str | None
     outlet_node_name: str | None
-    reheat_coil_air_inlet_node_name: str | None
     zone_mixer_name: str | None
     fan_name: str | None
     """Fan type must be Fan:SystemModel or Fan:ConstantVolume"""
@@ -12408,8 +12407,6 @@ class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     supply_air_inlet_node_name: str | None
     secondary_air_inlet_node_name: str | None
     outlet_node_name: str | None
-    reheat_coil_air_inlet_node_name: str | None
-    """mixer outlet node"""
     zone_mixer_name: str | None
     fan_name: str | None
     """Fan type must be Fan:SystemModel or Fan:ConstantVolume"""
@@ -12433,6 +12430,10 @@ class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1; Since: 24.2.0"""
     high_limit_heating_discharge_air_temperature: float | None
     """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7; Since: 24.2.0"""
+    backdraft_damper_leakage_fraction_curve_name: str | None
+    """Backdraft damper leakage fraction is the ratio of mass leakage flow rate to primary air flow rate at a constant stati...; Since: 26.1.0"""
+    backdraft_damper_leakage_zone_name: str | None
+    """Name of a zone that will be impacted by the backdraft damper leakage.; Since: 26.1.0"""
 
 class AirTerminalSingleDuctConstantVolumeFourPipeInduction(IDFObject):
     """Central air system terminal unit, single duct, variable volume, induction unit with hot water reheat coil and chilled..."""
@@ -21199,15 +21200,7 @@ class HeatExchangerFluidToFluid(IDFObject):
     minimum_temperature_difference_to_activate_heat_exchanger: float | None
     """Tolerance between control temperatures used to determine if heat exchanger should run.; [deltaC]; Default: 0.01; Range: >= 0.0, <= 50.0"""
     heat_transfer_metering_end_use_type: (
-        Literal[
-            "",
-            "FreeCooling",
-            "HeatRecovery",
-            "HeatRecoveryForCooling",
-            "HeatRecoveryForHeating",
-            "HeatRejection",
-            "LoopToLoop",
-        ]
+        Literal["", "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"]
         | None
     )
     """This field controls end use reporting for heat transfer meters; Default: LoopToLoop"""

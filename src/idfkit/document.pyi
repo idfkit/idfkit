@@ -1,7 +1,7 @@
-"""Auto-generated type stub for IDFDocument (EnergyPlus 25.2.0).
+"""Auto-generated type stub for IDFDocument (EnergyPlus 26.1.0).
 
 DO NOT EDIT — regenerate with:
-    python -m idfkit.codegen.generate_stubs 25.2.0
+    python -m idfkit.codegen.generate_stubs 26.1.0
 """
 
 from __future__ import annotations

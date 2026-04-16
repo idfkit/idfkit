@@ -174,4 +174,4 @@ This runs: lock file validation, pre-commit hooks (ruff format + lint, JSON form
 
 ## EnergyPlus Version Support
 
-Bundled schemas cover EnergyPlus 8.9.0 through 25.2.0 (16 versions). The latest supported version is 25.2.0. Version 24.1.0 is used as the default in test fixtures. See `src/idfkit/versions.py` for the full list.
+Bundled schemas cover EnergyPlus 8.9.0 through 26.1.0 (17 versions). The latest supported version is 26.1.0. Version 24.1.0 is used as the default in test fixtures. See `src/idfkit/versions.py` for the full list.
