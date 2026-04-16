@@ -38,6 +38,7 @@ nav:
     - Plotting: simulation/plotting.md
     - Output Discovery: simulation/output-discovery.md
     - Error Handling: simulation/errors.md
+    - Migrating Versions: simulation/migrating-versions.md
 
   - Schedules:
     - Overview: schedules/index.md

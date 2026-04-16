@@ -216,7 +216,7 @@ types, invalid bytes, or extra fields on non-extensible objects).
        doc = load_idf("file.idf", strict_parsing=False)
    ```
 
-### Version Mismatch
+### Unsupported Schema Version
 
 ```
 ValueError: Schema for version (99, 0, 0) not found
@@ -236,6 +236,39 @@ ValueError: Schema for version (99, 0, 0) not found
    ```python
    doc = load_idf("file.idf", version=(24, 1, 0))
    ```
+
+### Simulation Version Mismatch
+
+```
+VersionMismatchError: Model version 22.1.0 does not match target EnergyPlus version 25.2.0.
+Migration chain: 22.1.0->22.2.0 -> 22.2.0->23.1.0 -> ... -> 25.1.0->25.2.0
+Call idfkit.migrate(model, target_version=...) to migrate explicitly.
+```
+
+**Cause:** `simulate()` was called with a model whose `version` differs
+from the installed EnergyPlus, and `auto_migrate` is `False` (the default).
+
+**Solutions:**
+
+1. Forward-migrate transparently inside `simulate()`:
+   ```python
+   result = simulate(model, weather, auto_migrate=True)
+   print(result.migration_report.summary())
+   ```
+
+2. Migrate explicitly first so you can inspect the diff:
+   ```python
+   from idfkit import migrate
+   report = migrate(model, target_version=(25, 2, 0))
+   result = simulate(report.migrated_model, weather)
+   ```
+
+!!! warning "Backward migration is not supported"
+    EnergyPlus ships no reverse transition binaries, so a model *newer*
+    than the installed EnergyPlus cannot be downgraded. Install a newer
+    EnergyPlus or load the model explicitly at an older version.
+
+See [Migrating Versions](../simulation/migrating-versions.md) for the full workflow.
 
 ## Performance Issues
 

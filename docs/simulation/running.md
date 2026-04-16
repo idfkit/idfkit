@@ -105,6 +105,7 @@ def simulate(
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
+    auto_migrate: bool = False,
 ) -> SimulationResult:
 ```
 
@@ -134,6 +135,7 @@ def simulate(
 | `cache` | `None` | Simulation cache for result reuse |
 | `fs` | `None` | File system backend for cloud storage |
 | `on_progress` | `None` | Callback or `"tqdm"` for real-time progress updates |
+| `auto_migrate` | `False` | Forward-migrate the model when its version differs from the installed EnergyPlus (see [Migrating Versions](migrating-versions.md)) |
 
 ## EnergyPlus Discovery
 
@@ -240,8 +242,19 @@ Enable content-addressed caching to avoid redundant simulations:
 
 See [Caching](caching.md) for details.
 
+## Version Migration
+
+When `model.version` differs from the installed EnergyPlus,
+`simulate()` raises [`VersionMismatchError`][idfkit.exceptions.VersionMismatchError]
+by default. Pass `auto_migrate=True` to forward-migrate the model
+transparently before the run; the resulting
+[`MigrationReport`][idfkit.migration.report.MigrationReport] is attached to
+[`SimulationResult.migration_report`][idfkit.simulation.result.SimulationResult.migration_report].
+See [Migrating Versions](migrating-versions.md) for the full workflow.
+
 ## See Also
 
+- [Migrating Versions](migrating-versions.md) — Forward-migrate IDF models across EnergyPlus releases
 - [Progress Tracking](progress.md) — Real-time progress with `on_progress`
 - [Parsing Results](results.md) — Working with `SimulationResult`
 - [Batch Processing](batch.md) — Running multiple simulations

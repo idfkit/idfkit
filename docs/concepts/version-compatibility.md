@@ -9,6 +9,15 @@ The linter parses Python source files using the AST (no code execution) and
 compares extracted string literals against the bundled epJSON schemas for
 different EnergyPlus versions.
 
+!!! tip "Static linting vs. runtime migration"
+    The compatibility linter described here flags cross-version breakage
+    *statically* — it tells you which lines of your code reference object
+    types or choice values that won't exist in another EnergyPlus version.
+    To actually upgrade an existing IDF model, see
+    [Migrating Versions](../simulation/migrating-versions.md), which uses
+    `idfkit.migrate()` to forward-migrate models through the
+    `IDFVersionUpdater` transition binaries.
+
 ## What it detects
 
 | Code | Description |

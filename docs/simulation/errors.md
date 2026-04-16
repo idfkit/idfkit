@@ -67,6 +67,28 @@ The `simulate()` function raises `SimulationError` for certain failures:
 | EnergyPlus not found | `EnergyPlusNotFoundError` |
 | Timeout exceeded | `SimulationError` (exit_code=None) |
 | OS error starting process | `SimulationError` |
+| Model version differs from installed EnergyPlus | `VersionMismatchError` |
+
+### Version Mismatch
+
+By default `simulate()` refuses to run when `model.version` doesn't match
+the installed EnergyPlus version, raising
+[`VersionMismatchError`][idfkit.exceptions.VersionMismatchError] with a
+suggested migration chain. Two ways to resolve it:
+
+```python
+# Option A: let simulate() forward-migrate transparently
+result = simulate(model, weather, auto_migrate=True)
+print(result.migration_report.summary())
+
+# Option B: migrate explicitly first, inspect the report, then simulate
+from idfkit import migrate
+report = migrate(model, target_version=(25, 2, 0))
+result = simulate(report.migrated_model, weather)
+```
+
+Backward migration (installed EnergyPlus older than the model) is never
+attempted and always raises. See [Migrating Versions](migrating-versions.md).
 
 ### Timeout Handling
 
@@ -179,4 +201,5 @@ Or from string:
 
 - [Running Simulations](running.md) — Basic simulation guide
 - [Parsing Results](results.md) — Working with SimulationResult
+- [Migrating Versions](migrating-versions.md) — Resolving `VersionMismatchError`
 - [Troubleshooting](../troubleshooting/errors.md) — Common error solutions

@@ -49,6 +49,7 @@ pip install idfkit
 <span class="chip">:material-play-circle-outline: Simulation</span>
 <span class="chip">:material-weather-cloudy: Weather data</span>
 <span class="chip">:material-history: v8.9 -- v25.2</span>
+<span class="chip">:material-update: Version migration</span>
 
 </div>
 
@@ -134,5 +135,6 @@ pip install idfkit
 |------|-------------|
 | [Core Tutorial](getting-started/core-tutorial.ipynb) | Interactive notebook covering basic, advanced, and expert usage |
 | [Migrating from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
+| [Migrating Versions](simulation/migrating-versions.md) | Forward-migrate IDF models across EnergyPlus releases |
 | [Benchmarks](benchmarks.md) | Performance comparison against eppy and other tools |
 | [Troubleshooting](troubleshooting/errors.md) | Common errors and solutions |
