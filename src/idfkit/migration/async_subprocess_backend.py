@@ -20,7 +20,7 @@ from pathlib import Path
 
 from ..exceptions import MigrationError
 from .protocol import MigrationStepResult
-from .subprocess_backend import DEFAULT_STEP_TIMEOUT, binary_candidates, collect_audit_text
+from .subprocess_backend import DEFAULT_STEP_TIMEOUT, binary_candidates, collect_audit_text, stage_idd_symlinks
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ class AsyncSubprocessMigrator:
         binary = self.locate_binary(from_version, to_version)
 
         await asyncio.to_thread(work_dir.mkdir, parents=True, exist_ok=True)
+        await asyncio.to_thread(stage_idd_symlinks, self.version_updater_dir, work_dir)
         input_idf = work_dir / "in.idf"
         await asyncio.to_thread(input_idf.write_text, idf_text, "latin-1")
 
@@ -58,7 +59,7 @@ class AsyncSubprocessMigrator:
                 str(input_idf),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=str(self.version_updater_dir),
+                cwd=str(work_dir),
             )
         except OSError as exc:
             msg = f"Failed to start transition binary: {exc}"
