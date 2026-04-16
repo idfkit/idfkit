@@ -86,6 +86,56 @@ class EnergyPlusConfig:
         p = self._preprocess_dir / "BasementGHT.idd"
         return p if p.is_file() else None
 
+    @property
+    def version_updater_dir(self) -> Path | None:
+        """Path to the ``PreProcess/IDFVersionUpdater`` directory, if present.
+
+        This directory houses the per-step ``Transition-VX-to-VY`` binaries
+        and the ``VX-Y-Z-Energy+.idd`` files used to migrate IDF models
+        between EnergyPlus versions.
+        """
+        d = self.install_dir / "PreProcess" / "IDFVersionUpdater"
+        return d if d.is_dir() else None
+
+    def transition_exe(
+        self,
+        from_version: tuple[int, int, int],
+        to_version: tuple[int, int, int],
+    ) -> Path | None:
+        """Return the transition binary for a single version step, if present.
+
+        Probes the registry-exact name first, then ``patch=0`` fallbacks so
+        callers using version tuples such as ``(9, 0, 1)`` still resolve the
+        ``Transition-V8-9-0-to-V9-0-0`` binary that EnergyPlus actually ships.
+
+        Returns:
+            Path to the transition binary, or ``None`` if the IDFVersionUpdater
+            directory is missing or no matching binary exists.
+        """
+        from ..migration.subprocess_backend import binary_candidates
+
+        updater_dir = self.version_updater_dir
+        if updater_dir is None:
+            return None
+        for name in binary_candidates(from_version, to_version):
+            p = updater_dir / name
+            if p.is_file():
+                return p
+        return None
+
+    def transition_idd(self, version: tuple[int, int, int]) -> Path | None:
+        """Return the bundled IDD for *version* inside IDFVersionUpdater, if present.
+
+        The transition binaries load ``V{maj}-{min}-{patch}-Energy+.idd`` from
+        the IDFVersionUpdater directory at runtime.
+        """
+        updater_dir = self.version_updater_dir
+        if updater_dir is None:
+            return None
+        name = f"V{version[0]}-{version[1]}-{version[2]}-Energy+.idd"
+        p = updater_dir / name
+        return p if p.is_file() else None
+
     @classmethod
     def from_path(cls, path: str | Path) -> EnergyPlusConfig:
         """Create config from an explicit installation path.
@@ -163,7 +213,7 @@ def find_energyplus(
     Raises:
         EnergyPlusNotFoundError: If no matching installation is found.
     """
-    target_version = _normalize_version(version) if version is not None else None
+    target_version = normalize_version(version) if version is not None else None
     searched: list[str] = []
 
     # 1. Explicit path
@@ -234,7 +284,7 @@ _VERSION_DIR_RE = re.compile(r"EnergyPlus[Vv-]?(\d+)[.-](\d+)[.-](\d+)")
 _VERSION_IDD_RE = re.compile(r"^!IDD_Version\s+(\d+)\.(\d+)\.(\d+)", re.MULTILINE)
 
 
-def _normalize_version(version: tuple[int, int, int] | str) -> tuple[int, int, int]:
+def normalize_version(version: tuple[int, int, int] | str) -> tuple[int, int, int]:
     """Normalize a version argument to a (major, minor, patch) tuple.
 
     Args:
@@ -254,7 +304,11 @@ def _normalize_version(version: tuple[int, int, int] | str) -> tuple[int, int, i
     if len(parts) != 3:
         msg = f"Cannot parse version string: {version!r}"
         raise ValueError(msg)
-    return (int(parts[0]), int(parts[1]), int(parts[2]))
+    try:
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    except ValueError as exc:
+        msg = f"Cannot parse version string: {version!r}"
+        raise ValueError(msg) from exc
 
 
 def _extract_version(install_dir: Path) -> tuple[int, int, int] | None:

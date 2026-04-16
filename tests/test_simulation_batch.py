@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from conftest import InMemoryFileSystem
 
-from idfkit import new_document
+from idfkit import LATEST_VERSION, new_document
 from idfkit.simulation.batch import BatchResult, SimulationJob, simulate_batch
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
@@ -29,7 +29,7 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
     idd.write_text("!IDD_Version 24.1.0\n")
     return EnergyPlusConfig(
         executable=exe,
-        version=(24, 1, 0),
+        version=LATEST_VERSION,
         install_dir=tmp_path,
         idd_path=idd,
     )

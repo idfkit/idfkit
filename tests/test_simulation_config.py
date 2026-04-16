@@ -14,8 +14,8 @@ from idfkit.simulation.config import (
     EnergyPlusConfig,
     _extract_version,
     _glob_sorted,
-    _normalize_version,
     find_energyplus,
+    normalize_version,
 )
 
 # ---------------------------------------------------------------------------
@@ -157,20 +157,20 @@ class TestExtractVersion:
 
 
 class TestNormalizeVersion:
-    """Tests for _normalize_version()."""
+    """Tests for normalize_version()."""
 
     def test_tuple_passthrough(self) -> None:
-        assert _normalize_version((24, 1, 0)) == (24, 1, 0)
+        assert normalize_version((24, 1, 0)) == (24, 1, 0)
 
     def test_string_three_parts(self) -> None:
-        assert _normalize_version("24.1.0") == (24, 1, 0)
+        assert normalize_version("24.1.0") == (24, 1, 0)
 
     def test_string_two_parts(self) -> None:
-        assert _normalize_version("24.1") == (24, 1, 0)
+        assert normalize_version("24.1") == (24, 1, 0)
 
     def test_string_invalid(self) -> None:
         with pytest.raises(ValueError, match="Cannot parse"):
-            _normalize_version("24")
+            normalize_version("24")
 
 
 class TestGlobSorted:

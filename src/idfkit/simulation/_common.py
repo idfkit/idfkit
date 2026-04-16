@@ -14,7 +14,94 @@ from .config import EnergyPlusConfig, find_energyplus
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
+    from ..migration.report import MigrationReport
     from .fs import AsyncFileSystem, FileSystem
+
+
+def resolve_version_mismatch(
+    *,
+    model: IDFDocument,
+    config: EnergyPlusConfig,
+    auto_migrate: bool,
+) -> tuple[IDFDocument, MigrationReport | None]:
+    """Reconcile a model's version with the installed EnergyPlus version.
+
+    Returns a ``(model_to_simulate, migration_report)`` pair. If the versions
+    already match, the report is ``None`` and the caller's model is returned
+    unchanged. If they differ and *auto_migrate* is ``True``, the model is
+    forward-migrated and the resulting
+    [MigrationReport][idfkit.migration.report.MigrationReport] is returned.
+
+    Raises:
+        VersionMismatchError: If versions differ and *auto_migrate* is
+            ``False``, or if the model is newer than the installed EP
+            (backward migration is never attempted).
+        SimulationError: If migration completes without producing a migrated
+            model (should not happen in practice).
+    """
+    from ..exceptions import SimulationError, VersionMismatchError
+    from ..migration.chain import plan_migration_chain
+
+    if model.version == config.version:
+        return model, None
+
+    if model.version > config.version:
+        raise VersionMismatchError(current=model.version, target=config.version)
+
+    chain = plan_migration_chain(model.version, config.version)
+    if not auto_migrate:
+        raise VersionMismatchError(
+            current=model.version,
+            target=config.version,
+            migration_chain=chain,
+        )
+
+    from ..migration.runner import migrate
+
+    report = migrate(model, target_version=config.version, energyplus=config)
+    migrated = report.migrated_model
+    if migrated is None:  # pragma: no cover -- chain is non-empty, so migrate() returns a model
+        msg = "Migration completed without producing a migrated model"
+        raise SimulationError(msg)
+    return migrated, report
+
+
+async def async_resolve_version_mismatch(
+    *,
+    model: IDFDocument,
+    config: EnergyPlusConfig,
+    auto_migrate: bool,
+) -> tuple[IDFDocument, MigrationReport | None]:
+    """Async counterpart to [resolve_version_mismatch][idfkit.simulation._common.resolve_version_mismatch].
+
+    Differs only in that the migration step is dispatched through
+    [async_migrate()][idfkit.migration.async_runner.async_migrate] so it does
+    not block the event loop.
+    """
+    from ..exceptions import SimulationError, VersionMismatchError
+    from ..migration.async_runner import async_migrate
+    from ..migration.chain import plan_migration_chain
+
+    if model.version == config.version:
+        return model, None
+
+    if model.version > config.version:
+        raise VersionMismatchError(current=model.version, target=config.version)
+
+    chain = plan_migration_chain(model.version, config.version)
+    if not auto_migrate:
+        raise VersionMismatchError(
+            current=model.version,
+            target=config.version,
+            migration_chain=chain,
+        )
+
+    report = await async_migrate(model, target_version=config.version, energyplus=config)
+    migrated = report.migrated_model
+    if migrated is None:  # pragma: no cover -- chain is non-empty, so async_migrate() returns a model
+        msg = "Migration completed without producing a migrated model"
+        raise SimulationError(msg)
+    return migrated, report
 
 
 def resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:

@@ -38,6 +38,7 @@ nav:
     - Plotting: simulation/plotting.md
     - Output Discovery: simulation/output-discovery.md
     - Error Handling: simulation/errors.md
+    - Migrating Versions: simulation/migrating-versions.md
 
   - Schedules:
     - Overview: schedules/index.md
@@ -82,6 +83,7 @@ nav:
       - Cache: api/simulation/cache.md
       - Plotting: api/simulation/plotting.md
       - File Systems: api/simulation/fs.md
+    - Migration: api/migration.md
     - Schedules:
       - Overview: api/schedules/index.md
     - Weather:

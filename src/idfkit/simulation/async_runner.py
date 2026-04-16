@@ -37,6 +37,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from ..exceptions import SimulationError
 from ._common import (
+    async_resolve_version_mismatch,
     async_upload_results,
     build_command,
     ensure_sql_output,
@@ -80,6 +81,7 @@ async def async_simulate(
     cache: SimulationCache | None = None,
     fs: FileSystem | AsyncFileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
+    auto_migrate: bool = False,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation without blocking the event loop.
 
@@ -123,6 +125,10 @@ async def async_simulate(
             and async callables are accepted -- async callables are awaited.
             Pass ``"tqdm"`` to use a built-in tqdm progress bar (requires
             ``pip install idfkit[progress]``).
+        auto_migrate: When ``True`` and ``model.version`` differs from the
+            installed EnergyPlus version, forward-migrate the model before
+            running. See [simulate][idfkit.simulation.runner.simulate] for
+            the full semantics.
 
     Returns:
         SimulationResult with paths to output files.
@@ -131,6 +137,9 @@ async def async_simulate(
         SimulationError: On timeout, OS error, or missing weather file.
         ExpandObjectsError: If a preprocessing step fails.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
+        VersionMismatchError: If ``model.version`` differs from the installed
+            EnergyPlus and *auto_migrate* is ``False``, or if the model is
+            newer than the installed EnergyPlus.
     """
     if fs is not None and output_dir is None:
         msg = "output_dir is required when using a file system backend"
@@ -146,12 +155,18 @@ async def async_simulate(
             msg = f"Weather file not found: {weather_path}"
             raise SimulationError(msg)
 
+        sim_input_model, migration_report = await async_resolve_version_mismatch(
+            model=model,
+            config=config,
+            auto_migrate=auto_migrate,
+        )
+
         logger.info("Starting async simulation with weather %s", weather_path.name)
 
         cache_key: CacheKey | None = None
         if cache is not None:
             cache_key = cache.compute_key(
-                model,
+                sim_input_model,
                 weather_path,
                 expand_objects=expand_objects,
                 annual=annual,
@@ -162,16 +177,17 @@ async def async_simulate(
             )
             cached = cache.get(cache_key)
             if cached is not None:
+                cached.migration_report = migration_report
                 return cached
 
         # Copy model to avoid mutation
-        sim_model = model.copy()
+        sim_model = sim_input_model.copy()
         ensure_sql_output(sim_model)
 
         # Preprocessing may invoke subprocesses synchronously — delegate to a
         # thread so we don't block the event loop.
         sim_model, ep_expand = await asyncio.to_thread(
-            maybe_preprocess, model, sim_model, config, weather_path, expand_objects
+            maybe_preprocess, sim_input_model, sim_model, config, weather_path, expand_objects
         )
 
         # When using a remote fs, always run locally in a temp dir
@@ -224,6 +240,7 @@ async def async_simulate(
                 runtime_seconds=elapsed,
                 output_prefix=output_prefix,
                 async_fs=fs,  # type: ignore[arg-type]
+                migration_report=migration_report,
             )
         else:
             await asyncio.to_thread(upload_results, run_dir, remote_dir, fs)  # type: ignore[arg-type]
@@ -236,6 +253,7 @@ async def async_simulate(
                 runtime_seconds=elapsed,
                 output_prefix=output_prefix,
                 fs=fs,  # type: ignore[arg-type]
+                migration_report=migration_report,
             )
     else:
         result = SimulationResult(
@@ -246,6 +264,7 @@ async def async_simulate(
             stderr=stderr,
             runtime_seconds=elapsed,
             output_prefix=output_prefix,
+            migration_report=migration_report,
         )
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)

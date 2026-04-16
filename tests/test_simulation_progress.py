@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from idfkit import new_document
+from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.async_runner import async_simulate
 from idfkit.simulation.batch import SimulationJob, simulate_batch
@@ -36,7 +36,7 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
     idd.write_text("!IDD_Version 24.1.0\n")
     return EnergyPlusConfig(
         executable=exe,
-        version=(24, 1, 0),
+        version=LATEST_VERSION,
         install_dir=tmp_path,
         idd_path=idd,
     )

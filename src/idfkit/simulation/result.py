@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 from .parsers.err import ErrorReport
 
 if TYPE_CHECKING:
+    from ..migration.report import MigrationReport
     from .fs import AsyncFileSystem, FileSystem
     from .outputs import OutputVariableIndex
     from .parsers.csv import CSVResult
@@ -40,6 +41,9 @@ class SimulationResult:
         async_fs: Optional async file system backend for non-blocking reads.
             Set automatically by [async_simulate][idfkit.simulation.async_runner.async_simulate] when an
             [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] is provided.
+        migration_report: Populated when ``simulate(..., auto_migrate=True)``
+            forward-migrated the model before running. ``None`` when no
+            migration occurred.
     """
 
     run_dir: Path
@@ -51,6 +55,7 @@ class SimulationResult:
     output_prefix: str = "eplus"
     fs: FileSystem | None = field(default=None, repr=False)
     async_fs: AsyncFileSystem | None = field(default=None, repr=False)
+    migration_report: MigrationReport | None = field(default=None, repr=False)
     _cached_errors: Any = field(default=_UNSET, init=False, repr=False)
     _cached_sql: Any = field(default=_UNSET, init=False, repr=False)
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)

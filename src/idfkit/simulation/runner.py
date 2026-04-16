@@ -20,6 +20,7 @@ from ._common import (
     maybe_preprocess,
     prepare_run_directory,
     resolve_config,
+    resolve_version_mismatch,
     upload_results,
 )
 from .progress import ProgressParser, SimulationProgress
@@ -51,6 +52,7 @@ def simulate(
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
     on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
+    auto_migrate: bool = False,
 ) -> SimulationResult:
     """Run an EnergyPlus simulation.
 
@@ -102,6 +104,12 @@ def simulate(
             simulation day changes, post-processing steps, etc.).  Pass
             ``"tqdm"`` to use a built-in tqdm progress bar (requires
             ``pip install idfkit[progress]``).
+        auto_migrate: When ``True`` and ``model.version`` differs from the
+            installed EnergyPlus version, forward-migrate the model before
+            running the simulation. The resulting [MigrationReport][idfkit.migration.report.MigrationReport]
+            is attached to the returned [SimulationResult.migration_report][idfkit.simulation.result.SimulationResult.migration_report].
+            Backward migration (installed EP older than the model) is never
+            attempted and always raises [VersionMismatchError][idfkit.exceptions.VersionMismatchError].
 
     Returns:
         SimulationResult with paths to output files.
@@ -111,6 +119,10 @@ def simulate(
         ExpandObjectsError: If a preprocessing step (ExpandObjects, Slab,
             or Basement) fails during automatic preprocessing.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
+        VersionMismatchError: If ``model.version`` differs from the installed
+            EnergyPlus version and *auto_migrate* is ``False`` — or if the
+            model is newer than the installed EnergyPlus (backward migration
+            is not supported).
     """
     if fs is not None and output_dir is None:
         msg = "output_dir is required when using a file system backend"
@@ -127,12 +139,18 @@ def simulate(
             msg = f"Weather file not found: {weather_path}"
             raise SimulationError(msg)
 
+        sim_input_model, migration_report = resolve_version_mismatch(
+            model=model,
+            config=config,
+            auto_migrate=auto_migrate,
+        )
+
         logger.info("Starting simulation with weather %s", weather_path.name)
 
         cache_key: CacheKey | None = None
         if cache is not None:
             cache_key = cache.compute_key(
-                model,
+                sim_input_model,
                 weather_path,
                 expand_objects=expand_objects,
                 annual=annual,
@@ -144,15 +162,16 @@ def simulate(
             cached = cache.get(cache_key)
             if cached is not None:
                 logger.debug("Cache hit for key %s", cache_key.hex_digest[:12])
+                cached.migration_report = migration_report
                 return cached
             logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
         # Copy model to avoid mutation
-        sim_model = model.copy()
+        sim_model = sim_input_model.copy()
         ensure_sql_output(sim_model)
 
         # Auto-preprocess ground heat-transfer objects when needed.
-        sim_model, ep_expand = maybe_preprocess(model, sim_model, config, weather_path, expand_objects)
+        sim_model, ep_expand = maybe_preprocess(sim_input_model, sim_model, config, weather_path, expand_objects)
 
         # When using a remote fs, always run locally in a temp dir
         local_output_dir = None if fs is not None else output_dir
@@ -207,6 +226,7 @@ def simulate(
             runtime_seconds=elapsed,
             output_prefix=output_prefix,
             fs=fs,
+            migration_report=migration_report,
         )
     else:
         result = SimulationResult(
@@ -217,6 +237,7 @@ def simulate(
             stderr=stderr,
             runtime_seconds=elapsed,
             output_prefix=output_prefix,
+            migration_report=migration_report,
         )
     if cache is not None and cache_key is not None and result.success:
         cache.put(cache_key, result)

@@ -27,6 +27,10 @@ returns the same `SimulationResult`.  The only difference is that EnergyPlus
 runs as an `asyncio` subprocess, so the event loop is free to do other work
 while waiting.
 
+The `auto_migrate` flag and `result.migration_report` work identically to
+the sync API. For pure async migration without simulating, see
+[`async_migrate()`][idfkit.migration.async_runner.async_migrate].
+
 ## Async Batch Processing
 
 `async_simulate_batch()` mirrors `simulate_batch()` but uses an
@@ -194,10 +198,14 @@ don't block the event loop.  This is transparent — no user action required.
 Error handling is identical to the sync API:
 
 ```python
-from idfkit.exceptions import SimulationError
+from idfkit.exceptions import SimulationError, VersionMismatchError
 
 try:
     result = await async_simulate(model, weather, timeout=60)
+except VersionMismatchError as e:
+    # Retry with auto_migrate, or migrate explicitly first.
+    print(f"Model is {e.current}, need {e.target}")
+    result = await async_simulate(model, weather, timeout=60, auto_migrate=True)
 except SimulationError as e:
     if e.exit_code is None:
         print("Simulation timed out")
@@ -212,4 +220,5 @@ never raises due to a single job failing.
 
 - [Running Simulations](running.md) — Sync simulation guide
 - [Batch Processing](batch.md) — Sync batch guide
+- [Migrating Versions](migrating-versions.md) — Forward-migrate models with `auto_migrate` or `async_migrate`
 - [Simulation Architecture](../concepts/simulation-architecture.md) — Design decisions
