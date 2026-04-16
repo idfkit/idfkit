@@ -2,14 +2,16 @@
 
 The binaries live in ``PreProcess/IDFVersionUpdater`` inside an EnergyPlus
 installation. Each binary takes a single IDF file as its command-line argument,
-reads the sibling ``V{from}-Energy+.idd`` file, and writes the migrated IDF
-back to the same path (moving the original to ``<name>.idfold``).
+reads the sibling ``V{from}-Energy+.idd`` file (resolved relative to the
+binary's own location), and writes the migrated IDF back to the same path
+(moving the original to ``<name>.idfold``).
 
-The binary must be run with ``cwd`` set to the ``IDFVersionUpdater`` directory
-so it can locate its ``VX-Y-Z-Energy+.idd`` companion; we therefore stage the
-input IDF inside a temporary subdirectory and invoke the binary from there
-using an absolute path to the binary (matching how ``IDFVersionUpdater.app``
-launches them).
+Each step runs with ``cwd`` set to the caller-provided ``work_dir`` — a
+per-step temporary directory — so that ``audit.out`` and other side-effects
+land in isolation. This allows concurrent migrations against the same
+EnergyPlus install without file collisions. The companion ``V*-Energy+.idd``
+files are symlinked into ``work_dir`` before execution so the Fortran binary
+can still find them via its CWD-relative lookup.
 """
 
 from __future__ import annotations
@@ -54,6 +56,7 @@ class SubprocessMigrator:
         binary = self.locate_binary(from_version, to_version)
 
         work_dir.mkdir(parents=True, exist_ok=True)
+        stage_idd_symlinks(self.version_updater_dir, work_dir)
         input_idf = work_dir / "in.idf"
         input_idf.write_text(idf_text, encoding="latin-1")
 
@@ -63,7 +66,7 @@ class SubprocessMigrator:
                 capture_output=True,
                 text=True,
                 timeout=self.step_timeout,
-                cwd=str(self.version_updater_dir),
+                cwd=str(work_dir),
                 check=False,
             )
         except subprocess.TimeoutExpired as exc:
@@ -131,6 +134,19 @@ class SubprocessMigrator:
             raise MigrationError(msg, from_version=from_version, to_version=to_version)
         msg = f"No transition binary found. Tried: {', '.join(candidates)}"
         raise MigrationError(msg, from_version=from_version, to_version=to_version)
+
+
+def stage_idd_symlinks(version_updater_dir: Path, work_dir: Path) -> None:
+    """Symlink ``V*-Energy+.idd`` files from *version_updater_dir* into *work_dir*.
+
+    The Fortran transition binaries read their companion IDD relative to CWD.
+    By symlinking the IDDs into the per-step work directory we can set
+    ``cwd=work_dir``, isolating ``audit.out`` writes between concurrent runs.
+    """
+    for idd in version_updater_dir.glob("V*-Energy+.idd"):
+        link = work_dir / idd.name
+        if not link.exists():
+            link.symlink_to(idd)
 
 
 def binary_candidates(
