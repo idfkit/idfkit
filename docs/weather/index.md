@@ -3,6 +3,22 @@
 The weather module provides tools for searching weather stations, downloading
 weather files, and applying ASHRAE design day conditions to your models.
 
+## Try It — Interactive Station Browser
+
+The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Click a marker to inspect a station, or use the filter panel to narrow the ~17,000 entries. [Open in a new tab ↗](browse/index.html)
+
+<iframe
+  src="browse/index.html"
+  width="100%"
+  height="600"
+  loading="lazy"
+  style="border: 1px solid var(--md-default-fg-color--lightest); border-radius: 4px;"
+  title="idfkit tmy station browser">
+</iframe>
+
+!!! note "Docs-mode downloads"
+    Clicking **Download** in this embed opens the upstream ZIP on climate.onebuilding.org in a new tab. When you run `idfkit tmy --browse` locally, the download flows through idfkit's Python server and lands in the shared cache (`~/Library/Caches/idfkit/weather/files/` on macOS) so the same file is reused by later Python code.
+
 ## Quick Start
 
 ```python
