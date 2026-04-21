@@ -81,6 +81,9 @@ Combine `geocode()` with `nearest()` for address-based search:
 --8<-- "docs/snippets/weather/station-search/search_by_address.py:example"
 ```
 
+!!! note "No climate-zone filter"
+    The upstream index on climate.onebuilding.org does not include climate-zone metadata, so `StationIndex` cannot filter by ASHRAE/Köppen zone. See [Weather Pipeline: No Climate Zone Filter](../concepts/weather-pipeline.md#no-climate-zone-filter) for the workaround.
+
 ## Filter by Country
 
 ```python

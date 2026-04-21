@@ -28,6 +28,9 @@ Output is TTY-aware: coloured table on a terminal, TSV when piped, JSON with `--
 
 `--near` cannot be combined with `--lat`/`--lon`, and `--lat`/`--lon` must be specified together. `--max-km` requires a spatial anchor.
 
+!!! note "No climate-zone filter"
+    There is no `--climate-zone` flag because the upstream station index on climate.onebuilding.org does not publish climate zones per station. To pick a station for a specific ASHRAE zone, look up a representative city for that zone and use `--near "<city>"`. See [Weather Pipeline: No Climate Zone Filter](../concepts/weather-pipeline.md#no-climate-zone-filter) for the full rationale.
+
 ## Download
 
 Resolve a single station and pull its EPW/DDY/STAT bundle. The `--download` flag takes an optional directory; omit it to land in the platform cache.

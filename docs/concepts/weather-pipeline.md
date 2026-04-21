@@ -83,6 +83,18 @@ Combine with `geocode()` for address-based lookups:
 --8<-- "docs/snippets/concepts/weather-pipeline/spatial_search_2.py:example"
 ```
 
+## No Climate Zone Filter
+
+A natural question is *"can I filter stations by ASHRAE climate zone?"* The answer is **no**, and the reason is upstream: the station index on [climate.onebuilding.org](https://climate.onebuilding.org) does not publish a climate-zone column. Each listing is just country, state, city, WMO number, coordinates, elevation, timezone, and dataset variant. idfkit's `StationIndex` — and by extension `idfkit tmy` — can only expose fields that are actually in that index, so there's no `--climate-zone` flag and no `StationIndex.filter(climate_zone=...)`.
+
+If you need to pick a station for a specific climate zone, the usual workflow is:
+
+1. Look up the climate zone for your location (ASHRAE 169, Köppen, or your jurisdiction's map).
+2. Identify a representative city in that zone.
+3. Use `--near "<city>"` (CLI) or `geocode()` + `StationIndex.nearest()` (Python) to find the closest station.
+
+Alternatively, combine `--country`/`--state` with a coordinate bounding box via `--lat`/`--lon`/`--max-km` to narrow to stations you've already mapped to a zone out-of-band.
+
 ## Design Day Classification
 
 DDY files contain `SizingPeriod:DesignDay` objects using ASHRAE naming
