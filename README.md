@@ -155,6 +155,16 @@ results = index.nearest(*geocode("Chicago, IL"))
 print(results[0].station.display_name)
 ```
 
+## CLI
+
+`pip install idfkit` ships an `idfkit` command with three subcommands:
+
+- `idfkit check` — static lint for cross-version EnergyPlus breakage ([docs](https://py.idfkit.com/concepts/version-compatibility/))
+- `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://py.idfkit.com/simulation/migrating-versions/))
+- `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://py.idfkit.com/cli/tmy/))
+
+![idfkit tmy search](tape/idfkit_tmy_search.gif)
+
 ## Documentation
 
 Full documentation is available at

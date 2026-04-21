@@ -7,6 +7,9 @@ edit_uri: edit/main/docs/
 repo_name: idfkit/idfkit
 copyright: Maintained by <a href="https://samuelduchesne.github.io">samuelduchesne</a>.
 
+exclude_docs: |
+  tape/README.md
+
 nav:
   - Home: index.md
 
@@ -56,6 +59,11 @@ nav:
     - Cloud Simulations (S3): examples/cloud-simulations.md
     - Celery Integration: examples/celery-integration.md
     - Distributed Simulations (Scythe): examples/scythe.md
+
+  - CLI:
+    - TMY Weather: cli/tmy.md
+    - Version Migration: simulation/migrating-versions.md
+    - Compatibility Linter: concepts/version-compatibility.md
 
   - API Reference:
     - Core:

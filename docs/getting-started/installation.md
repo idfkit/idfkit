@@ -23,6 +23,7 @@ This installs the core package with support for:
 - Schema validation
 - 3D geometry calculations
 - Running EnergyPlus simulations
+- An `idfkit` command-line tool with subcommands [`check`](../concepts/version-compatibility.md) (lint), [`migrate`](../simulation/migrating-versions.md) (upgrade IDFs), and [`tmy`](../cli/tmy.md) (weather data)
 
 ## Optional Dependencies
 
