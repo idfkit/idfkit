@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>idfkit tmy — TMYx weather browser</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <aside id="sidebar">
+      <header>
+        <h1>idfkit <span class="muted">tmy</span></h1>
+        <p class="muted small">TMYx typical-year weather from climate.onebuilding.org</p>
+      </header>
+
+      <section class="filters">
+        <input
+          id="search"
+          type="search"
+          placeholder="City, WMO, or EPW filename…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="row">
+          <input id="country" type="text" placeholder="Country (USA)" maxlength="3" />
+          <input id="state" type="text" placeholder="State (IL)" maxlength="3" />
+        </div>
+        <input id="variant" type="text" placeholder="Variant (e.g. 2009-2023)" />
+        <div class="stats muted small">
+          <span id="total">0</span> stations ·
+          <span id="total-variants">0</span> datasets
+        </div>
+      </section>
+
+      <section id="results" class="results"></section>
+
+      <footer>
+        <span class="muted small">
+          Click a marker to view and download. Files go to the platform cache.
+        </span>
+      </footer>
+    </aside>
+
+    <main>
+      <div id="map"></div>
+    </main>
+
+    <dialog id="detail">
+      <header>
+        <h2 id="detail-name"></h2>
+        <button id="detail-close" aria-label="Close">×</button>
+      </header>
+      <dl>
+        <dt>WMO</dt><dd id="detail-wmo"></dd>
+        <dt>Country</dt><dd id="detail-country"></dd>
+        <dt>State</dt><dd id="detail-state"></dd>
+        <dt>Coords</dt><dd id="detail-coords"></dd>
+        <dt>Elevation</dt><dd id="detail-elev"></dd>
+        <dt>Timezone</dt><dd id="detail-tz"></dd>
+      </dl>
+      <section class="variants">
+        <h3>Available datasets</h3>
+        <ul id="variant-list"></ul>
+      </section>
+    </dialog>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
