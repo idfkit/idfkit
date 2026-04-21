@@ -3,6 +3,9 @@
 The `WeatherDownloader` downloads EPW and DDY weather files from
 climate.onebuilding.org with automatic caching.
 
+!!! tip "Prefer the shell?"
+    The [`idfkit tmy`](../cli/tmy.md) CLI wraps this API for interactive use. Pass `--download DIR` to fetch the EPW/DDY/STAT bundle for a station without writing any Python.
+
 ## Basic Usage
 
 ```python

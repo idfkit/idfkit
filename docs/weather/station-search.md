@@ -138,6 +138,8 @@ The bundled index works without network access. To get the latest data:
 
 Refresh requires: `pip install idfkit[weather]`
 
+The same operation is available from the shell as `idfkit tmy --refresh` — see [`idfkit tmy`](../cli/tmy.md#refresh-the-station-index).
+
 ## Performance
 
 The index uses efficient data structures for fast searching:

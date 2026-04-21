@@ -48,6 +48,7 @@ Apply standard design day conditions to your model:
 | [`WeatherDownloader`](downloads.md) | Download EPW and DDY files |
 | [`DesignDayManager`](design-days.md) | Parse and apply design days |
 | [`geocode()`](geocoding.md) | Convert addresses to coordinates |
+| [`idfkit tmy`](../cli/tmy.md) | Search, download, and browse TMYx data from the shell |
 
 ## Installation
 
