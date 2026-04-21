@@ -66,7 +66,23 @@
   async function loadStations() {
     const resp = await fetch('stations.json.gz');
     if (!resp.ok) throw new Error(`stations fetch failed: ${resp.status}`);
-    const data = await resp.json();
+    const buf = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let text;
+    // If the server set Content-Encoding: gzip (Python http.server
+    // mode), the browser already decompressed and `bytes` is plain
+    // JSON. Otherwise (static CDN serving the .json.gz as a raw
+    // file), we see the gzip magic 0x1f 0x8b and decompress here.
+    if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+      if (!('DecompressionStream' in window)) {
+        throw new Error('Browser lacks DecompressionStream — use a recent Chrome/Firefox/Safari');
+      }
+      const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
+      text = await new Response(stream).text();
+    } else {
+      text = new TextDecoder().decode(bytes);
+    }
+    const data = JSON.parse(text);
     return data.stations || [];
   }
 
@@ -76,6 +92,13 @@
   let staticMode = false;
 
   async function loadConfig() {
+    // Opt-in flag for static deploys — avoids a spurious 404 in the
+    // devtools console when there is no Python server behind the page.
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('static')) {
+      staticMode = true;
+      return {};
+    }
     try {
       const resp = await fetch('api/config');
       if (resp.ok) return resp.json();

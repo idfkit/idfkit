@@ -5,10 +5,10 @@ weather files, and applying ASHRAE design day conditions to your models.
 
 ## Try It — Interactive Station Browser
 
-The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Click a marker to inspect a station, or use the filter panel to narrow the ~17,000 entries. [Open in a new tab ↗](browse/index.html)
+The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Click a marker to inspect a station, or use the filter panel to narrow the ~17,000 entries. [Open in a new tab ↗](browse/index.html?static=1)
 
 <iframe
-  src="browse/index.html"
+  src="browse/index.html?static=1"
   width="100%"
   height="600"
   loading="lazy"
