@@ -7,6 +7,9 @@ Subcommands:
   EnergyPlus schema versions.
 - ``idfkit migrate`` — forward-migrate an IDF model to a newer EnergyPlus
   version via the installed ``IDFVersionUpdater`` transition binaries.
+- ``idfkit tmy`` — search and download TMYx typical meteorological year
+  weather data from climate.onebuilding.org (EPW + DDY + STAT), optionally
+  via an interactive map browser.
 
 Usage examples::
 
@@ -14,6 +17,9 @@ Usage examples::
     idfkit check script.py --targets 24.2,25.1,25.2 --json
     idfkit migrate old.idf --to 25.2
     idfkit migrate old.idf --output new.idf --to 25.2 --json
+    idfkit tmy "chicago ohare"
+    idfkit tmy --wmo 725300 --download ./weather/
+    idfkit tmy --browse
 """
 
 from __future__ import annotations
@@ -29,6 +35,8 @@ from typing import TYPE_CHECKING
 from ..exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
 from ..migration import MigrationProgress, MigrationReport, migrate
 from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
+from ..weather._cli import add_subparser as _add_tmy_subparser
+from ..weather._cli import run_tmy as _run_tmy
 from ._checker import check_compatibility, resolve_version
 from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 from ._sarif import format_sarif
@@ -245,6 +253,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Suppress progress output (final report is still written unless --json is off).",
     )
 
+    _add_tmy_subparser(sub)
+
     return top
 
 
@@ -358,6 +368,8 @@ def main(argv: list[str] | None = None) -> None:
         _run_check(args)
     elif args.command == "migrate":
         _run_migrate(args)
+    elif args.command == "tmy":
+        sys.exit(_run_tmy(args))
 
 
 def _run_check(args: argparse.Namespace) -> None:
