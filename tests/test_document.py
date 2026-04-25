@@ -835,6 +835,7 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=1,
                 ext_field_names=("vertex_x", "vertex_y"),
+                ext_wrapper_key=None,
             ),
         )
         assert result == ["name", "x_origin"]
@@ -856,6 +857,7 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=2,
                 ext_field_names=("vertex_x", "vertex_y"),
+                ext_wrapper_key=None,
             ),
         )
         assert "vertex_y" in result
@@ -878,6 +880,7 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=2,
                 ext_field_names=("vertex_x", "vertex_y"),
+                ext_wrapper_key=None,
             ),
         )
         assert "vertex_x" in result
@@ -902,6 +905,7 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=1,
                 ext_field_names=(),  # empty -> skips the while True group loop
+                ext_wrapper_key=None,
             ),
         )
         # 'extra_field' should still be added via the user-provided aliases section

@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .document import IDFDocument
 from .exceptions import VersionNotFoundError
-from .objects import IDFObject
+from .objects import IDFObject, expand_extensible_array
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +208,22 @@ class EpJSONParser:
 
                 # Create per-object field_order copy so extensible fields can be added
                 fields_dict = cast(dict[str, Any], fields)
+
+                # Expand canonical-shape extensible array (e.g. {"vertices": [{...}, ...]})
+                # into the flat IDD shape (vertex_x_coordinate, vertex_x_coordinate_2, ...)
+                # so all downstream consumers see a uniform shape across parsers.
+                if pc and pc.extensible and pc.ext_wrapper_key:
+                    wrapper = fields_dict.get(pc.ext_wrapper_key)
+                    if isinstance(wrapper, list):
+                        fields_dict = dict(fields_dict)
+                        del fields_dict[pc.ext_wrapper_key]
+                        fields_dict.update(
+                            expand_extensible_array(
+                                cast("list[dict[str, Any]]", wrapper),
+                                frozenset(pc.ext_field_names),
+                            )
+                        )
+
                 field_order = self._build_field_order(base_field_names, fields_dict, pc)
 
                 obj = IDFObject(

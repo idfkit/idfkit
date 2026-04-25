@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError
@@ -72,6 +72,48 @@ def normalize_extensible_name(field_name: str, extensibles: frozenset[str]) -> s
     if base is None:
         return field_name
     return extensible_schema_name(base, group)
+
+
+def expand_extensible_array(
+    items: list[Any],
+    extensibles: frozenset[str],
+) -> dict[str, Any]:
+    """Flatten a canonical epJSON extensible array into the IDD-style flat shape.
+
+    Each item's array position determines the group index — matching canonical
+    epJSON semantics where ``vertices[0]`` is always group 1. Inner keys are
+    normalized via :func:`normalize_extensible_name` so user-style aliases
+    (``vertex_1_x_coordinate``) inside an item are accepted, but unknown inner
+    keys raise :class:`ValueError`.
+
+    Examples:
+        >>> exts = frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"})
+        >>> expand_extensible_array(
+        ...     [{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+        ...      {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}],
+        ...     exts,
+        ... ) == {
+        ...     "vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0,
+        ...     "vertex_x_coordinate_2": 5.0, "vertex_y_coordinate_2": 0.0, "vertex_z_coordinate_2": 0.0,
+        ... }
+        True
+    """
+    out: dict[str, Any] = {}
+    for group_idx, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            raise TypeError(  # noqa: TRY003
+                f"Expected dict for extensible group {group_idx}, got {type(item).__name__}"
+            )
+        for inner_key, value in cast("dict[str, Any]", item).items():
+            normalized = normalize_extensible_name(inner_key, extensibles)
+            base, _ = parse_extensible_index(normalized, extensibles)
+            if base is None:
+                raise ValueError(  # noqa: TRY003
+                    f"Unknown extensible field {inner_key!r} in group {group_idx}; "
+                    f"expected one of {sorted(extensibles)}"
+                )
+            out[extensible_schema_name(base, group_idx)] = value
+    return out
 
 
 def to_python_name(idf_name: str) -> str:

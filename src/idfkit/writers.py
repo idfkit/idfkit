@@ -474,13 +474,38 @@ class EpJSONWriter:
         return result
 
     def _object_to_dict(self, obj: IDFObject) -> dict[str, Any]:
-        """Convert object to epJSON dict (excluding name)."""
-        result: dict[str, Any] = {}
+        """Convert object to epJSON dict (excluding name).
 
+        For extensible types with a canonical wrapper key (e.g. ``vertices``,
+        ``data``), flat fields like ``vertex_x_coordinate_2`` are bucketed
+        back into a list of dicts under that wrapper key — matching the
+        schema's canonical shape.
+        """
+        schema = self._doc.schema
+        pc = schema.get_parsing_cache(obj.obj_type) if schema else None
+
+        if pc and pc.extensible and pc.ext_wrapper_key and pc.ext_field_names:
+            from .objects import parse_extensible_index
+
+            ext_set = frozenset(pc.ext_field_names)
+            result: dict[str, Any] = {}
+            groups: dict[int, dict[str, Any]] = {}
+            for field_name, value in obj.data.items():
+                if value is None or value == "":
+                    continue
+                base, group_idx = parse_extensible_index(field_name, ext_set)
+                if base is None:
+                    result[field_name] = self._format_value(value)
+                else:
+                    groups.setdefault(group_idx, {})[base] = self._format_value(value)
+            if groups:
+                result[pc.ext_wrapper_key] = [groups[k] for k in sorted(groups)]
+            return result
+
+        result = {}
         for field_name, value in obj.data.items():
             if value is not None and value != "":
                 result[field_name] = self._format_value(value)
-
         return result
 
     def _format_value(self, value: Any) -> Any:
