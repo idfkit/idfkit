@@ -138,6 +138,30 @@ class TestNamespaceToConfig:
         cfg = _namespace_to_config(ns)
         assert any("--max-km" in e for e in cfg.errors)
 
+    def test_nearby_alone_is_valid(self) -> None:
+        ns = _parse(["--nearby"])
+        cfg = _namespace_to_config(ns)
+        assert cfg.errors == ()
+        assert cfg.filters.nearby is True
+        assert cfg.filters.has_spatial
+        assert cfg.filters.has_any
+
+    def test_nearby_and_near_conflict(self) -> None:
+        ns = _parse(["--nearby", "--near", "Chicago"])
+        cfg = _namespace_to_config(ns)
+        assert any("--nearby cannot be combined with --near" in e for e in cfg.errors)
+
+    def test_nearby_and_lat_lon_conflict(self) -> None:
+        ns = _parse(["--nearby", "--lat", "40.7", "--lon", "-74.0"])
+        cfg = _namespace_to_config(ns)
+        assert any("--nearby cannot be combined with --lat/--lon" in e for e in cfg.errors)
+
+    def test_nearby_with_max_km_is_valid(self) -> None:
+        ns = _parse(["--nearby", "--max-km", "50"])
+        cfg = _namespace_to_config(ns)
+        assert cfg.errors == ()
+        assert cfg.filters.max_km == 50.0
+
     def test_full_filters(self) -> None:
         ns = _parse([
             "chicago",
@@ -380,6 +404,57 @@ class TestRunTmy:
             code = run_tmy(ns)
         assert code == EXIT_NETWORK
         assert "boom" in capsys.readouterr().err
+
+    def test_nearby_resolves_via_detect_location(
+        self,
+        sample_index: StationIndex,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        ns = _parse(["--nearby", "--max-km", "100", "--json"])
+        with (
+            patch.object(StationIndex, "load", return_value=sample_index),
+            patch(
+                "idfkit.weather._cli.detect_location",
+                return_value=(41.9, -87.8),
+            ) as mock_detect,
+        ):
+            code = run_tmy(ns)
+        assert code == EXIT_OK
+        mock_detect.assert_called_once()
+        parsed = json.loads(capsys.readouterr().out)
+        # Sample index has two Chicago-area stations within 100 km of (41.9, -87.8)
+        assert len(parsed) >= 1
+        assert all(m["distance_km"] is not None for m in parsed)
+
+    def test_nearby_network_failure_returns_exit_3(
+        self,
+        sample_index: StationIndex,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        from idfkit.weather.geocode import GeocodingError
+
+        ns = _parse(["--nearby"])
+        with (
+            patch.object(StationIndex, "load", return_value=sample_index),
+            patch(
+                "idfkit.weather._cli.detect_location",
+                side_effect=GeocodingError("offline"),
+            ),
+        ):
+            code = run_tmy(ns)
+        assert code == EXIT_NETWORK
+        err = capsys.readouterr().err
+        assert "geocoding failed" in err
+        assert "offline" in err
+
+    def test_nearby_with_near_errors(
+        self,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        ns = _parse(["--nearby", "--near", "Chicago"])
+        code = run_tmy(ns)
+        assert code == EXIT_USAGE
+        assert "--nearby cannot be combined with --near" in capsys.readouterr().err
 
 
 # ---------------------------------------------------------------------------

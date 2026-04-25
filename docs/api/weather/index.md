@@ -14,6 +14,7 @@ The weather module provides station search, file downloads, and design day manag
 | [`DesignDayType`](designday.md) | Design day type enumeration |
 | [`apply_ashrae_sizing()`](designday.md) | Quick design day application |
 | [`geocode()`](station.md) | Address to coordinates |
+| [`detect_location()`](station.md) | This machine's coordinates from public IP |
 
 ## Module Contents
 

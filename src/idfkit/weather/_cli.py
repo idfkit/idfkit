@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.error import HTTPError, URLError
 
-from .geocode import GeocodingError, geocode
+from .geocode import GeocodingError, detect_location, geocode
 from .index import StationIndex, default_cache_dir
 
 if TYPE_CHECKING:
@@ -65,14 +65,15 @@ class TmyFilters:
     country: str | None = None
     state: str | None = None
     variant: str | None = None
+    nearby: bool = False
 
     @property
     def has_spatial(self) -> bool:
-        return self.near is not None or (self.lat is not None and self.lon is not None)
+        return self.near is not None or (self.lat is not None and self.lon is not None) or self.nearby
 
     @property
     def has_any(self) -> bool:
-        return any(
+        return self.nearby or any(
             v is not None
             for v in (
                 self.query,
@@ -149,6 +150,7 @@ _EPILOG = """\
 examples:
   idfkit tmy "chicago ohare"
   idfkit tmy --near "350 Fifth Ave, NYC" --max-km 25
+  idfkit tmy --nearby --max-km 50 --first --download
   idfkit tmy --wmo 725300 --variant 2009-2023 --download ./weather/
   idfkit tmy "london" --first --download
   idfkit tmy --browse
@@ -190,6 +192,15 @@ def add_subparser(
     p.add_argument("--filename", metavar="NAME", help="Exact EPW filename or stem")
 
     p.add_argument("--near", metavar="ADDRESS", help="Geocode address, then find nearest stations")
+    p.add_argument(
+        "--nearby",
+        action="store_true",
+        help=(
+            "Auto-detect coordinates from your public IP "
+            "(sent over HTTPS to ipapi.co; cached locally for 1h) "
+            "and find nearest stations"
+        ),
+    )
     p.add_argument("--lat", type=float, metavar="LAT", help="Latitude (decimal degrees, N positive)")
     p.add_argument("--lon", type=float, metavar="LON", help="Longitude (decimal degrees, E positive)")
     p.add_argument("--max-km", dest="max_km", type=float, metavar="KM", help="Maximum distance in km")
@@ -283,15 +294,20 @@ def _namespace_to_config(ns: argparse.Namespace) -> TmyRunConfig:
         country=getattr(ns, "country", None),
         state=getattr(ns, "state", None),
         variant=getattr(ns, "variant", None),
+        nearby=bool(getattr(ns, "nearby", False)),
     )
 
     # Cross-flag validation
     if filters.near is not None and (filters.lat is not None or filters.lon is not None):
         errors.append("--near cannot be combined with --lat/--lon")
+    if filters.nearby and filters.near is not None:
+        errors.append("--nearby cannot be combined with --near")
+    if filters.nearby and (filters.lat is not None or filters.lon is not None):
+        errors.append("--nearby cannot be combined with --lat/--lon")
     if (filters.lat is None) != (filters.lon is None):
         errors.append("--lat and --lon must be specified together")
     if filters.max_km is not None and not filters.has_spatial:
-        errors.append("--max-km requires --near or --lat/--lon")
+        errors.append("--max-km requires --near, --nearby, or --lat/--lon")
 
     action = _resolve_action(ns)
 
@@ -379,13 +395,18 @@ def _post_filter(matches: Sequence[TmyMatch], filters: TmyFilters) -> list[TmyMa
 
 
 def _resolve_coords(filters: TmyFilters, *, quiet: bool) -> tuple[float, float] | None:
-    """Resolve the spatial anchor from ``--near`` or ``--lat/--lon``.
+    """Resolve the spatial anchor from ``--nearby``, ``--near``, or ``--lat/--lon``.
 
     Returns ``None`` when no spatial filter is active. Raises
-    :class:`GeocodingError` on geocoding failure.
+    :class:`GeocodingError` on geocoding / IP-detection failure.
     """
     if filters.lat is not None and filters.lon is not None:
         return filters.lat, filters.lon
+    if filters.nearby:
+        _info("Detecting location from IP via ipapi.co...", quiet=quiet)
+        lat, lon = detect_location()
+        _info(f"Detected approximate location: {lat:.4f}, {lon:.4f}", quiet=quiet)
+        return lat, lon
     if filters.near is not None:
         _info(f"Geocoding '{filters.near}' via Nominatim...", quiet=quiet)
         return geocode(filters.near)
@@ -543,6 +564,17 @@ def _format_table(matches: Sequence[TmyMatch], *, color: bool) -> str:
     return "\n".join(lines)
 
 
+def _spatial_anchor_bit(filters: TmyFilters) -> str | None:
+    """One-line description of the spatial anchor, or ``None`` if absent."""
+    if filters.near:
+        return f'near="{filters.near}"'
+    if filters.lat is not None and filters.lon is not None:
+        return f"coords={filters.lat:.4f},{filters.lon:.4f}"
+    if filters.nearby:
+        return "nearby=ip"
+    return None
+
+
 def _format_header(filters: TmyFilters, matches: Sequence[TmyMatch], *, color: bool) -> str:
     bits: list[str] = []
     if filters.query:
@@ -551,10 +583,9 @@ def _format_header(filters: TmyFilters, matches: Sequence[TmyMatch], *, color: b
         bits.append(f"wmo={filters.wmo}")
     if filters.filename:
         bits.append(f"filename={filters.filename}")
-    if filters.near:
-        bits.append(f'near="{filters.near}"')
-    elif filters.lat is not None and filters.lon is not None:
-        bits.append(f"coords={filters.lat:.4f},{filters.lon:.4f}")
+    spatial = _spatial_anchor_bit(filters)
+    if spatial is not None:
+        bits.append(spatial)
     if filters.max_km is not None:
         bits.append(f"max_km={filters.max_km}")
     if filters.country:
