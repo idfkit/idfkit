@@ -48,6 +48,20 @@ Find the nearest weather station to any address:
 --8<-- "docs/snippets/weather/index/address_based_search.py:example"
 ```
 
+### "Nearest to me" — Auto-Detected Location
+
+Skip the address entirely and let `detect_location()` resolve the
+machine's coordinates from its public IP (cached on disk for 1 hour):
+
+```python
+--8<-- "docs/snippets/weather/geocoding/detect_location_with_station_search.py:example"
+```
+
+The CLI exposes the same flow as
+[`idfkit tmy --nearby`](../cli/tmy.md#detect-location-from-ip-nearby).
+See [Geocoding](geocoding.md#detect-location-from-ip) for caching, error
+handling, and privacy notes.
+
 ### ASHRAE Design Days
 
 Apply standard design day conditions to your model:
@@ -64,6 +78,7 @@ Apply standard design day conditions to your model:
 | [`WeatherDownloader`](downloads.md) | Download EPW and DDY files |
 | [`DesignDayManager`](design-days.md) | Parse and apply design days |
 | [`geocode()`](geocoding.md) | Convert addresses to coordinates |
+| [`detect_location()`](geocoding.md#detect-location-from-ip) | Auto-detect coordinates from this machine's public IP |
 | [`idfkit tmy`](../cli/tmy.md) | Search, download, and browse TMYx data from the shell |
 
 ## Installation

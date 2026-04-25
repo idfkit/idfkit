@@ -20,16 +20,46 @@ Output is TTY-aware: coloured table on a terminal, TSV when piped, JSON with `--
 | `--wmo WMO` | Exact WMO station number lookup (e.g. `725300`) |
 | `--filename NAME` | Exact EPW filename or stem lookup |
 | `--near ADDRESS` | Geocode an address (Nominatim), then rank by distance |
+| `--nearby` | Auto-detect coordinates from your public IP, then rank by distance |
 | `--lat LAT --lon LON` | Spatial anchor by explicit coordinates |
-| `--max-km KM` | Cap distance for `--near` / `--lat`+`--lon` |
+| `--max-km KM` | Cap distance for any spatial anchor |
 | `--country CC` | ISO country code (`USA`, `FRA`, `GBR`, …) |
 | `--state ST` | State/province code |
 | `--variant STR` | Substring match on dataset variant (`TMYx.2009-2023`, `2009-2023`, …) |
 
-`--near` cannot be combined with `--lat`/`--lon`, and `--lat`/`--lon` must be specified together. `--max-km` requires a spatial anchor.
+The three spatial anchors — `--near`, `--nearby`, and `--lat`/`--lon` — are
+mutually exclusive, and `--lat`/`--lon` must be specified together.
+`--max-km` requires one of them.
 
 !!! note "No climate-zone filter"
     There is no `--climate-zone` flag because the upstream station index on climate.onebuilding.org does not publish climate zones per station. To pick a station for a specific ASHRAE zone, look up a representative city for that zone and use `--near "<city>"`. See [Weather Pipeline: No Climate Zone Filter](../concepts/weather-pipeline.md#no-climate-zone-filter) for the full rationale.
+
+## Detect location from IP (`--nearby`)
+
+`--nearby` is a zero-input shortcut for "stations near me". It resolves
+the running machine's approximate coordinates from its public IP via
+[ipapi.co](https://ipapi.co/) and feeds them straight into the same
+spatial pipeline as `--near` and `--lat`/`--lon`.
+
+```bash
+# 10 closest stations to here
+idfkit tmy --nearby
+
+# Bound the search and grab the top match into the platform cache
+idfkit tmy --nearby --max-km 50 --first --download
+
+# Filter by country at the same time
+idfkit tmy --nearby --country USA --max-km 100 --json
+```
+
+Calls hit ipapi.co over HTTPS and the result is **cached on disk for one
+hour** under the platform weather cache directory, so repeated
+invocations don't make repeated network calls. Accuracy is city-level —
+fine for picking a TMYx station, not precise enough for surveying.
+
+If you'd rather not send your IP to ipapi.co, use `--near "<city>"` or
+`--lat`/`--lon` instead. The Python equivalent is
+[`detect_location()`](../weather/geocoding.md#detect-location-from-ip).
 
 ## Download
 
@@ -98,6 +128,7 @@ Rebuilds the bundled index from the live Excel files on climate.onebuilding.org.
 | `--wmo WMO` | — | Exact WMO lookup |
 | `--filename NAME` | — | Exact filename/stem lookup |
 | `--near ADDR` | — | Geocode then rank by distance |
+| `--nearby` | `false` | Auto-detect coordinates from your IP (cached 1h) |
 | `--lat LAT` / `--lon LON` | — | Explicit coordinates (decimal degrees) |
 | `--max-km KM` | — | Distance cap for spatial searches |
 | `--country CC` | — | ISO country filter |
@@ -119,5 +150,5 @@ Rebuilds the bundled index from the live Excel files on climate.onebuilding.org.
 
 - [Weather Downloads](../weather/downloads.md) — the `WeatherDownloader` Python API the CLI wraps
 - [Station Search](../weather/station-search.md) — the `StationIndex` Python API
-- [Geocoding](../weather/geocoding.md) — `--near` uses the same Nominatim client as `geocode()`
+- [Geocoding](../weather/geocoding.md) — `--near` uses `geocode()`; `--nearby` uses `detect_location()`
 - [Weather Pipeline](../concepts/weather-pipeline.md) — architectural overview
