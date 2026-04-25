@@ -3,11 +3,20 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from idfkit.weather.geocode import GeocodingError, RateLimiter, _nominatim_limiter, geocode
+from idfkit.weather.geocode import (
+    GeocodingError,
+    RateLimiter,
+    _ipapi_limiter,  # pyright: ignore[reportPrivateUsage]
+    _nominatim_limiter,  # pyright: ignore[reportPrivateUsage]
+    detect_location,
+    geocode,
+)
 
 
 def _mock_response(data: bytes) -> MagicMock:
@@ -20,8 +29,9 @@ def _mock_response(data: bytes) -> MagicMock:
 
 @pytest.fixture(autouse=True)
 def reset_rate_limiter() -> None:
-    """Reset the global rate limiter before each test."""
+    """Reset the global rate limiters before each test."""
     _nominatim_limiter.reset()
+    _ipapi_limiter.reset()
 
 
 class TestRateLimiter:
@@ -118,3 +128,122 @@ class TestGeocode:
 
         with pytest.raises(GeocodingError, match="Failed to geocode"):
             geocode("Chicago, IL")
+
+
+class TestDetectLocation:
+    """Tests for detect_location() (mocked, no network)."""
+
+    @patch("urllib.request.urlopen")
+    def test_successful_detection(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        body = {"latitude": 41.85, "longitude": -87.65, "city": "Chicago"}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        lat, lon = detect_location(cache_dir=tmp_path)
+
+        assert abs(lat - 41.85) < 1e-6
+        assert abs(lon - (-87.65)) < 1e-6
+        # Cache file written
+        cache_file = tmp_path / "ipgeo.json"
+        assert cache_file.exists()
+        cached = json.loads(cache_file.read_text())
+        assert cached["latitude"] == pytest.approx(41.85)
+        assert cached["longitude"] == pytest.approx(-87.65)
+
+    @patch("urllib.request.urlopen")
+    def test_network_failure_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        from urllib.error import URLError
+
+        mock_urlopen.side_effect = URLError("Network unreachable")
+
+        with pytest.raises(GeocodingError, match="Failed to detect location"):
+            detect_location(cache_dir=tmp_path)
+
+    @patch("urllib.request.urlopen")
+    def test_error_response_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        body = {"error": True, "reason": "RateLimited", "message": "slow down"}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        with pytest.raises(GeocodingError, match=r"could not locate"):
+            detect_location(cache_dir=tmp_path)
+
+    @patch("urllib.request.urlopen")
+    def test_missing_lat_lon_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        body = {"city": "somewhere"}  # No latitude/longitude
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        with pytest.raises(GeocodingError, match="missing latitude/longitude"):
+            detect_location(cache_dir=tmp_path)
+
+    @patch("urllib.request.urlopen")
+    def test_invalid_json_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_urlopen.return_value = _mock_response(b"not valid json")
+
+        with pytest.raises(GeocodingError, match="Failed to detect location"):
+            detect_location(cache_dir=tmp_path)
+
+    @patch("urllib.request.urlopen")
+    def test_cache_hit_skips_network(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        # Pre-populate a fresh cache entry.
+        cache_file = tmp_path / "ipgeo.json"
+        cache_file.write_text(
+            json.dumps({
+                "latitude": 51.5,
+                "longitude": -0.12,
+                "fetched_at": datetime.now(tz=timezone.utc).isoformat(),
+            })
+        )
+        mock_urlopen.side_effect = AssertionError("network should not be called on cache hit")
+
+        lat, lon = detect_location(cache_dir=tmp_path, max_age=timedelta(hours=1))
+
+        assert abs(lat - 51.5) < 1e-6
+        assert abs(lon - (-0.12)) < 1e-6
+        mock_urlopen.assert_not_called()
+
+    @patch("urllib.request.urlopen")
+    def test_cache_stale_refetches(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        cache_file = tmp_path / "ipgeo.json"
+        # Write a 2-hour-old cache entry.
+        old = datetime.now(tz=timezone.utc) - timedelta(hours=2)
+        cache_file.write_text(json.dumps({"latitude": 0.0, "longitude": 0.0, "fetched_at": old.isoformat()}))
+        body = {"latitude": 41.85, "longitude": -87.65}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        lat, lon = detect_location(cache_dir=tmp_path, max_age=timedelta(hours=1))
+
+        assert abs(lat - 41.85) < 1e-6
+        assert abs(lon - (-87.65)) < 1e-6
+        mock_urlopen.assert_called_once()
+
+    @patch("urllib.request.urlopen")
+    def test_max_age_zero_disables_cache(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        cache_file = tmp_path / "ipgeo.json"
+        # Even a brand-new cache should be ignored when max_age=0.
+        cache_file.write_text(
+            json.dumps({
+                "latitude": 0.0,
+                "longitude": 0.0,
+                "fetched_at": datetime.now(tz=timezone.utc).isoformat(),
+            })
+        )
+        body = {"latitude": 12.34, "longitude": 56.78}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        lat, lon = detect_location(cache_dir=tmp_path, max_age=0)
+
+        assert abs(lat - 12.34) < 1e-6
+        assert abs(lon - 56.78) < 1e-6
+        mock_urlopen.assert_called_once()
+
+    @patch("urllib.request.urlopen")
+    def test_corrupt_cache_falls_through(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        cache_file = tmp_path / "ipgeo.json"
+        cache_file.write_text("{not valid json")
+        body = {"latitude": 1.0, "longitude": 2.0}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        lat, lon = detect_location(cache_dir=tmp_path)
+
+        assert abs(lat - 1.0) < 1e-6
+        assert abs(lon - 2.0) < 1e-6
+        mock_urlopen.assert_called_once()
