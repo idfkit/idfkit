@@ -9,6 +9,7 @@ import math
 import os
 import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,6 +41,11 @@ _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 _BUNDLED_INDEX = Path(__file__).parent / "data" / "stations.json.gz"
 _CACHED_INDEX = "stations.json.gz"
+
+# Opt-out env var for the freshness nudge fired by `StationIndex.load()`.
+_DISABLE_UPDATE_CHECK_ENV_VAR = "IDFKIT_NO_WEATHER_UPDATE_CHECK"
+_UPDATE_CHECK_TIMESTAMP_FILE = "last_update_check"
+_UPDATE_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 
 
 def default_cache_dir() -> Path:
@@ -411,6 +417,44 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
 # ---------------------------------------------------------------------------
 
 
+def _maybe_check_for_updates(index: StationIndex, cache_dir: Path) -> None:
+    """Throttled, best-effort freshness check for the weather (TMYx) station index.
+
+    Skipped silently when:
+    - ``IDFKIT_NO_WEATHER_UPDATE_CHECK`` is set in the environment
+    - A previous check ran less than ``_UPDATE_CHECK_INTERVAL_SECONDS`` ago
+    - The loaded index has no ``last_modified`` metadata to compare against
+    - The cache directory cannot be created or written to
+
+    Logs a warning when upstream KML data is newer than the loaded index.
+    Network errors are already swallowed by ``check_for_updates``.
+    """
+    if os.environ.get(_DISABLE_UPDATE_CHECK_ENV_VAR):
+        return
+    if not index._last_modified:  # pyright: ignore[reportPrivateUsage]
+        return
+
+    timestamp_path = cache_dir / _UPDATE_CHECK_TIMESTAMP_FILE
+    try:
+        if time.time() - timestamp_path.stat().st_mtime < _UPDATE_CHECK_INTERVAL_SECONDS:
+            return
+    except OSError:
+        pass
+
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        timestamp_path.touch()
+    except OSError:
+        return
+
+    if index.check_for_updates():
+        logger.warning(
+            "Weather (TMYx) station index from climate.onebuilding.org appears out of date. "
+            "Run StationIndex.refresh() to rebuild it. Set %s=1 to silence this check.",
+            _DISABLE_UPDATE_CHECK_ENV_VAR,
+        )
+
+
 class StationIndex:
     """Searchable index of weather stations from climate.onebuilding.org.
 
@@ -476,6 +520,7 @@ class StationIndex:
         logger.info("Loaded station index with %d stations from %s", len(stations), source)
         instance = cls(stations)
         instance._last_modified = last_modified
+        _maybe_check_for_updates(instance, cache)
         return instance
 
     @classmethod

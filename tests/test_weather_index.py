@@ -917,6 +917,140 @@ class TestCheckForUpdates:
         assert idx.check_for_updates() is False
 
 
+class TestMaybeCheckForUpdates:
+    """Tests for the throttled freshness nudge in `StationIndex.load()`."""
+
+    @staticmethod
+    def _build_cache(tmp_path: Path, last_modified: dict[str, str] | None = None) -> Path:
+        stations = _fixture_stations()[:1]
+        lm = (
+            last_modified
+            if last_modified is not None
+            else {"Region1_Africa_TMYx_EPW_Processing_locations.kml": "Wed, 01 Jan 2020 00:00:00 GMT"}
+        )
+        dest = tmp_path / "stations.json.gz"
+        _save_compressed_index(stations, lm, dest)
+        return dest
+
+    def test_env_var_silences_check(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        self._build_cache(tmp_path)
+        monkeypatch.setenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", "1")
+
+        with (
+            patch("idfkit.weather.index._head_last_modified") as head,
+            caplog.at_level("WARNING", logger="idfkit.weather.index"),
+        ):
+            StationIndex.load(cache_dir=tmp_path)
+            head.assert_not_called()
+        assert not (tmp_path / "last_update_check").exists()
+        assert "out of date" not in caplog.text
+
+    def test_logs_warning_when_stale(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        self._build_cache(tmp_path)
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+
+        with (
+            patch(
+                "idfkit.weather.index._head_last_modified",
+                return_value="Wed, 15 Jan 2026 10:30:00 GMT",
+            ),
+            caplog.at_level("WARNING", logger="idfkit.weather.index"),
+        ):
+            StationIndex.load(cache_dir=tmp_path)
+
+        assert "out of date" in caplog.text
+        assert "IDFKIT_NO_WEATHER_UPDATE_CHECK" in caplog.text
+        assert (tmp_path / "last_update_check").exists()
+
+    def test_no_log_when_fresh(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        same = "Wed, 01 Jan 2020 00:00:00 GMT"
+        self._build_cache(tmp_path, last_modified={"Region1_Africa_TMYx_EPW_Processing_locations.kml": same})
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+
+        with (
+            patch("idfkit.weather.index._head_last_modified", return_value=same),
+            caplog.at_level("WARNING", logger="idfkit.weather.index"),
+        ):
+            StationIndex.load(cache_dir=tmp_path)
+
+        assert "out of date" not in caplog.text
+        assert (tmp_path / "last_update_check").exists()
+
+    def test_throttle_skips_within_window(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._build_cache(tmp_path)
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+        (tmp_path / "last_update_check").touch()
+
+        with patch("idfkit.weather.index._head_last_modified") as head:
+            StationIndex.load(cache_dir=tmp_path)
+            head.assert_not_called()
+
+    def test_throttle_runs_when_window_elapsed(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._build_cache(tmp_path)
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+        stamp = tmp_path / "last_update_check"
+        stamp.touch()
+        old = stamp.stat().st_mtime - (2 * 24 * 60 * 60)
+        os.utime(stamp, (old, old))
+
+        with patch("idfkit.weather.index._head_last_modified", return_value=None) as head:
+            StationIndex.load(cache_dir=tmp_path)
+            head.assert_called()
+
+        assert stamp.stat().st_mtime > old
+
+    def test_skipped_when_no_last_modified(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._build_cache(tmp_path, last_modified={})
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+
+        with patch("idfkit.weather.index._head_last_modified") as head:
+            StationIndex.load(cache_dir=tmp_path)
+            head.assert_not_called()
+        assert not (tmp_path / "last_update_check").exists()
+
+    def test_unwritable_cache_dir_silently_skipped(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._build_cache(tmp_path)
+        monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
+
+        with (
+            patch("pathlib.Path.mkdir", side_effect=OSError("read-only")),
+            patch("idfkit.weather.index._head_last_modified") as head,
+        ):
+            StationIndex.load(cache_dir=tmp_path)
+            head.assert_not_called()
+
+
 class TestRefresh:
     def test_refresh_saves_and_loads(self, tmp_path: Path) -> None:
         stations = _fixture_stations()
