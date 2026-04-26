@@ -5,6 +5,7 @@
 
   const $ = (id) => document.getElementById(id);
   const MAX_LIST = 100;
+  const MOBILE_BREAKPOINT = 768;
 
   let allStations = [];
   let allGroups = [];
@@ -50,6 +51,19 @@
       Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(a));
   };
+
+  // Read a number input. Returns null when blank or NaN so callers can
+  // distinguish "no constraint" from "0".
+  const numOrNull = (id) => {
+    const v = $(id).value;
+    if (v === '' || v == null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  // ASHRAE labels look like "4A - Mixed - Humid". The first whitespace-
+  // separated token is the canonical zone code we sort and group by.
+  const zoneCode = (label) => (label || '').split(/\s+/)[0] || '';
 
   const toast = (msg, variant = '') => {
     const el = $('toast');
@@ -129,6 +143,12 @@
           longitude: s.longitude,
           elevation: s.elevation,
           timezone: s.timezone,
+          ashrae_climate_zone: s.ashrae_climate_zone || '',
+          heating_design_db_c: s.heating_design_db_c,
+          cooling_design_db_c: s.cooling_design_db_c,
+          hdd18: s.hdd18,
+          cdd10: s.cdd10,
+          design_conditions_source_wmo: s.design_conditions_source_wmo || null,
           variants: [],
         };
         groups.set(key, g);
@@ -161,12 +181,34 @@
     const country = ($('country').value || '').trim().toUpperCase();
     const state = ($('state').value || '').trim().toUpperCase();
     const variantQ = ($('variant').value || '').trim().toLowerCase();
+    const zone = $('climate-zone').value || '';
+    const elevMin = numOrNull('elev-min');
+    const elevMax = numOrNull('elev-max');
+    const heatMin = numOrNull('heat-min');
+    const heatMax = numOrNull('heat-max');
+    const coolMin = numOrNull('cool-min');
+    const coolMax = numOrNull('cool-max');
+    const hddMin = numOrNull('hdd-min');
+    const hddMax = numOrNull('hdd-max');
+    const cddMin = numOrNull('cdd-min');
+    const cddMax = numOrNull('cdd-max');
     const qTokens = q ? q.split(/\s+/).filter(Boolean) : [];
 
     let out = [];
     for (const g of allGroups) {
       if (country && g.country.toUpperCase() !== country) continue;
       if (state && g.state.toUpperCase() !== state) continue;
+      if (zone && zoneCode(g.ashrae_climate_zone) !== zone) continue;
+      if (elevMin != null && g.elevation < elevMin) continue;
+      if (elevMax != null && g.elevation > elevMax) continue;
+      if (heatMin != null && g.heating_design_db_c < heatMin) continue;
+      if (heatMax != null && g.heating_design_db_c > heatMax) continue;
+      if (coolMin != null && g.cooling_design_db_c < coolMin) continue;
+      if (coolMax != null && g.cooling_design_db_c > coolMax) continue;
+      if (hddMin != null && g.hdd18 < hddMin) continue;
+      if (hddMax != null && g.hdd18 > hddMax) continue;
+      if (cddMin != null && g.cdd10 < cddMin) continue;
+      if (cddMax != null && g.cdd10 > cddMax) continue;
       if (variantQ && !g.variants.some((v) => datasetVariant(v).toLowerCase().includes(variantQ))) {
         continue;
       }
@@ -233,6 +275,14 @@
       count.className = 'count';
       count.textContent = g.variants.length + (g.variants.length === 1 ? ' dataset' : ' datasets');
       meta.appendChild(count);
+
+      const zc = zoneCode(g.ashrae_climate_zone);
+      if (zc) {
+        const zone = document.createElement('span');
+        zone.className = 'zone';
+        zone.textContent = zc;
+        meta.appendChild(zone);
+      }
 
       if (config && config.lat != null && config.lon != null) {
         const d = haversineKm(config.lat, config.lon, g.latitude, g.longitude);
@@ -307,6 +357,11 @@
   /* ── Focus / detail ────────────────────────────────────── */
 
   function focusGroup(g) {
+    // On mobile, a click on a result row needs to surface the map
+    // before the dialog opens — otherwise the cluster zoom animation
+    // runs against a hidden pane and the user lands on a blank screen
+    // when they close the dialog.
+    if (isMobile()) setView('map');
     map.setView([g.latitude, g.longitude], Math.max(map.getZoom(), 8));
     const m = markerByGroup.get(g);
     if (m && clusterGroup.hasLayer(m)) {
@@ -316,6 +371,10 @@
     }
   }
 
+  const fmtTemp = (c) =>
+    c == null || !Number.isFinite(c) ? '—' : `${c.toFixed(1)} °C / ${(c * 9 / 5 + 32).toFixed(1)} °F`;
+  const fmtInt = (n) => (n == null || !Number.isFinite(n) ? '—' : n.toLocaleString());
+
   function openDetail(g) {
     $('detail-name').textContent = displayName(g);
     $('detail-wmo').textContent = g.wmo || '—';
@@ -324,6 +383,11 @@
     $('detail-coords').textContent = `${g.latitude.toFixed(4)}, ${g.longitude.toFixed(4)}`;
     $('detail-elev').textContent = `${g.elevation} m`;
     $('detail-tz').textContent = `GMT ${g.timezone >= 0 ? '+' : ''}${g.timezone}`;
+    $('detail-zone').textContent = g.ashrae_climate_zone || '—';
+    $('detail-heat').textContent = fmtTemp(g.heating_design_db_c);
+    $('detail-cool').textContent = fmtTemp(g.cooling_design_db_c);
+    $('detail-hdd').textContent = fmtInt(g.hdd18);
+    $('detail-cdd').textContent = fmtInt(g.cdd10);
 
     const list = $('variant-list');
     list.innerHTML = '';
@@ -486,6 +550,59 @@
     if (cfg.variant) $('variant').value = cfg.variant;
   }
 
+  function populateClimateZoneOptions(groups) {
+    const select = $('climate-zone');
+    const seen = new Map(); // code -> full label
+    for (const g of groups) {
+      const code = zoneCode(g.ashrae_climate_zone);
+      if (!code) continue;
+      if (!seen.has(code)) seen.set(code, g.ashrae_climate_zone);
+    }
+    const codes = Array.from(seen.keys()).sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true }),
+    );
+    const frag = document.createDocumentFragment();
+    for (const c of codes) {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = seen.get(c);
+      frag.appendChild(opt);
+    }
+    select.appendChild(frag);
+  }
+
+  function resetFilters() {
+    const ids = [
+      'search', 'country', 'state', 'variant',
+      'elev-min', 'elev-max',
+      'heat-min', 'heat-max',
+      'cool-min', 'cool-max',
+      'hdd-min', 'hdd-max',
+      'cdd-min', 'cdd-max',
+    ];
+    for (const id of ids) $(id).value = '';
+    $('climate-zone').value = '';
+    applyFilters();
+  }
+
+  /* ── View toggle (mobile) ───────────────────────────────── */
+
+  const isMobile = () => window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+
+  function setView(view) {
+    const body = document.body;
+    body.classList.remove('view-list', 'view-map');
+    body.classList.add(view === 'map' ? 'view-map' : 'view-list');
+    for (const btn of document.querySelectorAll('#mobile-bar .view-toggle button')) {
+      btn.setAttribute('aria-selected', btn.dataset.view === view ? 'true' : 'false');
+    }
+    // Leaflet caches its container size; re-measure when the map pane
+    // becomes visible so tiles fill the new viewport correctly.
+    if (view === 'map' && map) {
+      requestAnimationFrame(() => map.invalidateSize());
+    }
+  }
+
   function wireInputs() {
     const debounce = (fn, ms) => {
       let t;
@@ -495,9 +612,21 @@
       };
     };
     const handler = debounce(applyFilters, 150);
-    ['search', 'country', 'state', 'variant'].forEach((id) =>
-      $(id).addEventListener('input', handler),
-    );
+    const filterIds = [
+      'search', 'country', 'state', 'variant',
+      'elev-min', 'elev-max',
+      'heat-min', 'heat-max',
+      'cool-min', 'cool-max',
+      'hdd-min', 'hdd-max',
+      'cdd-min', 'cdd-max',
+    ];
+    for (const id of filterIds) $(id).addEventListener('input', handler);
+    $('climate-zone').addEventListener('change', applyFilters);
+    $('reset-filters').addEventListener('click', resetFilters);
+
+    for (const btn of document.querySelectorAll('#mobile-bar .view-toggle button')) {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    }
 
     $('detail-close').addEventListener('click', () => $('detail').close());
     $('detail').addEventListener('click', (e) => {
@@ -516,6 +645,7 @@
       allGroups = groupStations(stations);
       config = cfg;
       seedFiltersFromConfig(cfg);
+      populateClimateZoneOptions(allGroups);
 
       if (cfg && cfg.lat != null && cfg.lon != null) {
         map.setView([cfg.lat, cfg.lon], 6);

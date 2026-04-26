@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>idfkit tmy — TMYx weather browser</title>
     <link
       rel="stylesheet"
@@ -20,7 +20,15 @@
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body class="view-list">
+    <header id="mobile-bar" aria-label="Mobile view switcher">
+      <span class="brand">idfkit <span class="muted">tmy</span></span>
+      <div class="view-toggle" role="tablist">
+        <button type="button" data-view="list" role="tab" aria-selected="true">Filters</button>
+        <button type="button" data-view="map" role="tab" aria-selected="false">Map</button>
+      </div>
+    </header>
+
     <aside id="sidebar">
       <header>
         <h1>idfkit <span class="muted">tmy</span></h1>
@@ -40,6 +48,50 @@
           <input id="state" type="text" placeholder="State (IL)" maxlength="3" />
         </div>
         <input id="variant" type="text" placeholder="Variant (e.g. 2009-2023)" />
+
+        <details class="advanced">
+          <summary>Climate &amp; design conditions</summary>
+
+          <label class="field">
+            <span>ASHRAE climate zone</span>
+            <select id="climate-zone">
+              <option value="">Any zone</option>
+            </select>
+          </label>
+
+          <fieldset class="range">
+            <legend>Elevation (m)</legend>
+            <input id="elev-min" type="number" inputmode="numeric" placeholder="min" />
+            <input id="elev-max" type="number" inputmode="numeric" placeholder="max" />
+          </fieldset>
+
+          <fieldset class="range">
+            <legend>Heating design DB (°C, 99%)</legend>
+            <input id="heat-min" type="number" inputmode="decimal" step="0.1" placeholder="min" />
+            <input id="heat-max" type="number" inputmode="decimal" step="0.1" placeholder="max" />
+          </fieldset>
+
+          <fieldset class="range">
+            <legend>Cooling design DB (°C, 1%)</legend>
+            <input id="cool-min" type="number" inputmode="decimal" step="0.1" placeholder="min" />
+            <input id="cool-max" type="number" inputmode="decimal" step="0.1" placeholder="max" />
+          </fieldset>
+
+          <fieldset class="range">
+            <legend>HDD18</legend>
+            <input id="hdd-min" type="number" inputmode="numeric" placeholder="min" />
+            <input id="hdd-max" type="number" inputmode="numeric" placeholder="max" />
+          </fieldset>
+
+          <fieldset class="range">
+            <legend>CDD10</legend>
+            <input id="cdd-min" type="number" inputmode="numeric" placeholder="min" />
+            <input id="cdd-max" type="number" inputmode="numeric" placeholder="max" />
+          </fieldset>
+
+          <button id="reset-filters" type="button" class="reset">Reset filters</button>
+        </details>
+
         <div class="stats muted small">
           <span id="total">0</span> stations ·
           <span id="total-variants">0</span> datasets
@@ -71,6 +123,11 @@
         <dt>Coords</dt><dd id="detail-coords"></dd>
         <dt>Elevation</dt><dd id="detail-elev"></dd>
         <dt>Timezone</dt><dd id="detail-tz"></dd>
+        <dt>Climate zone</dt><dd id="detail-zone"></dd>
+        <dt>Heating 99%</dt><dd id="detail-heat"></dd>
+        <dt>Cooling 1%</dt><dd id="detail-cool"></dd>
+        <dt>HDD18</dt><dd id="detail-hdd"></dd>
+        <dt>CDD10</dt><dd id="detail-cdd"></dd>
       </dl>
       <section class="variants">
         <h3>Available datasets</h3>
