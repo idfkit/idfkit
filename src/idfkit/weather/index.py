@@ -45,7 +45,7 @@ _CACHED_INDEX = "stations.json.gz"
 # Opt-out env var for the freshness nudge fired by `StationIndex.load()`.
 _DISABLE_UPDATE_CHECK_ENV_VAR = "IDFKIT_NO_WEATHER_UPDATE_CHECK"
 _UPDATE_CHECK_TIMESTAMP_FILE = "last_update_check"
-_UPDATE_CHECK_INTERVAL_SECONDS = 7 * 24 * 60 * 60
+_UPDATE_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 
 
 def default_cache_dir() -> Path:

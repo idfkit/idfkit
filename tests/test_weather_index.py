@@ -1013,7 +1013,7 @@ class TestMaybeCheckForUpdates:
         monkeypatch.delenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", raising=False)
         stamp = tmp_path / "last_update_check"
         stamp.touch()
-        old = stamp.stat().st_mtime - (8 * 24 * 60 * 60)
+        old = stamp.stat().st_mtime - (2 * 24 * 60 * 60)
         os.utime(stamp, (old, old))
 
         with patch("idfkit.weather.index._head_last_modified", return_value=None) as head:
