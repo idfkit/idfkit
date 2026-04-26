@@ -120,6 +120,17 @@ class InMemoryAsyncFileSystem:
             del self._files[key]
 
 
+@pytest.fixture(autouse=True)
+def _disable_weather_update_check(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Suppress the weather index freshness nudge in `StationIndex.load()`.
+
+    Prevents tests that load the bundled index from making network calls or
+    emitting warnings. Tests that exercise the nudge explicitly delete the env
+    var via their own ``monkeypatch.delenv``.
+    """
+    monkeypatch.setenv("IDFKIT_NO_WEATHER_UPDATE_CHECK", "1")
+
+
 @pytest.fixture
 def schema() -> EpJSONSchema:
     """Load the v24.1.0 schema."""
