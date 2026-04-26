@@ -424,23 +424,6 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         return list(base_field_order)
 
     @staticmethod
-    def _normalize_extensible_kwargs(
-        field_data: dict[str, Any],
-        extensibles: frozenset[str],
-    ) -> dict[str, Any]:
-        """Normalize user-style extensible kwargs to epJSON schema convention.
-
-        Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
-        etc. Non-extensible keys pass through unchanged.
-        """
-        from .objects import normalize_extensible_name
-
-        normalized: dict[str, Any] = {}
-        for key, value in field_data.items():
-            normalized[normalize_extensible_name(key, extensibles)] = value
-        return normalized
-
-    @staticmethod
     def _normalize_extensible_input(
         obj_type: str,
         field_data: dict[str, Any],

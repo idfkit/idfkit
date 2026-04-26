@@ -20,6 +20,7 @@ __all__ = [
     "ExtensibleList",
     "IDFCollection",
     "IDFObject",
+    "parse_extensible_index",
     "to_python_name",
 ]
 
@@ -61,66 +62,6 @@ def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tupl
             return base, int(m.group(2))
 
     return None, 0
-
-
-def extensible_schema_name(base: str, group: int) -> str:
-    """Generate the epJSON schema-convention name: base for group 1, base_N for N>=2."""
-    return base if group == 1 else f"{base}_{group}"
-
-
-def normalize_extensible_name(field_name: str, extensibles: frozenset[str]) -> str:
-    """Normalize an extensible field name to the epJSON schema convention.
-
-    Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
-    ``vertex_2_x_coordinate`` → ``vertex_x_coordinate_2``, etc.
-    Returns the name unchanged if it is not extensible.
-    """
-    base, group = parse_extensible_index(field_name, extensibles)
-    if base is None:
-        return field_name
-    return extensible_schema_name(base, group)
-
-
-def expand_extensible_array(
-    items: list[Any],
-    extensibles: frozenset[str],
-) -> dict[str, Any]:
-    """Flatten a canonical epJSON extensible array into the IDD-style flat shape.
-
-    Each item's array position determines the group index — matching canonical
-    epJSON semantics where ``vertices[0]`` is always group 1. Inner keys are
-    normalized via :func:`normalize_extensible_name` so user-style aliases
-    (``vertex_1_x_coordinate``) inside an item are accepted, but unknown inner
-    keys raise :class:`ValueError`.
-
-    Examples:
-        >>> exts = frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"})
-        >>> expand_extensible_array(
-        ...     [{"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
-        ...      {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}],
-        ...     exts,
-        ... ) == {
-        ...     "vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0,
-        ...     "vertex_x_coordinate_2": 5.0, "vertex_y_coordinate_2": 0.0, "vertex_z_coordinate_2": 0.0,
-        ... }
-        True
-    """
-    out: dict[str, Any] = {}
-    for group_idx, item in enumerate(items, start=1):
-        if not isinstance(item, dict):
-            raise TypeError(  # noqa: TRY003
-                f"Expected dict for extensible group {group_idx}, got {type(item).__name__}"
-            )
-        for inner_key, value in cast("dict[str, Any]", item).items():
-            normalized = normalize_extensible_name(inner_key, extensibles)
-            base, _ = parse_extensible_index(normalized, extensibles)
-            if base is None:
-                raise ValueError(  # noqa: TRY003
-                    f"Unknown extensible field {inner_key!r} in group {group_idx}; "
-                    f"expected one of {sorted(extensibles)}"
-                )
-            out[extensible_schema_name(base, group_idx)] = value
-    return out
 
 
 class ExtensibleGroup:
@@ -568,28 +509,20 @@ class IDFObject(EppyObjectMixin):
         return cast("list[dict[str, Any]]", items)
 
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
-        """Check if a field name is valid for this object type.
+        """Check whether *python_key* is a valid field name for this object.
 
-        Checks the base field order first, then extensible field patterns.
-        Handles both ``vertex_1_x_coordinate`` -> ``vertex_x_coordinate``
-        and ``field_1`` -> ``field``.
+        Returns ``True`` if the key is in *field_order* OR if it is a
+        legacy flat-extensible alias (``vertex_3_x_coordinate``,
+        ``vertex_x_coordinate_3``, ``field_42``) for one of this type's
+        extensible fields.
         """
         if python_key in field_order:
             return True
         extensibles = self._extensibles
         if not extensibles:
             return False
-        # Try "prefix_N_suffix" -> "prefix_suffix" (e.g. vertex_1_x_coordinate -> vertex_x_coordinate)
-        m = _EXTENSIBLE_NUMBER_PATTERN.match(python_key)
-        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
-            return True
-        # Try "base_N" -> "base" (e.g. field_1461 -> field)
-        last_underscore = python_key.rfind("_")
-        if last_underscore > 0 and python_key[last_underscore + 1 :].isdigit():
-            base = python_key[:last_underscore]
-            if base in extensibles:
-                return True
-        return False
+        base, _ = parse_extensible_index(python_key, extensibles)
+        return base is not None
 
     @property
     def name(self) -> str:
@@ -820,12 +753,7 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_source_text", None)
 
     def _set_field(self, python_key: str, value: Any) -> None:
-        """Centralized data-field write with reference graph notification.
-
-        When an extensible field is written that is not yet in ``field_order``,
-        all intermediate gap fields are created (with ``None`` values) so that
-        writers and iterators see a contiguous sequence.
-        """
+        """Centralized data-field write with reference graph notification."""
         doc = self._document
         ref_fields = self._ref_fields
         if doc is not None and ref_fields is not None and python_key in ref_fields:
@@ -836,69 +764,8 @@ class IDFObject(EppyObjectMixin):
         else:
             self._data[python_key] = value
 
-        # Maintain field_order for new extensible fields, filling any gaps.
-        field_order = self._field_order
-        if field_order is not None and python_key not in field_order:
-            extensibles = self._extensibles
-            if extensibles and self._is_known_field(python_key, field_order):
-                self._fill_extensible_gap(python_key, field_order, extensibles)
-
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
-
-    def _fill_extensible_gap(
-        self,
-        python_key: str,
-        field_order: list[str],
-        extensibles: frozenset[str],
-    ) -> None:
-        """Append extensible fields to ``field_order``, filling gaps with ``None``.
-
-        Given a new extensible field like ``field_41``, determines the group
-        index (41 for a single-field group), finds the current highest group
-        index in ``field_order``, and generates all intermediate groups so
-        that the field sequence is contiguous.
-
-        For multi-field groups (e.g. vertices with x/y/z), all fields in each
-        gap group are created.
-        """
-        ext_names = sorted(extensibles)  # stable order
-
-        # Parse the target field to find its base name and group index.
-        target_base, target_group = parse_extensible_index(python_key, extensibles)
-        if target_base is None:
-            # Couldn't parse — just append as-is.
-            field_order.append(python_key)
-            return
-
-        # Find the current highest group index already in field_order.
-        max_group = 0
-        for name in field_order:
-            base, group = parse_extensible_index(name, extensibles)
-            if base is not None and group > max_group:
-                max_group = group
-
-        # Generate all groups from max_group+1 through target_group
-        # using the epJSON schema naming convention.
-        existing = set(field_order)
-        schema_key = extensible_schema_name(target_base, target_group)
-        for g in range(max_group + 1, target_group + 1):
-            for base in ext_names:
-                field_name = extensible_schema_name(base, g)
-                if field_name not in existing:
-                    field_order.append(field_name)
-                    existing.add(field_name)
-                    # Fill gap fields with None in data (don't overwrite the
-                    # target field which was already written above).
-                    if field_name != schema_key and field_name not in self._data:
-                        self._data[field_name] = None
-
-    def _normalize_extensible_key(self, python_key: str) -> str:
-        """Normalize an extensible field name to the epJSON schema convention."""
-        extensibles = self._extensibles
-        if not extensibles:
-            return python_key
-        return normalize_extensible_name(python_key, extensibles)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation.

@@ -629,30 +629,3 @@ class TestObjectsAdditionalBranches:
         obj.__setattr__("_source_text", "custom_text")  # pyright: ignore[reportAttributeAccessIssue]
         assert object.__getattribute__(obj, "_source_text") == "custom_text"
 
-    def test_fill_extensible_gap_unparseable_key_appended_as_is(self) -> None:
-        """Lines 431-432: _fill_extensible_gap with a key parse_extensible_index can't parse."""
-        obj = IDFObject(obj_type="Zone", name="Z", field_order=["field"], extensibles=frozenset({"field"}))
-        field_order: list[str] = ["field"]
-        # "totally_unknown_xyz" has no numeric suffix → parse_extensible_index returns None, 0
-        obj._fill_extensible_gap(  # pyright: ignore[reportPrivateUsage]
-            "totally_unknown_xyz", field_order, frozenset({"field"})
-        )
-        assert "totally_unknown_xyz" in field_order
-
-    def test_fill_extensible_gap_fills_intermediate_groups(self) -> None:
-        """_fill_extensible_gap generates all intermediate groups up to the target."""
-        obj = IDFObject(
-            obj_type="BuildingSurface:Detailed",
-            name="Srf",
-            field_order=["vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"],
-            extensibles=frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"}),
-        )
-        field_order = ["vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"]
-        # Fill gap for group 3 — should add x_2, y_2, z_2, x_3, y_3, z_3
-        obj._fill_extensible_gap(  # pyright: ignore[reportPrivateUsage]
-            "vertex_x_coordinate_3",
-            field_order,
-            frozenset({"vertex_x_coordinate", "vertex_y_coordinate", "vertex_z_coordinate"}),
-        )
-        assert "vertex_x_coordinate_2" in field_order
-        assert "vertex_x_coordinate_3" in field_order
