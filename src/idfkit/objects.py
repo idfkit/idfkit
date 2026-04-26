@@ -724,7 +724,9 @@ class IDFObject(EppyObjectMixin):
                 raise TypeError(  # noqa: TRY003
                     f"{self._type}[{key!r}] must be a list of dicts; got {type(value).__name__}"
                 )
-            ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names).replace(cast("list[Any]", value))
+            ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names).replace(
+                cast("list[Any]", value)
+            )
             return
         setattr(self, key, value)
 

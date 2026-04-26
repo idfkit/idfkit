@@ -628,4 +628,3 @@ class TestObjectsAdditionalBranches:
         # Assign a private attribute through IDFObject.__setattr__
         obj.__setattr__("_source_text", "custom_text")  # pyright: ignore[reportAttributeAccessIssue]
         assert object.__getattribute__(obj, "_source_text") == "custom_text"
-
