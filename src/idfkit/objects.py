@@ -191,13 +191,21 @@ class ExtensibleGroup:
         )
 
 
-class ExtensibleList:
+GroupT_co = TypeVar("GroupT_co", bound=ExtensibleGroup, covariant=True)
+
+
+class ExtensibleList(Generic[GroupT_co]):
     """List-like view over the canonical wrapper array ``obj.data[wrapper_key]``.
 
     Holds a reference to the owning :class:`IDFObject` and the wrapper key;
     indexing, iteration, append, insert, delete, pop, clear, extend, equality,
     and bulk replace all operate on the canonical list of dicts. Items are
     yielded as :class:`ExtensibleGroup` instances bound to the underlying dicts.
+
+    The ``Generic[GroupT_co]`` parameter lets generated stubs narrow the item
+    type per object — e.g. ``surface.vertices`` is typed as
+    ``ExtensibleList[BuildingSurfaceVertex]`` so IDEs autocomplete the
+    inner ``vertex_x_coordinate`` etc. on each indexed item.
 
     Mutations bump the owner's mutation version. Reference-graph notification
     for fields inside extensible groups is handled separately by the document
@@ -234,13 +242,16 @@ class ExtensibleList:
             raise IndexError(f"{self._wrapper_key} index {index} out of range (length {n})")  # noqa: TRY003
         return index
 
-    def __getitem__(self, index: int) -> ExtensibleGroup:
+    def __getitem__(self, index: int) -> GroupT_co:
         idx = self._resolve_index(index)
-        return ExtensibleGroup(self._owner, self._wrapper_key, idx + 1, self._inner_names)
+        return cast("GroupT_co", ExtensibleGroup(self._owner, self._wrapper_key, idx + 1, self._inner_names))
 
-    def __iter__(self) -> Iterator[ExtensibleGroup]:
+    def __iter__(self) -> Iterator[GroupT_co]:
         for i in range(len(self)):
-            yield ExtensibleGroup(self._owner, self._wrapper_key, i + 1, self._inner_names)
+            yield cast(
+                "GroupT_co",
+                ExtensibleGroup(self._owner, self._wrapper_key, i + 1, self._inner_names),
+            )
 
     def __delitem__(self, index: int) -> None:
         idx = self._resolve_index(index)
@@ -269,16 +280,16 @@ class ExtensibleList:
                 f"{unknown!r}; expected subset of {list(self._inner_names)}"
             )
 
-    def append(self, item: Any = None, /, **kwargs: Any) -> ExtensibleGroup:
+    def append(self, item: Any = None, /, **kwargs: Any) -> GroupT_co:
         """Append a new group. Accepts a dict, another :class:`ExtensibleGroup`, or kwargs."""
         merged = self._coerce_item(item, kwargs)
         self._validate_inner(merged)
         items = self._items_for_write()
         items.append(merged)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
-        return ExtensibleGroup(self._owner, self._wrapper_key, len(items), self._inner_names)
+        return cast("GroupT_co", ExtensibleGroup(self._owner, self._wrapper_key, len(items), self._inner_names))
 
-    def insert(self, index: int, item: Any = None, /, **kwargs: Any) -> ExtensibleGroup:
+    def insert(self, index: int, item: Any = None, /, **kwargs: Any) -> GroupT_co:
         """Insert a new group at *index*. Existing groups at and after *index* shift up."""
         merged = self._coerce_item(item, kwargs)
         self._validate_inner(merged)
@@ -289,7 +300,10 @@ class ExtensibleList:
         index = min(index, n)
         items.insert(index, merged)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
-        return ExtensibleGroup(self._owner, self._wrapper_key, index + 1, self._inner_names)
+        return cast(
+            "GroupT_co",
+            ExtensibleGroup(self._owner, self._wrapper_key, index + 1, self._inner_names),
+        )
 
     def extend(self, items: Any) -> None:
         """Append every group from *items* (any iterable of dicts or groups)."""
@@ -551,7 +565,7 @@ class IDFObject(EppyObjectMixin):
         wrapper_key = object.__getattribute__(self, "_wrapper_key")
         if wrapper_key is not None and (key == wrapper_key or to_python_name(key) == wrapper_key):
             inner = object.__getattribute__(self, "_ext_inner_names")
-            return ExtensibleList(self, wrapper_key, inner)
+            return ExtensibleList[ExtensibleGroup](self, wrapper_key, inner)
 
         # Try exact match first
         data = object.__getattribute__(self, "_data")
@@ -628,7 +642,7 @@ class IDFObject(EppyObjectMixin):
                 raise TypeError(  # noqa: TRY003
                     f"{self._type}.{wrapper_key} must be a list of dicts; got {type(value).__name__}"
                 )
-            view = ExtensibleList(self, wrapper_key, self._ext_inner_names)
+            view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
             view.replace(cast("list[Any]", value))
             return
         # Normalize key to python style
@@ -686,7 +700,7 @@ class IDFObject(EppyObjectMixin):
                 return self._data.get(field_name)
             raise IndexError(f"Field index {key} out of range")  # noqa: TRY003
         if self._wrapper_key is not None and key == self._wrapper_key:
-            return ExtensibleList(self, self._wrapper_key, self._ext_inner_names)
+            return ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names)
         return getattr(self, key)
 
     def __setitem__(self, key: str | int, value: Any) -> None:
@@ -710,7 +724,7 @@ class IDFObject(EppyObjectMixin):
                 raise TypeError(  # noqa: TRY003
                     f"{self._type}[{key!r}] must be a list of dicts; got {type(value).__name__}"
                 )
-            ExtensibleList(self, self._wrapper_key, self._ext_inner_names).replace(cast("list[Any]", value))
+            ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names).replace(cast("list[Any]", value))
             return
         setattr(self, key, value)
 
