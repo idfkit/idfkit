@@ -468,6 +468,40 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             normalized[normalize_extensible_name(key, extensibles)] = value
         return normalized
 
+    @staticmethod
+    def _normalize_extensible_input(
+        obj_type: str,
+        field_data: dict[str, Any],
+        pc: ParsingCache,
+    ) -> dict[str, Any]:
+        """Collapse canonical-shape extensible wrappers into the flat IDD shape.
+
+        If ``field_data[wrapper_key]`` is a list of dicts (e.g.
+        ``vertices=[{...}, ...]``), expand it into ``vertex_x_coordinate``,
+        ``vertex_x_coordinate_2``, etc. Then normalize any user-style
+        extensible aliases. Raises ``ValueError`` if the caller mixes a
+        wrapper list with flat extensible keys.
+        """
+        from .objects import expand_extensible_array, parse_extensible_index
+
+        ext_set = frozenset(pc.ext_field_names)
+        if pc.ext_wrapper_key and pc.ext_wrapper_key in field_data:
+            wrapper_val = field_data[pc.ext_wrapper_key]
+            if isinstance(wrapper_val, list):
+                flat_present = next(
+                    (k for k in field_data if parse_extensible_index(k, ext_set)[0] is not None),
+                    None,
+                )
+                if flat_present is not None:
+                    raise ValueError(  # noqa: TRY003
+                        f"{obj_type}: cannot mix '{pc.ext_wrapper_key}=[...]' "
+                        f"with flat extensible field {flat_present!r}"
+                    )
+                field_data = dict(field_data)
+                del field_data[pc.ext_wrapper_key]
+                field_data.update(expand_extensible_array(cast("list[Any]", wrapper_val), ext_set))
+        return IDFDocument._normalize_extensible_kwargs(field_data, ext_set)
+
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
         if self._schema is None:
@@ -486,11 +520,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         return None
 
-    def add(  # noqa: C901
+    def add(
         self,
         obj_type: str,
         name: str = "",
-        data: dict[str, Any] | None = None,
+        fields: dict[str, Any] | None = None,
         *,
         validate: bool = True,
         **kwargs: Any,
@@ -502,7 +536,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             obj_type: Object type (e.g., "Zone")
             name: Object name (optional for object types without a name field,
                 such as Timestep, SimulationControl, GlobalGeometryRules)
-            data: Field data as dict
+            fields: Field values as a dict, useful when field names are
+                computed dynamically. Equivalent to passing the same keys
+                as ``**kwargs``; merged before ``kwargs`` so explicit
+                kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
                 bulk operations where performance matters.
@@ -551,31 +588,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(model["Zone"])
             4
         """
-        # Special case: the ``data`` parameter collides with the wrapper key
-        # of types like ``Schedule:Day:Interval`` (whose wrapper key is also
-        # ``"data"``). When the caller passes a list, route it under the
-        # type's wrapper key so the canonical-shape expansion path picks it up.
-        if isinstance(data, list):
-            wrapper_key: str | None = None
-            if self._schema is not None:
-                _resolved_for_wrapper = self._resolve_schema_obj_type(obj_type)
-                _pc_for_wrapper = self._schema.get_parsing_cache(_resolved_for_wrapper)
-                if _pc_for_wrapper is not None:
-                    wrapper_key = _pc_for_wrapper.ext_wrapper_key
-            if wrapper_key is None:
-                raise TypeError(  # noqa: TRY003
-                    f"add({obj_type!r}, ...): positional `data` must be a dict; "
-                    f"got list, but this type has no extensible wrapper key"
-                )
-            if wrapper_key in kwargs:
-                raise TypeError(  # noqa: TRY003
-                    f"add({obj_type!r}, ...): {wrapper_key!r} given both as positional `data` and as keyword argument"
-                )
-            kwargs[wrapper_key] = data
-            data = None
-
-        # Merge data and kwargs
-        field_data = dict(data) if data else {}
+        # Merge fields and kwargs
+        field_data = dict(fields) if fields else {}
         field_data.update(kwargs)
 
         # Get schema info
@@ -588,31 +602,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             resolved_obj_type = self._resolve_schema_obj_type(obj_type)
             obj_schema = self._schema.get_object_schema(resolved_obj_type)
 
-            # Normalize user-style extensible field names to schema convention.
+            # Normalize extensible-group input to the canonical flat shape so
+            # downstream consumers (writers, geometry, references, validation)
+            # all see uniform storage regardless of how the data was provided.
             pc = self._schema.get_parsing_cache(resolved_obj_type)
             if pc and pc.ext_field_names:
-                ext_set = frozenset(pc.ext_field_names)
-                # Expand canonical-shape wrapper (e.g. vertices=[{...}, ...]) into
-                # the flat IDD shape so downstream consumers see uniform storage.
-                if pc.ext_wrapper_key and pc.ext_wrapper_key in field_data:
-                    wrapper_val = field_data[pc.ext_wrapper_key]
-                    if isinstance(wrapper_val, list):
-                        from .objects import expand_extensible_array, parse_extensible_index
-
-                        wrapper_list = cast("list[Any]", wrapper_val)
-                        flat_present = next(
-                            (k for k in field_data if parse_extensible_index(k, ext_set)[0] is not None),
-                            None,
-                        )
-                        if flat_present is not None:
-                            raise ValueError(  # noqa: TRY003
-                                f"{resolved_obj_type}: cannot mix '{pc.ext_wrapper_key}=[...]' "
-                                f"with flat extensible field {flat_present!r}"
-                            )
-                        field_data = dict(field_data)
-                        del field_data[pc.ext_wrapper_key]
-                        field_data.update(expand_extensible_array(wrapper_list, ext_set))
-                field_data = self._normalize_extensible_kwargs(field_data, ext_set)
+                field_data = self._normalize_extensible_input(resolved_obj_type, field_data, pc)
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)

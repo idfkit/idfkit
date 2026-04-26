@@ -60,7 +60,13 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def items(self) -> list[tuple[str, IDFCollection[IDFObject]]]: ...  # type: ignore[override]
     def describe(self, obj_type: str) -> ObjectDescription: ...
     def add(
-        self, obj_type: str, name: str = ..., data: dict[str, Any] | None = ..., *, validate: bool = ..., **kwargs: Any
+        self,
+        obj_type: str,
+        name: str = ...,
+        fields: dict[str, Any] | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Any,
     ) -> IDFObject: ...
     def addidfobject(self, obj: IDFObject) -> IDFObject: ...
     def removeidfobject(self, obj: IDFObject) -> None: ...

@@ -550,7 +550,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     # add() — no overloads, returns IDFObject
     lines.append(
         "    def add(self, obj_type: str, name: str = ..., "
-        "data: dict[str, Any] | None = ..., *, validate: bool = ..., "
+        "fields: dict[str, Any] | None = ..., *, validate: bool = ..., "
         "**kwargs: Any) -> IDFObject: ..."
     )
     lines.append("")
