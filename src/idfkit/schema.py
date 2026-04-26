@@ -13,9 +13,11 @@ import json
 import logging
 import os
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, ClassVar, cast
 
 from .exceptions import SchemaNotFoundError
@@ -46,6 +48,7 @@ class ParsingCache:
     ext_size: int
     ext_field_names: tuple[str, ...]
     ext_wrapper_key: str | None
+    ext_inner_props: Mapping[str, dict[str, Any]]
 
 
 def _resolve_field_type(
@@ -387,7 +390,11 @@ class EpJSONSchema:
         # Find the wrapper key: the unique array-typed property whose item
         # schema covers the extensible field names (e.g. "vertices" for
         # BuildingSurface:Detailed, "data" for Schedule:Day:Interval).
+        # Also capture the inner property schemas — used by extensible-array
+        # consumers (canonical access API, validation, codegen) to know each
+        # inner field's type without re-walking the schema.
         ext_wrapper_key: str | None = None
+        ext_inner_props: dict[str, dict[str, Any]] = {}
         if extensible and ext_field_names_list:
             ext_set = set(ext_field_names_list)
             for pk, pv_any in props.items():
@@ -405,6 +412,7 @@ class EpJSONSchema:
                 inner = cast("dict[str, Any]", inner_any)
                 if ext_set.issubset(inner.keys()):
                     ext_wrapper_key = pk
+                    ext_inner_props = {k: cast("dict[str, Any]", v) for k, v in inner.items()}
                     break
 
         return ParsingCache(
@@ -418,6 +426,7 @@ class EpJSONSchema:
             ext_size=ext_size,
             ext_field_names=tuple(ext_field_names_list),
             ext_wrapper_key=ext_wrapper_key,
+            ext_inner_props=MappingProxyType(ext_inner_props),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:

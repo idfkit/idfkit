@@ -638,6 +638,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             field_order=field_order,
             ref_fields=ref_fields,
             extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
+            wrapper_key=parsing_cache.ext_wrapper_key if parsing_cache else None,
+            ext_inner_names=tuple(parsing_cache.ext_inner_props.keys()) if parsing_cache else (),
         )
 
         # Validate if requested

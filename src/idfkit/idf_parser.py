@@ -372,6 +372,8 @@ class IDFParser:
                 field_order=field_names,
                 ref_fields=pc.ref_fields,
                 extensibles=frozenset(pc.ext_field_names),
+                wrapper_key=pc.ext_wrapper_key,
+                ext_inner_names=tuple(pc.ext_inner_props.keys()),
             )
 
         # No-schema fallback

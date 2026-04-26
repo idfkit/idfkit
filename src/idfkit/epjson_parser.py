@@ -234,6 +234,8 @@ class EpJSONParser:
                     field_order=field_order,
                     ref_fields=ref_fields,
                     extensibles=frozenset(pc.ext_field_names) if pc else None,
+                    wrapper_key=pc.ext_wrapper_key if pc else None,
+                    ext_inner_names=tuple(pc.ext_inner_props.keys()) if pc else (),
                 )
 
                 addidfobject(obj)
