@@ -23,6 +23,7 @@ nav:
     - Simulation Architecture: concepts/simulation-architecture.md
     - Weather Data Pipeline: concepts/weather-pipeline.md
     - Caching Strategy: concepts/caching.md
+    - Environment Variables: concepts/environment-variables.md
     - Logging: concepts/logging.md
     - Cloud & Remote Storage: concepts/cloud-storage.md
     - Type-Safe Development: concepts/type-safety.md
