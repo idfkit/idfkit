@@ -172,6 +172,28 @@ make check && make test
 
 This runs: lock file validation, pre-commit hooks (ruff format + lint, JSON formatting, trailing whitespace), pyright, deptry (unused dependency detection), and pytest with coverage.
 
+## Environment Variables
+
+The complete list of environment variables idfkit reads is documented in
+[`docs/concepts/environment-variables.md`](docs/concepts/environment-variables.md).
+
+**IMPORTANT:** Whenever you add, rename, or remove a call to `os.environ`,
+`os.getenv`, or any other env-var lookup in `src/idfkit/` (or change a
+default, opt-out flag, or platform behaviour for one), you MUST update
+`docs/concepts/environment-variables.md` in the same change so the docs stay
+in sync with the code. This applies to user-facing variables (e.g.
+`ENERGYPLUS_DIR`, `IDFKIT_NO_WEATHER_UPDATE_CHECK`) and to standard platform
+variables that idfkit consults (e.g. `XDG_CACHE_HOME`, `LOCALAPPDATA`,
+`ProgramFiles*`, `SYSTEMDRIVE`).
+
+Quick audit command:
+
+```bash
+grep -rn "os.environ\|os.getenv" src/idfkit/
+```
+
+Every variable that command surfaces should appear in the docs page.
+
 ## EnergyPlus Version Support
 
 Bundled schemas cover EnergyPlus 8.9.0 through 26.1.0 (17 versions). The latest supported version is 26.1.0. Version 24.1.0 is used as the default in test fixtures. See `src/idfkit/versions.py` for the full list.
