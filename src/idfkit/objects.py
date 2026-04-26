@@ -626,8 +626,10 @@ class IDFObject(EppyObjectMixin):
     def __setattr__(self, key: str, value: Any) -> None:
         """Set field value by attribute name.
 
-        Extensible field names are normalized to the epJSON schema convention
-        (``field``, ``field_2``; ``vertex_x_coordinate``, ``vertex_x_coordinate_2``).
+        Assigning the schema's wrapper key (e.g. ``surface.vertices = [...]``)
+        replaces the canonical extensible array. Legacy eppy-style flat
+        extensible writes (``surface.vertex_3_x_coordinate = 5.0``) are
+        routed to the canonical slot with a :class:`DeprecationWarning`.
         """
         if key.startswith("_"):
             object.__setattr__(self, key, value)

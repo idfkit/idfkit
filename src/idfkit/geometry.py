@@ -459,11 +459,10 @@ def get_surface_coords(surface: IDFObject) -> Polygon3D | None:
     """
     Extract coordinates from a surface object.
 
-    Works with BuildingSurface:Detailed, FenestrationSurface:Detailed, etc.
-    Supports both field naming conventions:
-
-    - Classic/programmatic: ``vertex_1_x_coordinate``, ``vertex_2_x_coordinate``, ...
-    - epJSON schema: ``vertex_x_coordinate``, ``vertex_x_coordinate_2``, ...
+    Reads from the canonical wrapper array (``surface.data["vertices"]``)
+    for extensible types like ``BuildingSurface:Detailed``, and falls back
+    to fixed flat ``vertex_N_x_coordinate`` fields for surface types whose
+    vertex count is fixed in the schema (e.g. ``FenestrationSurface:Detailed``).
 
     Examples:
         Extract geometry from a 10 m x 3 m south-facing exterior wall:
@@ -475,10 +474,12 @@ def get_surface_coords(surface: IDFObject) -> Polygon3D | None:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)
         >>> poly = get_surface_coords(wall)
         >>> poly.area
@@ -703,10 +704,12 @@ def calculate_surface_area(surface: IDFObject) -> float:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)
         >>> calculate_surface_area(wall)
         30.0
@@ -730,10 +733,12 @@ def calculate_surface_tilt(surface: IDFObject) -> float:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)
         >>> calculate_surface_tilt(wall)
         90.0
@@ -758,10 +763,12 @@ def calculate_surface_azimuth(surface: IDFObject) -> float:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)
         >>> calculate_surface_azimuth(wall)
         180.0
@@ -787,10 +794,12 @@ def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
         ...     surface_type="Floor", construction_name="", zone_name="Office",
         ...     outside_boundary_condition="Ground",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=0,
-        ...     vertex_2_x_coordinate=5, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=5, vertex_3_y_coordinate=4, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=0, vertex_4_y_coordinate=4, vertex_4_z_coordinate=0,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 4, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 4, "vertex_z_coordinate": 0},
+        ...     ],
         ...     validate=False)  # doctest: +ELLIPSIS
         BuildingSurface:Detailed('Office_Floor')
         >>> calculate_zone_floor_area(model, "Office")
@@ -826,10 +835,12 @@ def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
         ...     surface_type="Ceiling", construction_name="", zone_name="Office",
         ...     outside_boundary_condition="Outdoors",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=4, vertex_2_z_coordinate=3,
-        ...     vertex_3_x_coordinate=5, vertex_3_y_coordinate=4, vertex_3_z_coordinate=3,
-        ...     vertex_4_x_coordinate=5, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 4, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 4, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)  # doctest: +ELLIPSIS
         BuildingSurface:Detailed('Office_Ceiling')
         >>> calculate_zone_ceiling_area(model, "Office")
@@ -866,10 +877,12 @@ def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=5, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=5, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)  # doctest: +ELLIPSIS
         BuildingSurface:Detailed('South_Wall')
         >>> calculate_zone_height(model, "Office")
@@ -918,10 +931,12 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
         ...     outside_boundary_condition="Outdoors",
         ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
         ...     number_of_vertices=4,
-        ...     vertex_1_x_coordinate=0, vertex_1_y_coordinate=0, vertex_1_z_coordinate=3,
-        ...     vertex_2_x_coordinate=0, vertex_2_y_coordinate=0, vertex_2_z_coordinate=0,
-        ...     vertex_3_x_coordinate=10, vertex_3_y_coordinate=0, vertex_3_z_coordinate=0,
-        ...     vertex_4_x_coordinate=10, vertex_4_y_coordinate=0, vertex_4_z_coordinate=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 10, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...     ],
         ...     validate=False)
         >>> translate_building(model, Vector3D(100, 200, 0))
         >>> wall.vertices[0].vertex_x_coordinate
