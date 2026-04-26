@@ -8,6 +8,7 @@ IDFCollection: Indexed collection of IDFObjects with O(1) lookup.
 from __future__ import annotations
 
 import re
+import warnings
 from collections.abc import Callable, Iterator
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
@@ -600,7 +601,7 @@ class IDFObject(EppyObjectMixin):
         """Set the object's name."""
         self._set_name(value)
 
-    def __getattr__(self, key: str) -> Any:
+    def __getattr__(self, key: str) -> Any:  # noqa: C901
         """Get field value by attribute name.
 
         When the parent document has ``strict=True``, accessing a field
@@ -634,10 +635,27 @@ class IDFObject(EppyObjectMixin):
         if python_key in data:
             return data[python_key]
 
-        # Try normalizing extensible field name to schema convention
-        schema_key = self._normalize_extensible_key(python_key)
-        if schema_key != python_key and schema_key in data:
-            return data[schema_key]
+        # Eppy-compat: legacy flat extensible field access
+        # (vertex_3_x_coordinate, vertex_x_coordinate_3, time_2, ...).
+        # Translates to the canonical wrapper position with a deprecation
+        # warning. Scheduled for removal in a future release.
+        extensibles = object.__getattribute__(self, "_extensibles")
+        if extensibles:
+            base, group_idx = parse_extensible_index(python_key, extensibles)
+            if base is not None:
+                wrapper_key = object.__getattribute__(self, "_wrapper_key")
+                if wrapper_key is not None:
+                    items_any: Any = data.get(wrapper_key)
+                    if isinstance(items_any, list):
+                        items_typed = cast("list[dict[str, Any]]", items_any)
+                        if 0 < group_idx <= len(items_typed):
+                            warnings.warn(
+                                f"{key!r} flat-extensible access is deprecated; "
+                                f"use {self._type}.{wrapper_key}[{group_idx - 1}].{base}",
+                                DeprecationWarning,
+                                stacklevel=2,
+                            )
+                            return items_typed[group_idx - 1].get(base)
 
         # Field not found — check strict mode
         doc = object.__getattribute__(self, "_document")
@@ -682,6 +700,26 @@ class IDFObject(EppyObjectMixin):
             return
         # Normalize key to python style
         python_key = to_python_name(key)
+
+        # Eppy-compat: legacy flat extensible field write
+        # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
+        # wrapper slot with a deprecation warning.
+        if self._extensibles:
+            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            if base is not None and self._wrapper_key is not None:
+                warnings.warn(
+                    f"{key!r} flat-extensible assignment is deprecated; "
+                    f"use {self._type}.{self._wrapper_key}[{group_idx - 1}].{base} = ...",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                items = self._data.setdefault(self._wrapper_key, [])
+                while len(items) < group_idx:
+                    items.append({})
+                cast("list[dict[str, Any]]", items)[group_idx - 1][base] = value
+                self._bump_version()
+                return
+
         # Validate in strict mode
         doc = self._document
         if doc is not None and getattr(doc, "_strict", False):
@@ -695,8 +733,6 @@ class IDFObject(EppyObjectMixin):
                     version=ver,
                     extensible_fields=self._extensibles,
                 )
-        # Normalize extensible field names to schema convention.
-        python_key = self._normalize_extensible_key(python_key)
         self._set_field(python_key, value)
 
     def __getitem__(self, key: str | int) -> Any:
