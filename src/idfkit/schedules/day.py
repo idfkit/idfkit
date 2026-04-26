@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime, time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values, time_to_minutes
 from idfkit.schedules.types import Interpolation, TimeValue
@@ -188,19 +188,18 @@ def _parse_interval_time_values(obj: IDFObject) -> list[TimeValue]:
     """
     time_values: list[TimeValue] = []
 
-    # Fields are: Time 1, Value Until Time 1, Time 2, Value Until Time 2, ...
-    # Maximum 144 intervals (one per 10 minutes)
+    # Schedule:Day:Interval stores its time/value pairs canonically as
+    # ``obj.data["data"]`` — a list of ``{"time": ..., "value_until_time": ...}``
+    # dicts. Up to 144 entries (one per 10 minutes).
+    items_raw: Any = obj.data.get("data") or []
+    if not isinstance(items_raw, list):
+        items_raw = []
+    items: list[dict[str, Any]] = cast("list[dict[str, Any]]", items_raw)
     prev_minutes = -1.0
-    for i in range(1, 145):
-        time_field = f"Time {i}"
-        value_field = f"Value Until Time {i}"
-
-        time_str = obj.get(time_field)
-        if time_str is None:
-            break
-
-        value = obj.get(value_field)
-        if value is None:
+    for item in items:
+        time_str = item.get("time")
+        value = item.get("value_until_time")
+        if time_str is None or value is None:
             break
 
         until_time = _parse_time(str(time_str))

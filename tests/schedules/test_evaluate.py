@@ -141,17 +141,12 @@ class TestValues:
         """Test day interval schedule with interpolation."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            fields = {
-                "Time 1": "12:00",
-                "Value Until Time 1": 0.0,
-                "Time 2": "24:00",
-                "Value Until Time 2": 1.0,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
+        obj.data = {
+            "data": [
+                {"time": "12:00", "value_until_time": 0.0},
+                {"time": "24:00", "value_until_time": 1.0},
+            ]
+        }
         del obj._document
 
         result = values(
@@ -243,16 +238,7 @@ class TestMalformedScheduleError:
         """Test that a malformed day schedule raises MalformedScheduleError."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            # Return non-numeric value for a numeric field
-            fields: dict[str, str | float] = {
-                "Time 1": "08:00",
-                "Value Until Time 1": "not_a_number",
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
+        obj.data = {"data": [{"time": "08:00", "value_until_time": "not_a_number"}]}
         del obj._document
 
         with pytest.raises(MalformedScheduleError):

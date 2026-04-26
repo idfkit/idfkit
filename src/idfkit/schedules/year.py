@@ -6,7 +6,7 @@ Handles Schedule:Year objects which reference week schedules for date ranges.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.types import DayType, Interpolation
 
@@ -143,26 +143,23 @@ def _find_week_for_date(
     Returns:
         Tuple of (week_name, week_object). week_object may be None if not found.
     """
-    # Parse all date ranges from the object
-    i = 1
-    while True:
-        week_name_field = f"Schedule:Week Name {i}"
-        start_month_field = f"Start Month {i}"
-        start_day_field = f"Start Day {i}"
-        end_month_field = f"End Month {i}"
-        end_day_field = f"End Day {i}"
-
-        week_name = obj.get(week_name_field)
+    # Schedule:Year stores its date-range groups canonically as
+    # ``obj.data["schedule_weeks"]`` — a list of dicts with
+    # schedule_week_name / start_month / start_day / end_month / end_day.
+    items_raw: Any = obj.data.get("schedule_weeks") or []
+    if not isinstance(items_raw, list):
+        items_raw = []
+    for item in cast("list[dict[str, Any]]", items_raw):
+        week_name = item.get("schedule_week_name")
         if week_name is None:
-            break
+            continue
 
-        start_month = obj.get(start_month_field)
-        start_day = obj.get(start_day_field)
-        end_month = obj.get(end_month_field)
-        end_day = obj.get(end_day_field)
+        start_month = item.get("start_month")
+        start_day = item.get("start_day")
+        end_month = item.get("end_month")
+        end_day = item.get("end_day")
 
-        if any(v is None for v in [start_month, start_day, end_month, end_day]):
-            i += 1
+        if any(v is None for v in (start_month, start_day, end_month, end_day)):
             continue
 
         start_m, start_d = _parse_month_day(str(start_month), str(start_day))
@@ -177,12 +174,9 @@ def _find_week_for_date(
             if d >= start_date or d <= end_date:
                 week_obj = _find_week_schedule(doc, str(week_name))
                 return str(week_name), week_obj
-        else:
-            if start_date <= d <= end_date:
-                week_obj = _find_week_schedule(doc, str(week_name))
-                return str(week_name), week_obj
-
-        i += 1
+        elif start_date <= d <= end_date:
+            week_obj = _find_week_schedule(doc, str(week_name))
+            return str(week_name), week_obj
 
     # No matching date range found
     return "", None

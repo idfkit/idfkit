@@ -474,11 +474,11 @@ class TestBuildingTransform:
     def test_translate_building(self, simple_doc: IDFDocument) -> None:
         wall = simple_doc.getobject("BuildingSurface:Detailed", "TestWall")
         assert wall is not None
-        orig_x = wall.vertex_1_x_coordinate
+        orig_x = wall.vertices[0].vertex_x_coordinate
 
         translate_building(simple_doc, Vector3D(100, 0, 0))
 
-        assert _close(wall.vertex_1_x_coordinate, orig_x + 100)
+        assert _close(wall.vertices[0].vertex_x_coordinate, orig_x + 100)
 
     def test_rotate_building(self) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -511,8 +511,9 @@ class TestBuildingTransform:
         wall = doc.getobject("BuildingSurface:Detailed", "Wall")
         assert wall is not None
         # After 90 degree rotation around origin, (10,0) -> (0,10)
-        assert _close(wall.vertex_1_x_coordinate, 0.0, tol=1e-5)
-        assert _close(wall.vertex_1_y_coordinate, 10.0, tol=1e-5)
+        v0 = wall.vertices[0]
+        assert _close(v0.vertex_x_coordinate, 0.0, tol=1e-5)
+        assert _close(v0.vertex_y_coordinate, 10.0, tol=1e-5)
 
 
 # ---------------------------------------------------------------------------
@@ -792,8 +793,8 @@ class TestRotateBuildingAnchor:
         rotate_building(doc, 180, anchor=Vector3D(5, 0, 0))
         wall = doc.getobject("BuildingSurface:Detailed", "Wall")
         assert wall is not None
-        assert _close(wall.vertex_1_x_coordinate, 0.0, tol=1e-5)
-        assert _close(wall.vertex_4_x_coordinate, 10.0, tol=1e-5)
+        assert _close(wall.vertices[0].vertex_x_coordinate, 0.0, tol=1e-5)
+        assert _close(wall.vertices[3].vertex_x_coordinate, 10.0, tol=1e-5)
 
 
 # ---------------------------------------------------------------------------

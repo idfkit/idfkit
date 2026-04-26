@@ -322,14 +322,23 @@ class IDFWriter:
 
         return "\n".join(lines)
 
-    def _get_field_values_and_comments(self, obj: IDFObject) -> tuple[list[str], list[str]]:
-        """Get the ordered field values and comment labels for *obj*."""
+    def _get_field_values_and_comments(self, obj: IDFObject) -> tuple[list[str], list[str]]:  # noqa: C901
+        """Get the ordered field values and comment labels for *obj*.
+
+        Storage is canonical: extensible groups live as a list of dicts under
+        the wrapper key (e.g. ``obj.data["vertices"]``). For IDF output we
+        flatten them into the legacy positional sequence with comment labels
+        synthesised on the fly (``Vertex X Coordinate 2`` for the second
+        ``vertex_x_coordinate`` token, etc.).
+        """
         obj_type = obj.obj_type
         schema = self._doc.schema
 
         obj_has_name = True
+        pc = None
         if schema:
             obj_has_name = schema.has_name(obj_type)
+            pc = schema.get_parsing_cache(obj_type)
 
         if obj.field_order:
             if obj_has_name:
@@ -343,16 +352,32 @@ class IDFWriter:
 
         values: list[str] = []
         comments: list[str] = []
+        wrapper_key = pc.ext_wrapper_key if pc and pc.extensible else None
 
         for field_name in field_names:
             if field_name == "name":
                 values.append(obj.name or "")
                 comments.append("Name")
+            elif field_name == wrapper_key:
+                # Skip — handled below as positional extensible expansion.
+                continue
             else:
                 value = obj.data.get(field_name)
                 values.append(self._format_value(value))
                 comment = field_name.replace("_", " ").title()
                 comments.append(comment)
+
+        # Append extensible groups as positional tokens (legacy IDF layout).
+        if wrapper_key and pc and pc.ext_field_names:
+            inner_names = pc.ext_field_names
+            ext_items_raw: Any = obj.data.get(wrapper_key) or []
+            if isinstance(ext_items_raw, list):
+                ext_items: list[dict[str, Any]] = cast("list[dict[str, Any]]", ext_items_raw)
+                for group_idx, item in enumerate(ext_items, start=1):
+                    suffix = "" if group_idx == 1 else f" {group_idx}"
+                    for inner in inner_names:
+                        values.append(self._format_value(item.get(inner)))
+                        comments.append(f"{inner.replace('_', ' ').title()}{suffix}")
 
         # Trim trailing empty fields
         while len(values) > 1 and values[-1] == "":
@@ -476,33 +501,13 @@ class EpJSONWriter:
     def _object_to_dict(self, obj: IDFObject) -> dict[str, Any]:
         """Convert object to epJSON dict (excluding name).
 
-        For extensible types with a canonical wrapper key (e.g. ``vertices``,
-        ``data``), flat fields like ``vertex_x_coordinate_2`` are bucketed
-        back into a list of dicts under that wrapper key — matching the
-        schema's canonical shape.
+        Storage is canonical, so this is a pass-through that drops empty
+        scalars and routes each value through ``_format_value`` for normal
+        type handling. The wrapper-key list (if any) is emitted verbatim —
+        each item is already a dict matching the schema's items.properties.
         """
-        schema = self._doc.schema
-        pc = schema.get_parsing_cache(obj.obj_type) if schema else None
 
-        if pc and pc.extensible and pc.ext_wrapper_key and pc.ext_field_names:
-            from .objects import parse_extensible_index
-
-            ext_set = frozenset(pc.ext_field_names)
-            result: dict[str, Any] = {}
-            groups: dict[int, dict[str, Any]] = {}
-            for field_name, value in obj.data.items():
-                if value is None or value == "":
-                    continue
-                base, group_idx = parse_extensible_index(field_name, ext_set)
-                if base is None:
-                    result[field_name] = self._format_value(value)
-                else:
-                    groups.setdefault(group_idx, {})[base] = self._format_value(value)
-            if groups:
-                result[pc.ext_wrapper_key] = [groups[k] for k in sorted(groups)]
-            return result
-
-        result = {}
+        result: dict[str, Any] = {}
         for field_name, value in obj.data.items():
             if value is not None and value != "":
                 result[field_name] = self._format_value(value)

@@ -119,14 +119,14 @@ def test_list_as_list_snapshot(surface: Any) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_mutate_via_attribute_writes_flat_storage(surface: Any) -> None:
+def test_mutate_via_attribute_writes_canonical_storage(surface: Any) -> None:
     surface.vertices[0].vertex_x_coordinate = 1.0
-    assert surface.data["vertex_x_coordinate"] == 1.0
+    assert surface.data["vertices"][0]["vertex_x_coordinate"] == 1.0
 
 
-def test_mutate_second_group_writes_suffixed_flat_key(surface: Any) -> None:
+def test_mutate_second_group_writes_canonical_slot(surface: Any) -> None:
     surface.vertices[1].vertex_x_coordinate = 99.0
-    assert surface.data["vertex_x_coordinate_2"] == 99.0
+    assert surface.data["vertices"][1]["vertex_x_coordinate"] == 99.0
 
 
 def test_group_update_atomic(surface: Any) -> None:
@@ -176,12 +176,11 @@ def test_insert_at_end_equivalent_to_append(surface: Any) -> None:
 
 
 def test_delete_shifts_later_groups_down(surface: Any) -> None:
-    # Original: [0,0,3], [5,0,0]; delete index 0 → [5,0,0]
+    # Original: [0,0,3], [5,0,0]; delete index 0 -> [5,0,0]
     del surface.vertices[0]
     assert len(surface.vertices) == 1
     assert surface.vertices[0].vertex_x_coordinate == 5.0
-    # The flat key for the second group must be gone
-    assert "vertex_x_coordinate_2" not in surface.data
+    assert len(surface.data["vertices"]) == 1
 
 
 def test_pop_returns_dict(surface: Any) -> None:
@@ -193,7 +192,7 @@ def test_pop_returns_dict(surface: Any) -> None:
 def test_clear(surface: Any) -> None:
     surface.vertices.clear()
     assert len(surface.vertices) == 0
-    assert not any(k.startswith("vertex_") for k in surface.data)
+    assert "vertices" not in surface.data
 
 
 def test_extend(surface: Any) -> None:
@@ -325,24 +324,24 @@ def test_schedule_compact_data_wrapper_with_mixed_types() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Integration with existing flat-shape access (must remain compatible)
+# Storage shape is canonical (Phase 2 invariant)
 # ---------------------------------------------------------------------------
 
 
-def test_flat_attribute_still_works(surface: Any) -> None:
-    """Phase 1 stays backward-compatible: flat access continues to work."""
-    assert surface.vertex_x_coordinate == 0.0
-    assert surface.vertex_x_coordinate_2 == 5.0
+def test_storage_is_canonical_after_construction(surface: Any) -> None:
+    """`obj.data[wrapper_key]` is a list of dicts; no flat keys leak in."""
+    assert isinstance(surface.data["vertices"], list)
+    assert all(isinstance(item, dict) for item in surface.data["vertices"])
+    assert all(not (k.startswith("vertex_") and k != "vertices") for k in surface.data), (
+        "no flat keys should be present at the top level of obj.data"
+    )
 
 
-def test_flat_setattr_visible_through_canonical_view(surface: Any) -> None:
-    surface.vertex_x_coordinate = 7.5
-    assert surface.vertices[0].vertex_x_coordinate == 7.5
-
-
-def test_canonical_mutation_visible_through_flat_access(surface: Any) -> None:
-    surface.vertices[1].vertex_x_coordinate = 88.0
-    assert surface.vertex_x_coordinate_2 == 88.0
+def test_canonical_storage_round_trips_via_dict_access(surface: Any) -> None:
+    """obj.data['vertices'][i] gives the raw inner dict, equivalent to the typed view."""
+    assert surface.data["vertices"][0] == surface.vertices[0].as_dict()
+    surface.vertices[0].vertex_x_coordinate = 42.0
+    assert surface.data["vertices"][0]["vertex_x_coordinate"] == 42.0
 
 
 # ---------------------------------------------------------------------------

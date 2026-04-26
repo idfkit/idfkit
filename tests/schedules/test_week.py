@@ -59,12 +59,7 @@ def _make_day_schedule(name: str, obj_type: str, hourly_value: float = 1.0) -> M
     elif obj_type == "Schedule:Day:Hourly":
         obj.get.side_effect = lambda f: hourly_value if f.startswith("Hour ") else None
     elif obj_type == "Schedule:Day:Interval":
-        fields = {
-            "Time 1": "24:00",
-            "Value Until Time 1": hourly_value,
-            "Time 2": None,
-        }
-        obj.get.side_effect = lambda f: fields.get(f)
+        obj.data = {"data": [{"time": "24:00", "value_until_time": hourly_value}]}
     elif obj_type == "Schedule:Day:List":
         fields: dict[str, float | int | None] = {
             "Minutes per Item": 60,
@@ -78,15 +73,15 @@ def _make_day_schedule(name: str, obj_type: str, hourly_value: float = 1.0) -> M
 
 
 def _make_week_compact(pairs: list[tuple[str, str]]) -> MagicMock:
-    """Create a mock Schedule:Week:Compact object with DayType/Schedule pairs."""
+    """Create a mock Schedule:Week:Compact object with canonical pairs.
+
+    Stored under ``obj.data["data"]`` as a list of ``{daytype_list, schedule_day_name}`` dicts.
+    """
     obj = MagicMock()
     obj.obj_type = "Schedule:Week:Compact"
-    fields: dict[str, str | None] = {}
-    for i, (day_types, sched_name) in enumerate(pairs, 1):
-        fields[f"DayType List {i}"] = day_types
-        fields[f"Schedule:Day Name {i}"] = sched_name
-    fields[f"DayType List {len(pairs) + 1}"] = None
-    obj.get.side_effect = lambda f: fields.get(f)
+    obj.data = {
+        "data": [{"daytype_list": day_types, "schedule_day_name": sched_name} for day_types, sched_name in pairs]
+    }
     return obj
 
 
@@ -387,14 +382,12 @@ class TestEvaluateWeekDaily:
         day_obj = MagicMock()
         day_obj.obj_type = "Schedule:Day:Interval"
         day_obj.name = "DaySched"
-        fields = {
-            "Time 1": "12:00",
-            "Value Until Time 1": 0.0,
-            "Time 2": "24:00",
-            "Value Until Time 2": 1.0,
-            "Time 3": None,
+        day_obj.data = {
+            "data": [
+                {"time": "12:00", "value_until_time": 0.0},
+                {"time": "24:00", "value_until_time": 1.0},
+            ]
         }
-        day_obj.get.side_effect = lambda f: fields.get(f)
         doc = _make_doc_with_day_schedule(day_obj)
         week_obj = _make_week_daily({"Monday Schedule:Day Name": "DaySched"})
 
@@ -732,10 +725,9 @@ class TestFindMatchingDayInWeekCompactLoopExhaustion:
     """Test that the for i in range(1, 13) loop exits naturally when all 12 pairs are filled (line 297->315)."""
 
     def test_all_12_pairs_filled_loop_exhaustion(self) -> None:
-        """With 12 valid DayType/Schedule pairs, the for-loop exhausts range(1, 13) naturally."""
+        """All 12 canonical pairs build the day-type map, all reachable."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Week:Compact"
-        # Fill all 12 slots with unique day type / schedule pairs
         day_names = [
             "Monday",
             "Tuesday",
@@ -750,14 +742,9 @@ class TestFindMatchingDayInWeekCompactLoopExhaustion:
             "CustomDay1",
             "CustomDay2",
         ]
-        fields: dict[str, str | None] = {}
-        for i, dt in enumerate(day_names, 1):
-            fields[f"DayType List {i}"] = dt
-            fields[f"Schedule:Day Name {i}"] = f"Sched{i}"
-        # No terminating None — range(1, 13) exhausts all 12 slots naturally (297->315 branch)
-        obj.get.side_effect = lambda f: fields.get(f)  # returns None for slot 13
-
-        # Requesting a type that IS in one of the 12 slots
+        obj.data = {
+            "data": [{"daytype_list": dt, "schedule_day_name": f"Sched{i}"} for i, dt in enumerate(day_names, 1)]
+        }
         types = {DAY_TYPE_MONDAY}
         result = _find_matching_day_in_week_compact(obj, types)
         assert result == "Sched1"

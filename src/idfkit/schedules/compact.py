@@ -10,7 +10,7 @@ import re
 import weakref
 from dataclasses import dataclass
 from datetime import date, datetime, time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.day_types import get_applicable_day_types
 from idfkit.schedules.time_utils import END_OF_DAY, evaluate_time_values
@@ -173,13 +173,14 @@ def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
         if version == obj.mutation_version:
             return result
 
-    # Build the ordered list of extensible field values from field_order.
-    # The first entry is always schedule_type_limits_name (non-extensible);
-    # everything after it is compact DSL data.
+    # Schedule:Compact stores its DSL fields canonically: a list of
+    # ``{"field": <token>}`` dicts under the ``data`` wrapper.
     ext_fields: list[str] = []
-    field_order = obj.field_order or []
-    for name in field_order[1:]:
-        raw = obj.data.get(name)
+    items_raw: Any = obj.data.get("data") or []
+    if not isinstance(items_raw, list):
+        items_raw = []
+    for item in cast("list[dict[str, Any]]", items_raw):
+        raw = item.get("field")
         ext_fields.append(str(raw).strip() if raw is not None else "")
 
     state = _ParseState(

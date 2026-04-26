@@ -39,6 +39,7 @@ class _FakePC:
     ext_size: int = 0
     ext_field_names: list[str] = dc_field(default_factory=list)
     field_types: dict[str, str | None] = dc_field(default_factory=dict)
+    ext_wrapper_key: str | None = "data"
 
 
 @pytest.fixture
@@ -271,24 +272,25 @@ ZoneHVAC:IdealLoadsAirSystem,
         return filepath
 
     def test_empty_schedule_fields_stored(self, hvac_equipment_idf: Path) -> None:
-        """Empty schedule fields should be stored as empty strings."""
+        """Empty schedule fields should be stored as empty strings (canonical wrapper)."""
         doc = parse_idf(hvac_equipment_idf)
         eq_list = doc["ZoneHVAC:EquipmentList"][0]
 
-        # Equipment 1 - verify all 6 fields are present
-        assert eq_list.data.get("zone_equipment_object_type") == "ZoneHVAC:IdealLoadsAirSystem"
-        assert eq_list.data.get("zone_equipment_name") == "Main Zone Ideal Loads"
-        assert eq_list.data.get("zone_equipment_cooling_sequence") == 1.0
-        assert eq_list.data.get("zone_equipment_heating_or_no_load_sequence") == 1.0
-        # Empty schedule fields must be stored as ""
-        assert eq_list.data.get("zone_equipment_sequential_cooling_fraction_schedule_name") == ""
-        assert eq_list.data.get("zone_equipment_sequential_heating_fraction_schedule_name") == ""
+        # Canonical: each equipment entry is one dict in obj.data["equipment"].
+        eq = eq_list.data["equipment"]
+        assert eq[0]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"
+        assert eq[0]["zone_equipment_name"] == "Main Zone Ideal Loads"
+        assert eq[0]["zone_equipment_cooling_sequence"] == 1.0
+        assert eq[0]["zone_equipment_heating_or_no_load_sequence"] == 1.0
+        # Empty schedule fields must round-trip as "" inside the same dict.
+        assert eq[0]["zone_equipment_sequential_cooling_fraction_schedule_name"] == ""
+        assert eq[0]["zone_equipment_sequential_heating_fraction_schedule_name"] == ""
 
-        # Equipment 2 - these would have wrong values if empty fields weren't stored
-        assert eq_list.data.get("zone_equipment_object_type_2") == "ZoneHVAC:IdealLoadsAirSystem"
-        assert eq_list.data.get("zone_equipment_name_2") == "Main Zone Ideal Loads 2"
-        assert eq_list.data.get("zone_equipment_cooling_sequence_2") == 2.0
-        assert eq_list.data.get("zone_equipment_heating_or_no_load_sequence_2") == 2.0
+        # Equipment 2 — stored as the second dict.
+        assert eq[1]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"
+        assert eq[1]["zone_equipment_name"] == "Main Zone Ideal Loads 2"
+        assert eq[1]["zone_equipment_cooling_sequence"] == 2.0
+        assert eq[1]["zone_equipment_heating_or_no_load_sequence"] == 2.0
 
     def test_empty_schedule_fields_roundtrip(self, hvac_equipment_idf: Path, tmp_path: Path) -> None:
         """Empty schedule fields should survive roundtrip."""
@@ -318,12 +320,13 @@ ZoneHVAC:IdealLoadsAirSystem,
         assert "Zone Equipment Sequential Cooling Fraction Schedule Name" in eq_text
         assert "Zone Equipment Sequential Heating Fraction Schedule Name" in eq_text
 
-        # Re-parse and verify data integrity
+        # Re-parse and verify canonical data integrity
         doc2 = parse_idf(output_path)
         eq_list2 = doc2["ZoneHVAC:EquipmentList"][0]
+        eq2 = eq_list2.data["equipment"]
         # If empty fields weren't preserved, equipment 2 would have wrong values
-        assert eq_list2.data.get("zone_equipment_object_type_2") == "ZoneHVAC:IdealLoadsAirSystem"
-        assert eq_list2.data.get("zone_equipment_name_2") == "Main Zone Ideal Loads 2"
+        assert eq2[1]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"
+        assert eq2[1]["zone_equipment_name"] == "Main Zone Ideal Loads 2"
 
 
 class TestExtensibleFields:
@@ -332,22 +335,13 @@ class TestExtensibleFields:
     def test_surface_vertices_parsed(self, minimal_idf: Path) -> None:
         doc = parse_idf(minimal_idf)
         wall = doc["BuildingSurface:Detailed"][0]
-        # First vertex group: vertex_x_coordinate, vertex_y_coordinate, vertex_z_coordinate
-        assert wall.data.get("vertex_x_coordinate") == 0.0
-        assert wall.data.get("vertex_y_coordinate") == 0.0
-        assert wall.data.get("vertex_z_coordinate") == 3.048
-        # Second vertex group: _2 suffix
-        assert wall.data.get("vertex_x_coordinate_2") == 0.0
-        assert wall.data.get("vertex_y_coordinate_2") == 0.0
-        assert wall.data.get("vertex_z_coordinate_2") == 0.0
-        # Third vertex group: _3 suffix
-        assert wall.data.get("vertex_x_coordinate_3") == 6.096
-        assert wall.data.get("vertex_y_coordinate_3") == 0.0
-        assert wall.data.get("vertex_z_coordinate_3") == 0.0
-        # Fourth vertex group: _4 suffix
-        assert wall.data.get("vertex_x_coordinate_4") == 6.096
-        assert wall.data.get("vertex_y_coordinate_4") == 0.0
-        assert wall.data.get("vertex_z_coordinate_4") == 3.048
+        # Canonical storage: obj.data["vertices"] is a list of dicts.
+        verts = wall.data["vertices"]
+        assert len(verts) == 4
+        assert verts[0] == {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.048}
+        assert verts[1] == {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}
+        assert verts[2] == {"vertex_x_coordinate": 6.096, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}
+        assert verts[3] == {"vertex_x_coordinate": 6.096, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.048}
 
     def test_surface_vertices_roundtrip(self, minimal_idf: Path, tmp_path: Path) -> None:
         doc = parse_idf(minimal_idf)
@@ -355,10 +349,11 @@ class TestExtensibleFields:
         write_idf(doc, output_path)
         doc2 = parse_idf(output_path)
         wall = doc2["BuildingSurface:Detailed"][0]
-        assert wall.data.get("vertex_x_coordinate") == 0.0
-        assert wall.data.get("vertex_z_coordinate") == 3.048
-        assert wall.data.get("vertex_x_coordinate_3") == 6.096
-        assert wall.data.get("vertex_z_coordinate_4") == 3.048
+        verts = wall.data["vertices"]
+        assert verts[0]["vertex_x_coordinate"] == 0.0
+        assert verts[0]["vertex_z_coordinate"] == 3.048
+        assert verts[2]["vertex_x_coordinate"] == 6.096
+        assert verts[3]["vertex_z_coordinate"] == 3.048
 
 
 class TestNamedObjects:
@@ -417,7 +412,7 @@ class TestFullRoundtrip:
         assert doc2["Timestep"][0].data.get("number_of_timesteps_per_hour") == 4
         assert len(doc2["Output:Variable"]) == 3
         assert doc2["Zone"][0].name == "ZONE ONE"
-        assert doc2["BuildingSurface:Detailed"][0].data.get("vertex_z_coordinate") == 3.048
+        assert doc2["BuildingSurface:Detailed"][0].data["vertices"][0]["vertex_z_coordinate"] == 3.048
 
 
 # ---------------------------------------------------------------------------
@@ -733,7 +728,7 @@ class TestExtensibleJGeNumExt:
         parser = IDFParser(idf_path, strict_parsing=True)
         data: dict[str, object] = {}
         field_names: list[str] = []
-        pc = _FakePC(ext_size=2, ext_field_names=["field_a"])
+        pc = _FakePC(ext_size=2, ext_field_names=["field_a"], ext_wrapper_key="data")
         parser._append_extensible_fields(  # pyright: ignore[reportPrivateUsage]
             data=data,
             extra=["val_a", "val_b", "val_c", "val_d"],
@@ -741,9 +736,9 @@ class TestExtensibleJGeNumExt:
             field_types={},
             pc=pc,  # type: ignore[arg-type]
         )
-        assert "field_a" in data
-        assert "field_a_2" in data
-        assert "field_b" not in data
+        # Canonical storage: two groups, each containing only field_a
+        # (field_b dropped because num_ext=1).
+        assert data["data"] == [{"field_a": "val_a"}, {"field_a": "val_c"}]
 
 
 class TestNonStrictSkipsUnknownType:

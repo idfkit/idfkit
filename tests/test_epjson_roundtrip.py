@@ -166,65 +166,41 @@ class TestNamelessObjectsEpjsonRoundtrip:
 class TestExtensibleFieldsEpjsonRoundtrip:
     """Extensible fields (vertices) should survive IDF -> epJSON -> IDF."""
 
-    def test_vertex_data_in_field_order(self, roundtrip_idf: Path, tmp_path: Path) -> None:
-        """field_order should include extensible vertex fields after epJSON parsing."""
+    def test_vertices_canonical_after_epjson_parse(self, roundtrip_idf: Path, tmp_path: Path) -> None:
+        """Canonical wrapper survives IDF -> epJSON -> parse_epjson."""
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
         write_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         wall = doc2["BuildingSurface:Detailed"][0]
-        assert wall.field_order is not None
-        assert "vertex_x_coordinate" in wall.field_order
-        assert "vertex_y_coordinate" in wall.field_order
-        assert "vertex_z_coordinate" in wall.field_order
-        assert "vertex_x_coordinate_2" in wall.field_order
-        assert "vertex_z_coordinate_4" in wall.field_order
-
-    def test_vertex_data_preserved(self, roundtrip_idf: Path, tmp_path: Path) -> None:
-        """Vertex coordinates should survive IDF -> epJSON -> parse_epjson."""
-        doc1 = parse_idf(roundtrip_idf)
-        epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
-        doc2 = parse_epjson(epjson_path)
-
-        wall = doc2["BuildingSurface:Detailed"][0]
-        assert wall.data.get("vertex_x_coordinate") == 0.0
-        assert wall.data.get("vertex_z_coordinate") == 3.048
-        assert wall.data.get("vertex_x_coordinate_3") == 6.096
-        assert wall.data.get("vertex_z_coordinate_4") == 3.048
+        verts = wall.data["vertices"]
+        assert len(verts) == 4
+        assert verts[0]["vertex_x_coordinate"] == 0.0
+        assert verts[0]["vertex_z_coordinate"] == 3.048
+        assert verts[2]["vertex_x_coordinate"] == 6.096
+        assert verts[3]["vertex_z_coordinate"] == 3.048
 
     def test_vertex_data_survives_full_roundtrip(self, roundtrip_idf: Path, tmp_path: Path) -> None:
-        """Vertex data should survive IDF -> epJSON -> IDF."""
+        """Vertex data survives IDF -> epJSON -> IDF in canonical shape."""
         doc1 = parse_idf(roundtrip_idf)
-
-        # Write to epJSON
         epjson_path = tmp_path / "test.epJSON"
         write_epjson(doc1, epjson_path)
-
-        # Parse epJSON
         doc2 = parse_epjson(epjson_path)
-
-        # Write back to IDF
         idf_path = tmp_path / "roundtrip.idf"
         write_idf(doc2, idf_path)
-
-        # Parse the IDF again
         doc3 = parse_idf(idf_path)
 
         wall = doc3["BuildingSurface:Detailed"][0]
-        assert wall.data.get("vertex_x_coordinate") == 0.0
-        assert wall.data.get("vertex_y_coordinate") == 0.0
-        assert wall.data.get("vertex_z_coordinate") == 3.048
-        assert wall.data.get("vertex_x_coordinate_2") == 0.0
-        assert wall.data.get("vertex_y_coordinate_2") == 0.0
-        assert wall.data.get("vertex_z_coordinate_2") == 0.0
-        assert wall.data.get("vertex_x_coordinate_3") == 6.096
-        assert wall.data.get("vertex_y_coordinate_3") == 0.0
-        assert wall.data.get("vertex_z_coordinate_3") == 0.0
-        assert wall.data.get("vertex_x_coordinate_4") == 6.096
-        assert wall.data.get("vertex_y_coordinate_4") == 0.0
-        assert wall.data.get("vertex_z_coordinate_4") == 3.048
+        verts = wall.data["vertices"]
+        expected = [
+            {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.048},
+            {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+            {"vertex_x_coordinate": 6.096, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+            {"vertex_x_coordinate": 6.096, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.048},
+        ]
+        for got, want in zip(verts, expected, strict=True):
+            assert got == want
 
 
 class TestNamedObjectsEpjsonRoundtrip:
@@ -371,14 +347,12 @@ class TestFullEpjsonRoundtrip:
         doc = parse_epjson(epjson_path)
         wall = doc["BuildingSurface:Detailed"][0]
 
-        # field_order must include extensible vertex fields
-        assert wall.field_order is not None
-        assert "vertex_x_coordinate" in wall.field_order
-        assert "vertex_z_coordinate_4" in wall.field_order
-
-        # Vertex data must be present
-        assert wall.data["vertex_z_coordinate"] == 3.0
-        assert wall.data["vertex_x_coordinate_4"] == 10.0
+        # Flat extensible keys at the top level get bucketed into the
+        # canonical wrapper at parse time (matches what real EnergyPlus
+        # epJSON output uses).
+        verts = wall.data["vertices"]
+        assert verts[0]["vertex_z_coordinate"] == 3.0
+        assert verts[3]["vertex_x_coordinate"] == 10.0
 
         # Write to IDF and verify vertices appear
         idf_output = write_idf(doc)

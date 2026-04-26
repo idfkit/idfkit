@@ -126,14 +126,9 @@ class ExtensibleGroup:
     """One row of an extensible array (e.g. a single vertex inside ``vertices``).
 
     Holds a back-reference to the owning :class:`IDFObject` and the group's
-    1-based index so attribute reads/writes route to the correct storage
-    location. Equality and ``dict()`` conversion compare/expose the inner
-    field values.
-
-    During Phase 1 of the canonical-shape migration this class is a *view*
-    over flat ``vertex_x_coordinate_3``-style storage; Phase 2 switches it
-    to a thin wrapper over a real dict in ``obj.data[wrapper_key][i]``.
-    The public API is the same in both phases.
+    1-based index so attribute reads/writes route into
+    ``obj.data[wrapper_key][group_index - 1]``. Equality compares against
+    plain dicts; ``as_dict()`` snapshots the underlying values.
     """
 
     __slots__ = ("_group_index", "_inner_names", "_owner", "_wrapper_key")
@@ -154,9 +149,12 @@ class ExtensibleGroup:
         """1-based position of this group within the wrapper array."""
         return self._group_index
 
-    def _flat_key(self, base: str) -> str:
-        """Translate a base name to the flat storage key for this group."""
-        return base if self._group_index == 1 else f"{base}_{self._group_index}"
+    def _slot(self) -> dict[str, Any]:
+        """Return the underlying dict for this group, creating it if necessary."""
+        items = self._owner.data.setdefault(self._wrapper_key, [])
+        while len(items) < self._group_index:
+            items.append({})
+        return cast("dict[str, Any]", items[self._group_index - 1])
 
     def __getattr__(self, name: str) -> Any:
         if name.startswith("_"):
@@ -165,7 +163,10 @@ class ExtensibleGroup:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
             )
-        return self._owner.data.get(self._flat_key(name))
+        items = self._owner.data.get(self._wrapper_key)
+        if not items or self._group_index > len(items):
+            return None
+        return cast("dict[str, Any]", items[self._group_index - 1]).get(name)
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name.startswith("_"):
@@ -175,7 +176,8 @@ class ExtensibleGroup:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
             )
-        self._owner._set_field(self._flat_key(name), value)  # pyright: ignore[reportPrivateUsage]
+        self._slot()[name] = value
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __getitem__(self, key: str) -> Any:
         return self.__getattr__(key)
@@ -195,15 +197,18 @@ class ExtensibleGroup:
 
     def values(self) -> list[Any]:
         """Return the values for each inner field, in schema order."""
-        return [self._owner.data.get(self._flat_key(n)) for n in self._inner_names]
+        return [self.__getattr__(n) for n in self._inner_names]
 
     def items(self) -> list[tuple[str, Any]]:
         """Return ``(field_name, value)`` pairs for the inner fields."""
-        return [(n, self._owner.data.get(self._flat_key(n))) for n in self._inner_names]
+        return [(n, self.__getattr__(n)) for n in self._inner_names]
 
     def as_dict(self) -> dict[str, Any]:
         """Snapshot the group as a plain dict (does not track future mutations)."""
-        return {n: self._owner.data.get(self._flat_key(n)) for n in self._inner_names}
+        items = self._owner.data.get(self._wrapper_key)
+        if not items or self._group_index > len(items):
+            return {}
+        return dict(cast("dict[str, Any]", items[self._group_index - 1]))
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update one or more inner fields atomically (matches dict.update)."""
@@ -218,8 +223,14 @@ class ExtensibleGroup:
                 for k, v in src:
                     merged[k] = v
         merged.update(kwargs)
-        for k, v in merged.items():
-            self.__setattr__(k, v)
+        for k in merged:
+            if k not in self._inner_names:
+                raise AttributeError(  # noqa: TRY003
+                    f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+                )
+        slot = self._slot()
+        slot.update(merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ExtensibleGroup):
@@ -239,16 +250,16 @@ class ExtensibleGroup:
 
 
 class ExtensibleList:
-    """List-like view over an extensible wrapper array on an :class:`IDFObject`.
+    """List-like view over the canonical wrapper array ``obj.data[wrapper_key]``.
 
-    Provides the canonical-shape API (indexing, iteration, append, insert,
-    delete, bulk replace) regardless of whether the underlying storage is
-    flat (Phase 1) or canonical (Phase 2+). Items are :class:`ExtensibleGroup`
-    instances; ``append`` and ``insert`` accept either a dict, an existing
-    group, or keyword arguments.
+    Holds a reference to the owning :class:`IDFObject` and the wrapper key;
+    indexing, iteration, append, insert, delete, pop, clear, extend, equality,
+    and bulk replace all operate on the canonical list of dicts. Items are
+    yielded as :class:`ExtensibleGroup` instances bound to the underlying dicts.
 
-    Mutations go through the owner's :meth:`IDFObject._set_field` so that the
-    reference graph and mutation version stay coherent.
+    Mutations bump the owner's mutation version. Reference-graph notification
+    for fields inside extensible groups is handled separately by the document
+    when it walks ``ref_fields`` recursively.
     """
 
     __slots__ = ("_inner_names", "_owner", "_wrapper_key")
@@ -262,21 +273,16 @@ class ExtensibleList:
         self._wrapper_key = wrapper_key
         self._inner_names = inner_names
 
+    def _items_or_empty(self) -> list[dict[str, Any]]:
+        """Return the underlying canonical list (empty list if absent)."""
+        return cast("list[dict[str, Any]]", self._owner.data.get(self._wrapper_key, []))
+
+    def _items_for_write(self) -> list[dict[str, Any]]:
+        """Return the underlying canonical list, creating it if absent."""
+        return cast("list[dict[str, Any]]", self._owner.data.setdefault(self._wrapper_key, []))
+
     def __len__(self) -> int:
-        # Count groups by scanning flat storage for the maximum populated index.
-        # Phase 2 will replace this with len(obj.data[wrapper_key]).
-        max_idx = 0
-        for inner in self._inner_names:
-            if inner in self._owner.data:
-                max_idx = max(max_idx, 1)
-        for key in self._owner.data:
-            for inner in self._inner_names:
-                if key.startswith(f"{inner}_"):
-                    suffix = key[len(inner) + 1 :]
-                    if suffix.isdigit():
-                        max_idx = max(max_idx, int(suffix))
-                        break
-        return max_idx
+        return len(self._items_or_empty())
 
     def _resolve_index(self, index: int) -> int:
         n = len(self)
@@ -296,22 +302,11 @@ class ExtensibleList:
 
     def __delitem__(self, index: int) -> None:
         idx = self._resolve_index(index)
-        n = len(self)
-        # Shift later groups down by one (dst is 1-based, range is 0-based).
-        for dst_idx in range(idx, n - 1):
-            for inner in self._inner_names:
-                src_key = self._flat(inner, dst_idx + 2)
-                dst_key = self._flat(inner, dst_idx + 1)
-                self._owner._set_field(dst_key, self._owner.data.get(src_key))  # pyright: ignore[reportPrivateUsage]
-        # Drop the last (now-duplicated) group entirely.
-        for inner in self._inner_names:
-            last_key = self._flat(inner, n)
-            if last_key in self._owner.data:
-                del self._owner.data[last_key]
-        object.__setattr__(self._owner, "_version", self._owner._version + 1)  # pyright: ignore[reportPrivateUsage]
-
-    def _flat(self, base: str, group: int) -> str:
-        return base if group == 1 else f"{base}_{group}"
+        items = self._items_for_write()
+        del items[idx]
+        if not items:
+            self._owner.data.pop(self._wrapper_key, None)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def _coerce_item(self, item: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
         if item is not None and kwargs:
@@ -336,31 +331,22 @@ class ExtensibleList:
         """Append a new group. Accepts a dict, another :class:`ExtensibleGroup`, or kwargs."""
         merged = self._coerce_item(item, kwargs)
         self._validate_inner(merged)
-        new_idx = len(self) + 1
-        for inner in self._inner_names:
-            if inner in merged:
-                self._owner._set_field(self._flat(inner, new_idx), merged[inner])  # pyright: ignore[reportPrivateUsage]
-        return ExtensibleGroup(self._owner, self._wrapper_key, new_idx, self._inner_names)
+        items = self._items_for_write()
+        items.append(merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+        return ExtensibleGroup(self._owner, self._wrapper_key, len(items), self._inner_names)
 
     def insert(self, index: int, item: Any = None, /, **kwargs: Any) -> ExtensibleGroup:
         """Insert a new group at *index*. Existing groups at and after *index* shift up."""
         merged = self._coerce_item(item, kwargs)
         self._validate_inner(merged)
-        n = len(self)
+        items = self._items_for_write()
+        n = len(items)
         if index < 0:
             index = max(0, n + index)
         index = min(index, n)
-        # Shift up: groups at positions [index..n-1] move to [index+1..n]
-        for src_idx in range(n, index, -1):
-            for inner in self._inner_names:
-                src_key = self._flat(inner, src_idx)
-                dst_key = self._flat(inner, src_idx + 1)
-                value = self._owner.data.get(src_key)
-                self._owner._set_field(dst_key, value)  # pyright: ignore[reportPrivateUsage]
-        # Write the new group at index+1 (1-based)
-        for inner in self._inner_names:
-            if inner in merged:
-                self._owner._set_field(self._flat(inner, index + 1), merged[inner])  # pyright: ignore[reportPrivateUsage]
+        items.insert(index, merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
         return ExtensibleGroup(self._owner, self._wrapper_key, index + 1, self._inner_names)
 
     def extend(self, items: Any) -> None:
@@ -370,19 +356,19 @@ class ExtensibleList:
 
     def clear(self) -> None:
         """Remove all groups."""
-        for inner in self._inner_names:
-            for group in range(1, len(self) + 2):
-                key = self._flat(inner, group)
-                if key in self._owner.data:
-                    del self._owner.data[key]
-        # Bump version explicitly since we bypassed _set_field for deletions
-        object.__setattr__(self._owner, "_version", self._owner._version + 1)  # pyright: ignore[reportPrivateUsage]
+        if self._wrapper_key in self._owner.data:
+            del self._owner.data[self._wrapper_key]
+            self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def pop(self, index: int = -1) -> dict[str, Any]:
         """Remove and return the group at *index* as a plain dict."""
         idx = self._resolve_index(index)
-        snapshot = ExtensibleGroup(self._owner, self._wrapper_key, idx + 1, self._inner_names).as_dict()
-        del self[idx]
+        items = self._items_for_write()
+        snapshot = dict(items[idx])
+        del items[idx]
+        if not items:
+            self._owner.data.pop(self._wrapper_key, None)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
         return snapshot
 
     def replace(self, items: list[Any]) -> None:
@@ -562,6 +548,23 @@ class IDFObject(EppyObjectMixin):
     def field_order(self) -> list[str] | None:
         """Ordered list of field names from schema."""
         return self._field_order
+
+    def extensible_items(self, wrapper_key: str | None = None) -> list[dict[str, Any]]:
+        """Return the canonical list of extensible items (empty if absent).
+
+        For an extensible type (e.g. ``BuildingSurface:Detailed``) this
+        returns ``obj.data[wrapper_key]`` typed as ``list[dict[str, Any]]``.
+        If *wrapper_key* is omitted, the schema's wrapper key is used.
+        Returns an empty list if the wrapper isn't present or the type
+        isn't extensible — never ``None``.
+        """
+        key = wrapper_key if wrapper_key is not None else self._wrapper_key
+        if key is None:
+            return []
+        items = self._data.get(key)
+        if not isinstance(items, list):
+            return []
+        return cast("list[dict[str, Any]]", items)
 
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check if a field name is valid for this object type.
@@ -767,6 +770,18 @@ class IDFObject(EppyObjectMixin):
         doc = self._document
         if doc is not None:
             doc.notify_name_change(self, old, value)
+
+    def _bump_version(self) -> None:
+        """Mark the object as mutated.
+
+        Bumps :attr:`mutation_version` and invalidates the cached IDF source
+        text so the writer regenerates output for this object. Used by
+        :class:`ExtensibleList`/:class:`ExtensibleGroup` after mutating the
+        canonical wrapper array directly (without going through
+        :meth:`_set_field`).
+        """
+        object.__setattr__(self, "_version", self._version + 1)
+        object.__setattr__(self, "_source_text", None)
 
     def _set_field(self, python_key: str, value: Any) -> None:
         """Centralized data-field write with reference graph notification.

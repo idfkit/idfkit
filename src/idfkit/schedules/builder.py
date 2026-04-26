@@ -155,12 +155,12 @@ def create_compact_schedule_from_values(
         fields.append("For: AllDays")
         fields.extend(_profile_to_until_fields(profile))
 
-    # 4. Create the Schedule:Compact object.
+    # 4. Create the Schedule:Compact object using the canonical extensible
+    #    wrapper shape: data=[{"field": ...}, {"field": ...}, ...].
     kwargs: dict[str, Any] = {}
     if type_limits:
         kwargs["schedule_type_limits_name"] = type_limits
-    for i, field_val in enumerate(fields, 1):
-        kwargs[f"field_{i}"] = field_val
+    kwargs["data"] = [{"field": field_val} for field_val in fields]
 
     return doc.add("Schedule:Compact", name, validate=False, **kwargs)
 

@@ -15,7 +15,7 @@ import logging
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._compat import EppyDocumentMixin
 from .cst import DocumentCST
@@ -412,44 +412,16 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data: dict[str, Any],
         parsing_cache: ParsingCache | None,
     ) -> list[str] | None:
-        """Build field order for newly created objects.
+        """Build field order for a newly created object.
 
-        For extensible objects, include extensible fields present in input data so
-        IDF serialization preserves those values.
+        Storage is canonical: extensible groups live as a list of dicts under
+        the wrapper key, not as flat suffixed keys, so ``field_order`` no
+        longer needs to enumerate them — the IDF writer handles wrapper
+        expansion at output time using schema metadata.
         """
         if base_field_order is None:
             return None
-
-        field_order = list(base_field_order)
-        if parsing_cache is None or not parsing_cache.extensible:
-            return field_order
-
-        known_fields = set(field_order)
-
-        # First add schema-style extensible groups: field, field_2, field_3, ...
-        if parsing_cache.ext_field_names:
-            group_idx = 0
-            while True:
-                suffix = "" if group_idx == 0 else f"_{group_idx + 1}"
-                group_fields = [f"{name}{suffix}" for name in parsing_cache.ext_field_names]
-                if not any(field in field_data for field in group_fields):
-                    break
-
-                for field_name in group_fields:
-                    if field_name not in known_fields:
-                        field_order.append(field_name)
-                        known_fields.add(field_name)
-
-                group_idx += 1
-
-        # Then preserve any additional user-provided extensible aliases
-        # (for example eppy-style vertex_1_x_coordinate naming).
-        for field_name in field_data:
-            if field_name not in known_fields:
-                field_order.append(field_name)
-                known_fields.add(field_name)
-
-        return field_order
+        return list(base_field_order)
 
     @staticmethod
     def _normalize_extensible_kwargs(
@@ -474,33 +446,48 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data: dict[str, Any],
         pc: ParsingCache,
     ) -> dict[str, Any]:
-        """Collapse canonical-shape extensible wrappers into the flat IDD shape.
+        """Coerce extensible-group input to canonical wrapper-array shape.
 
-        If ``field_data[wrapper_key]`` is a list of dicts (e.g.
-        ``vertices=[{...}, ...]``), expand it into ``vertex_x_coordinate``,
-        ``vertex_x_coordinate_2``, etc. Then normalize any user-style
-        extensible aliases. Raises ``ValueError`` if the caller mixes a
-        wrapper list with flat extensible keys.
+        Storage is canonical (``field_data[wrapper_key]`` is a list of dicts),
+        so this normalizer's job is to translate any *flat* eppy-style
+        kwargs (``vertex_x_coordinate=0``, ``vertex_x_coordinate_2=5``) the
+        caller may have passed back into the canonical shape. A wrapper
+        already passed as a list passes through untouched. Mixing both
+        styles in one call raises ``ValueError``.
         """
-        from .objects import expand_extensible_array, parse_extensible_index
+        from .objects import parse_extensible_index
+
+        if not pc.ext_wrapper_key or not pc.ext_field_names:
+            return field_data
 
         ext_set = frozenset(pc.ext_field_names)
-        if pc.ext_wrapper_key and pc.ext_wrapper_key in field_data:
-            wrapper_val = field_data[pc.ext_wrapper_key]
-            if isinstance(wrapper_val, list):
-                flat_present = next(
-                    (k for k in field_data if parse_extensible_index(k, ext_set)[0] is not None),
-                    None,
-                )
-                if flat_present is not None:
-                    raise ValueError(  # noqa: TRY003
-                        f"{obj_type}: cannot mix '{pc.ext_wrapper_key}=[...]' "
-                        f"with flat extensible field {flat_present!r}"
-                    )
-                field_data = dict(field_data)
-                del field_data[pc.ext_wrapper_key]
-                field_data.update(expand_extensible_array(cast("list[Any]", wrapper_val), ext_set))
-        return IDFDocument._normalize_extensible_kwargs(field_data, ext_set)
+        wrapper_key = pc.ext_wrapper_key
+        wrapper_present = wrapper_key in field_data
+
+        # Pull every flat-style extensible key out of field_data into groups.
+        flat_groups: dict[int, dict[str, Any]] = {}
+        flat_keys: list[str] = []
+        for key, value in field_data.items():
+            if key == wrapper_key:
+                continue
+            base, idx = parse_extensible_index(key, ext_set)
+            if base is not None:
+                flat_groups.setdefault(idx, {})[base] = value
+                flat_keys.append(key)
+
+        if not flat_keys:
+            return field_data
+
+        if wrapper_present:
+            raise ValueError(  # noqa: TRY003
+                f"{obj_type}: cannot mix {wrapper_key!r}=[...] with flat extensible field {flat_keys[0]!r}"
+            )
+
+        field_data = dict(field_data)
+        for k in flat_keys:
+            del field_data[k]
+        field_data[wrapper_key] = [flat_groups[i] for i in sorted(flat_groups)]
+        return field_data
 
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""

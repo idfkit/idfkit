@@ -123,22 +123,16 @@ class TestEvaluateDayInterval:
 
     @pytest.fixture
     def interval_schedule(self) -> MagicMock:
-        """Create a mock interval schedule."""
+        """Create a mock interval schedule with canonical storage."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            fields = {
-                "Time 1": "08:00",
-                "Value Until Time 1": 0.0,
-                "Time 2": "18:00",
-                "Value Until Time 2": 1.0,
-                "Time 3": "24:00",
-                "Value Until Time 3": 0.0,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
+        obj.data = {
+            "data": [
+                {"time": "08:00", "value_until_time": 0.0},
+                {"time": "18:00", "value_until_time": 1.0},
+                {"time": "24:00", "value_until_time": 0.0},
+            ]
+        }
         return obj
 
     def test_before_first_interval(self, interval_schedule: MagicMock) -> None:
@@ -250,18 +244,12 @@ class TestTimeOrdering:
         """Test that descending times raise ValueError."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            fields = {
-                "Time 1": "18:00",
-                "Value Until Time 1": 1.0,
-                "Time 2": "08:00",  # Descending — invalid
-                "Value Until Time 2": 0.0,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
-
+        obj.data = {
+            "data": [
+                {"time": "18:00", "value_until_time": 1.0},
+                {"time": "08:00", "value_until_time": 0.0},
+            ]
+        }
         with pytest.raises(ValueError, match="ascending order"):
             evaluate_day_interval(obj, datetime(2024, 1, 1, 12, 0))
 
@@ -273,20 +261,13 @@ class TestMidnightBoundary:
         """Test evaluation just before midnight."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            fields = {
-                "Time 1": "08:00",
-                "Value Until Time 1": 0.0,
-                "Time 2": "18:00",
-                "Value Until Time 2": 1.0,
-                "Time 3": "24:00",
-                "Value Until Time 3": 0.5,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
-
+        obj.data = {
+            "data": [
+                {"time": "08:00", "value_until_time": 0.0},
+                {"time": "18:00", "value_until_time": 1.0},
+                {"time": "24:00", "value_until_time": 0.5},
+            ]
+        }
         # At 23:59 should be in the third interval (value 0.5)
         result = evaluate_day_interval(obj, datetime(2024, 1, 1, 23, 59))
         assert result == 0.5
@@ -295,18 +276,12 @@ class TestMidnightBoundary:
         """Test evaluation at midnight (start of day)."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> str | float | None:
-            fields = {
-                "Time 1": "08:00",
-                "Value Until Time 1": 0.0,
-                "Time 2": "24:00",
-                "Value Until Time 2": 1.0,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
-
+        obj.data = {
+            "data": [
+                {"time": "08:00", "value_until_time": 0.0},
+                {"time": "24:00", "value_until_time": 1.0},
+            ]
+        }
         # At 00:00 should be in the first interval (value 0.0)
         result = evaluate_day_interval(obj, datetime(2024, 1, 1, 0, 0))
         assert result == 0.0
@@ -342,36 +317,24 @@ class TestParseIntervalTimeValuesEdgeCases:
     """Tests for edge cases in _parse_interval_time_values (lines 194->216, 204)."""
 
     def test_value_none_causes_break(self) -> None:
-        """When Value Until Time N is None, parsing stops (line 204 break)."""
+        """When value_until_time is None, parsing stops at that item."""
         obj = MagicMock()
-
-        def get_field(field: str) -> object:
-            fields: dict[str, object] = {
-                "Time 1": "08:00",
-                "Value Until Time 1": None,  # Missing value → break at line 204
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
-        # With no valid value, there are no time_values → returns 0.0
+        obj.data = {"data": [{"time": "08:00", "value_until_time": None}]}
+        # With no valid value, there are no time_values -> returns 0.0
         result = evaluate_day_interval(obj, datetime(2024, 1, 1, 6, 0))
         assert result == 0.0
 
     def test_all_144_intervals_exhausted(self) -> None:
-        """Providing 144 intervals exhausts the range (line 194->216 natural exit)."""
+        """144 ten-minute intervals span the full day."""
         obj = MagicMock()
-
-        # Return sequential 10-minute intervals: 0:10, 0:20, ... up to 24:00
-        # We need exactly 144 intervals (144 * 10min = 1440min = 24h)
-        time_fields: dict[str, object] = {}
+        items = []
         for i in range(1, 145):
             total_minutes = i * 10
             h = total_minutes // 60
             m = total_minutes % 60
-            time_fields[f"Time {i}"] = f"{h:02d}:{m:02d}" if total_minutes < 1440 else "24:00"
-            time_fields[f"Value Until Time {i}"] = 1.0
-
-        obj.get.side_effect = lambda f: time_fields.get(f)
+            time_str = f"{h:02d}:{m:02d}" if total_minutes < 1440 else "24:00"
+            items.append({"time": time_str, "value_until_time": 1.0})
+        obj.data = {"data": items}
         result = evaluate_day_interval(obj, datetime(2024, 1, 1, 12, 0))
         assert result == 1.0
 
@@ -518,15 +481,7 @@ class TestGetDayValuesAllTypes:
         """get_day_values works with Schedule:Day:Interval."""
         obj = MagicMock()
         obj.obj_type = "Schedule:Day:Interval"
-
-        def get_field(field: str) -> object:
-            fields: dict[str, object] = {
-                "Time 1": "24:00",
-                "Value Until Time 1": 0.6,
-            }
-            return fields.get(field)
-
-        obj.get.side_effect = get_field
+        obj.data = {"data": [{"time": "24:00", "value_until_time": 0.6}]}
         result = get_day_values(obj, timestep=1)
         assert len(result) == 24
         assert all(v == 0.6 for v in result)
