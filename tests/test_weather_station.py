@@ -8,17 +8,22 @@ from idfkit.weather.station import SearchResult, SpatialResult, WeatherStation
 
 
 def _make_station(**kwargs: object) -> WeatherStation:
-    defaults = {
+    defaults: dict[str, object] = {
         "country": "USA",
         "state": "IL",
         "city": "Chicago.Ohare.Intl.AP",
         "wmo": "725300",
-        "source": "SRC-TMYx",
+        "source": "TMYx.2009-2023",
         "latitude": 41.98,
         "longitude": -87.92,
         "timezone": -6.0,
         "elevation": 201.0,
         "url": "https://climate.onebuilding.org/WMO_Region_4/USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip",
+        "ashrae_climate_zone": "5A - Cool - Humid",
+        "heating_design_db_c": -17.4,
+        "cooling_design_db_c": 32.5,
+        "hdd18": 3454,
+        "cdd10": 2103,
     }
     defaults.update(kwargs)
     return WeatherStation(**defaults)  # type: ignore[arg-type]
@@ -75,6 +80,12 @@ class TestSerialization:
             "timezone",
             "elevation",
             "url",
+            "ashrae_climate_zone",
+            "heating_design_db_c",
+            "cooling_design_db_c",
+            "hdd18",
+            "cdd10",
+            "design_conditions_source_wmo",
         }
         assert set(d.keys()) == expected_keys
 
@@ -85,18 +96,38 @@ class TestSerialization:
             "state": "IL",
             "city": "Test",
             "wmo": "725300",
-            "source": "SRC",
+            "source": "TMYx",
             "latitude": "41.98",
             "longitude": "-87.92",
             "timezone": "-6.0",
             "elevation": "201.0",
             "url": "https://example.com/test.zip",
+            "ashrae_climate_zone": "5A - Cool - Humid",
+            "heating_design_db_c": "-17.4",
+            "cooling_design_db_c": "32.5",
+            "hdd18": "3454",
+            "cdd10": "2103",
         }
         s = WeatherStation.from_dict(d)  # type: ignore[arg-type]
         assert isinstance(s.wmo, str)
         assert isinstance(s.latitude, float)
         assert s.wmo == "725300"
         assert s.latitude == 41.98
+        assert isinstance(s.heating_design_db_c, float)
+        assert s.heating_design_db_c == -17.4
+        assert isinstance(s.hdd18, int)
+        assert s.hdd18 == 3454
+
+    def test_alternate_wmo_round_trip(self) -> None:
+        """The optional alternate-WMO field survives a serialization round-trip."""
+        s = _make_station(design_conditions_source_wmo="911900")
+        restored = WeatherStation.from_dict(s.to_dict())
+        assert restored.design_conditions_source_wmo == "911900"
+
+    def test_fahrenheit_properties(self) -> None:
+        s = _make_station(heating_design_db_c=0.0, cooling_design_db_c=100.0)
+        assert s.heating_design_db_f == pytest.approx(32.0)
+        assert s.cooling_design_db_f == pytest.approx(212.0)
 
 
 class TestFilenameStem:

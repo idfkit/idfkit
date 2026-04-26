@@ -101,7 +101,7 @@ Launches a local `http.server` (default `127.0.0.1:random`) serving a Leaflet + 
 idfkit tmy --refresh
 ```
 
-Rebuilds the bundled index from the live Excel files on climate.onebuilding.org. Requires `pip install idfkit[weather]` (adds `openpyxl`). The bundled index works offline; refresh is only needed when you want the latest dataset variants.
+Rebuilds the bundled index from the regional KML files on climate.onebuilding.org. Uses the Python standard library only — no third-party packages required. The bundled index works offline; refresh is only needed when you want the latest dataset variants.
 
 ## Output modes
 

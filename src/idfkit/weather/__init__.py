@@ -82,12 +82,13 @@ Index Freshness
 ---------------
 
 ``StationIndex.load()`` is purely local and requires no extra dependencies.
-Use ``StationIndex.refresh()`` (requires ``openpyxl``) to re-download the
-upstream Excel indexes and rebuild the local cache:
+Use ``StationIndex.refresh()`` to re-download the upstream KML indexes and
+rebuild the local cache. Refresh is also stdlib-only — no third-party
+packages required:
 
     ```python
     if index.check_for_updates():
-        index = StationIndex.refresh()  # requires openpyxl
+        index = StationIndex.refresh()
     ```
 """
 

@@ -31,16 +31,17 @@ The `StationIndex` provides two modes of operation:
 
 This works without any extra dependencies or network access.
 
-### Live Refresh (Requires openpyxl)
+### Live Refresh
 
-`StationIndex.refresh()` downloads the **latest Excel indexes** from
-climate.onebuilding.org and rebuilds the index:
+`StationIndex.refresh()` downloads the **latest regional KML indexes**
+from climate.onebuilding.org and rebuilds the cached index:
 
 ```python
---8<-- "docs/snippets/concepts/weather-pipeline/live_refresh_requires_openpyxl.py:example"
+--8<-- "docs/snippets/concepts/weather-pipeline/live_refresh.py:example"
 ```
 
-This requires the `openpyxl` package (`pip install idfkit[weather]`).
+Refresh uses the Python standard library only — no third-party packages
+required.
 
 ## Station vs Entry
 
@@ -83,17 +84,26 @@ Combine with `geocode()` for address-based lookups:
 --8<-- "docs/snippets/concepts/weather-pipeline/spatial_search_2.py:example"
 ```
 
-## No Climate Zone Filter
+## Climate Zone Metadata
 
-A natural question is *"can I filter stations by ASHRAE climate zone?"* The answer is **no**, and the reason is upstream: the station index on [climate.onebuilding.org](https://climate.onebuilding.org) does not publish a climate-zone column. Each listing is just country, state, city, WMO number, coordinates, elevation, timezone, and dataset variant. idfkit's `StationIndex` — and by extension `idfkit tmy` — can only expose fields that are actually in that index, so there's no `--climate-zone` flag and no `StationIndex.filter(climate_zone=...)`.
+Each `WeatherStation` carries the **ASHRAE HOF climate zone** label
+(e.g. `"4A - Mixed - Humid"`) along with 99% heating and 1% cooling
+design dry-bulb temperatures, HDD18, and CDD10. These come from the KML
+indexes published alongside each WMO region on
+[climate.onebuilding.org](https://climate.onebuilding.org).
 
-If you need to pick a station for a specific climate zone, the usual workflow is:
+Use plain Python list comprehensions to filter by zone:
 
-1. Look up the climate zone for your location (ASHRAE 169, Köppen, or your jurisdiction's map).
-2. Identify a representative city in that zone.
-3. Use `--near "<city>"` (CLI) or `geocode()` + `StationIndex.nearest()` (Python) to find the closest station.
+```python
+from idfkit.weather import StationIndex
 
-Alternatively, combine `--country`/`--state` with a coordinate bounding box via `--lat`/`--lon`/`--max-km` to narrow to stations you've already mapped to a zone out-of-band.
+index = StationIndex.load()
+zone_4a = [s for s in index.stations if s.ashrae_climate_zone.startswith("4A")]
+```
+
+When a station inherits design conditions from a neighbouring station,
+the source WMO is recorded in `design_conditions_source_wmo` (otherwise
+`None`).
 
 ## Design Day Classification
 

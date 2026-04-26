@@ -21,12 +21,17 @@ def _make_station() -> WeatherStation:
         state="IL",
         city="Chicago.Ohare.Intl.AP",
         wmo="725300",
-        source="SRC-TMYx",
+        source="TMYx.2009-2023",
         latitude=41.98,
         longitude=-87.92,
         timezone=-6.0,
         elevation=201.0,
         url="https://climate.onebuilding.org/WMO_Region_4/USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip",
+        ashrae_climate_zone="5A - Cool - Humid",
+        heating_design_db_c=-17.4,
+        cooling_design_db_c=32.5,
+        hdd18=3454,
+        cdd10=2103,
     )
 
 
