@@ -8,6 +8,6 @@ index: StationIndex = ...  # type: ignore[assignment]
 if index.check_for_updates():
     print("Updates available")
 
-    # Refresh from climate.onebuilding.org (requires openpyxl)
+    # Refresh from climate.onebuilding.org (stdlib only, no extras)
     index = StationIndex.refresh()
 # --8<-- [end:example]

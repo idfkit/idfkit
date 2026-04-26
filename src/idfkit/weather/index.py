@@ -9,6 +9,7 @@ import math
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -20,18 +21,18 @@ from .station import SearchResult, SpatialResult, WeatherStation
 
 logger = logging.getLogger(__name__)
 
-# The main regional TMYx Excel index files covering worldwide stations.
+# The main regional TMYx KML index files covering worldwide stations.
 _INDEX_FILES: tuple[str, ...] = (
-    "Region1_Africa_TMYx_EPW_Processing_locations.xlsx",
-    "Region2_Asia_TMYx_EPW_Processing_locations.xlsx",
-    "Region2_Region6_Russia_TMYx_EPW_Processing_locations.xlsx",
-    "Region3_South_America_TMYx_EPW_Processing_locations.xlsx",
-    "Region4_USA_TMYx_EPW_Processing_locations.xlsx",
-    "Region4_Canada_TMYx_EPW_Processing_locations.xlsx",
-    "Region4_NA_CA_Caribbean_TMYx_EPW_Processing_locations.xlsx",
-    "Region5_Southwest_Pacific_TMYx_EPW_Processing_locations.xlsx",
-    "Region6_Europe_TMYx_EPW_Processing_locations.xlsx",
-    "Region7_Antarctica_TMYx_EPW_Processing_locations.xlsx",
+    "Region1_Africa_TMYx_EPW_Processing_locations.kml",
+    "Region2_Asia_TMYx_EPW_Processing_locations.kml",
+    "Region2_Region6_Russia_TMYx_EPW_Processing_locations.kml",
+    "Region3_South_America_TMYx_EPW_Processing_locations.kml",
+    "Region4_USA_TMYx_EPW_Processing_locations.kml",
+    "Region4_Canada_TMYx_EPW_Processing_locations.kml",
+    "Region4_NA_CA_Caribbean_TMYx_EPW_Processing_locations.kml",
+    "Region5_Southwest_Pacific_TMYx_EPW_Processing_locations.kml",
+    "Region6_Europe_TMYx_EPW_Processing_locations.kml",
+    "Region7_Antarctica_TMYx_EPW_Processing_locations.kml",
 )
 
 _SOURCES_BASE_URL = "https://climate.onebuilding.org/sources"
@@ -74,7 +75,7 @@ def _download_file(url: str, dest: Path) -> str | None:
 
 
 def _ensure_index_file(filename: str, cache_dir: Path) -> tuple[Path, str | None]:
-    """Return the local path for an Excel index file, downloading if absent.
+    """Return the local path for a KML index file, downloading if absent.
 
     Returns ``(path, last_modified_header)``.  When the file already exists
     in the cache the header is ``None`` (we don't know it).
@@ -91,64 +92,171 @@ def _ensure_index_file(filename: str, cache_dir: Path) -> tuple[Path, str | None
     return local, last_modified
 
 
-def _parse_excel(path: Path) -> list[WeatherStation]:
-    """Parse a single climate.onebuilding.org Excel index file.
+# Strip HTML tags from a string. The KML descriptions are <![CDATA[...]]>
+# blocks containing a small HTML <table>; we don't want a real HTML parser.
+_TAG_RE = re.compile(r"<[^>]+>")
 
-    Columns (1-indexed):
-        A: Country, B: State, C: City/Station, D: WMO, E: Source Data,
-        F: Latitude (N+/S-), G: Longitude (E+/W-), H: Time Zone (GMT +/-),
-        I: Elevation (m), J: URL
+# Field extractors. Each pattern runs against the description with HTML tags
+# stripped (whitespace and newlines from the original <tr>/<td> structure are
+# preserved, so per-row keys are separated by newlines).
+_KML_PATTERNS: dict[str, re.Pattern[str]] = {
+    "data_source": re.compile(r"Data Source\s+([A-Za-z0-9._-]+)"),
+    "elevation": re.compile(r"Elevation\s+([-\d.]+)\s*m"),
+    "timezone": re.compile(r"Time Zone\s*\{?\s*GMT\s+([-+\d.]+)\s*hours?\s*\}?"),
+    "climate_zone": re.compile(r"ASHRAE\s+HOF\s+\d+\s+Climate\s+Zone\s+([^\n]+)"),
+    "heating_db_c": re.compile(r"99%\s+Heating\s+DB\s+([-\d.]+)\s*C"),
+    "cooling_db_c": re.compile(r"1%\s+Cooling\s+DB\s+([-\d.]+)\s*C"),
+    "hdd18": re.compile(r"HDD18\s+(\d+)"),
+    "cdd10": re.compile(r"CDD10\s+(\d+)"),
+    "url": re.compile(r"(https?://\S+?\.zip)"),
+    "alternate_wmo": re.compile(r"Design\s+conditions\s+from\s+alternate\s+WMO\s+(\d+)"),
+}
+
+
+def _parse_url_metadata(url: str) -> tuple[str, str, str, str]:
+    """Extract ``(country, state, city, wmo)`` from a download URL.
+
+    Examples:
+        ``USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip``
+            → ``("USA", "IL", "Chicago.Ohare.Intl.AP", "725300")``
+        ``GBR_London.Heathrow.AP.037720_TMYx.zip``
+            → ``("GBR", "", "London.Heathrow.AP", "037720")``
     """
-    try:
-        from openpyxl import load_workbook
-    except ImportError:
-        msg = (
-            "openpyxl is required for refreshing the weather station index. "
-            "Install it with:  pip install idfkit[weather]"
-        )
-        raise ImportError(msg)  # noqa: B904
+    filename = url.rsplit("/", maxsplit=1)[-1]
+    stem = filename.removesuffix(".zip")
+    parts = stem.split("_")
+    if not parts:
+        return "", "", "", ""
+    country = parts[0]
 
-    wb = load_workbook(path, read_only=True, data_only=True)
-    ws = wb[wb.sheetnames[0]]
+    # parts[1] is a 2-3 letter alpha state code only when there are 4+ underscore-segments
+    # (country, state, city.WMO, variant). For single-segment (country, city.WMO, variant)
+    # there's no state.
+    state = ""
+    city_idx = 1
+    if len(parts) >= 4 and parts[1].isalpha() and 1 <= len(parts[1]) <= 3:
+        state = parts[1]
+        city_idx = 2
+
+    if city_idx >= len(parts):
+        return country, state, "", ""
+
+    city_with_wmo = parts[city_idx]
+    dot_split = city_with_wmo.rsplit(".", maxsplit=1)
+    if len(dot_split) == 2 and dot_split[1].isdigit():
+        return country, state, dot_split[0], dot_split[1]
+    return country, state, city_with_wmo, ""
+
+
+def _strip_kml_namespace(root: ET.Element) -> None:
+    """Remove KML namespace prefixes so element lookups don't need them."""
+    for elem in root.iter():
+        tag = elem.tag
+        if "}" in tag:
+            elem.tag = tag.split("}", 1)[1]
+
+
+def _parse_kml(path: Path) -> list[WeatherStation]:
+    """Parse a single climate.onebuilding.org KML index file.
+
+    Each ``<Placemark>`` represents one downloadable weather entry. The
+    placemark's ``<description>`` is a CDATA block containing a small
+    HTML table with the station's metadata; coordinates are read from
+    the ``<Point><coordinates>`` element.
+
+    Sentinel placemarks (e.g. the region label that opens each KML and
+    has no description / no download URL) are skipped silently. Real
+    station placemarks missing any of the required climate metrics
+    raise ``ValueError`` so the surprise is caught at index-rebuild time
+    rather than at search time.
+
+    The KMLs declare ``encoding="UTF-8"`` but occasionally contain a
+    stray Latin-1 byte inside a URL or station name (e.g. the ``í`` in
+    ``Potosí``). We decode tolerantly with ``errors="replace"`` so a
+    handful of replacement characters in those fields don't bring down
+    the rebuild.
+    """
+    text = path.read_bytes().decode("utf-8", errors="replace")
+    root = ET.fromstring(text)  # noqa: S314 — input is a known KML from a trusted source
+    _strip_kml_namespace(root)
 
     stations: list[WeatherStation] = []
-    for i, row in enumerate(ws.iter_rows(values_only=True)):
-        if i == 0:
-            # Skip header row
-            continue
-        # Unpack the 10 columns.  Cast via Any because openpyxl's
-        # cell-value union type is too wide for int()/float() directly.
-        vals: tuple[Any, ...] = tuple(row)
-        country, state, city, wmo, source, lat, lon, tz, elev, url = (
-            vals[0],
-            vals[1],
-            vals[2],
-            vals[3],
-            vals[4],
-            vals[5],
-            vals[6],
-            vals[7],
-            vals[8],
-            vals[9],
-        )
-        if url is None or lat is None or lon is None:
-            continue
-        stations.append(
-            WeatherStation(
-                country=str(country or ""),
-                state=str(state or ""),
-                city=str(city or ""),
-                wmo=str(wmo).split(".")[0] if wmo is not None else "",
-                source=str(source or ""),
-                latitude=float(lat),
-                longitude=float(lon),
-                timezone=float(tz) if tz is not None else 0.0,
-                elevation=float(elev) if elev is not None else 0.0,
-                url=str(url),
-            )
-        )
-    wb.close()
+    for placemark in root.iter("Placemark"):
+        station = _parse_placemark(placemark, path.name)
+        if station is not None:
+            stations.append(station)
     return stations
+
+
+def _parse_placemark(placemark: ET.Element, source_filename: str) -> WeatherStation | None:
+    """Parse a single ``<Placemark>`` element. Returns ``None`` for sentinels."""
+    description_elem = placemark.find("description")
+    coords_elem = placemark.find(".//coordinates")
+    name_elem = placemark.find("name")
+    if description_elem is None or description_elem.text is None or coords_elem is None:
+        return None
+
+    plain = _TAG_RE.sub("", description_elem.text)
+
+    url_match = _KML_PATTERNS["url"].search(plain)
+    if url_match is None:
+        return None
+    url = url_match.group(1)
+
+    coords_text = (coords_elem.text or "").strip()
+    coords_parts = coords_text.split(",")
+    if len(coords_parts) < 2:
+        return None
+    longitude = float(coords_parts[0])
+    latitude = float(coords_parts[1])
+
+    placemark_name = (name_elem.text or "?") if name_elem is not None else "?"
+
+    def _required(key: str) -> str:
+        match = _KML_PATTERNS[key].search(plain)
+        if match is None:
+            msg = f"Placemark {placemark_name!r} in {source_filename} is missing required field {key!r}"
+            raise ValueError(msg)
+        return match.group(1)
+
+    climate_zone = _required("climate_zone").strip()
+    heating_db_c = float(_required("heating_db_c"))
+    cooling_db_c = float(_required("cooling_db_c"))
+    hdd18 = int(_required("hdd18"))
+    cdd10 = int(_required("cdd10"))
+
+    elev_match = _KML_PATTERNS["elevation"].search(plain)
+    elevation = float(elev_match.group(1)) if elev_match else 0.0
+
+    tz_match = _KML_PATTERNS["timezone"].search(plain)
+    timezone_offset = float(tz_match.group(1)) if tz_match else 0.0
+
+    source_match = _KML_PATTERNS["data_source"].search(plain)
+    source = source_match.group(1) if source_match else ""
+
+    alt_match = _KML_PATTERNS["alternate_wmo"].search(plain)
+    alternate_wmo = alt_match.group(1) if alt_match else None
+
+    country, state, city, wmo = _parse_url_metadata(url)
+
+    return WeatherStation(
+        country=country,
+        state=state,
+        city=city,
+        wmo=wmo,
+        source=source,
+        latitude=latitude,
+        longitude=longitude,
+        timezone=timezone_offset,
+        elevation=elevation,
+        url=url,
+        ashrae_climate_zone=climate_zone,
+        heating_design_db_c=heating_db_c,
+        cooling_design_db_c=cooling_db_c,
+        hdd18=hdd18,
+        cdd10=cdd10,
+        design_conditions_source_wmo=alternate_wmo,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +415,7 @@ class StationIndex:
     """Searchable index of weather stations from climate.onebuilding.org.
 
     Use [load][idfkit.weather.index.StationIndex.load] to load the bundled (or user-refreshed) station index.
-    No network access or ``openpyxl`` is required for [load][idfkit.weather.index.StationIndex.load].
+    No network access or third-party dependencies are required for [load][idfkit.weather.index.StationIndex.load].
 
     Use [check_for_updates][idfkit.weather.index.StationIndex.check_for_updates] to see if upstream data has changed, and
     [refresh][idfkit.weather.index.StationIndex.refresh] to re-download and rebuild the index.
@@ -377,9 +485,9 @@ class StationIndex:
 
     @classmethod
     def refresh(cls, *, cache_dir: Path | None = None) -> StationIndex:
-        """Re-download Excel indexes from climate.onebuilding.org and rebuild the cache.
+        """Re-download the regional KML indexes from climate.onebuilding.org and rebuild the cache.
 
-        Requires ``openpyxl``.  Install with ``pip install idfkit[weather]``.
+        Uses the Python standard library only — no third-party dependencies.
 
         Args:
             cache_dir: Override the default cache directory.
@@ -392,7 +500,7 @@ class StationIndex:
             local_path, lm = _ensure_index_file(fname, cache)
             if lm is not None:
                 last_modified[fname] = lm
-            all_stations.extend(_parse_excel(local_path))
+            all_stations.extend(_parse_kml(local_path))
 
         dest = cache / _CACHED_INDEX
         _save_compressed_index(all_stations, last_modified, dest)
@@ -404,7 +512,7 @@ class StationIndex:
     # --- Freshness ----------------------------------------------------------
 
     def check_for_updates(self) -> bool:
-        """Check if upstream Excel files have changed since this index was built.
+        """Check if upstream KML files have changed since this index was built.
 
         Sends lightweight HEAD requests to climate.onebuilding.org.
         Returns ``True`` if any file has a newer ``Last-Modified`` date.

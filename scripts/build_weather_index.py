@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Build the bundled weather station index.
 
-Downloads all 10 regional Excel index files from climate.onebuilding.org,
+Downloads all 10 regional KML index files from climate.onebuilding.org,
 parses them, and writes a compressed JSON index to
 ``src/idfkit/weather/data/stations.json.gz``.
 
-Requires ``openpyxl`` (install via ``pip install idfkit[weather]``).
+Uses the Python standard library only — no third-party dependencies.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from idfkit.weather.index import (
     _INDEX_FILES,
     _SOURCES_BASE_URL,
     _download_file,
-    _parse_excel,
+    _parse_kml,
     _save_compressed_index,
 )
 from idfkit.weather.station import WeatherStation
@@ -29,7 +29,7 @@ _DEST = Path(__file__).resolve().parent.parent / "src" / "idfkit" / "weather" / 
 
 
 def main() -> None:
-    """Download Excel indexes, parse stations, and write compressed index."""
+    """Download KML indexes, parse stations, and write compressed index."""
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -46,7 +46,7 @@ def main() -> None:
                 last_modified[fname] = lm
 
             print(f"  Parsing {fname}...")
-            stations = _parse_excel(dest)
+            stations = _parse_kml(dest)
             print(f"  Found {len(stations)} stations")
             all_stations.extend(stations)
 

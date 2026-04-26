@@ -91,13 +91,12 @@ The core weather module requires no extra dependencies:
 
 To refresh the index from upstream:
 
-```bash
-pip install idfkit[weather]  # Adds openpyxl
-```
-
 ```python
 --8<-- "docs/snippets/weather/index/installation_2.py:example"
 ```
+
+Refresh uses the Python standard library only — no third-party packages
+required.
 
 ## Workflow Example
 

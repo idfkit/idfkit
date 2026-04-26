@@ -81,8 +81,10 @@ Combine `geocode()` with `nearest()` for address-based search:
 --8<-- "docs/snippets/weather/station-search/search_by_address.py:example"
 ```
 
-!!! note "No climate-zone filter"
-    The upstream index on climate.onebuilding.org does not include climate-zone metadata, so `StationIndex` cannot filter by ASHRAE/Köppen zone. See [Weather Pipeline: No Climate Zone Filter](../concepts/weather-pipeline.md#no-climate-zone-filter) for the workaround.
+!!! tip "Climate-zone-aware search"
+    Each `WeatherStation` carries its ASHRAE HOF climate zone, design
+    dry-bulb temperatures, HDD18, and CDD10. See
+    [Filter by Climate Zone](#filter-by-climate-zone) below.
 
 ## Filter by Country
 
@@ -115,15 +117,37 @@ Note: WMO numbers are **not unique** — multiple entries can share a WMO
 | `state` | `str` | State/province/region |
 | `country` | `str` | Country name |
 | `wmo` | `str` | WMO station number |
-| `source` | `str` | Data source identifier (e.g., "SRC-TMYx") |
+| `source` | `str` | Dataset source identifier (e.g., `"TMYx.2009-2023"`) |
 | `latitude` | `float` | Station latitude |
 | `longitude` | `float` | Station longitude |
 | `timezone` | `float` | UTC offset (hours from GMT) |
 | `elevation` | `float` | Elevation in meters |
 | `url` | `str` | Download URL for weather files |
+| `ashrae_climate_zone` | `str` | ASHRAE HOF climate zone (e.g., `"4A - Mixed - Humid"`) |
+| `heating_design_db_c` | `float` | 99% heating design dry-bulb temperature (°C) |
+| `cooling_design_db_c` | `float` | 1% cooling design dry-bulb temperature (°C) |
+| `heating_design_db_f` | `float` | 99% heating design dry-bulb temperature (°F, computed) |
+| `cooling_design_db_f` | `float` | 1% cooling design dry-bulb temperature (°F, computed) |
+| `hdd18` | `int` | Heating degree-days, base 18 °C |
+| `cdd10` | `int` | Cooling degree-days, base 10 °C |
+| `design_conditions_source_wmo` | `str \| None` | WMO of a neighbouring station whose design conditions are inherited; `None` for stations with their own design data |
 | `display_name` | `str` | Formatted name (city, state, country) |
 | `filename_stem` | `str` | Canonical EPW filename stem from URL |
-| `dataset_variant` | `str` | TMYx variant (e.g., "TMYx.2009-2023") |
+| `dataset_variant` | `str` | TMYx variant (e.g., `"TMYx.2009-2023"`) |
+
+The five climate metrics (`ashrae_climate_zone`, the two design DBs,
+HDD18, and CDD10) are populated for every station in the bundled index.
+`design_conditions_source_wmo` is only set when a station inherits its
+design conditions from a neighbouring WMO station; otherwise it is
+`None`.
+
+## Filter by Climate Zone
+
+Filter stations by ASHRAE climate zone using a plain list comprehension:
+
+```python
+--8<-- "docs/snippets/weather/station-search/filter_by_climate_zone.py:example"
+```
 
 ## Listing Countries
 
@@ -139,9 +163,9 @@ The bundled index works without network access. To get the latest data:
 --8<-- "docs/snippets/weather/station-search/refreshing_the_index.py:example"
 ```
 
-Refresh requires: `pip install idfkit[weather]`
-
-The same operation is available from the shell as `idfkit tmy --refresh` — see [`idfkit tmy`](../cli/tmy.md#refresh-the-station-index).
+Refresh uses the Python standard library only — no third-party packages
+required. The same operation is available from the shell as
+`idfkit tmy --refresh` — see [`idfkit tmy`](../cli/tmy.md#refresh-the-station-index).
 
 ## Performance
 

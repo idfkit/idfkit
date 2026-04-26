@@ -19,7 +19,8 @@ from idfkit.weather.index import (
     _head_last_modified,  # pyright: ignore[reportPrivateUsage]
     _is_epw_filename,  # pyright: ignore[reportPrivateUsage]
     _load_compressed_index,  # pyright: ignore[reportPrivateUsage]
-    _parse_excel,  # pyright: ignore[reportPrivateUsage]
+    _parse_kml,  # pyright: ignore[reportPrivateUsage]
+    _parse_url_metadata,  # pyright: ignore[reportPrivateUsage]
     _save_compressed_index,  # pyright: ignore[reportPrivateUsage]
     _score_station,  # pyright: ignore[reportPrivateUsage]
     _strip_weather_extension,  # pyright: ignore[reportPrivateUsage]
@@ -36,60 +37,86 @@ def _fixture_stations() -> list[WeatherStation]:
             state="IL",
             city="Chicago.Ohare.Intl.AP",
             wmo="725300",
-            source="SRC-TMYx",
+            source="TMYx.2009-2023",
             latitude=41.98,
             longitude=-87.92,
             timezone=-6.0,
             elevation=201.0,
             url="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/USA_United_States_of_America/IL_Illinois/USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip",
+            ashrae_climate_zone="5A - Cool - Humid",
+            heating_design_db_c=-17.4,
+            cooling_design_db_c=32.5,
+            hdd18=3454,
+            cdd10=2103,
         ),
         WeatherStation(
             country="USA",
             state="IL",
             city="Chicago.Midway.AP",
             wmo="725340",
-            source="SRC-TMYx",
+            source="TMYx.2009-2023",
             latitude=41.79,
             longitude=-87.75,
             timezone=-6.0,
             elevation=189.0,
             url="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/USA_United_States_of_America/IL_Illinois/USA_IL_Chicago.Midway.AP.725340_TMYx.2009-2023.zip",
+            ashrae_climate_zone="5A - Cool - Humid",
+            heating_design_db_c=-17.0,
+            cooling_design_db_c=32.6,
+            hdd18=3380,
+            cdd10=2155,
+            design_conditions_source_wmo="725300",
         ),
         WeatherStation(
             country="USA",
             state="NY",
             city="New.York.J.F.Kennedy.Intl.AP",
             wmo="744860",
-            source="SRC-TMYx",
+            source="TMYx",
             latitude=40.64,
             longitude=-73.76,
             timezone=-5.0,
             elevation=4.0,
             url="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/USA_United_States_of_America/NY_New_York/USA_NY_New.York.J.F.Kennedy.Intl.AP.744860_TMYx.zip",
+            ashrae_climate_zone="4A - Mixed - Humid",
+            heating_design_db_c=-10.5,
+            cooling_design_db_c=31.2,
+            hdd18=2625,
+            cdd10=1869,
         ),
         WeatherStation(
             country="GBR",
             state="",
             city="London.Heathrow.AP",
-            wmo="37720",
-            source="SRC-TMYx",
+            wmo="037720",
+            source="TMYx",
             latitude=51.48,
             longitude=-0.45,
             timezone=0.0,
             elevation=25.0,
             url="https://climate.onebuilding.org/WMO_Region_6_Europe/GBR_United_Kingdom/GBR_London.Heathrow.AP.037720_TMYx.zip",
+            ashrae_climate_zone="4A - Mixed - Humid",
+            heating_design_db_c=-3.4,
+            cooling_design_db_c=27.4,
+            hdd18=2387,
+            cdd10=916,
         ),
         WeatherStation(
             country="FRA",
             state="",
             city="Paris.Orly.AP",
-            wmo="71490",
-            source="SRC-TMYx",
+            wmo="071490",
+            source="TMYx",
             latitude=48.73,
             longitude=2.40,
             timezone=1.0,
             elevation=89.0,
             url="https://climate.onebuilding.org/WMO_Region_6_Europe/FRA_France/FRA_Paris.Orly.AP.071490_TMYx.zip",
+            ashrae_climate_zone="4A - Mixed - Humid",
+            heating_design_db_c=-4.5,
+            cooling_design_db_c=29.6,
+            hdd18=2390,
+            cdd10=1147,
         ),
     ]
 
@@ -147,7 +174,7 @@ class TestDefaultCacheDir:
 
 class TestDownloadFile:
     def test_downloads_to_dest(self, tmp_path: Path) -> None:
-        dest = tmp_path / "subdir" / "file.xlsx"
+        dest = tmp_path / "subdir" / "file.kml"
         mock_resp = MagicMock()
         mock_resp.read.return_value = b"data"
         mock_resp.headers.get.return_value = "Mon, 01 Jan 2024 00:00:00 GMT"
@@ -155,13 +182,13 @@ class TestDownloadFile:
         mock_resp.__exit__ = MagicMock(return_value=False)
 
         with patch("idfkit.weather.index.urlopen", return_value=mock_resp):
-            lm = _download_file("https://example.com/file.xlsx", dest)
+            lm = _download_file("https://example.com/file.kml", dest)
 
         assert dest.read_bytes() == b"data"
         assert lm == "Mon, 01 Jan 2024 00:00:00 GMT"
 
     def test_returns_none_when_no_header(self, tmp_path: Path) -> None:
-        dest = tmp_path / "file.xlsx"
+        dest = tmp_path / "file.kml"
         mock_resp = MagicMock()
         mock_resp.read.return_value = b"data"
         mock_resp.headers.get.return_value = None
@@ -169,7 +196,7 @@ class TestDownloadFile:
         mock_resp.__exit__ = MagicMock(return_value=False)
 
         with patch("idfkit.weather.index.urlopen", return_value=mock_resp):
-            lm = _download_file("https://example.com/file.xlsx", dest)
+            lm = _download_file("https://example.com/file.kml", dest)
 
         assert lm is None
 
@@ -181,22 +208,22 @@ class TestDownloadFile:
 
 class TestEnsureIndexFile:
     def test_already_cached(self, tmp_path: Path) -> None:
-        cached = tmp_path / "indexes" / "test.xlsx"
+        cached = tmp_path / "indexes" / "test.kml"
         cached.parent.mkdir(parents=True)
         cached.write_text("existing")
-        path, lm = _ensure_index_file("test.xlsx", tmp_path)
+        path, lm = _ensure_index_file("test.kml", tmp_path)
         assert path == cached
         assert lm is None
 
     def test_downloads_on_miss(self, tmp_path: Path) -> None:
         mock_resp = MagicMock()
-        mock_resp.read.return_value = b"excel-data"
+        mock_resp.read.return_value = b"<kml/>"
         mock_resp.headers.get.return_value = "Tue, 02 Jan 2024"
         mock_resp.__enter__ = lambda s: s
         mock_resp.__exit__ = MagicMock(return_value=False)
 
         with patch("idfkit.weather.index.urlopen", return_value=mock_resp):
-            path, lm = _ensure_index_file("Region1.xlsx", tmp_path)
+            path, lm = _ensure_index_file("Region1.kml", tmp_path)
 
         assert path.exists()
         assert lm == "Tue, 02 Jan 2024"
@@ -208,64 +235,199 @@ class TestEnsureIndexFile:
             patch("idfkit.weather.index.urlopen", side_effect=URLError("connection failed")),
             pytest.raises(RuntimeError, match="Failed to download"),
         ):
-            _ensure_index_file("Region1.xlsx", tmp_path)
+            _ensure_index_file("Region1.kml", tmp_path)
 
 
 # ---------------------------------------------------------------------------
-# _parse_excel (lines 102-151)
+# _parse_url_metadata
 # ---------------------------------------------------------------------------
 
 
-class TestParseExcel:
-    def test_import_error_without_openpyxl(self) -> None:
-        with patch.dict("sys.modules", {"openpyxl": None}), pytest.raises(ImportError, match="openpyxl"):
-            _parse_excel(Path("fake.xlsx"))
+class TestParseUrlMetadata:
+    def test_us_with_state(self) -> None:
+        url = (
+            "https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/"
+            "USA_United_States_of_America/IL_Illinois/"
+            "USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip"
+        )
+        country, state, city, wmo = _parse_url_metadata(url)
+        assert country == "USA"
+        assert state == "IL"
+        assert city == "Chicago.Ohare.Intl.AP"
+        assert wmo == "725300"
 
-    def test_parse_with_mock_workbook(self) -> None:
-        rows = [
-            ("Country", "State", "City", "WMO", "Source", "Lat", "Lon", "TZ", "Elev", "URL"),
-            ("USA", "IL", "Chicago", "725300", "TMYx", 41.98, -87.92, -6.0, 201.0, "https://example.com/f.zip"),
-            ("GBR", "", "London", None, "TMYx", 51.47, -0.46, 0.0, None, "https://example.com/l.zip"),
-            ("FRA", "", "Paris", 71490, "TMYx", None, None, None, None, None),  # skip: no url/lat/lon
-        ]
+    def test_non_us_no_state(self) -> None:
+        url = (
+            "https://climate.onebuilding.org/WMO_Region_6_Europe/"
+            "GBR_United_Kingdom/GBR_London.Heathrow.AP.037720_TMYx.zip"
+        )
+        country, state, city, wmo = _parse_url_metadata(url)
+        assert country == "GBR"
+        assert state == ""
+        assert city == "London.Heathrow.AP"
+        assert wmo == "037720"  # Leading zero preserved
 
-        mock_ws = MagicMock()
-        mock_ws.iter_rows.return_value = rows
+    def test_preserves_leading_zero(self) -> None:
+        url = "https://example.com/FRA_Paris.Orly.AP.071490_TMYx.zip"
+        _, _, _, wmo = _parse_url_metadata(url)
+        assert wmo == "071490"
 
-        mock_wb = MagicMock()
-        mock_wb.sheetnames = ["Sheet1"]
-        mock_wb.__getitem__ = MagicMock(return_value=mock_ws)
 
-        mock_openpyxl = MagicMock()
-        mock_openpyxl.load_workbook.return_value = mock_wb
+# ---------------------------------------------------------------------------
+# _parse_kml
+# ---------------------------------------------------------------------------
 
-        with patch.dict("sys.modules", {"openpyxl": mock_openpyxl}):
-            stations = _parse_excel(Path("fake.xlsx"))
 
-        assert len(stations) == 2
-        assert stations[0].city == "Chicago"
+def _build_kml(placemarks_xml: str) -> str:
+    """Wrap one or more placemark fragments in a minimal KML document."""
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<kml xmlns="http://earth.google.com/kml/2.1">'
+        "<Document>"
+        f"{placemarks_xml}"
+        "</Document>"
+        "</kml>"
+    )
+
+
+def _placemark(
+    name: str,
+    description: str | None,
+    coords: str | None = "-87.92,41.98,201",
+) -> str:
+    parts = [f"<Placemark><name>{name}</name>"]
+    if description is not None:
+        parts.append(f"<description><![CDATA[{description}]]></description>")
+    if coords is not None:
+        parts.append(f"<Point><coordinates>{coords}</coordinates></Point>")
+    parts.append("</Placemark>")
+    return "".join(parts)
+
+
+_FULL_DESCRIPTION = """<table>
+<tr><td colspan="2"><b>USA IL Chicago.Ohare.Intl.AP.725300 TMYx.2009-2023</b></td></tr>
+<tr><td><b>Data Source TMYx.2009-2023</td></tr>
+<tr><td>WMO <b>725300</b></td></tr>
+<tr><td>Elevation <b>201</b> m</td></tr>
+<tr><td>Time Zone {GMT <b>-6.0</b> hours}</td></tr>
+<tr><td>ASHRAE HOF 2025 Climate Zone <b>5A - Cool - Humid</b></td></tr>
+<tr><td>99% Heating DB <b>-17.4 C</b>, <b>0.7 F</b></td></tr>
+<tr><td>1% Cooling DB <b>32.5 C</b>, <b>90.5 F</b></td></tr>
+<tr><td>HDD18 <b>3454</b>, CDD10 <b>2103</b></td></tr>
+<tr><td>URL https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/USA_United_States_of_America/IL_Illinois/USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip</td></tr>
+</table>"""
+
+_ALTERNATE_WMO_DESCRIPTION = """<table>
+<tr><td><b>Data Source TMY3</td></tr>
+<tr><td>Elevation <b>1</b> m</td></tr>
+<tr><td>Time Zone {GMT <b>-10.0</b> hours}</td></tr>
+<tr><td>ASHRAE HOF 2025 Climate Zone <b>0A - Extremely Hot - Humid</b></td></tr>
+<tr><td>Design conditions from alternate WMO 911900</td></tr>
+<tr><td>99% Heating DB <b>14.0 C</b>, <b>57.2 F</b></td></tr>
+<tr><td>1% Cooling DB <b>30.0 C</b>, <b>86.0 F</b></td></tr>
+<tr><td>HDD18 <b>0</b>, CDD10 <b>5444</b></td></tr>
+<tr><td>URL https://climate.onebuilding.org/WMO_Region_5_Southwest_Pacific/USA_United_States_of_America/HI_Hawaii/USA_HI_Kapalua-West.Maui.AP.911900_TMY3.zip</td></tr>
+</table>"""
+
+
+class TestParseKml:
+    def test_full_placemark(self, tmp_path: Path) -> None:
+        kml = _build_kml(_placemark("Chicago O'Hare", _FULL_DESCRIPTION, "-87.92,41.98,201"))
+        path = tmp_path / "test.kml"
+        path.write_text(kml, encoding="utf-8")
+
+        stations = _parse_kml(path)
+        assert len(stations) == 1
+        s = stations[0]
+        assert s.country == "USA"
+        assert s.state == "IL"
+        assert s.city == "Chicago.Ohare.Intl.AP"
+        assert s.wmo == "725300"
+        assert s.source == "TMYx.2009-2023"
+        assert s.latitude == 41.98
+        assert s.longitude == -87.92
+        assert s.timezone == -6.0
+        assert s.elevation == 201.0
+        assert s.ashrae_climate_zone == "5A - Cool - Humid"
+        assert s.heating_design_db_c == -17.4
+        assert s.cooling_design_db_c == 32.5
+        assert s.hdd18 == 3454
+        assert s.cdd10 == 2103
+        assert s.design_conditions_source_wmo is None
+
+    def test_alternate_wmo_annotation(self, tmp_path: Path) -> None:
+        kml = _build_kml(_placemark("Kapalua", _ALTERNATE_WMO_DESCRIPTION, "-156.67,20.96,1"))
+        path = tmp_path / "test.kml"
+        path.write_text(kml, encoding="utf-8")
+
+        stations = _parse_kml(path)
+        assert len(stations) == 1
+        assert stations[0].design_conditions_source_wmo == "911900"
+        assert stations[0].ashrae_climate_zone == "0A - Extremely Hot - Humid"
+
+    def test_sentinel_no_description(self, tmp_path: Path) -> None:
+        """A region-label placemark with no description is skipped silently."""
+        kml = _build_kml(
+            _placemark("Region Label", description=None, coords="0,0,0")
+            + _placemark("Chicago O'Hare", _FULL_DESCRIPTION, "-87.92,41.98,201")
+        )
+        path = tmp_path / "test.kml"
+        path.write_text(kml, encoding="utf-8")
+
+        stations = _parse_kml(path)
+        assert len(stations) == 1
         assert stations[0].wmo == "725300"
-        assert stations[1].wmo == ""  # None wmo -> ""
-        assert stations[1].elevation == 0.0  # None elevation -> 0.0
 
-    def test_parse_wmo_with_decimal(self) -> None:
-        """WMO like 725300.0 should be split to '725300'."""
-        rows = [
-            ("Country", "State", "City", "WMO", "Source", "Lat", "Lon", "TZ", "Elev", "URL"),
-            ("USA", "IL", "Chicago", "725300.0", "TMYx", 41.98, -87.92, -6.0, 201.0, "https://example.com/f.zip"),
-        ]
-        mock_ws = MagicMock()
-        mock_ws.iter_rows.return_value = rows
-        mock_wb = MagicMock()
-        mock_wb.sheetnames = ["Sheet1"]
-        mock_wb.__getitem__ = MagicMock(return_value=mock_ws)
-        mock_openpyxl = MagicMock()
-        mock_openpyxl.load_workbook.return_value = mock_wb
+    def test_sentinel_no_url(self, tmp_path: Path) -> None:
+        """A placemark whose description has no download URL is skipped silently."""
+        no_url = "<table><tr><td>Some metadata without a download link</td></tr></table>"
+        kml = _build_kml(_placemark("Header", no_url, "0,0,0"))
+        path = tmp_path / "test.kml"
+        path.write_text(kml, encoding="utf-8")
 
-        with patch.dict("sys.modules", {"openpyxl": mock_openpyxl}):
-            stations = _parse_excel(Path("fake.xlsx"))
+        assert _parse_kml(path) == []
 
-        assert stations[0].wmo == "725300"
+    def test_missing_required_field_raises(self, tmp_path: Path) -> None:
+        """Real placemark missing a required climate field surfaces loudly."""
+        broken = """<table>
+<tr><td><b>Data Source TMYx</td></tr>
+<tr><td>Elevation <b>10</b> m</td></tr>
+<tr><td>Time Zone {GMT <b>0.0</b> hours}</td></tr>
+<tr><td>99% Heating DB <b>-5.0 C</b>, <b>23.0 F</b></td></tr>
+<tr><td>1% Cooling DB <b>30.0 C</b>, <b>86.0 F</b></td></tr>
+<tr><td>HDD18 <b>2000</b>, CDD10 <b>1000</b></td></tr>
+<tr><td>URL https://example.com/XYZ_Broken.Station.999999_TMYx.zip</td></tr>
+</table>"""
+        kml = _build_kml(_placemark("Broken Station", broken, "0,0,0"))
+        path = tmp_path / "broken.kml"
+        path.write_text(kml, encoding="utf-8")
+
+        with pytest.raises(ValueError, match=r"climate_zone.*Broken Station|Broken Station.*climate_zone"):
+            _parse_kml(path)
+
+    def test_country_state_from_url(self, tmp_path: Path) -> None:
+        """The non-US placemark exercises the no-state branch of URL parsing."""
+        gbr_desc = """<table>
+<tr><td><b>Data Source TMYx</td></tr>
+<tr><td>Elevation <b>25</b> m</td></tr>
+<tr><td>Time Zone {GMT <b>0.0</b> hours}</td></tr>
+<tr><td>ASHRAE HOF 2025 Climate Zone <b>4A - Mixed - Humid</b></td></tr>
+<tr><td>99% Heating DB <b>-3.4 C</b>, <b>25.9 F</b></td></tr>
+<tr><td>1% Cooling DB <b>27.4 C</b>, <b>81.3 F</b></td></tr>
+<tr><td>HDD18 <b>2387</b>, CDD10 <b>916</b></td></tr>
+<tr><td>URL https://climate.onebuilding.org/WMO_Region_6_Europe/GBR_United_Kingdom/GBR_London.Heathrow.AP.037720_TMYx.zip</td></tr>
+</table>"""
+        kml = _build_kml(_placemark("London Heathrow", gbr_desc, "-0.45,51.48,25"))
+        path = tmp_path / "gbr.kml"
+        path.write_text(kml, encoding="utf-8")
+
+        stations = _parse_kml(path)
+        assert len(stations) == 1
+        s = stations[0]
+        assert s.country == "GBR"
+        assert s.state == ""
+        assert s.city == "London.Heathrow.AP"
+        assert s.wmo == "037720"
 
 
 # ---------------------------------------------------------------------------
@@ -608,6 +770,11 @@ class TestNearest:
             timezone=0.0,
             elevation=0.0,
             url="",
+            ashrae_climate_zone="0A - Extremely Hot - Humid",
+            heating_design_db_c=15.0,
+            cooling_design_db_c=35.0,
+            hdd18=0,
+            cdd10=5000,
         )
         idx = StationIndex.from_stations([corner_station])
         results = idx.nearest(0.0, 0.0, max_distance_km=50.0)
@@ -658,7 +825,7 @@ class TestFilter:
 class TestCompressedIndex:
     def test_save_and_load_round_trip(self, tmp_path: Path) -> None:
         stations = _fixture_stations()
-        last_modified = {"file_a.xlsx": "Wed, 15 Jan 2026 10:30:00 GMT"}
+        last_modified = {"file_a.kml": "Wed, 15 Jan 2026 10:30:00 GMT"}
         dest = tmp_path / "stations.json.gz"
 
         _save_compressed_index(stations, last_modified, dest)
@@ -666,6 +833,11 @@ class TestCompressedIndex:
 
         assert len(loaded_stations) == len(stations)
         assert loaded_stations[0] == stations[0]
+        # New climate fields and the alternate-WMO override survive the round-trip.
+        assert loaded_stations[0].ashrae_climate_zone == "5A - Cool - Humid"
+        assert loaded_stations[0].heating_design_db_c == -17.4
+        assert loaded_stations[1].design_conditions_source_wmo == "725300"
+        assert loaded_stations[2].design_conditions_source_wmo is None
         assert loaded_lm == last_modified
         assert built_at
 
@@ -695,7 +867,7 @@ class TestLoadBundled:
 
     def test_load_from_cache_takes_priority(self, tmp_path: Path) -> None:
         stations = _fixture_stations()[:2]
-        last_modified = {"test.xlsx": "Mon, 01 Jan 2026 00:00:00 GMT"}
+        last_modified = {"test.kml": "Mon, 01 Jan 2026 00:00:00 GMT"}
         dest = tmp_path / "stations.json.gz"
         _save_compressed_index(stations, last_modified, dest)
 
@@ -714,7 +886,7 @@ class TestCheckForUpdates:
     def test_stale_returns_true(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
         idx._last_modified = {  # pyright: ignore[reportPrivateUsage]
-            "Region1_Africa_TMYx_EPW_Processing_locations.xlsx": "Wed, 01 Jan 2020 00:00:00 GMT",
+            "Region1_Africa_TMYx_EPW_Processing_locations.kml": "Wed, 01 Jan 2020 00:00:00 GMT",
         }
         with patch(
             "idfkit.weather.index._head_last_modified",
@@ -726,7 +898,7 @@ class TestCheckForUpdates:
         idx = StationIndex.from_stations(_fixture_stations())
         same_date = "Wed, 15 Jan 2026 10:30:00 GMT"
         idx._last_modified = {  # pyright: ignore[reportPrivateUsage]
-            "Region1_Africa_TMYx_EPW_Processing_locations.xlsx": same_date,
+            "Region1_Africa_TMYx_EPW_Processing_locations.kml": same_date,
         }
         with patch("idfkit.weather.index._head_last_modified", return_value=same_date):
             assert idx.check_for_updates() is False
@@ -734,7 +906,7 @@ class TestCheckForUpdates:
     def test_offline_returns_false(self) -> None:
         idx = StationIndex.from_stations(_fixture_stations())
         idx._last_modified = {  # pyright: ignore[reportPrivateUsage]
-            "Region1_Africa_TMYx_EPW_Processing_locations.xlsx": "Wed, 01 Jan 2020 00:00:00 GMT",
+            "Region1_Africa_TMYx_EPW_Processing_locations.kml": "Wed, 01 Jan 2020 00:00:00 GMT",
         }
         with patch("idfkit.weather.index._head_last_modified", return_value=None):
             assert idx.check_for_updates() is False
@@ -754,7 +926,7 @@ class TestRefresh:
 
         with (
             patch("idfkit.weather.index._ensure_index_file", side_effect=mock_ensure),
-            patch("idfkit.weather.index._parse_excel", return_value=stations),
+            patch("idfkit.weather.index._parse_kml", return_value=stations),
         ):
             idx = StationIndex.refresh(cache_dir=tmp_path)
 

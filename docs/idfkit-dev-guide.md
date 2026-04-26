@@ -5,7 +5,7 @@ Copy the block below into your project's `CLAUDE.md` to give Claude Code context
 ````markdown
 ## idfkit Dependency Guide
 
-**idfkit** is a Python toolkit for EnergyPlus IDF/epJSON files. It provides O(1) object lookups, automatic reference tracking, schema-driven validation, simulation execution, weather data, schedule evaluation, thermal calculations, and 3D geometry operations. Zero third-party dependencies for the core package (including simulation, schedules, thermal, and geometry). Optional extras: `weather` (openpyxl), `pandas`, `plot` (matplotlib), `plotly`, `progress` (tqdm), `s3`/`async-s3` (cloud storage), or `all`.
+**idfkit** is a Python toolkit for EnergyPlus IDF/epJSON files. It provides O(1) object lookups, automatic reference tracking, schema-driven validation, simulation execution, weather data, schedule evaluation, thermal calculations, and 3D geometry operations. Zero third-party dependencies for the core package (including simulation, schedules, thermal, geometry, and weather). Optional extras: `pandas`, `plot` (matplotlib), `plotly`, `progress` (tqdm), `s3`/`async-s3` (cloud storage), or `all`.
 
 ### Loading & Creating Documents
 

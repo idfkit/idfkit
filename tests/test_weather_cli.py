@@ -42,7 +42,8 @@ def _station(
     lat: float = 41.98,
     lon: float = -87.92,
     variant: str = "TMYx.2009-2023",
-    source: str = "SRC-TMYx",
+    source: str = "TMYx.2009-2023",
+    climate_zone: str = "5A - Cool - Humid",
 ) -> WeatherStation:
     base = "https://climate.onebuilding.org/WMO_Region_4/"
     url = f"{base}{country}_{state}_{city}.{wmo}_{variant}.zip"
@@ -57,6 +58,11 @@ def _station(
         timezone=-6.0,
         elevation=200.0,
         url=url,
+        ashrae_climate_zone=climate_zone,
+        heating_design_db_c=-17.4,
+        cooling_design_db_c=32.5,
+        hdd18=3454,
+        cdd10=2103,
     )
 
 

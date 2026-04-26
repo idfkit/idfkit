@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -20,12 +21,21 @@ class WeatherStation:
             (e.g. ``"Marina.Muni.AP"``).
         wmo: WMO station number as a string to preserve leading zeros
             (e.g. ``"722950"`` or ``"012345"``).
-        source: Dataset source identifier (e.g. ``"SRC-TMYx"``).
+        source: Dataset source identifier (e.g. ``"TMYx.2009-2023"``).
         latitude: Decimal degrees, north positive.
         longitude: Decimal degrees, east positive.
         timezone: Hours offset from GMT (e.g. ``-8.0``).
         elevation: Meters above sea level.
         url: Full download URL for the ZIP archive.
+        ashrae_climate_zone: ASHRAE HOF climate zone label
+            (e.g. ``"4A - Mixed - Humid"``).
+        heating_design_db_c: 99% heating design dry-bulb temperature in °C.
+        cooling_design_db_c: 1% cooling design dry-bulb temperature in °C.
+        hdd18: Heating degree-days base 18 °C.
+        cdd10: Cooling degree-days base 10 °C.
+        design_conditions_source_wmo: When the station inherits design
+            conditions from a neighbouring station, this holds that
+            station's WMO number; otherwise ``None``.
     """
 
     country: str
@@ -38,8 +48,14 @@ class WeatherStation:
     timezone: float
     elevation: float
     url: str
+    ashrae_climate_zone: str
+    heating_design_db_c: float
+    cooling_design_db_c: float
+    hdd18: int
+    cdd10: int
+    design_conditions_source_wmo: str | None = None
 
-    def to_dict(self) -> dict[str, str | float]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to a plain dictionary for JSON storage."""
         return {
             "country": self.country,
@@ -52,11 +68,23 @@ class WeatherStation:
             "timezone": self.timezone,
             "elevation": self.elevation,
             "url": self.url,
+            "ashrae_climate_zone": self.ashrae_climate_zone,
+            "heating_design_db_c": self.heating_design_db_c,
+            "cooling_design_db_c": self.cooling_design_db_c,
+            "hdd18": self.hdd18,
+            "cdd10": self.cdd10,
+            "design_conditions_source_wmo": self.design_conditions_source_wmo,
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, str | float]) -> WeatherStation:
-        """Deserialize from a plain dictionary."""
+    def from_dict(cls, data: dict[str, Any]) -> WeatherStation:
+        """Deserialize from a plain dictionary.
+
+        The required climate fields use ``data[key]`` so a stale or
+        corrupt payload fails loudly. ``design_conditions_source_wmo``
+        is genuinely optional.
+        """
+        source_wmo = data.get("design_conditions_source_wmo")
         return cls(
             country=str(data["country"]),
             state=str(data["state"]),
@@ -68,6 +96,12 @@ class WeatherStation:
             timezone=float(data["timezone"]),
             elevation=float(data["elevation"]),
             url=str(data["url"]),
+            ashrae_climate_zone=str(data["ashrae_climate_zone"]),
+            heating_design_db_c=float(data["heating_design_db_c"]),
+            cooling_design_db_c=float(data["cooling_design_db_c"]),
+            hdd18=int(data["hdd18"]),
+            cdd10=int(data["cdd10"]),
+            design_conditions_source_wmo=str(source_wmo) if source_wmo is not None else None,
         )
 
     @property
@@ -109,6 +143,16 @@ class WeatherStation:
         if len(parts) == 2:
             return parts[1]
         return self.filename_stem
+
+    @property
+    def heating_design_db_f(self) -> float:
+        """99% heating design dry-bulb temperature in °F."""
+        return self.heating_design_db_c * 9 / 5 + 32
+
+    @property
+    def cooling_design_db_f(self) -> float:
+        """1% cooling design dry-bulb temperature in °F."""
+        return self.cooling_design_db_c * 9 / 5 + 32
 
 
 @dataclass(frozen=True)
