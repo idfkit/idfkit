@@ -81,7 +81,7 @@ def annual_result(
     model.add(
         "Output:Variable",
         "",
-        data={
+        fields={
             "key_value": "*",
             "variable_name": "Zone Mean Air Temperature",
             "reporting_frequency": "Hourly",
@@ -90,7 +90,7 @@ def annual_result(
     model.add(
         "Output:Variable",
         "",
-        data={
+        fields={
             "key_value": "*",
             "variable_name": "Site Outdoor Air Drybulb Temperature",
             "reporting_frequency": "Hourly",
