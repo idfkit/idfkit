@@ -194,7 +194,7 @@ intersect_match(doc)
 
 ### Key Patterns & Pitfalls
 
-- **Version-bound**: Each document is tied to an EnergyPlus version. Supported: 8.9.0–25.2.0.
+- **Version-bound**: Each document is tied to an EnergyPlus version. Supported: 8.9.0–26.1.0 (17 versions).
 - **Snake-case fields**: Use `zone.x_origin`, not `zone["X Origin"]` (both work, attributes preferred).
 - **Validation is opt-in**: Call `validate_document()` explicitly; parsing does not validate.
 - **Rename cascades**: `doc.rename()` updates all cross-references automatically.
