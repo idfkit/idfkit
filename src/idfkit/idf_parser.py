@@ -372,6 +372,8 @@ class IDFParser:
                 field_order=field_names,
                 ref_fields=pc.ref_fields,
                 extensibles=frozenset(pc.ext_field_names),
+                wrapper_key=pc.ext_wrapper_key,
+                ext_inner_names=tuple(pc.ext_inner_props.keys()),
             )
 
         # No-schema fallback
@@ -431,7 +433,14 @@ class IDFParser:
         field_types: dict[str, str | None],
         pc: ParsingCache,
     ) -> None:
-        """Append extensible field groups to parsed data."""
+        """Bucket extensible-group tokens into a canonical wrapper array.
+
+        Tokens are split into ``ext_size``-wide groups; each group becomes
+        a dict keyed by the schema's inner property names, and the resulting
+        list is stored under ``data[wrapper_key]`` (e.g. ``data["vertices"]``).
+        The wrapper key is *not* added to ``field_names`` — the IDF writer
+        handles wrapper expansion separately via the schema cache.
+        """
         ext_size = pc.ext_size
         if ext_size <= 0:
             if self._strict_parsing:
@@ -441,36 +450,30 @@ class IDFParser:
 
         ext_names = pc.ext_field_names
         num_ext = len(ext_names)
-
-        # Pre-compute type per extensible index — avoids a dict lookup per field.
         ext_types = tuple(field_types.get(name) for name in ext_names)
+        wrapper_key = pc.ext_wrapper_key
 
-        # First group (group_idx=0): field names are just ext_names — no suffix,
-        # no f-string allocation.
-        first_group = extra[:ext_size]
-        for j, value in enumerate(first_group):
-            if j >= num_ext:
-                continue
-            ext_field = ext_names[j]
-            if value:
-                data[ext_field] = _coerce_value_fast(ext_types[j], value)
-            else:
-                data[ext_field] = ""
-            field_names.append(ext_field)
-
-        # Remaining groups: need a suffix.
-        for group_idx in range(ext_size, len(extra), ext_size):
-            suffix = f"_{group_idx // ext_size + 1}"
-            group = extra[group_idx : group_idx + ext_size]
+        items: list[dict[str, Any]] = []
+        for group_start in range(0, len(extra), ext_size):
+            group = extra[group_start : group_start + ext_size]
+            item: dict[str, Any] = {}
+            has_any = False
             for j, value in enumerate(group):
                 if j >= num_ext:
                     continue
-                ext_field = f"{ext_names[j]}{suffix}"
+                inner = ext_names[j]
                 if value:
-                    data[ext_field] = _coerce_value_fast(ext_types[j], value)
+                    item[inner] = _coerce_value_fast(ext_types[j], value)
+                    has_any = True
                 else:
-                    data[ext_field] = ""
-                field_names.append(ext_field)
+                    item[inner] = ""
+            # Drop trailing all-empty groups (e.g. an extra "," at the end of
+            # the extensible block). Keeping them would emit phantom vertices.
+            if has_any:
+                items.append(item)
+
+        if items and wrapper_key is not None:
+            data[wrapper_key] = items
 
     def _parse_fields(self, fields_raw: str) -> list[str]:
         """Parse and clean field values from raw string."""

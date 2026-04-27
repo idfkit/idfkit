@@ -269,23 +269,42 @@ def _generate_object_class(
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
+    For extensible types, also generates a per-type :class:`ExtensibleGroup`
+    subclass listing the inner field names with their schema-derived types,
+    and exposes the wrapper attribute on the parent class typed as
+    ``ExtensibleList[GroupClass]``. This gives IDEs full autocomplete on
+    ``surface.vertices[0].vertex_x_coordinate`` etc.
+
     Args:
-        indent: Prefix for each line (e.g. ``""`` for top-level, ``"    "``
-            for nested inside a block).
+        indent: Prefix for each line.
         type_since: Mapping of object type -> earliest version it appeared.
         field_since: Mapping of ``(obj_type, field)`` -> earliest version.
     """
     cls_name = _to_class_name(obj_type)
     lines: list[str] = []
-    lines.append(f"{indent}class {cls_name}(IDFObject):")
 
+    # Pull per-object schema bits.
+    pc = schema.get_parsing_cache(obj_type)
+    wrapper_key = pc.ext_wrapper_key if pc is not None else None
+    ext_inner_props = dict(pc.ext_inner_props) if pc is not None else {}
     field_names = schema.get_field_names(obj_type)
 
-    # For extensible types, add base extensible field names
-    if schema.is_extensible(obj_type):
-        for ext_name in schema.get_extensible_field_names(obj_type):
-            if ext_name not in field_names:
-                field_names.append(ext_name)
+    # If this type has a canonical wrapper, emit a typed ExtensibleGroup
+    # subclass before the parent class so the parent can reference it.
+    group_cls_name: str | None = None
+    if wrapper_key and ext_inner_props:
+        group_cls_name = f"{cls_name}{_to_class_name(wrapper_key.title())}Group"
+        lines.append(f"{indent}class {group_cls_name}(ExtensibleGroup):")
+        lines.append(f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""')
+        for inner_name, inner_schema in ext_inner_props.items():
+            if not inner_name.isidentifier():
+                continue
+            has_any_of = "anyOf" in inner_schema
+            py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
+            lines.append(f"{indent}    {inner_name}: {py_type} | None")
+        lines.append("")
+
+    lines.append(f"{indent}class {cls_name}(IDFObject):")
 
     body_indent = indent + "    "
 
@@ -297,16 +316,29 @@ def _generate_object_class(
         lines.append(f'{body_indent}"""{cls_doc}"""')
         has_body = True
 
-    if not field_names:
+    if not field_names and not group_cls_name:
         if not has_body:
             lines[-1] = f"{indent}class {cls_name}(IDFObject): ..."
         else:
             lines.append("")
         return lines
 
-    _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+    if field_names:
+        _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+
+    # Add the canonical wrapper attribute typed as ExtensibleList[<GroupCls>].
+    if group_cls_name and wrapper_key:
+        lines.append(f"{body_indent}{wrapper_key}: ExtensibleList[{group_cls_name}]")
 
     return lines
+
+
+def _schema_field_type(field_schema: dict[str, Any]) -> str | None:
+    """Pull the direct schema 'type' string from a property schema."""
+    t = field_schema.get("type")
+    if isinstance(t, str):
+        return t
+    return None
 
 
 def _generate_fields(
@@ -429,7 +461,7 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
-    parts.append("from .objects import IDFCollection, IDFObject")
+    parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")
     parts.append("# =========================================================================")
     parts.append("# Typed object classes (one per EnergyPlus object type)")
@@ -550,7 +582,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     # add() — no overloads, returns IDFObject
     lines.append(
         "    def add(self, obj_type: str, name: str = ..., "
-        "data: dict[str, Any] | None = ..., *, validate: bool = ..., "
+        "fields: dict[str, Any] | None = ..., *, validate: bool = ..., "
         "**kwargs: Any) -> IDFObject: ..."
     )
     lines.append("")

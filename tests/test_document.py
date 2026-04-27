@@ -648,7 +648,8 @@ class TestBuildFieldOrderForAdd:
         assert result is None
 
     def test_extensible_with_user_extra_fields(self, empty_doc: IDFDocument) -> None:
-        # Add a BuildingSurface:Detailed with an extra field not in schema
+        # Vertices are bucketed into the canonical wrapper; an arbitrary
+        # non-schema field passes through into obj.data (writers ignore it).
         obj = empty_doc.add(
             "BuildingSurface:Detailed",
             "Wall1",
@@ -658,18 +659,16 @@ class TestBuildFieldOrderForAdd:
                 "zone_name": "",
                 "outside_boundary_condition": "Outdoors",
                 "number_of_vertices": 2,
-                "vertex_x_coordinate": 0.0,
-                "vertex_y_coordinate": 0.0,
-                "vertex_z_coordinate": 0.0,
-                "vertex_2_x_coordinate": 1.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 0.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                ],
                 "extra_nonschema_field": 42.0,
             },
             validate=False,
         )
-        assert obj.field_order is not None
-        assert "extra_nonschema_field" in obj.field_order
+        assert obj.data["extra_nonschema_field"] == 42.0
+        assert len(obj.data["vertices"]) == 2
 
 
 class TestRemoveIdfObjectEdgeCases:
@@ -835,14 +834,21 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=1,
                 ext_field_names=("vertex_x", "vertex_y"),
+                ext_wrapper_key=None,
+                ext_inner_props={},
             ),
         )
         assert result == ["name", "x_origin"]
 
-    def test_extensible_field_already_in_known(self) -> None:
+    def test_field_order_returns_base_only(self) -> None:
+        """After Phase 2, ``_build_field_order_for_add`` returns just the base.
+
+        Extensible fields are tracked through the canonical wrapper
+        (``obj.data[wrapper_key]``) and expanded by the writer at output
+        time, so they no longer need to appear in ``field_order``.
+        """
         from idfkit.schema import ParsingCache
 
-        # base_field_order already contains 'vertex_x' — skip append for it
         result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
             ["name", "vertex_x"],
             {"vertex_x": 0.0, "vertex_y": 1.0},
@@ -856,56 +862,11 @@ class TestBuildFieldOrderExtensibleEarlyBreak:
                 extensible=True,
                 ext_size=2,
                 ext_field_names=("vertex_x", "vertex_y"),
+                ext_wrapper_key="data",
+                ext_inner_props={},
             ),
         )
-        assert "vertex_y" in result
-        assert result.count("vertex_x") == 1  # not duplicated
-
-    def test_extensible_multiple_groups_iterated(self) -> None:
-        from idfkit.schema import ParsingCache
-
-        # Two groups both present in field_data — loop must iterate twice (404->421 hit)
-        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
-            ["name"],
-            {"vertex_x": 0.0, "vertex_y": 0.0, "vertex_x_2": 1.0, "vertex_y_2": 1.0},
-            ParsingCache(
-                obj_schema={},
-                has_name=True,
-                field_names=(),
-                all_field_names=("name",),
-                field_types={},
-                ref_fields=frozenset(),
-                extensible=True,
-                ext_size=2,
-                ext_field_names=("vertex_x", "vertex_y"),
-            ),
-        )
-        assert "vertex_x" in result
-        assert "vertex_y" in result
-        assert "vertex_x_2" in result
-        assert "vertex_y_2" in result
-
-    def test_extensible_empty_ext_field_names_skips_group_loop(self) -> None:
-        from idfkit.schema import ParsingCache
-
-        # ext_field_names is empty — the 'if parsing_cache.ext_field_names:' branch is False (404->421)
-        result = IDFDocument._build_field_order_for_add(  # pyright: ignore[reportPrivateUsage]
-            ["name"],
-            {"extra_field": 42},
-            ParsingCache(
-                obj_schema={},
-                has_name=True,
-                field_names=(),
-                all_field_names=("name",),
-                field_types={},
-                ref_fields=frozenset(),
-                extensible=True,
-                ext_size=1,
-                ext_field_names=(),  # empty -> skips the while True group loop
-            ),
-        )
-        # 'extra_field' should still be added via the user-provided aliases section
-        assert "extra_field" in result
+        assert result == ["name", "vertex_x"]
 
 
 class TestRemoveCSTNoMatch:

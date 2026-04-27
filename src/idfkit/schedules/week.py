@@ -6,7 +6,7 @@ Handles Schedule:Week:Daily and Schedule:Week:Compact objects.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from idfkit.schedules.day_types import DAY_TYPE_PRIORITY, get_applicable_day_types
 from idfkit.schedules.types import (
@@ -291,23 +291,23 @@ def _find_matching_day_in_week_compact(obj: IDFObject, applicable_types: set[str
     Returns:
         The matching day schedule name, or None.
     """
-    # Build a map of day type -> schedule name from the object
+    # Build a map of day type -> schedule name from the canonical wrapper.
+    # Schedule:Week:Compact stores its DayType/Schedule pairs as
+    # ``obj.data["data"]`` — a list of ``{"daytype_list": ..., "schedule_day_name": ...}`` dicts.
     type_to_schedule: dict[str, str] = {}
 
-    for i in range(1, 13):  # Max 12 pairs
-        daytype_field = f"DayType List {i}"
-        schedule_field = f"Schedule:Day Name {i}"
-
-        daytype_value = obj.get(daytype_field)
-        schedule_value = obj.get(schedule_field)
-
+    items_raw: Any = obj.data.get("data") or []
+    if not isinstance(items_raw, list):
+        items_raw = []
+    for item in cast("list[dict[str, Any]]", items_raw):
+        daytype_value = item.get("daytype_list")
+        schedule_value = item.get("schedule_day_name")
         if daytype_value is None or schedule_value is None:
-            break
+            continue
 
         # DayType List can have multiple day types separated by spaces
         daytype_str = str(daytype_value)
         schedule_name = str(schedule_value)
-
         for dt_part in daytype_str.split():
             type_to_schedule[dt_part] = schedule_name
 

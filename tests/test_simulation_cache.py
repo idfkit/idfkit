@@ -121,7 +121,7 @@ class TestComputeKey:
         """Model with and without Output:SQLite should produce the same key."""
         m1 = new_document()
         m2 = new_document()
-        m2.add("Output:SQLite", "", data={"option_type": "SimpleAndTabular"})
+        m2.add("Output:SQLite", "", option_type="SimpleAndTabular")
         k1 = cache.compute_key(m1, weather_file)
         k2 = cache.compute_key(m2, weather_file)
         assert k1 == k2

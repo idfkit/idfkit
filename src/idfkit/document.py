@@ -412,61 +412,65 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data: dict[str, Any],
         parsing_cache: ParsingCache | None,
     ) -> list[str] | None:
-        """Build field order for newly created objects.
+        """Build field order for a newly created object.
 
-        For extensible objects, include extensible fields present in input data so
-        IDF serialization preserves those values.
+        Storage is canonical: extensible groups live as a list of dicts under
+        the wrapper key, not as flat suffixed keys, so ``field_order`` no
+        longer needs to enumerate them — the IDF writer handles wrapper
+        expansion at output time using schema metadata.
         """
         if base_field_order is None:
             return None
-
-        field_order = list(base_field_order)
-        if parsing_cache is None or not parsing_cache.extensible:
-            return field_order
-
-        known_fields = set(field_order)
-
-        # First add schema-style extensible groups: field, field_2, field_3, ...
-        if parsing_cache.ext_field_names:
-            group_idx = 0
-            while True:
-                suffix = "" if group_idx == 0 else f"_{group_idx + 1}"
-                group_fields = [f"{name}{suffix}" for name in parsing_cache.ext_field_names]
-                if not any(field in field_data for field in group_fields):
-                    break
-
-                for field_name in group_fields:
-                    if field_name not in known_fields:
-                        field_order.append(field_name)
-                        known_fields.add(field_name)
-
-                group_idx += 1
-
-        # Then preserve any additional user-provided extensible aliases
-        # (for example eppy-style vertex_1_x_coordinate naming).
-        for field_name in field_data:
-            if field_name not in known_fields:
-                field_order.append(field_name)
-                known_fields.add(field_name)
-
-        return field_order
+        return list(base_field_order)
 
     @staticmethod
-    def _normalize_extensible_kwargs(
+    def _normalize_extensible_input(
+        obj_type: str,
         field_data: dict[str, Any],
-        extensibles: frozenset[str],
+        pc: ParsingCache,
     ) -> dict[str, Any]:
-        """Normalize user-style extensible kwargs to epJSON schema convention.
+        """Coerce extensible-group input to canonical wrapper-array shape.
 
-        Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
-        etc. Non-extensible keys pass through unchanged.
+        Storage is canonical (``field_data[wrapper_key]`` is a list of dicts),
+        so this normalizer's job is to translate any *flat* eppy-style
+        kwargs (``vertex_x_coordinate=0``, ``vertex_x_coordinate_2=5``) the
+        caller may have passed back into the canonical shape. A wrapper
+        already passed as a list passes through untouched. Mixing both
+        styles in one call raises ``ValueError``.
         """
-        from .objects import normalize_extensible_name
+        from .objects import parse_extensible_index
 
-        normalized: dict[str, Any] = {}
+        if not pc.ext_wrapper_key or not pc.ext_field_names:
+            return field_data
+
+        ext_set = frozenset(pc.ext_field_names)
+        wrapper_key = pc.ext_wrapper_key
+        wrapper_present = wrapper_key in field_data
+
+        # Pull every flat-style extensible key out of field_data into groups.
+        flat_groups: dict[int, dict[str, Any]] = {}
+        flat_keys: list[str] = []
         for key, value in field_data.items():
-            normalized[normalize_extensible_name(key, extensibles)] = value
-        return normalized
+            if key == wrapper_key:
+                continue
+            base, idx = parse_extensible_index(key, ext_set)
+            if base is not None:
+                flat_groups.setdefault(idx, {})[base] = value
+                flat_keys.append(key)
+
+        if not flat_keys:
+            return field_data
+
+        if wrapper_present:
+            raise ValueError(  # noqa: TRY003
+                f"{obj_type}: cannot mix {wrapper_key!r}=[...] with flat extensible field {flat_keys[0]!r}"
+            )
+
+        field_data = dict(field_data)
+        for k in flat_keys:
+            del field_data[k]
+        field_data[wrapper_key] = [flat_groups[i] for i in sorted(flat_groups)]
+        return field_data
 
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
@@ -490,7 +494,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self,
         obj_type: str,
         name: str = "",
-        data: dict[str, Any] | None = None,
+        fields: dict[str, Any] | None = None,
         *,
         validate: bool = True,
         **kwargs: Any,
@@ -502,7 +506,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             obj_type: Object type (e.g., "Zone")
             name: Object name (optional for object types without a name field,
                 such as Timestep, SimulationControl, GlobalGeometryRules)
-            data: Field data as dict
+            fields: Field values as a dict, useful when field names are
+                computed dynamically. Equivalent to passing the same keys
+                as ``**kwargs``; merged before ``kwargs`` so explicit
+                kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
                 bulk operations where performance matters.
@@ -551,8 +558,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(model["Zone"])
             4
         """
-        # Merge data and kwargs
-        field_data = dict(data) if data else {}
+        # Merge fields and kwargs
+        field_data = dict(fields) if fields else {}
         field_data.update(kwargs)
 
         # Get schema info
@@ -565,10 +572,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             resolved_obj_type = self._resolve_schema_obj_type(obj_type)
             obj_schema = self._schema.get_object_schema(resolved_obj_type)
 
-            # Normalize user-style extensible field names to schema convention.
+            # Normalize extensible-group input to the canonical flat shape so
+            # downstream consumers (writers, geometry, references, validation)
+            # all see uniform storage regardless of how the data was provided.
             pc = self._schema.get_parsing_cache(resolved_obj_type)
             if pc and pc.ext_field_names:
-                field_data = self._normalize_extensible_kwargs(field_data, frozenset(pc.ext_field_names))
+                field_data = self._normalize_extensible_input(resolved_obj_type, field_data, pc)
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
@@ -599,6 +608,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             field_order=field_order,
             ref_fields=ref_fields,
             extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
+            wrapper_key=parsing_cache.ext_wrapper_key if parsing_cache else None,
+            ext_inner_names=tuple(parsing_cache.ext_inner_props.keys()) if parsing_cache else (),
         )
 
         # Validate if requested

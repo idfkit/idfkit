@@ -8,13 +8,21 @@ IDFCollection: Indexed collection of IDFObjects with O(1) lookup.
 from __future__ import annotations
 
 import re
+import warnings
 from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError
 
-__all__ = ["IDFCollection", "IDFObject", "to_python_name"]
+__all__ = [
+    "ExtensibleGroup",
+    "ExtensibleList",
+    "IDFCollection",
+    "IDFObject",
+    "parse_extensible_index",
+    "to_python_name",
+]
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -56,22 +64,296 @@ def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tupl
     return None, 0
 
 
-def extensible_schema_name(base: str, group: int) -> str:
-    """Generate the epJSON schema-convention name: base for group 1, base_N for N>=2."""
-    return base if group == 1 else f"{base}_{group}"
+class ExtensibleGroup:
+    """One row of an extensible array (e.g. a single vertex inside ``vertices``).
 
-
-def normalize_extensible_name(field_name: str, extensibles: frozenset[str]) -> str:
-    """Normalize an extensible field name to the epJSON schema convention.
-
-    Converts ``field_1`` → ``field``, ``vertex_1_x_coordinate`` → ``vertex_x_coordinate``,
-    ``vertex_2_x_coordinate`` → ``vertex_x_coordinate_2``, etc.
-    Returns the name unchanged if it is not extensible.
+    Holds a back-reference to the owning :class:`IDFObject` and the group's
+    1-based index so attribute reads/writes route into
+    ``obj.data[wrapper_key][group_index - 1]``. Equality compares against
+    plain dicts; ``as_dict()`` snapshots the underlying values.
     """
-    base, group = parse_extensible_index(field_name, extensibles)
-    if base is None:
-        return field_name
-    return extensible_schema_name(base, group)
+
+    __slots__ = ("_group_index", "_inner_names", "_owner", "_wrapper_key")
+
+    _owner: IDFObject
+    _wrapper_key: str
+    _group_index: int
+    _inner_names: tuple[str, ...]
+
+    def __init__(self, owner: IDFObject, wrapper_key: str, group_index: int, inner_names: tuple[str, ...]) -> None:
+        object.__setattr__(self, "_owner", owner)
+        object.__setattr__(self, "_wrapper_key", wrapper_key)
+        object.__setattr__(self, "_group_index", group_index)
+        object.__setattr__(self, "_inner_names", inner_names)
+
+    @property
+    def group_index(self) -> int:
+        """1-based position of this group within the wrapper array."""
+        return self._group_index
+
+    def _slot(self) -> dict[str, Any]:
+        """Return the underlying dict for this group, creating it if necessary."""
+        items = self._owner.data.setdefault(self._wrapper_key, [])
+        while len(items) < self._group_index:
+            items.append({})
+        return cast("dict[str, Any]", items[self._group_index - 1])
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("_"):
+            raise AttributeError(name)
+        if name not in self._inner_names:
+            raise AttributeError(  # noqa: TRY003
+                f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+            )
+        items = self._owner.data.get(self._wrapper_key)
+        if not items or self._group_index > len(items):
+            return None
+        return cast("dict[str, Any]", items[self._group_index - 1]).get(name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name.startswith("_"):
+            object.__setattr__(self, name, value)
+            return
+        if name not in self._inner_names:
+            raise AttributeError(  # noqa: TRY003
+                f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+            )
+        self._slot()[name] = value
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+
+    def __getitem__(self, key: str) -> Any:
+        return self.__getattr__(key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.__setattr__(key, value)
+
+    def __contains__(self, key: object) -> bool:
+        return isinstance(key, str) and key in self._inner_names
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._inner_names)
+
+    def keys(self) -> tuple[str, ...]:
+        """Return the inner field names defined by the schema for this group."""
+        return self._inner_names
+
+    def values(self) -> list[Any]:
+        """Return the values for each inner field, in schema order."""
+        return [self.__getattr__(n) for n in self._inner_names]
+
+    def items(self) -> list[tuple[str, Any]]:
+        """Return ``(field_name, value)`` pairs for the inner fields."""
+        return [(n, self.__getattr__(n)) for n in self._inner_names]
+
+    def as_dict(self) -> dict[str, Any]:
+        """Snapshot the group as a plain dict (does not track future mutations)."""
+        items = self._owner.data.get(self._wrapper_key)
+        if not items or self._group_index > len(items):
+            return {}
+        return dict(cast("dict[str, Any]", items[self._group_index - 1]))
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update one or more inner fields atomically (matches dict.update)."""
+        if len(args) > 1:
+            raise TypeError(f"update expected at most 1 positional argument, got {len(args)}")  # noqa: TRY003
+        merged: dict[str, Any] = {}
+        if args:
+            src = args[0]
+            if isinstance(src, dict):
+                merged.update(cast("dict[str, Any]", src))
+            else:
+                for k, v in src:
+                    merged[k] = v
+        merged.update(kwargs)
+        for k in merged:
+            if k not in self._inner_names:
+                raise AttributeError(  # noqa: TRY003
+                    f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
+                )
+        slot = self._slot()
+        slot.update(merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ExtensibleGroup):
+            return self.as_dict() == other.as_dict()
+        if isinstance(other, dict):
+            other_dict = cast("dict[str, Any]", other)
+            return self.as_dict() == other_dict
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return id(self)
+
+    def __repr__(self) -> str:
+        return (
+            f"ExtensibleGroup({self._owner.obj_type}.{self._wrapper_key}[{self._group_index - 1}], {self.as_dict()!r})"
+        )
+
+
+GroupT_co = TypeVar("GroupT_co", bound=ExtensibleGroup, covariant=True)
+
+
+class ExtensibleList(Generic[GroupT_co]):
+    """List-like view over the canonical wrapper array ``obj.data[wrapper_key]``.
+
+    Holds a reference to the owning :class:`IDFObject` and the wrapper key;
+    indexing, iteration, append, insert, delete, pop, clear, extend, equality,
+    and bulk replace all operate on the canonical list of dicts. Items are
+    yielded as :class:`ExtensibleGroup` instances bound to the underlying dicts.
+
+    The ``Generic[GroupT_co]`` parameter lets generated stubs narrow the item
+    type per object — e.g. ``surface.vertices`` is typed as
+    ``ExtensibleList[BuildingSurfaceVertex]`` so IDEs autocomplete the
+    inner ``vertex_x_coordinate`` etc. on each indexed item.
+
+    Mutations bump the owner's mutation version. Reference-graph notification
+    for fields inside extensible groups is handled separately by the document
+    when it walks ``ref_fields`` recursively.
+    """
+
+    __slots__ = ("_inner_names", "_owner", "_wrapper_key")
+
+    _owner: IDFObject
+    _wrapper_key: str
+    _inner_names: tuple[str, ...]
+
+    def __init__(self, owner: IDFObject, wrapper_key: str, inner_names: tuple[str, ...]) -> None:
+        self._owner = owner
+        self._wrapper_key = wrapper_key
+        self._inner_names = inner_names
+
+    def _items_or_empty(self) -> list[dict[str, Any]]:
+        """Return the underlying canonical list (empty list if absent)."""
+        return cast("list[dict[str, Any]]", self._owner.data.get(self._wrapper_key, []))
+
+    def _items_for_write(self) -> list[dict[str, Any]]:
+        """Return the underlying canonical list, creating it if absent."""
+        return cast("list[dict[str, Any]]", self._owner.data.setdefault(self._wrapper_key, []))
+
+    def __len__(self) -> int:
+        return len(self._items_or_empty())
+
+    def _resolve_index(self, index: int) -> int:
+        n = len(self)
+        if index < 0:
+            index += n
+        if index < 0 or index >= n:
+            raise IndexError(f"{self._wrapper_key} index {index} out of range (length {n})")  # noqa: TRY003
+        return index
+
+    def __getitem__(self, index: int) -> GroupT_co:
+        idx = self._resolve_index(index)
+        return cast("GroupT_co", ExtensibleGroup(self._owner, self._wrapper_key, idx + 1, self._inner_names))
+
+    def __iter__(self) -> Iterator[GroupT_co]:
+        for i in range(len(self)):
+            yield cast(
+                "GroupT_co",
+                ExtensibleGroup(self._owner, self._wrapper_key, i + 1, self._inner_names),
+            )
+
+    def __delitem__(self, index: int) -> None:
+        idx = self._resolve_index(index)
+        items = self._items_for_write()
+        del items[idx]
+        if not items:
+            self._owner.data.pop(self._wrapper_key, None)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+
+    def _coerce_item(self, item: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+        if item is not None and kwargs:
+            raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
+        if isinstance(item, ExtensibleGroup):
+            return item.as_dict()
+        if isinstance(item, dict):
+            return dict(cast("dict[str, Any]", item))
+        if item is None:
+            return dict(kwargs)
+        raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
+
+    def _validate_inner(self, item: dict[str, Any]) -> None:
+        unknown = [k for k in item if k not in self._inner_names]
+        if unknown:
+            raise ValueError(  # noqa: TRY003
+                f"{self._owner.obj_type}.{self._wrapper_key}: unknown extensible field(s) "
+                f"{unknown!r}; expected subset of {list(self._inner_names)}"
+            )
+
+    def append(self, item: Any = None, /, **kwargs: Any) -> GroupT_co:
+        """Append a new group. Accepts a dict, another :class:`ExtensibleGroup`, or kwargs."""
+        merged = self._coerce_item(item, kwargs)
+        self._validate_inner(merged)
+        items = self._items_for_write()
+        items.append(merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+        return cast("GroupT_co", ExtensibleGroup(self._owner, self._wrapper_key, len(items), self._inner_names))
+
+    def insert(self, index: int, item: Any = None, /, **kwargs: Any) -> GroupT_co:
+        """Insert a new group at *index*. Existing groups at and after *index* shift up."""
+        merged = self._coerce_item(item, kwargs)
+        self._validate_inner(merged)
+        items = self._items_for_write()
+        n = len(items)
+        if index < 0:
+            index = max(0, n + index)
+        index = min(index, n)
+        items.insert(index, merged)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+        return cast(
+            "GroupT_co",
+            ExtensibleGroup(self._owner, self._wrapper_key, index + 1, self._inner_names),
+        )
+
+    def extend(self, items: Any) -> None:
+        """Append every group from *items* (any iterable of dicts or groups)."""
+        for it in items:
+            self.append(it)
+
+    def clear(self) -> None:
+        """Remove all groups."""
+        if self._wrapper_key in self._owner.data:
+            del self._owner.data[self._wrapper_key]
+            self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+
+    def pop(self, index: int = -1) -> dict[str, Any]:
+        """Remove and return the group at *index* as a plain dict."""
+        idx = self._resolve_index(index)
+        items = self._items_for_write()
+        snapshot = dict(items[idx])
+        del items[idx]
+        if not items:
+            self._owner.data.pop(self._wrapper_key, None)
+        self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
+        return snapshot
+
+    def replace(self, items: list[Any]) -> None:
+        """Replace the entire wrapper contents with *items* (each a dict or group)."""
+        coerced = [self._coerce_item(it, {}) for it in items]
+        for it in coerced:
+            self._validate_inner(it)
+        self.clear()
+        for it in coerced:
+            self.append(it)
+
+    def as_list(self) -> list[dict[str, Any]]:
+        """Snapshot the wrapper as a plain list of plain dicts."""
+        return [g.as_dict() for g in self]
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ExtensibleList):
+            return self.as_list() == other.as_list()
+        if isinstance(other, list):
+            return self.as_list() == [
+                (g.as_dict() if isinstance(g, ExtensibleGroup) else g) for g in cast("list[Any]", other)
+            ]
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return id(self)
+
+    def __repr__(self) -> str:
+        return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self.as_list()!r})"
 
 
 def to_python_name(idf_name: str) -> str:
@@ -139,6 +421,7 @@ class IDFObject(EppyObjectMixin):
         "__weakref__",
         "_data",
         "_document",
+        "_ext_inner_names",
         "_extensibles",
         "_field_order",
         "_name",
@@ -147,6 +430,7 @@ class IDFObject(EppyObjectMixin):
         "_source_text",
         "_type",
         "_version",
+        "_wrapper_key",
     )
 
     _type: str
@@ -157,6 +441,8 @@ class IDFObject(EppyObjectMixin):
     _field_order: list[str] | None
     _ref_fields: frozenset[str] | None
     _source_text: str | None
+    _wrapper_key: str | None
+    _ext_inner_names: tuple[str, ...]
 
     def __init__(
         self,
@@ -169,6 +455,8 @@ class IDFObject(EppyObjectMixin):
         ref_fields: frozenset[str] | None = None,
         source_text: str | None = None,
         extensibles: frozenset[str] | None = None,
+        wrapper_key: str | None = None,
+        ext_inner_names: tuple[str, ...] = (),
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
@@ -180,6 +468,8 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_ref_fields", ref_fields)
         object.__setattr__(self, "_source_text", source_text)
         object.__setattr__(self, "_version", 0)
+        object.__setattr__(self, "_wrapper_key", wrapper_key)
+        object.__setattr__(self, "_ext_inner_names", ext_inner_names)
 
     @property
     def obj_type(self) -> str:
@@ -215,29 +505,38 @@ class IDFObject(EppyObjectMixin):
         """Ordered list of field names from schema."""
         return self._field_order
 
-    def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
-        """Check if a field name is valid for this object type.
+    def extensible_items(self, wrapper_key: str | None = None) -> list[dict[str, Any]]:
+        """Return the canonical list of extensible items (empty if absent).
 
-        Checks the base field order first, then extensible field patterns.
-        Handles both ``vertex_1_x_coordinate`` -> ``vertex_x_coordinate``
-        and ``field_1`` -> ``field``.
+        For an extensible type (e.g. ``BuildingSurface:Detailed``) this
+        returns ``obj.data[wrapper_key]`` typed as ``list[dict[str, Any]]``.
+        If *wrapper_key* is omitted, the schema's wrapper key is used.
+        Returns an empty list if the wrapper isn't present or the type
+        isn't extensible — never ``None``.
+        """
+        key = wrapper_key if wrapper_key is not None else self._wrapper_key
+        if key is None:
+            return []
+        items = self._data.get(key)
+        if not isinstance(items, list):
+            return []
+        return cast("list[dict[str, Any]]", items)
+
+    def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
+        """Check whether *python_key* is a valid field name for this object.
+
+        Returns ``True`` if the key is in *field_order* OR if it is a
+        legacy flat-extensible alias (``vertex_3_x_coordinate``,
+        ``vertex_x_coordinate_3``, ``field_42``) for one of this type's
+        extensible fields.
         """
         if python_key in field_order:
             return True
         extensibles = self._extensibles
         if not extensibles:
             return False
-        # Try "prefix_N_suffix" -> "prefix_suffix" (e.g. vertex_1_x_coordinate -> vertex_x_coordinate)
-        m = _EXTENSIBLE_NUMBER_PATTERN.match(python_key)
-        if m and f"{m.group(1)}_{m.group(3)}" in extensibles:
-            return True
-        # Try "base_N" -> "base" (e.g. field_1461 -> field)
-        last_underscore = python_key.rfind("_")
-        if last_underscore > 0 and python_key[last_underscore + 1 :].isdigit():
-            base = python_key[:last_underscore]
-            if base in extensibles:
-                return True
-        return False
+        base, _ = parse_extensible_index(python_key, extensibles)
+        return base is not None
 
     @property
     def name(self) -> str:
@@ -249,7 +548,7 @@ class IDFObject(EppyObjectMixin):
         """Set the object's name."""
         self._set_name(value)
 
-    def __getattr__(self, key: str) -> Any:
+    def __getattr__(self, key: str) -> Any:  # noqa: C901
         """Get field value by attribute name.
 
         When the parent document has ``strict=True``, accessing a field
@@ -259,6 +558,14 @@ class IDFObject(EppyObjectMixin):
         """
         if key.startswith("_"):
             raise AttributeError(key)
+
+        # Canonical extensible-wrapper access (e.g. surface.vertices,
+        # schedule.data, branchlist.branches). Returns a list-like view
+        # bound to the schema's wrapper key.
+        wrapper_key = object.__getattribute__(self, "_wrapper_key")
+        if wrapper_key is not None and (key == wrapper_key or to_python_name(key) == wrapper_key):
+            inner = object.__getattribute__(self, "_ext_inner_names")
+            return ExtensibleList[ExtensibleGroup](self, wrapper_key, inner)
 
         # Try exact match first
         data = object.__getattribute__(self, "_data")
@@ -275,10 +582,27 @@ class IDFObject(EppyObjectMixin):
         if python_key in data:
             return data[python_key]
 
-        # Try normalizing extensible field name to schema convention
-        schema_key = self._normalize_extensible_key(python_key)
-        if schema_key != python_key and schema_key in data:
-            return data[schema_key]
+        # Eppy-compat: legacy flat extensible field access
+        # (vertex_3_x_coordinate, vertex_x_coordinate_3, time_2, ...).
+        # Translates to the canonical wrapper position with a deprecation
+        # warning. Scheduled for removal in a future release.
+        extensibles = object.__getattribute__(self, "_extensibles")
+        if extensibles:
+            base, group_idx = parse_extensible_index(python_key, extensibles)
+            if base is not None:
+                wrapper_key = object.__getattribute__(self, "_wrapper_key")
+                if wrapper_key is not None:
+                    items_any: Any = data.get(wrapper_key)
+                    if isinstance(items_any, list):
+                        items_typed = cast("list[dict[str, Any]]", items_any)
+                        if 0 < group_idx <= len(items_typed):
+                            warnings.warn(
+                                f"{key!r} flat-extensible access is deprecated; "
+                                f"use {self._type}.{wrapper_key}[{group_idx - 1}].{base}",
+                                DeprecationWarning,
+                                stacklevel=2,
+                            )
+                            return items_typed[group_idx - 1].get(base)
 
         # Field not found — check strict mode
         doc = object.__getattribute__(self, "_document")
@@ -302,35 +626,74 @@ class IDFObject(EppyObjectMixin):
     def __setattr__(self, key: str, value: Any) -> None:
         """Set field value by attribute name.
 
-        Extensible field names are normalized to the epJSON schema convention
-        (``field``, ``field_2``; ``vertex_x_coordinate``, ``vertex_x_coordinate_2``).
+        Assigning the schema's wrapper key (e.g. ``surface.vertices = [...]``)
+        replaces the canonical extensible array. Legacy eppy-style flat
+        extensible writes (``surface.vertex_3_x_coordinate = 5.0``) are
+        routed to the canonical slot with a :class:`DeprecationWarning`.
         """
         if key.startswith("_"):
             object.__setattr__(self, key, value)
-        elif key.lower() == "name":
+            return
+        if key.lower() == "name":
             self._set_name(value)
-        else:
-            # Normalize key to python style
-            python_key = to_python_name(key)
-            # Validate in strict mode
-            doc = self._document
-            if doc is not None and getattr(doc, "_strict", False):
-                field_order = self._field_order
-                if field_order is not None and not self._is_known_field(python_key, field_order):
-                    ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
-                    raise InvalidFieldError(
-                        self._type,
-                        key,
-                        available_fields=list(field_order),
-                        version=ver,
-                        extensible_fields=self._extensibles,
-                    )
-            # Normalize extensible field names to schema convention.
-            python_key = self._normalize_extensible_key(python_key)
-            self._set_field(python_key, value)
+            return
+        # Canonical extensible-wrapper bulk replace (e.g. surface.vertices = [...]).
+        wrapper_key = self._wrapper_key
+        if wrapper_key is not None and (key == wrapper_key or to_python_name(key) == wrapper_key):
+            if not isinstance(value, list):
+                raise TypeError(  # noqa: TRY003
+                    f"{self._type}.{wrapper_key} must be a list of dicts; got {type(value).__name__}"
+                )
+            view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
+            view.replace(cast("list[Any]", value))
+            return
+        # Normalize key to python style
+        python_key = to_python_name(key)
+
+        # Eppy-compat: legacy flat extensible field write
+        # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
+        # wrapper slot with a deprecation warning.
+        if self._extensibles:
+            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            if base is not None and self._wrapper_key is not None:
+                warnings.warn(
+                    f"{key!r} flat-extensible assignment is deprecated; "
+                    f"use {self._type}.{self._wrapper_key}[{group_idx - 1}].{base} = ...",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                items = self._data.setdefault(self._wrapper_key, [])
+                while len(items) < group_idx:
+                    items.append({})
+                cast("list[dict[str, Any]]", items)[group_idx - 1][base] = value
+                self._bump_version()
+                return
+
+        # Validate in strict mode
+        doc = self._document
+        if doc is not None and getattr(doc, "_strict", False):
+            field_order = self._field_order
+            if field_order is not None and not self._is_known_field(python_key, field_order):
+                ver: tuple[int, int, int] | None = object.__getattribute__(doc, "version")
+                raise InvalidFieldError(
+                    self._type,
+                    key,
+                    available_fields=list(field_order),
+                    version=ver,
+                    extensible_fields=self._extensibles,
+                )
+        self._set_field(python_key, value)
 
     def __getitem__(self, key: str | int) -> Any:
-        """Get field value by name or index."""
+        """Get field value by name or index.
+
+        For the schema's extensible wrapper key (``"vertices"``, ``"data"``,
+        ``"branches"``, …), returns an :class:`ExtensibleList` view of the
+        wrapper. This is the only access path for types whose wrapper key
+        collides with the ``data`` property (Schedule:Day:Interval,
+        Schedule:Compact); for other types it is equivalent to attribute
+        access.
+        """
         if isinstance(key, int):
             if key == 0:
                 return self._name
@@ -338,10 +701,17 @@ class IDFObject(EppyObjectMixin):
                 field_name = self._field_order[key - 1]
                 return self._data.get(field_name)
             raise IndexError(f"Field index {key} out of range")  # noqa: TRY003
+        if self._wrapper_key is not None and key == self._wrapper_key:
+            return ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names)
         return getattr(self, key)
 
     def __setitem__(self, key: str | int, value: Any) -> None:
-        """Set field value by name or index."""
+        """Set field value by name or index.
+
+        For the schema's extensible wrapper key, *value* must be a list of
+        dicts (or :class:`ExtensibleGroup` instances) and replaces the entire
+        wrapper contents.
+        """
         if isinstance(key, int):
             if key == 0:
                 self._set_name(value)
@@ -350,8 +720,17 @@ class IDFObject(EppyObjectMixin):
                 self._set_field(field_name, value)
             else:
                 raise IndexError(f"Field index {key} out of range")  # noqa: TRY003
-        else:
-            setattr(self, key, value)
+            return
+        if self._wrapper_key is not None and key == self._wrapper_key:
+            if not isinstance(value, list):
+                raise TypeError(  # noqa: TRY003
+                    f"{self._type}[{key!r}] must be a list of dicts; got {type(value).__name__}"
+                )
+            ExtensibleList[ExtensibleGroup](self, self._wrapper_key, self._ext_inner_names).replace(
+                cast("list[Any]", value)
+            )
+            return
+        setattr(self, key, value)
 
     def __repr__(self) -> str:
         return f"{self._type}('{self._name}')"
@@ -379,13 +758,20 @@ class IDFObject(EppyObjectMixin):
         if doc is not None:
             doc.notify_name_change(self, old, value)
 
-    def _set_field(self, python_key: str, value: Any) -> None:
-        """Centralized data-field write with reference graph notification.
+    def _bump_version(self) -> None:
+        """Mark the object as mutated.
 
-        When an extensible field is written that is not yet in ``field_order``,
-        all intermediate gap fields are created (with ``None`` values) so that
-        writers and iterators see a contiguous sequence.
+        Bumps :attr:`mutation_version` and invalidates the cached IDF source
+        text so the writer regenerates output for this object. Used by
+        :class:`ExtensibleList`/:class:`ExtensibleGroup` after mutating the
+        canonical wrapper array directly (without going through
+        :meth:`_set_field`).
         """
+        object.__setattr__(self, "_version", self._version + 1)
+        object.__setattr__(self, "_source_text", None)
+
+    def _set_field(self, python_key: str, value: Any) -> None:
+        """Centralized data-field write with reference graph notification."""
         doc = self._document
         ref_fields = self._ref_fields
         if doc is not None and ref_fields is not None and python_key in ref_fields:
@@ -396,69 +782,8 @@ class IDFObject(EppyObjectMixin):
         else:
             self._data[python_key] = value
 
-        # Maintain field_order for new extensible fields, filling any gaps.
-        field_order = self._field_order
-        if field_order is not None and python_key not in field_order:
-            extensibles = self._extensibles
-            if extensibles and self._is_known_field(python_key, field_order):
-                self._fill_extensible_gap(python_key, field_order, extensibles)
-
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
-
-    def _fill_extensible_gap(
-        self,
-        python_key: str,
-        field_order: list[str],
-        extensibles: frozenset[str],
-    ) -> None:
-        """Append extensible fields to ``field_order``, filling gaps with ``None``.
-
-        Given a new extensible field like ``field_41``, determines the group
-        index (41 for a single-field group), finds the current highest group
-        index in ``field_order``, and generates all intermediate groups so
-        that the field sequence is contiguous.
-
-        For multi-field groups (e.g. vertices with x/y/z), all fields in each
-        gap group are created.
-        """
-        ext_names = sorted(extensibles)  # stable order
-
-        # Parse the target field to find its base name and group index.
-        target_base, target_group = parse_extensible_index(python_key, extensibles)
-        if target_base is None:
-            # Couldn't parse — just append as-is.
-            field_order.append(python_key)
-            return
-
-        # Find the current highest group index already in field_order.
-        max_group = 0
-        for name in field_order:
-            base, group = parse_extensible_index(name, extensibles)
-            if base is not None and group > max_group:
-                max_group = group
-
-        # Generate all groups from max_group+1 through target_group
-        # using the epJSON schema naming convention.
-        existing = set(field_order)
-        schema_key = extensible_schema_name(target_base, target_group)
-        for g in range(max_group + 1, target_group + 1):
-            for base in ext_names:
-                field_name = extensible_schema_name(base, g)
-                if field_name not in existing:
-                    field_order.append(field_name)
-                    existing.add(field_name)
-                    # Fill gap fields with None in data (don't overwrite the
-                    # target field which was already written above).
-                    if field_name != schema_key and field_name not in self._data:
-                        self._data[field_name] = None
-
-    def _normalize_extensible_key(self, python_key: str) -> str:
-        """Normalize an extensible field name to the epJSON schema convention."""
-        extensibles = self._extensibles
-        if not extensibles:
-            return python_key
-        return normalize_extensible_name(python_key, extensibles)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation.

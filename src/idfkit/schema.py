@@ -13,9 +13,11 @@ import json
 import logging
 import os
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, ClassVar, cast
 
 from .exceptions import SchemaNotFoundError
@@ -45,6 +47,8 @@ class ParsingCache:
     extensible: bool
     ext_size: int
     ext_field_names: tuple[str, ...]
+    ext_wrapper_key: str | None
+    ext_inner_props: Mapping[str, dict[str, Any]]
 
 
 def _resolve_field_type(
@@ -334,7 +338,7 @@ class EpJSONSchema:
             self._parsing_cache[obj_type] = cached
         return cached
 
-    def _build_parsing_cache(self, obj_type: str, obj_schema: dict[str, Any]) -> ParsingCache:
+    def _build_parsing_cache(self, obj_type: str, obj_schema: dict[str, Any]) -> ParsingCache:  # noqa: C901
         """Build parsing metadata for a single object type."""
         has_name = "name" in obj_schema
 
@@ -383,6 +387,34 @@ class EpJSONSchema:
             if ext_field_schema is not None and "object_list" in ext_field_schema:
                 ref_fields_set.add(ext_fname)
 
+        # Find the wrapper key: the unique array-typed property whose item
+        # schema covers the extensible field names (e.g. "vertices" for
+        # BuildingSurface:Detailed, "data" for Schedule:Day:Interval).
+        # Also capture the inner property schemas — used by extensible-array
+        # consumers (canonical access API, validation, codegen) to know each
+        # inner field's type without re-walking the schema.
+        ext_wrapper_key: str | None = None
+        ext_inner_props: dict[str, dict[str, Any]] = {}
+        if extensible and ext_field_names_list:
+            ext_set = set(ext_field_names_list)
+            for pk, pv_any in props.items():
+                if not isinstance(pv_any, dict):
+                    continue
+                pv = cast("dict[str, Any]", pv_any)
+                if pv.get("type") != "array":
+                    continue
+                items_any = pv.get("items")
+                if not isinstance(items_any, dict):
+                    continue
+                inner_any = cast("dict[str, Any]", items_any).get("properties")
+                if not isinstance(inner_any, dict):
+                    continue
+                inner = cast("dict[str, Any]", inner_any)
+                if ext_set.issubset(inner.keys()):
+                    ext_wrapper_key = pk
+                    ext_inner_props = {k: cast("dict[str, Any]", v) for k, v in inner.items()}
+                    break
+
         return ParsingCache(
             obj_schema=obj_schema,
             has_name=has_name,
@@ -393,6 +425,8 @@ class EpJSONSchema:
             extensible=extensible,
             ext_size=ext_size,
             ext_field_names=tuple(ext_field_names_list),
+            ext_wrapper_key=ext_wrapper_key,
+            ext_inner_props=MappingProxyType(ext_inner_props),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:
@@ -476,6 +510,28 @@ class EpJSONSchema:
         if obj_schema:
             return obj_schema.get("extensible_size")
         return None
+
+    def get_extensible_wrapper_key(self, obj_type: str) -> str | None:
+        """Return the canonical epJSON wrapper key for an extensible type.
+
+        For ``BuildingSurface:Detailed`` this is ``"vertices"``; for
+        ``Schedule:Day:Interval`` it is ``"data"``. Returns ``None`` if the
+        type is not extensible or its schema does not expose an array
+        wrapper (e.g. types where extensibles are inlined alongside fixed
+        fields, like ``Site:SpectrumData``).
+
+        Examples:
+            >>> from idfkit import get_schema, LATEST_VERSION
+            >>> schema = get_schema(LATEST_VERSION)
+            >>> schema.get_extensible_wrapper_key("BuildingSurface:Detailed")
+            'vertices'
+            >>> schema.get_extensible_wrapper_key("Schedule:Day:Interval")
+            'data'
+            >>> schema.get_extensible_wrapper_key("Zone") is None
+            True
+        """
+        cache = self.get_parsing_cache(obj_type)
+        return cache.ext_wrapper_key if cache else None
 
     @property
     def object_types(self) -> list[str]:

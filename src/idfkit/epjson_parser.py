@@ -72,6 +72,48 @@ def parse_epjson(
     return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
 
 
+def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> dict[str, Any]:
+    """Translate flat suffixed extensible keys into the canonical wrapper array.
+
+    Real EnergyPlus epJSON output is canonical, but hand-authored / legacy
+    epJSON sometimes uses ``vertex_x_coordinate_2``-style flat keys. This
+    helper buckets every flat extensible key it finds into a list of dicts
+    under the schema's wrapper key. If the wrapper is already present
+    (and is a list), the flat keys are merged into it.
+    """
+    from .objects import parse_extensible_index
+
+    ext_set = frozenset(pc.ext_field_names)
+    wrapper_key = pc.ext_wrapper_key
+    assert wrapper_key is not None  # caller checked  # noqa: S101
+
+    flat_groups: dict[int, dict[str, Any]] = {}
+    flat_keys: list[str] = []
+    for key in fields_dict:
+        if key == wrapper_key:
+            continue
+        base, idx = parse_extensible_index(key, ext_set)
+        if base is not None:
+            flat_groups.setdefault(idx, {})[base] = fields_dict[key]
+            flat_keys.append(key)
+
+    if not flat_keys:
+        return fields_dict
+
+    out = dict(fields_dict)
+    for k in flat_keys:
+        del out[k]
+    flat_list = [flat_groups[i] for i in sorted(flat_groups)]
+    existing = out.get(wrapper_key)
+    if isinstance(existing, list):
+        # Wrapper present alongside flat keys — append; keeps user-authored
+        # mixes deterministic.
+        out[wrapper_key] = list(cast("list[Any]", existing)) + flat_list
+    else:
+        out[wrapper_key] = flat_list
+    return out
+
+
 class EpJSONParser:
     """
     Parser for epJSON files.
@@ -206,9 +248,17 @@ class EpJSONParser:
                 # Nameless objects: use empty string instead of epJSON dict key
                 name = obj_name if has_name else ""
 
-                # Create per-object field_order copy so extensible fields can be added
                 fields_dict = cast(dict[str, Any], fields)
-                field_order = self._build_field_order(base_field_names, fields_dict, pc)
+
+                # Real EnergyPlus epJSON is canonical for extensible types, but
+                # hand-authored or legacy epJSON sometimes uses flat suffixed
+                # keys (vertex_x_coordinate_2, time_3, ...). Coerce them into
+                # the canonical wrapper-array shape so downstream consumers see
+                # uniform storage.
+                if pc and pc.extensible and pc.ext_wrapper_key and pc.ext_field_names:
+                    fields_dict = _bucket_flat_extensibles(fields_dict, pc)
+
+                field_order = list(base_field_names) if base_field_names is not None else None
 
                 obj = IDFObject(
                     obj_type=obj_type,
@@ -218,42 +268,11 @@ class EpJSONParser:
                     field_order=field_order,
                     ref_fields=ref_fields,
                     extensibles=frozenset(pc.ext_field_names) if pc else None,
+                    wrapper_key=pc.ext_wrapper_key if pc else None,
+                    ext_inner_names=tuple(pc.ext_inner_props.keys()) if pc else (),
                 )
 
                 addidfobject(obj)
-
-    @staticmethod
-    def _build_field_order(
-        base_field_names: tuple[str, ...] | None,
-        fields_dict: dict[str, Any],
-        pc: ParsingCache | None,
-    ) -> list[str] | None:
-        """Build field_order including extensible fields present in the data."""
-        if base_field_names is None:
-            return None
-
-        # Start with a copy of the base schema field names
-        field_order = list(base_field_names)
-        base_set = set(base_field_names)
-
-        # Find extensible fields in the data that aren't in the base field list
-        if pc is not None and pc.extensible and pc.ext_field_names:
-            ext_names = pc.ext_field_names
-            group_idx = 0
-            while True:
-                suffix = "" if group_idx == 0 else f"_{group_idx + 1}"
-                group_fields = [f"{name}{suffix}" for name in ext_names]
-
-                if not any(f in fields_dict for f in group_fields):
-                    break
-
-                for f in group_fields:
-                    if f not in base_set:
-                        field_order.append(f)
-
-                group_idx += 1
-
-        return field_order
 
 
 def load_epjson(filepath: Path | str) -> dict[str, Any]:

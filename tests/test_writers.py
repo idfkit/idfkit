@@ -113,8 +113,8 @@ class TestWriteIDF:
         roundtrip = parse_idf(path)
         wall = roundtrip.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        assert wall.data.get("vertex_x_coordinate_4") == 10.0
-        assert wall.data.get("vertex_z_coordinate_4") == 3.0
+        assert wall.data["vertices"][3]["vertex_x_coordinate"] == 10.0
+        assert wall.data["vertices"][3]["vertex_z_coordinate"] == 3.0
 
     def test_programmatic_surface_extensibles_classic_style_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -149,8 +149,8 @@ class TestWriteIDF:
         roundtrip = parse_idf(path)
         wall = roundtrip.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        assert wall.data.get("vertex_x_coordinate_4") == 10.0
-        assert wall.data.get("vertex_z_coordinate_4") == 3.0
+        assert wall.data["vertices"][3]["vertex_x_coordinate"] == 10.0
+        assert wall.data["vertices"][3]["vertex_z_coordinate"] == 3.0
 
     def test_programmatic_schedule_compact_extensibles_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -173,8 +173,8 @@ class TestWriteIDF:
         roundtrip = parse_idf(path)
         schedule = roundtrip.getobject("Schedule:Compact", "AlwaysOn")
         assert schedule is not None
-        assert schedule.data.get("field") == "Through: 12/31"
-        assert schedule.data.get("field_4") == "1.0"
+        assert schedule.data["data"][0]["field"] == "Through: 12/31"
+        assert schedule.data["data"][3]["field"] == "1.0"
 
 
 # ---------------------------------------------------------------------------

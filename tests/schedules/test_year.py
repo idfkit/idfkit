@@ -135,21 +135,21 @@ def _make_year_obj(ranges: list[tuple[str, str, str, str, str]]) -> MagicMock:
     """Create a mock Schedule:Year with date ranges.
 
     Each range is (week_name, start_month, start_day, end_month, end_day).
+    Stored canonically under ``obj.data["schedule_weeks"]``.
     """
     obj = MagicMock()
     obj.obj_type = "Schedule:Year"
-
-    fields: dict[str, str | None] = {}
-    for i, (week_name, sm, sd, em, ed) in enumerate(ranges, 1):
-        fields[f"Schedule:Week Name {i}"] = week_name
-        fields[f"Start Month {i}"] = sm
-        fields[f"Start Day {i}"] = sd
-        fields[f"End Month {i}"] = em
-        fields[f"End Day {i}"] = ed
-    # Terminate the loop
-    fields[f"Schedule:Week Name {len(ranges) + 1}"] = None
-
-    obj.get.side_effect = lambda f: fields.get(f)
+    items = [
+        {
+            "schedule_week_name": week_name,
+            "start_month": sm,
+            "start_day": sd,
+            "end_month": em,
+            "end_day": ed,
+        }
+        for (week_name, sm, sd, em, ed) in ranges
+    ]
+    obj.data = {"schedule_weeks": items}
     return obj
 
 
@@ -419,12 +419,7 @@ class TestEvaluateYear:
         week_obj = MagicMock()
         week_obj.obj_type = "Schedule:Week:Compact"
         week_obj.name = "WeekSched"
-        compact_fields: dict[str, str | None] = {
-            "DayType List 1": "AllDays",
-            "Schedule:Day Name 1": "DaySched",
-            "DayType List 2": None,
-        }
-        week_obj.get.side_effect = lambda f: compact_fields.get(f)
+        week_obj.data = {"data": [{"daytype_list": "AllDays", "schedule_day_name": "DaySched"}]}
 
         doc = MagicMock()
 
@@ -485,16 +480,17 @@ class TestEvaluateYear:
         # Use month names
         obj = MagicMock()
         obj.obj_type = "Schedule:Year"
-        fields: dict[str, str | None] = {
-            "Schedule:Week Name 1": "WeekSched",
-            "Start Month 1": "January",
-            "Start Day 1": "1",
-            "End Month 1": "December",
-            "End Day 1": "31",
-            "Schedule:Week Name 2": None,
+        obj.data = {
+            "schedule_weeks": [
+                {
+                    "schedule_week_name": "WeekSched",
+                    "start_month": "January",
+                    "start_day": "1",
+                    "end_month": "December",
+                    "end_day": "31",
+                }
+            ]
         }
-        obj.get.side_effect = lambda f: fields.get(f)
-
         result = evaluate_year(obj, datetime(2024, 6, 15, 12, 0), doc)
         assert result == 0.33
 
@@ -503,12 +499,7 @@ class TestEvaluateYear:
         day_obj = MagicMock()
         day_obj.obj_type = "Schedule:Day:Interval"
         day_obj.name = "DaySched"
-        day_fields = {
-            "Time 1": "24:00",
-            "Value Until Time 1": 1.0,
-            "Time 2": None,
-        }
-        day_obj.get.side_effect = lambda f: day_fields.get(f)
+        day_obj.data = {"data": [{"time": "24:00", "value_until_time": 1.0}]}
 
         week_obj = MagicMock()
         week_obj.obj_type = "Schedule:Week:Daily"

@@ -69,11 +69,12 @@ class TestCreateCompactScheduleFromValues:
         vals = [0.75] * 8760
         obj = create_compact_schedule_from_values(doc, "Const", vals, year=2023)
         assert obj.obj_type == "Schedule:Compact"
-        # Should have Through: 12/31, For: AllDays, Until: 24:00, 0.75
-        assert obj.field_1 == "Through: 12/31"
-        assert obj.field_2 == "For: AllDays"
-        assert obj.field_3 == "Until: 24:00"
-        assert obj.field_4 == "0.75"
+        # Canonical: data is a list of {"field": ...} dicts.
+        items = obj["data"]
+        assert items[0].field == "Through: 12/31"
+        assert items[1].field == "For: AllDays"
+        assert items[2].field == "Until: 24:00"
+        assert items[3].field == "0.75"
 
     def test_binary_on_off(self) -> None:
         """Daytime on / nighttime off pattern compresses Until blocks."""
@@ -83,16 +84,17 @@ class TestCreateCompactScheduleFromValues:
         vals = day_profile * 365
         obj = create_compact_schedule_from_values(doc, "Office", vals, year=2023)
         assert obj.obj_type == "Schedule:Compact"
-        # Should produce: Through: 12/31, For: AllDays,
-        # Until: 08:00, 0, Until: 18:00, 1, Until: 24:00, 0
-        assert obj.field_1 == "Through: 12/31"
-        assert obj.field_2 == "For: AllDays"
-        assert obj.field_3 == "Until: 08:00"
-        assert obj.field_4 == "0"
-        assert obj.field_5 == "Until: 18:00"
-        assert obj.field_6 == "1"
-        assert obj.field_7 == "Until: 24:00"
-        assert obj.field_8 == "0"
+        items = obj["data"]
+        assert [it.field for it in items] == [
+            "Through: 12/31",
+            "For: AllDays",
+            "Until: 08:00",
+            "0",
+            "Until: 18:00",
+            "1",
+            "Until: 24:00",
+            "0",
+        ]
 
     def test_two_different_day_profiles(self) -> None:
         """Two distinct day profiles produce two Through blocks."""
@@ -105,8 +107,9 @@ class TestCreateCompactScheduleFromValues:
         assert len(vals) == 8760
         obj = create_compact_schedule_from_values(doc, "TwoPhase", vals, year=2023)
         # First Through block ends 1/31, second ends 12/31
-        assert obj.field_1 == "Through: 1/31"
-        assert obj.field_5 == "Through: 12/31"
+        items = obj["data"]
+        assert items[0].field == "Through: 1/31"
+        assert items[4].field == "Through: 12/31"
 
     def test_unique_daily_profiles(self) -> None:
         """Each day having a unique profile produces 365 Through blocks.
@@ -123,16 +126,15 @@ class TestCreateCompactScheduleFromValues:
             vals.extend([float(d)] * 24)
         assert len(vals) == 8760
         obj = create_compact_schedule_from_values(doc, "Unique", vals, year=2023)
-        # Should have 365 Through blocks, each with 4 fields → 1460 fields total
-        assert obj.get("Field 1460") is not None
-        assert obj.get("Field 1461") is None
+        # Should have 365 Through blocks, each with 4 fields = 1460 entries.
+        assert len(obj["data"]) == 1460
 
     def test_leap_year_8784(self) -> None:
         doc = new_document()
         vals = [1.0] * 8784
         obj = create_compact_schedule_from_values(doc, "Leap", vals, year=2024)
         assert obj.obj_type == "Schedule:Compact"
-        assert obj.field_1 == "Through: 12/31"
+        assert obj["data"][0].field == "Through: 12/31"
 
     def test_non_leap_8760(self) -> None:
         doc = new_document()
@@ -233,5 +235,4 @@ class TestCreateCompactScheduleFromValues:
         doc = new_document()
         obj = create_compact_schedule_from_values(doc, "Min", [1.0] * 8760, year=2023)
         # Through: 12/31, For: AllDays, Until: 24:00, 1
-        assert obj.get("Field 4") is not None
-        assert obj.get("Field 5") is None
+        assert len(obj["data"]) == 4

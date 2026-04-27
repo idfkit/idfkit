@@ -373,25 +373,19 @@ class TestSurfaceGeometryUtils:
         poly = get_surface_coords(surface)
         assert poly is None
 
-    def test_get_surface_coords_schema_naming(self) -> None:
-        """Test epJSON schema naming: vertex_x_coordinate, vertex_x_coordinate_2, ..."""
+    def test_get_surface_coords_canonical_storage(self) -> None:
+        """Test canonical storage: obj.data["vertices"] is a list of dicts."""
         surface = IDFObject(
             obj_type="BuildingSurface:Detailed",
             name="SchemaWall",
             data={
                 "number_of_vertices": 4,
-                "vertex_x_coordinate": 0.0,
-                "vertex_y_coordinate": 0.0,
-                "vertex_z_coordinate": 3.0,
-                "vertex_x_coordinate_2": 0.0,
-                "vertex_y_coordinate_2": 0.0,
-                "vertex_z_coordinate_2": 0.0,
-                "vertex_x_coordinate_3": 10.0,
-                "vertex_y_coordinate_3": 0.0,
-                "vertex_z_coordinate_3": 0.0,
-                "vertex_x_coordinate_4": 10.0,
-                "vertex_y_coordinate_4": 0.0,
-                "vertex_z_coordinate_4": 3.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                ],
             },
         )
         poly = get_surface_coords(surface)
@@ -642,9 +636,10 @@ class TestTranslateToWorld:
         translate_to_world(doc)
         wall = doc.getobject("BuildingSurface:Detailed", "OfficeWall")
         assert wall is not None
-        # vertex_1 was (0, 0, 3) -> translated by (10, 20, 0)
-        assert _close(wall.vertex_1_x_coordinate, 10.0)
-        assert _close(wall.vertex_1_y_coordinate, 20.0)
+        # vertex 1 was (0, 0, 3) -> translated by (10, 20, 0)
+        v0 = wall.vertices[0]
+        assert _close(v0.vertex_x_coordinate, 10.0)
+        assert _close(v0.vertex_y_coordinate, 20.0)
         # Zone origins reset to 0
         zone = doc.getobject("Zone", "Office")
         assert zone is not None
@@ -724,7 +719,7 @@ class TestTranslateToWorld:
         translate_to_world(doc)
         wall = doc.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        assert _close(wall.vertex_1_x_coordinate, 5.0)
+        assert _close(wall.vertices[0].vertex_x_coordinate, 5.0)
 
     def test_surface_without_coords_skipped(self) -> None:
         """Surfaces with no vertex data are skipped gracefully."""
@@ -2202,7 +2197,7 @@ class TestTranslateRotateBuildingWithSurfaces:
         translate_building(doc, Vector3D(100, 200, 0))
         wall = doc.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        assert _close(wall.vertex_1_x_coordinate, 100.0)
+        assert _close(wall.vertices[0].vertex_x_coordinate, 100.0)
 
     def test_rotate_building_changes_coords(self) -> None:
         """rotate_building rotates all surface vertices around the Z axis."""
@@ -2232,8 +2227,8 @@ class TestTranslateRotateBuildingWithSurfaces:
         rotate_building(doc, 90.0)
         wall = doc.getobject("BuildingSurface:Detailed", "W1")
         assert wall is not None
-        # After 90-degree rotation: vertex_3 was (10, 0, 0), should be (0, 10, 0)
-        assert wall.vertex_3_y_coordinate == pytest.approx(10.0)
+        # After 90-degree rotation: vertex 3 was (10, 0, 0), should be (0, 10, 0)
+        assert wall.vertices[2].vertex_y_coordinate == pytest.approx(10.0)
 
 
 # ---------------------------------------------------------------------------

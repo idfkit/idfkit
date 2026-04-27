@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypedDict
 
-from .objects import IDFCollection, IDFObject
+from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
 # =========================================================================
 # Typed object classes (one per EnergyPlus object type)
@@ -80,6 +80,11 @@ class Building(IDFObject):
     minimum_number_of_warmup_days: int | None
     """The minimum number of warmup days that produce enough temperature and flux history to start EnergyPlus simulation for...; Default: 1; Range: > 0"""
 
+class ShadowCalculationShadingZoneGroupsGroup(ExtensibleGroup):
+    """One shading_zone_groups group inside :class:`ShadowCalculation`."""
+
+    shading_zone_group_zonelist_name: str | None
+
 class ShadowCalculation(IDFObject):
     """This object is used to control details of the solar, shading, and daylighting models"""
 
@@ -103,7 +108,7 @@ class ShadowCalculation(IDFObject):
     """If Yes, self-shading will be disabled from all exterior surfaces in a given Shading Zone Group to surfaces within the...; Default: No"""
     disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None
     """If Yes, self-shading will be disabled from all exterior surfaces in a given Shading Zone Group to all other zones in ...; Default: No"""
-    shading_zone_group_zonelist_name: str | None
+    shading_zone_groups: ExtensibleList[ShadowCalculationShadingZoneGroupsGroup]
 
 class SurfaceConvectionAlgorithmInside(IDFObject):
     """Default indoor surface heat transfer convection algorithm to be used for all zones"""
@@ -813,6 +818,12 @@ class SiteSolarAndVisibleSpectrum(IDFObject):
     solar_spectrum_data_object_name: str | None
     visible_spectrum_data_object_name: str | None
 
+class SiteSpectrumDataExtensionsGroup(ExtensibleGroup):
+    """One extensions group inside :class:`SiteSpectrumData`."""
+
+    wavelength: float | None
+    spectrum: float | None
+
 class SiteSpectrumData(IDFObject):
     """Spectrum Data Type is followed by up to 107 sets of normal-incidence measured values of [wavelength, spectrum] for wa..."""
 
@@ -823,6 +834,7 @@ class SiteSpectrumData(IDFObject):
     wavelength_1: float | None
     """[micron]"""
     spectrum_2: float | None
+    extensions: ExtensibleList[SiteSpectrumDataExtensionsGroup]
 
 class ScheduleTypeLimits(IDFObject):
     """ScheduleTypeLimits specifies the data types and limits for the values contained in schedules"""
@@ -908,14 +920,24 @@ class ScheduleDayHourly(IDFObject):
     hour_24: float | None
     """Default: 0.0"""
 
+class ScheduleDayIntervalDataGroup(ExtensibleGroup):
+    """One data group inside :class:`ScheduleDayInterval`."""
+
+    time: str | None
+    value_until_time: float | None
+
 class ScheduleDayInterval(IDFObject):
     """A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
 
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
     """when the interval does not match the user specified timestep a Average choice will average between the intervals requ...; Default: No"""
-    time: str | None
-    value_until_time: float | None
+    data: ExtensibleList[ScheduleDayIntervalDataGroup]
+
+class ScheduleDayListExtensionsGroup(ExtensibleGroup):
+    """One extensions group inside :class:`ScheduleDayList`."""
+
+    value: float | None
 
 class ScheduleDayList(IDFObject):
     """Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature."""
@@ -925,7 +947,7 @@ class ScheduleDayList(IDFObject):
     """when the interval does not match the user specified timestep a 'Average' choice will average between the intervals re...; Default: No"""
     minutes_per_item: int | None
     """Must be evenly divisible into 60; Range: >= 1, <= 60"""
-    value: float | None
+    extensions: ExtensibleList[ScheduleDayListExtensionsGroup]
 
 class ScheduleWeekDaily(IDFObject):
     """A Schedule:Week:Daily contains 12 Schedule:Day:Hourly objects, one for each day type."""
@@ -943,32 +965,42 @@ class ScheduleWeekDaily(IDFObject):
     customday1_schedule_day_name: str | None
     customday2_schedule_day_name: str | None
 
-class ScheduleWeekCompact(IDFObject):
-    """Compact definition for Schedule:Day:List"""
+class ScheduleWeekCompactDataGroup(ExtensibleGroup):
+    """One data group inside :class:`ScheduleWeekCompact`."""
 
     daytype_list: str | None
     schedule_day_name: str | None
+
+class ScheduleWeekCompact(IDFObject):
+    """Compact definition for Schedule:Day:List"""
+
+    data: ExtensibleList[ScheduleWeekCompactDataGroup]
+
+class ScheduleYearScheduleWeeksGroup(ExtensibleGroup):
+    """One schedule_weeks group inside :class:`ScheduleYear`."""
+
+    schedule_week_name: str | None
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
 
 class ScheduleYear(IDFObject):
     """A Schedule:Year contains from 1 to 52 week schedules"""
 
     schedule_type_limits_name: str | None
-    schedule_week_name: str | None
-    """Since: 9.0.1"""
-    start_month: float | None
-    """Since: 9.0.1"""
-    start_day: float | None
-    """Since: 9.0.1"""
-    end_month: float | None
-    """Since: 9.0.1"""
-    end_day: float | None
-    """Since: 9.0.1"""
+    schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup]
+
+class ScheduleCompactDataGroup(ExtensibleGroup):
+    """One data group inside :class:`ScheduleCompact`."""
+
+    field: float | str | None
 
 class ScheduleCompact(IDFObject):
     """Irregular object. Does not follow the usual definition for fields. Fields A3... are: Through: Date For: Applicable da..."""
 
     schedule_type_limits_name: str | None
-    field: str | None
+    data: ExtensibleList[ScheduleCompactDataGroup]
 
 class ScheduleConstant(IDFObject):
     """Constant hourly value for entire year."""
@@ -1134,11 +1166,16 @@ class WindowMaterialGlazing(IDFObject):
     window_glass_spectral_and_incident_angle_back_reflectance_data_set_table_name: str | None
     """Used only when Optical Data Type = SpectralAndAngle"""
 
-class WindowMaterialGlazingGroupThermochromic(IDFObject):
-    """thermochromic glass at different temperatures"""
+class WindowMaterialGlazingGroupThermochromicTemperatureDataGroup(ExtensibleGroup):
+    """One temperature_data group inside :class:`WindowMaterialGlazingGroupThermochromic`."""
 
     optical_data_temperature: float | None
     window_material_glazing_name: str | None
+
+class WindowMaterialGlazingGroupThermochromic(IDFObject):
+    """thermochromic glass at different temperatures"""
+
+    temperature_data: ExtensibleList[WindowMaterialGlazingGroupThermochromicTemperatureDataGroup]
 
 class WindowMaterialGlazingRefractionExtinctionMethod(IDFObject):
     """Glass material properties for Windows or Glass Doors Index of Refraction/Extinction Coefficient input method Not to b..."""
@@ -1652,15 +1689,18 @@ class MaterialPropertyMoisturePenetrationDepthSettings(IDFObject):
     coating_layer_water_vapor_diffusion_resistance_factor: float | None
     """The coating's resistance to water vapor diffusion relative to the resistance to water vapor diffusion in stagnant air...; [dimensionless]; Range: >= 0.0"""
 
+class MaterialPropertyPhaseChangeValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`MaterialPropertyPhaseChange`."""
+
+    temperature: float | None
+    enthalpy: float | None
+
 class MaterialPropertyPhaseChange(IDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) Na..."""
 
     temperature_coefficient_for_thermal_conductivity: float | None
     """The base temperature is 20C. This is the thermal conductivity change per degree excursion from 20C. This variable con...; [W/m-K2]; Default: 0.0"""
-    temperature: float | None
-    """Since: 24.2.0"""
-    enthalpy: float | None
-    """Since: 24.2.0"""
+    values: ExtensibleList[MaterialPropertyPhaseChangeValuesGroup]
 
 class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) wi..."""
@@ -1692,13 +1732,16 @@ class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     low_temperature_difference_of_freezing_curve: float | None
     """The total freezing range of the material is the sum of low and high temperature difference of freezing curve.; [deltaC]; Range: > 0.0"""
 
+class MaterialPropertyVariableThermalConductivityValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`MaterialPropertyVariableThermalConductivity`."""
+
+    temperature: float | None
+    thermal_conductivity: float | None
+
 class MaterialPropertyVariableThermalConductivity(IDFObject):
     """Additional properties for temperature dependent thermal conductivity using piecewise linear temperature-conductivity ..."""
 
-    temperature: float | None
-    """Since: 24.2.0"""
-    thermal_conductivity: float | None
-    """Since: 24.2.0"""
+    values: ExtensibleList[MaterialPropertyVariableThermalConductivityValuesGroup]
 
 class MaterialPropertyVariableAbsorptance(IDFObject):
     """Since: 23.1.0"""
@@ -2257,6 +2300,14 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity(IDFObject):
     thermal_conductivity_25: float | None
     """[W/m-K]; Range: > 0.0"""
 
+class MaterialPropertyGlazingSpectralDataExtensionsGroup(ExtensibleGroup):
+    """One extensions group inside :class:`MaterialPropertyGlazingSpectralData`."""
+
+    wavelength: float | None
+    transmittance: float | None
+    front_reflectance: float | None
+    back_reflectance: float | None
+
 class MaterialPropertyGlazingSpectralData(IDFObject):
     """Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectan..."""
 
@@ -2280,10 +2331,7 @@ class MaterialPropertyGlazingSpectralData(IDFObject):
     transmittance_4: float | None
     front_reflectance_4: float | None
     back_reflectance_4: float | None
-    wavelength: float | None
-    transmittance: float | None
-    front_reflectance: float | None
-    back_reflectance: float | None
+    extensions: ExtensibleList[MaterialPropertyGlazingSpectralDataExtensionsGroup]
 
 class Construction(IDFObject):
     """Start with outside layer and work your way to the inside layer Up to 10 layers total, 8 for windows Enter the materia..."""
@@ -2472,6 +2520,11 @@ class GeometryTransform(IDFObject):
     new_aspect_ratio: float | None
     """Aspect ratio to transform to during run; Range: > 0.0"""
 
+class SpaceTagsGroup(ExtensibleGroup):
+    """One tags group inside :class:`Space`."""
+
+    tag: str | None
+
 class Space(IDFObject):
     """Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ...; Since: 9.6.0"""
 
@@ -2484,12 +2537,17 @@ class Space(IDFObject):
     """If this field is 0.0, negative or autocalculate, then the floor area of the space is automatically calculated and use...; [m2]; Default: Autocalculate"""
     space_type: str | None
     """Space type is used to tag spaces by activity type, such as office, classroom, storage, etc.; Default: General"""
-    tag: str | None
+    tags: ExtensibleList[SpaceTagsGroup]
+
+class SpaceListSpacesGroup(ExtensibleGroup):
+    """One spaces group inside :class:`SpaceList`."""
+
+    space_name: str | None
 
 class SpaceList(IDFObject):
     """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to...; Since: 9.6.0"""
 
-    space_name: str | None
+    spaces: ExtensibleList[SpaceListSpacesGroup]
 
 class Zone(IDFObject):
     """Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone..."""
@@ -2524,10 +2582,15 @@ class Zone(IDFObject):
     part_of_total_floor_area: Literal["", "No", "Yes"] | None
     """Default: Yes"""
 
+class ZoneListZonesGroup(ExtensibleGroup):
+    """One zones group inside :class:`ZoneList`."""
+
+    zone_name: str | None
+
 class ZoneList(IDFObject):
     """Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the in..."""
 
-    zone_name: str | None
+    zones: ExtensibleList[ZoneListZonesGroup]
 
 class ZoneGroup(IDFObject):
     """Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive s..."""
@@ -2535,6 +2598,13 @@ class ZoneGroup(IDFObject):
     zone_list_name: str | None
     zone_list_multiplier: int | None
     """Default: 1; Range: >= 1"""
+
+class BuildingSurfaceDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`BuildingSurfaceDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
 
 class BuildingSurfaceDetailed(IDFObject):
     """Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
@@ -2578,6 +2648,11 @@ class BuildingSurfaceDetailed(IDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 120 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates (last ...; Default: Autocalculate"""
+    vertices: ExtensibleList[BuildingSurfaceDetailedVerticesGroup]
+
+class WallDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`WallDetailed`."""
+
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
@@ -2623,6 +2698,11 @@ class WallDetailed(IDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
+    vertices: ExtensibleList[WallDetailedVerticesGroup]
+
+class RoofCeilingDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`RoofCeilingDetailed`."""
+
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
@@ -2666,6 +2746,11 @@ class RoofCeilingDetailed(IDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
+    vertices: ExtensibleList[RoofCeilingDetailedVerticesGroup]
+
+class FloorDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`FloorDetailed`."""
+
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
@@ -2711,9 +2796,7 @@ class FloorDetailed(IDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
-    vertex_x_coordinate: float | None
-    vertex_y_coordinate: float | None
-    vertex_z_coordinate: float | None
+    vertices: ExtensibleList[FloorDetailedVerticesGroup]
 
 class WallExterior(IDFObject):
     """Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated."""
@@ -3121,6 +3204,11 @@ class GlazedDoorInterzone(IDFObject):
     height: float | None
     """[m]"""
 
+class WindowShadingControlFenestrationSurfacesGroup(ExtensibleGroup):
+    """One fenestration_surfaces group inside :class:`WindowShadingControl`."""
+
+    fenestration_surface_name: str | None
+
 class WindowShadingControl(IDFObject):
     """Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ...; Since: 9.0.1"""
 
@@ -3192,7 +3280,7 @@ class WindowShadingControl(IDFObject):
     """Reference to the Daylighting:Controls object that provides the glare and illuminance control to the zone."""
     multiple_surface_control_type: Literal["", "Group", "Sequential"] | None
     """When Sequential is used the list of fenestration surfaces are controlled individually in the order specified When Gro...; Default: Sequential"""
-    fenestration_surface_name: str | None
+    fenestration_surfaces: ExtensibleList[WindowShadingControlFenestrationSurfacesGroup]
 
 class WindowPropertyFrameAndDivider(IDFObject):
     """Specifies the dimensions of a window frame, dividers, and inside reveal surfaces. Referenced by the surface objects f..."""
@@ -3357,6 +3445,13 @@ class ShadingBuilding(IDFObject):
     height: float | None
     """[m]"""
 
+class ShadingSiteDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`ShadingSiteDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+
 class ShadingSiteDetailed(IDFObject):
     """used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
 
@@ -3364,6 +3459,11 @@ class ShadingSiteDetailed(IDFObject):
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
+    vertices: ExtensibleList[ShadingSiteDetailedVerticesGroup]
+
+class ShadingBuildingDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`ShadingBuildingDetailed`."""
+
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
@@ -3375,9 +3475,7 @@ class ShadingBuildingDetailed(IDFObject):
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
-    vertex_x_coordinate: float | None
-    vertex_y_coordinate: float | None
-    vertex_z_coordinate: float | None
+    vertices: ExtensibleList[ShadingBuildingDetailedVerticesGroup]
 
 class ShadingOverhang(IDFObject):
     """Overhangs are usually flat shading surfaces that reference a window or door."""
@@ -3459,6 +3557,13 @@ class ShadingFinProjection(IDFObject):
     right_depth_as_fraction_of_window_door_width: float | None
     """[dimensionless]; Range: >= 0.0"""
 
+class ShadingZoneDetailedVerticesGroup(ExtensibleGroup):
+    """One vertices group inside :class:`ShadingZoneDetailed`."""
+
+    vertex_x_coordinate: float | None
+    vertex_y_coordinate: float | None
+    vertex_z_coordinate: float | None
+
 class ShadingZoneDetailed(IDFObject):
     """used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
 
@@ -3467,9 +3572,7 @@ class ShadingZoneDetailed(IDFObject):
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object vertices are given in GlobalGeometryRules coordinates -- if rela...; Default: Autocalculate"""
-    vertex_x_coordinate: float | None
-    vertex_y_coordinate: float | None
-    vertex_z_coordinate: float | None
+    vertices: ExtensibleList[ShadingZoneDetailedVerticesGroup]
 
 class ShadingPropertyReflectance(IDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
@@ -3527,6 +3630,11 @@ class SurfacePropertyHeatTransferAlgorithmMultipleSurface(IDFObject):
     )
     """Default: ConductionTransferFunction"""
 
+class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup(ExtensibleGroup):
+    """One surface group inside :class:`SurfacePropertyHeatTransferAlgorithmSurfaceList`."""
+
+    surface_name: str | None
+
 class SurfacePropertyHeatTransferAlgorithmSurfaceList(IDFObject):
     """Determines which Heat Balance Algorithm will be used for a list of surfaces Allows selectively overriding the global ..."""
 
@@ -3541,7 +3649,7 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList(IDFObject):
         | None
     )
     """Default: ConductionTransferFunction"""
-    surface_name: str | None
+    surface: ExtensibleList[SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup]
 
 class SurfacePropertyHeatTransferAlgorithmConstruction(IDFObject):
     """Determines which Heat Balance Algorithm will be used for surfaces that have a specific type of construction Allows se..."""
@@ -3629,6 +3737,14 @@ class SurfacePropertyUnderwater(IDFObject):
     free_stream_water_velocity_schedule: str | None
     """[m/s]"""
 
+class FoundationKivaBlocksGroup(ExtensibleGroup):
+    """One blocks group inside :class:`FoundationKiva`."""
+
+    custom_block_material_name: str | None
+    custom_block_depth: float | None
+    custom_block_x_position: float | None
+    custom_block_z_position: float | None
+
 class FoundationKiva(IDFObject):
     """Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated usi..."""
 
@@ -3659,10 +3775,7 @@ class FoundationKiva(IDFObject):
     footing_material_name: str | None
     footing_depth: float | None
     """Top-to-bottom dimension of the footing (not to be confused with its depth in the ground). The width of the footing is...; [m]; Default: 0.3; Range: > 0.0"""
-    custom_block_material_name: str | None
-    custom_block_depth: float | None
-    custom_block_x_position: float | None
-    custom_block_z_position: float | None
+    blocks: ExtensibleList[FoundationKivaBlocksGroup]
 
 class FoundationKivaSettings(IDFObject):
     """Settings applied across all Kiva foundation calculations. Object is not required. If not defined, defaults will be ap..."""
@@ -3690,6 +3803,11 @@ class FoundationKivaSettings(IDFObject):
     simulation_timestep: Literal["", "Hourly", "Timestep"] | None
     """Default: Hourly"""
 
+class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter`."""
+
+    surface_segment_exposed: Literal["", "No", "Yes"] | None
+
 class SurfacePropertyExposedFoundationPerimeter(IDFObject):
     """Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may e..."""
 
@@ -3701,7 +3819,7 @@ class SurfacePropertyExposedFoundationPerimeter(IDFObject):
     """[m]; Range: >= 0.0"""
     exposed_perimeter_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
-    surface_segment_exposed: str | None
+    surfaces: ExtensibleList[SurfacePropertyExposedFoundationPerimeterSurfacesGroup]
 
 class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(IDFObject):
     """Options to change the individual convection model equations for dynamic selection when using AdaptiveConvectiongAlgor..."""
@@ -4589,6 +4707,11 @@ class SurfacePropertiesVaporCoefficients(IDFObject):
     internal_vapor_coefficient_value: float | None
     """[kg/Pa-s-m2]; Default: 0.0; Range: >= 0.0"""
 
+class SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup(ExtensibleGroup):
+    """One surface group inside :class:`SurfacePropertyExteriorNaturalVentedCavity`."""
+
+    surface_name: str | None
+
 class SurfacePropertyExteriorNaturalVentedCavity(IDFObject):
     """Used to describe the decoupled layer, or baffle, and the characteristics of the cavity and openings for naturally ven..."""
 
@@ -4613,7 +4736,7 @@ class SurfacePropertyExteriorNaturalVentedCavity(IDFObject):
     """[dimensionless]; Default: 0.25; Range: > 0.0, <= 1.5"""
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
     """[dimensionless]; Default: 0.65; Range: > 0.0, <= 1.5"""
-    surface_name: str | None
+    surface: ExtensibleList[SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup]
 
 class SurfacePropertySolarIncidentInside(IDFObject):
     """Used to provide incident solar radiation on the inside of the surface. Reference surface-construction pair and if tha..."""
@@ -4653,6 +4776,13 @@ class ZonePropertyLocalEnvironment(IDFObject):
     outdoor_air_node_name: str | None
     """Enter the name of an OutdoorAir:Node object"""
 
+class SurfacePropertySurroundingSurfacesSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`SurfacePropertySurroundingSurfaces`."""
+
+    surrounding_surface_name: str | None
+    surrounding_surface_view_factor: float | None
+    surrounding_surface_temperature_schedule_name: str | None
+
 class SurfacePropertySurroundingSurfaces(IDFObject):
     """This object defines a list of surrounding surfaces for an exterior surface."""
 
@@ -4664,17 +4794,20 @@ class SurfacePropertySurroundingSurfaces(IDFObject):
     """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
     ground_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
-    surrounding_surface_name: str | None
-    surrounding_surface_view_factor: float | None
-    surrounding_surface_temperature_schedule_name: str | None
+    surfaces: ExtensibleList[SurfacePropertySurroundingSurfacesSurfacesGroup]
 
-class SurfacePropertyGroundSurfaces(IDFObject):
-    """This object defines a list of ground surfaces for use with an exterior surface.; Since: 22.2.0"""
+class SurfacePropertyGroundSurfacesGroundSurfacesGroup(ExtensibleGroup):
+    """One ground_surfaces group inside :class:`SurfacePropertyGroundSurfaces`."""
 
     ground_surface_name: str | None
     ground_surface_view_factor: float | None
     ground_surface_temperature_schedule_name: str | None
     ground_surface_reflectance_schedule_name: str | None
+
+class SurfacePropertyGroundSurfaces(IDFObject):
+    """This object defines a list of ground surfaces for use with an exterior surface.; Since: 22.2.0"""
+
+    ground_surfaces: ExtensibleList[SurfacePropertyGroundSurfacesGroundSurfacesGroup]
 
 class ComplexFenestrationPropertySolarAbsorbedLayers(IDFObject):
     """Used to provide solar radiation absorbed in fenestration layers. References surface-construction pair and if that pai..."""
@@ -4692,12 +4825,17 @@ class ComplexFenestrationPropertySolarAbsorbedLayers(IDFObject):
     layer_5_solar_radiation_absorbed_schedule_name: str | None
     """Values in schedule are expected to be in W/m2"""
 
-class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
-    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
+class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(ExtensibleGroup):
+    """One view_factors group inside :class:`ZonePropertyUserViewFactorsBySurfaceName`."""
 
     from_surface: str | None
     to_surface: str | None
     view_factor: float | None
+
+class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
+    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
+
+    view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
 
 class GroundHeatTransferControl(IDFObject):
     """Object determines if the Slab and Basement preprocessors are going to be executed."""
@@ -5097,6 +5235,12 @@ class RoomAirTemperaturePatternTwoGradient(IDFObject):
     lower_heat_rate_bound: float | None
     """[W]"""
 
+class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(ExtensibleGroup):
+    """One pairs group inside :class:`RoomAirTemperaturePatternNondimensionalHeight`."""
+
+    pair_zeta_nondimensional_height: float | None
+    pair_delta_adjacent_air_temperature: float | None
+
 class RoomAirTemperaturePatternNondimensionalHeight(IDFObject):
     """Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of hei..."""
 
@@ -5108,8 +5252,13 @@ class RoomAirTemperaturePatternNondimensionalHeight(IDFObject):
     """= (Temp leaving - Mean Air Temp ) deg C; [deltaC]"""
     exhaust_air_offset: float | None
     """= (Temp exhaust - Mean Air Temp) deg C the remaining fields have pairs that describe the relative temperature pattern...; [deltaC]"""
-    pair_zeta_nondimensional_height: float | None
-    pair_delta_adjacent_air_temperature: float | None
+    pairs: ExtensibleList[RoomAirTemperaturePatternNondimensionalHeightPairsGroup]
+
+class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(ExtensibleGroup):
+    """One surface_deltas group inside :class:`RoomAirTemperaturePatternSurfaceMapping`."""
+
+    surface_name_pair: str | None
+    delta_adjacent_air_temperature_pair: float | None
 
 class RoomAirTemperaturePatternSurfaceMapping(IDFObject):
     """Defines a distribution pattern for the air temperatures adjacent to individual surfaces. This allows controlling the ..."""
@@ -5122,8 +5271,7 @@ class RoomAirTemperaturePatternSurfaceMapping(IDFObject):
     """= (Tleaving - Mean Air Temp ) deg C; [deltaC]"""
     exhaust_air_offset: float | None
     """= (Texhaust - Mean Air Temp) deg C; [deltaC]"""
-    surface_name_pair: str | None
-    delta_adjacent_air_temperature_pair: float | None
+    surface_deltas: ExtensibleList[RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup]
 
 class RoomAirNode(IDFObject):
     """Define an air node for some types of nodal room air models"""
@@ -5258,23 +5406,135 @@ class RoomAirNodeAirflowNetwork(IDFObject):
     roomair_node_airflownetwork_internalgains_name: str | None
     roomair_node_airflownetwork_hvacequipment_name: str | None
 
-class RoomAirNodeAirflowNetworkAdjacentSurfaceList(IDFObject):
+class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceList`."""
+
     surface_name: str | None
+
+class RoomAirNodeAirflowNetworkAdjacentSurfaceList(IDFObject):
+    surfaces: ExtensibleList[RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup]
+
+class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(ExtensibleGroup):
+    """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains`."""
+
+    internal_gain_object_type: (
+        Literal[
+            "AirTerminal:SingleDuct:UserDefined",
+            "Coil:UserDefined",
+            "DaylightingDevice:Tubular",
+            "ElectricEquipment",
+            "ElectricLoadCenter:Inverter:FunctionOfPower",
+            "ElectricLoadCenter:Inverter:LookUpTable",
+            "ElectricLoadCenter:Inverter:Simple",
+            "ElectricLoadCenter:Storage:Battery",
+            "ElectricLoadCenter:Storage:Converter",
+            "ElectricLoadCenter:Storage:LiIonNMCBattery",
+            "ElectricLoadCenter:Storage:Simple",
+            "ElectricLoadCenter:Transformer",
+            "GasEquipment",
+            "Generator:FuelCell",
+            "Generator:MicroCHP",
+            "HeaderedPumps:ConstantSpeed",
+            "HeaderedPumps:VariableSpeed",
+            "HotWaterEquipment",
+            "Lights",
+            "OtherEquipment",
+            "People",
+            "Pipe:Indoor",
+            "PlantComponent:UserDefined",
+            "Pump:ConstantSpeed",
+            "Pump:VariableSpeed",
+            "Pump:VariableSpeed:Condensate",
+            "Refrigeration:Case",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:SecondarySystem:Pipe",
+            "Refrigeration:SecondarySystem:Receiver",
+            "Refrigeration:System:Condenser:AirCooled",
+            "Refrigeration:System:SuctionPipe",
+            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
+            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
+            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
+            "Refrigeration:WalkIn",
+            "SteamEquipment",
+            "ThermalStorage:ChilledWater:Mixed",
+            "ThermalStorage:ChilledWater:Stratified",
+            "WaterHeater:Mixed",
+            "WaterHeater:Stratified",
+            "WaterUse:Equipment",
+            "ZoneBaseboard:OutdoorTemperatureControlled",
+            "ZoneContaminantSourceAndSink:CarbonDioxide",
+            "ZoneContaminantSourceAndSink:GenericContaminant",
+            "ZoneHVAC:ForcedAir:UserDefined",
+        ]
+        | None
+    )
+    internal_gain_object_name: str | None
+    fraction_of_gains_to_node: float | None
 
 class RoomAirNodeAirflowNetworkInternalGains(IDFObject):
     """define the internal gains that are associated with one particular RoomAir:Node"""
 
-    internal_gain_object_type: str | None
-    internal_gain_object_name: str | None
-    fraction_of_gains_to_node: float | None
+    gains: ExtensibleList[RoomAirNodeAirflowNetworkInternalGainsGainsGroup]
+
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(ExtensibleGroup):
+    """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment`."""
+
+    zonehvac_or_air_terminal_equipment_object_type: (
+        Literal[
+            "AirLoopHVACReturnAir",
+            "AirTerminal:DualDuct:ConstantVolume",
+            "AirTerminal:DualDuct:VAV",
+            "AirTerminal:DualDuct:VAV:OutdoorAir",
+            "AirTerminal:SingleDuct:ConstantVolume:CooledBeam",
+            "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction",
+            "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+            "AirTerminal:SingleDuct:ConstantVolume:Reheat",
+            "AirTerminal:SingleDuct:ParallelPIU:Reheat",
+            "AirTerminal:SingleDuct:SeriesPIU:Reheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat",
+            "AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat",
+            "AirTerminal:SingleDuct:VAV:NoReheat",
+            "AirTerminal:SingleDuct:VAV:Reheat",
+            "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan",
+            "Fan:ZoneExhaust",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zonehvac_or_air_terminal_equipment_object_name: str | None
+    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
+    fraction_of_input_or_return_air_to_hvac_equipment: float | None
 
 class RoomAirNodeAirflowNetworkHVACEquipment(IDFObject):
     """define the zone equipment associated with one particular RoomAir:Node"""
 
-    zonehvac_or_air_terminal_equipment_object_type: str | None
-    zonehvac_or_air_terminal_equipment_object_name: str | None
-    fraction_of_output_or_supply_air_from_hvac_equipment: float | None
-    fraction_of_input_or_return_air_to_hvac_equipment: float | None
+    equipment_fractions: ExtensibleList[RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup]
+
+class RoomAirSettingsAirflowNetworkNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`RoomAirSettingsAirflowNetwork`."""
+
+    roomairflownetwork_node_name: str | None
 
 class RoomAirSettingsAirflowNetwork(IDFObject):
     """RoomAir modeling using Airflow pressure network solver"""
@@ -5282,7 +5542,7 @@ class RoomAirSettingsAirflowNetwork(IDFObject):
     zone_name: str | None
     """Name of Zone being described. Any existing zone name"""
     control_point_roomairflownetwork_node_name: str | None
-    roomairflownetwork_node_name: str | None
+    nodes: ExtensibleList[RoomAirSettingsAirflowNetworkNodesGroup]
 
 class People(IDFObject):
     """Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
@@ -5367,13 +5627,16 @@ class People(IDFObject):
     heat_stress_temperature_threshold: float | None
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0; Since: 22.2.0"""
 
+class ComfortViewFactorAnglesAnglesGroup(ExtensibleGroup):
+    """One angles group inside :class:`ComfortViewFactorAngles`."""
+
+    surface_name: str | None
+    angle_factor: float | None
+
 class ComfortViewFactorAngles(IDFObject):
     """Used to specify radiant view factors for thermal comfort calculations. Note that the following angle factor fractions..."""
 
-    surface_name: str | None
-    """Since: 25.2.0"""
-    angle_factor: float | None
-    """Since: 25.2.0"""
+    angles: ExtensibleList[ComfortViewFactorAnglesAnglesGroup]
 
 class Lights(IDFObject):
     """Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
@@ -5790,6 +6053,13 @@ class ZoneContaminantSourceAndSinkGenericDepositionRateSink(IDFObject):
     schedule_name: str | None
     """Value in this schedule should be a fraction (generally 0.0 - 1.0) applied to the Initial Emission Rate. When the valu..."""
 
+class DaylightingControlsControlDataGroup(ExtensibleGroup):
+    """One control_data group inside :class:`DaylightingControls`."""
+
+    daylighting_reference_point_name: str | None
+    fraction_of_lights_controlled_by_reference_point: float | None
+    illuminance_setpoint_at_reference_point: float | None
+
 class DaylightingControls(IDFObject):
     """Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
@@ -5815,10 +6085,7 @@ class DaylightingControls(IDFObject):
     """The default is for general office work; Default: 22.0; Range: >= 1.0"""
     delight_gridding_resolution: float | None
     """Maximum surface area for nodes in gridding all surfaces in the DElight zone. All reflective and transmitting surfaces...; [m2]; Range: > 0.0"""
-    daylighting_reference_point_name: str | None
-    fraction_of_lights_controlled_by_reference_point: float | None
-    """Since: 9.6.0"""
-    illuminance_setpoint_at_reference_point: float | None
+    control_data: ExtensibleList[DaylightingControlsControlDataGroup]
 
 class DaylightingReferencePoint(IDFObject):
     """Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
@@ -5844,6 +6111,12 @@ class DaylightingDELightComplexFenestration(IDFObject):
     fenestration_rotation: float | None
     """In-plane counter-clockwise rotation angle of the Complex Fenestration optical reference direction and the base edge o...; [deg]; Default: 0.0"""
 
+class DaylightingDeviceTubularTransitionLengthsGroup(ExtensibleGroup):
+    """One transition_lengths group inside :class:`DaylightingDeviceTubular`."""
+
+    transition_zone_name: str | None
+    transition_zone_length: float | None
+
 class DaylightingDeviceTubular(IDFObject):
     """Defines a tubular daylighting device (TDD) consisting of three components: a dome, a pipe, and a diffuser. The dome a..."""
 
@@ -5858,8 +6131,7 @@ class DaylightingDeviceTubular(IDFObject):
     """The exterior exposed length is the difference between total and sum of zone lengths; [m]; Range: > 0.0"""
     effective_thermal_resistance: float | None
     """R value between TubularDaylightDome and TubularDaylightDiffuser; [m2-K/W]; Default: 0.28; Range: > 0.0"""
-    transition_zone_name: str | None
-    transition_zone_length: float | None
+    transition_lengths: ExtensibleList[DaylightingDeviceTubularTransitionLengthsGroup]
 
 class DaylightingDeviceShelf(IDFObject):
     """Defines a daylighting which can have an inside shelf, an outside shelf, or both. The inside shelf is defined as a bui..."""
@@ -7042,6 +7314,12 @@ class AirflowNetworkDistributionLinkage(IDFObject):
     thermal_zone_name: str | None
     """Only used if component = AirflowNetwork:Distribution:Component:Duct The zone name is where AirflowNetwork:Distributio..."""
 
+class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors`."""
+
+    surface_name: str | None
+    surface_view_factor: float | None
+
 class AirflowNetworkDistributionDuctViewFactors(IDFObject):
     """This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfac..."""
 
@@ -7049,8 +7327,7 @@ class AirflowNetworkDistributionDuctViewFactors(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     duct_surface_emittance: float | None
     """Default: 0.9; Range: >= 0.0, <= 1.0"""
-    surface_name: str | None
-    surface_view_factor: float | None
+    surfaces: ExtensibleList[AirflowNetworkDistributionDuctViewFactorsSurfacesGroup]
 
 class AirflowNetworkDistributionDuctSizing(IDFObject):
     """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
@@ -9935,11 +10212,16 @@ class DesignSpecificationOutdoorAir(IDFObject):
     proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None
     """This input is only used to calculate the minimum outdoor air flow rate when the field System Outdoor Air Method = Pro..."""
 
-class DesignSpecificationOutdoorAirSpaceList(IDFObject):
-    """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
+class DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup(ExtensibleGroup):
+    """One space_specs group inside :class:`DesignSpecificationOutdoorAirSpaceList`."""
 
     space_name: str | None
     space_design_specification_outdoor_air_object_name: str | None
+
+class DesignSpecificationOutdoorAirSpaceList(IDFObject):
+    """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
+
+    space_specs: ExtensibleList[DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup]
 
 class DesignSpecificationZoneAirDistribution(IDFObject):
     """This object is used to describe zone air distribution in terms of air distribution effectiveness and secondary recirc..."""
@@ -11196,6 +11478,35 @@ class ZoneHVACEvaporativeCoolerUnit(IDFObject):
     shut_off_relative_humidity: float | None
     """Zone relative humidity above which the evap cooler is shut off.; [percent]; Range: >= 0.0, <= 100.0; Since: 23.2.0"""
 
+class ZoneHVACHybridUnitaryHVACModesGroup(ExtensibleGroup):
+    """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC`."""
+
+    mode_name: str | None
+    mode_supply_air_temperature_lookup_table_name: str | None
+    mode_supply_air_humidity_ratio_lookup_table_name: str | None
+    mode_system_electric_power_lookup_table_name: str | None
+    mode_supply_fan_electric_power_lookup_table_name: str | None
+    mode_external_static_pressure_lookup_table_name: str | None
+    mode_system_second_fuel_consumption_lookup_table_name: str | None
+    mode_system_third_fuel_consumption_lookup_table_name: str | None
+    mode_system_water_use_lookup_table_name: str | None
+    mode_minimum_outdoor_air_temperature: float | None
+    mode_maximum_outdoor_air_temperature: float | None
+    mode_minimum_outdoor_air_humidity_ratio: float | None
+    mode_maximum_outdoor_air_humidity_ratio: float | None
+    mode_minimum_outdoor_air_relative_humidity: float | None
+    mode_maximum_outdoor_air_relative_humidity: float | None
+    mode_minimum_return_air_temperature: float | None
+    mode_maximum_return_air_temperature: float | None
+    mode_minimum_return_air_humidity_ratio: float | None
+    mode_maximum_return_air_humidity_ratio: float | None
+    mode_minimum_return_air_relative_humidity: float | None
+    mode_maximum_return_air_relative_humidity: float | None
+    mode_minimum_outdoor_air_fraction: float | None
+    mode_maximum_outdoor_air_fraction: float | None
+    mode_minimum_supply_air_mass_flow_rate_ratio: float | None
+    mode_maximum_supply_air_mass_flow_rate_ratio: float | None
+
 class ZoneHVACHybridUnitaryHVAC(IDFObject):
     """Hybrid Unitary HVAC. A black box model for multi-mode packaged forced air equipment. Independent variables include ou..."""
 
@@ -11326,31 +11637,7 @@ class ZoneHVACHybridUnitaryHVAC(IDFObject):
     """Enter the outdoor air fraction for Mode 0. If this field is blank, the outdoor air fraction for Mode 0 will be 0.00.; Default: 0.0; Range: >= 0.0, <= 1.0"""
     mode_0_supply_air_mass_flow_rate_ratio: float | None
     """Enter the supply air mass flow rate ratio for Mode 0. The value in this field will be used to determine the supply ai...; Default: 0.0; Range: >= 0.0, <= 1.0"""
-    mode_name: str | None
-    mode_supply_air_temperature_lookup_table_name: str | None
-    mode_supply_air_humidity_ratio_lookup_table_name: str | None
-    mode_system_electric_power_lookup_table_name: str | None
-    mode_supply_fan_electric_power_lookup_table_name: str | None
-    mode_external_static_pressure_lookup_table_name: str | None
-    mode_system_second_fuel_consumption_lookup_table_name: str | None
-    mode_system_third_fuel_consumption_lookup_table_name: str | None
-    mode_system_water_use_lookup_table_name: str | None
-    mode_minimum_outdoor_air_temperature: float | None
-    mode_maximum_outdoor_air_temperature: float | None
-    mode_minimum_outdoor_air_humidity_ratio: float | None
-    mode_maximum_outdoor_air_humidity_ratio: float | None
-    mode_minimum_outdoor_air_relative_humidity: float | None
-    mode_maximum_outdoor_air_relative_humidity: float | None
-    mode_minimum_return_air_temperature: float | None
-    mode_maximum_return_air_temperature: float | None
-    mode_minimum_return_air_humidity_ratio: float | None
-    mode_maximum_return_air_humidity_ratio: float | None
-    mode_minimum_return_air_relative_humidity: float | None
-    mode_maximum_return_air_relative_humidity: float | None
-    mode_minimum_outdoor_air_fraction: float | None
-    mode_maximum_outdoor_air_fraction: float | None
-    mode_minimum_supply_air_mass_flow_rate_ratio: float | None
-    mode_maximum_supply_air_mass_flow_rate_ratio: float | None
+    modes: ExtensibleList[ZoneHVACHybridUnitaryHVACModesGroup]
 
 class ZoneHVACOutdoorAirUnit(IDFObject):
     """The zone outdoor air unit models a single-zone dedicated outdoor air system (DOAS). Forced-convection 100% outdoor ai..."""
@@ -11640,6 +11927,12 @@ class ZoneHVACBaseboardRadiantConvectiveWaterDesign(IDFObject):
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
 
+class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACBaseboardRadiantConvectiveWater`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+
 class ZoneHVACBaseboardRadiantConvectiveWater(IDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
@@ -11657,8 +11950,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater(IDFObject):
     """Enter the design heating capacity. Required field when the heating design capacity method HeatingDesignCapacity. This...; [W] (W); Default: Autosize"""
     maximum_water_flow_rate: float | Literal["Autosize"] | None
     """[m3/s] (gal/min)"""
-    surface_name: str | None
-    fraction_of_radiant_energy_to_surface: float | None
+    surface_fractions: ExtensibleList[ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup]
 
 class ZoneHVACBaseboardRadiantConvectiveSteamDesign(IDFObject):
     """Since: 9.5.0"""
@@ -11678,6 +11970,12 @@ class ZoneHVACBaseboardRadiantConvectiveSteamDesign(IDFObject):
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
 
+class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACBaseboardRadiantConvectiveSteam`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
+
 class ZoneHVACBaseboardRadiantConvectiveSteam(IDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list."""
 
@@ -11693,6 +11991,11 @@ class ZoneHVACBaseboardRadiantConvectiveSteam(IDFObject):
     """[deltaC]; Default: 5.0; Range: >= 1.0"""
     maximum_steam_flow_rate: float | Literal["Autosize"] | None
     """[m3/s]"""
+    surface_fractions: ExtensibleList[ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup]
+
+class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACBaseboardRadiantConvectiveElectric`."""
+
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
@@ -11717,6 +12020,11 @@ class ZoneHVACBaseboardRadiantConvectiveElectric(IDFObject):
     """Range: >= 0.0, <= 1.0"""
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
+    surface_fractions: ExtensibleList[ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup]
+
+class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACCoolingPanelRadiantConvectiveWater`."""
+
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
@@ -11770,8 +12078,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater(IDFObject):
     """Range: >= 0.0, <= 1.0"""
     fraction_of_radiant_energy_incident_on_people: float | None
     """Range: >= 0.0, <= 1.0"""
-    surface_name: str | None
-    fraction_of_radiant_energy_to_surface: float | None
+    surface_fractions: ExtensibleList[ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup]
 
 class ZoneHVACBaseboardConvectiveWater(IDFObject):
     """Hot water baseboard heater, convection-only. Natural convection hydronic heating unit."""
@@ -12020,11 +12327,22 @@ class ZoneHVACLowTemperatureRadiantElectric(IDFObject):
     """[deltaC]; Default: 0.0; Range: >= 0.0"""
     heating_setpoint_temperature_schedule_name: str | None
 
-class ZoneHVACLowTemperatureRadiantSurfaceGroup(IDFObject):
-    """This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractio..."""
+class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACLowTemperatureRadiantSurfaceGroup`."""
 
     surface_name: str | None
     flow_fraction_for_surface: float | None
+
+class ZoneHVACLowTemperatureRadiantSurfaceGroup(IDFObject):
+    """This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractio..."""
+
+    surface_fractions: ExtensibleList[ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup]
+
+class ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup(ExtensibleGroup):
+    """One surface_fractions group inside :class:`ZoneHVACHighTemperatureRadiant`."""
+
+    surface_name: str | None
+    fraction_of_radiant_energy_to_surface: float | None
 
 class ZoneHVACHighTemperatureRadiant(IDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
@@ -12072,8 +12390,7 @@ class ZoneHVACHighTemperatureRadiant(IDFObject):
     """This setpoint is a 'mean air temperature', a 'mean radiant temperature' or an 'operative temperature' setpoint depend..."""
     fraction_of_radiant_energy_incident_on_people: float | None
     """This will affect thermal comfort but from an energy balance standpoint this value gets added to the convective gains ...; Range: >= 0.0, <= 1.0"""
-    surface_name: str | None
-    fraction_of_radiant_energy_to_surface: float | None
+    surface_fractions: ExtensibleList[ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup]
 
 class ZoneHVACVentilatedSlab(IDFObject):
     """Ventilated slab system where outdoor air flows through hollow cores in a building surface (wall, ceiling, or floor)."""
@@ -12163,8 +12480,8 @@ class ZoneHVACVentilatedSlab(IDFObject):
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
-class ZoneHVACVentilatedSlabSlabGroup(IDFObject):
-    """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
+class ZoneHVACVentilatedSlabSlabGroupDataGroup(ExtensibleGroup):
+    """One data group inside :class:`ZoneHVACVentilatedSlabSlabGroup`."""
 
     zone_name: str | None
     surface_name: str | None
@@ -12173,6 +12490,11 @@ class ZoneHVACVentilatedSlabSlabGroup(IDFObject):
     core_numbers_for_surface: float | None
     slab_inlet_node_name_for_surface: str | None
     slab_outlet_node_name_for_surface: str | None
+
+class ZoneHVACVentilatedSlabSlabGroup(IDFObject):
+    """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
+
+    data: ExtensibleList[ZoneHVACVentilatedSlabSlabGroupDataGroup]
 
 class AirTerminalSingleDuctConstantVolumeReheat(IDFObject):
     """Central air system terminal unit, single duct, constant volume, with reheat coil (hot water, electric, gas, or steam)."""
@@ -12703,19 +13025,59 @@ class ZoneHVACExhaustControl(IDFObject):
     balanced_exhaust_fraction_schedule_name: str | None
     """Schedule name of the Balanced Exhaust Fraction."""
 
+class ZoneHVACEquipmentListEquipmentGroup(ExtensibleGroup):
+    """One equipment group inside :class:`ZoneHVACEquipmentList`."""
+
+    zone_equipment_object_type: (
+        Literal[
+            "AirLoopHVAC:UnitarySystem",
+            "Fan:ZoneExhaust",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "WaterHeater:HeatPump:PumpedCondenser",
+            "WaterHeater:HeatPump:WrappedCondenser",
+            "ZoneHVAC:AirDistributionUnit",
+            "ZoneHVAC:Baseboard:Convective:Electric",
+            "ZoneHVAC:Baseboard:Convective:Water",
+            "ZoneHVAC:Baseboard:RadiantConvective:Electric",
+            "ZoneHVAC:Baseboard:RadiantConvective:Steam",
+            "ZoneHVAC:Baseboard:RadiantConvective:Water",
+            "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+            "ZoneHVAC:Dehumidifier:DX",
+            "ZoneHVAC:EnergyRecoveryVentilator",
+            "ZoneHVAC:EvaporativeCoolerUnit",
+            "ZoneHVAC:ForcedAir:UserDefined",
+            "ZoneHVAC:FourPipeFanCoil",
+            "ZoneHVAC:HighTemperatureRadiant",
+            "ZoneHVAC:HybridUnitaryHVAC",
+            "ZoneHVAC:IdealLoadsAirSystem",
+            "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
+            "ZoneHVAC:LowTemperatureRadiant:Electric",
+            "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
+            "ZoneHVAC:OutdoorAirUnit",
+            "ZoneHVAC:PackagedTerminalAirConditioner",
+            "ZoneHVAC:PackagedTerminalHeatPump",
+            "ZoneHVAC:RefrigerationChillerSet",
+            "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+            "ZoneHVAC:UnitHeater",
+            "ZoneHVAC:UnitVentilator",
+            "ZoneHVAC:VentilatedSlab",
+            "ZoneHVAC:WaterToAirHeatPump",
+            "ZoneHVAC:WindowAirConditioner",
+        ]
+        | None
+    )
+    zone_equipment_name: str | None
+    zone_equipment_cooling_sequence: int | None
+    zone_equipment_heating_or_no_load_sequence: int | None
+    zone_equipment_sequential_cooling_fraction_schedule_name: str | None
+    zone_equipment_sequential_heating_fraction_schedule_name: str | None
+
 class ZoneHVACEquipmentList(IDFObject):
     """List equipment in simulation order. Note that an ZoneHVAC:AirDistributionUnit object must be listed in this statement..."""
 
     load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"] | None
     """Default: SequentialLoad"""
-    zone_equipment_object_type: str | None
-    zone_equipment_name: str | None
-    zone_equipment_cooling_sequence: float | None
-    zone_equipment_heating_or_no_load_sequence: float | None
-    zone_equipment_sequential_cooling_fraction_schedule_name: str | None
-    """Since: 9.2.0"""
-    zone_equipment_sequential_heating_fraction_schedule_name: str | None
-    """Since: 9.2.0"""
+    equipment: ExtensibleList[ZoneHVACEquipmentListEquipmentGroup]
 
 class ZoneHVACEquipmentConnections(IDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
@@ -12742,6 +13104,13 @@ class SpaceHVACEquipmentConnections(IDFObject):
     """This schedule is multiplied times the base return air flow rate. If this field is left blank, the schedule defaults t..."""
     space_return_air_node_1_flow_rate_basis_node_or_nodelist_name: str | None
     """The optional basis node(s) used to calculate the base return air flow rate for the first return air node in this spac..."""
+
+class SpaceHVACZoneEquipmentSplitterSpacesGroup(ExtensibleGroup):
+    """One spaces group inside :class:`SpaceHVACZoneEquipmentSplitter`."""
+
+    space_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_supply_node_name: str | None
 
 class SpaceHVACZoneEquipmentSplitter(IDFObject):
     """Distributes the output from a piece of zone equipment to one or more Spaces in the Zone. If any equipment in a zone h...; Since: 23.2.0"""
@@ -12796,9 +13165,14 @@ class SpaceHVACZoneEquipmentSplitter(IDFObject):
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
     """The basis used to autosize the space output fractions.; Default: DesignCoolingLoad"""
+    spaces: ExtensibleList[SpaceHVACZoneEquipmentSplitterSpacesGroup]
+
+class SpaceHVACZoneEquipmentMixerSpacesGroup(ExtensibleGroup):
+    """One spaces group inside :class:`SpaceHVACZoneEquipmentMixer`."""
+
     space_name: str | None
-    space_fraction: float | None
-    space_supply_node_name: str | None
+    space_fraction: float | Literal["", "Autosize"] | None
+    space_node_name: str | None
 
 class SpaceHVACZoneEquipmentMixer(IDFObject):
     """Mixes the airflow from one or more Spaces into a piece of zone equipment. All spaces in the zone must also have a Spa...; Since: 23.2.0"""
@@ -12811,9 +13185,13 @@ class SpaceHVACZoneEquipmentMixer(IDFObject):
         Literal["", "DesignCoolingLoad", "DesignHeatingLoad", "FloorArea", "PerimeterLength", "Volume"] | None
     )
     """The basis used to autosize the space output fractions.; Default: DesignCoolingLoad"""
+    spaces: ExtensibleList[SpaceHVACZoneEquipmentMixerSpacesGroup]
+
+class SpaceHVACZoneReturnMixerSpacesGroup(ExtensibleGroup):
+    """One spaces group inside :class:`SpaceHVACZoneReturnMixer`."""
+
     space_name: str | None
-    space_fraction: float | None
-    space_node_name: str | None
+    space_return_air_node_name: str | None
 
 class SpaceHVACZoneReturnMixer(IDFObject):
     """Mixes the return airflow from one or more Spaces into a zone return node. All spaces in the zone must also have a Spa...; Since: 24.2.0"""
@@ -12822,8 +13200,13 @@ class SpaceHVACZoneReturnMixer(IDFObject):
     """Must be a controlled zone which has a ZoneHVAC:EquipmentConnections object."""
     zone_return_air_node_name: str | None
     """The zone return air node will be mixed from the spaces. Must match a Zone Return Air Node for this zone."""
-    space_name: str | None
-    space_return_air_node_name: str | None
+    spaces: ExtensibleList[SpaceHVACZoneReturnMixerSpacesGroup]
+
+class FanSystemModelSpeedFractionsGroup(ExtensibleGroup):
+    """One speed_fractions group inside :class:`FanSystemModel`."""
+
+    speed_flow_fraction: float | None
+    speed_electric_power_fraction: float | None
 
 class FanSystemModel(IDFObject):
     """Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
@@ -12870,8 +13253,7 @@ class FanSystemModel(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
     number_of_speeds: int | None
     """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1"""
-    speed_flow_fraction: float | None
-    speed_electric_power_fraction: float | None
+    speed_fractions: ExtensibleList[FanSystemModelSpeedFractionsGroup]
 
 class FanConstantVolume(IDFObject):
     """Constant volume fan that is intended to operate continuously based on a time schedule. This fan will not cycle on and..."""
@@ -16817,6 +17199,12 @@ class AirLoopHVACUnitarySystem(IDFObject):
     design_specification_multispeed_object_name: str | None
     """The name of the performance specification object used to describe the multispeed coil."""
 
+class UnitarySystemPerformanceMultispeedFlowRatiosGroup(ExtensibleGroup):
+    """One flow_ratios group inside :class:`UnitarySystemPerformanceMultispeed`."""
+
+    heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+    cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
+
 class UnitarySystemPerformanceMultispeed(IDFObject):
     """The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is pri..."""
 
@@ -16828,8 +17216,7 @@ class UnitarySystemPerformanceMultispeed(IDFObject):
     """Controls coil operation during each HVAC timestep. This choice does not apply to speed 1 operation. Yes = operate at ...; Default: No"""
     no_load_supply_air_flow_rate_ratio: float | None
     """Used to define the no load operating air flow rate when the system fan is specified to operate continuously.; Default: 1.0; Range: >= 0.0, <= 1.0"""
-    heating_speed_supply_air_flow_ratio: float | None
-    cooling_speed_supply_air_flow_ratio: float | None
+    flow_ratios: ExtensibleList[UnitarySystemPerformanceMultispeedFlowRatiosGroup]
 
 class AirLoopHVACUnitaryFurnaceHeatOnly(IDFObject):
     """Unitary system, heating-only with constant volume supply fan (continuous or cycling) and heating coil (gas, electric,..."""
@@ -17443,6 +17830,13 @@ class AirConditionerVariableRefrigerantFlow(IDFObject):
     heat_recovery_heating_energy_time_constant: float | None
     """Enter the time constant used to model the transition from cooling only mode to heat recovery mode; [hr]; Default: 0.0"""
 
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup(ExtensibleGroup):
+    """One loading_indices group inside :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControl`."""
+
+    compressor_speed_at_loading_index: float | None
+    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
+    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
     """This is a key object in the new physics based VRF model applicable for Fluid Temperature Control It describes the Var..."""
 
@@ -17524,6 +17918,11 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
     """[Pa]; Default: 4500000.0; Range: >= 0.0, <= 50000000.0"""
     number_of_compressor_loading_index_entries: int | None
     """First index represents minimal capacity operation Last index represents full capacity operation; Default: 2; Range: >= 2, <= 9"""
+    loading_indices: ExtensibleList[AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup]
+
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup(ExtensibleGroup):
+    """One loading_indices group inside :class:`AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR`."""
+
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
     loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
@@ -17645,14 +18044,17 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(IDFObject):
     """Describe the evaporative capacity difference because of system configuration difference between test bed and real sys...; [dimensionless]; Default: 1.0; Range: > 0.0"""
     number_of_compressor_loading_index_entries: int | None
     """Load index describe the compressor operational state, either a single compressor or multiple compressors, at differen...; Default: 2; Range: >= 2"""
-    compressor_speed_at_loading_index: float | None
-    loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
-    loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
+    loading_indices: ExtensibleList[AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup]
+
+class ZoneTerminalUnitListTerminalUnitsGroup(ExtensibleGroup):
+    """One terminal_units group inside :class:`ZoneTerminalUnitList`."""
+
+    zone_terminal_unit_name: str | None
 
 class ZoneTerminalUnitList(IDFObject):
     """List of variable refrigerant flow (VRF) terminal units served by a given VRF condensing unit. See ZoneHVAC:TerminalUn..."""
 
-    zone_terminal_unit_name: str | None
+    terminal_units: ExtensibleList[ZoneTerminalUnitListTerminalUnitsGroup]
 
 class ControllerWaterCoil(IDFObject):
     """Controller for a water coil which is located directly in an air loop branch or outdoor air equipment list. Controls t..."""
@@ -17739,6 +18141,13 @@ class ControllerOutdoorAir(IDFObject):
     economizer_operation_staging: Literal["", "EconomizerFirst", "InterlockedWithMechanicalCooling"] | None
     """This input is only used when the Controller:OutdoorAir is used in conjunction with an AirLoopHVAC:UnitarySystem with ...; Default: InterlockedWithMechanicalCooling; Since: 23.2.0"""
 
+class ControllerMechanicalVentilationZoneSpecificationsGroup(ExtensibleGroup):
+    """One zone_specifications group inside :class:`ControllerMechanicalVentilation`."""
+
+    zone_or_zonelist_name: str | None
+    design_specification_outdoor_air_object_name: str | None
+    design_specification_zone_air_distribution_object_name: str | None
+
 class ControllerMechanicalVentilation(IDFObject):
     """This object is used in conjunction with Controller:OutdoorAir to specify outdoor ventilation air based on outdoor air..."""
 
@@ -17764,10 +18173,7 @@ class ControllerMechanicalVentilation(IDFObject):
     """Default: Standard62.1VentilationRateProcedure"""
     zone_maximum_outdoor_air_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: > 0.0"""
-    zone_or_zonelist_name: str | None
-    """Since: 9.3.0"""
-    design_specification_outdoor_air_object_name: str | None
-    design_specification_zone_air_distribution_object_name: str | None
+    zone_specifications: ExtensibleList[ControllerMechanicalVentilationZoneSpecificationsGroup]
 
 class AirLoopHVACControllerList(IDFObject):
     """List controllers in order of control sequence"""
@@ -17855,10 +18261,20 @@ class OutdoorAirMixer(IDFObject):
     return_air_stream_node_name: str | None
     """Name of Return Air Stream Node"""
 
+class AirLoopHVACZoneSplitterNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACZoneSplitter`."""
+
+    outlet_node_name: str | None
+
 class AirLoopHVACZoneSplitter(IDFObject):
     """Split one air stream into N outlet streams (currently 500 per air loop, but extensible). Node names cannot be duplica..."""
 
     inlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACZoneSplitterNodesGroup]
+
+class AirLoopHVACSupplyPlenumNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACSupplyPlenum`."""
+
     outlet_node_name: str | None
 
 class AirLoopHVACSupplyPlenum(IDFObject):
@@ -17867,19 +18283,34 @@ class AirLoopHVACSupplyPlenum(IDFObject):
     zone_name: str | None
     zone_node_name: str | None
     inlet_node_name: str | None
-    outlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACSupplyPlenumNodesGroup]
+
+class AirLoopHVACSupplyPathComponentsGroup(ExtensibleGroup):
+    """One components group inside :class:`AirLoopHVACSupplyPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
+    component_name: str | None
 
 class AirLoopHVACSupplyPath(IDFObject):
     """A supply path can only contain AirLoopHVAC:ZoneSplitter and AirLoopHVAC:SupplyPlenum objects which may be in series o..."""
 
     supply_air_path_inlet_node_name: str | None
-    component_object_type: str | None
-    component_name: str | None
+    components: ExtensibleList[AirLoopHVACSupplyPathComponentsGroup]
+
+class AirLoopHVACZoneMixerNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACZoneMixer`."""
+
+    inlet_node_name: str | None
 
 class AirLoopHVACZoneMixer(IDFObject):
     """Mix N inlet air streams into one (currently 500 per air loop, but extensible). Node names cannot be duplicated within..."""
 
     outlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACZoneMixerNodesGroup]
+
+class AirLoopHVACReturnPlenumNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACReturnPlenum`."""
+
     inlet_node_name: str | None
 
 class AirLoopHVACReturnPlenum(IDFObject):
@@ -17889,14 +18320,19 @@ class AirLoopHVACReturnPlenum(IDFObject):
     zone_node_name: str | None
     outlet_node_name: str | None
     induced_air_outlet_node_or_nodelist_name: str | None
-    inlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACReturnPlenumNodesGroup]
+
+class AirLoopHVACReturnPathComponentsGroup(ExtensibleGroup):
+    """One components group inside :class:`AirLoopHVACReturnPath`."""
+
+    component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
+    component_name: str | None
 
 class AirLoopHVACReturnPath(IDFObject):
     """A return air path can only contain one AirLoopHVAC:ZoneMixer and one or more AirLoopHVAC:ReturnPlenum objects."""
 
     return_air_path_outlet_node_name: str | None
-    component_object_type: str | None
-    component_name: str | None
+    components: ExtensibleList[AirLoopHVACReturnPathComponentsGroup]
 
 class AirLoopHVACExhaustSystem(IDFObject):
     """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n...; Since: 22.1.0"""
@@ -17905,6 +18341,11 @@ class AirLoopHVACExhaustSystem(IDFObject):
     """The name of the exhaust system AirLoopHVAC:ZoneMixer"""
     fan_object_type: Literal["Fan:ComponentModel", "Fan:SystemModel"] | None
     fan_name: str | None
+
+class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(ExtensibleGroup):
+    """One airloophvacs group inside :class:`AirLoopHVACDedicatedOutdoorAirSystem`."""
+
+    airloophvac_name: str | None
 
 class AirLoopHVACDedicatedOutdoorAirSystem(IDFObject):
     """Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.; Since: 9.2.0"""
@@ -17927,46 +18368,76 @@ class AirLoopHVACDedicatedOutdoorAirSystem(IDFObject):
     """[kgWater/kgDryAir]"""
     number_of_airloophvac: int | None
     """Enter the number of the AirLoopHVAC served by AirLoopHVAC:DedicatedOutdoorAirSystem"""
-    airloophvac_name: str | None
+    airloophvacs: ExtensibleList[AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup]
+
+class AirLoopHVACMixerNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACMixer`."""
+
+    inlet_node_name: str | None
 
 class AirLoopHVACMixer(IDFObject):
     """Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed ...; Since: 9.2.0"""
 
     outlet_node_name: str | None
-    inlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACMixerNodesGroup]
+
+class AirLoopHVACSplitterNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`AirLoopHVACSplitter`."""
+
+    outlet_node_name: str | None
 
 class AirLoopHVACSplitter(IDFObject):
     """Split one air stream from AirLoopHVAC:DedicatedOutdoorAirSystem outlet node into N outlet streams (currently 10 as de...; Since: 9.2.0"""
 
     inlet_node_name: str | None
-    outlet_node_name: str | None
+    nodes: ExtensibleList[AirLoopHVACSplitterNodesGroup]
+
+class BranchComponentsGroup(ExtensibleGroup):
+    """One components group inside :class:`Branch`."""
+
+    component_object_type: str | None
+    component_name: str | None
+    component_inlet_node_name: str | None
+    component_outlet_node_name: str | None
 
 class Branch(IDFObject):
     """List components on the branch in simulation and connection order Note: this should NOT include splitters or mixers wh..."""
 
     pressure_drop_curve_name: str | None
     """Optional field to include this branch in plant pressure drop calculations This field is only relevant for branches in..."""
-    component_object_type: str | None
-    component_name: str | None
-    component_inlet_node_name: str | None
-    component_outlet_node_name: str | None
+    components: ExtensibleList[BranchComponentsGroup]
+
+class BranchListBranchesGroup(ExtensibleGroup):
+    """One branches group inside :class:`BranchList`."""
+
+    branch_name: str | None
 
 class BranchList(IDFObject):
     """Branches MUST be listed in Flow order: Inlet branch, then parallel branches, then Outlet branch. Branches are simulat..."""
 
-    branch_name: str | None
+    branches: ExtensibleList[BranchListBranchesGroup]
+
+class ConnectorSplitterBranchesGroup(ExtensibleGroup):
+    """One branches group inside :class:`ConnectorSplitter`."""
+
+    outlet_branch_name: str | None
 
 class ConnectorSplitter(IDFObject):
     """Split one air/water stream into N outlet streams. Branch names cannot be duplicated within a single Splitter list."""
 
     inlet_branch_name: str | None
-    outlet_branch_name: str | None
+    branches: ExtensibleList[ConnectorSplitterBranchesGroup]
+
+class ConnectorMixerBranchesGroup(ExtensibleGroup):
+    """One branches group inside :class:`ConnectorMixer`."""
+
+    inlet_branch_name: str | None
 
 class ConnectorMixer(IDFObject):
     """Mix N inlet air/water streams into one. Branch names cannot be duplicated within a single mixer list."""
 
     outlet_branch_name: str | None
-    inlet_branch_name: str | None
+    branches: ExtensibleList[ConnectorMixerBranchesGroup]
 
 class ConnectorList(IDFObject):
     """only two connectors allowed per loop if two entered, one must be Connector:Splitter and one must be Connector:Mixer"""
@@ -17976,10 +18447,15 @@ class ConnectorList(IDFObject):
     connector_2_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
     connector_2_name: str | None
 
+class NodeListNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`NodeList`."""
+
+    node_name: str | None
+
 class NodeList(IDFObject):
     """This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air I..."""
 
-    node_name: str | None
+    nodes: ExtensibleList[NodeListNodesGroup]
 
 class OutdoorAirNode(IDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node. It allows the height above ground t..."""
@@ -18001,10 +18477,15 @@ class OutdoorAirNode(IDFObject):
     wind_angle_type: Literal["", "Absolute", "Relative"] | None
     """Specify whether the angle used to compute the wind pressure coefficient is absolute or relative Specify Relative to c...; Default: Absolute"""
 
+class OutdoorAirNodeListNodesGroup(ExtensibleGroup):
+    """One nodes group inside :class:`OutdoorAirNodeList`."""
+
+    node_or_nodelist_name: str | None
+
 class OutdoorAirNodeList(IDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node using the weather data values. to va..."""
 
-    node_or_nodelist_name: str | None
+    nodes: ExtensibleList[OutdoorAirNodeListNodesGroup]
 
 class PipeAdiabatic(IDFObject):
     """Passes Inlet Node state variables to Outlet Node state variables"""
@@ -18067,6 +18548,11 @@ class PipeUnderground(IDFObject):
         | None
     )
     undisturbed_ground_temperature_model_name: str | None
+
+class PipingSystemUndergroundDomainPipeCircuitsGroup(ExtensibleGroup):
+    """One pipe_circuits group inside :class:`PipingSystemUndergroundDomain`."""
+
+    pipe_circuit: str | None
 
 class PipingSystemUndergroundDomain(IDFObject):
     """The ground domain object for underground piping system simulation."""
@@ -18131,7 +18617,12 @@ class PipingSystemUndergroundDomain(IDFObject):
     """This specifies the ground cover effects during evapotranspiration calculations. The value roughly represents the foll...; Default: 0.4; Range: >= 0.0, <= 1.5"""
     number_of_pipe_circuits_entered_for_this_domain: int | None
     """Range: >= 1"""
-    pipe_circuit: str | None
+    pipe_circuits: ExtensibleList[PipingSystemUndergroundDomainPipeCircuitsGroup]
+
+class PipingSystemUndergroundPipeCircuitPipeSegmentsGroup(ExtensibleGroup):
+    """One pipe_segments group inside :class:`PipingSystemUndergroundPipeCircuit`."""
+
+    pipe_segment: str | None
 
 class PipingSystemUndergroundPipeCircuit(IDFObject):
     """The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain..."""
@@ -18160,7 +18651,7 @@ class PipingSystemUndergroundPipeCircuit(IDFObject):
     """Required because it must be selected by user instead of being inferred from circuit/domain object inputs.; Range: > 0.0"""
     number_of_pipe_segments_entered_for_this_pipe_circuit: int | None
     """Range: >= 1"""
-    pipe_segment: str | None
+    pipe_segments: ExtensibleList[PipingSystemUndergroundPipeCircuitPipeSegmentsGroup]
 
 class PipingSystemUndergroundPipeSegment(IDFObject):
     """The pipe segment to be used in an underground piping system This object represents a single pipe leg positioned axial..."""
@@ -18569,6 +19060,11 @@ class SolarCollectorPerformanceIntegralCollectorStorage(IDFObject):
     emissivity_of_absorber_plate: float | None
     """Thermal emissivity of the absorber plate; [dimensionless]; Default: 0.3; Range: > 0.0, < 1.0"""
 
+class SolarCollectorUnglazedTranspiredSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`SolarCollectorUnglazedTranspired`."""
+
+    surface_name: str | None
+
 class SolarCollectorUnglazedTranspired(IDFObject):
     """Unglazed transpired solar collector (UTSC) used to condition outdoor air. This type of collector is generally used to..."""
 
@@ -18612,15 +19108,20 @@ class SolarCollectorUnglazedTranspired(IDFObject):
     """Cv; [dimensionless]; Default: 0.25; Range: > 0.0, <= 1.5"""
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
     """Cd; [dimensionless]; Default: 0.65; Range: > 0.0, <= 1.5"""
-    surface_name: str | None
+    surfaces: ExtensibleList[SolarCollectorUnglazedTranspiredSurfacesGroup]
 
-class SolarCollectorUnglazedTranspiredMultisystem(IDFObject):
-    """quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
+class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(ExtensibleGroup):
+    """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
 
     outdoor_air_system_collector_inlet_node: str | None
     outdoor_air_system_collector_outlet_node: str | None
     outdoor_air_system_mixed_air_node: str | None
     outdoor_air_system_zone_node: str | None
+
+class SolarCollectorUnglazedTranspiredMultisystem(IDFObject):
+    """quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
+
+    systems: ExtensibleList[SolarCollectorUnglazedTranspiredMultisystemSystemsGroup]
 
 class BoilerHotWater(IDFObject):
     """This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
@@ -20903,6 +21404,11 @@ class FluidCoolerTwoSpeed(IDFObject):
     """This field is only used if the previous field is set to autocalculate.; Default: 0.16"""
     outdoor_air_inlet_node_name: str | None
 
+class GroundHeatExchangerSystemVerticalWellLocationsGroup(ExtensibleGroup):
+    """One vertical_well_locations group inside :class:`GroundHeatExchangerSystem`."""
+
+    ghe_vertical_single_object_name: str | None
+
 class GroundHeatExchangerSystem(IDFObject):
     """Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
 
@@ -20931,7 +21437,7 @@ class GroundHeatExchangerSystem(IDFObject):
     ghe_vertical_sizing_object_name: str | None
     """Only needed when g-function calculation method is FullDesign; Since: 25.2.0"""
     ghe_vertical_array_object_name: str | None
-    ghe_vertical_single_object_name: str | None
+    vertical_well_locations: ExtensibleList[GroundHeatExchangerSystemVerticalWellLocationsGroup]
 
 class GroundHeatExchangerVerticalSizingRectangle(IDFObject):
     """Specifies parameters to be used for Ground Heat Exchanger borehole field design and sizing.; Since: 25.2.0"""
@@ -20999,6 +21505,12 @@ class GroundHeatExchangerVerticalSingle(IDFObject):
     y_location: float | None
     """[m]"""
 
+class GroundHeatExchangerResponseFactorsGFunctionsGroup(ExtensibleGroup):
+    """One g_functions group inside :class:`GroundHeatExchangerResponseFactors`."""
+
+    g_function_ln_t_ts_value: float | None
+    g_function_g_value: float | None
+
 class GroundHeatExchangerResponseFactors(IDFObject):
     """Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
 
@@ -21006,8 +21518,7 @@ class GroundHeatExchangerResponseFactors(IDFObject):
     number_of_boreholes: int | None
     g_function_reference_ratio: float | None
     """[dimensionless]; Default: 0.0005; Range: > 0.0"""
-    g_function_ln_t_ts_value: float | None
-    g_function_g_value: float | None
+    g_functions: ExtensibleList[GroundHeatExchangerResponseFactorsGFunctionsGroup]
 
 class GroundHeatExchangerPond(IDFObject):
     """A model of a shallow pond with immersed pipe loops. Typically used in hybrid geothermal systems and included in the c..."""
@@ -22077,21 +22588,27 @@ class CondenserLoop(IDFObject):
     loop_circulation_time: float | None
     """This field is only used to autocalculate the Condenser Loop Volume. Loop Volume = Loop Circulation Time * Maximum Loo...; [minutes]; Default: 2.0; Range: >= 0.0"""
 
+class PlantEquipmentListEquipmentGroup(ExtensibleGroup):
+    """One equipment group inside :class:`PlantEquipmentList`."""
+
+    equipment_object_type: str | None
+    equipment_name: str | None
+
 class PlantEquipmentList(IDFObject):
     """List plant equipment in order of operating priority, 1st in list will be used 1st, etc Use only plant equipment in th..."""
 
+    equipment: ExtensibleList[PlantEquipmentListEquipmentGroup]
+
+class CondenserEquipmentListEquipmentGroup(ExtensibleGroup):
+    """One equipment group inside :class:`CondenserEquipmentList`."""
+
     equipment_object_type: str | None
-    """Since: 9.1.0"""
     equipment_name: str | None
-    """Since: 9.1.0"""
 
 class CondenserEquipmentList(IDFObject):
     """List condenser equipment in order of operating priority, 1st in list will be used 1st, etc Use only condenser equipme..."""
 
-    equipment_object_type: str | None
-    """Since: 9.1.0"""
-    equipment_name: str | None
-    """Since: 9.1.0"""
+    equipment: ExtensibleList[CondenserEquipmentListEquipmentGroup]
 
 class PlantEquipmentOperationUncontrolled(IDFObject):
     """Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is ..."""
@@ -23259,6 +23776,11 @@ class EnergyManagementSystemActuator(IDFObject):
     actuated_component_type: str | None
     actuated_component_control_type: str | None
 
+class EnergyManagementSystemProgramCallingManagerProgramsGroup(ExtensibleGroup):
+    """One programs group inside :class:`EnergyManagementSystemProgramCallingManager`."""
+
+    program_name: str | None
+
 class EnergyManagementSystemProgramCallingManager(IDFObject):
     """Input EMS program. a program needs a name a description of when it should be called and then lines of program code fo..."""
 
@@ -23285,22 +23807,37 @@ class EnergyManagementSystemProgramCallingManager(IDFObject):
         ]
         | None
     )
-    program_name: str | None
+    programs: ExtensibleList[EnergyManagementSystemProgramCallingManagerProgramsGroup]
+
+class EnergyManagementSystemProgramLinesGroup(ExtensibleGroup):
+    """One lines group inside :class:`EnergyManagementSystemProgram`."""
+
+    program_line: str | None
 
 class EnergyManagementSystemProgram(IDFObject):
     """This input defines an Erl program Each field after the name is a line of EMS Runtime Language"""
+
+    lines: ExtensibleList[EnergyManagementSystemProgramLinesGroup]
+
+class EnergyManagementSystemSubroutineLinesGroup(ExtensibleGroup):
+    """One lines group inside :class:`EnergyManagementSystemSubroutine`."""
 
     program_line: str | None
 
 class EnergyManagementSystemSubroutine(IDFObject):
     """This input defines an Erl program subroutine Each field after the name is a line of EMS Runtime Language"""
 
-    program_line: str | None
+    lines: ExtensibleList[EnergyManagementSystemSubroutineLinesGroup]
+
+class EnergyManagementSystemGlobalVariableVariablesGroup(ExtensibleGroup):
+    """One variables group inside :class:`EnergyManagementSystemGlobalVariable`."""
+
+    erl_variable_name: str | None
 
 class EnergyManagementSystemGlobalVariable(IDFObject):
     """Declares Erl variable as having global scope No spaces allowed in names used for Erl variables"""
 
-    erl_variable_name: str | None
+    variables: ExtensibleList[EnergyManagementSystemGlobalVariableVariablesGroup]
 
 class EnergyManagementSystemOutputVariable(IDFObject):
     """This object sets up an EnergyPlus output variable from an Erl variable"""
@@ -23882,11 +24419,31 @@ class AvailabilityManagerHybridVentilation(IDFObject):
     minimum_ventilation_time: float | None
     """Minimum ventilation time when natural ventilation is forced on.; [minutes]; Default: 0.0; Range: >= 0.0"""
 
+class AvailabilityManagerAssignmentListManagersGroup(ExtensibleGroup):
+    """One managers group inside :class:`AvailabilityManagerAssignmentList`."""
+
+    availability_manager_object_type: (
+        Literal[
+            "AvailabilityManager:DifferentialThermostat",
+            "AvailabilityManager:HighTemperatureTurnOff",
+            "AvailabilityManager:HighTemperatureTurnOn",
+            "AvailabilityManager:LowTemperatureTurnOff",
+            "AvailabilityManager:LowTemperatureTurnOn",
+            "AvailabilityManager:NightCycle",
+            "AvailabilityManager:NightVentilation",
+            "AvailabilityManager:OptimumStart",
+            "AvailabilityManager:Scheduled",
+            "AvailabilityManager:ScheduledOff",
+            "AvailabilityManager:ScheduledOn",
+        ]
+        | None
+    )
+    availability_manager_name: str | None
+
 class AvailabilityManagerAssignmentList(IDFObject):
     """Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
 
-    availability_manager_object_type: str | None
-    availability_manager_name: str | None
+    managers: ExtensibleList[AvailabilityManagerAssignmentListManagersGroup]
 
 class SetpointManagerScheduled(IDFObject):
     """The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not ..."""
@@ -24497,10 +25054,15 @@ class RefrigerationCompressorRack(IDFObject):
     heat_rejection_zone_name: str | None
     """This must be a controlled zone and appear in a ZoneHVAC:EquipmentConnections object. Required only if walk-in[s] are ..."""
 
+class RefrigerationCaseAndWalkInListCasesAndWalkinsGroup(ExtensibleGroup):
+    """One cases_and_walkins group inside :class:`RefrigerationCaseAndWalkInList`."""
+
+    case_or_walkin_name: str | None
+
 class RefrigerationCaseAndWalkInList(IDFObject):
     """Provides a list of all the refrigerated cases, walk in coolers, or air chillers cooled by a single refrigeration syst..."""
 
-    case_or_walkin_name: str | None
+    cases_and_walkins: ExtensibleList[RefrigerationCaseAndWalkInListCasesAndWalkinsGroup]
 
 class RefrigerationCondenserAirCooled(IDFObject):
     """Air cooled condenser for a refrigeration system (Refrigeration:System)."""
@@ -24656,10 +25218,15 @@ class RefrigerationGasCoolerAirCooled(IDFObject):
     gas_cooler_outlet_piping_refrigerant_inventory: float | None
     """optional input; [kg]; Default: 0.0"""
 
+class RefrigerationTransferLoadListTransferLoadsGroup(ExtensibleGroup):
+    """One transfer_loads group inside :class:`RefrigerationTransferLoadList`."""
+
+    cascade_condenser_name_or_secondary_system_name: str | None
+
 class RefrigerationTransferLoadList(IDFObject):
     """A refrigeration system may provide cooling to other, secondary, systems through either a secondary loop or a cascade ..."""
 
-    cascade_condenser_name_or_secondary_system_name: str | None
+    transfer_loads: ExtensibleList[RefrigerationTransferLoadListTransferLoadsGroup]
 
 class RefrigerationSubcooler(IDFObject):
     """Two types of subcoolers are modeled by the detailed refrigeration system. The liquid suction heat exchanger uses cool..."""
@@ -24699,10 +25266,15 @@ class RefrigerationCompressor(IDFObject):
     transcritical_compressor_power_curve_name: str | None
     transcritical_compressor_capacity_curve_name: str | None
 
+class RefrigerationCompressorListCompressorsGroup(ExtensibleGroup):
+    """One compressors group inside :class:`RefrigerationCompressorList`."""
+
+    refrigeration_compressor_name: str | None
+
 class RefrigerationCompressorList(IDFObject):
     """List of all the compressors included within a single refrigeration system (Refrigeration:System). Each list must cont..."""
 
-    refrigeration_compressor_name: str | None
+    compressors: ExtensibleList[RefrigerationCompressorListCompressorsGroup]
 
 class RefrigerationSystem(IDFObject):
     """Simulates the performance of a supermarket refrigeration system when used along with other objects to define the refr..."""
@@ -24813,6 +25385,22 @@ class RefrigerationSecondarySystem(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+class RefrigerationWalkInZoneDataGroup(ExtensibleGroup):
+    """One zone_data group inside :class:`RefrigerationWalkIn`."""
+
+    zone_name: str | None
+    total_insulated_surface_area_facing_zone: float | None
+    insulated_surface_u_value_facing_zone: float | None
+    area_of_glass_reach_in_doors_facing_zone: float | None
+    height_of_glass_reach_in_doors_facing_zone: float | None
+    glass_reach_in_door_u_value_facing_zone: float | None
+    glass_reach_in_door_opening_schedule_name_facing_zone: str | None
+    area_of_stocking_doors_facing_zone: float | None
+    height_of_stocking_doors_facing_zone: float | None
+    stocking_door_u_value_facing_zone: float | None
+    stocking_door_opening_schedule_name_facing_zone: str | None
+    stocking_door_opening_protection_type_facing_zone: Literal["", "AirCurtain", "None", "StripCurtain"] | None
+
 class RefrigerationWalkIn(IDFObject):
     """Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate ..."""
 
@@ -24856,18 +25444,7 @@ class RefrigerationWalkIn(IDFObject):
     """floor area of walk-in cooler; [m2]; Range: > 0.0"""
     insulated_floor_u_value: float | None
     """The default value corresponds to R18 [ft2-F-hr/Btu] To convert other IP R-values to U, divide 5.678 by the R-value So...; [W/m2-K]; Default: 0.3154; Range: > 0.0"""
-    zone_name: str | None
-    total_insulated_surface_area_facing_zone: float | None
-    insulated_surface_u_value_facing_zone: float | None
-    area_of_glass_reach_in_doors_facing_zone: float | None
-    height_of_glass_reach_in_doors_facing_zone: float | None
-    glass_reach_in_door_u_value_facing_zone: float | None
-    glass_reach_in_door_opening_schedule_name_facing_zone: str | None
-    area_of_stocking_doors_facing_zone: float | None
-    height_of_stocking_doors_facing_zone: float | None
-    stocking_door_u_value_facing_zone: float | None
-    stocking_door_opening_schedule_name_facing_zone: str | None
-    stocking_door_opening_protection_type_facing_zone: str | None
+    zone_data: ExtensibleList[RefrigerationWalkInZoneDataGroup]
 
 class RefrigerationAirChiller(IDFObject):
     """Works in conjunction with a refrigeration chiller set, compressor rack, a refrigeration system, or a refrigeration se..."""
@@ -24944,6 +25521,11 @@ class RefrigerationAirChiller(IDFObject):
     average_refrigerant_charge_inventory: float | None
     """This value is only used if the Cooling Source Type is DXEvaporator; [kg]; Default: 0.0"""
 
+class ZoneHVACRefrigerationChillerSetChillersGroup(ExtensibleGroup):
+    """One chillers group inside :class:`ZoneHVACRefrigerationChillerSet`."""
+
+    air_chiller_name: str | None
+
 class ZoneHVACRefrigerationChillerSet(IDFObject):
     """Works in conjunction with one or multiple air chillers, compressor racks, refrigeration systems, or refrigeration sec..."""
 
@@ -24955,7 +25537,22 @@ class ZoneHVACRefrigerationChillerSet(IDFObject):
     """Not used - reserved for future use Name of the zone exhaust node (see Node) from which the refrigeration chiller draw..."""
     air_outlet_node_name: str | None
     """Not used - reserved for future use The name of the node where the chiller coil sends its outlet air, which must be on..."""
-    air_chiller_name: str | None
+    chillers: ExtensibleList[ZoneHVACRefrigerationChillerSetChillersGroup]
+
+class DemandManagerAssignmentListManagerDataGroup(ExtensibleGroup):
+    """One manager_data group inside :class:`DemandManagerAssignmentList`."""
+
+    demandmanager_object_type: (
+        Literal[
+            "DemandManager:ElectricEquipment",
+            "DemandManager:ExteriorLights",
+            "DemandManager:Lights",
+            "DemandManager:Thermostats",
+            "DemandManager:Ventilation",
+        ]
+        | None
+    )
+    demandmanager_name: str | None
 
 class DemandManagerAssignmentList(IDFObject):
     """A high level control that makes demand limiting decisions based on a list of possible demand limiting strategies."""
@@ -24971,8 +25568,12 @@ class DemandManagerAssignmentList(IDFObject):
     demand_window_length: int | None
     """[minutes]; Range: > 0"""
     demand_manager_priority: Literal["All", "Sequential"] | None
-    demandmanager_object_type: str | None
-    demandmanager_name: str | None
+    manager_data: ExtensibleList[DemandManagerAssignmentListManagerDataGroup]
+
+class DemandManagerExteriorLightsLightsGroup(ExtensibleGroup):
+    """One lights group inside :class:`DemandManagerExteriorLights`."""
+
+    exterior_lights_name: str | None
 
 class DemandManagerExteriorLights(IDFObject):
     """used for demand limiting Exterior:Lights objects."""
@@ -24989,7 +25590,12 @@ class DemandManagerExteriorLights(IDFObject):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     rotation_duration: int | None
     """If blank, duration defaults to the timestep; [minutes]; Range: >= 0"""
-    exterior_lights_name: str | None
+    lights: ExtensibleList[DemandManagerExteriorLightsLightsGroup]
+
+class DemandManagerLightsLightsGroup(ExtensibleGroup):
+    """One lights group inside :class:`DemandManagerLights`."""
+
+    lights_name: str | None
 
 class DemandManagerLights(IDFObject):
     """used for demand limiting Lights objects."""
@@ -25006,7 +25612,12 @@ class DemandManagerLights(IDFObject):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     rotation_duration: int | None
     """If blank, duration defaults to the timestep; [minutes]; Range: >= 0"""
-    lights_name: str | None
+    lights: ExtensibleList[DemandManagerLightsLightsGroup]
+
+class DemandManagerElectricEquipmentEquipmentGroup(ExtensibleGroup):
+    """One equipment group inside :class:`DemandManagerElectricEquipment`."""
+
+    electric_equipment_name: str | None
 
 class DemandManagerElectricEquipment(IDFObject):
     """used for demand limiting ElectricEquipment objects."""
@@ -25023,7 +25634,12 @@ class DemandManagerElectricEquipment(IDFObject):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     rotation_duration: int | None
     """If blank, duration defaults to the timestep; [minutes]; Range: >= 0"""
-    electric_equipment_name: str | None
+    equipment: ExtensibleList[DemandManagerElectricEquipmentEquipmentGroup]
+
+class DemandManagerThermostatsThermostatsGroup(ExtensibleGroup):
+    """One thermostats group inside :class:`DemandManagerThermostats`."""
+
+    thermostat_name: str | None
 
 class DemandManagerThermostats(IDFObject):
     """used for demand limiting ZoneControl:Thermostat objects."""
@@ -25042,7 +25658,12 @@ class DemandManagerThermostats(IDFObject):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     rotation_duration: int | None
     """If blank, duration defaults to the timestep; [minutes]; Range: >= 0"""
-    thermostat_name: str | None
+    thermostats: ExtensibleList[DemandManagerThermostatsThermostatsGroup]
+
+class DemandManagerVentilationControllersGroup(ExtensibleGroup):
+    """One controllers group inside :class:`DemandManagerVentilation`."""
+
+    controller_outdoor_air_name: str | None
 
 class DemandManagerVentilation(IDFObject):
     """used for demand limiting Controller:OutdoorAir objects."""
@@ -25062,7 +25683,7 @@ class DemandManagerVentilation(IDFObject):
     """Default: All"""
     rotation_duration: int | None
     """If blank, duration defaults to the timestep; [minutes]; Range: >= 0"""
-    controller_outdoor_air_name: str | None
+    controllers: ExtensibleList[DemandManagerVentilationControllersGroup]
 
 class GeneratorInternalCombustionEngine(IDFObject):
     """This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Engine..."""
@@ -25537,6 +26158,12 @@ class GeneratorFuelCellPowerModule(IDFObject):
     maximum_operating_point: float | None
     """[W]"""
 
+class GeneratorFuelCellAirSupplyConstituentFractionsGroup(ExtensibleGroup):
+    """One constituent_fractions group inside :class:`GeneratorFuelCellAirSupply`."""
+
+    constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
+    molar_fraction: float | None
+
 class GeneratorFuelCellAirSupply(IDFObject):
     """Used to define details of the air supply subsystem for a fuel cell power generator."""
 
@@ -25566,8 +26193,7 @@ class GeneratorFuelCellAirSupply(IDFObject):
     air_supply_constituent_mode: Literal["AmbientAir", "UserDefinedConstituents"] | None
     number_of_userdefined_constituents: float | None
     """Range: <= 5.0"""
-    constituent_name: str | None
-    molar_fraction: float | None
+    constituent_fractions: ExtensibleList[GeneratorFuelCellAirSupplyConstituentFractionsGroup]
 
 class GeneratorFuelCellWaterSupply(IDFObject):
     """Used to provide details of the water supply subsystem for a fuel cell power generator. This water is used for steam r..."""
@@ -26077,14 +26703,31 @@ class GeneratorWindTurbine(IDFObject):
     power_coefficient_c6: float | None
     """Default: 21.0; Range: > 0.0"""
 
-class ElectricLoadCenterGenerators(IDFObject):
-    """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
+class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(ExtensibleGroup):
+    """One generator_outputs group inside :class:`ElectricLoadCenterGenerators`."""
 
     generator_name: str | None
-    generator_object_type: str | None
+    generator_object_type: (
+        Literal[
+            "Generator:CombustionTurbine",
+            "Generator:FuelCell",
+            "Generator:InternalCombustionEngine",
+            "Generator:MicroCHP",
+            "Generator:MicroTurbine",
+            "Generator:PVWatts",
+            "Generator:Photovoltaic",
+            "Generator:WindTurbine",
+        ]
+        | None
+    )
     generator_rated_electric_power_output: float | None
     generator_availability_schedule_name: str | None
     generator_rated_thermal_to_electrical_power_ratio: float | None
+
+class ElectricLoadCenterGenerators(IDFObject):
+    """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
+
+    generator_outputs: ExtensibleList[ElectricLoadCenterGeneratorsGeneratorOutputsGroup]
 
 class ElectricLoadCenterInverterSimple(IDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
@@ -26261,6 +26904,11 @@ class ElectricLoadCenterStorageLiIonNMCBattery(IDFObject):
     battery_cell_internal_electrical_resistance: float | None
     """for a single cell Most users should not need to change this value.; [ohms]; Default: 0.09; Range: >= 0.0"""
 
+class ElectricLoadCenterTransformerMetersGroup(ExtensibleGroup):
+    """One meters group inside :class:`ElectricLoadCenterTransformer`."""
+
+    meter_name: str | None
+
 class ElectricLoadCenterTransformer(IDFObject):
     """This object is used to model the energy losses of transformers when they are used to transfer electricity from the gr..."""
 
@@ -26298,7 +26946,7 @@ class ElectricLoadCenterTransformer(IDFObject):
     """Percentage of the rate capacity at which the maximum efficiency is obtained Only required when NominalEfficiency is t...; Range: > 0.0, <= 1.0"""
     consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None
     """Only required when the transformer is used for power in from the utility grid; Default: Yes"""
-    meter_name: str | None
+    meters: ExtensibleList[ElectricLoadCenterTransformerMetersGroup]
 
 class ElectricLoadCenterDistribution(IDFObject):
     """ElectricLoadCenter:Distribution objects are used to include on-site electricity generators and or storage in a simula..."""
@@ -26415,6 +27063,11 @@ class WaterUseEquipment(IDFObject):
     latent_fraction_schedule_name: str | None
     """Defaults to 0.0 at all times"""
 
+class WaterUseConnectionsConnectionsGroup(ExtensibleGroup):
+    """One connections group inside :class:`WaterUseConnections`."""
+
+    water_use_equipment_name: str | None
+
 class WaterUseConnections(IDFObject):
     """A subsystem that groups together multiple WaterUse:Equipment components. As its name suggests, the object provides co..."""
 
@@ -26433,7 +27086,7 @@ class WaterUseConnections(IDFObject):
     """Default: Plant"""
     drain_water_heat_exchanger_u_factor_times_area: float | None
     """[W/K]; Range: >= 0.0"""
-    water_use_equipment_name: str | None
+    connections: ExtensibleList[WaterUseConnectionsConnectionsGroup]
 
 class WaterUseStorage(IDFObject):
     """A water storage tank. If the building model is to include any on-site water collection, wells, or storing and reuse o..."""
@@ -26490,6 +27143,11 @@ class WaterUseWell(IDFObject):
     """[m]"""
     water_table_depth_schedule_name: str | None
 
+class WaterUseRainCollectorSurfacesGroup(ExtensibleGroup):
+    """One surfaces group inside :class:`WaterUseRainCollector`."""
+
+    collection_surface_name: str | None
+
 class WaterUseRainCollector(IDFObject):
     """Used for harvesting rainwater falling on building surfaces. The rainwater is sent to a WaterUse:Storage object. In ve..."""
 
@@ -26500,7 +27158,7 @@ class WaterUseRainCollector(IDFObject):
     collection_loss_factor_schedule_name: str | None
     maximum_collection_rate: float | None
     """Defaults to unlimited flow.; [m3/s] (gal/min)"""
-    collection_surface_name: str | None
+    surfaces: ExtensibleList[WaterUseRainCollectorSurfacesGroup]
 
 class FaultModelTemperatureSensorOffsetOutdoorAir(IDFObject):
     """This object describes outdoor air temperature sensor offset"""
@@ -26742,12 +27400,17 @@ class FaultModelFoulingCoil(IDFObject):
     inside_to_outside_coil_surface_area_ratio: float | None
     """For Fouling Input Method: FoulingFactor; [dimensionless]; Default: 0.07; Range: > 0.0"""
 
+class MatrixTwoDimensionValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`MatrixTwoDimension`."""
+
+    value: float | None
+
 class MatrixTwoDimension(IDFObject):
     """matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2"""
 
     number_of_rows: int | None
     number_of_columns: int | None
-    value: float | None
+    values: ExtensibleList[MatrixTwoDimensionValuesGroup]
 
 class HybridModelZone(IDFObject):
     """Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
@@ -27405,6 +28068,11 @@ class CurveChillerPartLoadWithLift(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
+class TableIndependentVariableValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`TableIndependentVariable`."""
+
+    value: float | None
+
 class TableIndependentVariable(IDFObject):
     """An independent variable representing a single dimension of a Table:Lookup object.; Since: 9.2.0"""
 
@@ -27424,12 +28092,22 @@ class TableIndependentVariable(IDFObject):
     """Range: >= 1"""
     external_file_starting_row_number: int | None
     """Range: >= 1"""
-    value: float | None
+    values: ExtensibleList[TableIndependentVariableValuesGroup]
+
+class TableIndependentVariableListIndependentVariablesGroup(ExtensibleGroup):
+    """One independent_variables group inside :class:`TableIndependentVariableList`."""
+
+    independent_variable_name: str | None
 
 class TableIndependentVariableList(IDFObject):
     """A sorted list of independent variables used by one or more Table:Lookup objects.; Since: 9.2.0"""
 
-    independent_variable_name: str | None
+    independent_variables: ExtensibleList[TableIndependentVariableListIndependentVariablesGroup]
+
+class TableLookupValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`TableLookup`."""
+
+    output_value: float | None
 
 class TableLookup(IDFObject):
     """Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:Ind...; Since: 9.2.0"""
@@ -27448,7 +28126,7 @@ class TableLookup(IDFObject):
     """Range: >= 1"""
     external_file_starting_row_number: int | None
     """Range: >= 1"""
-    output_value: float | None
+    values: ExtensibleList[TableLookupValuesGroup]
 
 class FluidPropertiesName(IDFObject):
     """potential fluid name/type in the input file repeat this object for each fluid"""
@@ -29195,6 +29873,11 @@ class LifeCycleCostNonrecurringCost(IDFObject):
     months_from_start: int | None
     """This field and the Years From Start field together represent the time from either the start of the Service Period on ...; Range: >= 0, <= 1200"""
 
+class LifeCycleCostUsePriceEscalationEscalationsGroup(ExtensibleGroup):
+    """One escalations group inside :class:`LifeCycleCostUsePriceEscalation`."""
+
+    year_escalation: float | None
+
 class LifeCycleCostUsePriceEscalation(IDFObject):
     """Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
 
@@ -29242,7 +29925,12 @@ class LifeCycleCostUsePriceEscalation(IDFObject):
         | None
     )
     """This field and the Escalation Start Year define the time that corresponds to Year 1 Escalation such as 2010 when the ...; Default: January"""
-    year_escalation: float | None
+    escalations: ExtensibleList[LifeCycleCostUsePriceEscalationEscalationsGroup]
+
+class LifeCycleCostUseAdjustmentMultipliersGroup(ExtensibleGroup):
+    """One multipliers group inside :class:`LifeCycleCostUseAdjustment`."""
+
+    year_multiplier: float | None
 
 class LifeCycleCostUseAdjustment(IDFObject):
     """Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensa..."""
@@ -29270,27 +29958,47 @@ class LifeCycleCostUseAdjustment(IDFObject):
         ]
         | None
     )
-    year_multiplier: float | None
+    multipliers: ExtensibleList[LifeCycleCostUseAdjustmentMultipliersGroup]
+
+class ParametricSetValueForRunValuesGroup(ExtensibleGroup):
+    """One values group inside :class:`ParametricSetValueForRun`."""
+
+    value_for_run: str | None
 
 class ParametricSetValueForRun(IDFObject):
     """Parametric objects allow a set of multiple simulations to be defined in a single idf file. The parametric preprocesso..."""
 
-    value_for_run: str | None
+    values: ExtensibleList[ParametricSetValueForRunValuesGroup]
+
+class ParametricLogicLinesGroup(ExtensibleGroup):
+    """One lines group inside :class:`ParametricLogic`."""
+
+    parametric_logic_line: str | None
 
 class ParametricLogic(IDFObject):
     """This object allows some types of objects to be included for some parametric cases and not for others. For example, yo..."""
 
-    parametric_logic_line: str | None
+    lines: ExtensibleList[ParametricLogicLinesGroup]
+
+class ParametricRunControlRunsGroup(ExtensibleGroup):
+    """One runs group inside :class:`ParametricRunControl`."""
+
+    perform_run: Literal["", "No", "Yes"] | None
 
 class ParametricRunControl(IDFObject):
     """Controls which parametric runs are simulated. This object is optional. If it is not included, then all parametric run..."""
 
-    perform_run: str | None
+    runs: ExtensibleList[ParametricRunControlRunsGroup]
+
+class ParametricFileNameSuffixSuffixesGroup(ExtensibleGroup):
+    """One suffixes group inside :class:`ParametricFileNameSuffix`."""
+
+    suffix_for_file_name_in_run: str | None
 
 class ParametricFileNameSuffix(IDFObject):
     """Defines the suffixes to be appended to the idf and output file names for each parametric run. If this object is omitt..."""
 
-    suffix_for_file_name_in_run: str | None
+    suffixes: ExtensibleList[ParametricFileNameSuffixSuffixesGroup]
 
 class OutputVariableDictionary(IDFObject):
     """Produces a list summarizing the output variables and meters that are available for reporting for the model being simu..."""
@@ -29661,10 +30369,121 @@ class OutputControlSurfaceColorScheme(IDFObject):
     color_for_drawing_element_15: int | None
     """use color number for output assignment (e.g. DXF); Range: >= 0, <= 255"""
 
+class OutputTableSummaryReportsReportsGroup(ExtensibleGroup):
+    """One reports group inside :class:`OutputTableSummaryReports`."""
+
+    report_name: (
+        Literal[
+            "AdaptiveComfortSummary",
+            "AirLoopComponentLoadSummary",
+            "AirLoopSystemComponentEnergyUseMonthly",
+            "AirLoopSystemComponentLoadsMonthly",
+            "AirLoopSystemEnergyAndWaterUseMonthly",
+            "AllMonthly",
+            "AllSummary",
+            "AllSummaryAndMonthly",
+            "AllSummaryAndSizingPeriod",
+            "AllSummaryMonthlyAndSizingPeriod",
+            "AnnualBuildingUtilityPerformanceSummary",
+            "AverageOutdoorConditionsMonthly",
+            "BoilerReportMonthly",
+            "CO2ResilienceSummary",
+            "ChillerReportMonthly",
+            "ClimaticDataSummary",
+            "CoilReportMonthly",
+            "CoilSizingDetails",
+            "ComfortReportSimple55Monthly",
+            "ComponentCostEconomicsSummary",
+            "ComponentSizingSummary",
+            "CondLoopDemandReportMonthly",
+            "DXReportMonthly",
+            "DaylightingReportMonthly",
+            "DemandEndUseComponentsSummary",
+            "EconomicResultSummary",
+            "ElectricComponentsOfPeakDemandMonthly",
+            "EndUseEnergyConsumptionCoalMonthly",
+            "EndUseEnergyConsumptionDieselMonthly",
+            "EndUseEnergyConsumptionElectricityMonthly",
+            "EndUseEnergyConsumptionFuelOilMonthly",
+            "EndUseEnergyConsumptionGasolineMonthly",
+            "EndUseEnergyConsumptionNaturalGasMonthly",
+            "EndUseEnergyConsumptionOtherFuelsMonthly",
+            "EndUseEnergyConsumptionPropaneMonthly",
+            "EnergyConsumptionCoalGasolineMonthly",
+            "EnergyConsumptionDieselFuelOilMonthly",
+            "EnergyConsumptionDistrictHeatingCoolingMonthly",
+            "EnergyConsumptionElectricityGeneratedPropaneMonthly",
+            "EnergyConsumptionElectricityNaturalGasMonthly",
+            "EnergyConsumptionOtherFuelsMonthly",
+            "EnergyMeters",
+            "EnvelopeSummary",
+            "EquipmentSummary",
+            "FacilityComponentLoadSummary",
+            "FanReportMonthly",
+            "GeneratorReportMonthly",
+            "HVACSizingSummary",
+            "HeatEmissionsReportMonthly",
+            "HeatEmissionsSummary",
+            "InitializationSummary",
+            "InputVerificationandResultsSummary",
+            "LEEDSummary",
+            "LifeCycleCostReport",
+            "LightingSummary",
+            "MechanicalVentilationLoadsMonthly",
+            "ObjectCountSummary",
+            "OccupantComfortDataSummaryMonthly",
+            "OutdoorAirDetails",
+            "OutdoorAirSummary",
+            "OutdoorConditionsMaximumDewPointMonthly",
+            "OutdoorConditionsMaximumDryBulbMonthly",
+            "OutdoorConditionsMaximumWetBulbMonthly",
+            "OutdoorConditionsMinimumDryBulbMonthly",
+            "OutdoorGroundConditionsMonthly",
+            "PeakEnergyEndUseCoalMonthly",
+            "PeakEnergyEndUseDieselMonthly",
+            "PeakEnergyEndUseElectricityPart1Monthly",
+            "PeakEnergyEndUseElectricityPart2Monthly",
+            "PeakEnergyEndUseFuelOilMonthly",
+            "PeakEnergyEndUseGasolineMonthly",
+            "PeakEnergyEndUseNaturalGasMonthly",
+            "PeakEnergyEndUseOtherFuelsMonthly",
+            "PeakEnergyEndUsePropaneMonthly",
+            "PeakSpaceGainsMonthly",
+            "PlantLoopDemandReportMonthly",
+            "PumpReportMonthly",
+            "SensibleHeatGainSummary",
+            "SetpointsNotMetWithTemperaturesMonthly",
+            "ShadingSummary",
+            "SourceEnergyEndUseComponentsSummary",
+            "SpaceGainComponentsAtCoolingPeakMonthly",
+            "SpaceGainsMonthly",
+            "Standard62.1Summary",
+            "SurfaceShadowingSummary",
+            "SystemSummary",
+            "TariffReport",
+            "ThermalResilienceSummary",
+            "TowerReportMonthly",
+            "UnglazedTranspiredSolarCollectorSummaryMonthly",
+            "VisualResilienceSummary",
+            "WaterHeaterReportMonthly",
+            "WindowACReportMonthly",
+            "WindowEnergyReportMonthly",
+            "WindowEnergyZoneSummaryMonthly",
+            "WindowReportMonthly",
+            "WindowZoneSummaryMonthly",
+            "ZoneComponentLoadSummary",
+            "ZoneCoolingSummaryMonthly",
+            "ZoneElectricSummaryMonthly",
+            "ZoneHeatingSummaryMonthly",
+            "ZoneTemperatureOscillationReportMonthly",
+        ]
+        | None
+    )
+
 class OutputTableSummaryReports(IDFObject):
     """This object allows the user to call report types that are predefined and will appear with the other tabular reports. ..."""
 
-    report_name: str | None
+    reports: ExtensibleList[OutputTableSummaryReportsReportsGroup]
 
 class OutputTableTimeBins(IDFObject):
     """Produces a bin report in the table output file which shows the amount of time in hours that occurs in different bins ..."""
@@ -29681,13 +30500,62 @@ class OutputTableTimeBins(IDFObject):
     variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None
     """Optional input on the type of units for the variable used by other fields in the object."""
 
+class OutputTableMonthlyVariableDetailsGroup(ExtensibleGroup):
+    """One variable_details group inside :class:`OutputTableMonthly`."""
+
+    variable_or_meter_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+
 class OutputTableMonthly(IDFObject):
     """Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defi..."""
 
     digits_after_decimal: int | None
     """Default: 2; Range: >= 0, <= 10"""
-    variable_or_meter_name: str | None
-    aggregation_type_for_variable_or_meter: str | None
+    variable_details: ExtensibleList[OutputTableMonthlyVariableDetailsGroup]
+
+class OutputTableAnnualVariableDetailsGroup(ExtensibleGroup):
+    """One variable_details group inside :class:`OutputTableAnnual`."""
+
+    variable_or_meter_or_ems_variable_or_field_name: str | None
+    aggregation_type_for_variable_or_meter: (
+        Literal[
+            "HourInTenBinsMinToMax",
+            "HourInTenBinsMinToZero",
+            "HourInTenBinsZeroToMax",
+            "HoursNegative",
+            "HoursNonNegative",
+            "HoursNonPositive",
+            "HoursNonZero",
+            "HoursPositive",
+            "HoursZero",
+            "Maximum",
+            "MaximumDuringHoursShown",
+            "Minimum",
+            "MinimumDuringHoursShown",
+            "SumOrAverage",
+            "SumOrAverageDuringHoursShown",
+            "ValueWhenMaximumOrMinimum",
+        ]
+        | None
+    )
+    digits_after_decimal: int | None
 
 class OutputTableAnnual(IDFObject):
     """Provides a generic method of setting up tables of annual results with one row per object. The report has multiple col..."""
@@ -29696,9 +30564,7 @@ class OutputTableAnnual(IDFObject):
     """An optional text string that is compared to the names of the objects referenced by the variables and if they match ar..."""
     schedule_name: str | None
     """Optional schedule name. If left blank, aggregation is performed for all hours simulated. If a schedule is specified, ..."""
-    variable_or_meter_or_ems_variable_or_field_name: str | None
-    aggregation_type_for_variable_or_meter: str | None
-    digits_after_decimal: float | None
+    variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup]
 
 class OutputTableReportPeriod(IDFObject):
     """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi...; Since: 22.2.0"""
@@ -29784,6 +30650,12 @@ class OutputMeterCumulativeMeterFileOnly(IDFObject):
     )
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
+class MeterCustomVariableDetailsGroup(ExtensibleGroup):
+    """One variable_details group inside :class:`MeterCustom`."""
+
+    key_name: str | None
+    output_variable_or_meter_name: str | None
+
 class MeterCustom(IDFObject):
     """Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
@@ -29808,6 +30680,11 @@ class MeterCustom(IDFObject):
         | None
     )
     """Since: 9.4.0"""
+    variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
+
+class MeterCustomDecrementVariableDetailsGroup(ExtensibleGroup):
+    """One variable_details group inside :class:`MeterCustomDecrement`."""
+
     key_name: str | None
     output_variable_or_meter_name: str | None
 
@@ -29836,8 +30713,7 @@ class MeterCustomDecrement(IDFObject):
     )
     """Since: 9.4.0"""
     source_meter_name: str | None
-    key_name: str | None
-    output_variable_or_meter_name: str | None
+    variable_details: ExtensibleList[MeterCustomDecrementVariableDetailsGroup]
 
 class OutputControlFiles(IDFObject):
     """Conditionally turn on/off output from EnergyPlus.; Since: 9.4.0"""
@@ -30031,11 +30907,31 @@ class FuelFactors(IDFObject):
     """[m3/MJ]"""
     nuclear_low_level_emission_factor_schedule_name: str | None
 
+class OutputDiagnosticsDiagnosticsGroup(ExtensibleGroup):
+    """One diagnostics group inside :class:`OutputDiagnostics`."""
+
+    key: (
+        Literal[
+            "DisplayAdvancedReportVariables",
+            "DisplayAllWarnings",
+            "DisplayExtraWarnings",
+            "DisplayUnusedObjects",
+            "DisplayUnusedSchedules",
+            "DisplayWeatherMissingDataWarnings",
+            "DisplayZoneAirHeatBalanceOffBalance",
+            "DoNotMirrorAttachedShading",
+            "DoNotMirrorDetachedShading",
+            "ReportDetailedWarmupConvergence",
+            "ReportDuringHVACSizingSimulation",
+            "ReportDuringWarmup",
+        ]
+        | None
+    )
+
 class OutputDiagnostics(IDFObject):
     """Special keys to produce certain warning messages or effect certain simulation characteristics."""
 
-    key: str | None
-    """Since: 9.4.0"""
+    diagnostics: ExtensibleList[OutputDiagnosticsDiagnosticsGroup]
 
 class OutputDebuggingData(IDFObject):
     """switch eplusout.dbg file on or off"""
@@ -30059,6 +30955,11 @@ class OutputPreprocessorMessage(IDFObject):
     message_line_9: str | None
     message_line_10: str | None
 
+class PythonPluginSearchPathsPySearchPathsGroup(ExtensibleGroup):
+    """One py_search_paths group inside :class:`PythonPluginSearchPaths`."""
+
+    search_path: str | None
+
 class PythonPluginSearchPaths(IDFObject):
     """Add directories to the search path for Python plugin modules The directory containing the EnergyPlus executable file ...; Since: 9.3.0"""
 
@@ -30068,8 +30969,7 @@ class PythonPluginSearchPaths(IDFObject):
     """Enabling this will allow Python to find plugin scripts in the same directory as the running input file, even if that ...; Default: Yes"""
     add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None
     """The 'epin' environment variable is set by some EnergyPlus interfaces in order to let EnergyPlus find external files i...; Default: Yes; Since: 22.1.0"""
-    search_path: str | None
-    """Since: 9.4.0"""
+    py_search_paths: ExtensibleList[PythonPluginSearchPathsPySearchPathsGroup]
 
 class PythonPluginInstance(IDFObject):
     """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in...; Since: 9.3.0"""
@@ -30081,11 +30981,15 @@ class PythonPluginInstance(IDFObject):
     plugin_class_name: str | None
     """This is the name of the class to be executed as a plugin during a simulation The class must inherit the EnergyPlusPlu..."""
 
+class PythonPluginVariablesGlobalPyVarsGroup(ExtensibleGroup):
+    """One global_py_vars group inside :class:`PythonPluginVariables`."""
+
+    variable_name: str | None
+
 class PythonPluginVariables(IDFObject):
     """This object defines name identifiers for custom Python Plugin variable data that should be shared among all running P...; Since: 9.3.0"""
 
-    variable_name: str | None
-    """Since: 9.4.0"""
+    global_py_vars: ExtensibleList[PythonPluginVariablesGlobalPyVarsGroup]
 
 class PythonPluginTrendVariable(IDFObject):
     """This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across...; Since: 9.3.0"""
