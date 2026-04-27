@@ -19,8 +19,10 @@ Usage::
 
 from __future__ import annotations
 
+import ast
 import re
 import sys
+from pathlib import Path
 from typing import Any
 
 from idfkit.schema import EpJSONSchema, get_schema
@@ -246,6 +248,81 @@ def _truncate_text(text: str, max_len: int = 120) -> str:
     return _sanitize_docstring(collapsed)
 
 
+# ---- source-docstring extraction -------------------------------------------
+
+
+def _extract_class_docstrings(source_path: Path, class_name: str) -> dict[str, str]:
+    """Parse *source_path* and return a map of qualified names to docstrings.
+
+    Keys are ``class_name`` for the class docstring and ``class_name.method``
+    for each method/property/static method/classmethod defined directly in
+    that class.  Docstrings are returned as ``ast.get_docstring`` produces them
+    (cleaned and dedented).
+    """
+    out: dict[str, str] = {}
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if not (isinstance(node, ast.ClassDef) and node.name == class_name):
+            continue
+        cls_doc = ast.get_docstring(node)
+        if cls_doc:
+            out[class_name] = cls_doc
+        for sub in node.body:
+            if isinstance(sub, ast.FunctionDef | ast.AsyncFunctionDef):
+                doc = ast.get_docstring(sub)
+                if doc:
+                    out[f"{class_name}.{sub.name}"] = doc
+        break
+    return out
+
+
+def _format_docstring_for_stub(text: str, indent: str) -> list[str]:
+    """Format *text* as triple-quoted docstring lines for inclusion in a stub.
+
+    Returns a list of lines (without trailing newlines).  Single-line input
+    becomes a one-line ``\"\"\"...\"\"\"``; multi-line input is reflowed with
+    each line re-indented to *indent*.  Embedded triple quotes are sanitized.
+    """
+    text = text.strip()
+    if not text:
+        return []
+    text = text.replace('"""', "'''")
+    if "\n" not in text:
+        return [f'{indent}"""{text}"""']
+    in_lines = text.split("\n")
+    out_lines: list[str] = [f'{indent}"""{in_lines[0]}']
+    for ln in in_lines[1:]:
+        out_lines.append(f"{indent}{ln}" if ln.strip() else "")
+    out_lines.append(f'{indent}"""')
+    return out_lines
+
+
+def _emit_method(
+    lines: list[str],
+    signature: str,
+    docstring: str | None,
+    *,
+    decorators: tuple[str, ...] = (),
+    indent: str = "    ",
+    suffix: str = "",
+) -> None:
+    """Append a method/property declaration to *lines*.
+
+    *signature* should not include the trailing ``:`` or body.  When *docstring*
+    is provided, it is emitted as the only body element (no ``...`` placeholder
+    is needed in stubs since the docstring itself is a valid statement).
+    *suffix* is appended to the line that ends with ``:`` or ``: ...`` -- use
+    it for trailing comments such as ``# type: ignore[override]``.
+    """
+    for d in decorators:
+        lines.append(f"{indent}{d}")
+    if docstring:
+        lines.append(f"{indent}{signature}:{suffix}")
+        lines.extend(_format_docstring_for_stub(docstring, indent + "    "))
+    else:
+        lines.append(f"{indent}{signature}: ...{suffix}")
+
+
 def _class_docstring(
     memo: str | None,
     since: tuple[int, int, int] | None,
@@ -388,13 +465,21 @@ def _generate_object_type_map(
     This replaces 858 ``@overload`` decorators with a single ``TypedDict``.
     Pyright resolves ``td["Zone"]`` in O(1) via hash lookup vs O(n) overload
     matching, giving ~3x faster type-checking.
+
+    The map is emitted with ``total=True`` because :class:`IDFDocument` always
+    returns a collection for any known object type (lazily creating an empty
+    one if absent), so every key behaves as required.  ``total=False`` would
+    cause pyright's ``reportTypedDictNotRequiredAccess`` to fire on every
+    ``doc["Zone"]`` lookup.  The TypedDict is stub-only and never instantiated
+    as a dict literal, so the construction semantics of ``total=True`` do not
+    apply.
     """
     lines: list[str] = []
     lines.append('_ObjectTypeMap = TypedDict("_ObjectTypeMap", {')
     for obj_type in schema.object_types:
         cls_name = _to_class_name(obj_type)
         lines.append(f'    "{obj_type}": IDFCollection[{cls_name}],')
-    lines.append("}, total=False)")
+    lines.append("}, total=True)")
     return lines
 
 
@@ -414,20 +499,34 @@ _RESERVED_ATTRS = frozenset({
 
 def _generate_attr_properties(
     python_to_idf: dict[str, str],
+    schema: EpJSONSchema,
     indent: str = "    ",
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
     These correspond to the ``_PYTHON_TO_IDF`` mapping in document.py.
     Skips names that conflict with real instance attributes or methods.
+
+    Each property gets a docstring derived from the EnergyPlus schema memo for
+    the underlying object type, so IDEs surface a description on hover.
     """
     lines: list[str] = []
     for py_name, idf_type in python_to_idf.items():
         if py_name in _RESERVED_ATTRS:
             continue
         cls_name = _to_class_name(idf_type)
-        lines.append(f"{indent}@property")
-        lines.append(f"{indent}def {py_name}(self) -> IDFCollection[{cls_name}]: ...")
+        memo = schema.get_object_memo(idf_type)
+        doc_parts = [f"All ``{idf_type}`` objects in the document."]
+        if memo:
+            doc_parts.append(_truncate_text(memo, max_len=200))
+        docstring = " ".join(doc_parts)
+        _emit_method(
+            lines,
+            f"def {py_name}(self) -> IDFCollection[{cls_name}]",
+            docstring,
+            decorators=("@property",),
+            indent=indent,
+        )
     return lines
 
 
@@ -496,11 +595,23 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     The stub declares ``IDFDocument`` as inheriting from ``_ObjectTypeMap``
     (a ``TypedDict``), which gives pyright O(1) per-key type resolution for
     ``__getitem__`` without any ``@overload`` decorators.
+
+    Method and property docstrings are extracted from ``document.py`` via AST
+    so IDE hovers (which read from the ``.pyi`` when one exists) surface the
+    same documentation as the source module.
     """
     ver = version or LATEST_VERSION
     version_str = f"{ver[0]}.{ver[1]}.{ver[2]}"
+    schema = get_schema(ver)
 
+    import idfkit.document as _document_mod
     from idfkit.document import _PYTHON_TO_IDF  # pyright: ignore[reportPrivateUsage]
+
+    # Resolve document.py via the imported module rather than this file's
+    # location, so test fixtures that patch __file__ on the codegen module
+    # don't redirect docstring extraction to a non-existent path.
+    source_path = Path(_document_mod.__file__).resolve()
+    docs = _extract_class_docstrings(source_path, "IDFDocument")
 
     lines: list[str] = []
 
@@ -535,8 +646,15 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
     # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
     lines.append("class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: ignore[misc]")
+    cls_doc = docs.get("IDFDocument")
+    if cls_doc:
+        lines.extend(_format_docstring_for_stub(cls_doc, "    "))
+        lines.append("")
     lines.append("    filepath: Path | None")
     lines.append("")
+
+    # __init__ — emit multi-line for readability, then attach docstring if present
+    init_doc = docs.get("IDFDocument.__init__")
     lines.append("    def __init__(")
     lines.append("        self,")
     lines.append("        version: tuple[int, int, int] | None = ...,")
@@ -544,75 +662,117 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("        filepath: Path | str | None = ...,")
     lines.append("        *,")
     lines.append("        strict: Strict = ...,")
-    lines.append("    ) -> None: ...")
+    if init_doc:
+        lines.append("    ) -> None:")
+        lines.extend(_format_docstring_for_stub(init_doc, "        "))
+    else:
+        lines.append("    ) -> None: ...")
     lines.append("")
+
+    def emit(
+        signature: str,
+        doc_key: str,
+        *,
+        decorators: tuple[str, ...] = (),
+        suffix: str = "",
+    ) -> None:
+        _emit_method(
+            lines,
+            signature,
+            docs.get(doc_key),
+            decorators=decorators,
+            indent="    ",
+            suffix=suffix,
+        )
 
     # Properties
-    lines.append("    @property")
-    lines.append("    def version(self) -> tuple[int, int, int]: ...")
-    lines.append("    @property")
-    lines.append("    def strict(self) -> Strict: ...")
-    lines.append("    @property")
-    lines.append("    def schema(self) -> EpJSONSchema | None: ...")
-    lines.append("    @property")
-    lines.append("    def cst(self) -> DocumentCST | None: ...")
-    lines.append("    @property")
-    lines.append("    def raw_text(self) -> str | None: ...")
-    lines.append("    @property")
-    lines.append("    def collections(self) -> dict[str, IDFCollection[IDFObject]]: ...")
-    lines.append("    @property")
-    lines.append("    def references(self) -> ReferenceGraph: ...")
-    lines.append("")
-
-    # get_collection — typed access for dynamic string keys (avoids TypedDict Unknown)
-    lines.append("    def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]: ...")
-    # __getattr__ — fallback for object types not covered by the generated @property
-    # accessors below.  Keeps the stub open to custom/uncommon EnergyPlus types;
-    # the typed properties still provide autocomplete for the ~90 most common types.
-    lines.append("    def __getattr__(self, name: str) -> IDFCollection[IDFObject]: ...")
-    lines.append("    def __contains__(self, obj_type: str) -> bool: ...  # type: ignore[override]")
-    lines.append("    def __iter__(self) -> Iterator[str]: ...  # type: ignore[override]")
-    lines.append("    def __len__(self) -> int: ...")
-    lines.append("    def keys(self) -> list[str]: ...  # type: ignore[override]")
-    lines.append("    def values(self) -> list[IDFCollection[IDFObject]]: ...  # type: ignore[override]")
-    lines.append("    def items(self) -> list[tuple[str, IDFCollection[IDFObject]]]: ...  # type: ignore[override]")
-    lines.append("    def describe(self, obj_type: str) -> ObjectDescription: ...")
-    lines.append("")
-
-    # add() — no overloads, returns IDFObject
-    lines.append(
-        "    def add(self, obj_type: str, name: str = ..., "
-        "fields: dict[str, Any] | None = ..., *, validate: bool = ..., "
-        "**kwargs: Any) -> IDFObject: ..."
+    emit("def version(self) -> tuple[int, int, int]", "IDFDocument.version", decorators=("@property",))
+    emit("def strict(self) -> Strict", "IDFDocument.strict", decorators=("@property",))
+    emit("def schema(self) -> EpJSONSchema | None", "IDFDocument.schema", decorators=("@property",))
+    emit("def cst(self) -> DocumentCST | None", "IDFDocument.cst", decorators=("@property",))
+    emit("def raw_text(self) -> str | None", "IDFDocument.raw_text", decorators=("@property",))
+    emit(
+        "def collections(self) -> dict[str, IDFCollection[IDFObject]]",
+        "IDFDocument.collections",
+        decorators=("@property",),
     )
+    emit("def references(self) -> ReferenceGraph", "IDFDocument.references", decorators=("@property",))
     lines.append("")
 
-    # Remaining methods
-    lines.append("    def addidfobject(self, obj: IDFObject) -> IDFObject: ...")
-    lines.append("    def removeidfobject(self, obj: IDFObject) -> None: ...")
-    lines.append("    def rename(self, obj_type: str, old_name: str, new_name: str) -> None: ...")
-    lines.append("    def notify_name_change(self, obj: IDFObject, old_name: str, new_name: str) -> None: ...")
-    lines.append(
-        "    def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None: ..."
+    # Collection access
+    emit("def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]", "IDFDocument.get_collection")
+    emit("def __getattr__(self, name: str) -> IDFCollection[IDFObject]", "IDFDocument.__getattr__")
+    emit(
+        "def __contains__(self, obj_type: str) -> bool",
+        "IDFDocument.__contains__",
+        suffix="  # type: ignore[override]",
     )
-    lines.append("    def get_referencing(self, name: str) -> set[IDFObject]: ...")
-    lines.append("    def get_references(self, obj: IDFObject) -> set[str]: ...")
-    lines.append("    @property")
-    lines.append("    def schedules_dict(self) -> dict[str, IDFObject]: ...")
-    lines.append("    def get_schedule(self, name: str) -> IDFObject | None: ...")
-    lines.append("    def get_used_schedules(self) -> set[str]: ...")
-    lines.append("    def get_zone_surfaces(self, zone_name: str) -> list[IDFObject]: ...")
-    lines.append("    @property")
-    lines.append("    def all_objects(self) -> Iterator[IDFObject]: ...")
-    lines.append("    def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]: ...")
-    lines.append(
-        "    def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]: ..."
+    emit("def __iter__(self) -> Iterator[str]", "IDFDocument.__iter__", suffix="  # type: ignore[override]")
+    emit("def __len__(self) -> int", "IDFDocument.__len__")
+    emit("def keys(self) -> list[str]", "IDFDocument.keys", suffix="  # type: ignore[override]")
+    emit(
+        "def values(self) -> list[IDFCollection[IDFObject]]",
+        "IDFDocument.values",
+        suffix="  # type: ignore[override]",
     )
-    lines.append("    def copy(self) -> IDFDocument[Strict]: ...")
+    emit(
+        "def items(self) -> list[tuple[str, IDFCollection[IDFObject]]]",
+        "IDFDocument.items",
+        suffix="  # type: ignore[override]",
+    )
+    emit("def describe(self, obj_type: str) -> ObjectDescription", "IDFDocument.describe")
     lines.append("")
 
-    # Attribute accessor properties
-    lines.extend(_generate_attr_properties(_PYTHON_TO_IDF, indent="    "))
+    # Object manipulation
+    emit(
+        "def add(self, obj_type: str, name: str = ..., fields: dict[str, Any] | None = ..., "
+        "*, validate: bool = ..., **kwargs: Any) -> IDFObject",
+        "IDFDocument.add",
+    )
+    emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
+    emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
+    emit("def rename(self, obj_type: str, old_name: str, new_name: str) -> None", "IDFDocument.rename")
+    emit(
+        "def notify_name_change(self, obj: IDFObject, old_name: str, new_name: str) -> None",
+        "IDFDocument.notify_name_change",
+    )
+    emit(
+        "def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None",
+        "IDFDocument.notify_reference_change",
+    )
+    emit("def get_referencing(self, name: str) -> set[IDFObject]", "IDFDocument.get_referencing")
+    emit("def get_references(self, obj: IDFObject) -> set[str]", "IDFDocument.get_references")
+
+    # Schedules / surfaces / iteration / expand / copy
+    emit(
+        "def schedules_dict(self) -> dict[str, IDFObject]",
+        "IDFDocument.schedules_dict",
+        decorators=("@property",),
+    )
+    emit("def get_schedule(self, name: str) -> IDFObject | None", "IDFDocument.get_schedule")
+    emit("def get_used_schedules(self) -> set[str]", "IDFDocument.get_used_schedules")
+    emit(
+        "def get_zone_surfaces(self, zone_name: str) -> list[IDFObject]",
+        "IDFDocument.get_zone_surfaces",
+    )
+    emit(
+        "def all_objects(self) -> Iterator[IDFObject]",
+        "IDFDocument.all_objects",
+        decorators=("@property",),
+    )
+    emit(
+        "def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]",
+        "IDFDocument.objects_by_type",
+    )
+    emit(
+        "def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]",
+        "IDFDocument.expand",
+    )
+    emit("def copy(self) -> IDFDocument[Strict]", "IDFDocument.copy")
+    lines.append("")
+
+    # Attribute accessor properties (zones, materials, ...) with memo docstrings
+    lines.extend(_generate_attr_properties(_PYTHON_TO_IDF, schema, indent="    "))
     lines.append("")
 
     return "\n".join(lines)
@@ -620,8 +780,6 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
 def main() -> None:
     """CLI entry point."""
-    from pathlib import Path
-
     version: tuple[int, int, int] | None = None
     if len(sys.argv) > 1:
         version_parts = sys.argv[1].split(".")
