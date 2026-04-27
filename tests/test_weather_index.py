@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from idfkit.weather.index import (
+    _CACHED_INDEX,  # pyright: ignore[reportPrivateUsage]
     StationIndex,
     _download_file,  # pyright: ignore[reportPrivateUsage]
     _ensure_index_file,  # pyright: ignore[reportPrivateUsage]
@@ -880,6 +882,43 @@ class TestLoadBundled:
             pytest.raises(FileNotFoundError, match="No station index found"),
         ):
             StationIndex.load(cache_dir=tmp_path)
+
+    def test_stale_cache_falls_back_to_bundled(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """A cache from before a schema migration is quarantined and the bundled index is used.
+
+        Reproduces the 0.10.0 regression: PR #136 added climate fields to
+        WeatherStation; users with a cache from a previous idfkit version
+        hit a KeyError because StationIndex.load chose the stale cache
+        over the bundled file.
+        """
+        # Write a "stale" cache mimicking the pre-KML-migration shape: each
+        # station dict is missing every field added in PR #136.
+        stale_station = {
+            "country": "USA",
+            "state": "IL",
+            "city": "Chicago",
+            "wmo": "725300",
+            "source": "TMYx.2009-2023",
+            "latitude": 41.99,
+            "longitude": -87.91,
+            "timezone": -6.0,
+            "elevation": 201.0,
+            "url": "https://example.com/chicago.zip",
+        }
+        stale_path = tmp_path / _CACHED_INDEX
+        with gzip.open(stale_path, "wt", encoding="utf-8") as f:
+            json.dump({"stations": [stale_station], "last_modified": {}, "built_at": "2026-04-01"}, f)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.weather.index"):
+            idx = StationIndex.load(cache_dir=tmp_path)
+
+        # Falls back to the bundled index (more than just our one fake station).
+        assert len(idx) > 1
+        # Stale cache is quarantined, original path is gone.
+        assert not stale_path.exists()
+        assert (tmp_path / (_CACHED_INDEX + ".stale")).is_file()
+        # User-visible warning explains what happened.
+        assert any("could not be loaded" in r.message for r in caplog.records)
 
 
 class TestCheckForUpdates:

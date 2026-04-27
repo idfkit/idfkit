@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import gzip
 import json
 import logging
@@ -499,6 +500,11 @@ class StationIndex:
         bundled index shipped with the package.  No network access is
         required.
 
+        If the cached file is from an older idfkit version and fails to
+        deserialise (e.g. missing schema fields after a format migration),
+        it is quarantined to ``stations.json.gz.stale`` and the bundled
+        index is used instead.
+
         Args:
             cache_dir: Override the default cache directory.
         """
@@ -506,9 +512,35 @@ class StationIndex:
         cached_path = cache / _CACHED_INDEX
 
         if cached_path.is_file():
-            source = cached_path
+            try:
+                stations, last_modified, _ = _load_compressed_index(cached_path)
+            except (KeyError, ValueError, TypeError, json.JSONDecodeError, OSError, gzip.BadGzipFile) as exc:
+                quarantine = cached_path.with_suffix(cached_path.suffix + ".stale")
+                logger.warning(
+                    "Cached station index at %s could not be loaded (%s: %s). "
+                    "Falling back to the bundled index. The stale cache has been "
+                    "moved to %s — run StationIndex.refresh() to rebuild it.",
+                    cached_path,
+                    type(exc).__name__,
+                    exc,
+                    quarantine,
+                )
+                with contextlib.suppress(OSError):
+                    cached_path.replace(quarantine)
+                if not _BUNDLED_INDEX.is_file():
+                    msg = (
+                        "Cached station index is unreadable and no bundled "
+                        "index ships with this build. Run StationIndex.refresh() "
+                        "to download one."
+                    )
+                    raise FileNotFoundError(msg) from exc
+                stations, last_modified, _ = _load_compressed_index(_BUNDLED_INDEX)
+                logger.info("Loaded station index with %d stations from %s", len(stations), _BUNDLED_INDEX)
+            else:
+                logger.info("Loaded station index with %d stations from %s", len(stations), cached_path)
         elif _BUNDLED_INDEX.is_file():
-            source = _BUNDLED_INDEX
+            stations, last_modified, _ = _load_compressed_index(_BUNDLED_INDEX)
+            logger.info("Loaded station index with %d stations from %s", len(stations), _BUNDLED_INDEX)
         else:
             msg = (
                 "No station index found. The bundled index is missing and no "
@@ -516,8 +548,6 @@ class StationIndex:
             )
             raise FileNotFoundError(msg)
 
-        stations, last_modified, _ = _load_compressed_index(source)
-        logger.info("Loaded station index with %d stations from %s", len(stations), source)
         instance = cls(stations)
         instance._last_modified = last_modified
         _maybe_check_for_updates(instance, cache)
