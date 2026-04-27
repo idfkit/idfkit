@@ -32111,5 +32111,5 @@ _ObjectTypeMap = TypedDict(
         "PythonPlugin:TrendVariable": IDFCollection[PythonPluginTrendVariable],
         "PythonPlugin:OutputVariable": IDFCollection[PythonPluginOutputVariable],
     },
-    total=False,
+    total=True,
 )

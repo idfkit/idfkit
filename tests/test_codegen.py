@@ -472,15 +472,23 @@ class TestGenerateObjectTypeMap:
 
 class TestGenerateAttrProperties:
     def test_generates_properties(self) -> None:
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
         mapping = {"zones": "Zone", "materials": "Material"}
-        lines = _generate_attr_properties(mapping)
+        lines = _generate_attr_properties(mapping, schema)
         text = "\n".join(lines)
         assert "@property" in text
-        assert "def zones(self) -> IDFCollection[Zone]: ..." in text
+        # The signature is now followed by a docstring instead of `: ...`
+        assert "def zones(self) -> IDFCollection[Zone]:" in text
+        assert '"""All ``Zone`` objects in the document.' in text
 
     def test_skips_reserved(self) -> None:
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
         mapping = {"version": "Version", "zones": "Zone"}
-        lines = _generate_attr_properties(mapping)
+        lines = _generate_attr_properties(mapping, schema)
         text = "\n".join(lines)
         assert "def version" not in text
         assert "def zones" in text
@@ -585,8 +593,16 @@ class TestStubsMain:
             stubs_main()
         assert (tmp_path / "_generated_types.pyi").exists()
 
+    @pytest.mark.usefixtures("_preserve_generated_stubs")
     def test_main_via_module_execution(self, tmp_path: Path) -> None:
-        """Cover line 620: if __name__ == '__main__'."""
+        """Cover line 620: if __name__ == '__main__'.
+
+        ``runpy.run_module(run_name="__main__")`` re-imports the module fresh
+        and resets ``__file__`` to the real on-disk path, so the
+        ``patch.object(stubs_mod, "__file__", ...)`` does *not* take effect for
+        this test.  The ``_preserve_generated_stubs`` fixture backs up and
+        restores the real stub files so this test does not corrupt them.
+        """
         import runpy
 
         import idfkit.codegen.generate_stubs as stubs_mod
