@@ -31,8 +31,8 @@ The three spatial anchors — `--near`, `--nearby`, and `--lat`/`--lon` — are
 mutually exclusive, and `--lat`/`--lon` must be specified together.
 `--max-km` requires one of them.
 
-!!! note "No climate-zone filter"
-    There is no `--climate-zone` flag because the upstream station index on climate.onebuilding.org does not publish climate zones per station. To pick a station for a specific ASHRAE zone, look up a representative city for that zone and use `--near "<city>"`. See [Weather Pipeline: No Climate Zone Filter](../concepts/weather-pipeline.md#no-climate-zone-filter) for the full rationale.
+!!! tip "No `--climate-zone` CLI flag yet"
+    Each station now carries its ASHRAE HOF climate zone (added with the KML index migration), but the CLI doesn't expose a `--climate-zone` filter yet. Use the Python API for ASHRAE-zone filtering — see [Weather Pipeline: Climate Zone Metadata](../concepts/weather-pipeline.md#climate-zone-metadata) and [Filter by Climate Zone](../weather/station-search.md#filter-by-climate-zone).
 
 ## Detect location from IP (`--nearby`)
 
