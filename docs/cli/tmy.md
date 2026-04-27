@@ -2,7 +2,7 @@
 
 Search, download, and browse [TMYx](https://climate.onebuilding.org) typical meteorological year weather data from the shell. Each station ships EPW (8760 hourly values), DDY (ASHRAE design days), and STAT (climate summary). These are synthetic typical years, not historical measurements.
 
-The subcommand is stdlib-only — no extra dependencies beyond the core `idfkit` install. The `--refresh` action additionally requires `pip install idfkit[weather]`.
+The subcommand is stdlib-only — no extra dependencies beyond the core `idfkit` install, including the `--refresh` action.
 
 ## Search
 
@@ -117,7 +117,7 @@ Rebuilds the bundled index from the regional KML files on climate.onebuilding.or
 |------|---------|
 | `0` | Success (match found and printed/downloaded, or refresh completed) |
 | `1` | No stations matched the given filters |
-| `2` | Usage error: invalid flag combination, non-TTY ambiguity, missing `[weather]` extra for `--refresh` |
+| `2` | Usage error: invalid flag combination, non-TTY ambiguity |
 | `3` | Network failure: geocoding, download, or refresh could not reach upstream |
 
 ## Full flag reference
@@ -136,7 +136,7 @@ Rebuilds the bundled index from the regional KML files on climate.onebuilding.or
 | `--variant STR` | — | Dataset variant substring filter |
 | `-d`, `--download [DIR]` | — | Download to `DIR`, or the platform cache when DIR is omitted |
 | `--browse` | — | Launch the local web UI |
-| `--refresh` | — | Rebuild the index (requires `[weather]` extra) |
+| `--refresh` | — | Rebuild the index from upstream KML files |
 | `--first` | `false` | Non-interactively take the top-scored match |
 | `--limit N` | `10` | Cap results when listing |
 | `--json` | `false` | Force JSON output |

@@ -29,26 +29,6 @@ This installs the core package with support for:
 
 idfkit provides optional extras for additional functionality:
 
-### Weather Station Index
-
-Refresh the bundled weather station index from climate.onebuilding.org:
-
-=== "pip"
-
-    ```bash
-    pip install idfkit[weather]
-    ```
-
-=== "uv"
-
-    ```bash
-    uv add idfkit[weather]
-    ```
-
-!!! note
-    The bundled station index works without this extra. Only install `[weather]`
-    if you need to refresh the index with `StationIndex.refresh()`.
-
 ### DataFrame Support
 
 Convert simulation results to pandas DataFrames:

@@ -118,7 +118,7 @@ for r in batch.succeeded:
     print(r.label, r.result.success)
 ```
 
-### Weather Data (bundled index; `idfkit[weather]` extra for index refresh)
+### Weather Data (bundled index; refresh uses stdlib only)
 
 ```python
 from idfkit.weather import WeatherDownloader
@@ -199,7 +199,7 @@ intersect_match(doc)
 - **Validation is opt-in**: Call `validate_document()` explicitly; parsing does not validate.
 - **Rename cascades**: `doc.rename()` updates all cross-references automatically.
 - **Strict mode**: Strict field access is on by default; raises `InvalidFieldError` on field typos. Disable with `strict=False`.
-- **Optional extras**: Core features (simulation, schedules, thermal, geometry) need no extras. Install `idfkit[weather]` for index refresh, `idfkit[pandas]` for DataFrames, `idfkit[plot]`/`idfkit[plotly]` for plotting, `idfkit[progress]` for tqdm bars, `idfkit[s3]` for cloud storage, or `idfkit[all]`.
+- **Optional extras**: Core features (simulation, schedules, thermal, geometry, weather) need no extras. Install `idfkit[pandas]` for DataFrames, `idfkit[plot]`/`idfkit[plotly]` for plotting, `idfkit[progress]` for tqdm bars, `idfkit[s3]` for cloud storage, or `idfkit[all]`.
 
 ### Exception Hierarchy
 

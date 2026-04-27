@@ -228,7 +228,7 @@ def add_subparser(
     actions.add_argument(
         "--refresh",
         action="store_true",
-        help="Rebuild the station index from upstream (requires [weather] extra)",
+        help="Rebuild the station index from upstream KML files",
     )
 
     p.add_argument("--first", action="store_true", help="Non-interactive: pick top-scored match")
