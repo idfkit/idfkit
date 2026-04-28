@@ -197,3 +197,22 @@ Every variable that command surfaces should appear in the docs page.
 ## EnergyPlus Version Support
 
 Bundled schemas cover EnergyPlus 8.9.0 through 26.1.0 (17 versions). The latest supported version is 26.1.0. Version 24.1.0 is used as the default in test fixtures. See `src/idfkit/versions.py` for the full list.
+
+## Releases
+
+Releases are GitHub-Release-driven: creating a published Release on `main`
+triggers `.github/workflows/on-release-main.yml`, which patches
+`pyproject.toml` to match the tag and publishes the wheel to PyPI plus the
+docs to GitHub Pages. `pyproject.toml`'s `version` field is therefore not
+the source of truth — the git tag is. Do not bump it in a separate commit.
+
+**Tag format: `vX.Y.Z` with the `v` prefix.** A run of tags from `0.6.5`
+through `0.10.1` was cut without the prefix; that was a mistake. All new
+tags use `v`. Do not rename or delete the un-prefixed historical tags —
+they back published PyPI releases and GitHub Releases.
+
+To cut a release (after confirming the version with the user):
+
+```bash
+gh release create vX.Y.Z --target main --title "vX.Y.Z" --generate-notes
+```
