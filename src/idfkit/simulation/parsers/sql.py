@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING, Any, Literal
 if TYPE_CHECKING:
     import pandas as pd
 
+    from ..plotting import PlotBackend
+
 # EnergyPlus uses a fixed reference year for timestamps. 2017 is the canonical
 # non-leap year used by convention.
 _REFERENCE_YEAR = 2017
@@ -61,7 +63,7 @@ class TimeSeriesResult:
             {"timestamp": list(self.timestamps), self.variable_name: list(self.values)}
         ).set_index("timestamp")
 
-    def plot(self, *, backend: Any = None, title: str | None = None) -> Any:
+    def plot(self, *, backend: PlotBackend | None = None, title: str | None = None) -> Any:
         """Plot this time series as a line chart.
 
         Auto-detects the plotting backend if not provided. Requires matplotlib
