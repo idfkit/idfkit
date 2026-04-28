@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,29 @@ def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
     return f"{v[0]}.{v[1]}"
 
 
+@overload
 def write_idf(
+    doc: IDFDocument[bool],
+    filepath: None = ...,
+    encoding: str = ...,
+    output_type: OutputType = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> str: ...
+
+
+@overload
+def write_idf(
+    doc: IDFDocument[bool],
+    filepath: Path | str,
+    encoding: str = ...,
+    output_type: OutputType = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> None: ...
+
+
+def write_idf(  # type: ignore[misc]  # overload implementation
     doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     encoding: str = "latin-1",
@@ -129,7 +151,27 @@ def write_idf(
     return content
 
 
+@overload
 def write_epjson(
+    doc: IDFDocument[bool],
+    filepath: None = ...,
+    indent: int = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> str: ...
+
+
+@overload
+def write_epjson(
+    doc: IDFDocument[bool],
+    filepath: Path | str,
+    indent: int = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> None: ...
+
+
+def write_epjson(  # type: ignore[misc]  # overload implementation
     doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     indent: int = 2,
