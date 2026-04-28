@@ -79,8 +79,8 @@ class TestWeatherDownloader:
         station = _make_station()
         files = downloader.download(station)
 
-        assert files.epw is not None and files.epw.exists()
-        assert files.ddy is not None and files.ddy.exists()
+        assert files.epw.exists()
+        assert files.ddy.exists()
         assert files.stat is not None and files.stat.exists()
         assert files.station is station
         assert files.epw.suffix == ".epw"
@@ -205,7 +205,7 @@ class TestWeatherDownloaderMaxAge:
         station = _make_station()
 
         files = downloader.download(station)
-        assert files.epw is not None and files.epw.exists()
+        assert files.epw.exists()
         assert mock_urlopen.call_count == 1
 
     @patch("idfkit.weather.download.urlopen")
@@ -220,7 +220,7 @@ class TestWeatherDownloaderMaxAge:
         station = _make_station()
 
         files = downloader.download(station)
-        assert files.epw is not None and files.epw.exists()
+        assert files.epw.exists()
 
     @patch("idfkit.weather.download.urlopen")
     @patch("idfkit.weather.download.time")

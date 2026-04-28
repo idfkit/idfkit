@@ -9,7 +9,7 @@ import zipfile
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -41,17 +41,39 @@ def _normalise_suffixes(suffixes: Iterable[str] | None) -> frozenset[str] | None
 
 @dataclass(frozen=True)
 class WeatherFiles:
-    """Paths to downloaded and extracted weather files.
+    """Paths to a fully extracted weather bundle.
 
-    For a full extraction (``download(station)`` without ``only``), ``epw`` and
-    ``ddy`` are guaranteed non-``None`` — a missing one raises during download.
-    When a selective extraction is requested via ``only=``, any field whose
-    suffix was not requested *and* not already cached on disk will be ``None``.
+    Returned by ``WeatherDownloader.download(station)`` (no ``only=``).
+    ``epw`` and ``ddy`` are guaranteed non-``None`` — a missing one raises
+    during download.
+
+    Attributes:
+        epw: Path to the ``.epw`` file.
+        ddy: Path to the ``.ddy`` file.
+        stat: Path to the ``.stat`` file, or ``None`` if not included.
+        zip_path: Path to the original downloaded ZIP archive.
+        station: The station this download corresponds to.
+    """
+
+    epw: Path
+    ddy: Path
+    stat: Path | None
+    zip_path: Path
+    station: WeatherStation
+
+
+@dataclass(frozen=True)
+class PartialWeatherFiles:
+    """Paths to a selectively extracted weather bundle.
+
+    Returned by ``WeatherDownloader.download(station, only=...)``. Any field
+    whose suffix was not requested *and* not already cached on disk will be
+    ``None``.
 
     Attributes:
         epw: Path to the ``.epw`` file, or ``None`` if not extracted.
         ddy: Path to the ``.ddy`` file, or ``None`` if not extracted.
-        stat: Path to the ``.stat`` file, or ``None`` if not included or extracted.
+        stat: Path to the ``.stat`` file, or ``None`` if not extracted.
         zip_path: Path to the original downloaded ZIP archive.
         station: The station this download corresponds to.
     """
@@ -116,12 +138,18 @@ class WeatherDownloader:
         age = time.time() - path.stat().st_mtime
         return age > self._max_age_seconds
 
+    @overload
+    def download(self, station: WeatherStation) -> WeatherFiles: ...
+    @overload
+    def download(self, station: WeatherStation, *, only: None) -> WeatherFiles: ...
+    @overload
+    def download(self, station: WeatherStation, *, only: Iterable[str]) -> PartialWeatherFiles: ...
     def download(
         self,
         station: WeatherStation,
         *,
         only: Iterable[str] | None = None,
-    ) -> WeatherFiles:
+    ) -> WeatherFiles | PartialWeatherFiles:
         """Download and extract weather files for *station*.
 
         If the files are already cached and not stale, no network request is made.
@@ -137,7 +165,10 @@ class WeatherDownloader:
                 and a ``.ddy``.
 
         Returns:
-            A [WeatherFiles][idfkit.weather.download.WeatherFiles] with paths to the extracted files.
+            [WeatherFiles][idfkit.weather.download.WeatherFiles] for a full
+            extraction, or
+            [PartialWeatherFiles][idfkit.weather.download.PartialWeatherFiles]
+            when ``only=`` is set.
 
         Raises:
             RuntimeError: If the download or extraction fails, or if a full
@@ -170,15 +201,22 @@ class WeatherDownloader:
         ddy_path = self._find_file(station_dir, ".ddy")
         stat_path = self._find_file(station_dir, ".stat")
 
-        # When the caller asked for a full extraction, EPW and DDY are required.
-        if only_set is None:
-            if epw_path is None:
-                msg = f"No .epw file found in downloaded archive for {station.display_name}"
-                raise RuntimeError(msg)
-            if ddy_path is None:
-                msg = f"No .ddy file found in downloaded archive for {station.display_name}"
-                raise RuntimeError(msg)
+        if only_set is not None:
+            return PartialWeatherFiles(
+                epw=epw_path,
+                ddy=ddy_path,
+                stat=stat_path,
+                zip_path=zip_path,
+                station=station,
+            )
 
+        # Full-extract path: EPW and DDY are required.
+        if epw_path is None:
+            msg = f"No .epw file found in downloaded archive for {station.display_name}"
+            raise RuntimeError(msg)
+        if ddy_path is None:
+            msg = f"No .ddy file found in downloaded archive for {station.display_name}"
+            raise RuntimeError(msg)
         return WeatherFiles(
             epw=epw_path,
             ddy=ddy_path,
@@ -224,9 +262,7 @@ class WeatherDownloader:
         Extracts the full archive. To skip extraction of unwanted members,
         call ``download(station, only={".epw"}).epw`` directly.
         """
-        epw = self.download(station).epw
-        assert epw is not None  # noqa: S101 — guaranteed by full-extract validation
-        return epw
+        return self.download(station).epw
 
     def get_ddy(self, station: WeatherStation) -> Path:
         """Download and return the path to the DDY file.
@@ -234,9 +270,7 @@ class WeatherDownloader:
         Extracts the full archive. To skip extraction of unwanted members,
         call ``download(station, only={".ddy"}).ddy`` directly.
         """
-        ddy = self.download(station).ddy
-        assert ddy is not None  # noqa: S101 — guaranteed by full-extract validation
-        return ddy
+        return self.download(station).ddy
 
     def _resolve_filename(self, filename: str, index: StationIndex | None) -> WeatherStation:
         """Resolve an EPW filename to a station, raising on failure."""
