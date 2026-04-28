@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 import warnings
 from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError
@@ -1012,7 +1012,18 @@ class IDFCollection(Generic[_T]):
     def __repr__(self) -> str:
         return f"IDFCollection({self._type}, count={len(self._items)})"
 
-    def get(self, name: str, default: _T | None = None) -> _T | None:
+    @overload
+    def get(self, name: str) -> _T | None: ...
+
+    @overload
+    def get(self, name: str, default: _T) -> _T: ...
+
+    @overload
+    def get(self, name: str, default: None) -> _T | None: ...
+
+    def get(  # type: ignore[misc]  # overload implementation
+        self, name: str, default: _T | None = None
+    ) -> _T | None:
         """Get object by name with default.
 
         For unnamed/singleton object types (e.g. SimulationControl), pass an
