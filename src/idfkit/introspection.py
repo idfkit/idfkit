@@ -22,7 +22,11 @@ class FieldDescription:
 
     Attributes:
         name: Field name (python-style, e.g., "x_origin")
-        field_type: Type of the field ("number", "string", "integer", etc.)
+        field_type: Type of the field ("number", "string", "integer", etc.). For
+            heterogeneous fields declared via ``anyOf`` with multiple primitive
+            types (e.g. ``Schedule:Compact``'s ``field``, which mixes directives
+            like ``Through: 12/31`` with numeric values), this is a pipe-delimited
+            union in declaration order — e.g. ``"number|string"``.
         required: Whether the field is required
         default: Default value, if any
         units: Units string, if any (e.g., "m", "W/m-K")
@@ -282,21 +286,28 @@ def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescripti
 
 
 def _get_field_type(field_schema: dict[str, Any]) -> str | None:
-    """Extract the field type from a field schema."""
+    """Extract the field type from a field schema.
+
+    For ``anyOf`` schemas declaring multiple primitive types (e.g.
+    ``Schedule:Compact``'s extensible ``field`` allows both number and string),
+    returns a pipe-delimited union in declaration order — e.g. ``"number|string"``
+    — so callers can see the field is heterogeneous instead of being told only
+    the preferred type. Sub-schemas without a ``type`` key (pure ``enum``
+    branches) are ignored, matching the prior contract.
+    """
     if "type" in field_schema:
         result: str = field_schema["type"]
         return result
 
     if "anyOf" in field_schema:
         any_of: list[dict[str, Any]] = field_schema["anyOf"]
-        # Look for a primary type (prefer number/integer over string)
+        types: list[str] = []
         for sub in any_of:
-            if sub.get("type") in ("number", "integer"):
-                result = sub["type"]
-                return result
-        for sub in any_of:
-            if sub.get("type") == "string":
-                return "string"
+            sub_type = sub.get("type")
+            if isinstance(sub_type, str) and sub_type not in types:
+                types.append(sub_type)
+        if types:
+            return "|".join(types)
 
     if "enum" in field_schema:
         return "string"

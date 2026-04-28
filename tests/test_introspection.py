@@ -221,6 +221,21 @@ class TestDescribeObjectType:
         vertex_fields = [f for f in desc2.fields if f.name.startswith("vertex_")]
         assert all(f.field_type == "number" for f in vertex_fields)
 
+    def test_schedule_compact_field_is_heterogeneous(self, schema: EpJSONSchema) -> None:
+        """Schedule:Compact's extensible 'field' allows both numbers and strings.
+
+        EnergyPlus declares it as ``anyOf: [number, string]`` because rows interleave
+        directives like ``Through: 12/31`` with numeric values. The describe path must
+        surface both types so callers know strings are valid (regression for the
+        upstream issue raised against idfkit-mcp).
+        """
+        desc = describe_object_type(schema, "Schedule:Compact")
+        field = next((f for f in desc.fields if f.name == "field"), None)
+        assert field is not None
+        assert field.field_type is not None
+        assert "number" in field.field_type
+        assert "string" in field.field_type
+
     def test_nameless_object(self, schema: EpJSONSchema) -> None:
         desc = describe_object_type(schema, "Timestep")
         assert desc.has_name is False
@@ -240,17 +255,28 @@ class TestGetFieldType:
         result = _get_field_type({"type": "number"})
         assert result == "number"
 
-    def test_anyof_prefers_number(self) -> None:
+    def test_anyof_returns_union_in_declaration_order(self) -> None:
         field_schema: dict[str, object] = {"anyOf": [{"type": "string"}, {"type": "number"}]}
         result = _get_field_type(field_schema)
-        assert result == "number"
+        assert result == "string|number"
 
-    def test_anyof_prefers_integer(self) -> None:
+    def test_anyof_number_first_keeps_number_first(self) -> None:
+        field_schema: dict[str, object] = {"anyOf": [{"type": "number"}, {"type": "string"}]}
+        result = _get_field_type(field_schema)
+        assert result == "number|string"
+
+    def test_anyof_integer_and_string_returns_union(self) -> None:
         field_schema: dict[str, object] = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
         result = _get_field_type(field_schema)
-        assert result == "integer"
+        assert result == "string|integer"
 
-    def test_anyof_falls_back_to_string(self) -> None:
+    def test_anyof_dedupes_repeated_types(self) -> None:
+        field_schema: dict[str, object] = {"anyOf": [{"type": "number"}, {"type": "number"}, {"type": "string"}]}
+        result = _get_field_type(field_schema)
+        assert result == "number|string"
+
+    def test_anyof_ignores_subschemas_without_type(self) -> None:
+        """Sub-schemas with only 'enum' (no 'type') don't contribute to the union."""
         field_schema: dict[str, object] = {"anyOf": [{"type": "string"}, {"enum": ["A", "B"]}]}
         result = _get_field_type(field_schema)
         assert result == "string"
