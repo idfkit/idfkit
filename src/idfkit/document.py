@@ -13,6 +13,7 @@ from __future__ import annotations
 import contextlib
 import logging
 import sys
+import warnings
 from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -465,6 +466,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             raise ValueError(  # noqa: TRY003
                 f"{obj_type}: cannot mix {wrapper_key!r}=[...] with flat extensible field {flat_keys[0]!r}"
             )
+
+        warnings.warn(
+            f"flat-extensible kwargs ({', '.join(repr(k) for k in flat_keys)}) "
+            f"are deprecated; pass repeated entries as "
+            f"{wrapper_key}=[{{...}}, ...] instead",
+            DeprecationWarning,
+            stacklevel=3,
+        )
 
         field_data = dict(field_data)
         for k in flat_keys:
