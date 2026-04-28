@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 import warnings
 from collections.abc import Callable, Iterator
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
@@ -463,7 +464,19 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_data", data if data is not None else {})
         object.__setattr__(self, "_schema", schema)
         object.__setattr__(self, "_document", document)
-        object.__setattr__(self, "_extensibles", extensibles or frozenset())
+        # Invariant: extensible metadata must be passed as a complete bundle.
+        # Having ext_field_names without a wrapper_key/inner_names trio means
+        # obj.<wrapper_key> falls back to returning the raw list of dicts
+        # instead of an ExtensibleList — a silent foot-gun that surfaces
+        # later as 'dict' object has no attribute '<inner_field>'.
+        ext_set = extensibles or frozenset()
+        if ext_set and (wrapper_key is None or not ext_inner_names):
+            raise ValueError(  # noqa: TRY003
+                f"{obj_type}: inconsistent extensible metadata — "
+                f"extensibles={sorted(ext_set)!r} requires both "
+                f"wrapper_key (got {wrapper_key!r}) and ext_inner_names (got {ext_inner_names!r})"
+            )
+        object.__setattr__(self, "_extensibles", ext_set)
         object.__setattr__(self, "_field_order", field_order)
         object.__setattr__(self, "_ref_fields", ref_fields)
         object.__setattr__(self, "_source_text", source_text)
@@ -825,13 +838,15 @@ class IDFObject(EppyObjectMixin):
         return IDFObject(
             obj_type=self._type,
             name=self._name,
-            data=dict(self._data),
+            data=deepcopy(self._data),
             schema=self._schema,
             document=None,  # Don't copy document reference
             field_order=list(self._field_order) if self._field_order is not None else None,
             ref_fields=self._ref_fields,
             source_text=None,  # copy is a new object; don't carry over verbatim text
             extensibles=self._extensibles,
+            wrapper_key=self._wrapper_key,
+            ext_inner_names=self._ext_inner_names,
         )
 
     def __dir__(self) -> list[str]:
