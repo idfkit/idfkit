@@ -63,7 +63,7 @@ def write_idf(
 ) -> None: ...
 
 
-def write_idf(  # type: ignore[misc]  # overload implementation
+def write_idf(
     doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     encoding: str = "latin-1",
@@ -171,7 +171,7 @@ def write_epjson(
 ) -> None: ...
 
 
-def write_epjson(  # type: ignore[misc]  # overload implementation
+def write_epjson(
     doc: IDFDocument[bool],
     filepath: Path | str | None = None,
     indent: int = 2,
