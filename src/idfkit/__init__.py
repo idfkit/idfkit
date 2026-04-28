@@ -183,7 +183,7 @@ def load_idf(
 ) -> IDFDocument[Literal[False]]: ...
 
 
-def load_idf(  # type: ignore[misc]  # overload implementation
+def load_idf(
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
@@ -264,7 +264,7 @@ def load_epjson(
 ) -> IDFDocument[Literal[False]]: ...
 
 
-def load_epjson(  # type: ignore[misc]  # overload implementation
+def load_epjson(
     path: str,
     version: tuple[int, int, int] | None = None,
     *,
@@ -325,7 +325,7 @@ def new_document(
 ) -> IDFDocument[Literal[False]]: ...
 
 
-def new_document(  # type: ignore[misc]  # overload implementation
+def new_document(
     version: tuple[int, int, int] = LATEST_VERSION,
     *,
     strict: bool = True,
