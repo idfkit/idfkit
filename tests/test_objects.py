@@ -203,6 +203,55 @@ class TestIDFObject:
         copied = obj.copy()
         assert copied.theidf is None
 
+    def test_copy_preserves_extensible_wrapper(self) -> None:
+        """Regression: copy() must forward wrapper_key and ext_inner_names so
+        the typed ExtensibleList view keeps working on the copy. Otherwise
+        ``obj.<wrapper>`` falls through to ``data[<wrapper>]`` and yields
+        plain dicts on iteration — breaking any caller that touched the
+        copied object via the typed API."""
+        obj = IDFObject(
+            obj_type="Output:Table:SummaryReports",
+            name="",
+            data={"reports": [{"report_name": "AllSummary"}]},
+            extensibles=frozenset({"report_name"}),
+            wrapper_key="reports",
+            ext_inner_names=("report_name",),
+        )
+        copied = obj.copy()
+        assert copied._wrapper_key == "reports"
+        assert copied._ext_inner_names == ("report_name",)
+        # Iteration via the typed API yields ExtensibleGroup, not raw dicts.
+        names = {group.report_name for group in copied.reports}
+        assert names == {"AllSummary"}
+
+    def test_copy_data_is_deep(self) -> None:
+        """copy() must deep-copy data so mutating extensible groups on the
+        copy does not bleed back into the original."""
+        obj = IDFObject(
+            obj_type="Output:Table:SummaryReports",
+            name="",
+            data={"reports": [{"report_name": "AllSummary"}]},
+            extensibles=frozenset({"report_name"}),
+            wrapper_key="reports",
+            ext_inner_names=("report_name",),
+        )
+        copied = obj.copy()
+        copied.reports.append({"report_name": "HVACSizingSummary"})
+        assert [g.report_name for g in obj.reports] == ["AllSummary"]
+        assert [g.report_name for g in copied.reports] == ["AllSummary", "HVACSizingSummary"]
+
+    def test_init_rejects_inconsistent_extensible_metadata(self) -> None:
+        """Defensive guard: extensibles must come bundled with wrapper_key
+        and ext_inner_names. A partial trio is the precise failure mode that
+        used to surface as 'dict' has no attribute '<inner_field>' downstream."""
+        with pytest.raises(ValueError, match="inconsistent extensible metadata"):
+            IDFObject(
+                obj_type="Output:Table:SummaryReports",
+                name="",
+                extensibles=frozenset({"report_name"}),
+                # wrapper_key and ext_inner_names omitted on purpose
+            )
+
     def test_fieldnames_with_field_order(self) -> None:
         obj = IDFObject(
             obj_type="Zone",
@@ -576,6 +625,8 @@ class TestIDFObjectStrict:
             name="Z",
             field_order=["field_one"],
             extensibles=frozenset({"other"}),
+            wrapper_key="entries",
+            ext_inner_names=("other",),
         )
         # "vertex_1_x_coordinate" doesn't match extensibles → check "base_N" path
         assert not obj._is_known_field("vertex_1_x_coordinate", ["field_one"])  # pyright: ignore[reportPrivateUsage]
@@ -587,6 +638,8 @@ class TestIDFObjectStrict:
             name="Z",
             field_order=["field"],
             extensibles=frozenset({"field"}),
+            wrapper_key="entries",
+            ext_inner_names=("field",),
         )
         # Write a field that has no extensible pattern match — value stored in _data
         obj._set_field("completely_unknown_field_xyz", 42.0)  # pyright: ignore[reportPrivateUsage]
@@ -610,6 +663,8 @@ class TestObjectsAdditionalBranches:
             name="Z",
             field_order=["other"],
             extensibles=frozenset({"other"}),
+            wrapper_key="entries",
+            ext_inner_names=("other",),
         )
         # "myfield_5" matches base_N pattern; base="myfield" NOT in extensibles
         result = obj._is_known_field("myfield_5", ["other"])  # pyright: ignore[reportPrivateUsage]
