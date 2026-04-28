@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,28 @@ def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
                 return vi.strip()
     v = doc.version
     return f"{v[0]}.{v[1]}"
+
+
+@overload
+def write_idf(
+    doc: IDFDocument[bool],
+    filepath: None = ...,
+    encoding: str = ...,
+    output_type: OutputType = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> str: ...
+
+
+@overload
+def write_idf(
+    doc: IDFDocument[bool],
+    filepath: Path | str,
+    encoding: str = ...,
+    output_type: OutputType = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> None: ...
 
 
 def write_idf(
@@ -127,6 +149,26 @@ def write_idf(
 
     logger.debug("Serialized IDF (%d objects) to string", len(doc))
     return content
+
+
+@overload
+def write_epjson(
+    doc: IDFDocument[bool],
+    filepath: None = ...,
+    indent: int = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> str: ...
+
+
+@overload
+def write_epjson(
+    doc: IDFDocument[bool],
+    filepath: Path | str,
+    indent: int = ...,
+    *,
+    preserve_formatting: bool | None = ...,
+) -> None: ...
 
 
 def write_epjson(
