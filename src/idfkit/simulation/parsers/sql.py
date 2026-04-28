@@ -11,7 +11,10 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 # EnergyPlus uses a fixed reference year for timestamps. 2017 is the canonical
 # non-leap year used by convention.
@@ -38,7 +41,7 @@ class TimeSeriesResult:
     timestamps: tuple[datetime, ...]
     values: tuple[float, ...]
 
-    def to_dataframe(self) -> Any:
+    def to_dataframe(self) -> pd.DataFrame:
         """Convert to a pandas DataFrame.
 
         Requires pandas to be installed.
@@ -50,12 +53,11 @@ class TimeSeriesResult:
             ImportError: If pandas is not installed.
         """
         try:
-            import pandas  # type: ignore[import-not-found]
+            import pandas as _pd  # type: ignore[import-not-found]
         except ImportError:
             msg = "pandas is required for DataFrame conversion. Install it with: pip install idfkit[dataframes]"
             raise ImportError(msg) from None
-        pd: Any = pandas
-        return pd.DataFrame(  # type: ignore[no-any-return]
+        return _pd.DataFrame(  # type: ignore[no-any-return]
             {"timestamp": list(self.timestamps), self.variable_name: list(self.values)}
         ).set_index("timestamp")
 
@@ -500,7 +502,7 @@ class SQLResult:
         key_value: str = "*",
         frequency: str | None = None,
         environment: Environment | None = None,
-    ) -> Any:
+    ) -> pd.DataFrame:
         """Retrieve a time series as a pandas DataFrame.
 
         This is a convenience wrapper around [get_timeseries][idfkit.simulation.parsers.sql.SQLResult.get_timeseries] that
