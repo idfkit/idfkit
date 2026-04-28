@@ -79,8 +79,8 @@ class TestWeatherDownloader:
         station = _make_station()
         files = downloader.download(station)
 
-        assert files.epw.exists()
-        assert files.ddy.exists()
+        assert files.epw is not None and files.epw.exists()
+        assert files.ddy is not None and files.ddy.exists()
         assert files.stat is not None and files.stat.exists()
         assert files.station is station
         assert files.epw.suffix == ".epw"
@@ -205,7 +205,7 @@ class TestWeatherDownloaderMaxAge:
         station = _make_station()
 
         files = downloader.download(station)
-        assert files.epw.exists()
+        assert files.epw is not None and files.epw.exists()
         assert mock_urlopen.call_count == 1
 
     @patch("idfkit.weather.download.urlopen")
@@ -220,7 +220,7 @@ class TestWeatherDownloaderMaxAge:
         station = _make_station()
 
         files = downloader.download(station)
-        assert files.epw.exists()
+        assert files.epw is not None and files.epw.exists()
 
     @patch("idfkit.weather.download.urlopen")
     @patch("idfkit.weather.download.time")
@@ -272,6 +272,81 @@ class TestWeatherDownloaderMaxAge:
         """_is_stale returns True for non-existent file when max_age is set (line 95)."""
         downloader = WeatherDownloader(cache_dir=tmp_path, max_age=3600.0)
         assert downloader._is_stale(tmp_path / "nonexistent.zip")  # pyright: ignore[reportPrivateUsage]
+
+
+class TestSelectiveExtraction:
+    """``download(only=...)`` extracts only the requested members."""
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_only_epw_skips_ddy_and_stat(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        station = _make_station()
+        files = downloader.download(station, only={".epw"})
+
+        assert files.epw is not None and files.epw.exists()
+        assert files.ddy is None
+        assert files.stat is None
+        # Only the EPW landed on disk next to the ZIP.
+        siblings = sorted(p.suffix.lower() for p in files.zip_path.parent.iterdir() if p.is_file())
+        assert siblings == [".epw", ".zip"]
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_only_normalises_suffix_forms(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        """Bare extension, missing dot, and uppercase all match the same members."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        station = _make_station()
+        files = downloader.download(station, only=["EPW", ".DDY"])
+
+        assert files.epw is not None and files.epw.exists()
+        assert files.ddy is not None and files.ddy.exists()
+        assert files.stat is None
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_only_does_not_raise_when_member_missing(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        """A missing requested member yields ``None``; selective mode never raises for that."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_without_ddy()  # has EPW, no DDY
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        station = _make_station()
+        files = downloader.download(station, only={".ddy"})
+
+        assert files.ddy is None
+        # Full-extract requirement does NOT apply in selective mode.
+
+    @patch("idfkit.weather.download.urlopen")
+    def test_selective_after_full_returns_already_extracted(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        """If a prior full download cached every file, selective still surfaces them."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = _make_zip_bytes()
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        station = _make_station()
+        downloader.download(station)  # full extract populates the cache dir
+        files = downloader.download(station, only={".epw"})
+
+        # We didn't request the DDY/stat, but they're on disk from the prior call.
+        assert files.epw is not None
+        assert files.ddy is not None
+        assert files.stat is not None
 
 
 class TestGetEpwByFilename:

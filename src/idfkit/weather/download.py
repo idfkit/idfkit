@@ -17,6 +17,8 @@ from .index import default_cache_dir
 from .station import WeatherStation
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from .index import StationIndex
 
 logger = logging.getLogger(__name__)
@@ -24,20 +26,38 @@ logger = logging.getLogger(__name__)
 _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 
+def _normalise_suffixes(suffixes: Iterable[str] | None) -> frozenset[str] | None:
+    """Normalise a user-supplied collection of suffixes to lowercased ``.ext`` form."""
+    if suffixes is None:
+        return None
+    out: set[str] = set()
+    for s in suffixes:
+        token = s.lower()
+        if not token.startswith("."):
+            token = f".{token}"
+        out.add(token)
+    return frozenset(out)
+
+
 @dataclass(frozen=True)
 class WeatherFiles:
     """Paths to downloaded and extracted weather files.
 
+    For a full extraction (``download(station)`` without ``only``), ``epw`` and
+    ``ddy`` are guaranteed non-``None`` — a missing one raises during download.
+    When a selective extraction is requested via ``only=``, any field whose
+    suffix was not requested *and* not already cached on disk will be ``None``.
+
     Attributes:
-        epw: Path to the ``.epw`` file (always present after extraction).
-        ddy: Path to the ``.ddy`` file (always present after extraction).
-        stat: Path to the ``.stat`` file, or ``None`` if not included.
+        epw: Path to the ``.epw`` file, or ``None`` if not extracted.
+        ddy: Path to the ``.ddy`` file, or ``None`` if not extracted.
+        stat: Path to the ``.stat`` file, or ``None`` if not included or extracted.
         zip_path: Path to the original downloaded ZIP archive.
         station: The station this download corresponds to.
     """
 
-    epw: Path
-    ddy: Path
+    epw: Path | None
+    ddy: Path | None
     stat: Path | None
     zip_path: Path
     station: WeatherStation
@@ -96,19 +116,32 @@ class WeatherDownloader:
         age = time.time() - path.stat().st_mtime
         return age > self._max_age_seconds
 
-    def download(self, station: WeatherStation) -> WeatherFiles:
+    def download(
+        self,
+        station: WeatherStation,
+        *,
+        only: Iterable[str] | None = None,
+    ) -> WeatherFiles:
         """Download and extract weather files for *station*.
 
         If the files are already cached and not stale, no network request is made.
 
         Args:
             station: The weather station to download files for.
+            only: If given, extract only members whose suffix matches one of
+                these values (e.g. ``{".epw"}`` or ``[".epw", ".ddy"]``).
+                Each entry is normalised to a lowercase suffix with a leading
+                dot (``"epw"`` and ``".EPW"`` both match ``.epw`` members).
+                When ``None`` (default), every member of the archive is
+                extracted and the result is required to contain a ``.epw``
+                and a ``.ddy``.
 
         Returns:
             A [WeatherFiles][idfkit.weather.download.WeatherFiles] with paths to the extracted files.
 
         Raises:
-            RuntimeError: If the download or extraction fails.
+            RuntimeError: If the download or extraction fails, or if a full
+                extraction is missing a required ``.epw`` or ``.ddy`` file.
         """
         # Derive a cache subdirectory from the ZIP filename
         zip_filename = station.url.rsplit("/", maxsplit=1)[-1]
@@ -130,33 +163,21 @@ class WeatherDownloader:
         else:
             logger.debug("Cache hit for station %s (WMO %s)", station.display_name, station.wmo)
 
-        # Extract if EPW doesn't already exist or if the ZIP is newer than
-        # the EPW (i.e. we just re-downloaded).  We compare against the ZIP's
-        # mtime rather than calling ``_is_stale(epw_path)`` because
-        # ``zipfile.extractall`` preserves archive-internal timestamps, so the
-        # extracted EPW's mtime can be arbitrarily old and would always appear
-        # stale.
+        only_set = _normalise_suffixes(only)
+        self._ensure_extracted(zip_path, station_dir, only_set)
+
         epw_path = self._find_file(station_dir, ".epw")
-        needs_extract = epw_path is None or (zip_path.exists() and epw_path.stat().st_mtime < zip_path.stat().st_mtime)
-        if needs_extract:
-            try:
-                with zipfile.ZipFile(zip_path) as zf:
-                    zf.extractall(station_dir)
-            except zipfile.BadZipFile as exc:
-                msg = f"Downloaded file is not a valid ZIP archive: {zip_path}"
-                raise RuntimeError(msg) from exc
-            epw_path = self._find_file(station_dir, ".epw")
-
-        if epw_path is None:
-            msg = f"No .epw file found in downloaded archive for {station.display_name}"
-            raise RuntimeError(msg)
-
         ddy_path = self._find_file(station_dir, ".ddy")
-        if ddy_path is None:
-            msg = f"No .ddy file found in downloaded archive for {station.display_name}"
-            raise RuntimeError(msg)
-
         stat_path = self._find_file(station_dir, ".stat")
+
+        # When the caller asked for a full extraction, EPW and DDY are required.
+        if only_set is None:
+            if epw_path is None:
+                msg = f"No .epw file found in downloaded archive for {station.display_name}"
+                raise RuntimeError(msg)
+            if ddy_path is None:
+                msg = f"No .ddy file found in downloaded archive for {station.display_name}"
+                raise RuntimeError(msg)
 
         return WeatherFiles(
             epw=epw_path,
@@ -166,13 +187,56 @@ class WeatherDownloader:
             station=station,
         )
 
+    @staticmethod
+    def _ensure_extracted(
+        zip_path: Path,
+        station_dir: Path,
+        only: frozenset[str] | None,
+    ) -> None:
+        """Extract members from *zip_path* into *station_dir*.
+
+        If *only* is ``None``, every member is extracted (matching the
+        historical ``extractall`` behaviour). Otherwise, only members whose
+        lowercased suffix is in *only* are extracted. A member is skipped if
+        an up-to-date copy already exists on disk (mtime ≥ ZIP mtime).
+        """
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                # Compare against the ZIP's mtime rather than ``_is_stale`` —
+                # ``zipfile`` preserves archive-internal timestamps, so the
+                # extracted file's mtime can be arbitrarily old.
+                zip_mtime = zip_path.stat().st_mtime
+                for member in zf.namelist():
+                    suffix = Path(member).suffix.lower()
+                    if only is not None and suffix not in only:
+                        continue
+                    target = station_dir / Path(member).name
+                    if target.exists() and target.stat().st_mtime >= zip_mtime:
+                        continue
+                    zf.extract(member, station_dir)
+        except zipfile.BadZipFile as exc:
+            msg = f"Downloaded file is not a valid ZIP archive: {zip_path}"
+            raise RuntimeError(msg) from exc
+
     def get_epw(self, station: WeatherStation) -> Path:
-        """Download and return the path to the EPW file."""
-        return self.download(station).epw
+        """Download and return the path to the EPW file.
+
+        Extracts the full archive. To skip extraction of unwanted members,
+        call ``download(station, only={".epw"}).epw`` directly.
+        """
+        epw = self.download(station).epw
+        assert epw is not None  # noqa: S101 — guaranteed by full-extract validation
+        return epw
 
     def get_ddy(self, station: WeatherStation) -> Path:
-        """Download and return the path to the DDY file."""
-        return self.download(station).ddy
+        """Download and return the path to the DDY file.
+
+        Extracts the full archive. To skip extraction of unwanted members,
+        call ``download(station, only={".ddy"}).ddy`` directly.
+        """
+        ddy = self.download(station).ddy
+        assert ddy is not None  # noqa: S101 — guaranteed by full-extract validation
+        return ddy
 
     def _resolve_filename(self, filename: str, index: StationIndex | None) -> WeatherStation:
         """Resolve an EPW filename to a station, raising on failure."""
