@@ -46,7 +46,13 @@ class SimulationJob:
         output_prefix: Prefix for output files.
         output_suffix: Output file naming suffix (``"C"``, ``"L"``, or ``"D"``).
         readvars: Run ReadVarsESO after simulation.
-        timeout: Maximum runtime in seconds.
+        timeout: Maximum runtime in seconds for the main EnergyPlus
+            subprocess.
+        preprocessor_timeout: Per-subprocess timeout (seconds) applied
+            individually to ExpandObjects, Slab, and Basement when they
+            run automatically.  ``None`` consults the
+            ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
+            back to 120 s.
         extra_args: Additional command-line arguments.
     """
 
@@ -61,6 +67,7 @@ class SimulationJob:
     output_suffix: Literal["C", "L", "D"] = "C"
     readvars: bool = False
     timeout: float = 3600.0
+    preprocessor_timeout: float | None = None
     extra_args: tuple[str, ...] | None = None
 
 
@@ -237,6 +244,7 @@ def _run_job(
             output_suffix=job.output_suffix,
             readvars=job.readvars,
             timeout=job.timeout,
+            preprocessor_timeout=job.preprocessor_timeout,
             extra_args=list(job.extra_args) if job.extra_args else None,
             cache=cache,
             fs=fs,

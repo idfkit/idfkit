@@ -48,6 +48,7 @@ def simulate(
     output_suffix: Literal["C", "L", "D"] = "C",
     readvars: bool = False,
     timeout: float = 3600.0,
+    preprocessor_timeout: float | None = None,
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
@@ -83,7 +84,16 @@ def simulate(
             files (default), ``"L"`` for legacy separate table files, or
             ``"D"`` for timestamped separate files.
         readvars: Run ReadVarsESO after simulation (``-r`` flag).
-        timeout: Maximum runtime in seconds (default 3600).
+        timeout: Maximum runtime in seconds (default 3600).  Applied only
+            to the main EnergyPlus subprocess; preprocessor stages
+            (ExpandObjects, Slab, Basement) have an independent budget — see
+            *preprocessor_timeout*.
+        preprocessor_timeout: Per-subprocess timeout (seconds) applied
+            individually to ExpandObjects, Slab, and Basement when they
+            run automatically.  ``None`` (the default) consults the
+            ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
+            back to 120 s.  Independent of *timeout* — there is no shared
+            wall-clock cap across the pipeline.
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend for storing results on remote
@@ -171,7 +181,14 @@ def simulate(
         ensure_sql_output(sim_model)
 
         # Auto-preprocess ground heat-transfer objects when needed.
-        sim_model, ep_expand = maybe_preprocess(sim_input_model, sim_model, config, weather_path, expand_objects)
+        sim_model, ep_expand = maybe_preprocess(
+            sim_input_model,
+            sim_model,
+            config,
+            weather_path,
+            expand_objects,
+            preprocessor_timeout=preprocessor_timeout,
+        )
 
         # When using a remote fs, always run locally in a temp dir
         local_output_dir = None if fs is not None else output_dir

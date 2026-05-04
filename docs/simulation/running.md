@@ -66,6 +66,30 @@ objects need the Slab or Basement preprocessor to compute ground temperatures.
     contains the corresponding ground heat-transfer objects.  In most
     cases you do not need to call these functions yourself.
 
+#### Preprocessor Timeout
+
+Each preprocessor stage (ExpandObjects, Slab, Basement) gets its own
+subprocess timeout, separate from the EnergyPlus `timeout`.  Override it
+per call with `preprocessor_timeout`:
+
+```python
+simulate(model, weather, preprocessor_timeout=600.0)  # 10 min per stage
+```
+
+Or set a process-wide default with the `IDFKIT_PREPROCESSOR_TIMEOUT`
+environment variable — useful for slow shared hardware (raise it) or
+fast CI where you want to catch hangs quickly (lower it):
+
+```bash
+export IDFKIT_PREPROCESSOR_TIMEOUT=600   # slow shared hardware
+export IDFKIT_PREPROCESSOR_TIMEOUT=30    # fail fast in CI
+```
+
+The default is **120 seconds per subprocess**.  `timeout` and
+`preprocessor_timeout` are independent budgets — there is no shared
+wall-clock cap across the pipeline, so a long `preprocessor_timeout`
+will not trip the simulation's `timeout` and vice versa.
+
 For cases where you need to inspect or modify the preprocessed model
 before simulation, standalone functions are available:
 
@@ -101,6 +125,7 @@ def simulate(
     output_suffix: Literal["C", "L", "D"] = "C",
     readvars: bool = False,
     timeout: float = 3600.0,
+    preprocessor_timeout: float | None = None,
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | None = None,
@@ -130,7 +155,8 @@ def simulate(
 | `output_prefix` | `"eplus"` | Prefix for output files |
 | `output_suffix` | `"C"` | Output naming style (C/L/D) |
 | `readvars` | `False` | Run ReadVarsESO after simulation |
-| `timeout` | `3600.0` | Maximum runtime in seconds |
+| `timeout` | `3600.0` | Maximum runtime in seconds (main EnergyPlus subprocess only) |
+| `preprocessor_timeout` | `None` | Per-subprocess timeout for ExpandObjects / Slab / Basement.  `None` reads `IDFKIT_PREPROCESSOR_TIMEOUT`, defaulting to 120 s |
 | `extra_args` | `None` | Additional command-line arguments |
 | `cache` | `None` | Simulation cache for result reuse |
 | `fs` | `None` | File system backend for cloud storage |
