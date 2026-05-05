@@ -48,7 +48,7 @@ pip install idfkit
 <span class="chip">:material-cube-outline: 3-D geometry</span>
 <span class="chip">:material-play-circle-outline: Simulation</span>
 <span class="chip">:material-weather-cloudy: Weather data</span>
-<span class="chip">:material-history: v8.9 -- v25.2</span>
+<span class="chip">:material-history: v8.9 -- v26.1</span>
 <span class="chip">:material-update: Version migration</span>
 <span class="chip">:material-console: CLI</span>
 

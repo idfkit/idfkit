@@ -155,7 +155,7 @@ hooks:
   - id: idfkit-check
     args:
       - "--targets"
-      - "24.1,24.2,25.1,25.2"
+      - "24.1,24.2,25.1,25.2,26.1"
       - "--ignore"
       - "C002"
       - "--group"

@@ -21,3 +21,19 @@ Weather file downloading and caching.
       members:
         - epw
         - ddy
+        - stat
+        - zip_path
+        - station
+
+## PartialWeatherFiles
+
+::: idfkit.weather.download.PartialWeatherFiles
+    options:
+      show_root_heading: true
+      show_source: true
+      members:
+        - epw
+        - ddy
+        - stat
+        - zip_path
+        - station

@@ -46,12 +46,12 @@ formats.
 - **Thermal properties** — Gas mixture and material thermal calculations for
   glazing and construction analysis.
 - **Broad version support** — Bundled schemas for every EnergyPlus release
-  from v8.9 through v25.2.
+  from v8.9 through v26.1.
 
 ## Performance
 
 idfkit is designed from the ground up for speed. On a **1,700-object IDF**,
-looking up a single object by name is **over 3000x faster** than eppy and opyplus
+looking up a single object by name is **over 2000x faster** than eppy and opyplus
 thanks to O(1) dict-based indexing:
 
 <picture>

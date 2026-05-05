@@ -10,6 +10,7 @@ The weather module provides station search, file downloads, and design day manag
 | [`WeatherStation`](station.md) | Station metadata container |
 | [`WeatherDownloader`](download.md) | EPW/DDY file downloads |
 | [`WeatherFiles`](download.md) | Downloaded file paths |
+| [`PartialWeatherFiles`](download.md) | Selective-extraction file paths (each may be `None`) |
 | [`DesignDayManager`](designday.md) | Design day parsing and injection |
 | [`DesignDayType`](designday.md) | Design day type enumeration |
 | [`apply_ashrae_sizing()`](designday.md) | Quick design day application |
