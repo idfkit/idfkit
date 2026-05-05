@@ -11,6 +11,7 @@ import re
 import warnings
 from collections.abc import Callable, Iterator
 from copy import deepcopy
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
@@ -357,11 +358,18 @@ class ExtensibleList(Generic[GroupT_co]):
         return f"ExtensibleList({self._owner.obj_type}.{self._wrapper_key}, {self.as_list()!r})"
 
 
+@lru_cache(maxsize=2048)
 def to_python_name(idf_name: str) -> str:
     """Convert IDF field name to Python-friendly name.
 
     'Direction of Relative North' -> 'direction_of_relative_north'
     'X Origin' -> 'x_origin'
+
+    Cached: this is on the hot path of every ``IDFObject.__getattr__`` and
+    ``__setattr__`` call. The pure regex pipeline costs ~300-660 ns; a
+    cached lookup costs ~30 ns. The unique-input set is bounded by the
+    schema's field-name vocabulary (a few thousand strings), well within
+    the cache's working set.
     """
     return _FIELD_NAME_PATTERN.sub("_", idf_name.lower()).strip("_")
 
