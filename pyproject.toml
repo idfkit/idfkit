@@ -83,6 +83,7 @@ benchmark = [
     "matplotlib>=3.7.0",
     "opyplus>=2.0.7",
     "energyplus-idd-idf-utilities>=0.88",
+    "pyinstrument>=5.0",
 ]
 
 [project.scripts]

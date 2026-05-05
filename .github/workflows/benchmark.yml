@@ -1,0 +1,118 @@
+name: benchmark
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch/commit to benchmark (default: triggering ref)"
+        type: string
+        default: ""
+      runs:
+        description: "Number of parallel benchmark runs to take the median over"
+        type: string
+        default: "5"
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: setup
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+      ref: ${{ steps.build.outputs.ref }}
+    steps:
+      - name: Build matrix and resolve ref
+        id: build
+        run: |
+          n=${{ inputs.runs || 5 }}
+          matrix=$(python3 -c "import json; print(json.dumps(list(range(1, $n + 1))))")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          ref="${{ inputs.ref }}"
+          if [ -z "$ref" ]; then ref="${{ github.ref }}"; fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Will run $n parallel benchmark jobs against $ref"
+
+  bench:
+    name: bench (run ${{ matrix.run }})
+    needs: setup
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.ref }}
+
+      - uses: ./.github/actions/setup-python-env
+
+      - name: Install benchmark deps
+        run: uv sync --frozen --group benchmark
+
+      - name: Run benchmark
+        run: uv run --group benchmark python benchmarks/bench.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-run-${{ matrix.run }}
+          path: benchmarks/results.json
+          if-no-files-found: error
+
+  aggregate:
+    name: aggregate
+    needs: [setup, bench]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # needed to upload to the triggering release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.ref }}
+
+      - uses: ./.github/actions/setup-python-env
+
+      - name: Install benchmark deps
+        run: uv sync --frozen --group benchmark
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: per-run
+          pattern: results-run-*
+
+      - name: Aggregate runs (median of N)
+        run: uv run --group benchmark python benchmarks/aggregate.py per-run/
+
+      - name: Show aggregated README diff
+        run: |
+          echo "::group::Aggregated README perf claim"
+          grep -nE "looking up a single object by name" README.md || true
+          echo "::endgroup::"
+          echo "::group::Aggregated benchmarks.md table"
+          sed -n '40,55p' docs/benchmarks.md || true
+          echo "::endgroup::"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmarks/results.json
+            docs/assets/benchmark*.svg
+            README.md
+            docs/benchmarks.md
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            benchmarks/results.json \
+            docs/assets/benchmark.svg \
+            docs/assets/benchmark_dark.svg \
+            --clobber
