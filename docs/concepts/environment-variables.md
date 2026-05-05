@@ -26,6 +26,31 @@ to locate the `energyplus` executable.
 See [Installation › EnergyPlus Installation](../getting-started/installation.md#energyplus-installation)
 for the full discovery order.
 
+### `IDFKIT_PREPROCESSOR_TIMEOUT`
+
+Per-subprocess timeout (in seconds) applied to the ExpandObjects, Slab,
+and Basement preprocessors when [`simulate()`](../api/simulation/runner.md)
+runs them automatically. Useful for raising the ceiling on slow shared
+hardware with complex slab/basement geometries, or lowering it in CI to
+catch hangs quickly.
+
+- **Read in:** `idfkit.simulation._common`
+- **Default:** unset — falls back to **120 seconds** per subprocess.
+- **Activation:** set to a positive number of seconds. Invalid or
+  non-positive values raise `ValueError` at simulation time.
+- **Override:** the `preprocessor_timeout` argument to `simulate()`,
+  `async_simulate()`, and `SimulationJob` always wins over this variable.
+- **Note:** independent of the `timeout` argument — there is no shared
+  wall-clock budget across the pipeline. Each preprocessor stage gets its
+  own fresh window, and EnergyPlus then gets `timeout` seconds for the
+  main run.
+- **Example:**
+
+    ```bash
+    export IDFKIT_PREPROCESSOR_TIMEOUT=600   # slow shared hardware
+    export IDFKIT_PREPROCESSOR_TIMEOUT=30    # fail fast in CI
+    ```
+
 ### `IDFKIT_NO_WEATHER_UPDATE_CHECK`
 
 Opt-out flag that suppresses the once-per-day freshness nudge emitted when
@@ -88,6 +113,7 @@ fallback root when scanning for `EnergyPlusV*` installs at the drive root.
 | Variable                          | Purpose                                | Default                              |
 |-----------------------------------|----------------------------------------|--------------------------------------|
 | `ENERGYPLUS_DIR`                  | EnergyPlus install path                | unset (PATH + platform defaults)     |
+| `IDFKIT_PREPROCESSOR_TIMEOUT`     | Per-subprocess preprocessor timeout    | unset (120 s)                        |
 | `IDFKIT_NO_WEATHER_UPDATE_CHECK`  | Disable weather index freshness nudge  | unset (check enabled)                |
 | `XDG_CACHE_HOME`                  | Linux cache root                       | `~/.cache`                           |
 | `LOCALAPPDATA`                    | Windows cache root                     | `%UserProfile%\AppData\Local`        |

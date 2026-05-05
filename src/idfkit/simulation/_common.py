@@ -5,12 +5,60 @@ Internal module — not part of the public API.
 
 from __future__ import annotations
 
+import os
 import shutil
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from .config import EnergyPlusConfig, find_energyplus
+
+PREPROCESSOR_TIMEOUT_ENV = "IDFKIT_PREPROCESSOR_TIMEOUT"
+DEFAULT_PREPROCESSOR_TIMEOUT = 120.0
+
+
+def resolve_preprocessor_timeout(explicit: float | None) -> float:
+    """Resolve the preprocessor timeout for a single subprocess invocation.
+
+    Resolution order:
+
+    1. *explicit* if not ``None`` (caller-supplied value).
+    2. ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, parsed as
+       a float.
+    3. ``DEFAULT_PREPROCESSOR_TIMEOUT`` (120 seconds).
+
+    Args:
+        explicit: Caller-supplied value, or ``None`` to defer to the
+            environment / default.
+
+    Returns:
+        The timeout in seconds applied to each preprocessor subprocess
+        (ExpandObjects, Slab, Basement). The value is per-invocation, not
+        a shared budget across the pipeline.
+
+    Raises:
+        ValueError: If ``IDFKIT_PREPROCESSOR_TIMEOUT`` is set but cannot
+            be parsed as a positive float.
+    """
+    if explicit is not None:
+        return explicit
+
+    env_value = os.environ.get(PREPROCESSOR_TIMEOUT_ENV)
+    if env_value is None or env_value == "":
+        return DEFAULT_PREPROCESSOR_TIMEOUT
+
+    try:
+        parsed = float(env_value)
+    except ValueError as exc:
+        msg = f"{PREPROCESSOR_TIMEOUT_ENV} must be a positive number of seconds, got {env_value!r}"
+        raise ValueError(msg) from exc
+
+    if parsed <= 0:
+        msg = f"{PREPROCESSOR_TIMEOUT_ENV} must be a positive number of seconds, got {parsed}"
+        raise ValueError(msg)
+
+    return parsed
+
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
@@ -157,6 +205,7 @@ def maybe_preprocess(
     config: EnergyPlusConfig,
     weather_path: Path,
     expand_objects: bool,
+    preprocessor_timeout: float | None = None,
 ) -> tuple[IDFDocument, bool]:
     """Run ground heat-transfer preprocessing if needed.
 
@@ -172,6 +221,10 @@ def maybe_preprocess(
         config: EnergyPlus configuration.
         weather_path: Resolved path to the weather file.
         expand_objects: Whether the caller requested expansion.
+        preprocessor_timeout: Per-subprocess timeout (seconds) applied to
+            ExpandObjects, Slab, and Basement individually. ``None`` defers
+            to [resolve_preprocessor_timeout][idfkit.simulation._common.resolve_preprocessor_timeout]
+            (env var ``IDFKIT_PREPROCESSOR_TIMEOUT`` or 120 s default).
 
     Returns:
         A ``(model, ep_expand)`` tuple where *model* is either the
@@ -189,6 +242,7 @@ def maybe_preprocess(
             sim_model,
             energyplus=config,
             weather=weather_path,
+            timeout=resolve_preprocessor_timeout(preprocessor_timeout),
         )
         return preprocessed, False  # Already expanded by preprocessing
 

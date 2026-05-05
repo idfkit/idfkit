@@ -32,7 +32,8 @@ Define individual simulations with `SimulationJob`:
 | `output_prefix` | `str` | `"eplus"` | Output file prefix |
 | `output_suffix` | <code>"C" &#124; "L" &#124; "D"</code> | `"C"` | Output naming style |
 | `readvars` | `bool` | `False` | Run ReadVarsESO |
-| `timeout` | `float` | `3600.0` | Max runtime (seconds) |
+| `timeout` | `float` | `3600.0` | Max runtime (seconds) for the EnergyPlus subprocess |
+| `preprocessor_timeout` | <code>float &#124; None</code> | `None` | Per-subprocess timeout for ExpandObjects / Slab / Basement.  `None` reads `IDFKIT_PREPROCESSOR_TIMEOUT` (default 120 s) — see [Running Simulations › Preprocessor Timeout](running.md#preprocessor-timeout) |
 | `extra_args` | <code>tuple[str, ...] &#124; None</code> | `None` | Extra CLI args |
 
 ## Parametric Studies

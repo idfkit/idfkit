@@ -303,6 +303,7 @@ async def _async_run_job(
             output_suffix=job.output_suffix,
             readvars=job.readvars,
             timeout=job.timeout,
+            preprocessor_timeout=job.preprocessor_timeout,
             extra_args=list(job.extra_args) if job.extra_args else None,
             cache=cache,
             fs=fs,

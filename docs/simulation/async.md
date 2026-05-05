@@ -193,6 +193,11 @@ When `expand_objects=True` (the default), the Slab and Basement
 preprocessors run in a background thread via `asyncio.to_thread()` so they
 don't block the event loop.  This is transparent — no user action required.
 
+`async_simulate` accepts a `preprocessor_timeout` argument that mirrors
+[`simulate()`'s](running.md#preprocessor-timeout); pass an explicit value
+or set the `IDFKIT_PREPROCESSOR_TIMEOUT` environment variable to override
+the per-subprocess 120 s default.
+
 ## Error Handling
 
 Error handling is identical to the sync API:

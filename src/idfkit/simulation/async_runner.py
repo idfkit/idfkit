@@ -77,6 +77,7 @@ async def async_simulate(
     output_suffix: Literal["C", "L", "D"] = "C",
     readvars: bool = False,
     timeout: float = 3600.0,
+    preprocessor_timeout: float | None = None,
     extra_args: list[str] | None = None,
     cache: SimulationCache | None = None,
     fs: FileSystem | AsyncFileSystem | None = None,
@@ -109,7 +110,14 @@ async def async_simulate(
             files (default), ``"L"`` for legacy separate table files, or
             ``"D"`` for timestamped separate files.
         readvars: Run ReadVarsESO after simulation (``-r`` flag).
-        timeout: Maximum runtime in seconds (default 3600).
+        timeout: Maximum runtime in seconds (default 3600).  Applied only
+            to the main EnergyPlus subprocess; preprocessor stages have an
+            independent budget — see *preprocessor_timeout*.
+        preprocessor_timeout: Per-subprocess timeout (seconds) applied
+            individually to ExpandObjects, Slab, and Basement when they
+            run automatically.  ``None`` (the default) consults the
+            ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
+            back to 120 s.  Independent of *timeout*.
         extra_args: Additional command-line arguments.
         cache: Optional simulation cache for content-hash lookups.
         fs: Optional file system backend for storing results on remote
@@ -187,7 +195,13 @@ async def async_simulate(
         # Preprocessing may invoke subprocesses synchronously — delegate to a
         # thread so we don't block the event loop.
         sim_model, ep_expand = await asyncio.to_thread(
-            maybe_preprocess, sim_input_model, sim_model, config, weather_path, expand_objects
+            maybe_preprocess,
+            sim_input_model,
+            sim_model,
+            config,
+            weather_path,
+            expand_objects,
+            preprocessor_timeout,
         )
 
         # When using a remote fs, always run locally in a temp dir
