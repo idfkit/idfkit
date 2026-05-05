@@ -51,7 +51,7 @@ formats.
 ## Performance
 
 idfkit is designed from the ground up for speed. On a **1,700-object IDF**,
-looking up a single object by name is **over 2000x faster** than eppy and opyplus
+looking up a single object by name is **over 3000x faster** than eppy and opyplus
 thanks to O(1) dict-based indexing:
 
 <picture>
