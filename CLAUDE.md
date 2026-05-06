@@ -215,6 +215,12 @@ Security` subsection. Surface breaking changes inline with a `**Breaking:**`
 prefix; do not invent new categories. Write entries for humans, in past tense,
 ending with a period — not as commit messages.
 
+**Reference the source.** End each entry with a parenthetical link to the PR
+(`([#152](https://github.com/idfkit/idfkit/pull/152))`) or, when the change
+landed without a PR, the short commit SHA
+(`([f973e60](https://github.com/idfkit/idfkit/commit/f973e60))`). Multiple
+refs go in one parenthetical, comma-separated.
+
 **At release time:** rename the `[Unreleased]` heading to `[X.Y.Z] - YYYY-MM-DD`,
 add a fresh empty `[Unreleased]` section above it, and update the compare-link
 definitions at the bottom of the file.
