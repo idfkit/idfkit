@@ -91,6 +91,24 @@ uv run ruff check src/ tests/
 uv run ruff format src/ tests/
 ```
 
+## Changelog
+
+`CHANGELOG.md` follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/)
+and is the source of truth for release notes. Update it in the same change that
+introduces user-visible behavior — new public API, behavior changes, breaking
+renames, bug fixes, performance changes worth flagging, or security fixes. Skip
+purely internal refactors, CI tweaks, lockfile bumps, and doc-site styling.
+
+Add new entries under `## [Unreleased]` at the top of the file, in the
+appropriate `### Added / Changed / Deprecated / Removed / Fixed / Security`
+subsection. Surface breaking changes inline with a `**Breaking:**` prefix; do
+not invent new categories. Write entries for humans, in past tense, ending with
+a period — not as commit messages.
+
+At release time the `[Unreleased]` heading is renamed to `[X.Y.Z] - YYYY-MM-DD`,
+a fresh empty `[Unreleased]` section is added above it, and the compare-link
+definitions at the bottom are updated.
+
 ## Code Conventions
 
 - Every module starts with `from __future__ import annotations`
