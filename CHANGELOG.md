@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-05-06
+
 ### Fixed
 
-- RDD/MDD parsers now match `Output:VariableDictionary, IDF` lines that include the `Zone Average` / `HVAC Sum` descriptor between `!-` and the units bracket. Previously `OutputVariableIndex.from_simulation()` silently returned zero variables on real EnergyPlus output. ([#154](https://github.com/idfkit/idfkit/issues/154))
-- MDD parser now recognizes `Output:Meter:Cumulative`, `Output:Meter:MeterFileOnly`, and `Output:Meter:Cumulative:MeterFileOnly` lines instead of silently skipping them. Cumulative variants are dropped from the result for now (a TODO tracks modeling all four variants on `OutputMeter`). ([#154](https://github.com/idfkit/idfkit/issues/154))
+- RDD/MDD parsers now match `Output:VariableDictionary, IDF` lines that include the `Zone Average` / `HVAC Sum` descriptor between `!-` and the units bracket. Previously `OutputVariableIndex.from_simulation()` silently returned zero variables on real EnergyPlus output. ([#155](https://github.com/idfkit/idfkit/pull/155))
+- MDD parser now recognizes `Output:Meter:Cumulative`, `Output:Meter:MeterFileOnly`, and `Output:Meter:Cumulative:MeterFileOnly` lines instead of silently skipping them. Cumulative variants are dropped from the result for now (a TODO tracks modeling all four variants on `OutputMeter`). ([#155](https://github.com/idfkit/idfkit/pull/155))
 
 ### Added
 
-- RDD/MDD parsers now also accept the `Output:VariableDictionary, Regular` format (the EnergyPlus default). Both formats produce the same `OutputVariable` / `OutputMeter` set; for Regular lines, `key` is synthesized as `"*"` and `frequency` as `"hourly"` to match the IDF form. ([#154](https://github.com/idfkit/idfkit/issues/154))
-- `DictionaryParseWarning` is emitted when `parse_rdd` / `parse_mdd` produce zero entries from a non-empty file, surfacing format mismatches that would otherwise fail silently. ([#154](https://github.com/idfkit/idfkit/issues/154))
+- RDD/MDD parsers now also accept the `Output:VariableDictionary, Regular` format (the EnergyPlus default). Both formats produce the same `OutputVariable` / `OutputMeter` set; for Regular lines, `key` is synthesized as `"*"` and `frequency` as `"hourly"` to match the IDF form. ([#155](https://github.com/idfkit/idfkit/pull/155))
+- `DictionaryParseWarning` is emitted when `parse_rdd` / `parse_mdd` produce zero entries from a non-empty file, surfacing format mismatches that would otherwise fail silently. ([#155](https://github.com/idfkit/idfkit/pull/155))
 
 ## [0.12.0] - 2026-05-05
 
@@ -247,7 +249,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[unreleased]: https://github.com/idfkit/idfkit/compare/v0.12.0...HEAD
+[unreleased]: https://github.com/idfkit/idfkit/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/idfkit/idfkit/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/idfkit/idfkit/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/idfkit/idfkit/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/idfkit/idfkit/compare/v0.10.3...v0.11.0
