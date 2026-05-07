@@ -205,6 +205,7 @@ class TestDocLocationsMain:
         ):
             doc_locations_main()
 
+    @pytest.mark.filterwarnings("ignore::RuntimeWarning")
     def test_main_via_module_execution(self, tmp_path: Path) -> None:
         """Cover line 111: if __name__ == '__main__'."""
         import runpy
@@ -593,6 +594,7 @@ class TestStubsMain:
             stubs_main()
         assert (tmp_path / "_generated_types.pyi").exists()
 
+    @pytest.mark.filterwarnings("ignore::RuntimeWarning")
     @pytest.mark.usefixtures("_preserve_generated_stubs")
     def test_main_via_module_execution(self, tmp_path: Path) -> None:
         """Cover line 620: if __name__ == '__main__'.
