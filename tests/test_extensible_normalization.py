@@ -17,6 +17,7 @@ during those tests. The matrix below fills exactly that gap.
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -208,7 +209,9 @@ def _entry(
         if entry_shape == "add_canonical":
             doc.add(obj_type, name, **common, vertices=[dict(item) for item in canonical_items], validate=False)
         else:
-            doc.add(obj_type, name, **common, **flat_kwargs, validate=False)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                doc.add(obj_type, name, **common, **flat_kwargs, validate=False)
         return doc
 
     # Schedule:Day:Interval
@@ -217,7 +220,9 @@ def _entry(
     if entry_shape == "add_canonical":
         doc.add(obj_type, name, **common, data=[dict(item) for item in canonical_items], validate=False)
     else:
-        doc.add(obj_type, name, **common, **flat_kwargs, validate=False)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            doc.add(obj_type, name, **common, **flat_kwargs, validate=False)
     return doc
 
 

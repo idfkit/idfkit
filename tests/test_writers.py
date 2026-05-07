@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import warnings
 from pathlib import Path
 
 import pytest
@@ -82,30 +83,32 @@ class TestWriteIDF:
 
     def test_programmatic_surface_extensibles_schema_style_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
-        doc.add(
-            "BuildingSurface:Detailed",
-            "W1",
-            {
-                "surface_type": "Wall",
-                "outside_boundary_condition": "Outdoors",
-                "sun_exposure": "SunExposed",
-                "wind_exposure": "WindExposed",
-                "number_of_vertices": 4,
-                "vertex_x_coordinate": 0.0,
-                "vertex_y_coordinate": 0.0,
-                "vertex_z_coordinate": 3.0,
-                "vertex_x_coordinate_2": 0.0,
-                "vertex_y_coordinate_2": 0.0,
-                "vertex_z_coordinate_2": 0.0,
-                "vertex_x_coordinate_3": 10.0,
-                "vertex_y_coordinate_3": 0.0,
-                "vertex_z_coordinate_3": 0.0,
-                "vertex_x_coordinate_4": 10.0,
-                "vertex_y_coordinate_4": 0.0,
-                "vertex_z_coordinate_4": 3.0,
-            },
-            validate=False,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            doc.add(
+                "BuildingSurface:Detailed",
+                "W1",
+                {
+                    "surface_type": "Wall",
+                    "outside_boundary_condition": "Outdoors",
+                    "sun_exposure": "SunExposed",
+                    "wind_exposure": "WindExposed",
+                    "number_of_vertices": 4,
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0,
+                    "vertex_x_coordinate_2": 0.0,
+                    "vertex_y_coordinate_2": 0.0,
+                    "vertex_z_coordinate_2": 0.0,
+                    "vertex_x_coordinate_3": 10.0,
+                    "vertex_y_coordinate_3": 0.0,
+                    "vertex_z_coordinate_3": 0.0,
+                    "vertex_x_coordinate_4": 10.0,
+                    "vertex_y_coordinate_4": 0.0,
+                    "vertex_z_coordinate_4": 3.0,
+                },
+                validate=False,
+            )
 
         path = tmp_path / "surface_schema_style.idf"
         write_idf(doc, path)
@@ -118,30 +121,32 @@ class TestWriteIDF:
 
     def test_programmatic_surface_extensibles_classic_style_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
-        doc.add(
-            "BuildingSurface:Detailed",
-            "W1",
-            {
-                "surface_type": "Wall",
-                "outside_boundary_condition": "Outdoors",
-                "sun_exposure": "SunExposed",
-                "wind_exposure": "WindExposed",
-                "number_of_vertices": 4,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 3.0,
-                "vertex_2_x_coordinate": 0.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 0.0,
-                "vertex_3_x_coordinate": 10.0,
-                "vertex_3_y_coordinate": 0.0,
-                "vertex_3_z_coordinate": 0.0,
-                "vertex_4_x_coordinate": 10.0,
-                "vertex_4_y_coordinate": 0.0,
-                "vertex_4_z_coordinate": 3.0,
-            },
-            validate=False,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            doc.add(
+                "BuildingSurface:Detailed",
+                "W1",
+                {
+                    "surface_type": "Wall",
+                    "outside_boundary_condition": "Outdoors",
+                    "sun_exposure": "SunExposed",
+                    "wind_exposure": "WindExposed",
+                    "number_of_vertices": 4,
+                    "vertex_1_x_coordinate": 0.0,
+                    "vertex_1_y_coordinate": 0.0,
+                    "vertex_1_z_coordinate": 3.0,
+                    "vertex_2_x_coordinate": 0.0,
+                    "vertex_2_y_coordinate": 0.0,
+                    "vertex_2_z_coordinate": 0.0,
+                    "vertex_3_x_coordinate": 10.0,
+                    "vertex_3_y_coordinate": 0.0,
+                    "vertex_3_z_coordinate": 0.0,
+                    "vertex_4_x_coordinate": 10.0,
+                    "vertex_4_y_coordinate": 0.0,
+                    "vertex_4_z_coordinate": 3.0,
+                },
+                validate=False,
+            )
 
         path = tmp_path / "surface_classic_style.idf"
         write_idf(doc, path)
@@ -154,18 +159,20 @@ class TestWriteIDF:
 
     def test_programmatic_schedule_compact_extensibles_are_preserved(self, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
-        doc.add(
-            "Schedule:Compact",
-            "AlwaysOn",
-            {
-                "schedule_type_limits_name": "Any Number",
-                "field": "Through: 12/31",
-                "field_2": "For: AllDays",
-                "field_3": "Until: 24:00",
-                "field_4": "1.0",
-            },
-            validate=False,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            doc.add(
+                "Schedule:Compact",
+                "AlwaysOn",
+                {
+                    "schedule_type_limits_name": "Any Number",
+                    "field": "Through: 12/31",
+                    "field_2": "For: AllDays",
+                    "field_3": "Until: 24:00",
+                    "field_4": "1.0",
+                },
+                validate=False,
+            )
 
         path = tmp_path / "schedule_compact.idf"
         write_idf(doc, path)

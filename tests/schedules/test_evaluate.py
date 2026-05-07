@@ -174,17 +174,19 @@ class TestIntegration:
             "Schedule:Compact",
             "Office",
             validate=False,
-            field_1="Through: 12/31",
-            field_2="For: Weekdays",
-            field_3="Until: 08:00",
-            field_4="0.0",
-            field_5="Until: 18:00",
-            field_6="1.0",
-            field_7="Until: 24:00",
-            field_8="0.0",
-            field_9="For: AllOtherDays",
-            field_10="Until: 24:00",
-            field_11="0.0",
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: Weekdays"},
+                {"field": "Until: 08:00"},
+                {"field": "0.0"},
+                {"field": "Until: 18:00"},
+                {"field": "1.0"},
+                {"field": "Until: 24:00"},
+                {"field": "0.0"},
+                {"field": "For: AllOtherDays"},
+                {"field": "Until: 24:00"},
+                {"field": "0.0"},
+            ],
         )
         return doc.get_collection("Schedule:Compact").get("Office")
 
@@ -316,7 +318,12 @@ class TestEvaluateDocumentSchedules:
     def test_week_daily_evaluation(self) -> None:
         """Exercise _eval_document_schedule for Schedule:Week:Daily (line 150)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.5")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.5"}],
+        )
         doc.add(
             "Schedule:Week:Daily",
             "WeekSched",
@@ -375,13 +382,17 @@ class TestEvaluateDocumentSchedules:
     def test_eval_document_week_compact(self) -> None:
         """Exercise Schedule:Week:Compact through evaluate() (line 184)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.3")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.3"}],
+        )
         doc.add(
             "Schedule:Week:Compact",
             "WeekCompact",
             validate=False,
-            daytype_list_1="AllDays",
-            schedule_day_name_1="DaySched",
+            data=[{"daytype_list": "AllDays", "schedule_day_name": "DaySched"}],
         )
         week_obj = doc.get_collection("Schedule:Week:Compact").get("WeekCompact")
         result = evaluate(week_obj, datetime(2024, 1, 8, 12, 0), document=doc)
@@ -390,7 +401,12 @@ class TestEvaluateDocumentSchedules:
     def test_eval_document_year(self) -> None:
         """Exercise Schedule:Year through evaluate() (line 186)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.8")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.8"}],
+        )
         doc.add(
             "Schedule:Week:Daily",
             "WeekSched",
@@ -412,11 +428,15 @@ class TestEvaluateDocumentSchedules:
             "Schedule:Year",
             "YearSched",
             validate=False,
-            schedule_week_name="WeekSched",
-            start_month="1",
-            start_day="1",
-            end_month="12",
-            end_day="31",
+            schedule_weeks=[
+                {
+                    "schedule_week_name": "WeekSched",
+                    "start_month": "1",
+                    "start_day": "1",
+                    "end_month": "12",
+                    "end_day": "31",
+                }
+            ],
         )
         year_obj = doc.get_collection("Schedule:Year").get("YearSched")
         result = evaluate(year_obj, datetime(2024, 6, 15, 12, 0), document=doc)
@@ -433,10 +453,12 @@ class TestValuesWithDocument:
             "Schedule:Compact",
             "Sched",
             validate=False,
-            field_1="Through: 12/31",
-            field_2="For: AllDays",
-            field_3="Until: 24:00",
-            field_4="1.0",
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: AllDays"},
+                {"field": "Until: 24:00"},
+                {"field": "1.0"},
+            ],
         )
         sched_obj = doc.get_collection("Schedule:Compact").get("Sched")
         result = values(sched_obj, year=2024, start_date=(1, 1), end_date=(1, 1), document=doc)
@@ -555,13 +577,17 @@ class TestEvaluateWithInterpolation:
     def test_week_compact_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Week:Compact (line 337)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.6")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.6"}],
+        )
         doc.add(
             "Schedule:Week:Compact",
             "WeekCompact",
             validate=False,
-            daytype_list_1="AllDays",
-            schedule_day_name_1="DaySched",
+            data=[{"daytype_list": "AllDays", "schedule_day_name": "DaySched"}],
         )
         week_obj = doc.get_collection("Schedule:Week:Compact").get("WeekCompact")
         result = values(
@@ -579,7 +605,12 @@ class TestEvaluateWithInterpolation:
     def test_year_schedule_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Year (line 341)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.9")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.9"}],
+        )
         doc.add(
             "Schedule:Week:Daily",
             "WeekSched",
@@ -601,11 +632,15 @@ class TestEvaluateWithInterpolation:
             "Schedule:Year",
             "YearSched",
             validate=False,
-            schedule_week_name="WeekSched",
-            start_month="1",
-            start_day="1",
-            end_month="12",
-            end_day="31",
+            schedule_weeks=[
+                {
+                    "schedule_week_name": "WeekSched",
+                    "start_month": "1",
+                    "start_day": "1",
+                    "end_month": "12",
+                    "end_day": "31",
+                }
+            ],
         )
         year_obj = doc.get_collection("Schedule:Year").get("YearSched")
         result = values(
@@ -635,7 +670,12 @@ class TestEvaluateWithInterpolation:
     def test_week_daily_with_interpolation_in_values(self) -> None:
         """Exercise _eval_document_with_interp for Schedule:Week:Daily (line 333)."""
         doc = new_document()
-        doc.add("Schedule:Day:Interval", "DaySched", validate=False, time_1="24:00", value_until_time_1="0.4")
+        doc.add(
+            "Schedule:Day:Interval",
+            "DaySched",
+            validate=False,
+            data=[{"time": "24:00", "value_until_time": "0.4"}],
+        )
         doc.add(
             "Schedule:Week:Daily",
             "WeekSched",

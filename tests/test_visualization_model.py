@@ -42,18 +42,12 @@ _MATERIAL_FIELDS = {
 
 _WALL_VERTICES = {
     "number_of_vertices": 4,
-    "vertex_1_x_coordinate": 0.0,
-    "vertex_1_y_coordinate": 0.0,
-    "vertex_1_z_coordinate": 3.0,
-    "vertex_2_x_coordinate": 0.0,
-    "vertex_2_y_coordinate": 0.0,
-    "vertex_2_z_coordinate": 0.0,
-    "vertex_3_x_coordinate": 5.0,
-    "vertex_3_y_coordinate": 0.0,
-    "vertex_3_z_coordinate": 0.0,
-    "vertex_4_x_coordinate": 5.0,
-    "vertex_4_y_coordinate": 0.0,
-    "vertex_4_z_coordinate": 3.0,
+    "vertices": [
+        {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+        {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+        {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+        {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+    ],
 }
 
 
@@ -99,18 +93,12 @@ def multi_zone_doc():
             "zone_name": "ZoneA",
             "outside_boundary_condition": "Outdoors",
             "number_of_vertices": 4,
-            "vertex_1_x_coordinate": 0.0,
-            "vertex_1_y_coordinate": 0.0,
-            "vertex_1_z_coordinate": 3.0,
-            "vertex_2_x_coordinate": 0.0,
-            "vertex_2_y_coordinate": 0.0,
-            "vertex_2_z_coordinate": 0.0,
-            "vertex_3_x_coordinate": 5.0,
-            "vertex_3_y_coordinate": 0.0,
-            "vertex_3_z_coordinate": 0.0,
-            "vertex_4_x_coordinate": 5.0,
-            "vertex_4_y_coordinate": 0.0,
-            "vertex_4_z_coordinate": 3.0,
+            "vertices": [
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
         },
     )
     doc.add(
@@ -122,18 +110,12 @@ def multi_zone_doc():
             "zone_name": "ZoneA",
             "outside_boundary_condition": "Ground",
             "number_of_vertices": 4,
-            "vertex_1_x_coordinate": 0.0,
-            "vertex_1_y_coordinate": 0.0,
-            "vertex_1_z_coordinate": 0.0,
-            "vertex_2_x_coordinate": 5.0,
-            "vertex_2_y_coordinate": 0.0,
-            "vertex_2_z_coordinate": 0.0,
-            "vertex_3_x_coordinate": 5.0,
-            "vertex_3_y_coordinate": 5.0,
-            "vertex_3_z_coordinate": 0.0,
-            "vertex_4_x_coordinate": 0.0,
-            "vertex_4_y_coordinate": 5.0,
-            "vertex_4_z_coordinate": 0.0,
+            "vertices": [
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 5.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 5.0, "vertex_z_coordinate": 0.0},
+            ],
         },
     )
 
@@ -147,18 +129,12 @@ def multi_zone_doc():
             "zone_name": "ZoneB",
             "outside_boundary_condition": "Outdoors",
             "number_of_vertices": 4,
-            "vertex_1_x_coordinate": 0.0,
-            "vertex_1_y_coordinate": 0.0,
-            "vertex_1_z_coordinate": 3.0,
-            "vertex_2_x_coordinate": 0.0,
-            "vertex_2_y_coordinate": 0.0,
-            "vertex_2_z_coordinate": 0.0,
-            "vertex_3_x_coordinate": 5.0,
-            "vertex_3_y_coordinate": 0.0,
-            "vertex_3_z_coordinate": 0.0,
-            "vertex_4_x_coordinate": 5.0,
-            "vertex_4_y_coordinate": 0.0,
-            "vertex_4_z_coordinate": 3.0,
+            "vertices": [
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+            ],
         },
     )
     doc.add(
@@ -170,18 +146,12 @@ def multi_zone_doc():
             "zone_name": "ZoneB",
             "outside_boundary_condition": "Ground",
             "number_of_vertices": 4,
-            "vertex_1_x_coordinate": 0.0,
-            "vertex_1_y_coordinate": 0.0,
-            "vertex_1_z_coordinate": 0.0,
-            "vertex_2_x_coordinate": 5.0,
-            "vertex_2_y_coordinate": 0.0,
-            "vertex_2_z_coordinate": 0.0,
-            "vertex_3_x_coordinate": 5.0,
-            "vertex_3_y_coordinate": 5.0,
-            "vertex_3_z_coordinate": 0.0,
-            "vertex_4_x_coordinate": 0.0,
-            "vertex_4_y_coordinate": 5.0,
-            "vertex_4_z_coordinate": 0.0,
+            "vertices": [
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 5.0, "vertex_z_coordinate": 0.0},
+                {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 5.0, "vertex_z_coordinate": 0.0},
+            ],
         },
     )
 
@@ -334,18 +304,12 @@ class TestResolveSurfaces:
                 "zone_name": "RotZone",
                 "outside_boundary_condition": "Outdoors",
                 "number_of_vertices": 4,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 3.0,
-                "vertex_2_x_coordinate": 0.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 0.0,
-                "vertex_3_x_coordinate": 5.0,
-                "vertex_3_y_coordinate": 0.0,
-                "vertex_3_z_coordinate": 0.0,
-                "vertex_4_x_coordinate": 5.0,
-                "vertex_4_y_coordinate": 0.0,
-                "vertex_4_z_coordinate": 3.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)
@@ -373,18 +337,12 @@ class TestResolveSurfaces:
                 "zone_name": "Z1",
                 "outside_boundary_condition": "Outdoors",
                 "number_of_vertices": 4,
-                "vertex_x_coordinate": 0.0,
-                "vertex_y_coordinate": 0.0,
-                "vertex_z_coordinate": 3.0,
-                "vertex_x_coordinate_2": 0.0,
-                "vertex_y_coordinate_2": 0.0,
-                "vertex_z_coordinate_2": 0.0,
-                "vertex_x_coordinate_3": 5.0,
-                "vertex_y_coordinate_3": 0.0,
-                "vertex_z_coordinate_3": 0.0,
-                "vertex_x_coordinate_4": 5.0,
-                "vertex_y_coordinate_4": 0.0,
-                "vertex_z_coordinate_4": 3.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)
@@ -630,15 +588,11 @@ class TestResolveSurfacesShading:
             "SiteShade1",
             {
                 "number_of_vertices": 3,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 5.0,
-                "vertex_2_x_coordinate": 10.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 5.0,
-                "vertex_3_x_coordinate": 10.0,
-                "vertex_3_y_coordinate": 10.0,
-                "vertex_3_z_coordinate": 5.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 5.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 5.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 5.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)
@@ -656,15 +610,11 @@ class TestResolveSurfacesShading:
             "BuildingShade1",
             {
                 "number_of_vertices": 3,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 5.0,
-                "vertex_2_x_coordinate": 10.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 5.0,
-                "vertex_3_x_coordinate": 10.0,
-                "vertex_3_y_coordinate": 10.0,
-                "vertex_3_z_coordinate": 5.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 5.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 5.0},
+                    {"vertex_x_coordinate": 10.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 5.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)
@@ -693,15 +643,11 @@ class TestResolveSurfacesShading:
             {
                 "base_surface_name": "Wall1",
                 "number_of_vertices": 3,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 3.0,
-                "vertex_2_x_coordinate": 5.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 3.0,
-                "vertex_3_x_coordinate": 5.0,
-                "vertex_3_y_coordinate": -1.0,
-                "vertex_3_z_coordinate": 4.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": -1.0, "vertex_z_coordinate": 4.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)
@@ -865,15 +811,11 @@ class TestResolveSurfacesNoneCoords:
             {
                 "base_surface_name": "Wall1",
                 "number_of_vertices": 3,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 3.0,
-                "vertex_2_x_coordinate": 5.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 3.0,
-                "vertex_3_x_coordinate": 5.0,
-                "vertex_3_y_coordinate": -1.0,
-                "vertex_3_z_coordinate": 4.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": -1.0, "vertex_z_coordinate": 4.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc, zones=["GhostZone"])
@@ -893,15 +835,11 @@ class TestResolveSurfacesNoneCoords:
             {
                 "base_surface_name": "NonExistentWall",
                 "number_of_vertices": 3,
-                "vertex_1_x_coordinate": 0.0,
-                "vertex_1_y_coordinate": 0.0,
-                "vertex_1_z_coordinate": 3.0,
-                "vertex_2_x_coordinate": 5.0,
-                "vertex_2_y_coordinate": 0.0,
-                "vertex_2_z_coordinate": 3.0,
-                "vertex_3_x_coordinate": 5.0,
-                "vertex_3_y_coordinate": -1.0,
-                "vertex_3_z_coordinate": 4.0,
+                "vertices": [
+                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 3.0},
+                    {"vertex_x_coordinate": 5.0, "vertex_y_coordinate": -1.0, "vertex_z_coordinate": 4.0},
+                ],
             },
         )
         surfaces = _resolve_surfaces(doc)

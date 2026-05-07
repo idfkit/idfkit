@@ -34,8 +34,8 @@ from idfkit.schedules.types import (
 def _make_compact(*fields: str, name: str = "Test") -> IDFObject:
     """Create a real Schedule:Compact object from field values."""
     doc = new_document()
-    kwargs = {f"field_{i + 1}": v for i, v in enumerate(fields)}
-    doc.add("Schedule:Compact", name, validate=False, **kwargs)
+    data = [{"field": v} for v in fields]
+    doc.add("Schedule:Compact", name, validate=False, data=data)
     return doc.get_collection("Schedule:Compact").get(name)
 
 
@@ -447,10 +447,12 @@ class TestProcessUntilEdgeCases:
             "Schedule:Compact",
             "NoValueAfterUntil",
             validate=False,
-            field_1="Through: 12/31",
-            field_2="For: AllDays",
-            field_3="Until: 24:00",
-            # No value field
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: AllDays"},
+                {"field": "Until: 24:00"},
+                # No value field
+            ],
         )
         obj = doc.get_collection("Schedule:Compact").get("NoValueAfterUntil")
         periods, _ = parse_compact(obj)
@@ -465,10 +467,12 @@ class TestProcessUntilEdgeCases:
             "Schedule:Compact",
             "EmptyValue",
             validate=False,
-            field_1="Through: 12/31",
-            field_2="For: AllDays",
-            field_3="Until: 24:00",
-            field_4="",  # Empty value string
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: AllDays"},
+                {"field": "Until: 24:00"},
+                {"field": ""},  # Empty value string
+            ],
         )
         obj = doc.get_collection("Schedule:Compact").get("EmptyValue")
         periods, _ = parse_compact(obj)
@@ -568,14 +572,16 @@ class TestConsecutiveNoneLimit:
             "Schedule:Compact",
             "BlankTest",
             validate=False,
-            field_1="Through: 12/31",
-            field_2="For: AllDays",
-            field_3="Until: 24:00",
-            field_4="1.0",
-            # Three trailing blank fields
-            field_5="",
-            field_6="",
-            field_7="",
+            data=[
+                {"field": "Through: 12/31"},
+                {"field": "For: AllDays"},
+                {"field": "Until: 24:00"},
+                {"field": "1.0"},
+                # Three trailing blank fields
+                {"field": ""},
+                {"field": ""},
+                {"field": ""},
+            ],
         )
         obj = doc.get_collection("Schedule:Compact").get("BlankTest")
         periods, _ = parse_compact(obj)
