@@ -13,12 +13,19 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     env:
-      IDFKIT_VERSION: ${{ inputs.idfkit_version || github.event.release.tag_name }}
+      RAW_VERSION: ${{ inputs.idfkit_version || github.event.release.tag_name }}
       DOWNSTREAM_REPOS: |
         idfkit/idfkit-mcp
         idfkit/idfkit-lsp
         idfkit/idfkit-docs
     steps:
+      - name: Normalize version (strip v prefix)
+        id: ver
+        run: |
+          set -euo pipefail
+          version="${RAW_VERSION#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Normalized version: $version"
       - name: Mint app token
         id: app-token
         uses: actions/create-github-app-token@v1
@@ -29,6 +36,7 @@ jobs:
       - name: Trigger downstream bump workflows
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IDFKIT_VERSION: ${{ steps.ver.outputs.version }}
         run: |
           set -euo pipefail
           while read -r repo; do
