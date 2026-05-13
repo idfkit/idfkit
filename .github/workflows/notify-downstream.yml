@@ -10,10 +10,14 @@ on:
 permissions:
   contents: read
 jobs:
-  discover-and-dispatch:
+  dispatch:
     runs-on: ubuntu-latest
     env:
       IDFKIT_VERSION: ${{ inputs.idfkit_version || github.event.release.tag_name }}
+      DOWNSTREAM_REPOS: |
+        idfkit/idfkit-mcp
+        idfkit/idfkit-lsp
+        idfkit/idfkit-docs
     steps:
       - name: Mint app token
         id: app-token
@@ -22,26 +26,6 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-      - name: Discover downstream repos
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          set -euo pipefail
-          owners=("samuelduchesne" "idfkit" "Carbon-Signal")
-          files=("pyproject.toml" "requirements.txt" "uv.lock" "poetry.lock" "environment.yml")
-          : > discovered-repos.txt
-          for owner in "${owners[@]}"; do
-            for file in "${files[@]}"; do
-              gh search code '"idfkit"' \
-                --owner "$owner" \
-                --filename "$file" \
-                --json repository,path,url \
-                --limit 100 \
-              | jq -r '.[].repository.fullName' >> discovered-repos.txt || true
-            done
-          done
-          sort -u discovered-repos.txt -o discovered-repos.txt
-          cat discovered-repos.txt
       - name: Trigger downstream bump workflows
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -54,4 +38,4 @@ jobs:
               --repo "$repo" \
               -f idfkit_version="$IDFKIT_VERSION" \
             || echo "Skipping $repo: no bump-idfkit.yml or insufficient permissions"
-          done < discovered-repos.txt
+          done <<< "$DOWNSTREAM_REPOS"
