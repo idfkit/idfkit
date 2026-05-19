@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -12,6 +13,7 @@ from idfkit.weather.designday import (
     DesignDayType,
     _classify_design_day,  # pyright: ignore[reportPrivateUsage]
     apply_ashrae_sizing,
+    sanitize_ddy_file,
 )
 from idfkit.weather.station import WeatherStation
 
@@ -521,3 +523,77 @@ class TestApplyAshraeSizing:
             pytest.raises(NoDesignDaysError),
         ):
             apply_ashrae_sizing(model, station)
+
+
+class TestSanitizeDdyFile:
+    """Tests for sanitize_ddy_file (issue #156)."""
+
+    _GOOD_DD = (
+        "SizingPeriod:DesignDay,\n"
+        "    Boston Ann Htg 99.6% Condns DB,  !- Name\n"
+        "    1,                          !- Month\n"
+        "    21,                         !- Day of Month\n"
+        "    WinterDesignDay,            !- Day Type\n"
+        "    -14.7,                      !- Maximum Dry-Bulb Temperature {C}\n"
+        "    0.0,                        !- Daily Dry-Bulb Temperature Range\n"
+        "    DefaultMultipliers,         !- Range Modifier Type\n"
+        "    ,                           !- Range Modifier Day Schedule Name\n"
+        "    Wetbulb,                    !- Humidity Condition Type\n"
+        "    -14.7,                      !- Wetbulb at Maximum Dry-Bulb {C}\n"
+        "    101325.,                    !- Barometric Pressure {Pa}\n"
+        "    4.9,                        !- Wind Speed {m/s}\n"
+        "    270;                        !- Wind Direction {deg}\n"
+    )
+
+    _BAD_DD = (
+        "SizingPeriod:DesignDay,\n"
+        "    Boston January .4% Condns DB=>MCWB,  !- Name\n"
+        "    1,                          !- Month\n"
+        "    21,                         !- Day of Month\n"
+        "    SummerDesignDay,            !- Day Type\n"
+        "    12.3,                       !- Maximum Dry-Bulb Temperature {C}\n"
+        "    0.0,                        !- Daily Dry-Bulb Temperature Range\n"
+        "    DefaultMultipliers,         !- Range Modifier Type\n"
+        "    ,                           !- Range Modifier Day Schedule Name\n"
+        "    Wetbulb,                    !- Humidity Condition Type\n"
+        "          N,                    !- Wetbulb at Maximum Dry-Bulb {C}\n"
+        "    101325.,                    !- Barometric Pressure {Pa}\n"
+        "          N,                    !- Wind Speed {m/s}\n"
+        "    270;                        !- Wind Direction {deg}\n"
+    )
+
+    def test_blanks_placeholders_keeping_block(self, tmp_path: Path) -> None:
+        ddy = tmp_path / "broken.ddy"
+        ddy.write_text(self._GOOD_DD + "\n" + self._BAD_DD)
+
+        patched = sanitize_ddy_file(ddy)
+
+        assert patched == ["Boston January .4% Condns DB=>MCWB"]
+        new_text = ddy.read_text()
+        # Both design days are still present.
+        assert "Boston Ann Htg 99.6%" in new_text
+        assert "Boston January .4% Condns DB=>MCWB" in new_text
+        # The literal ``N`` field values are gone.
+        assert re.search(r"^\s*N\s*,", new_text, re.MULTILINE) is None
+        # Other fields are untouched.
+        assert "101325." in new_text
+        assert "12.3" in new_text
+
+    def test_clean_file_is_untouched(self, tmp_path: Path) -> None:
+        ddy = tmp_path / "clean.ddy"
+        original = self._GOOD_DD
+        ddy.write_text(original)
+
+        patched = sanitize_ddy_file(ddy)
+
+        assert patched == []
+        assert ddy.read_text() == original
+
+    def test_recognises_n_slash_a(self, tmp_path: Path) -> None:
+        ddy = tmp_path / "broken.ddy"
+        ddy.write_text(self._BAD_DD.replace("          N,", "        N/A,"))
+
+        patched = sanitize_ddy_file(ddy)
+
+        assert patched == ["Boston January .4% Condns DB=>MCWB"]
+        assert "N/A" not in ddy.read_text()

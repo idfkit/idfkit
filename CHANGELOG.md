@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `WeatherDownloader.download()` now sanitizes extracted `.ddy` files by blanking out non-numeric placeholder tokens (`N`, `N/A`, ...) found in `SizingPeriod:DesignDay` numeric fields. Some upstream OneBuilding TMYx archives ship these placeholders when source data is unavailable, causing EnergyPlus to reject the file with a type-constraint fatal. Affected design day names are logged at WARNING. ([#156](https://github.com/idfkit/idfkit/issues/156))
+
+### Added
+
+- `idfkit.weather.designday.sanitize_ddy_file()` exposes the DDY placeholder-stripping pass for callers that need to clean a DDY file outside the downloader flow. ([#156](https://github.com/idfkit/idfkit/issues/156))
+
 ## [0.12.1] - 2026-05-06
 
 ### Fixed
