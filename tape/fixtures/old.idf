@@ -1,0 +1,26 @@
+!-Generator archetypal
+!-Option SortedOrder
+
+Version,
+  22.1;                    !- Version Identifier
+
+Building,
+  Building;                   !- Name
+
+GlobalGeometryRules,
+  UpperLeftCorner,            !- Starting Vertex Position
+  Counterclockwise,           !- Vertex Entry Direction
+  Relative;                   !- Coordinate System
+
+SimulationControl,
+  ;                           !- Do Zone Sizing Calculation
+
+Timestep,
+  6;                          !- Number Of Timesteps Per Hour
+
+Zone,
+  Test Zone,                  !- Name
+  ,                           !- Direction Of Relative North
+  0,                          !- X Origin
+  0,                          !- Y Origin
+  0;                          !- Z Origin
