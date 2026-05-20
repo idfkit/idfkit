@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import platform
 import shutil
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -25,6 +26,20 @@ from idfkit.simulation.expand import (
     run_preprocessing,
     run_slab_preprocessor,
 )
+
+_EXE_SUFFIX = ".exe" if platform.system() == "Windows" else ""
+
+
+def _exe(name: str) -> str:
+    return f"{name}{_EXE_SUFFIX}"
+
+
+def _command_name(cmd: list[str]) -> str:
+    name = Path(cmd[0]).name
+    if _EXE_SUFFIX and name.endswith(_EXE_SUFFIX):
+        return name[: -len(_EXE_SUFFIX)]
+    return name
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -54,18 +69,18 @@ def mock_config(tmp_path: Path) -> EnergyPlusConfig:
     idd.write_text("!IDD_Version 24.1.0\n")
 
     # ExpandObjects
-    expand_exe = tmp_path / "ExpandObjects"
+    expand_exe = tmp_path / _exe("ExpandObjects")
     expand_exe.touch()
     expand_exe.chmod(0o755)
 
     # Slab & Basement
     preprocess = tmp_path / "PreProcess" / "GrndTempCalc"
     preprocess.mkdir(parents=True)
-    slab_exe = preprocess / "Slab"
+    slab_exe = preprocess / _exe("Slab")
     slab_exe.touch()
     slab_exe.chmod(0o755)
     (preprocess / "SlabGHT.idd").write_text("! Slab IDD\n")
-    basement_exe = preprocess / "Basement"
+    basement_exe = preprocess / _exe("Basement")
     basement_exe.touch()
     basement_exe.chmod(0o755)
     (preprocess / "BasementGHT.idd").write_text("! Basement IDD\n")
@@ -483,7 +498,7 @@ class TestSlabFatalMessage:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "GHTIn.idf").write_text("! input\n")
@@ -517,7 +532,7 @@ class TestBasementFatalMessage:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "BasementGHTIn.idf").write_text("! input\n")
@@ -568,7 +583,7 @@ class TestRunSlabPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
 
             if exe_name == "ExpandObjects":
@@ -607,7 +622,7 @@ class TestRunSlabPreprocessor:
         exe.touch()
         idd = tmp_path / "Energy+.idd"
         idd.write_text("!IDD_Version 24.1.0\n")
-        expand_exe = tmp_path / "ExpandObjects"
+        expand_exe = tmp_path / _exe("ExpandObjects")
         expand_exe.touch()
         # No PreProcess/GrndTempCalc/Slab
         config = EnergyPlusConfig(executable=exe, version=(24, 1, 0), install_dir=tmp_path, idd_path=idd)
@@ -646,7 +661,7 @@ class TestRunSlabPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "GHTIn.idf").write_text("! input\n")
@@ -682,7 +697,7 @@ class TestRunSlabPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 # Check weather file during execution, before cleanup
                 epw_path = cwd / "in.epw"
@@ -712,7 +727,7 @@ class TestRunSlabPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "GHTIn.idf").write_text("! input\n")
@@ -741,7 +756,7 @@ class TestRunSlabPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "GHTIn.idf").write_text("! input\n")
@@ -788,7 +803,7 @@ class TestRunBasementPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
 
             if exe_name == "ExpandObjects":
@@ -835,7 +850,7 @@ class TestRunBasementPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 # Check weather file during execution, before cleanup
                 epw_checks.append((cwd / "in.epw").is_file())
@@ -873,7 +888,7 @@ class TestRunBasementPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "BasementGHTIn.idf").write_text("! input\n")
@@ -901,7 +916,7 @@ class TestRunBasementPreprocessor:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n")
                 (cwd / "BasementGHTIn.idf").write_text("! input\n")
@@ -927,7 +942,7 @@ class TestRunBasementPreprocessor:
         exe.touch()
         idd = tmp_path / "Energy+.idd"
         idd.write_text("!IDD_Version 24.1.0\n")
-        expand_exe = tmp_path / "ExpandObjects"
+        expand_exe = tmp_path / _exe("ExpandObjects")
         expand_exe.touch()
         config = EnergyPlusConfig(executable=exe, version=(24, 1, 0), install_dir=tmp_path, idd_path=idd)
 
@@ -973,7 +988,7 @@ class TestRunPreprocessing:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n\nZone,\n  Office;\n")
@@ -1007,7 +1022,7 @@ class TestRunPreprocessing:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n\nZone,\n  Office;\n")
@@ -1047,7 +1062,7 @@ class TestRunPreprocessing:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n\nZone,\n  Office;\n")
@@ -1082,7 +1097,7 @@ class TestRunPreprocessing:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
             if exe_name == "ExpandObjects":
                 # No GHTIn.idf produced (run_slab_preprocessor=No)
@@ -1111,7 +1126,7 @@ class TestRunPreprocessing:
 
         def fake_run(cmd: list[str], **kwargs: object) -> MagicMock:
             cwd = Path(str(kwargs.get("cwd", "")))
-            exe_name = Path(cmd[0]).name
+            exe_name = _command_name(cmd)
             calls.append(exe_name)
             if exe_name == "ExpandObjects":
                 (cwd / "expanded.idf").write_text("Version, 24.1;\n\nZone,\n  Office;\n")
@@ -1135,7 +1150,7 @@ class TestRunPreprocessing:
 class TestConfigProperties:
     def test_slab_exe(self, mock_config: EnergyPlusConfig) -> None:
         assert mock_config.slab_exe is not None
-        assert mock_config.slab_exe.name == "Slab"
+        assert mock_config.slab_exe.name == _exe("Slab")
 
     def test_slab_idd(self, mock_config: EnergyPlusConfig) -> None:
         assert mock_config.slab_idd is not None
@@ -1143,7 +1158,7 @@ class TestConfigProperties:
 
     def test_basement_exe(self, mock_config: EnergyPlusConfig) -> None:
         assert mock_config.basement_exe is not None
-        assert mock_config.basement_exe.name == "Basement"
+        assert mock_config.basement_exe.name == _exe("Basement")
 
     def test_basement_idd(self, mock_config: EnergyPlusConfig) -> None:
         assert mock_config.basement_idd is not None
