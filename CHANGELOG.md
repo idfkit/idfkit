@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- EnergyPlus subprocesses (simulation, ExpandObjects, migration transition binaries) now have stdin explicitly redirected to `DEVNULL` instead of inheriting the parent's stdin. Prevents hangs on Windows when the parent process has a console attached. ([#158](https://github.com/idfkit/idfkit/pull/158))
+
 ## [0.12.1] - 2026-05-06
 
 ### Fixed
