@@ -57,6 +57,7 @@ class AsyncSubprocessMigrator:
             proc = await asyncio.create_subprocess_exec(
                 str(binary),
                 str(input_idf),
+                stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 cwd=str(work_dir),

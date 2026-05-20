@@ -180,6 +180,7 @@ def _run_subprocess(
     try:
         return subprocess.run(  # noqa: S603
             [str(exe)],
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             timeout=timeout,
