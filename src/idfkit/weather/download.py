@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, overload
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .designday import sanitize_ddy_file
 from .index import default_cache_dir
 from .station import WeatherStation
 
@@ -109,6 +110,14 @@ class WeatherDownloader:
             If ``None`` (default), cached files never expire.
 
     Note:
+        Extracted ``.ddy`` files are rewritten in place to drop
+        ``SizingPeriod:DesignDay`` objects whose numeric fields contain
+        non-numeric placeholder tokens (e.g. ``N``, ``N/A``). These appear
+        in some upstream archives when source data is unavailable and
+        would otherwise cause EnergyPlus to fail with a type-constraint
+        error.
+
+    Note:
         The cache has no size limit. For CI/CD environments with limited disk
         space, consider using [clear_cache][idfkit.weather.download.WeatherDownloader.clear_cache] periodically or setting
         a ``max_age`` to force re-downloads of stale files.
@@ -200,6 +209,9 @@ class WeatherDownloader:
         epw_path = self._find_file(station_dir, ".epw")
         ddy_path = self._find_file(station_dir, ".ddy")
         stat_path = self._find_file(station_dir, ".stat")
+
+        if ddy_path is not None:
+            sanitize_ddy_file(ddy_path)
 
         if only_set is not None:
             return PartialWeatherFiles(

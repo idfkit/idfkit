@@ -7,6 +7,7 @@ ASHRAE design-condition categories.
 
 from __future__ import annotations
 
+import logging
 import re
 from enum import Enum
 from pathlib import Path
@@ -19,6 +20,102 @@ if TYPE_CHECKING:
     from ..document import IDFDocument
     from ..objects import IDFObject
     from .station import WeatherStation
+
+logger = logging.getLogger(__name__)
+
+# OneBuilding TMYx DDY files use a literal ``N`` in numeric fields of
+# ``SizingPeriod:DesignDay`` when source data is unavailable (header comments
+# call these out as ``MWB=NC`` / ``WS=N/A``). EnergyPlus rejects the file
+# with a type-constraint fatal. This is a defensive, narrow workaround to
+# unblock users while the upstream data is corrected.
+_DDY_PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"N"})
+
+# Matches a single field value within a SizingPeriod:DesignDay block: the
+# value is the run of non-whitespace, non-delimiter characters following an
+# optional leading whitespace, terminated by ``,`` ``;`` or ``!`` (comment).
+_SIZING_DESIGN_DAY_BLOCK = re.compile(
+    r"SizingPeriod:DesignDay\s*,.*?;",
+    re.IGNORECASE | re.DOTALL,
+)
+_FIELD_VALUE = re.compile(r"(?P<lead>[,\n]\s*)(?P<value>[^,;!\s]+)(?P<trail>\s*(?=[,;!]))")
+
+
+def _sanitize_ddy_text(text: str) -> tuple[str, list[str]]:
+    """Blank out placeholder field values in ``SizingPeriod:DesignDay`` objects.
+
+    Some upstream DDY archives use literal tokens such as ``N`` / ``N/A`` in
+    numeric fields where source data is unavailable. EnergyPlus rejects these
+    as type-constraint violations. For each affected field we replace the
+    placeholder with an empty value (which EnergyPlus treats as defaulted),
+    preserving the surrounding design day object so the annual sizing data
+    remains usable.
+
+    Returns:
+        A ``(new_text, patched_names)`` tuple. ``patched_names`` lists the
+        ``SizingPeriod:DesignDay`` object names that had at least one field
+        blanked.
+    """
+    patched: list[str] = []
+
+    def _patch_block(match: re.Match[str]) -> str:
+        block = match.group(0)
+        # Extract the Name (first field after the type keyword) for logging.
+        no_comments = re.sub(r"!.*", "", block)
+        _, _, body = no_comments.partition(",")
+        body = body.rstrip().rstrip(";")
+        first_field = body.split(",", 1)[0].strip() if body else ""
+        name = first_field or "<unnamed>"
+
+        block_changed = False
+
+        def _patch_field(field_match: re.Match[str]) -> str:
+            nonlocal block_changed
+            value = field_match.group("value")
+            if value.upper() in _DDY_PLACEHOLDER_TOKENS:
+                block_changed = True
+                return field_match.group("lead") + field_match.group("trail")
+            return field_match.group(0)
+
+        new_block = _FIELD_VALUE.sub(_patch_field, block)
+        if block_changed:
+            patched.append(name)
+        return new_block
+
+    new_text = _SIZING_DESIGN_DAY_BLOCK.sub(_patch_block, text)
+    return new_text, patched
+
+
+def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
+    """Blank placeholder values in ``SizingPeriod:DesignDay`` fields of a DDY file.
+
+    Some upstream DDY archives (notably OneBuilding TMYx files) contain a
+    literal ``N`` token in numeric fields of ``SizingPeriod:DesignDay`` when
+    the underlying source data is unavailable. EnergyPlus rejects such files
+    with a fatal type-constraint error. This helper rewrites the file in
+    place, replacing each placeholder with an empty field (which EnergyPlus
+    treats as defaulted) so the surrounding design day object remains usable.
+
+    Args:
+        ddy_path: Path to a ``.ddy`` file.
+
+    Returns:
+        List of design day names that had at least one field blanked. Empty
+        if the file was already clean.
+    """
+    path = Path(ddy_path)
+    # Use binary I/O so original line endings (CRLF on OneBuilding archives,
+    # LF elsewhere) are preserved verbatim across the round-trip.
+    text = path.read_bytes().decode("utf-8", errors="replace")
+    new_text, patched = _sanitize_ddy_text(text)
+    if patched:
+        path.write_bytes(new_text.encode("utf-8"))
+        logger.warning(
+            "Sanitized %s: blanked non-numeric placeholder values in %d SizingPeriod:DesignDay object(s): %s",
+            path.name,
+            len(patched),
+            ", ".join(patched),
+        )
+    return patched
 
 
 class DesignDayType(Enum):
