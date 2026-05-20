@@ -23,10 +23,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Tokens that some upstream DDY providers use as placeholders in numeric fields
-# when source data is unavailable (e.g. OneBuilding's "MWB=NC" / "WS=N/A"
-# header notes). EnergyPlus rejects these as type-constraint violations.
-_DDY_PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"N", "N/A", "NA", "NC", "N.C."})
+# OneBuilding TMYx DDY files use a literal ``N`` in numeric fields of
+# ``SizingPeriod:DesignDay`` when source data is unavailable (header comments
+# call these out as ``MWB=NC`` / ``WS=N/A``). EnergyPlus rejects the file
+# with a type-constraint fatal. This is a defensive, narrow workaround to
+# unblock users while the upstream data is corrected.
+_DDY_PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"N"})
 
 # Matches a single field value within a SizingPeriod:DesignDay block: the
 # value is the run of non-whitespace, non-delimiter characters following an

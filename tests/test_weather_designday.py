@@ -589,11 +589,18 @@ class TestSanitizeDdyFile:
         assert patched == []
         assert ddy.read_text() == original
 
-    def test_recognises_n_slash_a(self, tmp_path: Path) -> None:
-        ddy = tmp_path / "broken.ddy"
-        ddy.write_text(self._BAD_DD.replace("          N,", "        N/A,"))
+    def test_leaves_other_non_numeric_tokens_alone(self, tmp_path: Path) -> None:
+        """Only the literal ``N`` is sanitized; other oddities pass through.
+
+        OneBuilding only ships ``N`` as the placeholder; the upstream issue
+        has been reported separately. Keep the workaround narrow so we do
+        not silently rewrite values we did not intend to.
+        """
+        ddy = tmp_path / "weird.ddy"
+        block_with_na = self._BAD_DD.replace("          N,", "        N/A,")
+        ddy.write_text(block_with_na)
 
         patched = sanitize_ddy_file(ddy)
 
-        assert patched == ["Boston January .4% Condns DB=>MCWB"]
-        assert "N/A" not in ddy.read_text()
+        assert patched == []
+        assert "N/A" in ddy.read_text()
