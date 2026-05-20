@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `WeatherDownloader.download()` now sanitizes extracted `.ddy` files by blanking out non-numeric placeholder tokens (`N`, `N/A`, ...) found in `SizingPeriod:DesignDay` numeric fields. Some upstream OneBuilding TMYx archives ship these placeholders when source data is unavailable, causing EnergyPlus to reject the file with a type-constraint fatal. Affected design day names are logged at WARNING. ([#156](https://github.com/idfkit/idfkit/issues/156))
+- EnergyPlus subprocesses (simulation, ExpandObjects, migration transition binaries) now have stdin explicitly redirected to `DEVNULL` instead of inheriting the parent's stdin. Prevents hangs on Windows when the parent process has a console attached. ([#158](https://github.com/idfkit/idfkit/pull/158))
 
 ### Added
 

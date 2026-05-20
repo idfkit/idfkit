@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Tokens that some upstream DDY providers use as placeholders in numeric fields
 # when source data is unavailable (e.g. OneBuilding's "MWB=NC" / "WS=N/A"
 # header notes). EnergyPlus rejects these as type-constraint violations.
-_DDY_PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"N", "N/A", "NA", "NC", "N.C.", "-"})
+_DDY_PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"N", "N/A", "NA", "NC", "N.C."})
 
 # Matches a single field value within a SizingPeriod:DesignDay block: the
 # value is the run of non-whitespace, non-delimiter characters following an

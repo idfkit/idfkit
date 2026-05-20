@@ -63,6 +63,7 @@ class SubprocessMigrator:
         try:
             proc = subprocess.run(  # noqa: S603
                 [str(binary), str(input_idf)],
+                stdin=subprocess.DEVNULL,
                 capture_output=True,
                 text=True,
                 timeout=self.step_timeout,

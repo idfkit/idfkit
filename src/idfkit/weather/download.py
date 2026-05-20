@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, overload
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .designday import sanitize_ddy_file
 from .index import default_cache_dir
 from .station import WeatherStation
 
@@ -210,8 +211,6 @@ class WeatherDownloader:
         stat_path = self._find_file(station_dir, ".stat")
 
         if ddy_path is not None:
-            from .designday import sanitize_ddy_file
-
             sanitize_ddy_file(ddy_path)
 
         if only_set is not None:
