@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import platform
 import subprocess
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -12,23 +13,29 @@ from idfkit.exceptions import MigrationError
 from idfkit.migration.async_subprocess_backend import AsyncSubprocessMigrator
 from idfkit.migration.subprocess_backend import SubprocessMigrator, binary_candidates
 
+_EXE_SUFFIX = ".exe" if platform.system() == "Windows" else ""
+
+
+def _binary(name: str) -> str:
+    return f"{name}{_EXE_SUFFIX}"
+
 
 class TestBinaryCandidates:
     def test_exact_patch_first(self) -> None:
         names = binary_candidates((24, 1, 0), (24, 2, 0))
-        assert names[0] == "Transition-V24-1-0-to-V24-2-0"
+        assert names[0] == _binary("Transition-V24-1-0-to-V24-2-0")
 
     def test_zero_patch_fallback_for_9_0_1(self) -> None:
         names = binary_candidates((8, 9, 0), (9, 0, 1))
-        assert "Transition-V8-9-0-to-V9-0-0" in names
+        assert _binary("Transition-V8-9-0-to-V9-0-0") in names
         # 8.9.0 is already patch-0, so the candidate with b's patch preserved comes first.
-        assert names[0] == "Transition-V8-9-0-to-V9-0-1"
+        assert names[0] == _binary("Transition-V8-9-0-to-V9-0-1")
 
     def test_deduplicates(self) -> None:
         # When both sides are already patch-0, fallbacks collapse into a single name.
         names = binary_candidates((24, 1, 0), (24, 2, 0))
         assert len(set(names)) == len(names)
-        assert names == ["Transition-V24-1-0-to-V24-2-0"]
+        assert names == [_binary("Transition-V24-1-0-to-V24-2-0")]
 
 
 class TestSubprocessMigrator:
@@ -66,7 +73,7 @@ class TestSubprocessMigrator:
         updater_dir: Path,
     ) -> None:
         # Stage the binary so _locate_binary succeeds.
-        binary = updater_dir / "Transition-V24-1-0-to-V24-2-0"
+        binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
         binary.touch()
         binary.chmod(0o755)
 
@@ -102,7 +109,7 @@ class TestSubprocessMigrator:
         updater_dir: Path,
     ) -> None:
         """Subprocess must run with cwd=work_dir so concurrent migrations don't collide."""
-        binary = updater_dir / "Transition-V24-1-0-to-V24-2-0"
+        binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
         binary.touch()
         binary.chmod(0o755)
 
@@ -134,7 +141,7 @@ class TestSubprocessMigrator:
         tmp_path: Path,
         updater_dir: Path,
     ) -> None:
-        binary = updater_dir / "Transition-V24-1-0-to-V24-2-0"
+        binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
         binary.touch()
 
         proc = MagicMock()
@@ -159,7 +166,7 @@ class TestSubprocessMigrator:
         tmp_path: Path,
         updater_dir: Path,
     ) -> None:
-        binary = updater_dir / "Transition-V24-1-0-to-V24-2-0"
+        binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
         binary.touch()
         mock_run.side_effect = subprocess.TimeoutExpired(cmd=["x"], timeout=1)
 
@@ -187,7 +194,7 @@ class TestAsyncSubprocessMigratorCwd:
         updater_dir: Path,
     ) -> None:
         """Async subprocess must run with cwd=work_dir so concurrent migrations don't collide."""
-        binary = updater_dir / "Transition-V24-1-0-to-V24-2-0"
+        binary = updater_dir / _binary("Transition-V24-1-0-to-V24-2-0")
         binary.touch()
         binary.chmod(0o755)
 
