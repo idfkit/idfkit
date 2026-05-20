@@ -271,6 +271,7 @@ def _run_simple(
     try:
         proc = subprocess.run(  # noqa: S603
             cmd,
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -305,6 +306,7 @@ def _run_with_progress(
     try:
         proc = subprocess.Popen(  # noqa: S603
             cmd,
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
