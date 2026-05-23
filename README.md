@@ -35,7 +35,7 @@ formats.
   area, zone volume, and coordinate transforms without external dependencies.
 - **EnergyPlus simulation** — Run simulations as subprocesses with structured
   result parsing, batch processing, and content-addressed caching.
-- **Weather data** — Search 55,000+ weather stations, download EPW/DDY files,
+- **Weather data** — Search ~17,300 weather stations (~70,000 TMYx datasets), download EPW/DDY files,
   and apply ASHRAE design day conditions.
 - **Async & batch simulation** — Run simulations concurrently with
   `async_simulate` or process parameter sweeps with `simulate_batch`.

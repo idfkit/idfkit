@@ -1,7 +1,8 @@
 # Station Search
 
-The `StationIndex` provides fast searching and filtering of 55,000+ weather
-station entries from climate.onebuilding.org.
+The `StationIndex` provides fast searching and filtering of ~70,000 weather
+station dataset entries (covering ~17,300 unique physical stations) from
+climate.onebuilding.org.
 
 ## Loading the Index
 

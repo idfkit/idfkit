@@ -12,7 +12,7 @@ This sub-package provides tools for:
 Station Index
 -------------
 
-The bundled index contains **~55,000 dataset entries** representing
+The bundled index contains **~70,000 dataset entries** representing
 **~17,300 unique physical weather stations** worldwide. The difference
 is because each station may have multiple TMYx year-range variants
 (e.g., ``TMYx.2007-2021``, ``TMYx.2009-2023``), each stored as a
