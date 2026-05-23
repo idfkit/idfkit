@@ -178,6 +178,15 @@ Key sections:
 - [API Reference](https://py.idfkit.com/api/document/) — Complete API documentation
 - [Migrating from eppy](https://py.idfkit.com/migration/) — Side-by-side comparison
 
+### For AI coding assistants
+
+idfkit ships agent-readable reference docs in
+[`src/idfkit/.agents/skills/developing-with-idfkit/`](src/idfkit/.agents/skills/developing-with-idfkit/SKILL.md).
+The directory is packaged in the wheel, so it's also accessible from an
+installed copy via `importlib.resources.files("idfkit") / ".agents"`.
+The companion [`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp) server
+exposes these references over MCP at `idfkit://references/{topic}`.
+
 ## Development
 
 ```bash

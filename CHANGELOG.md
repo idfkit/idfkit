@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Agent-readable reference documentation packaged with the wheel at `idfkit/.agents/skills/developing-with-idfkit/`. Contains a `SKILL.md` dispatch document plus 15 focused topic references (document & objects, parsing, writing, schema & validation, reference tracking, geometry, geometry builders & zoning, HVAC templates, HVAC loops, simulation execution, result parsing, weather data, schedule evaluation, thermal properties, visualization, version migration). Reference files are accessible via `importlib.resources` and can be surfaced to AI coding assistants by tooling such as `idfkit-mcp`. ([#160](https://github.com/idfkit/idfkit/issues/160))
+
 ## [0.12.2] - 2026-05-19
 
 ### Added
