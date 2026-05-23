@@ -64,7 +64,7 @@ def _discover_blocks() -> list[tuple[str, str]]:
 _BLOCKS = _discover_blocks()
 
 
-def _resolve_imports(tree: ast.AST) -> tuple[dict[str, object], list[str]]:
+def _resolve_imports(tree: ast.AST) -> tuple[dict[str, object], list[str]]:  # noqa: C901
     """Build a name → object map from ``Import`` / ``ImportFrom`` nodes.
 
     Returns the namespace and a list of import errors. Only failures
@@ -102,7 +102,7 @@ def _resolve_imports(tree: ast.AST) -> tuple[dict[str, object], list[str]]:
     return namespace, errors
 
 
-def _propagate_assignments(tree: ast.AST, namespace: dict[str, object]) -> None:
+def _propagate_assignments(tree: ast.AST, namespace: dict[str, object]) -> None:  # noqa: C901
     """Extend the namespace with ``x = Class(...)`` and ``x = Class.cm(...)``.
 
     The latter only fires when the classmethod's return annotation names
@@ -149,11 +149,7 @@ def _kwarg_errors(callable_obj: object, call: ast.Call) -> list[str]:
     if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
         return []
     valid = {p.name for p in sig.parameters.values()} - {"self", "cls"}
-    return [
-        f"unknown kwarg {kw.arg!r}; valid: {sorted(valid)}"
-        for kw in call.keywords
-        if kw.arg not in valid
-    ]
+    return [f"unknown kwarg {kw.arg!r}; valid: {sorted(valid)}" for kw in call.keywords if kw.arg not in valid]
 
 
 def _validate(tree: ast.AST, namespace: dict[str, object]) -> list[str]:
@@ -188,11 +184,7 @@ def _resolve(func: ast.AST, namespace: dict[str, object]) -> tuple[object | None
     """Resolve a callable expression to (object_or_None_or_MISSING, label)."""
     if isinstance(func, ast.Name) and func.id in namespace:
         return namespace[func.id], func.id
-    if (
-        isinstance(func, ast.Attribute)
-        and isinstance(func.value, ast.Name)
-        and func.value.id in namespace
-    ):
+    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) and func.value.id in namespace:
         owner = namespace[func.value.id]
         label = f"{func.value.id}.{func.attr}"
         if not hasattr(owner, func.attr):
