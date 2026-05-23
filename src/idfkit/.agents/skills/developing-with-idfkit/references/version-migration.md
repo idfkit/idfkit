@@ -43,20 +43,20 @@ from idfkit.migration import (
 )
 ```
 
-`migrate` accepts either an `IDFDocument` or a path; the type of the input determines whether you get a new document or a path back.
+`migrate` always takes a parsed `IDFDocument` and returns a `MigrationReport` whose `migrated_model` attribute is the new document. The input is never mutated.
 
 ## Top-level signature
 
-```python
+```text
 migrate(
-    source: IDFDocument | str | Path,
-    target_version: tuple[int, int, int],
+    model: IDFDocument,
+    target_version: tuple[int, int, int] | str,
     *,
     energyplus: EnergyPlusConfig | None = None,   # default: auto-discover
-    output: Path | str | None = None,             # only used when source is a path
-    on_progress: Callable[[MigrationProgress], None] | None = None,
-    timeout: float = 120.0,
     migrator: Migrator | None = None,             # plug a custom backend
+    on_progress: Callable[[MigrationProgress], None] | None = None,
+    work_dir: str | Path | None = None,           # default: a fresh tempdir
+    keep_work_dir: bool = False,
 ) -> MigrationReport
 ```
 
@@ -70,8 +70,8 @@ EnergyPlus ships one `Transition-VX-to-VY` binary per version step. idfkit plans
 from idfkit.migration import plan_migration_chain
 
 chain = plan_migration_chain(
-    source_version=(22, 1, 0),
-    target_version=(25, 2, 0),
+    source=(22, 1, 0),
+    target=(25, 2, 0),
 )
 for step in chain:
     print(step.from_version, "->", step.to_version, step.binary)

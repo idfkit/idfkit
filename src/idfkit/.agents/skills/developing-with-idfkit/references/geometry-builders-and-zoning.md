@@ -45,7 +45,7 @@ from idfkit import (
 rect = footprint_rectangle(width=50, depth=30)
 ell = footprint_l_shape(width=40, depth=20, wing_width=20, wing_depth=15)
 u = footprint_u_shape(width=40, depth=30, courtyard_width=15, courtyard_depth=10)
-courtyard = footprint_courtyard(width=40, depth=30, court_x=10, court_y=10, court_w=15, court_d=10)
+courtyard = footprint_courtyard(outer_width=40, outer_depth=30, inner_width=15, inner_depth=10)
 ```
 
 Or pass any CCW `list[tuple[float, float]]` you generate yourself.
@@ -71,8 +71,8 @@ create_block(doc, "Office", rect, floor_to_floor=3.5, num_stories=3,
 create_block(doc, "Office", rect, floor_to_floor=3.5, num_stories=3,
              zoning=ZoningScheme.CUSTOM,
              custom_zones=[
-                 ZoneFootprint(name="MeetingRoom", polygon=[(0,0), (10,0), (10,10), (0,10)]),
-                 ZoneFootprint(name="OpenPlan",    polygon=[(10,0), (50,0), (50,30), (10,30), (10,10), (0,10), (0,0)]),
+                 ZoneFootprint(name_suffix="MeetingRoom", polygon=[(0,0), (10,0), (10,10), (0,10)]),
+                 ZoneFootprint(name_suffix="OpenPlan",    polygon=[(10,0), (50,0), (50,30), (10,30), (10,10), (0,10), (0,0)]),
              ])
 ```
 
@@ -130,7 +130,7 @@ if bb is not None:
     (xmin, ymin), (xmax, ymax) = bb
 
 # Scale all surfaces uniformly (e.g. for unit conversion or sensitivity studies)
-scale_building(doc, scale_factor=1.1)      # 10% larger
+scale_building(doc, factor=1.1)            # 10% larger
 
 # Quickly assign a default construction to surfaces that lack one
 set_default_constructions(doc, construction_name="Default Construction")
@@ -157,9 +157,10 @@ When a footprint changes and you want to keep one surface but redraw it:
 ```python
 from idfkit.geometry_builders import split_horizontal_surface
 
-new_pieces = split_horizontal_surface(
+new_a, new_b = split_horizontal_surface(
+    doc,
     surface,
-    cut_polygon=[(10, 0), (20, 0), (20, 10), (10, 10)],
+    region=[(10, 0), (20, 0), (20, 10), (10, 10)],
 )
 ```
 
@@ -202,8 +203,9 @@ See [hvac-templates.md](hvac-templates.md).
 **BAD — forgetting `link_blocks` between setbacks**
 
 ```python
-create_block(doc, "Base", ...)
-create_block(doc, "Tower", base_elevation=10.5, ...)
+create_block(doc, "Base", base_footprint, floor_to_floor=3.5, num_stories=3)
+create_block(doc, "Tower", tower_footprint, floor_to_floor=3.5, num_stories=8,
+             base_elevation=10.5)
 # Tower floor and base ceiling are both `Outdoors` — heat flows where it shouldn't.
 ```
 

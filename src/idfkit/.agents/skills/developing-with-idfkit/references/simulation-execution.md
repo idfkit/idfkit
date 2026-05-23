@@ -78,8 +78,8 @@ If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised.
 ```python
 # Option 1 — explicit migration before simulate (recommended for production)
 from idfkit import migrate
-new_path = migrate("v22_model.idf", target_version=config.version, output="v24_model.idf")
-doc = load_idf(new_path)
+doc = load_idf("v22_model.idf")
+doc = migrate(doc, target_version=config.version).migrated_model
 
 # Option 2 — let simulate forward-migrate transparently
 result = simulate(doc, "weather.epw", auto_migrate=True)
@@ -142,7 +142,7 @@ If you re-simulate the same model + weather + flags often (e.g. iterating on out
 ```python
 from idfkit.simulation import SimulationCache
 
-cache = SimulationCache(directory=".sim_cache")
+cache = SimulationCache(cache_dir=".sim_cache")
 result = simulate(doc, "weather.epw", cache=cache)   # first call runs
 result = simulate(doc, "weather.epw", cache=cache)   # second call cache-hits, milliseconds
 ```
@@ -220,7 +220,7 @@ for _ in range(10):
 **GOOD — cache**
 
 ```python
-cache = SimulationCache(directory=".sim_cache")
+cache = SimulationCache(cache_dir=".sim_cache")
 for _ in range(10):
     result = simulate(doc, "weather.epw", cache=cache)   # cache-hits after the first
 ```

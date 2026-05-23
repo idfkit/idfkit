@@ -54,32 +54,31 @@ from idfkit.visualization import (
 ## 3D model views
 
 ```python
-from idfkit.visualization import view_model, ColorBy
+from idfkit.visualization import view_model, ColorBy, ModelViewConfig
 
 # Default — colour by zone
 view_model(doc).show()
 
 # Colour by boundary condition (Outdoors / Surface / Ground / Adiabatic)
-view_model(doc, color_by=ColorBy.BOUNDARY).show()
+view_model(doc, config=ModelViewConfig(color_by=ColorBy.BOUNDARY_CONDITION)).show()
 
 # Colour by construction (handy when you have many constructions)
-view_model(doc, color_by=ColorBy.CONSTRUCTION).show()
+view_model(doc, config=ModelViewConfig(color_by=ColorBy.CONSTRUCTION)).show()
 
-# Hide shading surfaces
-view_model(doc, include_shading=False).show()
+# Restrict to specific zones
+view_model(doc, zones=["Office_Core", "Office_Perimeter_N"]).show()
 
-# Custom config
-from idfkit.visualization import ModelViewConfig
+# Tune the styling (opacity, edges, labels, …)
 cfg = ModelViewConfig(
     color_by=ColorBy.ZONE,
-    include_shading=True,
-    show_axes=True,
+    show_fenestration=True,
+    show_labels=False,
     opacity=0.8,
 )
 view_model(doc, config=cfg).show()
 ```
 
-`view_model` returns a `plotly.graph_objects.Figure` — call `.show()`, `.write_image()`, or `.write_html()` on it. Requires `idfkit[plotly]`.
+`view_model` returns a `plotly.graph_objects.Figure` — call `.show()`, `.write_image()`, or `.write_html()` on it. Requires `idfkit[plotly]`. `ColorBy` members: `ZONE`, `SURFACE_TYPE`, `BOUNDARY_CONDITION`, `CONSTRUCTION`.
 
 ## Floor plans and exploded views
 
@@ -87,10 +86,10 @@ view_model(doc, config=cfg).show()
 from idfkit.visualization import view_floor_plan, view_exploded
 
 # Single-story plan
-view_floor_plan(doc, z=0.5).show()         # cuts at Z=0.5 m
+view_floor_plan(doc, z_cut=0.5).show()     # cuts at Z=0.5 m
 
 # Per-zone exploded view
-view_exploded(doc, gap=2.0).show()         # each zone offset by 2 m
+view_exploded(doc, separation=2.0).show()  # each zone offset by 2 m
 ```
 
 `view_floor_plan` is most useful for confirming zoning and core/perimeter splits. `view_exploded` is best for confirming surface ownership and adjacency.
@@ -115,18 +114,16 @@ from idfkit.visualization import construction_to_svg, SVGConfig
 wall = doc["Construction"]["ExteriorWall"]
 svg = construction_to_svg(wall)                      # default styling
 
-# Custom styling
+# Custom styling (width/height/padding/font, plus light/dark/auto theme)
 cfg = SVGConfig(
     width=800,
     height=400,
-    show_r_value=True,
-    show_thickness=True,
-    color_by_material_type=True,
+    theme="dark",
 )
 svg = construction_to_svg(wall, config=cfg)
 ```
 
-The SVG shows layered materials with proportional thicknesses, material names, and (optionally) R-values per layer. Each material type gets a distinct fill colour (insulation, glass, gas, opaque mass, …).
+The SVG shows layered materials with proportional thicknesses, material names, and R-values per layer. Each material type gets a distinct fill colour (insulation, glass, gas, opaque mass, …).
 
 For programmatic embedding into other diagrams, the lower-level `generate_construction_svg` returns a `bytes`-ready SVG with no surrounding `<svg>` boilerplate.
 
@@ -163,17 +160,17 @@ This is the canonical "did I get the geometry right?" loop. Render, look, edit, 
 
 ## Common mistakes
 
-**BAD — relying on `view_model` to render shading details**
+**BAD — silently hiding fenestration when you're studying it**
 
 ```python
-view_model(doc, include_shading=False).show()
-# Shading geometry hidden — you may miss that a neighbouring building isn't represented
+view_model(doc, config=ModelViewConfig(show_fenestration=False)).show()
+# Windows hidden — you may miss that south-facing fenestration didn't get applied
 ```
 
-**GOOD — keep shading on for orientation studies**
+**GOOD — keep fenestration on for envelope studies**
 
 ```python
-view_model(doc, include_shading=True).show()
+view_model(doc, config=ModelViewConfig(show_fenestration=True)).show()
 ```
 
 **BAD — `construction_to_svg` on an opaque material**

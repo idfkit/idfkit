@@ -139,6 +139,13 @@ hand-written examples.
 Skip this for purely internal refactors, dependency bumps, CI tweaks, and
 formatting changes — same scope as the changelog rule above.
 
+`tests/test_agent_references.py` parses every ```python block in those
+references and checks imports, keyword arguments, and attribute access
+against the live API. It runs as part of `make test`, so a renamed or
+removed symbol will fail there. Mark a block with
+`<!-- skip-check -->` immediately before its opening fence to opt out
+when an example is intentionally non-runnable.
+
 ## Code Conventions
 
 - Every module starts with `from __future__ import annotations`

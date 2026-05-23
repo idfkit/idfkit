@@ -219,6 +219,14 @@ hand-written examples.
 Skip this for purely internal refactors, dependency bumps, CI tweaks, and
 formatting changes — same scope as the changelog rule below.
 
+`tests/test_agent_references.py` parses every ```python block in those
+references and checks imports, keyword arguments, and attribute access
+against the live API. It runs as part of `make test`, so a renamed or
+removed symbol will fail there. Mark a block with
+`<!-- skip-check -->` immediately before its opening fence to opt out
+when an example is intentionally non-runnable (e.g. a `text` would be
+clearer but you want python syntax highlighting).
+
 ## EnergyPlus Version Support
 
 Bundled schemas cover EnergyPlus 8.9.0 through 26.1.0 (17 versions). The latest supported version is 26.1.0. Version 24.1.0 is used as the default in test fixtures. See `src/idfkit/versions.py` for the full list.

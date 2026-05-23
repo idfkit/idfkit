@@ -119,10 +119,10 @@ from idfkit.schedules import (
 )
 
 # Type limits (required by many schedule types)
-limits = create_schedule_type_limits(doc, "Fraction", lower=0.0, upper=1.0, numeric_type="Continuous")
+limits = create_schedule_type_limits(doc, "Fraction", lower=0.0, upper=1.0)
 
 # Constant
-always_on = create_constant_schedule(doc, "Always On", value=1.0, type_limits_name="Fraction")
+always_on = create_constant_schedule(doc, "Always On", value=1.0, type_limits="Fraction")
 
 # From an array of 8760 hourly values
 import numpy as np
@@ -130,7 +130,7 @@ arr = np.zeros(8760)
 arr[6 * 24 : 18 * 24] = 1.0                # mornings of week 1 occupied (toy example)
 sched = create_compact_schedule_from_values(
     doc, "Office Occupancy", arr,
-    type_limits_name="Fraction",
+    type_limits="Fraction",
 )
 ```
 

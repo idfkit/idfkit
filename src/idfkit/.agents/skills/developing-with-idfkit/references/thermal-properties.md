@@ -42,7 +42,7 @@ from idfkit.thermal import (
 )
 
 from idfkit.thermal.gas import (
-    GasType,                           # AIR, ARGON, KRYPTON, XENON
+    GasType,                           # Literal["Air", "Argon", "Krypton", "Xenon"]
     GasProperties,
     get_gas_properties,
     gas_gap_resistance,
@@ -105,23 +105,23 @@ Use this when you're emitting a construction report and don't want N round-trips
 ## Gas-gap properties
 
 ```python
-from idfkit.thermal.gas import GasType, gas_gap_resistance, typical_gap_r_value
+from idfkit.thermal.gas import gas_gap_resistance, typical_gap_r_value
 
-# Resistance of a 12 mm argon gap between two glass panes at 290 K mean temperature
+# Resistance of a 12 mm argon gap between two glass panes at 293 K mean temperature
 r_gap = gas_gap_resistance(
-    gas_type=GasType.ARGON,
-    thickness_m=0.012,
-    mean_temperature_k=290.0,
-    delta_temperature_k=15.0,
+    gas_type="Argon",                      # "Air", "Argon", "Krypton", "Xenon"
+    thickness=0.012,
+    temperature_k=293.15,
+    delta_t=15.0,
 )
 
 # Quick lookup of "typical" R-value (used by simplified glazing)
-r = typical_gap_r_value("argon", thickness_mm=12.0)
+r = typical_gap_r_value("Argon", thickness_mm=12.0)
 ```
 
 `gas_gap_resistance` accounts for conduction, convection, and radiation through the gas film — useful for IGU design when you're not relying on EnergyPlus's own glazing solver.
 
-Custom gas mixtures: build a `GasProperties` instance manually with the constituent properties (conductivity, viscosity, density, specific heat) and pass it where `GasType` would go.
+Custom gas mixtures: build a `GasProperties` instance manually with the constituent properties (conductivity, viscosity, density, specific heat) and use that instead of a `GasType` string.
 
 ## Worked example: comparing wall assemblies
 

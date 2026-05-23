@@ -193,9 +193,9 @@ from idfkit.simulation.plotting import (
     plot_comfort_hours,
 )
 
-plot_temperature_profile(result, zone="Office")
-plot_energy_balance(result)
-plot_comfort_hours(result, zone="Office")
+plot_temperature_profile(result.sql, zones=["Office"])
+plot_energy_balance(result.sql)
+plot_comfort_hours(result.sql, zones=["Office"])
 ```
 
 Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `idfkit[plotly]`). Pick with `get_default_backend(...)` or pass `backend=` explicitly.

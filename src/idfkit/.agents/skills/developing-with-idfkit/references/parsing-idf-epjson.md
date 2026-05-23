@@ -117,16 +117,14 @@ convert_epjson_to_idf("building.epJSON", "building.idf")
 
 ## Bulk loading
 
-For batch workflows, reuse an `IDFParser` instance to share the schema cache across files of the same version:
+For batch workflows, preload the schema once and pass it to every `IDFParser` so files of the same version share the cache:
 
 ```python
 from idfkit import IDFParser
 from idfkit.schema import get_schema
 
 schema = get_schema((25, 2, 0))
-parser = IDFParser(schema=schema)
-
-docs = [parser.parse_file(p) for p in input_paths]
+docs = [IDFParser(p, schema=schema).parse() for p in input_paths]
 ```
 
 ## Common mistakes
@@ -155,9 +153,11 @@ doc = load_idf("legacy.idf")               # may raise VersionNotFoundError
 **GOOD — explicitly migrate before loading**
 
 ```python
-from idfkit import migrate
-migrate("legacy.idf", target_version=(25, 2, 0), output="legacy_v25.idf")
-doc = load_idf("legacy_v25.idf")
+from idfkit import migrate, load_idf, write_idf
+legacy = load_idf("legacy.idf")
+report = migrate(legacy, target_version=(25, 2, 0))
+write_idf(report.migrated_model, "legacy_v25.idf")
+doc = report.migrated_model
 ```
 
 **BAD — forgetting `preserve_formatting` for the writer side**
