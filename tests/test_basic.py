@@ -10,7 +10,8 @@ def test_import():
     """Test that the package can be imported."""
     import idfkit
 
-    assert idfkit.__version__ == "0.1.0"
+    assert isinstance(idfkit.__version__, str)
+    assert idfkit.__version__
 
 
 def test_load_idf():

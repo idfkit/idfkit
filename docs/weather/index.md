@@ -27,12 +27,12 @@ The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Cl
 
 ## Key Features
 
-### 55,000+ Weather Stations
+### ~17,300 Weather Stations (~70,000 datasets)
 
 The bundled index contains data from climate.onebuilding.org, covering:
 
-- **~55,000 dataset entries** from 10 world regions
-- **~17,300 unique physical stations**
+- **~70,000 dataset entries** from 10 world regions
+- **~17,300 unique physical stations** (each may have multiple TMYx year-range variants)
 - **248 countries and territories**
 
 ### No Network Required

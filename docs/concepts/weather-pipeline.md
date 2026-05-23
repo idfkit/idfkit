@@ -9,7 +9,7 @@ idfkit's weather station index is built from the **climate.onebuilding.org**
 TMYx weather file collection. This is the most comprehensive free source
 of EnergyPlus weather files, containing:
 
-- **~55,000 dataset entries** from 10 world regions
+- **~70,000 dataset entries** from 10 world regions
 - **~17,300 unique physical weather stations**
 - Coverage of **248 countries and territories**
 
