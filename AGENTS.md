@@ -114,6 +114,31 @@ At release time the `[Unreleased]` heading is renamed to `[X.Y.Z] - YYYY-MM-DD`,
 a fresh empty `[Unreleased]` section is added above it, and the compare-link
 definitions at the bottom are updated.
 
+## Agent Reference Docs
+
+idfkit ships agent-readable reference docs at
+[`src/idfkit/.agents/skills/developing-with-idfkit/`](src/idfkit/.agents/skills/developing-with-idfkit/SKILL.md):
+a `SKILL.md` dispatch document and one focused markdown file per major
+feature under `references/`. They are packaged in the wheel and consumed
+by tooling such as
+[`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp), which exposes them
+over MCP at `idfkit://references/{topic}`.
+
+Whenever you change idfkit in a way an agent would notice — new or
+renamed public API, changed default behavior, a new sub-package, a new
+helper, a breaking change, a workflow that previously didn't exist —
+update the matching reference file(s) in
+`src/idfkit/.agents/skills/developing-with-idfkit/references/` in the
+same change. The reference table in `SKILL.md` maps tasks → files; pick
+the file whose topic matches and edit it, or add a new file and link it
+from `SKILL.md` if the change introduces a genuinely new topic. Code
+snippets in references should remain runnable — prefer reusing or adding
+to `docs/snippets/` (linted with ruff and pyright) rather than
+hand-written examples.
+
+Skip this for purely internal refactors, dependency bumps, CI tweaks, and
+formatting changes — same scope as the changelog rule above.
+
 ## Code Conventions
 
 - Every module starts with `from __future__ import annotations`
