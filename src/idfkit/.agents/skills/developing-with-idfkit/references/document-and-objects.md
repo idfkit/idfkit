@@ -98,6 +98,8 @@ zone.ceiling_height = 3.5                  # plain field
 zone.direction_of_relative_north = 90.0
 ```
 
+Dict-style access also works and accepts either Python or IDD field names — `zone["x_origin"]`, `zone["X Origin"]`, and `zone.x_origin` are all equivalent. Attribute access is the idiomatic form (better IDE autocomplete and type checking).
+
 Renaming uses `doc.rename()` (or `obj.name = "new"`) so the reference graph cascades the change:
 
 ```python
@@ -141,18 +143,6 @@ for obj in doc.all_objects():
 ```
 
 ## Common mistakes
-
-**BAD — string-keyed field access**
-
-```python
-zone["X Origin"] = 0.0                     # not how idfkit works
-```
-
-**GOOD — Python-name attribute access**
-
-```python
-zone.x_origin = 0.0
-```
 
 **BAD — mutating a list of extensibles in place**
 
