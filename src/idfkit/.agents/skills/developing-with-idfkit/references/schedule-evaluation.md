@@ -174,14 +174,14 @@ hourly = values(sched, file_cache=cache)
 ```python
 from idfkit.schedules import get_holidays, extract_special_days
 
-# US Federal holidays for a given year
-holidays = get_holidays(year=2024, country="US")
+# Pull RunPeriodControl:SpecialDays from a document for a year
+specials = extract_special_days(doc, 2024)
 
-# Pull RunPeriodControl:SpecialDays from a document
-specials = extract_special_days(doc)
+# Set[date] of dates classified as holidays for that year
+holidays = get_holidays(doc, 2024)
 ```
 
-These feed into `evaluate` automatically when `day_type` is `"holiday"` or when the timestamp falls on a registered special day.
+Both functions read the document's `RunPeriodControl:SpecialDays` objects — idfkit does not bundle external holiday calendars. To use country-specific calendars, add the corresponding `SpecialDays` entries yourself (e.g. from the `holidays` PyPI package) before calling.
 
 ## Common mistakes
 

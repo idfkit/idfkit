@@ -153,7 +153,8 @@ create_block(
     floor_to_floor=3.5, num_stories=3,
     zoning=ZoningScheme.CORE_PERIMETER,
 )
-set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})
+for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West", 0.4)]:
+    set_wwr(doc, wwr=ratio, orientation=orientation)
 
 view_model(doc).show()                     # sanity check before simulation
 ```

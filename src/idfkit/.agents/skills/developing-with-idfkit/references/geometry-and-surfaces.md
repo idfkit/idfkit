@@ -132,10 +132,12 @@ from idfkit import set_wwr
 
 set_wwr(doc, wwr=0.4)                      # all exterior walls
 set_wwr(doc, wwr=0.4, orientation="South") # only south walls
-set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})
+# Per-orientation ratios: call once per orientation.
+for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West", 0.4)]:
+    set_wwr(doc, wwr=ratio, orientation=orientation)
 ```
 
-The existing windows on matched walls are removed; new `FenestrationSurface:Detailed` objects are inserted with the target ratio, centred on each wall.
+`wwr` is a single float in the open interval `(0, 1)`. The existing windows on matched walls are removed; new `FenestrationSurface:Detailed` objects are inserted with the target ratio, centred on each wall.
 
 ## Surface matching
 
@@ -202,16 +204,17 @@ for zone in doc["Zone"]:
 rotate_building(doc, angle_deg=90.0)       # rotates all vertices and zone origins
 ```
 
-**BAD — running `set_wwr` on a model with non-vertical walls without scoping**
+**BAD — passing a dict to `set_wwr`**
 
 ```python
-set_wwr(doc, wwr=0.4)                      # may try to fenestrate sloped surfaces
+set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})  # TypeError
 ```
 
-**GOOD — restrict to vertical walls explicitly via orientation**
+**GOOD — call once per orientation**
 
 ```python
-set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})
+for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West", 0.4)]:
+    set_wwr(doc, wwr=ratio, orientation=orientation)
 ```
 
 ## Related

@@ -124,8 +124,10 @@ This adds `Shading:Building:Detailed` surfaces (not zones or interior walls).
 ```python
 from idfkit import bounding_box, scale_building, set_default_constructions
 
-# Inspect
-(xmin, ymin), (xmax, ymax) = bounding_box(doc)
+# Inspect — returns None if the model has no surfaces
+bb = bounding_box(doc)
+if bb is not None:
+    (xmin, ymin), (xmax, ymax) = bb
 
 # Scale all surfaces uniformly (e.g. for unit conversion or sensitivity studies)
 scale_building(doc, scale_factor=1.1)      # 10% larger

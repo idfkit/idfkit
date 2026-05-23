@@ -131,20 +131,25 @@ added = apply_ashrae_sizing(doc, station, standard="90.1")
 print(f"Added {len(added)} design days")
 ```
 
-The default `standard="90.1"` covers ASHRAE 90.1 99.6% and 0.4% conditions. Other choices: `"169"` for ASHRAE 169 climate zones, `"custom"` to pass your own DDY content.
+`standard="90.1"` adds Heating 99.6% + Cooling 1% DB + Cooling 1% WB; the default `standard="general"` adds Heating 99.6% + Cooling 0.4% DB. Those are the only two presets.
 
-Lower-level access:
+Lower-level access — download a station's DDY, inspect it, and inject selected percentiles into a model:
 
 ```python
 from idfkit.weather import DesignDayManager, DesignDayType
 
-ddm = DesignDayManager.from_ddy_url(station.ddy_url)
-heating = ddm.get(DesignDayType.HEATING_99_6)
-cooling = ddm.get(DesignDayType.COOLING_0_4)
-ddm.inject(doc, [heating, cooling])
+ddm = DesignDayManager.from_station(station)
+heating = ddm.get(DesignDayType.HEATING_99_6)         # IDFObject | None
+cooling = ddm.get(DesignDayType.COOLING_DB_0_4)
+added = ddm.apply_to_model(                            # injects per the preset args
+    doc,
+    heating="99.6%",
+    cooling="0.4%",
+    include_wet_bulb=True,
+)
 ```
 
-`NoDesignDaysError` is raised when a station's DDY contains no usable design days (rare, but possible for incomplete TMYx entries).
+`DesignDayType` members include `HEATING_99_6`, `HEATING_99`, `COOLING_DB_0_4`/`_1`/`_2`, `COOLING_WB_*`, `COOLING_ENTH_*`, `DEHUMID_*`, `HUMIDIFICATION_99_6`/`_99`, `HTG_WIND_*`, `WIND_*`. Use `ddm.summary()` to print everything the DDY classifies. `NoDesignDaysError` is raised by `ddm.raise_if_empty()` when a station's DDY contains no usable design days (rare, but possible for incomplete TMYx entries).
 
 ## Detecting the user's location
 

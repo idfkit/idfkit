@@ -24,7 +24,7 @@ ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office", frequency=
 print(max(ts.values), ts.units)            # 27.3 'C'
 
 # 3. Tabular reports (annual energy, sizing, …)
-df = result.sql.to_dataframe("AnnualBuildingUtilityPerformanceSummary")
+rows = result.sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformanceSummary")
 ```
 
 ## What's on `SimulationResult`
@@ -96,13 +96,9 @@ total = result.sql.get_tabular_value(
     row_name="Total End Uses",
     column_name="Electricity",
 )
-
-# As a DataFrame (requires idfkit[dataframes])
-df = result.sql.to_dataframe(
-    report_name="AnnualBuildingUtilityPerformanceSummary",
-    table_name="End Uses",
-)
 ```
+
+`get_tabular_data` returns `list[TabularRow]`; there is no direct tabular-to-DataFrame helper. If you need a DataFrame, build one yourself: `pd.DataFrame([dataclasses.asdict(r) for r in rows])`. `SQLResult.to_dataframe` is for time-series variables only (see above).
 
 To enumerate what's available:
 
@@ -174,7 +170,7 @@ To produce RDD/MDD, the IDF needs `Output:VariableDictionary, IDF;` (or `regular
 
 ```python
 from idfkit.simulation import prep_outputs
-prep_outputs(doc, include_variable_dictionary=True)
+prep_outputs(doc)                           # adds Output:VariableDictionary (and Output:SQLite)
 result = simulate(doc, "weather.epw")
 ```
 
@@ -209,7 +205,8 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 **BAD — accessing `result.sql` without a None check**
 
 ```python
-df = result.sql.to_dataframe(report_name="...")   # AttributeError if SQL output was disabled
+df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+# AttributeError if SQL output was disabled
 ```
 
 **GOOD — check or trust the runner's auto-injection**
@@ -218,7 +215,7 @@ df = result.sql.to_dataframe(report_name="...")   # AttributeError if SQL output
 # simulate() injects Output:SQLite if missing — result.sql is almost always present.
 # But guard anyway when reading legacy results from disk:
 if result.sql:
-    df = result.sql.to_dataframe(report_name="...")
+    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 ```
 
 **BAD — assuming a variable exists**
@@ -240,7 +237,7 @@ doc.add("Output:Variable", key_value="*",
 **BAD — ignoring `result.errors.has_severe()`**
 
 ```python
-df = result.sql.to_dataframe(report_name="...")
+df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 # Garbage data — EnergyPlus terminated mid-simulation, SQLite was never finalised.
 ```
 
@@ -249,7 +246,7 @@ df = result.sql.to_dataframe(report_name="...")
 ```python
 if result.errors.has_severe():
     raise SystemExit(result.errors.summary())
-df = result.sql.to_dataframe(report_name="...")
+df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 ```
 
 ## Related
