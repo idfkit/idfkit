@@ -236,10 +236,10 @@ result = simulate(doc, "weather.epw")
 
 ```python
 result = simulate(doc, "weather.epw")
-if result.errors.has_severe():
+if result.errors.has_severe:
     print(result.errors.summary())
-    for msg in result.errors.severe():
-        print(msg)
+    for msg in result.errors.severe:
+        print(msg.severity, msg.message)
     raise SystemExit("Simulation failed")
 ```
 

@@ -1,6 +1,6 @@
 # Reference tracking
 
-EnergyPlus models are graphs of cross-references: a `BuildingSurface:Detailed.zone_name` points at a `Zone.name`, a `People.zone_or_zonelist_name` points at a `Zone` or `ZoneList`, a `Branch` component name points at a coil. idfkit keeps a live `ReferenceGraph` of every reference and uses it for two superpowers — fast "what points at this?" queries, and automatic cascading renames.
+EnergyPlus models are graphs of cross-references: a `BuildingSurface:Detailed.zone_name` points at a `Zone.name`, a `People.zone_or_zonelist_or_space_or_spacelist_name` points at a `Zone` or `ZoneList`, a `Branch` component name points at a coil. idfkit keeps a live `ReferenceGraph` of every reference and uses it for two superpowers — fast "what points at this?" queries, and automatic cascading renames.
 
 ## When to use
 
@@ -47,8 +47,8 @@ doc.rename("Zone", "Office", "Open_Office")
 idfkit registers references at three points:
 
 1. **At parse time** — `parse_idf` / `parse_epjson` walks every reference field as it builds objects.
-2. **On `add` / `addidfobject`** — `doc.add("People", ..., zone_or_zonelist_name="Office")` registers the edge.
-3. **On field mutation** — setting `obj.zone_or_zonelist_name = "Office"` swaps the edge atomically.
+2. **On `add` / `addidfobject`** — `doc.add("People", ..., zone_or_zonelist_or_space_or_spacelist_name="Office")` registers the edge.
+3. **On field mutation** — setting `obj.zone_or_zonelist_or_space_or_spacelist_name = "Office"` swaps the edge atomically.
 
 `doc.removeidfobject(obj)` unregisters every edge originating from `obj`. `obj.name = "new"` triggers `notify_name_change`, which rewrites every edge that pointed at `obj` to point at the new name and rewrites every field carrying the old name.
 
@@ -76,8 +76,8 @@ The canonical pattern. Set `obj.name` (or call `doc.rename`) and every reference
 doc["Zone"]["Office"].name = "Open_Office"
 # All fields across the document that pointed to "Office" now say "Open_Office":
 #   BuildingSurface:Detailed.zone_name
-#   People.zone_or_zonelist_name
-#   ZoneInfiltration:DesignFlowRate.zone_or_zonelist_name
+#   People.zone_or_zonelist_or_space_or_spacelist_name
+#   ZoneInfiltration:DesignFlowRate.zone_or_zonelist_or_space_or_spacelist_name
 #   ...
 ```
 
@@ -89,7 +89,7 @@ Renaming an object that nothing references is also fine — it just updates the 
 people = doc["People"]["Office People"]
 for target_name in doc.get_references(people):
     print(target_name)
-# 'Office'              (zone_or_zonelist_name)
+# 'Office'              (zone_or_zonelist_or_space_or_spacelist_name)
 # 'Occupancy_Sched'     (number_of_people_schedule_name)
 # 'Activity_Sched'      (activity_level_schedule_name)
 

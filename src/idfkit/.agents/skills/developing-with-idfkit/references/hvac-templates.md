@@ -153,8 +153,9 @@ idfkit invokes `ExpandObjects` as a preprocessor and feeds EnergyPlus the expand
 ```python
 expanded = doc.expand()                    # returns a new IDFDocument
 # Templates are gone; the low-level equivalents are present
-for ideal in expanded.get("ZoneHVAC:IdealLoadsAirSystem", []):
-    print(ideal.name, ideal.cooling_limit)
+if "ZoneHVAC:IdealLoadsAirSystem" in expanded:
+    for ideal in expanded["ZoneHVAC:IdealLoadsAirSystem"]:
+        print(ideal.name, ideal.cooling_limit)
 ```
 
 Use this when you want to study what `ExpandObjects` produced or hand-modify the result.

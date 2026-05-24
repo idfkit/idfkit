@@ -145,7 +145,7 @@ from idfkit import detect_horizontal_adjacencies, link_horizontal_surfaces
 
 adjacencies = detect_horizontal_adjacencies(doc)
 for adj in adjacencies:
-    link_horizontal_surfaces(adj.ceiling, adj.floor)
+    link_horizontal_surfaces(adj.roof_surface, adj.floor_surface)
 ```
 
 `create_block` calls this automatically for the block it produces; you need to invoke it yourself only when stitching together hand-authored stories.

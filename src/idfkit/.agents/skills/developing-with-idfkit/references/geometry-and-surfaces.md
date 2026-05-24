@@ -51,9 +51,9 @@ v + Vector3D(0, 1, 0)                      # vector addition
 v - Vector3D(0, 1, 0)
 v.dot(other)
 v.cross(other)
-v.length
-v.normalized()
-v.rotate_z(angle_rad)                      # rotate about Z (vertical)
+v.length()
+v.normalize()
+v.rotate_z(angle_deg=45)                   # rotate about Z (vertical), degrees
 ```
 
 ### `Polygon3D`
@@ -65,8 +65,9 @@ poly.centroid                              # Vector3D
 poly.normal                                # outward normal as Vector3D
 poly.azimuth                               # 0–360, degrees clockwise from North
 poly.tilt                                  # 0–180, degrees from horizontal
-poly.reversed()                            # flip winding (used for floor↔ceiling matching)
 ```
+
+`Polygon3D` does not expose a "reverse winding" helper — for floor↔ceiling matching, build a new polygon with the vertices in the opposite order (`Polygon3D(list(reversed(poly.vertices)))`).
 
 ## Surface calculations
 

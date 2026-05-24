@@ -15,7 +15,7 @@
 result = simulate(doc, "weather.epw")
 
 # 1. Always check errors first
-if result.errors.has_severe():
+if result.errors.has_severe:
     print(result.errors.summary())
     raise SystemExit
 
@@ -47,12 +47,12 @@ All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce 
 errs = result.errors                       # ErrorReport
 print(errs.summary())                      # human-readable rollup
 
-if errs.has_severe():
-    for msg in errs.severe():
-        print(msg.severity, msg.text)
+if errs.has_severe:                        # property, not method
+    for msg in errs.severe:                # tuple[ErrorMessage, ...]
+        print(msg.severity, msg.message)
 
-for warn in errs.warnings():
-    print(warn.text)
+for warn in errs.warnings:
+    print(warn.message)
 ```
 
 `severe()` includes both `Severe` and `Fatal`. Always treat a non-empty `severe()` as a simulation failure even if EnergyPlus exited zero — many corrupt-output cases leave the file present but unreadable.
@@ -244,7 +244,7 @@ df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 **GOOD — gate on errors**
 
 ```python
-if result.errors.has_severe():
+if result.errors.has_severe:
     raise SystemExit(result.errors.summary())
 df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
 ```

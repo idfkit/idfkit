@@ -134,10 +134,11 @@ These codes are stable; agents and CI checks can filter on them.
 desc = doc.describe("Zone")
 print(desc.memo)                           # human description from EnergyPlus docs
 for field in desc.fields:
-    print(field.name, field.field_type, field.required, field.default, field.range)
+    print(field.name, field.field_type, field.required, field.default,
+          field.minimum, field.maximum)
 ```
 
-`doc.describe("Zone")` is shorthand for `ObjectDescription.from_schema(doc.schema, "Zone")`.
+`FieldDescription` exposes `name, field_type, required, default, units, enum_values, minimum, maximum, exclusive_minimum, exclusive_maximum, note, is_reference, object_list`. There is no `range` aggregate — pull `minimum`/`maximum` (and the `exclusive_*` variants for open intervals) directly.
 
 ## Common mistakes
 
