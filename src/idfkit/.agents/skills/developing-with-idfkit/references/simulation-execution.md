@@ -129,8 +129,8 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{int(wwr*100)}"))
 
 batch = simulate_batch(jobs, max_workers=4)
-for label, result in batch.results.items():
-    print(label, result.errors.summary())
+for job, result in zip(jobs, batch.results):
+    print(job.label, result.errors.summary())
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs in parallel processes (use `max_workers` to cap parallelism).

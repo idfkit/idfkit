@@ -95,8 +95,8 @@ for step in report.steps:
     print(step.from_version, "->", step.to_version)
     print(step.stdout)
     print(step.stderr)
-    print(step.audit)                      # contents of the transition audit file
-    print(step.duration_s)
+    print(step.audit_text)                 # contents of the transition audit file
+    print(step.runtime_seconds)
 ```
 
 `MigrationDiff` surfaces what types/objects changed: added, removed, renamed (object-type rename, e.g. `HVACTemplate:Plant:ChilledWaterLoop` getting a new field), and modified.
@@ -138,11 +138,19 @@ new_doc = asyncio.run(main())
 ## Plugging a custom backend
 
 ```python
-from idfkit.migration import Migrator, MigrationStepResult
+from pathlib import Path
+from idfkit.migration import MigrationStepResult
 
 class MyMigrator:
-    def migrate_step(self, idf_path: Path, from_version, to_version, *, timeout, **kwargs) -> MigrationStepResult:
-        ...   # invoke a binary, return MigrationStepResult
+    def migrate_step(
+        self,
+        idf_text: str,
+        from_version: tuple[int, int, int],
+        to_version: tuple[int, int, int],
+        *,
+        work_dir: Path,
+    ) -> MigrationStepResult:
+        ...   # invoke a binary, return MigrationStepResult(idf_text=..., stdout=..., stderr=..., audit_text=...)
 
 migrate(doc, target_version=(25, 2, 0), migrator=MyMigrator())
 ```

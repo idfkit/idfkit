@@ -74,13 +74,14 @@ results = index.nearest(*geocode("350 Fifth Avenue, New York, NY"))
 ### By coordinates
 
 ```python
-hits = index.nearest(lat=41.978, lon=-87.904, max_results=10)
+hits = index.nearest(41.978, -87.904, limit=10)
 ```
 
-### By bounding box
+### By distance
 
 ```python
-hits = index.search_box(min_lat=40, min_lon=-75, max_lat=42, max_lon=-72)
+# All stations within 200 km of a point
+hits = index.nearest(41.0, -73.5, max_distance_km=200)
 ```
 
 ## Inspecting a station
