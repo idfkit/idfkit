@@ -21,14 +21,7 @@ idfkit doesn't provide higher-level "build me an air loop" helpers — you autho
 ## Canonical pattern: lint before simulate
 
 ```python
-from idfkit import load_idf, validate_document
-
-doc = load_idf("custom_loop.idf")
-result = validate_document(doc)
-if not result.is_valid:
-    for err in result.errors:
-        print(err)
-    raise SystemExit("Refusing to simulate an invalid loop graph")
+--8<-- "docs/snippets/agent_references/hvac-loops.py:lint-before-simulate"
 ```
 
 `validate_document` with `check_references=True` (the default) reports every dangling node-name reference as an `E004` error. That's the single most useful smoke test before kicking off a simulation.
@@ -36,13 +29,7 @@ if not result.is_valid:
 ## Tracing a loop with `get_referencing`
 
 ```python
-# Every object that mentions "AHU-1 Cooling Coil"
-for obj in doc.get_referencing("AHU-1 Cooling Coil"):
-    print(obj.obj_type, obj.name)
-# Branch 'AHU-1 Cooling Branch'
-# Controller:WaterCoil 'AHU-1 Cooling Coil Controller'
-# SetpointManager:Scheduled 'AHU-1 Cooling Coil Setpoint'
-# ...
+--8<-- "docs/snippets/agent_references/hvac-loops.py:trace-referencing"
 ```
 
 If a branch or controller you expect to see isn't there, the wiring is wrong — fix it before simulating, not after.
@@ -50,9 +37,7 @@ If a branch or controller you expect to see isn't there, the wiring is wrong —
 ## Safe renames
 
 ```python
-# Rename a coil. Every branch component, controller, setpoint manager
-# that pointed at "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A".
-doc["Coil:Cooling:Water"]["AHU-1 Cooling Coil"].name = "AHU-1 Cooling Coil A"
+--8<-- "docs/snippets/agent_references/hvac-loops.py:safe-rename"
 ```
 
 This is the central reason idfkit is safer than text-editing IDFs: a rename through the reference graph is atomic and complete. Renaming via raw string substitution (e.g. `sed`) inevitably misses one of the dozens of fields that mention the name.
@@ -64,18 +49,7 @@ See [reference-tracking.md](reference-tracking.md) for the full rename machinery
 The branch/branch-list graph is what most loop authoring boils down to. Use the reference graph to verify it.
 
 ```python
-# All branches in the model
-for branch in doc.get_collection("Branch"):
-    print(branch.name)
-    # Each Branch has an extensible list of components
-    for comp in branch.components:
-        print("  ", comp.component_object_type, comp.component_name)
-
-# All BranchLists, and which branches they reference
-for bl in doc.get_collection("BranchList"):
-    print(bl.name)
-    for branch_name in doc.get_references(bl):
-        print("  branch:", branch_name)
+--8<-- "docs/snippets/agent_references/hvac-loops.py:branch-branchlist"
 ```
 
 A loop with a missing branch-list entry simulates and produces silently wrong results. The reference-graph walk above catches it in seconds.
@@ -85,15 +59,7 @@ A loop with a missing branch-list entry simulates and produces silently wrong re
 Splitter/mixer pairs define the parallel paths in an air or water loop. Each names branches via extensible fields:
 
 ```python
-splitter = doc.add("Connector:Splitter", "CHW Loop Splitter")
-splitter.inlet_branch_name = "CHW Loop Supply Inlet Branch"
-splitter.branches.append(outlet_branch_name="Chiller 1 Branch")
-splitter.branches.append(outlet_branch_name="Chiller 2 Branch")
-
-mixer = doc.add("Connector:Mixer", "CHW Loop Mixer")
-mixer.outlet_branch_name = "CHW Loop Supply Outlet Branch"
-mixer.branches.append(inlet_branch_name="Chiller 1 Branch")
-mixer.branches.append(inlet_branch_name="Chiller 2 Branch")
+--8<-- "docs/snippets/agent_references/hvac-loops.py:splitter-mixer"
 ```
 
 Validation checks that every branch name in the splitter/mixer exists as a `Branch` object — typos surface as `E004`.
@@ -105,25 +71,7 @@ EnergyPlus loops are wired by string-typed *node names*, not by object reference
 The safety net is `get_referencing` plus a final `validate_document` call. There's no idfkit feature that "wires" two nodes for you — that's still your responsibility.
 
 ```python
-# Coil names node A and node B
-coil = doc.add(
-    "Coil:Cooling:Water",
-    "AHU-1 Cooling Coil",
-    availability_schedule_name="Always On",
-    water_inlet_node_name="CHW Inlet Node",
-    water_outlet_node_name="CHW Outlet Node",
-    air_inlet_node_name="AHU-1 Mixed Air Node",
-    air_outlet_node_name="AHU-1 Cooling Coil Outlet Node",
-    # ...
-)
-# Adjacent component must declare the same air outlet name as its inlet
-fan = doc.add(
-    "Fan:VariableVolume",
-    "AHU-1 Fan",
-    air_inlet_node_name="AHU-1 Cooling Coil Outlet Node",  # MATCHES coil.air_outlet_node_name
-    air_outlet_node_name="AHU-1 Supply Outlet Node",
-    # ...
-)
+--8<-- "docs/snippets/agent_references/hvac-loops.py:link-node-names"
 ```
 
 If the strings don't match exactly (case-sensitive), the loop is broken. EnergyPlus will only tell you at simulation time. **Always lint with `validate_document` and a `get_referencing` spot-check before simulating.**
@@ -140,9 +88,7 @@ coil._data["air_outlet_node_name"] = "AHU-1 Coil Out"
 **GOOD — set both ends, or rename the coil**
 
 ```python
-coil.air_outlet_node_name = "AHU-1 Coil Out"
-fan.air_inlet_node_name = "AHU-1 Coil Out"
-# Note: node names are strings, not references — both must be updated.
+--8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-node-good"
 ```
 
 **BAD — renaming a coil via `_data["name"]`**
@@ -155,8 +101,7 @@ coil._data["name"] = "New Coil Name"
 **GOOD — set `.name`**
 
 ```python
-coil.name = "New Coil Name"
-# Every Branch.component_name that pointed at "AHU-1 Cooling Coil" updates.
+--8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-rename-good"
 ```
 
 **BAD — assuming `validate_document` catches mismatched node-name strings**
@@ -169,13 +114,7 @@ coil.name = "New Coil Name"
 **GOOD — also walk the graph manually for critical loops**
 
 ```python
-# Sanity-check that every coil has a paired adjacent branch component
-for coil in doc.get_collection("Coil:Cooling:Water"):
-    inlet = coil.air_inlet_node_name
-    outlet = coil.air_outlet_node_name
-    upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-    downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-    assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+--8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-walk-good"
 ```
 
 ## Related

@@ -12,18 +12,7 @@ idfkit's `geometry_builders` and `zoning` modules are for **synthesizing** build
 ## Quick start
 
 ```python
-from idfkit import new_document, write_idf, ZoningScheme, create_block, footprint_rectangle
-
-doc = new_document()
-create_block(
-    doc,
-    name="Office",
-    footprint=footprint_rectangle(width=50.0, depth=30.0),
-    floor_to_floor=3.5,
-    num_stories=3,
-    zoning=ZoningScheme.CORE_PERIMETER,
-)
-write_idf(doc, "block.idf")
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:quickstart"
 ```
 
 That single call produces zones, floors, ceilings, exterior walls, interior walls, ground/roof boundary conditions, and inter-floor links for an entire 3-story block.
@@ -33,17 +22,7 @@ That single call produces zones, floors, ceilings, exterior walls, interior wall
 idfkit provides parametric footprint generators that return `list[tuple[float, float]]` in counter-clockwise order:
 
 ```python
-from idfkit import (
-    footprint_rectangle,
-    footprint_l_shape,
-    footprint_u_shape,
-    footprint_courtyard,
-)
-
-rect = footprint_rectangle(width=50, depth=30)
-ell = footprint_l_shape(width=40, depth=20, wing_width=20, wing_depth=15)
-u = footprint_u_shape(width=40, depth=30, courtyard_width=15, courtyard_depth=10)
-courtyard = footprint_courtyard(outer_width=40, outer_depth=30, inner_width=15, inner_depth=10)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:footprints"
 ```
 
 Or pass any CCW `list[tuple[float, float]]` you generate yourself.
@@ -57,28 +36,7 @@ Or pass any CCW `list[tuple[float, float]]` you generate yourself.
 - `CUSTOM` — caller supplies `ZoneFootprint` polygons for each floor.
 
 ```python
-from idfkit import ZoningScheme, ZoneFootprint
-
-create_block(doc, "Office", rect, floor_to_floor=3.5, num_stories=3, zoning=ZoningScheme.BY_STOREY)
-
-create_block(
-    doc, "Office", rect, floor_to_floor=3.5, num_stories=3, zoning=ZoningScheme.CORE_PERIMETER, perimeter_depth=4.0
-)
-
-create_block(
-    doc,
-    "Office",
-    rect,
-    floor_to_floor=3.5,
-    num_stories=3,
-    zoning=ZoningScheme.CUSTOM,
-    custom_zones=[
-        ZoneFootprint(name_suffix="MeetingRoom", polygon=[(0, 0), (10, 0), (10, 10), (0, 10)]),
-        ZoneFootprint(
-            name_suffix="OpenPlan", polygon=[(10, 0), (50, 0), (50, 30), (10, 30), (10, 10), (0, 10), (0, 0)]
-        ),
-    ],
-)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:zoning-schemes"
 ```
 
 `create_block` also accepts:
@@ -91,24 +49,7 @@ create_block(
 For setback geometries (e.g. a base + tower), call `create_block` twice and link the stacked surfaces:
 
 ```python
-from idfkit import create_block, link_blocks, footprint_rectangle, ZoningScheme
-
-create_block(
-    doc, "Base", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3, zoning=ZoningScheme.CORE_PERIMETER
-)
-create_block(
-    doc,
-    "Tower",
-    footprint_rectangle(30, 20, origin=(10, 5)),
-    floor_to_floor=3.5,
-    num_stories=8,
-    base_elevation=3.5 * 3,
-    zoning=ZoningScheme.CORE_PERIMETER,
-)
-
-link_blocks(doc)  # auto-detect and link all stacked blocks
-# or
-link_blocks(doc, lower="Base", upper="Tower")  # link a specific pair
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:multi-block"
 ```
 
 `link_blocks` finds matching ceiling/floor pairs between blocks and sets their boundary conditions to `Surface` pointing at each other.
@@ -118,14 +59,7 @@ link_blocks(doc, lower="Base", upper="Tower")  # link a specific pair
 For solar shading from neighbouring structures (not conditioned space):
 
 ```python
-from idfkit import add_shading_block, footprint_rectangle
-
-add_shading_block(
-    doc,
-    name="ParkingGarage",
-    footprint=footprint_rectangle(40, 20, origin=(60, 0)),
-    height=12.0,
-)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:shading"
 ```
 
 This adds `Shading:Building:Detailed` surfaces (not zones or interior walls).
@@ -133,18 +67,7 @@ This adds `Shading:Building:Detailed` surfaces (not zones or interior walls).
 ## Building-wide edits
 
 ```python
-from idfkit import bounding_box, scale_building, set_default_constructions
-
-# Inspect — returns None if the model has no surfaces
-bb = bounding_box(doc)
-if bb is not None:
-    (xmin, ymin), (xmax, ymax) = bb
-
-# Scale all surfaces uniformly (e.g. for unit conversion or sensitivity studies)
-scale_building(doc, factor=1.1)  # 10% larger
-
-# Quickly assign a default construction to surfaces that lack one
-set_default_constructions(doc, construction_name="Default Construction")
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:building-edits"
 ```
 
 ## Horizontal adjacencies
@@ -152,11 +75,7 @@ set_default_constructions(doc, construction_name="Default Construction")
 For multi-story models where floors and ceilings need to be linked to their neighbours above/below:
 
 ```python
-from idfkit import detect_horizontal_adjacencies, link_horizontal_surfaces
-
-adjacencies = detect_horizontal_adjacencies(doc)
-for adj in adjacencies:
-    link_horizontal_surfaces(adj.roof_surface, adj.floor_surface)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:horizontal-adjacencies"
 ```
 
 `create_block` calls this automatically for the block it produces; you need to invoke it yourself only when stitching together hand-authored stories.
@@ -166,13 +85,7 @@ for adj in adjacencies:
 When a footprint changes and you want to keep one surface but redraw it:
 
 ```python
-from idfkit.geometry_builders import split_horizontal_surface
-
-new_a, new_b = split_horizontal_surface(
-    doc,
-    surface,
-    region=[(10, 0), (20, 0), (20, 10), (10, 10)],
-)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:split-surface"
 ```
 
 ## Common mistakes
@@ -188,7 +101,7 @@ create_block(doc, "Office", cw_rect, floor_to_floor=3.5, num_stories=1)
 **GOOD — counter-clockwise**
 
 ```python
-ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:mistake-ccw-good"
 ```
 
 **BAD — relying on `create_block` to add HVAC**
@@ -202,9 +115,7 @@ simulate(doc, "weather.epw")               # zones have no HVAC — uncontrolled
 **GOOD — add HVAC explicitly**
 
 ```python
-create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3)
-for zone in doc["Zone"]:
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:mistake-hvac-good"
 ```
 
 See [hvac-templates.md](hvac-templates.md).
@@ -221,7 +132,7 @@ create_block(doc, "Tower", tower_footprint, floor_to_floor=3.5, num_stories=8,
 **GOOD — link them**
 
 ```python
-link_blocks(doc)
+--8<-- "docs/snippets/agent_references/geometry-builders-and-zoning.py:mistake-link-good"
 ```
 
 ## Related

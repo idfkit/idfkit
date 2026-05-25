@@ -11,24 +11,7 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 ## Quick start
 
 ```python
-from idfkit import load_idf, new_document, write_idf
-
-# Create or load
-doc = new_document()  # blank model at LATEST_VERSION
-doc = load_idf("building.idf")  # from disk
-
-# Add an object — keyword args use Python snake_case field names
-zone = doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0, ceiling_height=3.0)
-
-# Look up by type, then by name (both are O(1))
-zone = doc["Zone"]["Office"]
-print(zone.ceiling_height)  # 3.0
-
-# Mutate fields by attribute
-zone.ceiling_height = 3.5
-
-# Persist
-write_idf(doc, "out.idf")
+--8<-- "docs/snippets/agent_references/document-and-objects.py:quickstart"
 ```
 
 ## Core API
@@ -55,15 +38,7 @@ write_idf(doc, "out.idf")
 `doc.add()` is the canonical constructor. Pass field values as keyword arguments using Python snake_case names (`x_origin`, not `"X Origin"`):
 
 ```python
-material = doc.add(
-    "Material",
-    "XPS_50mm",
-    roughness="Rough",
-    thickness=0.05,
-    conductivity=0.034,
-    density=35.0,
-    specific_heat=1400.0,
-)
+--8<-- "docs/snippets/agent_references/document-and-objects.py:add-object"
 ```
 
 Singletons (objects EnergyPlus requires exactly one of, like `Building` or `SimulationControl`) accept a positional name or no name at all; idfkit fills in the type-name where applicable. Objects without a name field (e.g. `GlobalGeometryRules`) accept no name.
@@ -71,20 +46,7 @@ Singletons (objects EnergyPlus requires exactly one of, like `Building` or `Simu
 ## Looking up objects
 
 ```python
-# By type → collection
-zones = doc["Zone"]
-print(len(zones))  # how many zones
-
-# Iterate the collection
-for zone in zones:
-    print(zone.name, zone.x_origin)
-
-# By name → individual object (O(1))
-office = doc["Zone"]["Office"]
-
-# Attribute access for common types
-for material in doc.materials:
-    print(material.conductivity)
+--8<-- "docs/snippets/agent_references/document-and-objects.py:lookup"
 ```
 
 Collections support `.first()` (when you know there's a singleton), `.values()`, name-keyed `[name]` access, and `in` membership tests.
@@ -94,9 +56,7 @@ Collections support `.first()` (when you know there's a singleton), `.values()`,
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:
 
 ```python
-zone = doc["Zone"]["Office"]
-zone.ceiling_height = 3.5  # plain field
-zone.direction_of_relative_north = 90.0
+--8<-- "docs/snippets/agent_references/document-and-objects.py:modify"
 ```
 
 Dict-style access also works and accepts either Python or IDD field names — `zone["x_origin"]`, `zone["X Origin"]`, and `zone.x_origin` are all equivalent. Attribute access is the idiomatic form (better IDE autocomplete and type checking).
@@ -104,8 +64,7 @@ Dict-style access also works and accepts either Python or IDD field names — `z
 Renaming uses `doc.rename()` (or `obj.name = "new"`) so the reference graph cascades the change:
 
 ```python
-doc.rename("Zone", "Office", "OpenPlanArea")
-# every BuildingSurface:Detailed.zone_name pointing at "Office" is now "OpenPlanArea"
+--8<-- "docs/snippets/agent_references/document-and-objects.py:rename"
 ```
 
 See [reference-tracking.md](reference-tracking.md) for the full reference-graph workflow.
@@ -115,18 +74,7 @@ See [reference-tracking.md](reference-tracking.md) for the full reference-graph 
 Some object types have repeated field groups — vertices on a surface, branches on a `BranchList`, layers in a `Construction`. idfkit exposes them as `ExtensibleList` accessors:
 
 ```python
-surface = doc.add(
-    "BuildingSurface:Detailed",
-    "South Wall",
-    surface_type="Wall",
-    construction_name="ExtWall",
-    zone_name="Office",
-    outside_boundary_condition="Outdoors",
-)
-surface.vertices.append(vertex_x_coordinate=0.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
-surface.vertices.append(vertex_x_coordinate=10.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
-# ...
-print(len(surface.vertices))  # 4
+--8<-- "docs/snippets/agent_references/document-and-objects.py:extensible"
 ```
 
 `ExtensibleList` supports `append`, `insert`, `extend`, `clear`, `pop`, indexing, iteration, and `as_list()`.
@@ -134,14 +82,7 @@ print(len(surface.vertices))  # 4
 ## Iterating the whole model
 
 ```python
-# Every type, in schema-defined order
-for obj_type, collection in doc.objects_by_type():
-    print(obj_type, len(collection))
-
-# Every individual object
-for obj in doc.all_objects:
-    if obj.obj_type.startswith("Zone"):
-        print(obj.name)
+--8<-- "docs/snippets/agent_references/document-and-objects.py:iterate"
 ```
 
 ## Common mistakes
@@ -155,7 +96,7 @@ surface._data["vertices"].append({"vertex_x_coordinate": 1.0})  # bypasses valid
 **GOOD — use the typed wrapper**
 
 ```python
-surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
+--8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-extensible-good"
 ```
 
 **BAD — renaming via raw string edits**
@@ -168,7 +109,7 @@ zone._data["name"] = "OpenPlanArea"
 **GOOD — rename through the document**
 
 ```python
-doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
+--8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-rename-good"
 ```
 
 ## Related

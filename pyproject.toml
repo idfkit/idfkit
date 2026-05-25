@@ -118,6 +118,50 @@ exclude = [
 root = "src/idfkit"
 reportTypedDictNotRequiredAccess = false
 
+# Agent reference snippets (docs/snippets/agent_references/) are the source of
+# truth for the examples in the bundled .agents reference docs. They get a
+# STRICTER environment than the rest of docs/snippets: the rules that catch API
+# drift — attribute access, call signatures, argument types — stay ON (that is
+# the whole point of routing the examples through pyright), while the
+# "unknown type" / "untyped" noise that snippet style provokes stays OFF.
+# Pyright uses the FIRST matching execution environment, so this MUST precede
+# the broader docs/snippets block below.
+[[tool.pyright.executionEnvironments]]
+root = "docs/snippets/agent_references"
+reportTypedDictNotRequiredAccess = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportUnknownLambdaType = false
+reportMissingParameterType = false
+reportMissingTypeStubs = false
+reportMissingTypeArgument = false
+reportMissingModuleSource = false
+reportUntypedFunctionDecorator = false
+reportUntypedBaseClass = false
+reportUnusedVariable = false
+reportUnusedExpression = false
+reportUnusedFunction = false
+reportPossiblyUnboundVariable = false
+reportReturnType = false
+# Happy-path doc style: examples assume optional accessors are present
+# (e.g. result.sql.get_timeseries). Attribute TYPOS on the non-None type are
+# still caught by reportAttributeAccessIssue; only the "could be None" noise is
+# silenced. reportAssignmentType is off because placeholder reassignment
+# (declare doc: IDFDocument, then doc = load_idf(...)) provokes false positives.
+reportOptionalMemberAccess = false
+reportAssignmentType = false
+# Reference sections legitimately show "here's the importable API" overview
+# blocks whose symbols aren't all exercised. Nonexistent import symbols are
+# still caught by reportAttributeAccessIssue ("unknown import symbol"), so
+# turning this off preserves the existence check.
+reportUnusedImport = false
+# Drift-catching rules deliberately left ON (strict default):
+#   reportAttributeAccessIssue, reportCallIssue, reportArgumentType,
+#   reportFunctionMemberAccess, reportIndexIssue, reportOptionalSubscript,
+#   reportOperatorIssue.
+
 [[tool.pyright.executionEnvironments]]
 root = "docs/snippets"
 reportTypedDictNotRequiredAccess = false

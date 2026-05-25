@@ -12,19 +12,7 @@ EnergyPlus models are graphs of cross-references: a `BuildingSurface:Detailed.zo
 ## Quick start
 
 ```python
-# Who points at this zone?
-for obj in doc.get_referencing("Office"):
-    print(obj.obj_type, obj.name)
-
-# What does this People object reference?
-people = doc["People"]["Office People"]
-for target_name in doc.get_references(people):
-    print(target_name)
-
-# Rename — every reference updates automatically
-doc["Zone"]["Office"].name = "Open_Office"
-# or
-doc.rename("Zone", "Office", "Open_Office")
+--8<-- "docs/snippets/agent_references/reference-tracking.py:quickstart"
 ```
 
 ## Core API
@@ -57,13 +45,7 @@ The graph is keyed off **reference lists** declared in the EpJSON schema (e.g. `
 ## Finding what points at a name
 
 ```python
-# Who points at "Office"?
-referencing = doc.get_referencing("Office")
-print(len(referencing))  # e.g. 8 (surfaces, people, lights, HVAC objects)
-
-# With the originating field name
-for obj, field in doc.references.get_referencing_with_fields("Office"):
-    print(f"{obj.obj_type} '{obj.name}'.{field}")
+--8<-- "docs/snippets/agent_references/reference-tracking.py:find-referencing"
 ```
 
 This is the single most useful idfkit affordance when authoring loops or zone lists. If a surface's `zone_name` typo doesn't show up here, you know the wiring is broken before you simulate.
@@ -73,12 +55,7 @@ This is the single most useful idfkit affordance when authoring loops or zone li
 The canonical pattern. Set `obj.name` (or call `doc.rename`) and every reference updates:
 
 ```python
-doc["Zone"]["Office"].name = "Open_Office"
-# All fields across the document that pointed to "Office" now say "Open_Office":
-#   BuildingSurface:Detailed.zone_name
-#   People.zone_or_zonelist_or_space_or_spacelist_name
-#   ZoneInfiltration:DesignFlowRate.zone_or_zonelist_or_space_or_spacelist_name
-#   ...
+--8<-- "docs/snippets/agent_references/reference-tracking.py:rename"
 ```
 
 Renaming an object that nothing references is also fine — it just updates the collection key.
@@ -86,16 +63,7 @@ Renaming an object that nothing references is also fine — it just updates the 
 ## Finding what an object references
 
 ```python
-people = doc["People"]["Office People"]
-for target_name in doc.get_references(people):
-    print(target_name)
-# 'Office'              (zone_or_zonelist_or_space_or_spacelist_name)
-# 'Occupancy_Sched'     (number_of_people_schedule_name)
-# 'Activity_Sched'      (activity_level_schedule_name)
-
-# With field names
-for field, target in doc.references.get_references_with_fields(people):
-    print(field, "->", target)
+--8<-- "docs/snippets/agent_references/reference-tracking.py:find-references"
 ```
 
 ## Auditing dangling references
@@ -103,9 +71,7 @@ for field, target in doc.references.get_references_with_fields(people):
 After a bulk edit, scan for references that no longer resolve:
 
 ```python
-all_names = {obj.name for obj in doc.all_objects if obj.name}
-for obj, field, target in doc.references.get_dangling_references(all_names):
-    print(f"{obj.obj_type} '{obj.name}'.{field} -> '{target}' (missing)")
+--8<-- "docs/snippets/agent_references/reference-tracking.py:dangling"
 ```
 
 For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E004` errors. See [schema-and-validation.md](schema-and-validation.md).
@@ -123,7 +89,7 @@ zone._data["name"] = "Open_Office"
 **GOOD — set `.name` or call `doc.rename`**
 
 ```python
-zone.name = "Open_Office"
+--8<-- "docs/snippets/agent_references/reference-tracking.py:mistake-name-good"
 ```
 
 **BAD — editing a referencing field by string mutation**
@@ -139,7 +105,7 @@ surfaces["South Wall"]._data["zone_name"] = "Open_Office"
 **GOOD — set the field through the wrapper**
 
 ```python
-surfaces["South Wall"].zone_name = "Open_Office"  # graph updates
+--8<-- "docs/snippets/agent_references/reference-tracking.py:mistake-field-good"
 ```
 
 **BAD — counting references with a manual loop**
@@ -156,7 +122,7 @@ count = sum(
 **GOOD — ask the graph**
 
 ```python
-count = len(doc.get_referencing("Office"))  # O(1)
+--8<-- "docs/snippets/agent_references/reference-tracking.py:mistake-count-good"
 ```
 
 ## Related

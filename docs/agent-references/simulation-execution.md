@@ -12,29 +12,13 @@
 ## Quick start
 
 ```python
-from idfkit import load_idf
-from idfkit.simulation import simulate
-
-doc = load_idf("building.idf")
-result = simulate(doc, "weather.epw", design_day=True)
-print(result.errors.summary())
+--8<-- "docs/snippets/agent_references/simulation-execution.py:quickstart"
 ```
 
 ## Core API
 
 ```python
-from idfkit.simulation import (
-    simulate,  # sync, single model
-    async_simulate,  # async, single model
-    simulate_batch,  # sync, multiple jobs
-    find_energyplus,  # discover the EnergyPlus install
-    EnergyPlusConfig,  # pre-configured install handle
-    SimulationCache,  # content-addressed cache
-    SimulationJob,  # one job in a batch
-    BatchResult,  # results from simulate_batch
-    SimulationResult,  # result container — see result-parsing.md
-    SimulationProgress,  # progress event payload
-)
+--8<-- "docs/snippets/agent_references/simulation-execution.py:core-api"
 ```
 
 `simulate` is the workhorse. The most useful arguments:
@@ -59,11 +43,7 @@ from idfkit.simulation import (
 ## Discovering EnergyPlus
 
 ```python
-from idfkit.simulation import find_energyplus
-
-config = find_energyplus()  # latest installed
-config = find_energyplus(version=(24, 1, 0))
-print(config.executable, config.version)
+--8<-- "docs/snippets/agent_references/simulation-execution.py:discover"
 ```
 
 Discovery checks `$ENERGYPLUS_DIR`, `$PATH`, and standard install locations (`/usr/local/EnergyPlus-*`, `/Applications/EnergyPlus-*`, `C:\EnergyPlusV*`). Pass the result to `simulate(..., energyplus=config)` to skip rediscovery on every call.
@@ -75,15 +55,7 @@ If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised.
 `simulate` refuses to run if `model.version` doesn't match the installed EnergyPlus version. Two ways to handle:
 
 ```python
-# Option 1 — explicit migration before simulate (recommended for production)
-from idfkit import migrate
-
-doc = load_idf("v22_model.idf")
-doc = migrate(doc, target_version=config.version).migrated_model
-
-# Option 2 — let simulate forward-migrate transparently
-result = simulate(doc, "weather.epw", auto_migrate=True)
-print(result.migration_report.summary())  # what was changed
+--8<-- "docs/snippets/agent_references/simulation-execution.py:version-handling"
 ```
 
 Backward migration (installed EP older than the model) is never attempted — it raises `VersionMismatchError`.
@@ -91,14 +63,7 @@ Backward migration (installed EP older than the model) is never attempted — it
 ## Design day vs. annual
 
 ```python
-# Quick smoke-test with the heating/cooling design days only — seconds
-result = simulate(doc, "weather.epw", design_day=True)
-
-# Full annual run — minutes
-result = simulate(doc, "weather.epw", annual=True)
-
-# Default (both flags False) — EnergyPlus's default, governed by SimulationControl in the IDF
-result = simulate(doc, "weather.epw")
+--8<-- "docs/snippets/agent_references/simulation-execution.py:design-day-vs-annual"
 ```
 
 ## Async
@@ -106,34 +71,13 @@ result = simulate(doc, "weather.epw")
 For UI loops or asyncio-based batch tooling:
 
 ```python
-import asyncio
-from idfkit.simulation import async_simulate
-
-
-async def main():
-    result = await async_simulate(doc, "weather.epw")
-    print(result.errors.summary())
-
-
-asyncio.run(main())
+--8<-- "docs/snippets/agent_references/simulation-execution.py:async"
 ```
 
 ## Batch parameter sweeps
 
 ```python
-from idfkit.simulation import simulate_batch, SimulationJob
-
-jobs = []
-for wwr in (0.2, 0.3, 0.4, 0.5):
-    variant = doc.copy()
-    from idfkit import set_wwr
-
-    set_wwr(variant, wwr=wwr)
-    jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{int(wwr * 100)}"))
-
-batch = simulate_batch(jobs, max_workers=4)
-for job, result in zip(jobs, batch.results):
-    print(job.label, result.errors.summary())
+--8<-- "docs/snippets/agent_references/simulation-execution.py:batch"
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs in parallel processes (use `max_workers` to cap parallelism).
@@ -143,11 +87,7 @@ for job, result in zip(jobs, batch.results):
 If you re-simulate the same model + weather + flags often (e.g. iterating on output processing), wrap in a `SimulationCache`:
 
 ```python
-from idfkit.simulation import SimulationCache
-
-cache = SimulationCache(cache_dir=".sim_cache")
-result = simulate(doc, "weather.epw", cache=cache)  # first call runs
-result = simulate(doc, "weather.epw", cache=cache)  # second call cache-hits, milliseconds
+--8<-- "docs/snippets/agent_references/simulation-execution.py:caching"
 ```
 
 The cache key is the SHA-256 of the (model bytes + weather bytes + flags) tuple. Any change invalidates the entry.
@@ -155,17 +95,7 @@ The cache key is the SHA-256 of the (model bytes + weather bytes + flags) tuple.
 ## Progress events
 
 ```python
-from idfkit.simulation import SimulationProgress
-
-
-def on_progress(event: SimulationProgress) -> None:
-    print(event.phase, event.percent, event.message)
-
-
-result = simulate(doc, "weather.epw", on_progress=on_progress)
-
-# Or for an interactive shell:
-result = simulate(doc, "weather.epw", on_progress="tqdm")  # requires idfkit[progress]
+--8<-- "docs/snippets/agent_references/simulation-execution.py:progress"
 ```
 
 Events carry `phase` (warmup/run/postprocessing), `percent` (where known), the EnergyPlus message, and the timestamp.
@@ -173,16 +103,7 @@ Events carry `phase` (warmup/run/postprocessing), `percent` (where known), the E
 ## Remote storage (S3)
 
 ```python
-from idfkit.simulation import simulate, S3FileSystem
-
-fs = S3FileSystem(bucket="my-sim-outputs")
-result = simulate(
-    doc,
-    "weather.epw",
-    output_dir="runs/2026-05-23/baseline",
-    fs=fs,
-)
-# EnergyPlus runs in a local temp dir; outputs are uploaded to s3://my-sim-outputs/runs/2026-05-23/baseline/
+--8<-- "docs/snippets/agent_references/simulation-execution.py:remote-s3"
 ```
 
 The weather file must be local — remote weather is not auto-downloaded. Pre-stage with `WeatherDownloader` (see [weather-data.md](weather-data.md)).
@@ -198,7 +119,7 @@ result = simulate(doc, "weather.epw")      # VersionMismatchError if EP version 
 **GOOD — use `auto_migrate=True` or migrate explicitly**
 
 ```python
-result = simulate(doc, "weather.epw", auto_migrate=True)
+--8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-version-good"
 ```
 
 **BAD — assuming `result.sql` always exists**
@@ -211,9 +132,7 @@ ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was 
 **GOOD — let the runner ensure SQLite output is on**
 
 ```python
-# simulate() auto-injects Output:SQLite if missing — just access result.sql safely:
-if result.sql:
-    ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+--8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-sql-good"
 ```
 
 **BAD — re-running the same simulation across iterations**
@@ -226,9 +145,7 @@ for _ in range(10):
 **GOOD — cache**
 
 ```python
-cache = SimulationCache(cache_dir=".sim_cache")
-for _ in range(10):
-    result = simulate(doc, "weather.epw", cache=cache)  # cache-hits after the first
+--8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-rerun-good"
 ```
 
 **BAD — silently swallowing simulation errors**
@@ -241,12 +158,7 @@ result = simulate(doc, "weather.epw")
 **GOOD — gate on errors**
 
 ```python
-result = simulate(doc, "weather.epw")
-if result.errors.has_severe:
-    print(result.errors.summary())
-    for msg in result.errors.severe:
-        print(msg.severity, msg.message)
-    raise SystemExit("Simulation failed")
+--8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-errors-good"
 ```
 
 ## Related

@@ -13,20 +13,7 @@ When templates aren't enough (custom topology, unusual controls, retrofits) drop
 ## Quick start: fastest energy estimate
 
 ```python
-from idfkit import new_document
-from idfkit.simulation import simulate
-
-doc = new_document()
-# ... create zones via create_block, etc.
-
-# Single Thermostat shared by every zone
-doc.add("HVACTemplate:Thermostat", "OfficeT", constant_heating_setpoint=20.0, constant_cooling_setpoint=24.0)
-
-# IdealLoadsAirSystem: no plant loops needed. Best for parametric studies.
-for zone in doc["Zone"]:
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeT")
-
-result = simulate(doc, "weather.epw", expand_objects=True)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:quickstart"
 ```
 
 ## The four-tier layering
@@ -85,61 +72,7 @@ For full I/O Reference, see [docs.idfkit.com/io-reference/hvac-template-objects/
 ## Worked example: full VAV + ChilledWater + HotWater system
 
 ```python
-# Thermostat (shared)
-doc.add(
-    "HVACTemplate:Thermostat",
-    "OfficeT",
-    heating_setpoint_schedule_name="OfficeHtgSetpt",
-    cooling_setpoint_schedule_name="OfficeClgSetpt",
-)
-
-# Zone equipment — one per zone
-for zone in doc["Zone"]:
-    doc.add(
-        "HVACTemplate:Zone:VAV",
-        zone_name=zone.name,
-        template_vav_system_name="AHU-1",
-        template_thermostat_name="OfficeT",
-        zone_minimum_air_flow_input_method="Constant",
-        constant_minimum_air_flow_fraction=0.3,
-    )
-
-# Air-side system
-doc.add(
-    "HVACTemplate:System:VAV",
-    "AHU-1",
-    cooling_coil_type="ChilledWater",
-    heating_coil_type="HotWater",
-    cooling_coil_design_setpoint=12.8,
-    heating_coil_design_setpoint=12.0,
-    economizer_type="NoEconomizer",
-)
-
-# Water-side loops + sources
-doc.add(
-    "HVACTemplate:Plant:ChilledWaterLoop",
-    "CHW Loop",
-    chilled_water_design_setpoint=6.7,
-    condenser_water_design_setpoint=29.4,
-)
-doc.add(
-    "HVACTemplate:Plant:Chiller",
-    "Chiller 1",
-    chiller_type="ElectricCentrifugalChiller",
-    capacity="Autosize",
-    condenser_type="WaterCooled",
-)
-doc.add("HVACTemplate:Plant:Tower", "CT-1", tower_type="SingleSpeed", high_speed_nominal_capacity="Autosize")
-
-doc.add("HVACTemplate:Plant:HotWaterLoop", "HW Loop", hot_water_design_setpoint=82.0)
-doc.add(
-    "HVACTemplate:Plant:Boiler",
-    "Boiler 1",
-    boiler_type="HotWaterBoiler",
-    capacity="Autosize",
-    efficiency=0.90,
-    fuel_type="NaturalGas",
-)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:worked-example"
 ```
 
 Then run the simulation with expansion enabled — see below.
@@ -151,9 +84,7 @@ Templates must be expanded into low-level objects before EnergyPlus can simulate
 ### Option 1 — let `simulate` handle it (recommended)
 
 ```python
-from idfkit.simulation import simulate
-
-result = simulate(doc, "weather.epw", expand_objects=True)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:expand-option1"
 ```
 
 idfkit invokes `ExpandObjects` as a preprocessor and feeds EnergyPlus the expanded model. The original `doc` is untouched.
@@ -161,11 +92,7 @@ idfkit invokes `ExpandObjects` as a preprocessor and feeds EnergyPlus the expand
 ### Option 2 — expand explicitly via `doc.expand()` and inspect
 
 ```python
-expanded = doc.expand()  # returns a new IDFDocument
-# Templates are gone; the low-level equivalents are present
-if "ZoneHVAC:IdealLoadsAirSystem" in expanded:
-    for ideal in expanded["ZoneHVAC:IdealLoadsAirSystem"]:
-        print(ideal.name, ideal.cooling_limit)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:expand-option2"
 ```
 
 Use this when you want to study what `ExpandObjects` produced or hand-modify the result.
@@ -173,9 +100,7 @@ Use this when you want to study what `ExpandObjects` produced or hand-modify the
 ### Option 3 — function-style
 
 ```python
-from idfkit.simulation import expand_objects
-
-expanded = expand_objects(doc)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:expand-option3"
 ```
 
 Equivalent to `doc.expand()`. Useful if you prefer free functions to methods.
@@ -185,12 +110,7 @@ All three require EnergyPlus to be installed (`ExpandObjects` is a C++ binary th
 ## Enumerating templates already in a model
 
 ```python
-for tmpl in doc.hvac_templates:
-    print(tmpl.obj_type, tmpl.name)
-# or
-for tmpl_type in [t for t in doc.collections if t.startswith("HVACTemplate:")]:
-    for tmpl in doc[tmpl_type]:
-        print(tmpl_type, tmpl.name)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:enumerate"
 ```
 
 `doc.hvac_templates` is the convenience accessor for the most common template (`HVACTemplate:Zone:IdealLoadsAirSystem`); the loop covers every template type.
@@ -219,8 +139,7 @@ doc.add("ZoneHVAC:IdealLoadsAirSystem", "Office Ideal Loads", zone_supply_air_no
 **GOOD — pick one approach per zone**
 
 ```python
-doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="Office", template_thermostat_name="OfficeT")
-# ... or write the ZoneHVAC:IdealLoadsAirSystem by hand, but not both.
+--8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-mix-good"
 ```
 
 **BAD — simulating without expansion**
@@ -234,7 +153,7 @@ result = simulate(doc, "weather.epw", expand_objects=False)
 **GOOD — let `simulate` expand for you**
 
 ```python
-result = simulate(doc, "weather.epw", expand_objects=True)  # the default
+--8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-simulate-good"
 ```
 
 **BAD — expecting `doc.expand()` to mutate**
@@ -247,8 +166,7 @@ simulate(doc, "weather.epw", expand_objects=False)   # original still has templa
 **GOOD — capture the return value**
 
 ```python
-expanded = doc.expand()
-simulate(expanded, "weather.epw", expand_objects=False)
+--8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-expand-good"
 ```
 
 ## When to drop down

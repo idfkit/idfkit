@@ -1,17 +1,14 @@
-# Schedule evaluation
+from __future__ import annotations
 
-`idfkit.schedules` evaluates EnergyPlus schedules **without running a simulation**. Useful for visualisation, debugging, building parametric inputs, and any workflow where you need the value of a `Schedule:*` at a given timestamp.
+from datetime import datetime
 
-## When to use
+from idfkit import IDFDocument, IDFObject, validate_document
 
-- You want to see what a `Schedule:Compact` resolves to at hour 14:00 on a Tuesday.
-- You're plotting an annual schedule to confirm it matches expectations.
-- You're synthesising schedules from a `numpy` array or a pandas `Series`.
-- You're auditing a model to find every schedule it uses.
+doc: IDFDocument = ...  # type: ignore[assignment]
+sched: IDFObject = ...  # type: ignore[assignment]
+ts: datetime = ...  # type: ignore[assignment]
 
-## Quick start
-
-```python
+# --8<-- [start:quickstart]
 from datetime import datetime
 from idfkit import load_idf
 from idfkit.schedules import evaluate, values, to_series
@@ -30,11 +27,10 @@ print(len(year))  # 8760
 # Pandas (requires idfkit[dataframes])
 series = to_series(sched, year=2024)
 series.plot()
-```
+# --8<-- [end:quickstart]
 
-## Core API
 
-```python
+# --8<-- [start:core-api]
 from idfkit.schedules import (
     evaluate,  # single-timestamp lookup
     values,  # array of hourly (or sub-hourly) values
@@ -49,23 +45,10 @@ from idfkit.schedules import (
     get_holidays,
     extract_special_days,
 )
-```
+# --8<-- [end:core-api]
 
-## Supported schedule types
 
-The evaluator covers every standard EnergyPlus schedule type:
-
-- `Schedule:Compact` (the most common)
-- `Schedule:Year` + `Schedule:Week:Daily` / `Week:Compact` + `Schedule:Day:Hourly` / `Day:Interval` / `Day:List`
-- `Schedule:Constant`
-- `Schedule:File` (reads the CSV directly, with optional `FileSystem` for S3)
-- `ScheduleTypeLimits` resolution
-
-If you hit an unsupported type, `UnsupportedScheduleType` is raised.
-
-## Single-timestamp evaluation
-
-```python
+# --8<-- [start:single-timestamp]
 from datetime import datetime
 from idfkit.schedules import evaluate
 
@@ -78,42 +61,34 @@ v = evaluate(sched, datetime(2024, 7, 15, 14, 0))
 v_summer = evaluate(sched, datetime(2024, 7, 15, 14, 0), day_type="summer")
 v_winter = evaluate(sched, datetime(2024, 1, 15, 6, 0), day_type="winter")
 v_holiday = evaluate(sched, datetime(2024, 12, 25, 10, 0), day_type="holiday")
-```
+# --8<-- [end:single-timestamp]
 
-`day_type` accepts `"normal"`, `"summer"`, `"winter"`, `"holiday"` and an explicit `DayType` enum.
 
-## Annual values
-
-```python
+# --8<-- [start:annual-values]
 from idfkit.schedules import values
 
 annual = values(sched, year=2024)  # 8760 hourly values
 sub_hourly = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly values
-```
+# --8<-- [end:annual-values]
 
-By default `values` returns a `list[float]`. For pandas:
 
-```python
+# --8<-- [start:to-series]
 from idfkit.schedules import to_series
 
 ts = to_series(sched, year=2024)  # DatetimeIndex, length 8760
-```
+# --8<-- [end:to-series]
 
-## Plotting
 
-```python
+# --8<-- [start:plotting]
 from idfkit.schedules import plot_schedule, plot_day, plot_week
 
 plot_schedule(sched, year=2024)  # entire year
 plot_day(sched, year=2024, month=7, day=15)  # one day
 plot_week(sched, year=2024, week=29)  # week 29 (mid-July)
-```
+# --8<-- [end:plotting]
 
-These pick the default backend (matplotlib if `idfkit[plot]` is installed, plotly if `idfkit[plotly]`). Pass `backend="plotly"` or `backend="matplotlib"` to force.
 
-## Building schedules programmatically
-
-```python
+# --8<-- [start:build-programmatically]
 from idfkit.schedules import (
     create_constant_schedule,
     create_compact_schedule_from_values,
@@ -139,13 +114,10 @@ sched = create_compact_schedule_from_values(
     year=2023,  # non-leap → 8760
     type_limits="Fraction",
 )
-```
+# --8<-- [end:build-programmatically]
 
-`create_compact_schedule_from_values` is a one-shot way to take an array and emit a `Schedule:Compact` object — useful when you have hourly inputs from measurement data.
 
-## Auditing schedule usage
-
-```python
+# --8<-- [start:audit]
 # Names of every schedule referenced by anything in the model
 used = doc.get_used_schedules()  # set[str]
 all_schedules = doc.schedules_dict  # {name: IDFObject} across all Schedule:* types
@@ -153,23 +125,19 @@ all_schedules = doc.schedules_dict  # {name: IDFObject} across all Schedule:* ty
 # Unused schedules — can usually be deleted
 for name in all_schedules.keys() - used:
     print("unused:", name)
-```
+# --8<-- [end:audit]
 
-## Schedule:File
 
-`Schedule:File` reads CSV data from disk (or S3 if you provide a `FileSystem`):
-
-```python
+# --8<-- [start:schedule-file]
 from idfkit.simulation.fs import S3FileSystem
 from idfkit.schedules import values
 
 fs = S3FileSystem(bucket="models", prefix="data/")
 hourly = values(doc["Schedule:File"]["Plug Loads"], fs=fs)
-```
+# --8<-- [end:schedule-file]
 
-For batch workflows reuse a `ScheduleFileCache` to avoid re-reading the same CSV:
 
-```python
+# --8<-- [start:schedule-file-cache]
 from idfkit.schedules import ScheduleFileCache
 from idfkit.simulation.fs import LocalFileSystem
 
@@ -177,11 +145,10 @@ from idfkit.simulation.fs import LocalFileSystem
 cache = ScheduleFileCache()
 file_sched = doc["Schedule:File"]["Plug Loads"]
 raw = cache.get_values(file_sched, LocalFileSystem())  # parsed once, cached by file + column
-```
+# --8<-- [end:schedule-file-cache]
 
-## Holidays and special days
 
-```python
+# --8<-- [start:holidays]
 from idfkit.schedules import get_holidays, extract_special_days
 
 # Pull RunPeriodControl:SpecialDays from a document for a year
@@ -189,52 +156,19 @@ specials = extract_special_days(doc, 2024)
 
 # Set[date] of dates classified as holidays for that year
 holidays = get_holidays(doc, 2024)
-```
+# --8<-- [end:holidays]
 
-Both functions read the document's `RunPeriodControl:SpecialDays` objects — idfkit does not bundle external holiday calendars. To use country-specific calendars, add the corresponding `SpecialDays` entries yourself (e.g. from the `holidays` PyPI package) before calling.
 
-## Common mistakes
-
-**BAD — evaluating a schedule that references missing schedules**
-
-```python
-# Compact schedule referencing "Building Occupancy" by name, but that schedule was deleted
-v = evaluate(sched, ts)                    # ScheduleReferenceError
-```
-
-**GOOD — validate first**
-
-```python
+# --8<-- [start:mistake-broken-good]
 result = validate_document(doc)  # check_references=True catches broken schedule refs
-```
+# --8<-- [end:mistake-broken-good]
 
-**BAD — assuming hourly when the schedule is sub-hourly**
 
-```python
-arr = values(sched, year=2024)             # 8760 hourly values, even if EnergyPlus would interpolate at 15 minutes
-```
-
-**GOOD — match the simulation timestep**
-
-```python
+# --8<-- [start:mistake-subhourly-good]
 arr = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly values for a 15-minute timestep
-```
+# --8<-- [end:mistake-subhourly-good]
 
-**BAD — passing a date in a non-leap year for Feb 29**
 
-```python
-v = evaluate(sched, datetime(2023, 2, 29, 10, 0))   # ValueError
-```
-
-**GOOD — use a leap year or guard**
-
-```python
+# --8<-- [start:mistake-leap-good]
 v = evaluate(sched, datetime(2024, 2, 29, 10, 0))
-```
-
-## Related
-
-- [document-and-objects.md](document-and-objects.md) — `doc.add(Schedule:Compact, ...)` etc.
-- [reference-tracking.md](reference-tracking.md) — finding what references a schedule.
-- [result-parsing.md](result-parsing.md) — compare evaluated schedules against simulated `Schedule Value` outputs.
-- API docs: [py.idfkit.com/schedules/](https://py.idfkit.com/schedules/)
+# --8<-- [end:mistake-leap-good]

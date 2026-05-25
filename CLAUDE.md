@@ -202,30 +202,47 @@ a `SKILL.md` dispatch document and one focused markdown file per major
 feature under `references/`. They are packaged in the wheel and consumed
 by tooling such as
 [`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp), which exposes them
-over MCP at `idfkit://references/{topic}`.
+over MCP at `idfkit://references/{topic}`. The same content is published
+on the docs site under "Developing with idfkit".
+
+**These bundled files are GENERATED — never hand-edit them.** The sources are:
+
+- **Prose** in `docs/agent-references/<topic>.md` — headings, tables, and
+  `--8<-- "docs/snippets/agent_references/<topic>.py:<section>"` include
+  directives for verified code. Intentionally-wrong "BAD" examples stay as
+  inline fenced blocks (they must not type-check).
+- **Code** in `docs/snippets/agent_references/<topic>.py` — the runnable
+  examples, one file per topic with a typed prelude and named
+  `# --8<-- [start:<section>]` / `[end:<section>]` regions.
+
+To regenerate the bundle after editing either source:
+
+```bash
+uv run python -m idfkit.codegen.bake_references
+```
 
 **IMPORTANT:** Whenever you change idfkit in a way an agent would notice —
 new or renamed public API, changed default behavior, a new sub-package, a
 new helper, a breaking change, a workflow that previously didn't exist —
-update the matching reference file(s) in
-`src/idfkit/.agents/skills/developing-with-idfkit/references/` in the
-same change. The reference table in `SKILL.md` maps tasks → files; pick
-the file whose topic matches and edit it, or add a new file and link it
-from `SKILL.md` if the change introduces a genuinely new topic. Code
-snippets in references should remain runnable — prefer reusing or adding
-to `docs/snippets/` (which are linted with ruff and pyright) rather than
-hand-written examples.
+update the matching source template + snippet in the same change, then
+re-bake. The reference table in `SKILL.md` maps tasks → files; edit the
+matching topic or add a new template + snippet (and a nav entry in
+`mkdocs.yml`) if the change introduces a genuinely new topic.
 
 Skip this for purely internal refactors, dependency bumps, CI tweaks, and
 formatting changes — same scope as the changelog rule below.
 
-`tests/test_agent_references.py` parses every ```python block in those
-references and checks imports, keyword arguments, and attribute access
-against the live API. It runs as part of `make test`, so a renamed or
-removed symbol will fail there. Mark a block with
-`<!-- skip-check -->` immediately before its opening fence to opt out
-when an example is intentionally non-runnable (e.g. a `text` would be
-clearer but you want python syntax highlighting).
+Two gates enforce correctness, both part of `make check` (and `make test`):
+
+- **pyright** type-checks `docs/snippets/agent_references/` under a strict
+  execution environment (`[[tool.pyright.executionEnvironments]]` with
+  `root = "docs/snippets/agent_references"`) that keeps the drift-catching
+  rules ON (`reportAttributeAccessIssue`, `reportCallIssue`,
+  `reportArgumentType`, …) while silencing snippet-style noise. A wrong
+  kwarg, a renamed attribute, or a property called as a method fails here.
+- **`check-baker`** runs the baker and `git diff --exit-code`s the bundle,
+  so a stale committed bundle (source edited but not re-baked) fails CI.
+  `tests/test_agent_references.py` asserts the same sync under `make test`.
 
 ## EnergyPlus Version Support
 

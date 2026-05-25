@@ -11,13 +11,7 @@ idfkit bundles the official EnergyPlus epJSON schema for every supported version
 ## Quick start
 
 ```python
-from idfkit import load_idf, validate_document, get_schema
-
-doc = load_idf("building.idf")
-result = validate_document(doc)
-if not result.is_valid:
-    for err in result.errors:
-        print(err)
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:quickstart"
 ```
 
 ## Core API
@@ -39,25 +33,7 @@ if not result.is_valid:
 ## Schema methods worth knowing
 
 ```python
-from idfkit import get_schema
-
-schema = get_schema((25, 2, 0))
-
-schema.get_object_schema("Zone")  # raw JSON-Schema dict
-schema.get_field_names("Zone")  # Python-style field names
-schema.get_required_fields("Zone")
-schema.get_field_type("Zone", "x_origin")  # "real", "alpha", "choice", ...
-schema.get_field_default("Material", "thickness")
-schema.get_group("HVACTemplate:Zone:VAV")  # "HVAC Templates"
-schema.has_name("Zone")  # True
-schema.is_extensible("BuildingSurface:Detailed")
-schema.is_reference_field("Zone", "Floor Area")
-schema.get_field_object_list("BuildingSurface:Detailed", "zone_name")
-# ['ZoneNames']  — what reference list this field accepts
-schema.get_types_providing_reference("ZoneNames")
-# ['Zone', 'ZoneList'] — what types satisfy that reference
-schema.object_types  # every registered type
-"Zone" in schema  # bool
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:schema-methods"
 ```
 
 The reference-list machinery (`get_field_object_list` / `get_types_providing_reference`) is what powers automatic cross-reference tracking. See [reference-tracking.md](reference-tracking.md).
@@ -65,24 +41,13 @@ The reference-list machinery (`get_field_object_list` / `get_types_providing_ref
 ## Validating a document
 
 ```python
-from idfkit import validate_document
-
-result = validate_document(doc)
-print(result)  # human summary
-
-# Drill in
-for err in result.errors:
-    print(err.code, err.obj_type, err.obj_name, err.field, err.message)
-
-for warn in result.warnings:
-    print(warn)
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:validate"
 ```
 
 `ValidationResult` is truthy when `is_valid` is `True`. Use it as a gate:
 
 ```python
-if not validate_document(doc):
-    raise SystemExit("Refusing to simulate an invalid model")
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:validate-gate"
 ```
 
 ## Scoping a validation
@@ -90,14 +55,7 @@ if not validate_document(doc):
 Skip categories of checks when you're iterating quickly, or restrict to a subset of types:
 
 ```python
-# Skip range checks during a parametric sweep where you know values are temporarily out of bounds
-result = validate_document(doc, check_ranges=False)
-
-# Validate only materials and constructions
-result = validate_document(doc, object_types=["Material", "Construction"])
-
-# Skip reference integrity (e.g. before you've finished adding referenced objects)
-result = validate_document(doc, check_references=False)
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:scope"
 ```
 
 ## Validating a single object
@@ -105,13 +63,7 @@ result = validate_document(doc, check_references=False)
 For tight inner loops or interactive workflows, `validate_object` skips reference checks (which require a whole-document view):
 
 ```python
-from idfkit import get_schema, validate_object
-
-zone = doc["Zone"]["Office"]
-schema = get_schema(doc.version)  # validate_object requires a schema
-issues = validate_object(zone, schema)
-for issue in issues:
-    print(issue)
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:validate-object"
 ```
 
 ## Error codes
@@ -132,10 +84,7 @@ These codes are stable; agents and CI checks can filter on them.
 `ObjectDescription` and `FieldDescription` are higher-level views over the raw JSON Schema:
 
 ```python
-desc = doc.describe("Zone")
-print(desc.memo)  # human description from EnergyPlus docs
-for field in desc.fields:
-    print(field.name, field.field_type, field.required, field.default, field.minimum, field.maximum)
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:introspect"
 ```
 
 `FieldDescription` exposes `name, field_type, required, default, units, enum_values, minimum, maximum, exclusive_minimum, exclusive_maximum, note, is_reference, object_list`. There is no `range` aggregate — pull `minimum`/`maximum` (and the `exclusive_*` variants for open intervals) directly.
@@ -151,12 +100,7 @@ result = simulate(doc, "weather.epw")      # may fail mid-simulation with crypti
 **GOOD — gate the simulation on validation**
 
 ```python
-v = validate_document(doc)
-if not v.is_valid:
-    for err in v.errors:
-        print(err)
-    raise SystemExit("Fix errors before simulating")
-result = simulate(doc, "weather.epw")
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-validate-good"
 ```
 
 **BAD — assuming a field exists without checking the schema**
@@ -168,8 +112,7 @@ zone.fictional_field = 1.0                 # InvalidFieldError in strict mode
 **GOOD — ask the schema**
 
 ```python
-if "fictional_field" in doc.schema.get_field_names("Zone"):
-    zone.fictional_field = 1.0
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-schema-good"
 ```
 
 **BAD — caching a schema across versions**
@@ -183,7 +126,7 @@ validate_document(doc, schema=schema)      # wrong schema — false errors
 **GOOD — let the document carry its own schema**
 
 ```python
-validate_document(doc)  # uses doc.schema automatically
+--8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-version-good"
 ```
 
 ## Related
