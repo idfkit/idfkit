@@ -177,52 +177,52 @@ new_a, new_b = split_horizontal_surface(
 
 ## Common mistakes
 
-**BAD — passing a clockwise footprint**
+!!! failure "passing a clockwise footprint"
 
-```python
-cw_rect = [(0,0), (0,30), (50,30), (50,0)]  # clockwise
-create_block(doc, "Office", cw_rect, floor_to_floor=3.5, num_stories=1)
-# Surfaces will have inward normals; EnergyPlus thinks the building is inside-out.
-```
+    ```python
+    cw_rect = [(0,0), (0,30), (50,30), (50,0)]  # clockwise
+    create_block(doc, "Office", cw_rect, floor_to_floor=3.5, num_stories=1)
+    # Surfaces will have inward normals; EnergyPlus thinks the building is inside-out.
+    ```
 
-**GOOD — counter-clockwise**
+!!! success "counter-clockwise"
 
-```python
-ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
-```
+    ```python
+    ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
+    ```
 
-**BAD — relying on `create_block` to add HVAC**
+!!! failure "relying on `create_block` to add HVAC"
 
-```python
-create_block(doc, "Office", rect, floor_to_floor=3.5, num_stories=3,
-             zoning=ZoningScheme.CORE_PERIMETER)
-simulate(doc, "weather.epw")               # zones have no HVAC — uncontrolled
-```
+    ```python
+    create_block(doc, "Office", rect, floor_to_floor=3.5, num_stories=3,
+                 zoning=ZoningScheme.CORE_PERIMETER)
+    simulate(doc, "weather.epw")               # zones have no HVAC — uncontrolled
+    ```
 
-**GOOD — add HVAC explicitly**
+!!! success "add HVAC explicitly"
 
-```python
-create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3)
-for zone in doc["Zone"]:
-    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
-```
+    ```python
+    create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num_stories=3)
+    for zone in doc["Zone"]:
+        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
+    ```
 
 See [hvac-templates.md](hvac-templates.md).
 
-**BAD — forgetting `link_blocks` between setbacks**
+!!! failure "forgetting `link_blocks` between setbacks"
 
-```python
-create_block(doc, "Base", base_footprint, floor_to_floor=3.5, num_stories=3)
-create_block(doc, "Tower", tower_footprint, floor_to_floor=3.5, num_stories=8,
-             base_elevation=10.5)
-# Tower floor and base ceiling are both `Outdoors` — heat flows where it shouldn't.
-```
+    ```python
+    create_block(doc, "Base", base_footprint, floor_to_floor=3.5, num_stories=3)
+    create_block(doc, "Tower", tower_footprint, floor_to_floor=3.5, num_stories=8,
+                 base_elevation=10.5)
+    # Tower floor and base ceiling are both `Outdoors` — heat flows where it shouldn't.
+    ```
 
-**GOOD — link them**
+!!! success "link them"
 
-```python
-link_blocks(doc)
-```
+    ```python
+    link_blocks(doc)
+    ```
 
 ## Related
 

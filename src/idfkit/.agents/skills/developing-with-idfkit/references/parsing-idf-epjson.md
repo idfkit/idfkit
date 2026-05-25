@@ -129,52 +129,52 @@ docs = [IDFParser(Path(p), schema=schema).parse() for p in input_paths]
 
 ## Common mistakes
 
-**BAD — silent typos in non-strict mode**
+!!! failure "silent typos in non-strict mode"
 
-```python
-doc = load_idf("building.idf", strict=False)
-zone.x_orign = 10.0                        # silently dropped on the floor
-write_idf(doc, "out.idf")                  # x_origin unchanged
-```
+    ```python
+    doc = load_idf("building.idf", strict=False)
+    zone.x_orign = 10.0                        # silently dropped on the floor
+    write_idf(doc, "out.idf")                  # x_origin unchanged
+    ```
 
-**GOOD — keep strict mode on for authoring**
+!!! success "keep strict mode on for authoring"
 
-```python
-doc = load_idf("building.idf")  # strict=True
-zone.x_origin = 10.0
-```
+    ```python
+    doc = load_idf("building.idf")  # strict=True
+    zone.x_origin = 10.0
+    ```
 
-**BAD — guessing the version on legacy files**
+!!! failure "guessing the version on legacy files"
 
-```python
-doc = load_idf("legacy.idf")               # may raise VersionNotFoundError
-```
+    ```python
+    doc = load_idf("legacy.idf")               # may raise VersionNotFoundError
+    ```
 
-**GOOD — explicitly migrate before loading**
+!!! success "explicitly migrate before loading"
 
-```python
-from idfkit import migrate, load_idf, write_idf
+    ```python
+    from idfkit import migrate, load_idf, write_idf
 
-legacy = load_idf("legacy.idf")
-report = migrate(legacy, target_version=(25, 2, 0))
-if report.success and report.migrated_model is not None:
-    doc = report.migrated_model
-    write_idf(doc, "legacy_v25.idf")
-```
+    legacy = load_idf("legacy.idf")
+    report = migrate(legacy, target_version=(25, 2, 0))
+    if report.success and report.migrated_model is not None:
+        doc = report.migrated_model
+        write_idf(doc, "legacy_v25.idf")
+    ```
 
-**BAD — forgetting `preserve_formatting` for the writer side**
+!!! failure "forgetting `preserve_formatting` for the writer side"
 
-```python
-doc = load_idf("building.idf")             # no CST → format-only writer
-write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
-```
+    ```python
+    doc = load_idf("building.idf")             # no CST → format-only writer
+    write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
+    ```
 
-**GOOD — pair load + write**
+!!! success "pair load + write"
 
-```python
-doc = load_idf("building.idf", preserve_formatting=True)
-write_idf(doc, "out.idf")  # byte-identical
-```
+    ```python
+    doc = load_idf("building.idf", preserve_formatting=True)
+    write_idf(doc, "out.idf")  # byte-identical
+    ```
 
 ## Related
 

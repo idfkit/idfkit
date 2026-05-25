@@ -127,47 +127,47 @@ The `simulate(doc, ..., expand_objects=True)` path expands a copy for EnergyPlus
 
 ## Common mistakes
 
-**BAD — mixing templates with hand-authored ZoneHVAC on the same zone**
+!!! failure "mixing templates with hand-authored ZoneHVAC on the same zone"
 
-```python
-doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="Office", template_thermostat_name="OfficeT")
-doc.add("ZoneHVAC:IdealLoadsAirSystem", "Office Ideal Loads", zone_supply_air_node_name="...")
-# ExpandObjects produces another ZoneHVAC:IdealLoadsAirSystem — now you have two,
-# the zone is double-conditioned, results are nonsense.
-```
+    ```python
+    doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name="Office", template_thermostat_name="OfficeT")
+    doc.add("ZoneHVAC:IdealLoadsAirSystem", "Office Ideal Loads", zone_supply_air_node_name="...")
+    # ExpandObjects produces another ZoneHVAC:IdealLoadsAirSystem — now you have two,
+    # the zone is double-conditioned, results are nonsense.
+    ```
 
-**GOOD — pick one approach per zone**
+!!! success "pick one approach per zone"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-mix-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-mix-good"
+    ```
 
-**BAD — simulating without expansion**
+!!! failure "simulating without expansion"
 
-```python
-result = simulate(doc, "weather.epw")      # expand_objects defaults to True, but if you opted out:
-result = simulate(doc, "weather.epw", expand_objects=False)
-# .err contains "HVACTemplate:Zone:VAV is an invalid object type"
-```
+    ```python
+    result = simulate(doc, "weather.epw")      # expand_objects defaults to True, but if you opted out:
+    result = simulate(doc, "weather.epw", expand_objects=False)
+    # .err contains "HVACTemplate:Zone:VAV is an invalid object type"
+    ```
 
-**GOOD — let `simulate` expand for you**
+!!! success "let `simulate` expand for you"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-simulate-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-simulate-good"
+    ```
 
-**BAD — expecting `doc.expand()` to mutate**
+!!! failure "expecting `doc.expand()` to mutate"
 
-```python
-doc.expand()                               # discarded — expand() returns a new document
-simulate(doc, "weather.epw", expand_objects=False)   # original still has templates
-```
+    ```python
+    doc.expand()                               # discarded — expand() returns a new document
+    simulate(doc, "weather.epw", expand_objects=False)   # original still has templates
+    ```
 
-**GOOD — capture the return value**
+!!! success "capture the return value"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-expand-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-templates.py:mistake-expand-good"
+    ```
 
 ## When to drop down
 

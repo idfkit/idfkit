@@ -99,42 +99,42 @@ Both functions read the document's `RunPeriodControl:SpecialDays` objects — id
 
 ## Common mistakes
 
-**BAD — evaluating a schedule that references missing schedules**
+!!! failure "evaluating a schedule that references missing schedules"
 
-```python
-# Compact schedule referencing "Building Occupancy" by name, but that schedule was deleted
-v = evaluate(sched, ts)                    # ScheduleReferenceError
-```
+    ```python
+    # Compact schedule referencing "Building Occupancy" by name, but that schedule was deleted
+    v = evaluate(sched, ts)                    # ScheduleReferenceError
+    ```
 
-**GOOD — validate first**
+!!! success "validate first"
 
-```python
---8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-broken-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-broken-good"
+    ```
 
-**BAD — assuming hourly when the schedule is sub-hourly**
+!!! failure "assuming hourly when the schedule is sub-hourly"
 
-```python
-arr = values(sched, year=2024)             # 8760 hourly values, even if EnergyPlus would interpolate at 15 minutes
-```
+    ```python
+    arr = values(sched, year=2024)             # 8760 hourly values, even if EnergyPlus would interpolate at 15 minutes
+    ```
 
-**GOOD — match the simulation timestep**
+!!! success "match the simulation timestep"
 
-```python
---8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-subhourly-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-subhourly-good"
+    ```
 
-**BAD — passing a date in a non-leap year for Feb 29**
+!!! failure "passing a date in a non-leap year for Feb 29"
 
-```python
-v = evaluate(sched, datetime(2023, 2, 29, 10, 0))   # ValueError
-```
+    ```python
+    v = evaluate(sched, datetime(2023, 2, 29, 10, 0))   # ValueError
+    ```
 
-**GOOD — use a leap year or guard**
+!!! success "use a leap year or guard"
 
-```python
---8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-leap-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schedule-evaluation.py:mistake-leap-good"
+    ```
 
 ## Related
 

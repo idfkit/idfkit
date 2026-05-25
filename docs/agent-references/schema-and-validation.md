@@ -91,43 +91,43 @@ These codes are stable; agents and CI checks can filter on them.
 
 ## Common mistakes
 
-**BAD — running a simulation without validating first**
+!!! failure "running a simulation without validating first"
 
-```python
-result = simulate(doc, "weather.epw")      # may fail mid-simulation with cryptic .err output
-```
+    ```python
+    result = simulate(doc, "weather.epw")      # may fail mid-simulation with cryptic .err output
+    ```
 
-**GOOD — gate the simulation on validation**
+!!! success "gate the simulation on validation"
 
-```python
---8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-validate-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-validate-good"
+    ```
 
-**BAD — assuming a field exists without checking the schema**
+!!! failure "assuming a field exists without checking the schema"
 
-```python
-zone.fictional_field = 1.0                 # InvalidFieldError in strict mode
-```
+    ```python
+    zone.fictional_field = 1.0                 # InvalidFieldError in strict mode
+    ```
 
-**GOOD — ask the schema**
+!!! success "ask the schema"
 
-```python
---8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-schema-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-schema-good"
+    ```
 
-**BAD — caching a schema across versions**
+!!! failure "caching a schema across versions"
 
-```python
-schema = get_schema((24, 1, 0))            # cached
-doc = load_idf("v25_model.idf")            # version (25, 2, 0)
-validate_document(doc, schema=schema)      # wrong schema — false errors
-```
+    ```python
+    schema = get_schema((24, 1, 0))            # cached
+    doc = load_idf("v25_model.idf")            # version (25, 2, 0)
+    validate_document(doc, schema=schema)      # wrong schema — false errors
+    ```
 
-**GOOD — let the document carry its own schema**
+!!! success "let the document carry its own schema"
 
-```python
---8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-version-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/schema-and-validation.py:mistake-version-good"
+    ```
 
 ## Related
 

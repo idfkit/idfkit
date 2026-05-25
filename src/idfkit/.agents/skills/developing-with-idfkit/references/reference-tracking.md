@@ -112,52 +112,52 @@ For a richer pre-flight check, run `validate_document(doc, check_references=True
 
 ## Common mistakes
 
-**BAD — editing a name through `_data`**
+!!! failure "editing a name through `_data`"
 
-```python
-zone._data["name"] = "Open_Office"
-# The collection key, the reference graph, and every surface.zone_name field
-# are all stale. The model is now inconsistent.
-```
+    ```python
+    zone._data["name"] = "Open_Office"
+    # The collection key, the reference graph, and every surface.zone_name field
+    # are all stale. The model is now inconsistent.
+    ```
 
-**GOOD — set `.name` or call `doc.rename`**
+!!! success "set `.name` or call `doc.rename`"
 
-```python
-zone.name = "Open_Office"
-```
+    ```python
+    zone.name = "Open_Office"
+    ```
 
-**BAD — editing a referencing field by string mutation**
+!!! failure "editing a referencing field by string mutation"
 
-```python
-# Update one surface's zone_name string in place
-surfaces = doc["BuildingSurface:Detailed"]
-surfaces["South Wall"]._data["zone_name"] = "Open_Office"
-# Reference graph still thinks "South Wall".zone_name -> "Office".
-# get_referencing("Office") will return "South Wall"; get_referencing("Open_Office") will not.
-```
+    ```python
+    # Update one surface's zone_name string in place
+    surfaces = doc["BuildingSurface:Detailed"]
+    surfaces["South Wall"]._data["zone_name"] = "Open_Office"
+    # Reference graph still thinks "South Wall".zone_name -> "Office".
+    # get_referencing("Office") will return "South Wall"; get_referencing("Open_Office") will not.
+    ```
 
-**GOOD — set the field through the wrapper**
+!!! success "set the field through the wrapper"
 
-```python
-surfaces["South Wall"].zone_name = "Open_Office"  # graph updates
-```
+    ```python
+    surfaces["South Wall"].zone_name = "Open_Office"  # graph updates
+    ```
 
-**BAD — counting references with a manual loop**
+!!! failure "counting references with a manual loop"
 
-```python
-# O(N * M) and easy to miss extensible fields
-count = sum(
-    1 for obj in doc.all_objects
-    for value in obj._data.values()
-    if value == "Office"
-)
-```
+    ```python
+    # O(N * M) and easy to miss extensible fields
+    count = sum(
+        1 for obj in doc.all_objects
+        for value in obj._data.values()
+        if value == "Office"
+    )
+    ```
 
-**GOOD — ask the graph**
+!!! success "ask the graph"
 
-```python
-count = len(doc.get_referencing("Office"))  # O(1)
-```
+    ```python
+    count = len(doc.get_referencing("Office"))  # O(1)
+    ```
 
 ## Related
 

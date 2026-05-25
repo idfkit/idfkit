@@ -130,53 +130,53 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
 
 ## Common mistakes
 
-**BAD — editing a node-name string by hand**
+!!! failure "editing a node-name string by hand"
 
-```python
-coil._data["air_outlet_node_name"] = "AHU-1 Coil Out"
-# fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
-```
+    ```python
+    coil._data["air_outlet_node_name"] = "AHU-1 Coil Out"
+    # fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
+    ```
 
-**GOOD — set both ends, or rename the coil**
+!!! success "set both ends, or rename the coil"
 
-```python
-coil.air_outlet_node_name = "AHU-1 Coil Out"
-fan.air_inlet_node_name = "AHU-1 Coil Out"
-# Note: node names are strings, not references — both must be updated.
-```
+    ```python
+    coil.air_outlet_node_name = "AHU-1 Coil Out"
+    fan.air_inlet_node_name = "AHU-1 Coil Out"
+    # Note: node names are strings, not references — both must be updated.
+    ```
 
-**BAD — renaming a coil via `_data["name"]`**
+!!! failure "renaming a coil via `_data["name"]`"
 
-```python
-coil._data["name"] = "New Coil Name"
-# Branch component still names "AHU-1 Cooling Coil" — broken
-```
+    ```python
+    coil._data["name"] = "New Coil Name"
+    # Branch component still names "AHU-1 Cooling Coil" — broken
+    ```
 
-**GOOD — set `.name`**
+!!! success "set `.name`"
 
-```python
-coil.name = "New Coil Name"
-# Every Branch.component_name that pointed at "AHU-1 Cooling Coil" updates.
-```
+    ```python
+    coil.name = "New Coil Name"
+    # Every Branch.component_name that pointed at "AHU-1 Cooling Coil" updates.
+    ```
 
-**BAD — assuming `validate_document` catches mismatched node-name strings**
+!!! failure "assuming `validate_document` catches mismatched node-name strings"
 
-```python
-# Node names are strings, not references — the schema validates type but not consistency.
-# A typo in a node name passes validation but breaks the loop.
-```
+    ```python
+    # Node names are strings, not references — the schema validates type but not consistency.
+    # A typo in a node name passes validation but breaks the loop.
+    ```
 
-**GOOD — also walk the graph manually for critical loops**
+!!! success "also walk the graph manually for critical loops"
 
-```python
-# Sanity-check that every coil has a paired adjacent branch component
-for coil in doc.get_collection("Coil:Cooling:Water"):
-    inlet = coil.air_inlet_node_name
-    outlet = coil.air_outlet_node_name
-    upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-    downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-    assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
-```
+    ```python
+    # Sanity-check that every coil has a paired adjacent branch component
+    for coil in doc.get_collection("Coil:Cooling:Water"):
+        inlet = coil.air_inlet_node_name
+        outlet = coil.air_outlet_node_name
+        upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
+        downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
+        assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+    ```
 
 ## Related
 

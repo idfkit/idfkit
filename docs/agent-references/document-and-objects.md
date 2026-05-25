@@ -87,30 +87,30 @@ Some object types have repeated field groups — vertices on a surface, branches
 
 ## Common mistakes
 
-**BAD — mutating a list of extensibles in place**
+!!! failure "mutating a list of extensibles in place"
 
-```python
-surface._data["vertices"].append({"vertex_x_coordinate": 1.0})  # bypasses validation
-```
+    ```python
+    surface._data["vertices"].append({"vertex_x_coordinate": 1.0})  # bypasses validation
+    ```
 
-**GOOD — use the typed wrapper**
+!!! success "use the typed wrapper"
 
-```python
---8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-extensible-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-extensible-good"
+    ```
 
-**BAD — renaming via raw string edits**
+!!! failure "renaming via raw string edits"
 
-```python
-# Renames the zone but leaves every BuildingSurface:Detailed.zone_name stale
-zone._data["name"] = "OpenPlanArea"
-```
+    ```python
+    # Renames the zone but leaves every BuildingSurface:Detailed.zone_name stale
+    zone._data["name"] = "OpenPlanArea"
+    ```
 
-**GOOD — rename through the document**
+!!! success "rename through the document"
 
-```python
---8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-rename-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/document-and-objects.py:mistake-rename-good"
+    ```
 
 ## Related
 

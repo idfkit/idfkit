@@ -174,51 +174,51 @@ if index.check_for_updates():
 
 ## Common mistakes
 
-**BAD — geocoding in a tight loop**
+!!! failure "geocoding in a tight loop"
 
-```python
-for addr in addresses:
-    lat, lon = geocode(addr)               # Nominatim rate-limits, will start failing
-```
+    ```python
+    for addr in addresses:
+        lat, lon = geocode(addr)               # Nominatim rate-limits, will start failing
+    ```
 
-**GOOD — sleep, or pre-compute**
+!!! success "sleep, or pre-compute"
 
-```python
-import time
+    ```python
+    import time
 
-coords = []
-for addr in addresses:
-    coords.append(geocode(addr))
-    time.sleep(1.0)
-```
+    coords = []
+    for addr in addresses:
+        coords.append(geocode(addr))
+        time.sleep(1.0)
+    ```
 
-**BAD — simulating without design days**
+!!! failure "simulating without design days"
 
-```python
-doc = load_idf("building.idf")
-simulate(doc, "weather.epw")               # autosizing fails — no design days in the model
-```
+    ```python
+    doc = load_idf("building.idf")
+    simulate(doc, "weather.epw")               # autosizing fails — no design days in the model
+    ```
 
-**GOOD — apply design days first**
+!!! success "apply design days first"
 
-```python
-station = StationIndex.load().search("chicago ohare")[0].station
-apply_ashrae_sizing(doc, station, standard="90.1")
-simulate(doc, "weather.epw")
-```
+    ```python
+    station = StationIndex.load().search("chicago ohare")[0].station
+    apply_ashrae_sizing(doc, station, standard="90.1")
+    simulate(doc, "weather.epw")
+    ```
 
-**BAD — assuming `display_name` is unique**
+!!! failure "assuming `display_name` is unique"
 
-```python
-station_by_name = {s.display_name: s for s in index.stations}
-# Collisions when multiple TMYx year-ranges exist for the same WMO ID.
-```
+    ```python
+    station_by_name = {s.display_name: s for s in index.stations}
+    # Collisions when multiple TMYx year-ranges exist for the same WMO ID.
+    ```
 
-**GOOD — key on `(wmo, source)` if you need uniqueness**
+!!! success "key on `(wmo, source)` if you need uniqueness"
 
-```python
-station_by_key = {(s.wmo, s.source): s for s in index.stations}
-```
+    ```python
+    station_by_key = {(s.wmo, s.source): s for s in index.stations}
+    ```
 
 ## Related
 

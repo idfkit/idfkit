@@ -161,43 +161,43 @@ This is the canonical "did I get the geometry right?" loop. Render, look, edit, 
 
 ## Common mistakes
 
-**BAD — silently hiding fenestration when you're studying it**
+!!! failure "silently hiding fenestration when you're studying it"
 
-```python
-view_model(doc, config=ModelViewConfig(show_fenestration=False)).show()
-# Windows hidden — you may miss that south-facing fenestration didn't get applied
-```
+    ```python
+    view_model(doc, config=ModelViewConfig(show_fenestration=False)).show()
+    # Windows hidden — you may miss that south-facing fenestration didn't get applied
+    ```
 
-**GOOD — keep fenestration on for envelope studies**
+!!! success "keep fenestration on for envelope studies"
 
-```python
-view_model(doc, config=ModelViewConfig(show_fenestration=True)).show()
-```
+    ```python
+    view_model(doc, config=ModelViewConfig(show_fenestration=True)).show()
+    ```
 
-**BAD — `construction_to_svg` on an opaque material**
+!!! failure "`construction_to_svg` on an opaque material"
 
-```python
-construction_to_svg(doc["Material"]["XPS_50mm"])   # not a Construction
-# TypeError-equivalent: expects a Construction, not a Material
-```
+    ```python
+    construction_to_svg(doc["Material"]["XPS_50mm"])   # not a Construction
+    # TypeError-equivalent: expects a Construction, not a Material
+    ```
 
-**GOOD — operate on `Construction`**
+!!! success "operate on `Construction`"
 
-```python
-construction_to_svg(doc["Construction"]["ExteriorWall"])
-```
+    ```python
+    construction_to_svg(doc["Construction"]["ExteriorWall"])
+    ```
 
-**BAD — large models with no opacity tuning**
+!!! failure "large models with no opacity tuning"
 
-```python
-view_model(doc).show()                     # rooms hidden behind exterior walls
-```
+    ```python
+    view_model(doc).show()                     # rooms hidden behind exterior walls
+    ```
 
-**GOOD — drop opacity for interior visibility**
+!!! success "drop opacity for interior visibility"
 
-```python
-view_model(doc, config=ModelViewConfig(opacity=0.5)).show()
-```
+    ```python
+    view_model(doc, config=ModelViewConfig(opacity=0.5)).show()
+    ```
 
 ## Related
 

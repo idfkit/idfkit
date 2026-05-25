@@ -78,44 +78,44 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
 
 ## Common mistakes
 
-**BAD — editing a node-name string by hand**
+!!! failure "editing a node-name string by hand"
 
-```python
-coil._data["air_outlet_node_name"] = "AHU-1 Coil Out"
-# fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
-```
+    ```python
+    coil._data["air_outlet_node_name"] = "AHU-1 Coil Out"
+    # fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
+    ```
 
-**GOOD — set both ends, or rename the coil**
+!!! success "set both ends, or rename the coil"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-node-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-node-good"
+    ```
 
-**BAD — renaming a coil via `_data["name"]`**
+!!! failure "renaming a coil via `_data["name"]`"
 
-```python
-coil._data["name"] = "New Coil Name"
-# Branch component still names "AHU-1 Cooling Coil" — broken
-```
+    ```python
+    coil._data["name"] = "New Coil Name"
+    # Branch component still names "AHU-1 Cooling Coil" — broken
+    ```
 
-**GOOD — set `.name`**
+!!! success "set `.name`"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-rename-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-rename-good"
+    ```
 
-**BAD — assuming `validate_document` catches mismatched node-name strings**
+!!! failure "assuming `validate_document` catches mismatched node-name strings"
 
-```python
-# Node names are strings, not references — the schema validates type but not consistency.
-# A typo in a node name passes validation but breaks the loop.
-```
+    ```python
+    # Node names are strings, not references — the schema validates type but not consistency.
+    # A typo in a node name passes validation but breaks the loop.
+    ```
 
-**GOOD — also walk the graph manually for critical loops**
+!!! success "also walk the graph manually for critical loops"
 
-```python
---8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-walk-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-walk-good"
+    ```
 
 ## Related
 

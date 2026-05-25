@@ -95,43 +95,43 @@ The default `SubprocessMigrator` shells out to the binaries shipped with the ins
 
 ## Common mistakes
 
-**BAD — assuming migration is reversible**
+!!! failure "assuming migration is reversible"
 
-```python
-report = migrate(doc, target_version=(22, 1, 0))   # MigrationError: backward migration not supported
-```
+    ```python
+    report = migrate(doc, target_version=(22, 1, 0))   # MigrationError: backward migration not supported
+    ```
 
-**GOOD — keep the original and migrate forward**
+!!! success "keep the original and migrate forward"
 
-```python
---8<-- "docs/snippets/agent_references/version-migration.py:mistake-reversible-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/version-migration.py:mistake-reversible-good"
+    ```
 
-**BAD — running migrate without `energyplus` when the installed version is older**
+!!! failure "running migrate without `energyplus` when the installed version is older"
 
-```python
-# Installed: 24.1; doc is 25.2 → no transition binaries exist to migrate forward
-migrate(doc, target_version=(25, 2, 0))    # MigrationError
-```
+    ```python
+    # Installed: 24.1; doc is 25.2 → no transition binaries exist to migrate forward
+    migrate(doc, target_version=(25, 2, 0))    # MigrationError
+    ```
 
-**GOOD — install a newer EnergyPlus, or migrate using one that has the binaries**
+!!! success "install a newer EnergyPlus, or migrate using one that has the binaries"
 
-```python
---8<-- "docs/snippets/agent_references/version-migration.py:mistake-energyplus-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/version-migration.py:mistake-energyplus-good"
+    ```
 
-**BAD — assuming `simulate(auto_migrate=True)` persists the migrated model**
+!!! failure "assuming `simulate(auto_migrate=True)` persists the migrated model"
 
-```python
-result = simulate(doc, "weather.epw", auto_migrate=True)
-# doc is unchanged; the migrated model was used for the simulation only.
-```
+    ```python
+    result = simulate(doc, "weather.epw", auto_migrate=True)
+    # doc is unchanged; the migrated model was used for the simulation only.
+    ```
 
-**GOOD — call `migrate` explicitly and persist if you need it later**
+!!! success "call `migrate` explicitly and persist if you need it later"
 
-```python
---8<-- "docs/snippets/agent_references/version-migration.py:mistake-automigrate-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/version-migration.py:mistake-automigrate-good"
+    ```
 
 ## Related
 

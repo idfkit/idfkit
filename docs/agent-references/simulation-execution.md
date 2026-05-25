@@ -110,56 +110,56 @@ The weather file must be local — remote weather is not auto-downloaded. Pre-st
 
 ## Common mistakes
 
-**BAD — running without checking the version**
+!!! failure "running without checking the version"
 
-```python
-result = simulate(doc, "weather.epw")      # VersionMismatchError if EP version != model version
-```
+    ```python
+    result = simulate(doc, "weather.epw")      # VersionMismatchError if EP version != model version
+    ```
 
-**GOOD — use `auto_migrate=True` or migrate explicitly**
+!!! success "use `auto_migrate=True` or migrate explicitly"
 
-```python
---8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-version-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-version-good"
+    ```
 
-**BAD — assuming `result.sql` always exists**
+!!! failure "assuming `result.sql` always exists"
 
-```python
-result = simulate(doc, "weather.epw")
-ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was disabled
-```
+    ```python
+    result = simulate(doc, "weather.epw")
+    ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was disabled
+    ```
 
-**GOOD — let the runner ensure SQLite output is on**
+!!! success "let the runner ensure SQLite output is on"
 
-```python
---8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-sql-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-sql-good"
+    ```
 
-**BAD — re-running the same simulation across iterations**
+!!! failure "re-running the same simulation across iterations"
 
-```python
-for _ in range(10):
-    result = simulate(doc, "weather.epw")   # full run each time, even if nothing changed
-```
+    ```python
+    for _ in range(10):
+        result = simulate(doc, "weather.epw")   # full run each time, even if nothing changed
+    ```
 
-**GOOD — cache**
+!!! success "cache"
 
-```python
---8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-rerun-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-rerun-good"
+    ```
 
-**BAD — silently swallowing simulation errors**
+!!! failure "silently swallowing simulation errors"
 
-```python
-result = simulate(doc, "weather.epw")
-# proceed regardless of result.errors.has_severe()
-```
+    ```python
+    result = simulate(doc, "weather.epw")
+    # proceed regardless of result.errors.has_severe()
+    ```
 
-**GOOD — gate on errors**
+!!! success "gate on errors"
 
-```python
---8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-errors-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/simulation-execution.py:mistake-errors-good"
+    ```
 
 ## Related
 

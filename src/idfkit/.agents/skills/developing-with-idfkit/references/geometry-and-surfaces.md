@@ -178,45 +178,45 @@ These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on bui
 
 ## Common mistakes
 
-**BAD — manually summing vertex coordinates**
+!!! failure "manually summing vertex coordinates"
 
-```python
-verts = surface._data.get("vertices", [])
-# ... bespoke area calculation, easy to get wrong on non-planar inputs
-```
+    ```python
+    verts = surface._data.get("vertices", [])
+    # ... bespoke area calculation, easy to get wrong on non-planar inputs
+    ```
 
-**GOOD — `calculate_surface_area`**
+!!! success "`calculate_surface_area`"
 
-```python
-calculate_surface_area(surface)
-```
+    ```python
+    calculate_surface_area(surface)
+    ```
 
-**BAD — rotating only `Zone` objects**
+!!! failure "rotating only `Zone` objects"
 
-```python
-for zone in doc["Zone"]:
-    zone.direction_of_relative_north = 90.0
-# surfaces still have their original vertices; the geometry is now inconsistent.
-```
+    ```python
+    for zone in doc["Zone"]:
+        zone.direction_of_relative_north = 90.0
+    # surfaces still have their original vertices; the geometry is now inconsistent.
+    ```
 
-**GOOD — `rotate_building`**
+!!! success "`rotate_building`"
 
-```python
-rotate_building(doc, angle_deg=90.0)  # rotates all vertices and zone origins
-```
+    ```python
+    rotate_building(doc, angle_deg=90.0)  # rotates all vertices and zone origins
+    ```
 
-**BAD — passing a dict to `set_wwr`**
+!!! failure "passing a dict to `set_wwr`"
 
-```python
-set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})  # TypeError
-```
+    ```python
+    set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})  # TypeError
+    ```
 
-**GOOD — call once per orientation**
+!!! success "call once per orientation"
 
-```python
-for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West", 0.4)]:
-    set_wwr(doc, wwr=ratio, orientation=orientation)
-```
+    ```python
+    for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West", 0.4)]:
+        set_wwr(doc, wwr=ratio, orientation=orientation)
+    ```
 
 ## Related
 

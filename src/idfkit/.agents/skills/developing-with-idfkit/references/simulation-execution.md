@@ -189,65 +189,65 @@ The weather file must be local — remote weather is not auto-downloaded. Pre-st
 
 ## Common mistakes
 
-**BAD — running without checking the version**
+!!! failure "running without checking the version"
 
-```python
-result = simulate(doc, "weather.epw")      # VersionMismatchError if EP version != model version
-```
+    ```python
+    result = simulate(doc, "weather.epw")      # VersionMismatchError if EP version != model version
+    ```
 
-**GOOD — use `auto_migrate=True` or migrate explicitly**
+!!! success "use `auto_migrate=True` or migrate explicitly"
 
-```python
-result = simulate(doc, "weather.epw", auto_migrate=True)
-```
+    ```python
+    result = simulate(doc, "weather.epw", auto_migrate=True)
+    ```
 
-**BAD — assuming `result.sql` always exists**
+!!! failure "assuming `result.sql` always exists"
 
-```python
-result = simulate(doc, "weather.epw")
-ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was disabled
-```
+    ```python
+    result = simulate(doc, "weather.epw")
+    ts = result.sql.get_timeseries(...)       # AttributeError if SQLite output was disabled
+    ```
 
-**GOOD — let the runner ensure SQLite output is on**
+!!! success "let the runner ensure SQLite output is on"
 
-```python
-# simulate() auto-injects Output:SQLite if missing — just access result.sql safely:
-if result.sql:
-    ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
-```
+    ```python
+    # simulate() auto-injects Output:SQLite if missing — just access result.sql safely:
+    if result.sql:
+        ts = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+    ```
 
-**BAD — re-running the same simulation across iterations**
+!!! failure "re-running the same simulation across iterations"
 
-```python
-for _ in range(10):
-    result = simulate(doc, "weather.epw")   # full run each time, even if nothing changed
-```
+    ```python
+    for _ in range(10):
+        result = simulate(doc, "weather.epw")   # full run each time, even if nothing changed
+    ```
 
-**GOOD — cache**
+!!! success "cache"
 
-```python
-cache = SimulationCache(cache_dir=".sim_cache")
-for _ in range(10):
-    result = simulate(doc, "weather.epw", cache=cache)  # cache-hits after the first
-```
+    ```python
+    cache = SimulationCache(cache_dir=".sim_cache")
+    for _ in range(10):
+        result = simulate(doc, "weather.epw", cache=cache)  # cache-hits after the first
+    ```
 
-**BAD — silently swallowing simulation errors**
+!!! failure "silently swallowing simulation errors"
 
-```python
-result = simulate(doc, "weather.epw")
-# proceed regardless of result.errors.has_severe()
-```
+    ```python
+    result = simulate(doc, "weather.epw")
+    # proceed regardless of result.errors.has_severe()
+    ```
 
-**GOOD — gate on errors**
+!!! success "gate on errors"
 
-```python
-result = simulate(doc, "weather.epw")
-if result.errors.has_severe:
-    print(result.errors.summary())
-    for msg in result.errors.severe:
-        print(msg.severity, msg.message)
-    raise SystemExit("Simulation failed")
-```
+    ```python
+    result = simulate(doc, "weather.epw")
+    if result.errors.has_severe:
+        print(result.errors.summary())
+        for msg in result.errors.severe:
+            print(msg.severity, msg.message)
+        raise SystemExit("Simulation failed")
+    ```
 
 ## Related
 

@@ -131,46 +131,46 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
 
 ## Common mistakes
 
-**BAD — expecting byte-identical output without `preserve_formatting=True` on the loader**
+!!! failure "expecting byte-identical output without `preserve_formatting=True` on the loader"
 
-```python
-doc = load_idf("building.idf")             # no CST
-write_idf(doc, "out.idf")                  # reformatted, NOT byte-identical
-```
+    ```python
+    doc = load_idf("building.idf")             # no CST
+    write_idf(doc, "out.idf")                  # reformatted, NOT byte-identical
+    ```
 
-**GOOD — pair load + write**
+!!! success "pair load + write"
 
-```python
-doc = load_idf("building.idf", preserve_formatting=True)
-write_idf(doc, "out.idf")
-```
+    ```python
+    doc = load_idf("building.idf", preserve_formatting=True)
+    write_idf(doc, "out.idf")
+    ```
 
-**BAD — UTF-8 by default for IDF**
+!!! failure "UTF-8 by default for IDF"
 
-```python
-write_idf(doc, "out.idf", encoding="utf-8")   # EnergyPlus may reject non-latin-1 bytes
-```
+    ```python
+    write_idf(doc, "out.idf", encoding="utf-8")   # EnergyPlus may reject non-latin-1 bytes
+    ```
 
-**GOOD — let the default win**
+!!! success "let the default win"
 
-```python
-write_idf(doc, "out.idf")  # latin-1
-```
+    ```python
+    write_idf(doc, "out.idf")  # latin-1
+    ```
 
-**BAD — mixing `output_type="compressed"` with lossless expectations**
+!!! failure "mixing `output_type="compressed"` with lossless expectations"
 
-```python
-doc = load_idf("building.idf", preserve_formatting=True)
-write_idf(doc, "out.idf", output_type="compressed")   # CST is ignored when output_type isn't "standard"
-```
+    ```python
+    doc = load_idf("building.idf", preserve_formatting=True)
+    write_idf(doc, "out.idf", output_type="compressed")   # CST is ignored when output_type isn't "standard"
+    ```
 
-**GOOD — be explicit about your intent**
+!!! success "be explicit about your intent"
 
-```python
-write_idf(doc, "out.idf", output_type="standard")  # lossless (default)
-# or
-write_idf(doc, "out.idf", output_type="compressed", preserve_formatting=False)
-```
+    ```python
+    write_idf(doc, "out.idf", output_type="standard")  # lossless (default)
+    # or
+    write_idf(doc, "out.idf", output_type="compressed", preserve_formatting=False)
+    ```
 
 ## Related
 

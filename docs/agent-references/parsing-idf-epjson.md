@@ -98,44 +98,44 @@ For batch workflows, preload the schema once and pass it to every `IDFParser` so
 
 ## Common mistakes
 
-**BAD — silent typos in non-strict mode**
+!!! failure "silent typos in non-strict mode"
 
-```python
-doc = load_idf("building.idf", strict=False)
-zone.x_orign = 10.0                        # silently dropped on the floor
-write_idf(doc, "out.idf")                  # x_origin unchanged
-```
+    ```python
+    doc = load_idf("building.idf", strict=False)
+    zone.x_orign = 10.0                        # silently dropped on the floor
+    write_idf(doc, "out.idf")                  # x_origin unchanged
+    ```
 
-**GOOD — keep strict mode on for authoring**
+!!! success "keep strict mode on for authoring"
 
-```python
---8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-strict-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-strict-good"
+    ```
 
-**BAD — guessing the version on legacy files**
+!!! failure "guessing the version on legacy files"
 
-```python
-doc = load_idf("legacy.idf")               # may raise VersionNotFoundError
-```
+    ```python
+    doc = load_idf("legacy.idf")               # may raise VersionNotFoundError
+    ```
 
-**GOOD — explicitly migrate before loading**
+!!! success "explicitly migrate before loading"
 
-```python
---8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-version-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-version-good"
+    ```
 
-**BAD — forgetting `preserve_formatting` for the writer side**
+!!! failure "forgetting `preserve_formatting` for the writer side"
 
-```python
-doc = load_idf("building.idf")             # no CST → format-only writer
-write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
-```
+    ```python
+    doc = load_idf("building.idf")             # no CST → format-only writer
+    write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
+    ```
 
-**GOOD — pair load + write**
+!!! success "pair load + write"
 
-```python
---8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-preserve-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-preserve-good"
+    ```
 
 ## Related
 

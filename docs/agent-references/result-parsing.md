@@ -119,44 +119,44 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 
 ## Common mistakes
 
-**BAD — accessing `result.sql` without a None check**
+!!! failure "accessing `result.sql` without a None check"
 
-```python
-df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-# AttributeError if SQL output was disabled
-```
+    ```python
+    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+    # AttributeError if SQL output was disabled
+    ```
 
-**GOOD — check or trust the runner's auto-injection**
+!!! success "check or trust the runner's auto-injection"
 
-```python
---8<-- "docs/snippets/agent_references/result-parsing.py:mistake-sql-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/result-parsing.py:mistake-sql-good"
+    ```
 
-**BAD — assuming a variable exists**
+!!! failure "assuming a variable exists"
 
-```python
-ts = result.sql.get_timeseries("Zone Cooling Set Point Not Met Time", "Office")
-# KeyError if you didn't add Output:Variable for it
-```
+    ```python
+    ts = result.sql.get_timeseries("Zone Cooling Set Point Not Met Time", "Office")
+    # KeyError if you didn't add Output:Variable for it
+    ```
 
-**GOOD — add the output, or discover what's available**
+!!! success "add the output, or discover what's available"
 
-```python
---8<-- "docs/snippets/agent_references/result-parsing.py:mistake-variable-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/result-parsing.py:mistake-variable-good"
+    ```
 
-**BAD — ignoring `result.errors.has_severe()`**
+!!! failure "ignoring `result.errors.has_severe()`"
 
-```python
-df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-# Garbage data — EnergyPlus terminated mid-simulation, SQLite was never finalised.
-```
+    ```python
+    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+    # Garbage data — EnergyPlus terminated mid-simulation, SQLite was never finalised.
+    ```
 
-**GOOD — gate on errors**
+!!! success "gate on errors"
 
-```python
---8<-- "docs/snippets/agent_references/result-parsing.py:mistake-errors-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/result-parsing.py:mistake-errors-good"
+    ```
 
 ## Related
 

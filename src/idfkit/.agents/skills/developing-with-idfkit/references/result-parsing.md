@@ -207,52 +207,52 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
 
 ## Common mistakes
 
-**BAD — accessing `result.sql` without a None check**
+!!! failure "accessing `result.sql` without a None check"
 
-```python
-df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-# AttributeError if SQL output was disabled
-```
-
-**GOOD — check or trust the runner's auto-injection**
-
-```python
-# simulate() injects Output:SQLite if missing — result.sql is almost always present.
-# But guard anyway when reading legacy results from disk:
-if result.sql:
+    ```python
     df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-```
+    # AttributeError if SQL output was disabled
+    ```
 
-**BAD — assuming a variable exists**
+!!! success "check or trust the runner's auto-injection"
 
-```python
-ts = result.sql.get_timeseries("Zone Cooling Set Point Not Met Time", "Office")
-# KeyError if you didn't add Output:Variable for it
-```
+    ```python
+    # simulate() injects Output:SQLite if missing — result.sql is almost always present.
+    # But guard anyway when reading legacy results from disk:
+    if result.sql:
+        df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+    ```
 
-**GOOD — add the output, or discover what's available**
+!!! failure "assuming a variable exists"
 
-```python
-doc.add(
-    "Output:Variable", key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
-)
-# Or check result.variables (after running with Output:VariableDictionary)
-```
+    ```python
+    ts = result.sql.get_timeseries("Zone Cooling Set Point Not Met Time", "Office")
+    # KeyError if you didn't add Output:Variable for it
+    ```
 
-**BAD — ignoring `result.errors.has_severe()`**
+!!! success "add the output, or discover what's available"
 
-```python
-df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-# Garbage data — EnergyPlus terminated mid-simulation, SQLite was never finalised.
-```
+    ```python
+    doc.add(
+        "Output:Variable", key_value="*", variable_name="Zone Cooling Set Point Not Met Time", reporting_frequency="Hourly"
+    )
+    # Or check result.variables (after running with Output:VariableDictionary)
+    ```
 
-**GOOD — gate on errors**
+!!! failure "ignoring `result.errors.has_severe()`"
 
-```python
-if result.errors.has_severe:
-    raise SystemExit(result.errors.summary())
-df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
-```
+    ```python
+    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+    # Garbage data — EnergyPlus terminated mid-simulation, SQLite was never finalised.
+    ```
+
+!!! success "gate on errors"
+
+    ```python
+    if result.errors.has_severe:
+        raise SystemExit(result.errors.summary())
+    df = result.sql.to_dataframe("Zone Mean Air Temperature", "Office")
+    ```
 
 ## Related
 

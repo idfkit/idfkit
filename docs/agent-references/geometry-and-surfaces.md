@@ -93,44 +93,44 @@ These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on bui
 
 ## Common mistakes
 
-**BAD — manually summing vertex coordinates**
+!!! failure "manually summing vertex coordinates"
 
-```python
-verts = surface._data.get("vertices", [])
-# ... bespoke area calculation, easy to get wrong on non-planar inputs
-```
+    ```python
+    verts = surface._data.get("vertices", [])
+    # ... bespoke area calculation, easy to get wrong on non-planar inputs
+    ```
 
-**GOOD — `calculate_surface_area`**
+!!! success "`calculate_surface_area`"
 
-```python
---8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-area-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-area-good"
+    ```
 
-**BAD — rotating only `Zone` objects**
+!!! failure "rotating only `Zone` objects"
 
-```python
-for zone in doc["Zone"]:
-    zone.direction_of_relative_north = 90.0
-# surfaces still have their original vertices; the geometry is now inconsistent.
-```
+    ```python
+    for zone in doc["Zone"]:
+        zone.direction_of_relative_north = 90.0
+    # surfaces still have their original vertices; the geometry is now inconsistent.
+    ```
 
-**GOOD — `rotate_building`**
+!!! success "`rotate_building`"
 
-```python
---8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-rotate-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-rotate-good"
+    ```
 
-**BAD — passing a dict to `set_wwr`**
+!!! failure "passing a dict to `set_wwr`"
 
-```python
-set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})  # TypeError
-```
+    ```python
+    set_wwr(doc, wwr={"North": 0.3, "South": 0.5, "East": 0.4, "West": 0.4})  # TypeError
+    ```
 
-**GOOD — call once per orientation**
+!!! success "call once per orientation"
 
-```python
---8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-wwr-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:mistake-wwr-good"
+    ```
 
 ## Related
 

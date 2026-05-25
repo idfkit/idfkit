@@ -182,48 +182,48 @@ else:
 
 ## Common mistakes
 
-**BAD — assuming migration is reversible**
+!!! failure "assuming migration is reversible"
 
-```python
-report = migrate(doc, target_version=(22, 1, 0))   # MigrationError: backward migration not supported
-```
+    ```python
+    report = migrate(doc, target_version=(22, 1, 0))   # MigrationError: backward migration not supported
+    ```
 
-**GOOD — keep the original and migrate forward**
+!!! success "keep the original and migrate forward"
 
-```python
-doc_v22 = load_idf("legacy_v22.idf")  # keep this on disk
-doc_v25 = migrate(doc_v22, target_version=(25, 2, 0)).migrated_model
-```
+    ```python
+    doc_v22 = load_idf("legacy_v22.idf")  # keep this on disk
+    doc_v25 = migrate(doc_v22, target_version=(25, 2, 0)).migrated_model
+    ```
 
-**BAD — running migrate without `energyplus` when the installed version is older**
+!!! failure "running migrate without `energyplus` when the installed version is older"
 
-```python
-# Installed: 24.1; doc is 25.2 → no transition binaries exist to migrate forward
-migrate(doc, target_version=(25, 2, 0))    # MigrationError
-```
+    ```python
+    # Installed: 24.1; doc is 25.2 → no transition binaries exist to migrate forward
+    migrate(doc, target_version=(25, 2, 0))    # MigrationError
+    ```
 
-**GOOD — install a newer EnergyPlus, or migrate using one that has the binaries**
+!!! success "install a newer EnergyPlus, or migrate using one that has the binaries"
 
-```python
-config = find_energyplus(version=(25, 2, 0))  # explicitly pick a newer install
-migrate(doc, target_version=(25, 2, 0), energyplus=config)
-```
+    ```python
+    config = find_energyplus(version=(25, 2, 0))  # explicitly pick a newer install
+    migrate(doc, target_version=(25, 2, 0), energyplus=config)
+    ```
 
-**BAD — assuming `simulate(auto_migrate=True)` persists the migrated model**
+!!! failure "assuming `simulate(auto_migrate=True)` persists the migrated model"
 
-```python
-result = simulate(doc, "weather.epw", auto_migrate=True)
-# doc is unchanged; the migrated model was used for the simulation only.
-```
+    ```python
+    result = simulate(doc, "weather.epw", auto_migrate=True)
+    # doc is unchanged; the migrated model was used for the simulation only.
+    ```
 
-**GOOD — call `migrate` explicitly and persist if you need it later**
+!!! success "call `migrate` explicitly and persist if you need it later"
 
-```python
-report = migrate(doc, target_version=config.version)
-new_doc = report.migrated_model  # IDFDocument at the target version
-write_idf(new_doc, "migrated.idf")
-result = simulate(new_doc, "weather.epw")
-```
+    ```python
+    report = migrate(doc, target_version=config.version)
+    new_doc = report.migrated_model  # IDFDocument at the target version
+    write_idf(new_doc, "migrated.idf")
+    result = simulate(new_doc, "weather.epw")
+    ```
 
 ## Related
 

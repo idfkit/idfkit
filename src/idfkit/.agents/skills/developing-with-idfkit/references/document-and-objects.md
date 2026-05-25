@@ -146,30 +146,30 @@ for obj in doc.all_objects:
 
 ## Common mistakes
 
-**BAD — mutating a list of extensibles in place**
+!!! failure "mutating a list of extensibles in place"
 
-```python
-surface._data["vertices"].append({"vertex_x_coordinate": 1.0})  # bypasses validation
-```
+    ```python
+    surface._data["vertices"].append({"vertex_x_coordinate": 1.0})  # bypasses validation
+    ```
 
-**GOOD — use the typed wrapper**
+!!! success "use the typed wrapper"
 
-```python
-surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
-```
+    ```python
+    surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex_z_coordinate=3.0)
+    ```
 
-**BAD — renaming via raw string edits**
+!!! failure "renaming via raw string edits"
 
-```python
-# Renames the zone but leaves every BuildingSurface:Detailed.zone_name stale
-zone._data["name"] = "OpenPlanArea"
-```
+    ```python
+    # Renames the zone but leaves every BuildingSurface:Detailed.zone_name stale
+    zone._data["name"] = "OpenPlanArea"
+    ```
 
-**GOOD — rename through the document**
+!!! success "rename through the document"
 
-```python
-doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
-```
+    ```python
+    doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
+    ```
 
 ## Related
 

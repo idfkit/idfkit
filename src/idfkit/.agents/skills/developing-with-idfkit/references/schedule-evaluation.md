@@ -195,42 +195,42 @@ Both functions read the document's `RunPeriodControl:SpecialDays` objects — id
 
 ## Common mistakes
 
-**BAD — evaluating a schedule that references missing schedules**
+!!! failure "evaluating a schedule that references missing schedules"
 
-```python
-# Compact schedule referencing "Building Occupancy" by name, but that schedule was deleted
-v = evaluate(sched, ts)                    # ScheduleReferenceError
-```
+    ```python
+    # Compact schedule referencing "Building Occupancy" by name, but that schedule was deleted
+    v = evaluate(sched, ts)                    # ScheduleReferenceError
+    ```
 
-**GOOD — validate first**
+!!! success "validate first"
 
-```python
-result = validate_document(doc)  # check_references=True catches broken schedule refs
-```
+    ```python
+    result = validate_document(doc)  # check_references=True catches broken schedule refs
+    ```
 
-**BAD — assuming hourly when the schedule is sub-hourly**
+!!! failure "assuming hourly when the schedule is sub-hourly"
 
-```python
-arr = values(sched, year=2024)             # 8760 hourly values, even if EnergyPlus would interpolate at 15 minutes
-```
+    ```python
+    arr = values(sched, year=2024)             # 8760 hourly values, even if EnergyPlus would interpolate at 15 minutes
+    ```
 
-**GOOD — match the simulation timestep**
+!!! success "match the simulation timestep"
 
-```python
-arr = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly values for a 15-minute timestep
-```
+    ```python
+    arr = values(sched, year=2024, timestep=4)  # 35,040 quarter-hourly values for a 15-minute timestep
+    ```
 
-**BAD — passing a date in a non-leap year for Feb 29**
+!!! failure "passing a date in a non-leap year for Feb 29"
 
-```python
-v = evaluate(sched, datetime(2023, 2, 29, 10, 0))   # ValueError
-```
+    ```python
+    v = evaluate(sched, datetime(2023, 2, 29, 10, 0))   # ValueError
+    ```
 
-**GOOD — use a leap year or guard**
+!!! success "use a leap year or guard"
 
-```python
-v = evaluate(sched, datetime(2024, 2, 29, 10, 0))
-```
+    ```python
+    v = evaluate(sched, datetime(2024, 2, 29, 10, 0))
+    ```
 
 ## Related
 

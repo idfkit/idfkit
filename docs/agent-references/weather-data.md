@@ -107,44 +107,44 @@ The bundled index ages well — TMYx datasets don't change often. To refresh fro
 
 ## Common mistakes
 
-**BAD — geocoding in a tight loop**
+!!! failure "geocoding in a tight loop"
 
-```python
-for addr in addresses:
-    lat, lon = geocode(addr)               # Nominatim rate-limits, will start failing
-```
+    ```python
+    for addr in addresses:
+        lat, lon = geocode(addr)               # Nominatim rate-limits, will start failing
+    ```
 
-**GOOD — sleep, or pre-compute**
+!!! success "sleep, or pre-compute"
 
-```python
---8<-- "docs/snippets/agent_references/weather-data.py:mistake-geocode-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/weather-data.py:mistake-geocode-good"
+    ```
 
-**BAD — simulating without design days**
+!!! failure "simulating without design days"
 
-```python
-doc = load_idf("building.idf")
-simulate(doc, "weather.epw")               # autosizing fails — no design days in the model
-```
+    ```python
+    doc = load_idf("building.idf")
+    simulate(doc, "weather.epw")               # autosizing fails — no design days in the model
+    ```
 
-**GOOD — apply design days first**
+!!! success "apply design days first"
 
-```python
---8<-- "docs/snippets/agent_references/weather-data.py:mistake-designday-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/weather-data.py:mistake-designday-good"
+    ```
 
-**BAD — assuming `display_name` is unique**
+!!! failure "assuming `display_name` is unique"
 
-```python
-station_by_name = {s.display_name: s for s in index.stations}
-# Collisions when multiple TMYx year-ranges exist for the same WMO ID.
-```
+    ```python
+    station_by_name = {s.display_name: s for s in index.stations}
+    # Collisions when multiple TMYx year-ranges exist for the same WMO ID.
+    ```
 
-**GOOD — key on `(wmo, source)` if you need uniqueness**
+!!! success "key on `(wmo, source)` if you need uniqueness"
 
-```python
---8<-- "docs/snippets/agent_references/weather-data.py:mistake-uniqueness-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/weather-data.py:mistake-uniqueness-good"
+    ```
 
 ## Related
 

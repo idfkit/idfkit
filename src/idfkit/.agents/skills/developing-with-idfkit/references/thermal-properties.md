@@ -139,48 +139,48 @@ for name in ("ExteriorWall_Baseline", "ExteriorWall_R30", "ExteriorWall_R40"):
 
 ## Common mistakes
 
-**BAD — comparing R-values without films**
+!!! failure "comparing R-values without films"
 
-```python
-r_a = calculate_r_value(wall_a, include_films=False)
-r_b = calculate_r_value(wall_b)                         # includes films
-# Apples and oranges; r_a is intentionally lower
-```
+    ```python
+    r_a = calculate_r_value(wall_a, include_films=False)
+    r_b = calculate_r_value(wall_b)                         # includes films
+    # Apples and oranges; r_a is intentionally lower
+    ```
 
-**GOOD — fix one mode and stick to it**
+!!! success "fix one mode and stick to it"
 
-```python
-r_a = calculate_r_value(wall_a)
-r_b = calculate_r_value(wall_b)
-```
+    ```python
+    r_a = calculate_r_value(wall_a)
+    r_b = calculate_r_value(wall_b)
+    ```
 
-**BAD — using SHGC for an opaque construction**
+!!! failure "using SHGC for an opaque construction"
 
-```python
-shgc = calculate_shgc(opaque_wall)         # returns None
-```
+    ```python
+    shgc = calculate_shgc(opaque_wall)         # returns None
+    ```
 
-**GOOD — branch on construction type or trust `None`**
+!!! success "branch on construction type or trust `None`"
 
-```python
-shgc = calculate_shgc(construction)
-if shgc is None:
-    pass  # opaque, no SHGC to report
-```
+    ```python
+    shgc = calculate_shgc(construction)
+    if shgc is None:
+        pass  # opaque, no SHGC to report
+    ```
 
-**BAD — running thermal calcs against an `IDFObject` that lacks `_document`**
+!!! failure "running thermal calcs against an `IDFObject` that lacks `_document`"
 
-```python
-loose_obj = IDFObject("Construction", "X", ...)   # no _document
-calculate_r_value(loose_obj)                       # can't resolve material references
-```
+    ```python
+    loose_obj = IDFObject("Construction", "X", ...)   # no _document
+    calculate_r_value(loose_obj)                       # can't resolve material references
+    ```
 
-**GOOD — operate on objects belonging to a `doc`**
+!!! success "operate on objects belonging to a `doc`"
 
-```python
-construction = doc["Construction"]["ExteriorWall"]
-calculate_r_value(construction)
-```
+    ```python
+    construction = doc["Construction"]["ExteriorWall"]
+    calculate_r_value(construction)
+    ```
 
 ## Related
 

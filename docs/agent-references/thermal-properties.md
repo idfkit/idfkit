@@ -77,44 +77,44 @@ Custom gas mixtures: build a `GasProperties` instance manually with the constitu
 
 ## Common mistakes
 
-**BAD — comparing R-values without films**
+!!! failure "comparing R-values without films"
 
-```python
-r_a = calculate_r_value(wall_a, include_films=False)
-r_b = calculate_r_value(wall_b)                         # includes films
-# Apples and oranges; r_a is intentionally lower
-```
+    ```python
+    r_a = calculate_r_value(wall_a, include_films=False)
+    r_b = calculate_r_value(wall_b)                         # includes films
+    # Apples and oranges; r_a is intentionally lower
+    ```
 
-**GOOD — fix one mode and stick to it**
+!!! success "fix one mode and stick to it"
 
-```python
---8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-films-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-films-good"
+    ```
 
-**BAD — using SHGC for an opaque construction**
+!!! failure "using SHGC for an opaque construction"
 
-```python
-shgc = calculate_shgc(opaque_wall)         # returns None
-```
+    ```python
+    shgc = calculate_shgc(opaque_wall)         # returns None
+    ```
 
-**GOOD — branch on construction type or trust `None`**
+!!! success "branch on construction type or trust `None`"
 
-```python
---8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-shgc-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-shgc-good"
+    ```
 
-**BAD — running thermal calcs against an `IDFObject` that lacks `_document`**
+!!! failure "running thermal calcs against an `IDFObject` that lacks `_document`"
 
-```python
-loose_obj = IDFObject("Construction", "X", ...)   # no _document
-calculate_r_value(loose_obj)                       # can't resolve material references
-```
+    ```python
+    loose_obj = IDFObject("Construction", "X", ...)   # no _document
+    calculate_r_value(loose_obj)                       # can't resolve material references
+    ```
 
-**GOOD — operate on objects belonging to a `doc`**
+!!! success "operate on objects belonging to a `doc`"
 
-```python
---8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-doc-good"
-```
+    ```python
+    --8<-- "docs/snippets/agent_references/thermal-properties.py:mistake-doc-good"
+    ```
 
 ## Related
 
