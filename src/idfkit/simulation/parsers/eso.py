@@ -97,9 +97,20 @@ class ESOVariable:
 class ESOEnvironment:
     """One environment period (design day or run period) within the file.
 
+    Environments appear in the order EnergyPlus ran them: sizing design days
+    first (in IDF order), then the weather run period(s). ``index`` is that
+    0-based order and is exactly the value used by ``environment_index``
+    everywhere else (:meth:`ESOResult.get_column` and
+    :attr:`ESOColumn.environment_index`); ``title`` is the human-readable name.
+    To learn which index is which design day, read :attr:`ESOResult.environments`
+    and match on ``title`` — EnergyPlus does not encode an environment *type*
+    code in the ESO format, so the title is the only discriminator (e.g.
+    ``"... ANN HTG 99% CONDNS DB"`` vs ``"RUN PERIOD 1"``).
+
     Attributes:
-        index: 0-based order of appearance in the file.
-        title: The environment title from the ``1,...`` marker line.
+        index: 0-based order of appearance; pass it as ``environment_index``.
+        title: The environment title from the ``1,...`` marker line, e.g.
+            ``"DENVER ... ANN HTG 99% CONDNS DB"`` or ``"RUN PERIOD 1"``.
         latitude: Site latitude in degrees.
         longitude: Site longitude in degrees.
         time_zone: Site time zone in hours from GMT.
@@ -121,6 +132,8 @@ class ESOColumn:
     Attributes:
         variable: The :class:`ESOVariable` this column belongs to.
         environment_index: Index of the environment these values belong to.
+            Look it up in :attr:`ESOResult.environments` to get the design-day /
+            run-period title: ``result.environments[col.environment_index].title``.
         timestamps: Timestamp for each data point.
         values: The reported value for each data point (the primary value for
             aggregated daily/monthly records).
@@ -275,6 +288,22 @@ class ESOResult:
     lazily on demand (see :meth:`get_column`). Pass ``eager=True`` to materialize
     every column up front.
 
+    A file usually contains several *environments* — the sizing design days
+    followed by the weather run period. :meth:`get_column` returns the last one
+    (the run period) by default. To target a specific design day, read
+    :attr:`environments` to map each ``index`` to its ``title`` and pass that
+    index as ``environment_index``:
+
+    Example:
+        >>> eso = ESOResult.from_file("eplusout.eso")  # doctest: +SKIP
+        >>> for env in eso.environments:               # doctest: +SKIP
+        ...     print(env.index, env.title)
+        0 DENVER ... ANN HTG 99% CONDNS DB
+        1 DENVER ... ANN CLG 1% CONDNS DB=>MWB
+        2 RUN PERIOD 1
+        >>> # the heating design day is index 0:
+        >>> col = eso.get_column("Zone Mean Air Temperature", "ZONE ONE", environment_index=0)  # doctest: +SKIP
+
     Attributes:
         program_version: The ``Program Version`` header line.
         variables: All variables declared in the data dictionary.
@@ -321,7 +350,12 @@ class ESOResult:
 
     @property
     def environments(self) -> tuple[ESOEnvironment, ...]:
-        """All environment periods in the file (lazily scanned and cached)."""
+        """All environment periods in the file (lazily scanned and cached).
+
+        This is the index → title map for ``environment_index``: each
+        :class:`ESOEnvironment` has an ``index`` (use it as ``environment_index``
+        in :meth:`get_column`) and a ``title`` (the design-day / run-period name).
+        """
         if self._env_cache is None:
             self._env_cache = self._scan_environments()
         return self._env_cache
@@ -365,11 +399,15 @@ class ESOResult:
             frequency: Optional frequency filter (e.g. ``"Hourly"``).
             environment_index: Which environment to return. Defaults to the last
                 environment in the file (typically the run period), mirroring the
-                most common intent.
+                most common intent. To pick a specific design day, find its index
+                by title in :attr:`environments` (e.g.
+                ``next(e.index for e in eso.environments if "HTG" in e.title)``)
+                and pass it here.
 
         Returns:
             The matching :class:`ESOColumn`, or ``None`` if the variable is not
-            found or has no data.
+            found or has no data. The returned column's ``environment_index``
+            cross-references back to :attr:`environments`.
         """
         var = self.get_variable(variable_name, key_value, frequency)
         if var is None:
