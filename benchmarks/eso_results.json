@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "python": "3.12.5",
+    "platform": "Darwin arm64",
+    "eso_file": "eplusout.eso",
+    "file_size_bytes": 104703996,
+    "approx_data_points": 5147016,
+    "iterations": 3
+  },
+  "idfkit\n(lazy)": {
+    "Single variable": {
+      "min": 1.3366483750287443,
+      "mean": 1.3561502083515127
+    }
+  },
+  "idfkit\n(eager)": {
+    "Full parse": {
+      "min": 3.054408374999184,
+      "mean": 3.0624644030079557
+    }
+  },
+  "esoreader": {
+    "Single variable": {
+      "min": 2.3297297499957494,
+      "mean": 2.350780653010588
+    },
+    "Full parse": {
+      "min": 2.329060791991651,
+      "mean": 2.359781389008276
+    }
+  },
+  "opyplus": {
+    "Single variable": {
+      "min": 3.0919168750406243,
+      "mean": 3.1044115556869656
+    },
+    "Full parse": {
+      "min": 3.0523574170074426,
+      "mean": 3.0781709583243355
+    }
+  },
+  "ReadVarsESO": {
+    "Full parse": {
+      "min": 3.4428168750018813,
+      "mean": 3.4742740413445667
+    }
+  }
+}

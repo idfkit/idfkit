@@ -1,6 +1,6 @@
 # Result parsing
 
-`SimulationResult` is what `simulate(...)` returns. It's a thin container over the EnergyPlus output directory with typed accessors for the SQLite, CSV, HTML tabular, ERR, and RDD/MDD files. Use `result.sql` for almost everything — it's complete, queryable, and consistent across EnergyPlus versions.
+`SimulationResult` is what `simulate(...)` returns. It's a thin container over the EnergyPlus output directory with typed accessors for the SQLite, CSV, ESO/MTR, HTML tabular, ERR, and RDD/MDD files. Use `result.sql` for almost everything — it's complete, queryable, and consistent across EnergyPlus versions. Reach for `result.eso` only when SQLite output wasn't produced, or when you want the fastest extraction of a few variables from a large `.eso`.
 
 ## When to use
 
@@ -22,9 +22,10 @@
 | `result.errors` | `ErrorReport` (always available) | Eager (parsed on construction). |
 | `result.sql` | `SQLResult | None` | Lazy — opens the SQLite file on first access. |
 | `result.csv` | `CSVResult | None` | Lazy. |
+| `result.eso` / `result.mtr` | `ESOResult | None` | Lazy — dictionary parsed on access, variable data on `get_column`. |
 | `result.html` | `HTMLResult | None` | Lazy. |
 | `result.variables` | `OutputVariableIndex | None` | Lazy — parses `.rdd`/`.mdd`. |
-| `result.sql_path` / `.err_path` / `.eso_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
+| `result.sql_path` / `.err_path` / `.eso_path` / `.mtr_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
 | `result.migration_report` | `MigrationReport | None` | Set if `auto_migrate=True`. |
 
 All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
@@ -86,6 +87,16 @@ Prefer SQL — CSV is one shot per `Output:Variable`, while SQL is queryable.
 ```
 
 The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus).
+
+## ESO / MTR time series
+
+The `.eso` (Standard Output) and `.mtr` (Meter) files are EnergyPlus's native time-series format. `result.eso` and `result.mtr` return an `ESOResult` parsed by the same reader. Prefer SQLite when it's available; use ESO when it isn't, or to pull a handful of variables out of a very large file cheaply.
+
+```python
+--8<-- "docs/snippets/agent_references/result-parsing.py:eso"
+```
+
+The reader is **lazy by design**: constructing it parses only the data dictionary, and `get_column(name, key)` runs a single byte-level scan that float-parses only the requested variable — so reading one variable from a large `.eso` doesn't pay to parse the whole file. `get_column` defaults to the last environment (the run period); pass `environment_index=` for a design day. Accessing `.columns` (or `from_file(..., eager=True)`) materializes every variable in one pass. `ESOColumn` exposes `.values`, `.timestamps`, and `.variable` (an `ESOVariable` with `.variable_name`/`.key_value`/`.units`/`.frequency`); timestamps use the reference year 2017, like the SQL reader. ESO carries no calendar year, so only the year differs from SQL — values and month/day/hour match exactly.
 
 ## Output variable discovery
 

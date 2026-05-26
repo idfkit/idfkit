@@ -20,6 +20,10 @@ The module provides parsers for the most commonly used EnergyPlus output formats
 - **SQLite** ([SQLResult][idfkit.simulation.parsers.sql.SQLResult]): Time-series data, tabular reports, and metadata.
   This is the recommended output format as it contains all simulation data in a
   single queryable file.
+- **ESO/MTR** ([ESOResult][idfkit.simulation.parsers.eso.ESOResult]): The Standard Output (``.eso``) and Meter
+  (``.mtr``) time-series files. A fast, pure-Python single-pass reader that parses the data dictionary
+  eagerly and extracts individual variables with a targeted scan — so reading a few variables from a large
+  file does not pay to parse the whole file. Useful when the model does not request SQLite output.
 - **CSV** ([CSVResult][idfkit.simulation.parsers.csv.CSVResult]): Time-series data in comma-separated format.
 - **HTML** ([HTMLResult][idfkit.simulation.parsers.html.HTMLResult]): Tabular reports in HTML format.
 - **RDD/MDD** ([OutputVariableIndex][idfkit.simulation.outputs.OutputVariableIndex]): Available output variables and meters.
@@ -28,7 +32,6 @@ The module provides parsers for the most commonly used EnergyPlus output formats
 The following formats are **intentionally not implemented** as the SQLite output
 covers the same data more reliably and completely:
 
-- **ESO/MTR**: Binary-text time-series format (use SQLite instead).
 - **EIO**: Simulation metadata and invariant outputs (use SQLite instead).
 
 If you have a specific need for these formats, please open an issue describing
@@ -54,6 +57,7 @@ from .fs import AsyncFileSystem, AsyncLocalFileSystem, AsyncS3FileSystem, FileSy
 from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
+from .parsers.eso import ESOColumn, ESOEnvironment, ESOResult, ESOVariable
 from .parsers.rdd import OutputMeter, OutputVariable
 from .parsers.sql import EnvironmentInfo, SQLResult, TabularRow, TimeSeriesResult, VariableInfo
 from .plotting import (
@@ -76,6 +80,10 @@ __all__ = [
     "CSVColumn",
     "CSVResult",
     "CacheKey",
+    "ESOColumn",
+    "ESOEnvironment",
+    "ESOResult",
+    "ESOVariable",
     "EnergyPlusConfig",
     "EnvironmentInfo",
     "ErrorMessage",

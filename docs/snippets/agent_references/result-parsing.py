@@ -114,6 +114,31 @@ if html:
 # --8<-- [end:html]
 
 
+# --8<-- [start:eso]
+# ESO time series — use when the model has no Output:SQLite, or to pull a few
+# variables out of a large .eso fast. The reader parses the dictionary eagerly
+# but the data lazily.
+eso = result.eso  # ESOResult | None
+if eso:
+    # Lazy: a single scan that float-parses ONLY this variable.
+    col = eso.get_column("Zone Mean Air Temperature", "Office")
+    if col:
+        print(col.variable.units, len(col.values))  # 'C' 8760
+        col.values  # tuple[float, ...]
+        col.timestamps  # tuple[datetime, ...]
+        df = col.to_dataframe()  # requires idfkit[dataframes]
+
+    # Default returns the last environment (the run period); pass
+    # environment_index= for a specific design day. Eager full parse:
+    all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable
+
+# Meter files (.mtr) use the same reader:
+mtr = result.mtr
+if mtr:
+    meter = mtr.get_column("Electricity:Facility")  # meters have no key value
+# --8<-- [end:eso]
+
+
 # --8<-- [start:output-discovery]
 idx = result.variables
 if idx:
