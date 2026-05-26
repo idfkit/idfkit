@@ -26,8 +26,15 @@ check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit
 		echo "⏭️  Skipping doc_locations check (../idfkit-docs/dist not found)"; \
 	fi
 
+.PHONY: check-baker
+check-baker: ## Verify bundled agent references match their source templates + snippets
+	@echo "🚀 Checking agent reference bundle consistency"
+	@uv run python -m idfkit.codegen.bake_references
+	@git diff --exit-code src/idfkit/.agents/skills/developing-with-idfkit || \
+		(echo "❌ Bundled agent references are out of date. Run: uv run python -m idfkit.codegen.bake_references" && exit 1)
+
 .PHONY: check
-check: check-stubs check-doc-locations ## Run code quality tools.
+check: check-stubs check-doc-locations check-baker ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"

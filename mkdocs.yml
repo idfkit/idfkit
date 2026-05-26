@@ -9,6 +9,9 @@ copyright: Maintained by <a href="https://samuelduchesne.github.io">samuelduches
 
 exclude_docs: |
   tape/README.md
+  # SKILL.md is the agent/MCP dispatch document (bundled in the wheel); its
+  # links are relative to the bundle layout, not the docs site.
+  agent-references/SKILL.md
 
 nav:
   - Home: index.md
@@ -100,6 +103,24 @@ nav:
       - Station: api/weather/station.md
       - Download: api/weather/download.md
       - Design Days: api/weather/designday.md
+
+  - Developing with idfkit:
+    - Document & Objects: agent-references/document-and-objects.md
+    - Parsing IDF/epJSON: agent-references/parsing-idf-epjson.md
+    - Writing Output: agent-references/writing-output.md
+    - Schema & Validation: agent-references/schema-and-validation.md
+    - Reference Tracking: agent-references/reference-tracking.md
+    - Geometry & Surfaces: agent-references/geometry-and-surfaces.md
+    - Geometry Builders & Zoning: agent-references/geometry-builders-and-zoning.md
+    - HVAC Templates: agent-references/hvac-templates.md
+    - HVAC Loops: agent-references/hvac-loops.md
+    - Simulation Execution: agent-references/simulation-execution.md
+    - Result Parsing: agent-references/result-parsing.md
+    - Weather Data: agent-references/weather-data.md
+    - Schedule Evaluation: agent-references/schedule-evaluation.md
+    - Thermal Properties: agent-references/thermal-properties.md
+    - Visualization: agent-references/visualization.md
+    - Version Migration: agent-references/version-migration.md
 
   - Troubleshooting:
     - Common Errors: troubleshooting/errors.md

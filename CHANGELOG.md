@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Agent-readable reference documentation packaged with the wheel at `idfkit/.agents/skills/developing-with-idfkit/`. Contains a `SKILL.md` dispatch document plus 16 focused topic references (document & objects, parsing, writing, schema & validation, reference tracking, geometry, geometry builders & zoning, HVAC templates, HVAC loops, simulation execution, result parsing, weather data, schedule evaluation, thermal properties, visualization, version migration). Reference files are accessible via `importlib.resources`, surfaced to AI coding assistants by tooling such as `idfkit-mcp`, and published on the docs site under "Developing with idfkit". Every code example is type-checked by pyright. ([#160](https://github.com/idfkit/idfkit/issues/160))
+
+### Changed
+
+- The bundled agent references are now **generated**, not hand-written. Example code lives in pyright-checked snippet files under `docs/snippets/agent_references/`; prose lives in templates under `docs/agent-references/`; `idfkit.codegen.bake_references` inlines the snippets into the bundled markdown. A strict pyright execution environment (`docs/snippets/agent_references`) keeps the drift-catching rules on, and a `check-baker` gate (mirroring `check-stubs`) fails CI if the committed bundle is stale. This replaces the ast-based validator from the initial drop, which structurally could not catch property-vs-method, dataclass-field, or argument-type drift. ([#160](https://github.com/idfkit/idfkit/issues/160))
+
+### Fixed
+
+- Reference-doc examples now match the live API, with pyright as the gate. The first drop's ast validator plus a manual audit fixed one batch (`set_wwr` single-float, `prep_outputs` no-kwargs, `get_holidays`/`extract_special_days` `(doc, year)`, `DesignDayManager.from_station`/`apply_to_model`, `apply_ashrae_sizing` `"general"`/`"90.1"` presets, `DesignDayType.COOLING_DB_0_4`, `SQLResult.to_dataframe` timeseries-only, `bounding_box` Optional, `footprint_courtyard` `outer_*`/`inner_*`, `ZoneFootprint(name_suffix=)`, `scale_building(factor=)`, `split_horizontal_surface(doc, surface, region=)`, `IDFParser(...).parse()`, `migrate(model, ...) -> MigrationReport`, `SimulationCache(cache_dir=)`, schedule `type_limits=`, `plot_*(sql, zones=[...])`, `plan_migration_chain(source=, target=)`, config-based `view_*` with `z_cut`/`separation`, `ColorBy.BOUNDARY_CONDITION`, `SVGConfig` fields, `gas_gap_resistance(gas_type, thickness, temperature_k, delta_t)`). Routing the examples through pyright then surfaced a further batch the validator could not see: `doc.all_objects` is a property (not `all_objects()`); `WeatherStation` fields are `country`/`state`/`wmo`/`elevation`/`timezone`/`source`/`url` (not `country_code`/`region`/`wmo_id`/`elevation_m`/`time_zone_offset_hours`/`tmyx_range`/`epw_url`/`ddy_url`); `MigrationDiff` exposes `added_object_types`/`removed_object_types`/`object_count_delta`/`field_changes`; `LayerThermalProperties.name`/`obj_type` (not `material_name`/`material_type`); `VariableInfo.frequency`, `EnvironmentInfo.name`, `OutputVariable.key`/`frequency`, `HTMLTable.title`; `validate_object(obj, schema)` requires the schema; `polygon_contains_2d` is polygon-in-polygon; `plot_day`/`plot_week` take `year`/`month`/`day` / `year`/`week`. ([#160](https://github.com/idfkit/idfkit/issues/160))
+
 ## [0.12.2] - 2026-05-19
 
 ### Added
