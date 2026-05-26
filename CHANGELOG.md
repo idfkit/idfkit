@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-05-26
+
 ### Added
 
 - High-performance ESO/MTR reader (`ESOResult` in `idfkit.simulation.parsers.eso`), exposed via `SimulationResult.eso` / `SimulationResult.mtr` (plus `async_eso()` / `async_mtr()` and a new `mtr_path`). EnergyPlus `.eso` Standard Output and `.mtr` Meter files share one grammar and one reader. The dictionary is parsed eagerly but the data section lazily: `get_column(name, key)` runs a single byte-level scan that float-parses only the requested variable, so reading a few variables from a large file does not pay to parse the whole file; `from_file(..., eager=True)` (or accessing `.columns`) materializes every variable in one pass into compact `array` buffers. Environment-aware (design days vs run period), handles all reporting frequencies, and uses the same reference-year-2017 timestamps and hour-24 rollover as the SQL reader. Pure Python, zero new dependencies; optional `to_dataframe()` via `idfkit[dataframes]`. Includes `benchmarks/bench_eso.py` comparing against esoreader, opyplus, pyeso, db-eplusout-reader, and the native ReadVarsESO. ([#163](https://github.com/idfkit/idfkit/pull/163))
@@ -18,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `idfkit.__version__` now reflects the installed package version, read from package metadata via `importlib.metadata`, instead of the hardcoded `"0.1.0"` literal it had always reported regardless of the installed release. Falls back to `"0.0.0+unknown"` when package metadata is unavailable (e.g. running from a source tree that was never installed). ([#161](https://github.com/idfkit/idfkit/pull/161))
 - Reference-doc examples now match the live API, with pyright as the gate. The first drop's ast validator plus a manual audit fixed one batch (`set_wwr` single-float, `prep_outputs` no-kwargs, `get_holidays`/`extract_special_days` `(doc, year)`, `DesignDayManager.from_station`/`apply_to_model`, `apply_ashrae_sizing` `"general"`/`"90.1"` presets, `DesignDayType.COOLING_DB_0_4`, `SQLResult.to_dataframe` timeseries-only, `bounding_box` Optional, `footprint_courtyard` `outer_*`/`inner_*`, `ZoneFootprint(name_suffix=)`, `scale_building(factor=)`, `split_horizontal_surface(doc, surface, region=)`, `IDFParser(...).parse()`, `migrate(model, ...) -> MigrationReport`, `SimulationCache(cache_dir=)`, schedule `type_limits=`, `plot_*(sql, zones=[...])`, `plan_migration_chain(source=, target=)`, config-based `view_*` with `z_cut`/`separation`, `ColorBy.BOUNDARY_CONDITION`, `SVGConfig` fields, `gas_gap_resistance(gas_type, thickness, temperature_k, delta_t)`). Routing the examples through pyright then surfaced a further batch the validator could not see: `doc.all_objects` is a property (not `all_objects()`); `WeatherStation` fields are `country`/`state`/`wmo`/`elevation`/`timezone`/`source`/`url` (not `country_code`/`region`/`wmo_id`/`elevation_m`/`time_zone_offset_hours`/`tmyx_range`/`epw_url`/`ddy_url`); `MigrationDiff` exposes `added_object_types`/`removed_object_types`/`object_count_delta`/`field_changes`; `LayerThermalProperties.name`/`obj_type` (not `material_name`/`material_type`); `VariableInfo.frequency`, `EnvironmentInfo.name`, `OutputVariable.key`/`frequency`, `HTMLTable.title`; `validate_object(obj, schema)` requires the schema; `polygon_contains_2d` is polygon-in-polygon; `plot_day`/`plot_week` take `year`/`month`/`day` / `year`/`week`. ([#160](https://github.com/idfkit/idfkit/issues/160))
 
 ## [0.12.2] - 2026-05-19
@@ -273,7 +276,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[unreleased]: https://github.com/idfkit/idfkit/compare/v0.12.2...HEAD
+[unreleased]: https://github.com/idfkit/idfkit/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/idfkit/idfkit/compare/v0.12.2...v0.13.0
 [0.12.2]: https://github.com/idfkit/idfkit/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/idfkit/idfkit/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/idfkit/idfkit/compare/v0.11.1...v0.12.0
