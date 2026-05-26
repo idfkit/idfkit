@@ -1,6 +1,6 @@
 # Result parsing
 
-`SimulationResult` is what `simulate(...)` returns. It's a thin container over the EnergyPlus output directory with typed accessors for the SQLite, CSV, HTML tabular, ERR, and RDD/MDD files. Use `result.sql` for almost everything — it's complete, queryable, and consistent across EnergyPlus versions.
+`SimulationResult` is what `simulate(...)` returns. It's a thin container over the EnergyPlus output directory with typed accessors for the SQLite, CSV, ESO/MTR, HTML tabular, ERR, and RDD/MDD files. Use `result.sql` for almost everything — it's complete, queryable, and consistent across EnergyPlus versions. Reach for `result.eso` only when SQLite output wasn't produced, or when you want the fastest extraction of a few variables from a large `.eso`.
 
 ## When to use
 
@@ -34,9 +34,10 @@ rows = result.sql.get_tabular_data(report_name="AnnualBuildingUtilityPerformance
 | `result.errors` | `ErrorReport` (always available) | Eager (parsed on construction). |
 | `result.sql` | `SQLResult | None` | Lazy — opens the SQLite file on first access. |
 | `result.csv` | `CSVResult | None` | Lazy. |
+| `result.eso` / `result.mtr` | `ESOResult | None` | Lazy — dictionary parsed on access, variable data on `get_column`. |
 | `result.html` | `HTMLResult | None` | Lazy. |
 | `result.variables` | `OutputVariableIndex | None` | Lazy — parses `.rdd`/`.mdd`. |
-| `result.sql_path` / `.err_path` / `.eso_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
+| `result.sql_path` / `.err_path` / `.eso_path` / `.mtr_path` / `.csv_path` / `.html_path` / `.rdd_path` / `.mdd_path` | `Path | None` | Direct file paths. |
 | `result.migration_report` | `MigrationReport | None` | Set if `auto_migrate=True`. |
 
 All `None` returns mean "the file doesn't exist" — EnergyPlus may not produce CSV/HTML unless you asked for them in the IDF (`Output:Variable`, `Output:Table:SummaryReports`).
@@ -154,6 +155,48 @@ if html:
 ```
 
 The HTML parser is mostly useful for surfacing reports that aren't in SQLite (rare in modern EnergyPlus).
+
+## ESO / MTR time series
+
+The `.eso` (Standard Output) and `.mtr` (Meter) files are EnergyPlus's native time-series format. `result.eso` and `result.mtr` return an `ESOResult` parsed by the same reader. Prefer SQLite when it's available; use ESO when it isn't, or to pull a handful of variables out of a very large file cheaply.
+
+```python
+# ESO time series — use when the model has no Output:SQLite, or to pull a few
+# variables out of a large .eso fast. The reader parses the dictionary eagerly
+# but the data lazily.
+eso = result.eso  # ESOResult | None
+if eso:
+    # Lazy: a single scan that float-parses ONLY this variable.
+    col = eso.get_column("Zone Mean Air Temperature", "Office")
+    if col:
+        print(col.variable.units, len(col.values))  # 'C' 8760
+        col.values  # tuple[float, ...]
+        col.timestamps  # tuple[datetime, ...]
+        df = col.to_dataframe()  # requires idfkit[dataframes]
+
+    # A file has several environments: the design days, then the run period.
+    # get_column returns the LAST one (the run period) by default. To pick a
+    # specific design day, map index -> title via .environments:
+    for env in eso.environments:
+        print(env.index, env.title)  # 0 '... ANN HTG ...'  1 '... ANN CLG ...'  2 'RUN PERIOD 1'
+    htg = next(e.index for e in eso.environments if "HTG" in e.title)
+    design_day_col = eso.get_column("Zone Mean Air Temperature", "Office", environment_index=htg)
+    # And back the other way — a column tells you its environment:
+    if design_day_col:
+        env = eso.environments[design_day_col.environment_index]
+
+    # Eager full parse:
+    all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable
+
+# Meter files (.mtr) use the same reader:
+mtr = result.mtr
+if mtr:
+    meter = mtr.get_column("Electricity:Facility")  # meters have no key value
+```
+
+The reader is **lazy by design**: constructing it parses only the data dictionary, and `get_column(name, key)` runs a single byte-level scan that float-parses only the requested variable — so reading one variable from a large `.eso` doesn't pay to parse the whole file. Accessing `.columns` (or `from_file(..., eager=True)`) materializes every variable in one pass. `ESOColumn` exposes `.values`, `.timestamps`, and `.variable` (an `ESOVariable` with `.variable_name`/`.key_value`/`.units`/`.frequency`); timestamps use the reference year 2017, like the SQL reader. ESO carries no calendar year, so only the year differs from SQL — values and month/day/hour match exactly.
+
+**Selecting an environment.** A file holds several environments — the sizing design days, then the weather run period. `get_column` returns the **last** one (the run period) by default. To target a specific design day, read `result.eso.environments` (a tuple of `ESOEnvironment`) and match `environment_index` to its `title` — EnergyPlus encodes no environment *type* in the ESO format, so the title (`"... ANN HTG 99% CONDNS DB"`, `"RUN PERIOD 1"`, …) is the discriminator. Each `ESOColumn.environment_index` cross-references back into `result.eso.environments`.
 
 ## Output variable discovery
 

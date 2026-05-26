@@ -91,6 +91,7 @@ nav:
       - Preprocessing: api/simulation/expand.md
       - Results: api/simulation/results.md
       - SQL: api/simulation/sql.md
+      - ESO / MTR: api/simulation/eso.md
       - Batch: api/simulation/batch.md
       - Cache: api/simulation/cache.md
       - Plotting: api/simulation/plotting.md

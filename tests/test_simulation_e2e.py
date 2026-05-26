@@ -209,6 +209,38 @@ class TestAnnualSimulation:
         assert len(csv.timestamps) > 0
         assert len(csv.columns) > 0
 
+    def test_eso_output(self, annual_result: SimulationResult) -> None:
+        eso = annual_result.eso
+        assert eso is not None
+        col = eso.get_column("Site Outdoor Air Drybulb Temperature")
+        assert col is not None
+        assert len(col.values) == 8760
+
+    def test_eso_matches_sql(self, annual_result: SimulationResult) -> None:
+        """The ESO reader must agree with the trusted SQL output."""
+        eso = annual_result.eso
+        sql = annual_result.sql
+        assert eso is not None
+        assert sql is not None
+        for name in ("Site Outdoor Air Drybulb Temperature", "Zone Mean Air Temperature"):
+            ecol = eso.get_column(name)
+            sts = sql.get_timeseries(name, environment="annual")
+            assert ecol is not None
+            assert len(ecol.values) == len(sts.values)
+            # Values are identical; timestamps agree on month/day/hour (the ESO
+            # format carries no calendar year, so only the reference year differs).
+            assert ecol.values == pytest.approx(sts.values)
+            assert all(
+                e.month == s.month and e.day == s.day and e.hour == s.hour
+                for e, s in zip(ecol.timestamps, sts.timestamps, strict=True)
+            )
+
+    def test_mtr_output(self, annual_result: SimulationResult) -> None:
+        mtr = annual_result.mtr
+        if mtr is None:  # .mtr only exists when the model requests meters
+            pytest.skip("no .mtr produced")
+        assert len(mtr.variables) > 0
+
     def test_variable_discovery(self, annual_result: SimulationResult) -> None:
         index = annual_result.variables
         assert index is not None

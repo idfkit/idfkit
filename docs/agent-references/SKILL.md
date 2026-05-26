@@ -20,7 +20,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Stand up an HVAC system quickly with `HVACTemplate:*` | [hvac-templates.md](references/hvac-templates.md) |
 | Hand-author `AirLoopHVAC` / `PlantLoop` / `CondenserLoop` | [hvac-loops.md](references/hvac-loops.md) |
 | Run EnergyPlus simulations (sync, async, batch) | [simulation-execution.md](references/simulation-execution.md) |
-| Parse SQL / CSV / ERR simulation output | [result-parsing.md](references/result-parsing.md) |
+| Parse SQL / CSV / ESO / MTR / ERR simulation output | [result-parsing.md](references/result-parsing.md) |
 | Find a weather station, download EPW/DDY, inject design days | [weather-data.md](references/weather-data.md) |
 | Evaluate `Schedule:*` objects to time series | [schedule-evaluation.md](references/schedule-evaluation.md) |
 | Compute R-value, U-value, SHGC, gas mixture properties | [thermal-properties.md](references/thermal-properties.md) |

@@ -13,14 +13,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
+from ._timeutil import FREQUENCY_MAP, REFERENCE_YEAR, make_timestamp
+
 if TYPE_CHECKING:
     import pandas as pd
 
     from ..plotting import PlotBackend
-
-# EnergyPlus uses a fixed reference year for timestamps. 2017 is the canonical
-# non-leap year used by convention.
-_REFERENCE_YEAR = 2017
 
 
 @dataclass(frozen=True, slots=True)
@@ -171,42 +169,6 @@ _ANNUAL_ENV_TYPE = 3  # WeatherFileRunPeriod
 Environment = Literal["sizing", "annual"]
 
 
-def _make_timestamp(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
-    """Build a datetime from EnergyPlus time components.
-
-    EnergyPlus stores Hour=24 to mean midnight of the next day. This function
-    handles that edge case, rolling over to the next day at hour 0.
-
-    Args:
-        year: Year value from the database (or ``_REFERENCE_YEAR`` fallback).
-        month: Month (1-12).
-        day: Day of month.
-        hour: Hour (0-24, where 24 means next day hour 0).
-        minute: Minute (0-59).
-
-    Returns:
-        A datetime for the given time components.
-    """
-    if hour == 24:
-        dt = datetime(year, month, day, 0, minute)
-        from datetime import timedelta
-
-        dt += timedelta(days=1)
-        return dt
-    return datetime(year, month, day, hour, minute)
-
-
-# Mapping from EnergyPlus ReportingFrequency string to a readable label
-_FREQUENCY_MAP: dict[str, str] = {
-    "TimeStep": "Timestep",
-    "Hourly": "Hourly",
-    "Daily": "Daily",
-    "Monthly": "Monthly",
-    "Run Period": "RunPeriod",
-    "Annual": "Annual",
-}
-
-
 class SQLResult:
     """Query interface for an EnergyPlus SQLite output database.
 
@@ -297,7 +259,7 @@ class SQLResult:
         )
         freq_row = cur.fetchone()
         raw_freq: str = str(freq_row[0]) if freq_row else ""
-        freq: str = _FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
+        freq: str = FREQUENCY_MAP.get(raw_freq, raw_freq) if raw_freq else "Unknown"
 
         # Retrieve time-series data, filtering out warmup periods.
         # COALESCE handles EnergyPlus versions where WarmupFlag is NULL.
@@ -330,8 +292,8 @@ class SQLResult:
         timestamps: list[datetime] = []
         values: list[float] = []
         for year, month, day, hour, minute, value in cur.fetchall():
-            ref_year = year if year and year > 0 else _REFERENCE_YEAR
-            timestamps.append(_make_timestamp(ref_year, month, day, hour, minute))
+            ref_year = year if year and year > 0 else REFERENCE_YEAR
+            timestamps.append(make_timestamp(ref_year, month, day, hour, minute))
             values.append(float(value))
 
         return TimeSeriesResult(
@@ -466,7 +428,7 @@ class SQLResult:
             VariableInfo(
                 name=str(row[0]),
                 key_value=str(row[1]),
-                frequency=_FREQUENCY_MAP.get(str(row[2]), str(row[2])),
+                frequency=FREQUENCY_MAP.get(str(row[2]), str(row[2])),
                 units=str(row[3]),
                 is_meter=bool(row[4]),
                 variable_type=str(row[5]) if row[5] else "",

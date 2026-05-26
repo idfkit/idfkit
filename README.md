@@ -34,7 +34,8 @@ formats.
 - **Built-in 3D geometry** — `Vector3D` and `Polygon3D` classes for surface
   area, zone volume, and coordinate transforms without external dependencies.
 - **EnergyPlus simulation** — Run simulations as subprocesses with structured
-  result parsing, batch processing, and content-addressed caching.
+  result parsing (SQLite, CSV, HTML, and a fast pure-Python `.eso`/`.mtr`
+  reader), batch processing, and content-addressed caching.
 - **Weather data** — Search ~17,300 weather stations (~70,000 TMYx datasets), download EPW/DDY files,
   and apply ASHRAE design day conditions.
 - **Async & batch simulation** — Run simulations concurrently with

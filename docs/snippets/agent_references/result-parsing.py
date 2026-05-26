@@ -114,6 +114,41 @@ if html:
 # --8<-- [end:html]
 
 
+# --8<-- [start:eso]
+# ESO time series — use when the model has no Output:SQLite, or to pull a few
+# variables out of a large .eso fast. The reader parses the dictionary eagerly
+# but the data lazily.
+eso = result.eso  # ESOResult | None
+if eso:
+    # Lazy: a single scan that float-parses ONLY this variable.
+    col = eso.get_column("Zone Mean Air Temperature", "Office")
+    if col:
+        print(col.variable.units, len(col.values))  # 'C' 8760
+        col.values  # tuple[float, ...]
+        col.timestamps  # tuple[datetime, ...]
+        df = col.to_dataframe()  # requires idfkit[dataframes]
+
+    # A file has several environments: the design days, then the run period.
+    # get_column returns the LAST one (the run period) by default. To pick a
+    # specific design day, map index -> title via .environments:
+    for env in eso.environments:
+        print(env.index, env.title)  # 0 '... ANN HTG ...'  1 '... ANN CLG ...'  2 'RUN PERIOD 1'
+    htg = next(e.index for e in eso.environments if "HTG" in e.title)
+    design_day_col = eso.get_column("Zone Mean Air Temperature", "Office", environment_index=htg)
+    # And back the other way — a column tells you its environment:
+    if design_day_col:
+        env = eso.environments[design_day_col.environment_index]
+
+    # Eager full parse:
+    all_columns = eso.columns  # tuple[ESOColumn, ...] — every variable
+
+# Meter files (.mtr) use the same reader:
+mtr = result.mtr
+if mtr:
+    meter = mtr.get_column("Electricity:Facility")  # meters have no key value
+# --8<-- [end:eso]
+
+
 # --8<-- [start:output-discovery]
 idx = result.variables
 if idx:

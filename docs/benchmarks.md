@@ -41,6 +41,45 @@ time is reported. Bars are sorted fastest to slowest.
 ![Write IDF to string](assets/benchmark_write_idf.svg#only-light)
 ![Write IDF to string](assets/benchmark_write_idf_dark.svg#only-dark)
 
+## ESO reader
+
+idfkit's `.eso`/`.mtr` reader is benchmarked against other EnergyPlus ESO
+readers on a **104 MB annual file** (RefBldgLargeOffice, ~5.1 million data
+points): [esoreader](https://github.com/architecture-building-systems/esoreader),
+[opyplus](https://github.com/openergy/opyplus),
+[pyeso](https://github.com/frantp/pyeso),
+[db-eplusout-reader](https://github.com/DesignBuilderSoftware/db-eplusout-reader),
+and EnergyPlus's native `ReadVarsESO`.
+
+### Extract one variable
+
+![Extract one variable](assets/benchmark_eso_single_variable.svg#only-light)
+![Extract one variable](assets/benchmark_eso_single_variable_dark.svg#only-dark)
+
+idfkit's reader is **lazy**: pulling one variable float-parses only that
+variable's records, so it is the fastest *correct* way to read a few variables
+from a large file. Every other reader parses the whole file first, even to
+return a single series.
+
+### Full parse
+
+![Parse every variable](assets/benchmark_eso_full_parse.svg#only-light)
+![Parse every variable](assets/benchmark_eso_full_parse_dark.svg#only-dark)
+
+When you do want everything, idfkit's eager full parse (pure Python, ~1.7M
+points/s) matches the fully-correct, pandas-based opyplus and beats the native
+C++ `ReadVarsESO`. `esoreader` and `pyeso` are faster only because they skip
+correctness — they concatenate design-day and run-period data into one series,
+drop daily/monthly min/max, and (pyeso) return raw strings. idfkit is also more
+robust: it reads reference-building files that crash `db-eplusout-reader` (a
+weekday/holiday bug) and that `ReadVarsESO` truncates to its 255-variable cap.
+
+To reproduce:
+
+```bash
+uv run --group benchmark python benchmarks/bench_eso.py --eso path/to/eplusout.eso
+```
+
 ## Supported EnergyPlus versions
 
 | Tool | Versions | Schema format |

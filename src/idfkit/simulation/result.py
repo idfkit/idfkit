@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from .fs import AsyncFileSystem, FileSystem
     from .outputs import OutputVariableIndex
     from .parsers.csv import CSVResult
+    from .parsers.eso import ESOResult
     from .parsers.html import HTMLResult
     from .parsers.sql import SQLResult
 
@@ -61,6 +62,8 @@ class SimulationResult:
     _cached_variables: Any = field(default=_UNSET, init=False, repr=False)
     _cached_csv: Any = field(default=_UNSET, init=False, repr=False)
     _cached_html: Any = field(default=_UNSET, init=False, repr=False)
+    _cached_eso: Any = field(default=_UNSET, init=False, repr=False)
+    _cached_mtr: Any = field(default=_UNSET, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.fs is not None and self.async_fs is not None:
@@ -199,6 +202,55 @@ class SimulationResult:
         object.__setattr__(self, "_cached_html", result)
         return result
 
+    def _load_eso_sync(self, path: Path) -> ESOResult:
+        """Read and parse an ESO/MTR file from disk or the sync file system."""
+        from .parsers.eso import ESOResult as _ESOResult
+
+        if self.fs is not None:
+            return _ESOResult.from_bytes(self.fs.read_bytes(str(path)))
+        return _ESOResult.from_file(path)
+
+    @property
+    def eso(self) -> ESOResult | None:
+        """Parsed ESO time-series output (lazily cached).
+
+        Returns:
+            An ESOResult for extracting variable time series, or None if no
+            .eso file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_eso")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = self.eso_path
+        if path is None:
+            object.__setattr__(self, "_cached_eso", None)
+            return None
+        result = self._load_eso_sync(path)
+        object.__setattr__(self, "_cached_eso", result)
+        return result
+
+    @property
+    def mtr(self) -> ESOResult | None:
+        """Parsed MTR meter time-series output (lazily cached).
+
+        The .mtr meter file uses the same format as .eso, so it is parsed by the
+        same reader.
+
+        Returns:
+            An ESOResult for extracting meter time series, or None if no .mtr
+            file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_mtr")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = self.mtr_path
+        if path is None:
+            object.__setattr__(self, "_cached_mtr", None)
+            return None
+        result = self._load_eso_sync(path)
+        object.__setattr__(self, "_cached_mtr", result)
+        return result
+
     @property
     def sql_path(self) -> Path | None:
         """Path to the SQLite output file, if present."""
@@ -213,6 +265,11 @@ class SimulationResult:
     def eso_path(self) -> Path | None:
         """Path to the .eso output file, if present."""
         return self._find_output_file(".eso")
+
+    @property
+    def mtr_path(self) -> Path | None:
+        """Path to the .mtr meter output file, if present."""
+        return self._find_output_file(".mtr")
 
     @property
     def csv_path(self) -> Path | None:
@@ -457,6 +514,56 @@ class SimulationResult:
         else:
             result = _HTMLResult.from_file(path)
         object.__setattr__(self, "_cached_html", result)
+        return result
+
+    async def _load_eso_async(self, path: Path) -> ESOResult:
+        """Read and parse an ESO/MTR file via the async/sync file system or disk."""
+        from .parsers.eso import ESOResult as _ESOResult
+
+        if self.async_fs is not None:
+            return _ESOResult.from_bytes(await self.async_fs.read_bytes(str(path)))
+        if self.fs is not None:
+            return _ESOResult.from_bytes(self.fs.read_bytes(str(path)))
+        return _ESOResult.from_file(path)
+
+    async def async_eso(self) -> ESOResult | None:
+        """Parsed ESO time-series output (async, lazily cached).
+
+        Non-blocking counterpart to [eso][idfkit.simulation.result.SimulationResult.eso] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
+
+        Returns:
+            An ESOResult, or None if no .eso file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_eso")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = await self._async_find_output_file(".eso")
+        if path is None:
+            object.__setattr__(self, "_cached_eso", None)
+            return None
+        result = await self._load_eso_async(path)
+        object.__setattr__(self, "_cached_eso", result)
+        return result
+
+    async def async_mtr(self) -> ESOResult | None:
+        """Parsed MTR meter time-series output (async, lazily cached).
+
+        Non-blocking counterpart to [mtr][idfkit.simulation.result.SimulationResult.mtr] that uses
+        [async_fs][idfkit.simulation.result.SimulationResult.async_fs] for file reads.
+
+        Returns:
+            An ESOResult, or None if no .mtr file was produced.
+        """
+        cached = object.__getattribute__(self, "_cached_mtr")
+        if cached is not _UNSET:
+            return cached  # type: ignore[no-any-return]
+        path = await self._async_find_output_file(".mtr")
+        if path is None:
+            object.__setattr__(self, "_cached_mtr", None)
+            return None
+        result = await self._load_eso_async(path)
+        object.__setattr__(self, "_cached_mtr", result)
         return result
 
     async def _async_find_output_file(self, suffix: str) -> Path | None:
