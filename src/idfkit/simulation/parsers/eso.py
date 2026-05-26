@@ -13,9 +13,9 @@ This parser is built for speed without leaving the standard library:
   single scan that float-parses *only that variable's* lines, skipping every
   other record with a prefix test — so reading a handful of variables out of a
   large file does not pay to parse the whole file.
-- An ``eager=True`` mode (or accessing :attr:`ESOResult.columns`) materializes
+- An ``eager=True`` mode (or accessing ``ESOResult.columns``) materializes
   every variable in one pass, accumulating values into compact
-  :class:`array.array` buffers.
+  ``array.array`` buffers.
 
 Example:
     >>> from idfkit.simulation.parsers.eso import ESOResult
@@ -100,9 +100,9 @@ class ESOEnvironment:
     Environments appear in the order EnergyPlus ran them: sizing design days
     first (in IDF order), then the weather run period(s). ``index`` is that
     0-based order and is exactly the value used by ``environment_index``
-    everywhere else (:meth:`ESOResult.get_column` and
-    :attr:`ESOColumn.environment_index`); ``title`` is the human-readable name.
-    To learn which index is which design day, read :attr:`ESOResult.environments`
+    everywhere else (``ESOResult.get_column`` and
+    ``ESOColumn.environment_index``); ``title`` is the human-readable name.
+    To learn which index is which design day, read ``ESOResult.environments``
     and match on ``title`` — EnergyPlus does not encode an environment *type*
     code in the ESO format, so the title is the only discriminator (e.g.
     ``"... ANN HTG 99% CONDNS DB"`` vs ``"RUN PERIOD 1"``).
@@ -130,9 +130,9 @@ class ESOColumn:
     """One variable's time series within a single environment.
 
     Attributes:
-        variable: The :class:`ESOVariable` this column belongs to.
+        variable: The [ESOVariable][idfkit.simulation.parsers.eso.ESOVariable] this column belongs to.
         environment_index: Index of the environment these values belong to.
-            Look it up in :attr:`ESOResult.environments` to get the design-day /
+            Look it up in ``ESOResult.environments`` to get the design-day /
             run-period title: ``result.environments[col.environment_index].title``.
         timestamps: Timestamp for each data point.
         values: The reported value for each data point (the primary value for
@@ -285,24 +285,26 @@ class ESOResult:
     """Parsed EnergyPlus ``.eso`` / ``.mtr`` output file.
 
     The data dictionary is parsed on construction; the data section is scanned
-    lazily on demand (see :meth:`get_column`). Pass ``eager=True`` to materialize
+    lazily on demand (see `get_column`). Pass ``eager=True`` to materialize
     every column up front.
 
     A file usually contains several *environments* — the sizing design days
-    followed by the weather run period. :meth:`get_column` returns the last one
+    followed by the weather run period. `get_column` returns the last one
     (the run period) by default. To target a specific design day, read
-    :attr:`environments` to map each ``index`` to its ``title`` and pass that
-    index as ``environment_index``:
+    `environments` to map each ``index`` to its ``title`` and pass that index
+    as ``environment_index``:
 
-    Example:
-        >>> eso = ESOResult.from_file("eplusout.eso")  # doctest: +SKIP
-        >>> for env in eso.environments:               # doctest: +SKIP
-        ...     print(env.index, env.title)
-        0 DENVER ... ANN HTG 99% CONDNS DB
-        1 DENVER ... ANN CLG 1% CONDNS DB=>MWB
-        2 RUN PERIOD 1
-        >>> # the heating design day is index 0:
-        >>> col = eso.get_column("Zone Mean Air Temperature", "ZONE ONE", environment_index=0)  # doctest: +SKIP
+    ```python
+    eso = ESOResult.from_file("eplusout.eso")
+    for env in eso.environments:
+        print(env.index, env.title)
+    # 0  DENVER ... ANN HTG 99% CONDNS DB
+    # 1  DENVER ... ANN CLG 1% CONDNS DB=>MWB
+    # 2  RUN PERIOD 1
+
+    # the heating design day is index 0:
+    col = eso.get_column("Zone Mean Air Temperature", "ZONE ONE", environment_index=0)
+    ```
 
     Attributes:
         program_version: The ``Program Version`` header line.
@@ -353,8 +355,9 @@ class ESOResult:
         """All environment periods in the file (lazily scanned and cached).
 
         This is the index → title map for ``environment_index``: each
-        :class:`ESOEnvironment` has an ``index`` (use it as ``environment_index``
-        in :meth:`get_column`) and a ``title`` (the design-day / run-period name).
+        [ESOEnvironment][idfkit.simulation.parsers.eso.ESOEnvironment] has an
+        ``index`` (use it as ``environment_index`` in ``get_column``) and a
+        ``title`` (the design-day / run-period name).
         """
         if self._env_cache is None:
             self._env_cache = self._scan_environments()
@@ -400,14 +403,14 @@ class ESOResult:
             environment_index: Which environment to return. Defaults to the last
                 environment in the file (typically the run period), mirroring the
                 most common intent. To pick a specific design day, find its index
-                by title in :attr:`environments` (e.g.
+                by title in ``environments`` (e.g.
                 ``next(e.index for e in eso.environments if "HTG" in e.title)``)
                 and pass it here.
 
         Returns:
-            The matching :class:`ESOColumn`, or ``None`` if the variable is not
-            found or has no data. The returned column's ``environment_index``
-            cross-references back to :attr:`environments`.
+            The matching [ESOColumn][idfkit.simulation.parsers.eso.ESOColumn], or
+            ``None`` if the variable is not found or has no data. The returned
+            column's ``environment_index`` cross-references back to ``environments``.
         """
         var = self.get_variable(variable_name, key_value, frequency)
         if var is None:
