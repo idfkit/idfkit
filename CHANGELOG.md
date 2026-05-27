@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `polygon_difference_2d` no longer returns a malformed bridge polygon. Edge, corner, and partial cuts now produce a clean simple (slit-free) polygon with no coincident consecutive vertices, so footprints carved with it — and the surfaces `create_block` extrudes from them — are valid for EnergyPlus instead of fataling on degenerate geometry. Fully-interior holes (which cannot be a simple polygon) return a keyhole/slit ring whose signed area is now correct (previously the bridge construction reported a wrong area, e.g. 4212.5 instead of 5300.0 for a 105×60 footprint minus a 40×25 interior island). The implementation also generalizes to partial overlaps where `inner` extends beyond `outer`. ([#164](https://github.com/idfkit/idfkit/issues/164))
+
 ## [0.13.0] - 2026-05-26
 
 ### Added

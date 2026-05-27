@@ -1386,57 +1386,285 @@ def polygon_intersection_2d(
     return result
 
 
+_DIFF_TOL = 1e-7
+
+
+def _points_close(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    tol: float = _DIFF_TOL,
+) -> bool:
+    """Return ``True`` if two points coincide within *tol*."""
+    return abs(a[0] - b[0]) <= tol and abs(a[1] - b[1]) <= tol
+
+
+def _point_on_segment(
+    p: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+    tol: float = _DIFF_TOL,
+) -> bool:
+    """Return ``True`` if *p* lies on the closed segment ``a``-``b``."""
+    abx = b[0] - a[0]
+    aby = b[1] - a[1]
+    seg_len = math.hypot(abx, aby)
+    if seg_len < tol:
+        return _points_close(p, a, tol)
+    # Perpendicular distance from the supporting line must be ~0.
+    cross = abx * (p[1] - a[1]) - aby * (p[0] - a[0])
+    if abs(cross) / seg_len > tol:
+        return False
+    # Projection parameter must fall within the segment.
+    dot = (p[0] - a[0]) * abx + (p[1] - a[1]) * aby
+    return -tol * seg_len <= dot <= seg_len * seg_len + tol * seg_len
+
+
+def _point_on_boundary(
+    p: tuple[float, float],
+    poly: Sequence[tuple[float, float]],
+    tol: float = _DIFF_TOL,
+) -> bool:
+    """Return ``True`` if *p* lies on any edge of *poly*."""
+    n = len(poly)
+    return any(_point_on_segment(p, poly[i], poly[(i + 1) % n], tol) for i in range(n))
+
+
+def _segment_crossing(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    d: tuple[float, float],
+    tol: float = _DIFF_TOL,
+) -> tuple[float, float] | None:
+    """Intersection point of segments ``a``-``b`` and ``c``-``d``.
+
+    Returns ``None`` for parallel/collinear segments (collinear overlaps
+    are handled separately by inserting shared endpoints).
+    """
+    rx = b[0] - a[0]
+    ry = b[1] - a[1]
+    sx = d[0] - c[0]
+    sy = d[1] - c[1]
+    denom = rx * sy - ry * sx
+    if abs(denom) < 1e-12:
+        return None
+    t = ((c[0] - a[0]) * sy - (c[1] - a[1]) * sx) / denom
+    u = ((c[0] - a[0]) * ry - (c[1] - a[1]) * rx) / denom
+    if -tol <= t <= 1 + tol and -tol <= u <= 1 + tol:
+        return (a[0] + t * rx, a[1] + t * ry)
+    return None
+
+
+def _subdivide_ring(
+    ring: Sequence[tuple[float, float]],
+    other: Sequence[tuple[float, float]],
+) -> Polygon2D:
+    """Insert into *ring* every point where *other*'s boundary meets it.
+
+    Each ring edge gains the transversal crossings with *other*'s edges
+    plus any *other* vertices lying on it, sorted along the edge.  This
+    lets every resulting sub-edge be classified as wholly inside,
+    outside, or shared.
+    """
+    n = len(ring)
+    m = len(other)
+    result: Polygon2D = []
+    for i in range(n):
+        a = ring[i]
+        b = ring[(i + 1) % n]
+        cuts: list[tuple[float, float]] = []
+        for j in range(m):
+            x = _segment_crossing(a, b, other[j], other[(j + 1) % m])
+            if x is not None and _point_on_segment(x, a, b):
+                cuts.append(x)
+        for c in other:
+            if _point_on_segment(c, a, b):
+                cuts.append(c)
+        cuts = [c for c in cuts if not _points_close(c, a) and not _points_close(c, b)]
+        cuts.sort(key=lambda p: (p[0] - a[0]) ** 2 + (p[1] - a[1]) ** 2)
+        result.append(a)
+        for c in cuts:
+            if not _points_close(result[-1], c):
+                result.append(c)
+    return result
+
+
+_Edge = tuple[tuple[float, float], tuple[float, float]]
+
+
+def _select_next_edge(edges: list[_Edge], prev: int, end: tuple[float, float], candidates: list[int]) -> int:
+    """Pick the outgoing edge index that keeps the region on the left.
+
+    At a junction this is the most clockwise turn relative to the
+    reversed incoming direction.
+    """
+    if len(candidates) == 1:
+        return candidates[0]
+    inx = edges[prev][0][0] - end[0]
+    iny = edges[prev][0][1] - end[1]
+    best = candidates[0]
+    best_angle = math.inf
+    for cand in candidates:
+        ox = edges[cand][1][0] - end[0]
+        oy = edges[cand][1][1] - end[1]
+        angle = math.atan2(inx * oy - iny * ox, inx * ox + iny * oy)
+        if angle <= 0:
+            angle += 2 * math.pi
+        if angle < best_angle:
+            best_angle = angle
+            best = cand
+    return best
+
+
+def _chain_edges(edges: list[_Edge]) -> list[Polygon2D]:
+    """Chain directed edges (region on the left) into closed loops."""
+
+    def key(p: tuple[float, float]) -> tuple[int, int]:
+        return (round(p[0] / _DIFF_TOL), round(p[1] / _DIFF_TOL))
+
+    from collections import defaultdict
+
+    outgoing: dict[tuple[int, int], list[int]] = defaultdict(list)
+    for idx, (start, _end) in enumerate(edges):
+        outgoing[key(start)].append(idx)
+
+    used = [False] * len(edges)
+    loops: list[Polygon2D] = []
+    for seed in range(len(edges)):
+        if used[seed]:
+            continue
+        loop: Polygon2D = [edges[seed][0]]
+        cur = seed
+        while not used[cur]:
+            used[cur] = True
+            end = edges[cur][1]
+            loop.append(end)
+            candidates = [k for k in outgoing[key(end)] if not used[k]]
+            if not candidates:
+                break
+            cur = _select_next_edge(edges, cur, end, candidates)
+        if len(loop) > 3 and _points_close(loop[0], loop[-1]):
+            loops.append(loop[:-1])
+    return loops
+
+
+def _clean_ring(ring: Sequence[tuple[float, float]]) -> Polygon2D:
+    """Drop consecutive duplicate and collinear vertices."""
+    pts = [p for i, p in enumerate(ring) if not _points_close(p, ring[i - 1])]
+    n = len(pts)
+    if n < 3:
+        return list(pts)
+    out: Polygon2D = []
+    for i in range(n):
+        a = pts[i - 1]
+        b = pts[i]
+        c = pts[(i + 1) % n]
+        cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])
+        if abs(cross) > _DIFF_TOL:
+            out.append(b)
+    return out
+
+
+def _keyhole_join(outer_ring: Polygon2D, hole: Polygon2D) -> Polygon2D:
+    """Join a CCW outer ring and a CW *hole* via a zero-width slit.
+
+    The bridge connects the closest outer/hole vertex pair and is walked
+    in both directions, so the signed area equals
+    ``area(outer) + area(hole)`` (the hole is clockwise, hence negative).
+    """
+    best = (0, 0)
+    best_dist = math.inf
+    for oi, op in enumerate(outer_ring):
+        for hi, hp in enumerate(hole):
+            d = (op[0] - hp[0]) ** 2 + (op[1] - hp[1]) ** 2
+            if d < best_dist:
+                best_dist = d
+                best = (oi, hi)
+    oi, hi = best
+    h = len(hole)
+    result: Polygon2D = list(outer_ring[: oi + 1])
+    result += [hole[(hi + k) % h] for k in range(h + 1)]
+    result.append(outer_ring[oi])
+    result += list(outer_ring[oi + 1 :])
+    return result
+
+
+def _collect_difference_edges(outer_list: Polygon2D, inner_list: Polygon2D) -> list[_Edge]:
+    """Directed boundary edges of ``outer - inner`` (region on the left).
+
+    Outer sub-edges lying outside *inner* are kept forward; inner
+    sub-edges lying strictly inside *outer* are kept reversed (hole
+    boundary).  Sub-edges shared between the two rings are dropped.
+    """
+    outer_sub = _subdivide_ring(outer_list, inner_list)
+    inner_sub = _subdivide_ring(inner_list, outer_list)
+    directed: list[_Edge] = []
+    no = len(outer_sub)
+    for i in range(no):
+        a = outer_sub[i]
+        b = outer_sub[(i + 1) % no]
+        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        if not _point_on_boundary(mid, inner_list) and not _point_in_polygon_2d(mid, inner_list):
+            directed.append((a, b))
+    ni = len(inner_sub)
+    for i in range(ni):
+        a = inner_sub[i]
+        b = inner_sub[(i + 1) % ni]
+        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        if not _point_on_boundary(mid, outer_list) and _point_in_polygon_2d(mid, outer_list):
+            directed.append((b, a))  # hole boundary, reversed
+    return directed
+
+
 def polygon_difference_2d(
     outer: Sequence[tuple[float, float]],
     inner: Sequence[tuple[float, float]],
 ) -> Polygon2D | None:
-    """Subtract *inner* from *outer* using a bridge/slit polygon.
+    """Subtract *inner* from *outer*.
 
-    The *inner* polygon must be fully contained within *outer*.  Both
-    must be counter-clockwise.  Returns a single simple (non-convex)
-    polygon representing the frame region, or ``None`` if the inner
-    polygon covers the entire outer polygon.
+    *inner* is expected to be contained within *outer*.  The result is
+    returned as a single 2-D polygon:
 
-    The approach is the same slit technique used by
-    :func:`~idfkit.zoning.footprint_courtyard`.
+    * **Edge/corner/partial cuts** (where *inner* touches *outer*'s
+      boundary) yield a clean simple polygon — a slit-free, possibly
+      non-convex ring with no coincident consecutive vertices, safe to
+      extrude into EnergyPlus surfaces.
+    * **Fully-interior holes** (where *inner* touches no edge of
+      *outer*) cannot be expressed as a simple polygon, so the result is
+      a *weakly-simple* keyhole ring: the outer boundary and the hole
+      joined by a zero-width slit.  Its signed area is correct
+      (``area(outer) - area(inner)``), but the coincident slit vertices
+      make it unsuitable as an EnergyPlus surface as-is — split the
+      region instead (see ``split_horizontal_surface``).
+
+    Returns ``None`` when *inner* covers *outer* entirely (empty result).
     """
     outer_list = list(outer)
     inner_list = list(inner)
+    if polygon_area_2d(outer_list) < 0:
+        outer_list.reverse()
+    if polygon_area_2d(inner_list) < 0:
+        inner_list.reverse()
 
-    outer_area = abs(polygon_area_2d(outer_list))
-    inner_area = abs(polygon_area_2d(inner_list))
-    if abs(outer_area - inner_area) < 1e-6:
+    directed = _collect_difference_edges(outer_list, inner_list)
+    loops = [_clean_ring(loop) for loop in _chain_edges(directed)]
+    loops = [loop for loop in loops if len(loop) >= 3 and abs(polygon_area_2d(loop)) > _DIFF_TOL]
+    if not loops:
         return None
 
-    # Find closest vertex pair for the slit
-    best_dist = float("inf")
-    best_oi = 0
-    best_ii = 0
-    for oi, op in enumerate(outer_list):
-        for ii, ip in enumerate(inner_list):
-            d = math.hypot(op[0] - ip[0], op[1] - ip[1])
-            if d < best_dist:
-                best_dist = d
-                best_oi = oi
-                best_ii = ii
+    boundaries = [loop for loop in loops if polygon_area_2d(loop) > 0]
+    holes = [loop for loop in loops if polygon_area_2d(loop) < 0]
+    if not boundaries:
+        return None
 
-    n_outer = len(outer_list)
-    n_inner = len(inner_list)
-
-    # Build bridge polygon:
-    # Walk outer CCW from best_oi+1 back to best_oi,
-    # slit to inner at best_ii,
-    # walk inner CW (reversed) from best_ii back to best_ii+1,
-    # slit back to outer.
-    result: Polygon2D = []
-    for k in range(n_outer):
-        result.append(outer_list[(best_oi + 1 + k) % n_outer])
-    # Slit entry: last point is outer[best_oi], now add inner[best_ii]
-    for k in range(n_inner):
-        result.append(inner_list[(best_ii - k) % n_inner])
-    # Slit exit: last point is inner[best_ii+1 in CW = best_ii-n_inner+1]
-    # Close back to outer[best_oi+1] via the implicit polygon close
-
+    # The single-polygon return cannot represent disjoint pieces; keep the
+    # largest boundary when a through-cut splits *outer* in two.
+    boundaries.sort(key=lambda loop: abs(polygon_area_2d(loop)), reverse=True)
+    result = boundaries[0]
+    if len(boundaries) > 1:
+        logger.warning("polygon_difference_2d: difference is disconnected; returning the largest piece")
+    for hole in holes:
+        result = _keyhole_join(result, hole)
     return result
 
 

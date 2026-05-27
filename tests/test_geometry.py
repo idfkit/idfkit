@@ -474,18 +474,52 @@ class TestPolygonIntersection2D:
         assert abs(polygon_area_2d(result)) > 0
 
 
+def _consecutive_duplicates(poly: list[tuple[float, float]]) -> int:
+    n = len(poly)
+    return sum(
+        1 for i in range(n) if abs(poly[i][0] - poly[i - 1][0]) < 1e-9 and abs(poly[i][1] - poly[i - 1][1]) < 1e-9
+    )
+
+
 class TestPolygonDifference2D:
-    def test_rectangles_frame(self) -> None:
+    def test_interior_hole_has_correct_area(self) -> None:
+        # A fully-interior hole cannot be a simple polygon, so the result is
+        # a keyhole/slit ring — but its signed area must still be correct.
         outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
         inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
         result = polygon_difference_2d(outer, inner)
         assert result is not None
-        # The result is a slit/bridge polygon containing vertices from both
-        # outer and inner polygons.
-        assert len(result) == len(outer) + len(inner)
-        # The conceptual frame area can be computed from the original polygons.
-        frame_area = abs(polygon_area_2d(outer)) - abs(polygon_area_2d(inner))
-        assert abs(frame_area - 300.0) < 0.01
+        assert abs(abs(polygon_area_2d(result)) - 300.0) < 0.01
+
+    def test_corner_cut_is_clean_simple_polygon(self) -> None:
+        outer = [(0, 0), (105, 0), (105, 60), (0, 60)]
+        inner = [(0, 0), (30, 0), (30, 20), (0, 20)]
+        result = polygon_difference_2d(outer, inner)
+        assert result is not None
+        assert _consecutive_duplicates(result) == 0
+        assert len(result) == 6  # L-shape
+        assert abs(abs(polygon_area_2d(result)) - 5700.0) < 0.01
+
+    def test_edge_notch_is_clean_simple_polygon(self) -> None:
+        outer = [(0, 0), (105, 0), (105, 60), (0, 60)]
+        inner = [(40, 0), (60, 0), (60, 15), (40, 15)]
+        result = polygon_difference_2d(outer, inner)
+        assert result is not None
+        assert _consecutive_duplicates(result) == 0
+        assert len(result) == 8  # U-notch
+        assert abs(abs(polygon_area_2d(result)) - 6000.0) < 0.01
+
+    def test_two_corner_cuts_concave_outer(self) -> None:
+        # Reproduces issue #164 case 2: nested difference where the second
+        # subtraction operates on a concave (L-shaped) outer polygon.
+        fp = [(0, 0), (105, 0), (105, 60), (0, 60)]
+        office = [(0, 0), (33.3, 0), (33.3, 9.0), (0, 9.0)]
+        robot = [(57.8, 34.6), (105, 34.6), (105, 60), (57.8, 60)]
+        result = polygon_difference_2d(polygon_difference_2d(fp, office), robot)
+        assert result is not None
+        assert _consecutive_duplicates(result) == 0
+        expected = 6300.0 - 33.3 * 9.0 - 47.2 * 25.4
+        assert abs(abs(polygon_area_2d(result)) - expected) < 0.01
 
     def test_same_polygon_returns_none(self) -> None:
         poly = [(0, 0), (10, 0), (10, 10), (0, 10)]

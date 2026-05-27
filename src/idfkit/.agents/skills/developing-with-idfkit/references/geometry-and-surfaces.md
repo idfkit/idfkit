@@ -171,7 +171,9 @@ inner = [(1, 1), (4, 1), (4, 4), (1, 4)]
 polygon_area_2d(a)  # 50.0
 polygon_contains_2d(a, inner)  # True (every vertex of inner is inside a)
 polygon_intersection_2d(a, b)  # overlapping rectangle
-polygon_difference_2d(a, b)  # a minus b
+polygon_difference_2d(a, b)  # a minus b: clean simple polygon for edge/corner cuts
+# A fully-interior hole yields a keyhole (slit) ring with the correct area;
+# split the region rather than extruding it directly into EnergyPlus surfaces.
 ```
 
 These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on building footprints in plan view.
