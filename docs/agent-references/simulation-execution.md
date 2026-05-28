@@ -46,7 +46,7 @@
 --8<-- "docs/snippets/agent_references/simulation-execution.py:discover"
 ```
 
-Discovery checks `$ENERGYPLUS_DIR`, `$PATH`, and standard install locations (`/usr/local/EnergyPlus-*`, `/Applications/EnergyPlus-*`, `C:\EnergyPlusV*`). Pass the result to `simulate(..., energyplus=config)` to skip rediscovery on every call.
+Discovery checks `$ENERGYPLUS_DIR`, `$PATH`, and standard install locations (`/usr/local/EnergyPlus-*`, `/Applications/EnergyPlus-*`, `C:\EnergyPlusV*`, plus `/opt/eplus` for Claude Code web sessions). Pass the result to `simulate(..., energyplus=config)` to skip rediscovery on every call.
 
 If EnergyPlus is missing, `EnergyPlusNotFoundError` is raised.
 

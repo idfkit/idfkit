@@ -253,6 +253,9 @@ def _discovery_candidates() -> list[Path]:
     if which_result:
         candidates.append(Path(which_result).resolve())
 
+    # Claude Code on the web installs EnergyPlus at this standard location
+    candidates.append(Path("/opt/eplus"))
+
     candidates.extend(_glob_sorted(_platform_search_dirs()))
     return candidates
 
