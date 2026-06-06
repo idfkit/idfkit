@@ -15,10 +15,20 @@ from __future__ import annotations
 
 import json
 import logging
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 logger = logging.getLogger(__name__)
+
+
+def _idfkit_version() -> str:
+    """Return the installed idfkit version, or a fallback if unavailable."""
+    try:
+        return _pkg_version("idfkit")
+    except PackageNotFoundError:
+        return "0.0.0+unknown"
 
 if TYPE_CHECKING:
     from .cst import CSTNode
@@ -332,7 +342,7 @@ class IDFWriter:
 
         if self._output_type != "compressed":
             # Write header comment
-            lines.append("!-Generator idfkit")
+            lines.append(f"!-Generator idfkit {_idfkit_version()}")
             lines.append("!-Option SortedOrder")
             lines.append("")
 
