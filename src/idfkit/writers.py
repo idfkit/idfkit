@@ -334,7 +334,7 @@ class IDFWriter:
             # Write header comment
             from . import __version__
 
-            lines.append(f"!-Generator idfkit {__version__}")
+            lines.append(f"!-Generator idfkit v{__version__}")
             lines.append("!-Option SortedOrder")
             lines.append("")
 
