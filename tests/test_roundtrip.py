@@ -255,7 +255,7 @@ class TestIdfRoundTrip:
         result = write_idf(doc, preserve_formatting=False)
 
         # Standard writer adds its own header
-        assert "!-Generator archetypal" in result
+        assert "!-Generator idfkit" in result
         # Original comments are NOT preserved in standard mode
         assert "! File header comment" not in result
 
