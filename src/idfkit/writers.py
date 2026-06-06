@@ -332,7 +332,7 @@ class IDFWriter:
 
         if self._output_type != "compressed":
             # Write header comment
-            lines.append("!-Generator archetypal")
+            lines.append("!-Generator idfkit")
             lines.append("!-Option SortedOrder")
             lines.append("")
 
