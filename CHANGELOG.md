@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `SimulationResult` is now a context manager and exposes `SimulationResult.close()`. Closing releases the SQLite connection opened lazily by `result.sql` (and deletes the temporary copy made for remote file system backends). ([#170](https://github.com/idfkit/idfkit/pull/170))
+
+### Fixed
+
+- Reading `result.sql` left a SQLite connection open for the lifetime of the `SimulationResult`, which on Windows kept an OS-level lock on `eplus.sql` and made deleting the run directory fail with `PermissionError [WinError 32]` (e.g. when the run directory lived inside a `tempfile.TemporaryDirectory`). The connection now releases its handle when the result is closed — use `with simulate(...) as result:` or call `result.close()` before removing the run directory. As a safety net, `SQLResult` also closes its connection on garbage collection. ([#170](https://github.com/idfkit/idfkit/pull/170))
+
 ## [0.13.0] - 2026-05-26
 
 ### Added

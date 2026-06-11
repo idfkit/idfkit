@@ -231,6 +231,34 @@ from idfkit.simulation import SimulationResult
 result = SimulationResult.from_directory("/path/to/run", output_prefix="eplus")
 ```
 
+## Releasing file handles (`close` / context manager)
+
+`result.sql` opens a SQLite connection on first access and caches it. That connection holds an OS-level lock on `eplus.sql`. On **Windows**, the lock blocks deleting the run directory — `shutil.rmtree` / `TemporaryDirectory` cleanup fails with `PermissionError [WinError 32]: the process cannot access the file because it is being used by another process`. POSIX doesn't lock on open, so this only bites Windows users.
+
+Close the result — or use it as a context manager — before the run directory is removed:
+
+```python
+import tempfile
+from pathlib import Path
+
+# result.sql opens a SQLite connection that holds an OS lock on eplus.sql.
+# On Windows that lock blocks deletion of the run directory. Close the result
+# (or use it as a context manager) before the directory is removed. The result
+# context exits first — closing the connection — then TemporaryDirectory cleans
+# up, so rmtree succeeds.
+with tempfile.TemporaryDirectory() as tmp, simulate(doc, "weather.epw", output_dir=Path(tmp) / "run") as result:
+    temps = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+
+# Equivalent without a context manager:
+result = simulate(doc, "weather.epw")
+try:
+    temps = result.sql.get_timeseries("Zone Mean Air Temperature", "Office")
+finally:
+    result.close()  # idempotent; reopens lazily if you touch result.sql again
+```
+
+`close()` is idempotent and resets the cached connection, so touching `result.sql` afterwards transparently reopens it. The other accessors (`errors`, `csv`, `eso`, `html`, `variables`) read their files eagerly and hold no handles, so they need no cleanup.
+
 ## Plotting helpers
 
 ```python

@@ -70,6 +70,31 @@ class SimulationResult:
             msg = "fs and async_fs are mutually exclusive — provide one or neither"
             raise ValueError(msg)
 
+    def close(self) -> None:
+        """Release any open file handles held by cached parsers.
+
+        Closes the SQLite connection opened lazily by [sql][idfkit.simulation.result.SimulationResult.sql] /
+        [async_sql][idfkit.simulation.result.SimulationResult.async_sql] (and removes the temporary copy made
+        for remote file systems). The other parsers read their files eagerly
+        and hold no handles, so this is currently a no-op for them.
+
+        Call this — or use the result as a context manager — before deleting
+        the run directory. On Windows an open SQLite connection locks
+        ``eplus.sql`` and blocks ``shutil.rmtree`` / ``TemporaryDirectory``
+        cleanup with ``PermissionError [WinError 32]``. Safe to call more
+        than once; the cached connection is reopened on next access if needed.
+        """
+        cached = object.__getattribute__(self, "_cached_sql")
+        if cached is not _UNSET and cached is not None:
+            cached.close()
+        object.__setattr__(self, "_cached_sql", _UNSET)
+
+    def __enter__(self) -> SimulationResult:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
+
     @property
     def errors(self) -> ErrorReport:
         """Parsed error report from the .err file (lazily cached).
@@ -113,7 +138,7 @@ class SimulationResult:
             data = self.fs.read_bytes(str(path))
             with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
                 tmp_file.write(data)
-            result: SQLResult = _SQLResult(Path(tmp_file.name))
+            result: SQLResult = _SQLResult(Path(tmp_file.name), _owns_file=True)
         else:
             result = _SQLResult(path)
         object.__setattr__(self, "_cached_sql", result)
@@ -395,12 +420,12 @@ class SimulationResult:
             data = await self.async_fs.read_bytes(str(path))
             with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
                 tmp_file.write(data)
-            result: SQLResult = _SQLResult(Path(tmp_file.name))
+            result: SQLResult = _SQLResult(Path(tmp_file.name), _owns_file=True)
         elif self.fs is not None:
             data = self.fs.read_bytes(str(path))
             with tempfile.NamedTemporaryFile(suffix=".sql", delete=False) as tmp_file:
                 tmp_file.write(data)
-            result = _SQLResult(Path(tmp_file.name))
+            result = _SQLResult(Path(tmp_file.name), _owns_file=True)
         else:
             result = _SQLResult(path)
         object.__setattr__(self, "_cached_sql", result)
