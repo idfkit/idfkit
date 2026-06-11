@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-06-11
+
 ### Added
 
 - `SimulationResult` is now a context manager and exposes `SimulationResult.close()`. Closing releases the SQLite connection opened lazily by `result.sql` (and deletes the temporary copy made for remote file system backends). ([#170](https://github.com/idfkit/idfkit/pull/170))
@@ -290,6 +292,8 @@ Initial public release.
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
 [unreleased]: https://github.com/idfkit/idfkit/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/idfkit/idfkit/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/idfkit/idfkit/compare/v0.12.2...v0.13.0
 [0.12.2]: https://github.com/idfkit/idfkit/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/idfkit/idfkit/compare/v0.12.0...v0.12.1
