@@ -88,7 +88,8 @@ idfkit auto-discovers EnergyPlus installations using a priority chain:
 1. **Explicit path** — Pass `energyplus_dir` to `simulate()` or `find_energyplus()`
 2. **Environment variable** — Set `ENERGYPLUS_DIR`
 3. **System PATH** — Looks for `energyplus` executable
-4. **Platform defaults**:
+4. **`/opt/eplus`** — Standard install location in Claude Code web sessions
+5. **Platform defaults**:
     - macOS: `/Applications/EnergyPlus-*/`
     - Linux: `/usr/local/EnergyPlus-*/`
     - Windows: `C:\EnergyPlusV*/`

@@ -95,6 +95,29 @@ Output files are parsed only when accessed:
 This keeps memory usage low, especially for batch simulations where you
 might only need specific outputs.
 
+## Releasing File Handles
+
+Accessing `result.sql` opens a SQLite connection on first use and caches it.
+That connection holds an OS-level file handle on `eplus.sql`. On **Windows**,
+the handle locks the file, so deleting the run directory while the result is
+alive fails with `PermissionError [WinError 32]` — typically when the run
+directory lives inside a `tempfile.TemporaryDirectory` or is removed with
+`shutil.rmtree`. POSIX systems don't lock on open, so this only affects
+Windows.
+
+`SimulationResult` is a context manager: exiting the `with` block calls
+[`close()`][idfkit.simulation.result.SimulationResult.close], which releases
+the connection. Close the result before the run directory is removed:
+
+```python
+--8<-- "docs/snippets/simulation/results/releasing_file_handles.py:example"
+```
+
+`close()` is idempotent and resets the cached connection, so touching
+`result.sql` afterwards transparently reopens it. The other accessors
+(`errors`, `csv`, `eso`, `html`, `variables`) read their files eagerly and
+hold no handles, so they need no cleanup.
+
 ## Reconstructing from Directory
 
 Inspect results from a previous simulation:

@@ -11,7 +11,8 @@ idfkit searches for EnergyPlus in this order:
 1. Explicit path in code
 2. `ENERGYPLUS_DIR` environment variable
 3. System PATH
-4. Platform default locations:
+4. `/opt/eplus` (standard install location in Claude Code web sessions)
+5. Platform default locations:
     - macOS: `/Applications/EnergyPlus-*/`
     - Linux: `/usr/local/EnergyPlus-*/`
     - Windows: `C:\EnergyPlusV*/`
@@ -254,6 +255,15 @@ short paths or quotes.
 **Long path issues:**
 
 Enable long paths in Windows or use shorter directory names.
+
+**`PermissionError [WinError 32]` when deleting a run directory:**
+
+Accessing `result.sql` opens a SQLite connection that locks `eplus.sql` on
+Windows, so `shutil.rmtree` or `tempfile.TemporaryDirectory` cleanup fails
+with `PermissionError [WinError 32]` while the result is still open. Use the
+result as a context manager (`with simulate(...) as result:`) or call
+`result.close()` before removing the directory. See
+[Releasing File Handles](../simulation/results.md#releasing-file-handles).
 
 ## Getting Help
 

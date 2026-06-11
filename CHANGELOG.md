@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SimulationResult` is now a context manager and exposes `SimulationResult.close()`. Closing releases the SQLite connection opened lazily by `result.sql` (and deletes the temporary copy made for remote file system backends). ([#170](https://github.com/idfkit/idfkit/pull/170))
+- EnergyPlus discovery now checks `/opt/eplus`, the standard install location in Claude Code web sessions, after `$PATH` and before the platform default directories. ([#167](https://github.com/idfkit/idfkit/pull/167))
+
+### Changed
+
+- IDF files written by idfkit now carry a `!-Generator idfkit v<version>` header instead of crediting archetypal. ([#168](https://github.com/idfkit/idfkit/pull/168))
 
 ### Fixed
 

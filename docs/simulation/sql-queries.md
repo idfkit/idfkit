@@ -181,6 +181,17 @@ automatically converts database timestamps to Python `datetime` objects.
 --8<-- "docs/snippets/simulation/sql-queries/context_manager.py:example"
 ```
 
+`SimulationResult` — the usual entry point via `simulate()` — is also a
+context manager. Exiting the `with` block closes the SQLite connection that
+`result.sql` opened lazily, which matters on Windows where the open
+connection locks `eplus.sql` and blocks deleting the run directory:
+
+```python
+--8<-- "docs/snippets/simulation/sql-queries/simulationresult_context_manager.py:example"
+```
+
+See [Releasing File Handles](results.md#releasing-file-handles) for details.
+
 ## Error Handling
 
 ```python
