@@ -130,6 +130,63 @@ class TestSqlProperty:
         assert ts.values[0] == -5.0
 
 
+class TestClose:
+    """Tests for SimulationResult.close() / context manager releasing handles."""
+
+    def test_close_releases_sql_connection_and_allows_rmtree(self, result_dir: Path) -> None:
+        # Reproduces the Windows WinError 32 scenario: an open SQLite
+        # connection must not keep the run directory locked after close().
+        result = SimulationResult(
+            run_dir=result_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0
+        )
+        sql = result.sql
+        assert sql is not None
+        _ = sql.get_timeseries("Site Outdoor Air Drybulb Temperature")  # force a real read
+
+        result.close()
+
+        # Connection is closed; querying it now raises.
+        with pytest.raises(sqlite3.ProgrammingError):
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+
+        # With the handle released, the directory can be removed (the failing
+        # operation on Windows pre-fix).
+        shutil.rmtree(result_dir)
+        assert not result_dir.exists()
+
+    def test_close_is_idempotent(self, result: SimulationResult) -> None:
+        assert result.sql is not None
+        result.close()
+        result.close()  # must not raise
+
+    def test_close_with_no_sql_accessed(self, tmp_path: Path) -> None:
+        # close() before .sql was ever touched is a no-op.
+        _make_result(tmp_path).close()
+
+    def test_context_manager_closes_sql(self, result_dir: Path) -> None:
+        with SimulationResult(
+            run_dir=result_dir, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0
+        ) as result:
+            sql = result.sql
+            assert sql is not None
+        with pytest.raises(sqlite3.ProgrammingError):
+            sql.get_timeseries("Site Outdoor Air Drybulb Temperature")
+
+    def test_sql_reopens_after_close(self, result: SimulationResult) -> None:
+        first = result.sql
+        assert first is not None
+        result.close()
+        second = result.sql
+        assert second is not None
+        assert second is not first  # a fresh connection
+
+    def test_sqlresult_del_closes_connection(self, result_dir: Path) -> None:
+        sql = SQLResult(result_dir / "eplusout.sql")
+        assert not sql._closed
+        sql.__del__()
+        assert sql._closed
+
+
 class TestVariablesProperty:
     """Tests for SimulationResult.variables."""
 

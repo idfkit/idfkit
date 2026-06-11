@@ -7,6 +7,7 @@ metadata from the ``eplusout.sql`` database produced by EnergyPlus when
 
 from __future__ import annotations
 
+import contextlib
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
@@ -183,24 +184,50 @@ class SQLResult:
         ```
     """
 
-    def __init__(self, db_path: str | Path) -> None:
+    def __init__(self, db_path: str | Path, *, _owns_file: bool = False) -> None:
         """Open the SQLite database in read-only mode.
 
         Args:
             db_path: Path to the EnergyPlus ``.sql`` output file.
+            _owns_file: Internal flag. When ``True``, [close][idfkit.simulation.parsers.sql.SQLResult.close]
+                also unlinks ``db_path`` — used when the file is a temporary
+                copy made for a remote file system backend.
         """
         self._db_path = Path(db_path)
+        self._owns_file = _owns_file
+        self._closed = False
         self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
 
     def close(self) -> None:
-        """Close the database connection."""
+        """Close the database connection.
+
+        Releases the underlying OS file handle. This matters on Windows,
+        where an open SQLite connection holds a lock that prevents the
+        ``.sql`` file (and any directory containing it) from being deleted.
+        Safe to call more than once.
+        """
+        if self._closed:
+            return
+        self._closed = True
         self._conn.close()
+        if self._owns_file:
+            with contextlib.suppress(OSError):
+                self._db_path.unlink()
 
     def __enter__(self) -> SQLResult:
         return self
 
     def __exit__(self, *exc: object) -> None:
         self.close()
+
+    def __del__(self) -> None:
+        # Safety net: release the file handle if the caller never closed the
+        # connection. Guarded because __init__ may have failed before _conn
+        # was assigned. Errors during interpreter shutdown are ignored.
+        if getattr(self, "_closed", True):
+            return
+        with contextlib.suppress(Exception):
+            self.close()
 
     def get_timeseries(
         self,

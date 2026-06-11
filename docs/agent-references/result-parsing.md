@@ -122,6 +122,18 @@ If you've simulated outside Python (or cached the outputs), rebuild a `Simulatio
 --8<-- "docs/snippets/agent_references/result-parsing.py:from-directory"
 ```
 
+## Releasing file handles (`close` / context manager)
+
+`result.sql` opens a SQLite connection on first access and caches it. That connection holds an OS-level lock on `eplus.sql`. On **Windows**, the lock blocks deleting the run directory — `shutil.rmtree` / `TemporaryDirectory` cleanup fails with `PermissionError [WinError 32]: the process cannot access the file because it is being used by another process`. POSIX doesn't lock on open, so this only bites Windows users.
+
+Close the result — or use it as a context manager — before the run directory is removed:
+
+```python
+--8<-- "docs/snippets/agent_references/result-parsing.py:closing"
+```
+
+`close()` is idempotent and resets the cached connection, so touching `result.sql` afterwards transparently reopens it. The other accessors (`errors`, `csv`, `eso`, `html`, `variables`) read their files eagerly and hold no handles, so they need no cleanup.
+
 ## Plotting helpers
 
 ```python
