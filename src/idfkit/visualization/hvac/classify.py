@@ -33,10 +33,29 @@ Port = tuple[str, str]
 _HVAC_TEMPLATE_GROUP = "HVAC Templates"
 _HVAC_TEMPLATE_PREFIX = "HVACTemplate:"
 
+#: Compound "container" components (unitary systems, coil systems) that hold a
+#: fan/coil train internally, referenced by name fields rather than placed on a
+#: branch. They are treated as structural: the container box is dropped and its
+#: child components are pulled into the loop in sequence (see :mod:`.build`).
+COMPOUND_CONTAINER_TYPES: frozenset[str] = frozenset({
+    "AirLoopHVAC:UnitarySystem",
+    "AirLoopHVAC:UnitaryHeatPump:AirToAir",
+    "AirLoopHVAC:UnitaryHeatPump:WaterToAir",
+    "AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed",
+    "AirLoopHVAC:UnitaryHeatCool",
+    "AirLoopHVAC:UnitaryHeatOnly",
+    "AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass",
+    "CoilSystem:Cooling:DX",
+    "CoilSystem:Heating:DX",
+    "CoilSystem:Cooling:Water",
+    "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+    "CoilSystem:Cooling:Water:HeatExchangerAssisted",
+})
+
 #: Object types that define topology but are not component vertices themselves.
 #: Junctions (connectors, zone splitters/mixers, plenums) appear here too — they
 #: are turned into junction vertices by dedicated passes in :mod:`.build`.
-STRUCTURAL_TYPES: frozenset[str] = frozenset({
+_STRUCTURAL_BASE: frozenset[str] = frozenset({
     "Branch",
     "BranchList",
     "ConnectorList",
@@ -59,6 +78,10 @@ STRUCTURAL_TYPES: frozenset[str] = frozenset({
     "NodeList",
     "OutdoorAir:NodeList",
 })
+
+#: All types the component-vertex pass skips. Compound containers are included so
+#: they are not drawn as a box; :mod:`.build` expands them into their children.
+STRUCTURAL_TYPES: frozenset[str] = _STRUCTURAL_BASE | COMPOUND_CONTAINER_TYPES
 
 #: Branch-based connectors — ports are synthesized from branch inlet/outlet nodes.
 BRANCH_CONNECTOR_TYPES: frozenset[str] = frozenset({"Connector:Splitter", "Connector:Mixer"})
@@ -222,3 +245,26 @@ def component_ports(obj: IDFObject, schema: EpJSONSchema | None) -> tuple[list[P
     if special is not None:
         return _ports_from_fields(obj, special.inlets), _ports_from_fields(obj, special.outlets)
     return _generic_ports(obj, schema)
+
+
+def child_component_refs(obj: IDFObject, schema: EpJSONSchema | None) -> list[tuple[str, str]]:
+    """Return the ``(object_type, name)`` child references of a compound container.
+
+    Unitary systems and coil systems name their internal fan and coils via
+    ``<prefix>_object_type`` / ``<prefix>_name`` field pairs (e.g.
+    ``cooling_coil_object_type`` + ``cooling_coil_name``). This scans for those
+    pairs and keeps the ones whose type is a real schema object type, so
+    non-component references (performance specs, etc.) are skipped.
+    """
+    refs: list[tuple[str, str]] = []
+    data = obj.data
+    for key, value in data.items():
+        if not key.endswith("_object_type") or not isinstance(value, str) or not value.strip():
+            continue
+        name_value = data.get(f"{key[: -len('_object_type')]}_name")
+        if not isinstance(name_value, str) or not name_value.strip():
+            continue
+        if schema is not None and not schema.get_object_schema(value.strip()):
+            continue
+        refs.append((value.strip(), name_value.strip()))
+    return refs

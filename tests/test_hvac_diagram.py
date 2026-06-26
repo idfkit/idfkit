@@ -610,3 +610,113 @@ def test_suspicious_node_warning() -> None:
     graph = build_hvac_graph(doc)
     kinds = {w.kind for w in graph.warnings}
     assert "suspicious_node" in kinds
+
+
+def _unitary_model() -> IDFDocument:
+    """An air loop whose branch carries an AirLoopHVAC:UnitarySystem container.
+
+    The fan and coils live inside the UnitarySystem (referenced by name), not on
+    the branch — the case that previously dumped them into "Other equipment".
+    """
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "AirLoopHVAC",
+        "RTU",
+        {
+            "branch_list_name": "RTU Branches",
+            "supply_side_inlet_node_name": "RTU Inlet",
+            "supply_side_outlet_node_names": "RTU Unit Outlet",
+            "demand_side_inlet_node_names": "RTU Demand Inlet",
+            "demand_side_outlet_node_name": "RTU Demand Outlet",
+        },
+        validate=False,
+    )
+    doc.add("BranchList", "RTU Branches", {"branches": [{"branch_name": "RTU Branch"}]}, validate=False)
+    doc.add(
+        "Branch",
+        "RTU Branch",
+        {
+            "components": [
+                {
+                    "component_object_type": "AirLoopHVAC:UnitarySystem",
+                    "component_name": "RTU Unit",
+                    "component_inlet_node_name": "RTU Inlet",
+                    "component_outlet_node_name": "RTU Unit Outlet",
+                }
+            ]
+        },
+        validate=False,
+    )
+    doc.add(
+        "AirLoopHVAC:UnitarySystem",
+        "RTU Unit",
+        {
+            "air_inlet_node_name": "RTU Inlet",
+            "air_outlet_node_name": "RTU Unit Outlet",
+            "supply_fan_object_type": "Fan:VariableVolume",
+            "supply_fan_name": "RTU Fan",
+            "cooling_coil_object_type": "Coil:Cooling:DX:SingleSpeed",
+            "cooling_coil_name": "RTU Cooling",
+            "heating_coil_object_type": "Coil:Heating:Fuel",
+            "heating_coil_name": "RTU Heating",
+        },
+        validate=False,
+    )
+    doc.add(
+        "Fan:VariableVolume",
+        "RTU Fan",
+        {"air_inlet_node_name": "RTU Inlet", "air_outlet_node_name": "RTU Fan Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "Coil:Cooling:DX:SingleSpeed",
+        "RTU Cooling",
+        {"air_inlet_node_name": "RTU Fan Outlet", "air_outlet_node_name": "RTU Cooling Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "Coil:Heating:Fuel",
+        "RTU Heating",
+        {"air_inlet_node_name": "RTU Cooling Outlet", "air_outlet_node_name": "RTU Unit Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "AirLoopHVAC:SupplyPath",
+        "RTU Supply Path",
+        {
+            "supply_air_path_inlet_node_name": "RTU Demand Inlet",
+            "components": [{"component_object_type": "AirLoopHVAC:ZoneSplitter", "component_name": "RTU Splitter"}],
+        },
+        validate=False,
+    )
+    doc.add(
+        "AirLoopHVAC:ZoneSplitter",
+        "RTU Splitter",
+        {"inlet_node_name": "RTU Demand Inlet", "nodes": [{"outlet_node_name": "Z Supply"}]},
+        validate=False,
+    )
+    doc.add(
+        "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+        "Z Terminal",
+        {"air_inlet_node_name": "Z Supply", "air_outlet_node_name": "Z Inlet"},
+        validate=False,
+    )
+    return doc
+
+
+def test_compound_unitary_system_expands() -> None:
+    graph = build_hvac_graph(_unitary_model())
+    # The container box is dropped — only its children are vertices.
+    assert graph.vertex(_vkey("AirLoopHVAC:UnitarySystem", "RTU Unit")) is None
+    # Every component lands in a loop; nothing is orphaned into "Other equipment".
+    assert [v.key for v in graph.vertices if not v.memberships] == []
+    rtu = next(loop for loop in graph.loops if loop.loop_type == "AirLoopHVAC")
+    for child in ("RTU Fan", "RTU Cooling", "RTU Heating"):
+        assert any(k.endswith(f"::{child.upper()}") for k in rtu.supply_keys)
+    # The internal train is chained in sequence (no phantom parallel shortcut).
+    fan = _vkey("Fan:VariableVolume", "RTU Fan")
+    cooling = _vkey("Coil:Cooling:DX:SingleSpeed", "RTU Cooling")
+    heating = _vkey("Coil:Heating:Fuel", "RTU Heating")
+    assert cooling in _edges_from(graph, fan)
+    assert heating in _edges_from(graph, cooling)

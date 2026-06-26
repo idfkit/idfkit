@@ -21,10 +21,12 @@ from typing import TYPE_CHECKING, Literal
 from idfkit.exceptions import HVACDiagramError
 
 from .classify import (
+    COMPOUND_CONTAINER_TYPES,
     NODE_JUNCTION_SPECS,
     STRUCTURAL_TYPES,
     Port,
     category_for,
+    child_component_refs,
     component_ports,
     hvac_template_types,
 )
@@ -332,10 +334,12 @@ class _GraphBuilder:
         if not isinstance(ct, str) or not isinstance(cn, str):
             return in_k, out_k
         if ct in STRUCTURAL_TYPES:
-            # A container (e.g. AirLoopHVAC:OutdoorAirSystem) — its internal
-            # equipment carries the real nodes; record the loop link only.
+            # A container — its internal equipment carries the real nodes, so the
+            # container box is dropped and its children are pulled into the loop.
             if ct == "AirLoopHVAC:OutdoorAirSystem" and loop_id is not None:
                 self.oa_system_loop[cn.strip().upper()] = (loop_id, side)
+            elif ct in COMPOUND_CONTAINER_TYPES and loop_id is not None:
+                self._expand_container(ct, cn, loop_id, side)
             return in_k, out_k
         vb = self._vertex(ct, cn, category_for(ct, self._group(ct)))
         self._reg(vb, inn, "inlet", fluid)
@@ -343,6 +347,25 @@ class _GraphBuilder:
         if loop_id is not None:
             self._member(vb, loop_id, side)
         return in_k, out_k
+
+    def _expand_container(self, obj_type: str, name: str, loop_id: str, side: Side) -> None:
+        """Assign a compound container's internal fan/coil children to a loop side.
+
+        The children are independent objects (already vertices from the component
+        pass) named by the container's fields; they only lack loop membership.
+        """
+        for child_type, child_name in self._container_children(obj_type, name):
+            vb = self.vertices.get(_vkey(child_type, child_name))
+            if vb is not None:
+                self._member(vb, loop_id, side)
+
+    def _container_children(self, obj_type: str, name: str) -> list[tuple[str, str]]:
+        if obj_type not in self.present:
+            return []
+        container = self.doc.get_collection(obj_type).get(name)
+        if container is None:
+            return []
+        return child_component_refs(container, self.schema)
 
     def _pass_node_junctions(self) -> None:
         for obj_type, spec in NODE_JUNCTION_SPECS.items():
@@ -418,21 +441,7 @@ class _GraphBuilder:
             if not isinstance(zname, str):
                 continue
             air_node = ec.data.get("zone_air_node_name")
-            equipment_keys: list[str] = []
-            eqlist_name = ec.data.get("zone_conditioning_equipment_list_name")
-            if isinstance(eqlist_name, str) and "ZoneHVAC:EquipmentList" in self.present:
-                eqlist = self.doc.get_collection("ZoneHVAC:EquipmentList").get(eqlist_name)
-                if eqlist is not None:
-                    for item in eqlist.extensible_items():
-                        ct = item.get("zone_equipment_object_type")
-                        cn = item.get("zone_equipment_name")
-                        if not isinstance(ct, str) or not isinstance(cn, str):
-                            continue
-                        key = self._resolve_equipment(ct, cn)
-                        equipment_keys.append(key)
-                        vb = self.vertices.get(key)
-                        if vb is not None:
-                            vb.zone = zname
+            equipment_keys = self._zone_equipment_keys(ec.data.get("zone_conditioning_equipment_list_name"), zname)
             inlet_nodes = self._resolve_nodes(ec.data.get("zone_air_inlet_node_or_nodelist_name"))
             exhaust_nodes = self._resolve_nodes(ec.data.get("zone_air_exhaust_node_or_nodelist_name"))
             return_nodes = self._resolve_nodes(ec.data.get("zone_return_air_node_or_nodelist_name"))
@@ -453,6 +462,26 @@ class _GraphBuilder:
                 )
             )
 
+    def _zone_equipment_keys(self, eqlist_name: object, zone_name: str) -> list[str]:
+        """Resolve a zone's equipment list to vertex keys, tagging each with the zone."""
+        keys: list[str] = []
+        if not isinstance(eqlist_name, str) or "ZoneHVAC:EquipmentList" not in self.present:
+            return keys
+        eqlist = self.doc.get_collection("ZoneHVAC:EquipmentList").get(eqlist_name)
+        if eqlist is None:
+            return keys
+        for item in eqlist.extensible_items():
+            ct = item.get("zone_equipment_object_type")
+            cn = item.get("zone_equipment_name")
+            if not isinstance(ct, str) or not isinstance(cn, str):
+                continue
+            for key in self._resolve_equipment_keys(ct, cn):
+                keys.append(key)
+                vb = self.vertices.get(key)
+                if vb is not None:
+                    vb.zone = zone_name
+        return keys
+
     def _resolve_equipment(self, obj_type: str, name: str) -> str:
         """Resolve a ZoneHVAC:AirDistributionUnit to its contained air terminal."""
         if obj_type == "ZoneHVAC:AirDistributionUnit" and "ZoneHVAC:AirDistributionUnit" in self.present:
@@ -463,6 +492,22 @@ class _GraphBuilder:
                 if isinstance(tt, str) and isinstance(tn, str):
                     return _vkey(tt, tn)
         return _vkey(obj_type, name)
+
+    def _resolve_equipment_keys(self, obj_type: str, name: str) -> list[str]:
+        """Resolve a zone-equipment entry to the vertex key(s) representing it.
+
+        ADUs resolve to their contained terminal; compound containers (unitary
+        systems) expand to their internal fan/coils so the unit is not a dead box.
+        """
+        if obj_type in COMPOUND_CONTAINER_TYPES:
+            child_keys = [
+                _vkey(ct, cn)
+                for ct, cn in self._container_children(obj_type, name)
+                if self.vertices.get(_vkey(ct, cn)) is not None
+            ]
+            if child_keys:
+                return child_keys
+        return [self._resolve_equipment(obj_type, name)]
 
     def _pass_air_demand(self) -> None:
         air_loops = [lb for lb in self.loops if lb.is_air]
