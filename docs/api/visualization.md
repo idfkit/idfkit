@@ -423,6 +423,27 @@ graph.to_mermaid(HVACDiagramConfig(direction="TB", show_node_labels=False))
 | `group_by_side` | `True` | Nest supply/demand subgraphs inside each loop |
 | `max_label_length` | 40 | Truncate long component names in labels |
 
+### Large models
+
+A whole-building flowchart can run to hundreds of nodes (a hospital or
+high-rise has dozens of loops), which no Mermaid/Graphviz renderer draws
+legibly. Two tools keep it readable:
+
+```python
+graph = build_hvac_graph(model)
+
+# Focus on one loop (or a set), by name or by type:
+graph.subset(loop_names=["VAV_1"]).to_mermaid()
+graph.subset(loop_types=["PlantLoop", "CondenserLoop"]).to_dot()
+
+# Or collapse the whole building to one node per loop and per zone, with
+# plant→air-loop coupling and the zones each loop serves:
+graph.overview_mermaid()
+```
+
+`to_mermaid()` also prepends a `%%` hint pointing at these when a model exceeds
+~150 components.
+
 ### Functions
 
 #### `build_hvac_graph(doc, *, expand=False)`
@@ -433,6 +454,10 @@ Reconstruct an `HVACGraph` from a document. With `expand=True`, runs
 #### `hvac_to_mermaid(source, config=None, *, expand=False)` / `hvac_to_dot(...)`
 
 Render straight from a document or a prebuilt `HVACGraph`.
+
+#### `HVACGraph.subset(*, loop_names=None, loop_types=None)` / `HVACGraph.overview_mermaid()`
+
+Filter the graph to selected loops, or render a building-level overview.
 
 ## See Also
 

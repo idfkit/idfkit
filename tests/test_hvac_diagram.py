@@ -720,3 +720,36 @@ def test_compound_unitary_system_expands() -> None:
     heating = _vkey("Coil:Heating:Fuel", "RTU Heating")
     assert cooling in _edges_from(graph, fan)
     assert heating in _edges_from(graph, cooling)
+
+
+def test_subset_by_type(graph: HVACGraph) -> None:
+    plant = graph.subset(loop_types=["PlantLoop"])
+    assert {loop.loop_type for loop in plant.loops} == {"PlantLoop"}
+    # The dual-loop coil is retained (it sits on the plant demand side).
+    assert plant.vertex(_vkey("Coil:Cooling:Water", "DOAS Cooling Coil")) is not None
+    # Air-only equipment is gone.
+    assert plant.vertex(_vkey("Fan:VariableVolume", "DOAS Supply Fan")) is None
+
+
+def test_subset_by_name(graph: HVACGraph) -> None:
+    air = graph.subset(loop_names=["DOAS"])
+    assert [loop.name for loop in air.loops] == ["DOAS"]
+    assert air.vertex(_vkey("Fan:VariableVolume", "DOAS Supply Fan")) is not None
+    assert air.vertex(_vkey("Pump:VariableSpeed", "CHW Pump")) is None
+    assert "PlantLoop" not in air.to_mermaid()
+
+
+def test_overview_mermaid(graph: HVACGraph) -> None:
+    ov = graph.overview_mermaid()
+    assert ov.startswith("flowchart")
+    assert "DOAS<br/>AirLoopHVAC" in ov
+    assert "CHW Loop<br/>PlantLoop" in ov
+    assert '(["Zone1"])' in ov
+    # The shared coil couples the plant loop to the air loop.
+    assert '-->|"coil"|' in ov
+    assert "classDef plantloop" in ov
+
+
+def test_large_model_size_hint() -> None:
+    # Small models carry no hint; the threshold is exercised on real models in CI-free smoke.
+    assert "%%" not in build_hvac_graph(_air_and_plant_model()).to_mermaid()

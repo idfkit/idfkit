@@ -138,4 +138,9 @@ data = graph.to_dict()
 
 # Convenience: go straight from a document, skipping the explicit graph.
 mermaid = hvac_to_mermaid(doc)
+
+# Large models (hundreds of components): filter to one loop, or collapse the
+# whole building to a one-node-per-loop/zone overview.
+one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
+overview = graph.overview_mermaid()
 # --8<-- [end:diagram]

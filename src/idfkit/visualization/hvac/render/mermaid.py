@@ -17,6 +17,10 @@ if TYPE_CHECKING:
     from ..model import Category, HVACDiagramConfig, HVACGraph, HVACVertex
 
 
+#: Above this many components a single flowchart is hard to read; hint at alternatives.
+_LARGE_MODEL = 150
+
+
 def _esc(text: str) -> str:
     """Escape text for a quoted Mermaid label."""
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
@@ -103,6 +107,11 @@ def render_mermaid(graph: HVACGraph, config: HVACDiagramConfig) -> str:
 
     layout = plan_layout(graph)
     lines: list[str] = [f"flowchart {config.direction}"]
+    if len(graph.vertices) > _LARGE_MODEL:
+        lines.append(
+            f"%% {len(graph.vertices)} components across {len(graph.loops)} loops — "
+            "use graph.subset(loop_names=[...]) or graph.overview_mermaid() for a readable view"
+        )
     used: set[Category] = set()
 
     for loop in graph.loops:

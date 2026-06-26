@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterable, Mapping
 
 #: Which side of a loop a component sits on.
 Side = Literal["supply", "demand", "other"]
@@ -271,6 +271,58 @@ class HVACGraph:
         from .render.dot import render_dot
 
         return render_dot(self, config or HVACDiagramConfig())
+
+    def overview_mermaid(self, config: HVACDiagramConfig | None = None) -> str:
+        """Render a building-level Mermaid overview (one node per loop and zone).
+
+        Use this instead of :meth:`to_mermaid` for large models, where a
+        component-level flowchart has too many nodes to read. Each loop and zone
+        becomes a single node; edges show plant→air-loop coupling and the zones
+        each loop serves.
+        """
+        from .render.overview import render_overview_mermaid
+
+        return render_overview_mermaid(self, config or HVACDiagramConfig())
+
+    def subset(
+        self,
+        *,
+        loop_names: Iterable[str] | None = None,
+        loop_types: Iterable[str] | None = None,
+    ) -> HVACGraph:
+        """Return a new graph restricted to the selected loops.
+
+        Filter by loop name (case-insensitive) and/or loop type
+        (``"AirLoopHVAC"``, ``"PlantLoop"``, ``"CondenserLoop"``). The result
+        keeps every vertex with membership in a selected loop, the edges among
+        them, and the zones they serve — so ``graph.subset(loop_names=["VAV_1"])``
+        renders just that one air loop. Passing neither argument returns an
+        equivalent graph.
+        """
+        name_set = {n.strip().upper() for n in loop_names} if loop_names is not None else None
+        type_set = set(loop_types) if loop_types is not None else None
+        selected_loops = tuple(
+            loop
+            for loop in self.loops
+            if (name_set is None or loop.name.strip().upper() in name_set)
+            and (type_set is None or loop.loop_type in type_set)
+        )
+        selected_ids = {loop.loop_id for loop in selected_loops}
+        keys = {v.key for v in self.vertices if any(m.loop_id in selected_ids for m in v.memberships)}
+        vertices = tuple(v for v in self.vertices if v.key in keys)
+        edges = tuple(e for e in self.edges if e.src in keys and e.dst in keys)
+        zones = tuple(z for z in self.zones if any(k in keys for k in z.equipment_keys))
+        nodes = tuple(n for n in self.nodes if keys.intersection((*n.producers, *n.consumers)))
+        return HVACGraph(
+            version=self.version,
+            loops=selected_loops,
+            vertices=vertices,
+            nodes=nodes,
+            edges=edges,
+            zones=zones,
+            warnings=(),
+            _by_key={v.key: v for v in vertices},
+        )
 
     def _repr_markdown_(self) -> str:
         """Render as a Mermaid code fence so the graph displays in Jupyter."""
