@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.14.0] - 2026-06-11
+### Added
+
+- HVAC system diagrams reconstructed directly from an `IDFDocument` — the IDF-native analogue of the EnergyPlus HVAC-Diagram utility, with no simulation run required. `idfkit.visualization.build_hvac_graph(doc)` walks `AirLoopHVAC`/`PlantLoop`/`CondenserLoop` definitions, their branch lists, connectors, supply/return paths, and zone equipment to build a directed `HVACGraph` using the same node-name connectivity rule as `eplusout.bnd` (a component whose outlet is node N feeds the component whose inlet is node N). A water coil shared between an air supply branch and a plant demand branch resolves to a single vertex carrying both loop memberships. Render to a Mermaid flowchart (`to_mermaid()` / `hvac_to_mermaid()`), Graphviz DOT (`to_dot()` / `hvac_to_dot()`), or a JSON-serializable dict (`to_dict()` / `to_json()`); output is deterministic. The document must be expanded first — `build_hvac_graph` raises the new `HVACDiagramError` when `HVACTemplate:*` objects remain, unless `expand=True` is passed. Building is total otherwise, recording dangling-node and unconnected-component issues as `HVACWarning`s on the graph. Pure stdlib, zero new dependencies.
 
 ### Added
 

@@ -178,6 +178,46 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
         assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
     ```
 
+## Diagram an HVAC system
+
+Once a loop graph exists, `idfkit.visualization.build_hvac_graph` reconstructs its
+topology — air, plant, and condenser loops, their supply/demand sides, branches,
+splitters/mixers, zone equipment — directly from the IDF objects, with no
+simulation run. It is the IDF-native analogue of the EnergyPlus HVAC-Diagram
+utility (which reads the post-run `eplusout.bnd` file). Render the result to a
+Mermaid flowchart, Graphviz DOT, or a JSON-serializable dict.
+
+The document must be **expanded** first: `build_hvac_graph` raises
+`HVACDiagramError` if `HVACTemplate:*` objects remain (pass `expand=True` to run
+`ExpandObjects` first). Building never raises on odd topology — it records
+`HVACWarning`s (dangling nodes, unconnected components) on the returned graph.
+
+```python
+from idfkit.visualization import HVACDiagramConfig, build_hvac_graph, hvac_to_mermaid
+
+# Build a topology graph from an *expanded* document (no HVACTemplate:* objects).
+# Raises HVACDiagramError if templates remain; pass expand=True to run
+# ExpandObjects first (needs an EnergyPlus install).
+graph = build_hvac_graph(doc)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components, {len(graph.edges)} links")
+for warning in graph.warnings:
+    print(warning.kind, warning.message)
+
+# Render to Mermaid (paste into mermaid.live or a Markdown file), Graphviz DOT,
+# or a plain JSON-serializable dict.
+mermaid = graph.to_mermaid(HVACDiagramConfig(direction="LR"))
+dot = graph.to_dot()
+data = graph.to_dict()
+
+# Convenience: go straight from a document, skipping the explicit graph.
+mermaid = hvac_to_mermaid(doc)
+```
+
+Connectivity follows the same rule EnergyPlus uses: a component whose *outlet* is
+node N feeds the component whose *inlet* is node N. A water coil that sits on both
+an air supply branch and a plant demand branch becomes a single graph vertex with
+both loop memberships.
+
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.

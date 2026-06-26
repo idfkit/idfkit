@@ -117,6 +117,29 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     --8<-- "docs/snippets/agent_references/hvac-loops.py:mistake-walk-good"
     ```
 
+## Diagram an HVAC system
+
+Once a loop graph exists, `idfkit.visualization.build_hvac_graph` reconstructs its
+topology — air, plant, and condenser loops, their supply/demand sides, branches,
+splitters/mixers, zone equipment — directly from the IDF objects, with no
+simulation run. It is the IDF-native analogue of the EnergyPlus HVAC-Diagram
+utility (which reads the post-run `eplusout.bnd` file). Render the result to a
+Mermaid flowchart, Graphviz DOT, or a JSON-serializable dict.
+
+The document must be **expanded** first: `build_hvac_graph` raises
+`HVACDiagramError` if `HVACTemplate:*` objects remain (pass `expand=True` to run
+`ExpandObjects` first). Building never raises on odd topology — it records
+`HVACWarning`s (dangling nodes, unconnected components) on the returned graph.
+
+```python
+--8<-- "docs/snippets/agent_references/hvac-loops.py:diagram"
+```
+
+Connectivity follows the same rule EnergyPlus uses: a component whose *outlet* is
+node N feeds the component whose *inlet* is node N. A water coil that sits on both
+an air supply branch and a plant demand branch becomes a single graph vertex with
+both loop memberships.
+
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.

@@ -372,6 +372,68 @@ All view functions accept a `zones` parameter to display only specific zones:
 fig = view_model(model, zones=["Zone1", "Zone2"])
 ```
 
+## HVAC System Diagrams
+
+`idfkit.visualization` reconstructs the HVAC topology of a model — air, plant, and
+condenser loops, their supply/demand sides, branches, splitters/mixers, and zone
+equipment — directly from the IDF objects, with **no simulation run**. It is the
+IDF-native analogue of the EnergyPlus HVAC-Diagram utility (which reads the
+post-run `eplusout.bnd` file). Output renders to a Mermaid flowchart, a Graphviz
+DOT graph, or a JSON-serializable dict.
+
+```python
+from idfkit import load_idf
+from idfkit.visualization import build_hvac_graph, hvac_to_mermaid
+
+model = load_idf("expanded_system.idf")
+
+# Build the graph (raises HVACDiagramError if HVACTemplate:* objects remain;
+# pass expand=True to run ExpandObjects first — requires an EnergyPlus install).
+graph = build_hvac_graph(model)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components")
+
+# Render
+mermaid = graph.to_mermaid()       # or hvac_to_mermaid(model)
+dot = graph.to_dot()               # pipe through `dot -Tsvg` for an image
+data = graph.to_dict()             # structured view (also graph.to_json())
+```
+
+The connectivity rule matches EnergyPlus: a component whose *outlet* is node `N`
+feeds the component whose *inlet* is node `N`. A water coil that sits on both an
+air supply branch and a plant demand branch becomes a **single** vertex carrying
+both loop memberships, so the coupling between loops is visible in the diagram.
+
+Building never raises on unusual topology — it records `HVACWarning`s (dangling
+nodes, unconnected components, missing branches) on the returned graph.
+
+### Configuration
+
+Pass an `HVACDiagramConfig` to either renderer:
+
+```python
+from idfkit.visualization import HVACDiagramConfig
+
+graph.to_mermaid(HVACDiagramConfig(direction="TB", show_node_labels=False))
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `direction` | `"LR"` | Flow direction: `"LR"`, `"RL"`, `"TB"`, `"BT"` |
+| `show_node_labels` | `True` | Label each edge with the node it flows through |
+| `group_by_side` | `True` | Nest supply/demand subgraphs inside each loop |
+| `max_label_length` | 40 | Truncate long component names in labels |
+
+### Functions
+
+#### `build_hvac_graph(doc, *, expand=False)`
+
+Reconstruct an `HVACGraph` from a document. With `expand=True`, runs
+`doc.expand()` first when templates are present.
+
+#### `hvac_to_mermaid(source, config=None, *, expand=False)` / `hvac_to_dot(...)`
+
+Render straight from a document or a prebuilt `HVACGraph`.
+
 ## See Also
 
 - [Thermal Properties](thermal.md) — R-value, U-value, SHGC calculations

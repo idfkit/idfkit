@@ -117,3 +117,25 @@ for coil in doc.get_collection("Coil:Cooling:Water"):
     downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
     assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
 # --8<-- [end:mistake-walk-good]
+
+
+# --8<-- [start:diagram]
+from idfkit.visualization import HVACDiagramConfig, build_hvac_graph, hvac_to_mermaid
+
+# Build a topology graph from an *expanded* document (no HVACTemplate:* objects).
+# Raises HVACDiagramError if templates remain; pass expand=True to run
+# ExpandObjects first (needs an EnergyPlus install).
+graph = build_hvac_graph(doc)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components, {len(graph.edges)} links")
+for warning in graph.warnings:
+    print(warning.kind, warning.message)
+
+# Render to Mermaid (paste into mermaid.live or a Markdown file), Graphviz DOT,
+# or a plain JSON-serializable dict.
+mermaid = graph.to_mermaid(HVACDiagramConfig(direction="LR"))
+dot = graph.to_dot()
+data = graph.to_dict()
+
+# Convenience: go straight from a document, skipping the explicit graph.
+mermaid = hvac_to_mermaid(doc)
+# --8<-- [end:diagram]
