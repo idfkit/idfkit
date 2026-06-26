@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..layout import Layout, plan_layout, truncate
+from ..layout import Layout, plan_layout, truncate, zone_outflow_targets
 from ..style import TEXT_COLOR, ZONE_FILL, ZONE_STROKE, style_for
 
 if TYPE_CHECKING:
@@ -70,6 +70,22 @@ def _zone_subgraph(graph: HVACGraph, layout: Layout) -> list[str]:
     return out
 
 
+def _zone_edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
+    out: list[str] = []
+    returns = zone_outflow_targets(graph) if config.show_return_air else {}
+    for z in graph.zones:
+        zid = layout.zone_ids[z.name]
+        for key in z.equipment_keys:
+            sid = layout.vertex_ids.get(key)
+            if sid is not None:
+                out.append(f"  {sid} --> {zid}")  # supply: equipment delivers to zone
+        for key in returns.get(z.name, ()):
+            tid = layout.vertex_ids.get(key)
+            if tid is not None:
+                out.append(f"  {zid} -.->|return| {tid}")  # return: zone air back to the mixer
+    return out
+
+
 def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     out: list[str] = []
     for e in graph.edges:
@@ -81,13 +97,7 @@ def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[
             out.append(f'  {src} -->|"{_esc(e.via_node)}"| {dst}')
         else:
             out.append(f"  {src} --> {dst}")
-    for z in graph.zones:
-        zid = layout.zone_ids[z.name]
-        for key in z.equipment_keys:
-            sid = layout.vertex_ids.get(key)
-            if sid is not None:
-                out.append(f"  {sid} --> {zid}")
-    return out
+    return out + _zone_edges(graph, layout, config)
 
 
 def _classdefs(used: set[Category], has_zones: bool) -> list[str]:

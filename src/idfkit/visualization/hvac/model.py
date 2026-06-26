@@ -60,6 +60,8 @@ class HVACDiagramConfig:
         show_node_labels: Annotate each edge with the EnergyPlus node name it
             flows through. Turn off to declutter large systems.
         group_by_side: Nest a ``supply``/``demand`` subgraph inside each loop.
+        show_return_air: Draw the return leg (zone → return mixer/plenum) as a
+            dashed edge, so the air loop reads as a closed supply/return circuit.
         include_controls: Reserved — controls and setpoint managers are excluded
             from the flow graph regardless (kept for forward compatibility).
         max_label_length: Truncate component names longer than this in labels.
@@ -68,6 +70,7 @@ class HVACDiagramConfig:
     direction: Literal["LR", "RL", "TB", "BT"] = "LR"
     show_node_labels: bool = True
     group_by_side: bool = True
+    show_return_air: bool = True
     include_controls: bool = False
     max_label_length: int = 40
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..layout import Layout, plan_layout, truncate
+from ..layout import Layout, plan_layout, truncate, zone_outflow_targets
 from ..style import ZONE_FILL, ZONE_STROKE, style_for
 
 if TYPE_CHECKING:
@@ -65,6 +65,22 @@ def _zone_cluster(graph: HVACGraph, layout: Layout) -> list[str]:
     return out
 
 
+def _zone_edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
+    out: list[str] = []
+    returns = zone_outflow_targets(graph) if config.show_return_air else {}
+    for z in graph.zones:
+        zid = layout.zone_ids[z.name]
+        for key in z.equipment_keys:
+            sid = layout.vertex_ids.get(key)
+            if sid is not None:
+                out.append(f"  {sid} -> {zid};")
+        for key in returns.get(z.name, ()):
+            tid = layout.vertex_ids.get(key)
+            if tid is not None:
+                out.append(f'  {zid} -> {tid} [style=dashed, label="return"];')
+    return out
+
+
 def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     out: list[str] = []
     for e in graph.edges:
@@ -74,13 +90,7 @@ def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[
             continue
         label = f' [label="{_esc(e.via_node)}"]' if config.show_node_labels else ""
         out.append(f"  {src} -> {dst}{label};")
-    for z in graph.zones:
-        zid = layout.zone_ids[z.name]
-        for key in z.equipment_keys:
-            sid = layout.vertex_ids.get(key)
-            if sid is not None:
-                out.append(f"  {sid} -> {zid};")
-    return out
+    return out + _zone_edges(graph, layout, config)
 
 
 def render_dot(graph: HVACGraph, config: HVACDiagramConfig) -> str:

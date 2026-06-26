@@ -753,3 +753,13 @@ def test_overview_mermaid(graph: HVACGraph) -> None:
 def test_large_model_size_hint() -> None:
     # Small models carry no hint; the threshold is exercised on real models in CI-free smoke.
     assert "%%" not in build_hvac_graph(_air_and_plant_model()).to_mermaid()
+
+
+def test_return_air_closes_the_loop(graph: HVACGraph) -> None:
+    # The zone's return air flows back to the zone mixer, drawn as a dashed edge.
+    mermaid = graph.to_mermaid()
+    assert "-.->|return|" in mermaid
+    # Off switch.
+    assert "-.->|return|" not in graph.to_mermaid(HVACDiagramConfig(show_return_air=False))
+    # DOT renders it dashed too.
+    assert 'style=dashed, label="return"' in graph.to_dot()

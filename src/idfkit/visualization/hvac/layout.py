@@ -46,3 +46,24 @@ def truncate(text: str, limit: int) -> str:
     if limit > 0 and len(text) > limit:
         return text[: max(1, limit - 1)] + "…"
     return text
+
+
+def zone_outflow_targets(graph: HVACGraph) -> dict[str, list[str]]:
+    """Map each zone to the vertex keys that consume its return/exhaust nodes.
+
+    These are the components air flows *into* on its way out of the zone — the
+    return mixer or plenum (and any zone exhaust fan) — used to draw the return
+    leg that closes the air loop.
+    """
+    node_consumers = {n.name.upper(): n.consumers for n in graph.nodes}
+    out: dict[str, list[str]] = {}
+    for z in graph.zones:
+        seen: set[str] = set()
+        targets: list[str] = []
+        for name in (*z.return_nodes, *z.exhaust_nodes):
+            for key in node_consumers.get(name.upper(), ()):
+                if key not in seen:
+                    seen.add(key)
+                    targets.append(key)
+        out[z.name] = targets
+    return out

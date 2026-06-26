@@ -421,6 +421,7 @@ graph.to_mermaid(HVACDiagramConfig(direction="TB", show_node_labels=False))
 | `direction` | `"LR"` | Flow direction: `"LR"`, `"RL"`, `"TB"`, `"BT"` |
 | `show_node_labels` | `True` | Label each edge with the node it flows through |
 | `group_by_side` | `True` | Nest supply/demand subgraphs inside each loop |
+| `show_return_air` | `True` | Draw the return leg (zone → mixer) as a dashed edge |
 | `max_label_length` | 40 | Truncate long component names in labels |
 
 ### Large models
