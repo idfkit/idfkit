@@ -152,6 +152,20 @@ class HVACEdge:
 
 
 @dataclass(frozen=True)
+class HVACRefrigerantEdge:
+    """A refrigerant-network link from a VRF outdoor unit to a terminal-unit coil.
+
+    Variable-refrigerant-flow systems couple their condensing unit to the zone
+    terminal units through a named terminal-unit *list*, not through air/water
+    nodes — so this connection is tracked separately from :class:`HVACEdge` and
+    rendered as a distinct dashed "refrigerant" edge.
+    """
+
+    master_key: str
+    terminal_key: str
+
+
+@dataclass(frozen=True)
 class HVACLoop:
     """A loop and the vertices on each of its sides."""
 
@@ -202,6 +216,7 @@ class HVACGraph:
     edges: tuple[HVACEdge, ...] = ()
     zones: tuple[HVACZone, ...] = ()
     warnings: tuple[HVACWarning, ...] = ()
+    refrigerant_edges: tuple[HVACRefrigerantEdge, ...] = ()
     _by_key: Mapping[str, HVACVertex] = field(default_factory=_empty_vertex_map, repr=False, compare=False)
 
     def vertex(self, key: str) -> HVACVertex | None:
@@ -257,6 +272,7 @@ class HVACGraph:
                 for z in self.zones
             ],
             "warnings": [{"kind": w.kind, "message": w.message, "ref": w.ref} for w in self.warnings],
+            "refrigerant": [{"master": r.master_key, "terminal": r.terminal_key} for r in self.refrigerant_edges],
         }
 
     def to_json(self, *, indent: int | None = 2) -> str:
@@ -316,6 +332,7 @@ class HVACGraph:
         edges = tuple(e for e in self.edges if e.src in keys and e.dst in keys)
         zones = tuple(z for z in self.zones if any(k in keys for k in z.equipment_keys))
         nodes = tuple(n for n in self.nodes if keys.intersection((*n.producers, *n.consumers)))
+        refrigerant = tuple(r for r in self.refrigerant_edges if r.master_key in keys and r.terminal_key in keys)
         return HVACGraph(
             version=self.version,
             loops=selected_loops,
@@ -324,6 +341,7 @@ class HVACGraph:
             edges=edges,
             zones=zones,
             warnings=(),
+            refrigerant_edges=refrigerant,
             _by_key={v.key: v for v in vertices},
         )
 

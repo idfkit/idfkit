@@ -18,7 +18,7 @@ don't follow the inlet/outlet convention (e.g. ``OutdoorAir:Mixer``).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from .model import Category
 
@@ -79,9 +79,28 @@ _STRUCTURAL_BASE: frozenset[str] = frozenset({
     "OutdoorAir:NodeList",
 })
 
+#: Schema groups whose objects are compound containers wrapping an internal
+#: fan/coil train: zone forced-air units (fan coils, PTAC/PTHP, unit ventilators,
+#: VRF terminal units). Like :data:`COMPOUND_CONTAINER_TYPES`, the container box is
+#: dropped and its children are pulled out (here, grouped under their zone).
+_CONTAINER_GROUPS: frozenset[str] = frozenset({"Zone HVAC Forced Air Units"})
+
 #: All types the component-vertex pass skips. Compound containers are included so
 #: they are not drawn as a box; :mod:`.build` expands them into their children.
 STRUCTURAL_TYPES: frozenset[str] = _STRUCTURAL_BASE | COMPOUND_CONTAINER_TYPES
+
+
+def is_expandable_container(obj_type: str, group: str | None) -> bool:
+    """True if *obj_type* is a compound container to expand into its children.
+
+    Covers the hardcoded unitary/coil-system types (:data:`COMPOUND_CONTAINER_TYPES`,
+    e.g. ``CoilSystem:*`` which is schema group ``"Coils"``) plus any object in a
+    container schema group (:data:`_CONTAINER_GROUPS` — zone forced-air units).
+    Radiative/convective units (baseboards) are intentionally excluded: they are
+    single components, not containers.
+    """
+    return obj_type in COMPOUND_CONTAINER_TYPES or (group is not None and group in _CONTAINER_GROUPS)
+
 
 #: Branch-based connectors — ports are synthesized from branch inlet/outlet nodes.
 BRANCH_CONNECTOR_TYPES: frozenset[str] = frozenset({"Connector:Splitter", "Connector:Mixer"})
@@ -187,9 +206,13 @@ def fluid_for_field(field_name: str) -> str:
 
 
 def _is_flow_node_field(obj_type: str, field_name: str, schema: EpJSONSchema | None) -> bool:
-    """True if *field_name* names a free-string flow node (not a ref or control)."""
+    """True if *field_name* names a free-string flow node (not a ref or control).
+
+    Most node fields end in ``_node_name``, but some components (e.g. VRF DX coils)
+    use a bare ``_node`` suffix (``coil_air_inlet_node``) — both are accepted.
+    """
     low = field_name.lower()
-    if not low.endswith("_name") or "node" not in low:
+    if not (low.endswith("_node_name") or low.endswith("_node")):
         return False
     if any(token in low for token in _CONTROL_TOKENS):
         return False
@@ -247,24 +270,49 @@ def component_ports(obj: IDFObject, schema: EpJSONSchema | None) -> tuple[list[P
     return _generic_ports(obj, schema)
 
 
+def _resolve_child(
+    data: dict[str, Any], type_key: str, value: str, schema: EpJSONSchema | None
+) -> tuple[str, str] | None:
+    """Resolve one ``<prefix>_object_type`` field to a ``(canonical_type, name)`` pair.
+
+    The paired name field is ``<prefix>_name`` (unitary/coil systems) or
+    ``<prefix>_object_name`` (VRF terminal units). The type value may be miscased
+    (e.g. ``COIL:Cooling:DX:...``), so it is canonicalised via the schema; a type
+    the schema does not recognise is skipped as a non-component reference.
+    """
+    prefix = type_key[: -len("_object_type")]
+    name_value = data.get(f"{prefix}_name")
+    if not isinstance(name_value, str) or not name_value.strip():
+        name_value = data.get(f"{prefix}_object_name")
+    if not isinstance(name_value, str) or not name_value.strip():
+        return None
+    child_type = value.strip()
+    if schema is not None:
+        canonical = schema.resolve_type_name(child_type)
+        if canonical is None:
+            return None
+        child_type = canonical
+    return child_type, name_value.strip()
+
+
 def child_component_refs(obj: IDFObject, schema: EpJSONSchema | None) -> list[tuple[str, str]]:
     """Return the ``(object_type, name)`` child references of a compound container.
 
-    Unitary systems and coil systems name their internal fan and coils via
-    ``<prefix>_object_type`` / ``<prefix>_name`` field pairs (e.g.
-    ``cooling_coil_object_type`` + ``cooling_coil_name``). This scans for those
+    Unitary systems, coil systems, and zone forced-air units (fan coils, PTACs,
+    VRF terminal units) name their internal fan and coils via
+    ``<prefix>_object_type`` paired with ``<prefix>_name`` or
+    ``<prefix>_object_name`` field pairs (e.g. ``cooling_coil_object_type`` +
+    ``cooling_coil_name``/``cooling_coil_object_name``). This scans for those
     pairs and keeps the ones whose type is a real schema object type, so
-    non-component references (performance specs, etc.) are skipped.
+    non-component references (performance specs, etc.) are skipped. Returned
+    types are canonicalised to their schema form.
     """
     refs: list[tuple[str, str]] = []
     data = obj.data
     for key, value in data.items():
         if not key.endswith("_object_type") or not isinstance(value, str) or not value.strip():
             continue
-        name_value = data.get(f"{key[: -len('_object_type')]}_name")
-        if not isinstance(name_value, str) or not name_value.strip():
-            continue
-        if schema is not None and not schema.get_object_schema(value.strip()):
-            continue
-        refs.append((value.strip(), name_value.strip()))
+        child = _resolve_child(data, key, value, schema)
+        if child is not None:
+            refs.append(child)
     return refs

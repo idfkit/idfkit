@@ -21,14 +21,15 @@ from typing import TYPE_CHECKING, Literal
 from idfkit.exceptions import HVACDiagramError
 
 from .classify import (
-    COMPOUND_CONTAINER_TYPES,
     NODE_JUNCTION_SPECS,
+    SPECIAL_PORTS,
     STRUCTURAL_TYPES,
     Port,
     category_for,
     child_component_refs,
     component_ports,
     hvac_template_types,
+    is_expandable_container,
 )
 from .model import (
     Category,
@@ -36,6 +37,7 @@ from .model import (
     HVACGraph,
     HVACLoop,
     HVACNode,
+    HVACRefrigerantEdge,
     HVACVertex,
     HVACWarning,
     HVACZone,
@@ -87,6 +89,17 @@ _LOOP_SPECS: dict[LoopType, dict[str, str | None]] = {
 }
 
 _LOOP_ORDER: dict[LoopType, int] = {"AirLoopHVAC": 0, "PlantLoop": 1, "CondenserLoop": 2}
+
+_VRF_MASTER_TYPE = "AirConditioner:VariableRefrigerantFlow"
+_VRF_TERMINAL_TYPE = "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow"
+#: VRF terminal-unit DX coils (canonical schema names) — the refrigerant-bearing
+#: children the outdoor unit drives.
+_VRF_COIL_TYPES: frozenset[str] = frozenset({
+    "Coil:Cooling:DX:VariableRefrigerantFlow",
+    "Coil:Heating:DX:VariableRefrigerantFlow",
+    "Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl",
+    "Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl",
+})
 
 
 def _vkey(obj_type: str, name: str) -> str:
@@ -147,6 +160,7 @@ class _GraphBuilder:
         self.branch_names: set[str] = {b.name.strip().upper() for b in self._objs("Branch")}
         self.nodelist_map: dict[str, list[str]] = self._build_nodelist_map()
         self.zones: list[_ZoneBuild] = []
+        self.refrigerant_links: list[tuple[str, str]] = []  # (master-key, terminal-coil-key)
 
     # -- small helpers -----------------------------------------------------
 
@@ -282,9 +296,12 @@ class _GraphBuilder:
 
     def _pass_components(self) -> None:
         for obj_type, collection in self.doc.objects_by_type():
-            if obj_type in STRUCTURAL_TYPES:
-                continue
             group = self._group(obj_type)
+            # Skip structural definitions and compound containers (unitary systems,
+            # zone forced-air units): the box is dropped and its children — separate
+            # objects with the real nodes — become the vertices instead.
+            if obj_type in STRUCTURAL_TYPES or is_expandable_container(obj_type, group):
+                continue
             if group in _EXCLUDED_GROUPS:
                 continue
             category = category_for(obj_type, group)
@@ -333,12 +350,13 @@ class _GraphBuilder:
         out_k = outn.strip().upper() if isinstance(outn, str) and outn.strip() else None
         if not isinstance(ct, str) or not isinstance(cn, str):
             return in_k, out_k
-        if ct in STRUCTURAL_TYPES:
+        expandable = is_expandable_container(ct, self._group(ct))
+        if ct in STRUCTURAL_TYPES or expandable:
             # A container — its internal equipment carries the real nodes, so the
             # container box is dropped and its children are pulled into the loop.
             if ct == "AirLoopHVAC:OutdoorAirSystem" and loop_id is not None:
                 self.oa_system_loop[cn.strip().upper()] = (loop_id, side)
-            elif ct in COMPOUND_CONTAINER_TYPES and loop_id is not None:
+            elif expandable and loop_id is not None:
                 self._expand_container(ct, cn, loop_id, side)
             return in_k, out_k
         vb = self._vertex(ct, cn, category_for(ct, self._group(ct)))
@@ -422,16 +440,32 @@ class _GraphBuilder:
                 cn = eqlist.data.get(f"component_{i}_name")
                 if not isinstance(ct, str) or not isinstance(cn, str):
                     break
-                vb = self._vertex(ct, cn, category_for(ct, self._group(ct)))
+                group = self._group(ct)
+                if is_expandable_container(ct, group):
+                    # e.g. a VRF terminal unit sitting in the OA-system equipment list.
+                    self._expand_container(ct, cn, loop_id, side)
+                    continue
+                vb = self._vertex(ct, cn, category_for(ct, group))
                 self._member(vb, loop_id, side)
 
     def _collect_oa_boundary(self) -> None:
-        """Outdoor-air source nodes are legitimate single-reference endpoints."""
+        """Outdoor-air source/relief nodes are legitimate single-reference endpoints."""
         for node in self._objs("OutdoorAir:Node"):
             self.boundary_nodes.add(node.name.strip().upper())
         for nl in self._objs("OutdoorAir:NodeList"):
             for item in nl.extensible_items():
                 value = item.get("node_or_nodelist_name")
+                if isinstance(value, str) and value.strip():
+                    self.boundary_nodes.add(value.strip().upper())
+        # An OA mixer's outdoor-air inlet and relief-air outlet open to outside, so
+        # they are referenced by a single component by design — not suspicious.
+        oa_boundary_fields = (
+            *SPECIAL_PORTS["OutdoorAir:Mixer"].inlets[:1],
+            *SPECIAL_PORTS["OutdoorAir:Mixer"].outlets[1:],
+        )
+        for mixer in self._objs("OutdoorAir:Mixer"):
+            for fname in oa_boundary_fields:
+                value = mixer.data.get(fname)
                 if isinstance(value, str) and value.strip():
                     self.boundary_nodes.add(value.strip().upper())
 
@@ -497,9 +531,10 @@ class _GraphBuilder:
         """Resolve a zone-equipment entry to the vertex key(s) representing it.
 
         ADUs resolve to their contained terminal; compound containers (unitary
-        systems) expand to their internal fan/coils so the unit is not a dead box.
+        systems, zone forced-air units) expand to their internal fan/coils so the
+        unit is not a dead box.
         """
-        if obj_type in COMPOUND_CONTAINER_TYPES:
+        if is_expandable_container(obj_type, self._group(obj_type)):
             child_keys = [
                 _vkey(ct, cn)
                 for ct, cn in self._container_children(obj_type, name)
@@ -508,6 +543,55 @@ class _GraphBuilder:
             if child_keys:
                 return child_keys
         return [self._resolve_equipment(obj_type, name)]
+
+    def _pass_vrf(self) -> None:
+        """Link each VRF outdoor unit to its terminal-unit coils (refrigerant net).
+
+        VRF couples its condensing unit to the zone terminal units through a named
+        ``ZoneTerminalUnitList``, not through air/water nodes — so it is tracked as
+        a separate refrigerant edge from the master to each terminal's DX coil.
+        """
+        if _VRF_MASTER_TYPE not in self.present:
+            return
+        for ac in self._objs(_VRF_MASTER_TYPE):
+            master = self._vertex(_VRF_MASTER_TYPE, ac.name)
+            for tu_name in self._vrf_terminal_unit_names(ac.data.get("zone_terminal_unit_list_name")):
+                for coil_key in self._vrf_terminal_coils(tu_name):
+                    self.refrigerant_links.append((master.key, coil_key))
+
+    def _vrf_terminal_unit_names(self, list_name: object) -> list[str]:
+        # ZoneTerminalUnitList's identifier is the ``zone_terminal_unit_list_name``
+        # field (not a standard ``name``), so match on the field rather than .get().
+        if not isinstance(list_name, str) or not list_name.strip():
+            return []
+        want = list_name.strip().upper()
+        names: list[str] = []
+        for lst in self._objs("ZoneTerminalUnitList"):
+            field_name = lst.data.get("zone_terminal_unit_list_name")
+            if not isinstance(field_name, str) or field_name.strip().upper() != want:
+                continue
+            for item in lst.extensible_items():
+                n = item.get("zone_terminal_unit_name")
+                if isinstance(n, str) and n.strip():
+                    names.append(n.strip())
+        return names
+
+    def _vrf_terminal_coils(self, tu_name: str) -> list[str]:
+        """Vertex keys of a VRF terminal unit's DX coils (or any child as fallback)."""
+        if _VRF_TERMINAL_TYPE not in self.present:
+            return []
+        tu = self.doc.get_collection(_VRF_TERMINAL_TYPE).get(tu_name)
+        if tu is None:
+            return []
+        children = [(ct, cn) for ct, cn in child_component_refs(tu, self.schema)]
+        coils = [_vkey(ct, cn) for ct, cn in children if ct in _VRF_COIL_TYPES]
+        keys = [k for k in coils if self.vertices.get(k) is not None]
+        if keys:
+            return keys
+        # FluidTemperatureControl coils have no air nodes (no vertex); fall back to
+        # the first child that does exist so the refrigerant link still draws.
+        fallback = next((_vkey(ct, cn) for ct, cn in children if self.vertices.get(_vkey(ct, cn)) is not None), None)
+        return [fallback] if fallback is not None else []
 
     def _pass_air_demand(self) -> None:
         air_loops = [lb for lb in self.loops if lb.is_air]
@@ -532,6 +616,28 @@ class _GraphBuilder:
                     break
             if not assigned and single_air is not None:
                 self._member(vb, single_air, "demand")
+        self._attach_terminal_children()
+
+    def _attach_terminal_children(self) -> None:
+        """Pull an air terminal's reheat coil onto the terminal's air-loop side.
+
+        A single-loop reheat coil (electric/gas) inside an ``AirTerminal:*:Reheat``
+        would otherwise have no membership and land in "Other equipment"; a water
+        reheat coil already on a plant branch simply gains the air-demand side too.
+        """
+        for vb in list(self.vertices.values()):
+            if vb.category != "terminal" or not vb.memberships or vb.obj_type not in self.present:
+                continue
+            terminal = self.doc.get_collection(vb.obj_type).get(vb.name)
+            if terminal is None:
+                continue
+            pm = vb.memberships[0]
+            for ct, cn in child_component_refs(terminal, self.schema):
+                child = self.vertices.get(_vkey(ct, cn))
+                if child is not None:
+                    self._member(child, pm.loop_id, pm.side)
+                    if child.zone is None:
+                        child.zone = vb.zone
 
     def _assign_path_components(self, path: IDFObject, loop_id: str | None) -> None:
         if loop_id is None:
@@ -577,6 +683,7 @@ class _GraphBuilder:
         self._pass_oa_systems()
         self._collect_oa_boundary()
         self._pass_zones()
+        self._pass_vrf()
         self._pass_air_demand()
         return self._finalize()
 
@@ -612,7 +719,11 @@ class _GraphBuilder:
         nodes = self._build_nodes(producers, consumers)
         loops = self._build_loops()
         zones = self._build_zones()
-        self._add_topology_warnings(producers, consumers, connected)
+        refrigerant = self._build_refrigerant_edges()
+        # A VRF outdoor unit and its terminal coils are connected by refrigerant,
+        # not nodes — exclude them from the node-based "unconnected" check.
+        refrigerant_keys = {k for r in refrigerant for k in (r.master_key, r.terminal_key)}
+        self._add_topology_warnings(producers, consumers, connected | refrigerant_keys)
 
         return HVACGraph(
             version=self.doc.version,
@@ -622,8 +733,20 @@ class _GraphBuilder:
             edges=edges,
             zones=zones,
             warnings=tuple(self.warnings),
+            refrigerant_edges=refrigerant,
             _by_key={v.key: v for v in vertices},
         )
+
+    def _build_refrigerant_edges(self) -> tuple[HVACRefrigerantEdge, ...]:
+        seen: set[tuple[str, str]] = set()
+        out: list[HVACRefrigerantEdge] = []
+        for master_key, terminal_key in self.refrigerant_links:
+            marker = (master_key, terminal_key)
+            if marker in seen:
+                continue
+            seen.add(marker)
+            out.append(HVACRefrigerantEdge(master_key=master_key, terminal_key=terminal_key))
+        return tuple(out)
 
     def _build_edges(self, producers: dict[str, list[str]], consumers: dict[str, list[str]]) -> tuple[HVACEdge, ...]:
         edges: list[HVACEdge] = []

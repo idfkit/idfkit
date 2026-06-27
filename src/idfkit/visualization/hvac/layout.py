@@ -25,13 +25,16 @@ class Layout:
     by_group: dict[tuple[str, str], list[HVACVertex]]
     ungrouped: list[HVACVertex]
     zone_ids: dict[str, str]
+    zone_clusters: dict[str, list[HVACVertex]]
 
 
 def plan_layout(graph: HVACGraph) -> Layout:
-    """Assign render ids and group vertices by primary loop/side membership."""
+    """Assign render ids and group vertices by loop/side, zone, or "other"."""
     vertex_ids = {v.key: f"n{i}" for i, v in enumerate(graph.vertices)}
     loop_ids = {loop.loop_id: f"loop{i}" for i, loop in enumerate(graph.loops)}
+    zone_ids = {z.name: f"z{i}" for i, z in enumerate(graph.zones)}
     by_group: dict[tuple[str, str], list[HVACVertex]] = {}
+    zone_clusters: dict[str, list[HVACVertex]] = {}
     ungrouped: list[HVACVertex] = []
     for v in graph.vertices:
         # Group under the first membership whose loop is present in this graph. A
@@ -40,12 +43,22 @@ def plan_layout(graph: HVACGraph) -> Layout:
         # filters that loop out we must fall through to the surviving membership
         # rather than dropping the coil into "Other equipment".
         pm = next((m for m in v.memberships if m.loop_id in loop_ids), None)
-        if pm is None:
-            ungrouped.append(v)
-        else:
+        if pm is not None:
             by_group.setdefault((pm.loop_id, pm.side), []).append(v)
-    zone_ids = {z.name: f"z{i}" for i, z in enumerate(graph.zones)}
-    return Layout(vertex_ids=vertex_ids, loop_ids=loop_ids, by_group=by_group, ungrouped=ungrouped, zone_ids=zone_ids)
+        elif v.zone is not None and v.zone in zone_ids:
+            # Zone equipment with no loop side (a fan-coil fan, an OA mixer, a VRF
+            # terminal-unit coil) is drawn inside its zone's cluster, not "Other".
+            zone_clusters.setdefault(v.zone, []).append(v)
+        else:
+            ungrouped.append(v)
+    return Layout(
+        vertex_ids=vertex_ids,
+        loop_ids=loop_ids,
+        by_group=by_group,
+        ungrouped=ungrouped,
+        zone_ids=zone_ids,
+        zone_clusters=zone_clusters,
+    )
 
 
 def truncate(text: str, limit: int) -> str:

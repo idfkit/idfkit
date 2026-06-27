@@ -778,3 +778,369 @@ def test_return_air_closes_the_loop(graph: HVACGraph) -> None:
     assert "-.->|return|" not in graph.to_mermaid(HVACDiagramConfig(show_return_air=False))
     # DOT renders it dashed too.
     assert 'style=dashed, label="return"' in graph.to_dot()
+
+
+# --- Zone equipment: fan coils, VRF, reheat coils ----------------------------
+
+
+def _fan_coil_model() -> IDFDocument:
+    """A zone served by a ZoneHVAC:FourPipeFanCoil with a water coil on a plant loop.
+
+    The fan coil is a compound container: its OA mixer, fan, and coils are separate
+    objects. The water cooling coil also sits on the chilled-water plant demand
+    branch, so it is dual-membership (plant demand) while the air-only fan and OA
+    mixer have no loop side and must cluster under their zone.
+    """
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    # --- Chilled-water plant loop carrying the fan-coil cooling coil (demand) ---
+    doc.add(
+        "PlantLoop",
+        "CHW",
+        {
+            "plant_side_branch_list_name": "CHW Supply Branches",
+            "demand_side_branch_list_name": "CHW Demand Branches",
+            "plant_side_inlet_node_name": "CHW Supply Inlet",
+            "plant_side_outlet_node_name": "CHW Supply Outlet",
+            "demand_side_inlet_node_name": "CHW Demand Inlet",
+            "demand_side_outlet_node_name": "CHW Demand Outlet",
+        },
+        validate=False,
+    )
+    doc.add("BranchList", "CHW Supply Branches", {"branches": [{"branch_name": "CHW Pump Branch"}]}, validate=False)
+    doc.add("BranchList", "CHW Demand Branches", {"branches": [{"branch_name": "FC Coil Branch"}]}, validate=False)
+    _branch(doc, "CHW Pump Branch", "Pump:VariableSpeed", "CHW Pump", "CHW Supply Inlet", "CHW Supply Outlet")
+    doc.add(
+        "Pump:VariableSpeed",
+        "CHW Pump",
+        {"inlet_node_name": "CHW Supply Inlet", "outlet_node_name": "CHW Supply Outlet"},
+        validate=False,
+    )
+    _branch(doc, "FC Coil Branch", "Coil:Cooling:Water", "FC Cooling Coil", "CHW Demand Inlet", "CHW Demand Outlet")
+    # --- Zone equipment: the fan coil and its internal train --------------------
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        "Z Equip",
+        {
+            "zone_name": "Z",
+            "zone_conditioning_equipment_list_name": "Z Equip List",
+            "zone_air_inlet_node_or_nodelist_name": "Z Inlet",
+            "zone_air_node_name": "Z Air Node",
+            "zone_return_air_node_or_nodelist_name": "Z Return",
+        },
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentList",
+        "Z Equip List",
+        {"equipment": [{"zone_equipment_object_type": "ZoneHVAC:FourPipeFanCoil", "zone_equipment_name": "Z FanCoil"}]},
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:FourPipeFanCoil",
+        "Z FanCoil",
+        {
+            "air_inlet_node_name": "Z FC Return",
+            "air_outlet_node_name": "Z Inlet",
+            "outdoor_air_mixer_object_type": "OutdoorAir:Mixer",
+            "outdoor_air_mixer_name": "Z FC OA Mixer",
+            "supply_air_fan_object_type": "Fan:OnOff",
+            "supply_air_fan_name": "Z FC Fan",
+            "cooling_coil_object_type": "Coil:Cooling:Water",
+            "cooling_coil_name": "FC Cooling Coil",
+            "heating_coil_object_type": "Coil:Heating:Water",
+            "heating_coil_name": "FC Heating Coil",
+        },
+        validate=False,
+    )
+    doc.add(
+        "OutdoorAir:Mixer",
+        "Z FC OA Mixer",
+        {
+            "mixed_air_node_name": "Z FC Mixed Air",
+            "outdoor_air_stream_node_name": "Z FC OA Inlet",
+            "relief_air_stream_node_name": "Z FC Relief",
+            "return_air_stream_node_name": "Z FC Return",
+        },
+        validate=False,
+    )
+    doc.add(
+        "Fan:OnOff",
+        "Z FC Fan",
+        {"air_inlet_node_name": "Z FC Mixed Air", "air_outlet_node_name": "Z FC Fan Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "Coil:Cooling:Water",
+        "FC Cooling Coil",
+        {
+            "air_inlet_node_name": "Z FC Fan Outlet",
+            "air_outlet_node_name": "Z FC Cooling Outlet",
+            "water_inlet_node_name": "CHW Demand Inlet",
+            "water_outlet_node_name": "CHW Demand Outlet",
+        },
+        validate=False,
+    )
+    doc.add(
+        "Coil:Heating:Water",
+        "FC Heating Coil",
+        {"air_inlet_node_name": "Z FC Cooling Outlet", "air_outlet_node_name": "Z Inlet"},
+        validate=False,
+    )
+    return doc
+
+
+def _vrf_zone_model() -> IDFDocument:
+    """A zone served by a VRF terminal unit driven by an outdoor condensing unit.
+
+    Exercises the ``_object_name`` field pairing (VRF terminal units), the bare
+    ``_node`` suffix on VRF DX-coil air nodes, and the refrigerant network linking
+    the master to each terminal unit through a ZoneTerminalUnitList.
+    """
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "AirConditioner:VariableRefrigerantFlow",
+        "VRF HP",
+        {"zone_terminal_unit_list_name": "VRF List"},
+        validate=False,
+    )
+    doc.add(
+        "ZoneTerminalUnitList",
+        "VRF List",
+        {"zone_terminal_unit_list_name": "VRF List", "terminal_units": [{"zone_terminal_unit_name": "TU1"}]},
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        "Z Equip",
+        {
+            "zone_name": "Z",
+            "zone_conditioning_equipment_list_name": "Z Equip List",
+            "zone_air_inlet_node_or_nodelist_name": "Z Inlet",
+            "zone_air_node_name": "Z Air Node",
+            "zone_return_air_node_or_nodelist_name": "Z Return",
+        },
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentList",
+        "Z Equip List",
+        {
+            "equipment": [
+                {
+                    "zone_equipment_object_type": "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+                    "zone_equipment_name": "TU1",
+                }
+            ]
+        },
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
+        "TU1",
+        {
+            "terminal_unit_air_inlet_node_name": "Z TU Return",
+            "terminal_unit_air_outlet_node_name": "Z Inlet",
+            "outside_air_mixer_object_type": "OutdoorAir:Mixer",
+            "outside_air_mixer_object_name": "TU1 OA Mixer",
+            "supply_air_fan_object_type": "Fan:OnOff",
+            "supply_air_fan_object_name": "TU1 Fan",
+            "cooling_coil_object_type": "Coil:Cooling:DX:VariableRefrigerantFlow",
+            "cooling_coil_object_name": "TU1 Cooling",
+            "heating_coil_object_type": "Coil:Heating:DX:VariableRefrigerantFlow",
+            "heating_coil_object_name": "TU1 Heating",
+        },
+        validate=False,
+    )
+    doc.add(
+        "OutdoorAir:Mixer",
+        "TU1 OA Mixer",
+        {
+            "mixed_air_node_name": "TU1 Mixed Air",
+            "outdoor_air_stream_node_name": "TU1 OA Inlet",
+            "relief_air_stream_node_name": "TU1 Relief",
+            "return_air_stream_node_name": "Z TU Return",
+        },
+        validate=False,
+    )
+    doc.add(
+        "Fan:OnOff",
+        "TU1 Fan",
+        {"air_inlet_node_name": "TU1 Mixed Air", "air_outlet_node_name": "TU1 Fan Outlet"},
+        validate=False,
+    )
+    # VRF DX coils use a bare ``_node`` suffix (no ``_name``) on their air nodes.
+    doc.add(
+        "Coil:Cooling:DX:VariableRefrigerantFlow",
+        "TU1 Cooling",
+        {"coil_air_inlet_node": "TU1 Fan Outlet", "coil_air_outlet_node": "TU1 Cooling Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "Coil:Heating:DX:VariableRefrigerantFlow",
+        "TU1 Heating",
+        {"coil_air_inlet_node": "TU1 Cooling Outlet", "coil_air_outlet_node": "Z Inlet"},
+        validate=False,
+    )
+    return doc
+
+
+def _reheat_model() -> IDFDocument:
+    """A single air loop with a VAV terminal whose reheat coil is electric (single-loop)."""
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "AirLoopHVAC",
+        "VAV",
+        {
+            "branch_list_name": "VAV Branches",
+            "supply_side_inlet_node_name": "VAV Inlet",
+            "supply_side_outlet_node_names": "VAV Supply Outlet",
+            "demand_side_inlet_node_names": "VAV Demand Inlet",
+            "demand_side_outlet_node_name": "VAV Demand Outlet",
+        },
+        validate=False,
+    )
+    doc.add("BranchList", "VAV Branches", {"branches": [{"branch_name": "VAV Branch"}]}, validate=False)
+    _branch(doc, "VAV Branch", "Fan:VariableVolume", "VAV Fan", "VAV Inlet", "VAV Supply Outlet")
+    doc.add(
+        "Fan:VariableVolume",
+        "VAV Fan",
+        {"air_inlet_node_name": "VAV Inlet", "air_outlet_node_name": "VAV Supply Outlet"},
+        validate=False,
+    )
+    doc.add(
+        "AirLoopHVAC:SupplyPath",
+        "VAV Supply Path",
+        {
+            "supply_air_path_inlet_node_name": "VAV Demand Inlet",
+            "components": [{"component_object_type": "AirLoopHVAC:ZoneSplitter", "component_name": "VAV Splitter"}],
+        },
+        validate=False,
+    )
+    doc.add(
+        "AirLoopHVAC:ZoneSplitter",
+        "VAV Splitter",
+        {"inlet_node_name": "VAV Demand Inlet", "nodes": [{"outlet_node_name": "Z Term Inlet"}]},
+        validate=False,
+    )
+    doc.add(
+        "AirTerminal:SingleDuct:VAV:Reheat",
+        "Z Terminal",
+        {
+            "air_inlet_node_name": "Z Term Inlet",
+            "air_outlet_node_name": "Z Inlet",
+            "damper_air_outlet_node_name": "Z Damper Outlet",
+            "reheat_coil_object_type": "Coil:Heating:Electric",
+            "reheat_coil_name": "Z Reheat",
+        },
+        validate=False,
+    )
+    doc.add(
+        "Coil:Heating:Electric",
+        "Z Reheat",
+        {"air_inlet_node_name": "Z Damper Outlet", "air_outlet_node_name": "Z Inlet"},
+        validate=False,
+    )
+    return doc
+
+
+def test_fan_coil_groups_under_zone() -> None:
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    graph = build_hvac_graph(_fan_coil_model())
+    # The fan-coil container box is dropped — only its children are vertices.
+    assert graph.vertex(_vkey("ZoneHVAC:FourPipeFanCoil", "Z FanCoil")) is None
+    layout = plan_layout(graph)
+    cluster = {v.key for v in layout.zone_clusters.get("Z", [])}
+    # Air-only equipment clusters under its zone, not "Other equipment".
+    assert _vkey("Fan:OnOff", "Z FC Fan") in cluster
+    assert _vkey("OutdoorAir:Mixer", "Z FC OA Mixer") in cluster
+    assert layout.ungrouped == []
+    assert "Other equipment" not in graph.to_mermaid()
+    # The water cooling coil keeps its plant membership but is still zone-tagged.
+    coil = graph.vertex(_vkey("Coil:Cooling:Water", "FC Cooling Coil"))
+    assert coil is not None
+    assert any(m.loop_id.startswith("PLANTLOOP::") for m in coil.memberships)
+    assert coil not in layout.zone_clusters.get("Z", [])
+    assert coil.zone == "Z"
+
+
+def test_vrf_refrigerant_network() -> None:
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    graph = build_hvac_graph(_vrf_zone_model())
+    # The terminal-unit container box is dropped; its DX coils became vertices
+    # despite their bare ``_node``-suffixed air-node fields.
+    assert graph.vertex(_vkey("ZoneHVAC:TerminalUnit:VariableRefrigerantFlow", "TU1")) is None
+    assert graph.vertex(_vkey("Coil:Cooling:DX:VariableRefrigerantFlow", "TU1 Cooling")) is not None
+    # The refrigerant network links the outdoor unit to each terminal DX coil.
+    master = _vkey("AirConditioner:VariableRefrigerantFlow", "VRF HP")
+    terminals = {r.terminal_key for r in graph.refrigerant_edges if r.master_key == master}
+    assert _vkey("Coil:Cooling:DX:VariableRefrigerantFlow", "TU1 Cooling") in terminals
+    assert _vkey("Coil:Heating:DX:VariableRefrigerantFlow", "TU1 Heating") in terminals
+    mermaid = graph.to_mermaid()
+    assert "-.->|refrigerant|" in mermaid
+    assert "VRF refrigerant system" in mermaid
+    assert "Other equipment" not in mermaid
+    # The DX coils group under their zone.
+    cluster = {v.key for v in plan_layout(graph).zone_clusters.get("Z", [])}
+    assert _vkey("Coil:Cooling:DX:VariableRefrigerantFlow", "TU1 Cooling") in cluster
+    # Round-trips through to_dict and subset.
+    assert graph.to_dict()["refrigerant"]
+    assert graph.subset(loop_types=["AirLoopHVAC"]).refrigerant_edges == ()
+
+
+def test_reheat_coil_attaches_to_terminal_loop() -> None:
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    graph = build_hvac_graph(_reheat_model())
+    coil = graph.vertex(_vkey("Coil:Heating:Electric", "Z Reheat"))
+    assert coil is not None
+    # The single-loop reheat coil inherits the terminal's air-loop demand side.
+    assert [m.side for m in coil.memberships] == ["demand"]
+    assert coil.memberships[0].loop_id == _vkey("AirLoopHVAC", "VAV")
+    assert coil not in plan_layout(graph).ungrouped
+    assert "Other equipment" not in graph.to_mermaid()
+
+
+def _example_files_dir() -> object:
+    """The EnergyPlus ExampleFiles directory, or None if no install is found."""
+
+    try:
+        from idfkit.simulation import find_energyplus
+
+        ex = find_energyplus().install_dir / "ExampleFiles"
+    except Exception:
+        return None
+    return ex if ex.is_dir() else None
+
+
+@pytest.mark.parametrize(
+    ("filename", "expand"),
+    [
+        ("VariableRefrigerantFlow_5Zone_wAirloop.idf", False),
+        ("5ZoneFanCoilDOASCool.idf", False),
+        ("HVACTemplate-5ZonePackagedVAV.idf", True),
+    ],
+)
+def test_real_zone_equipment_models_have_no_orphans(filename: str, expand: bool) -> None:
+    """On real zone-equipment models, nothing falls into 'Other equipment'."""
+    from pathlib import Path
+
+    from idfkit import load_idf
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    ex_dir = _example_files_dir()
+    if ex_dir is None:
+        pytest.skip("EnergyPlus ExampleFiles not available")
+    path = Path(str(ex_dir)) / filename
+    if not path.exists():
+        pytest.skip(f"{filename} not bundled with this EnergyPlus version")
+    graph = build_hvac_graph(load_idf(path), expand=expand)
+    # The only acceptable "ungrouped" vertices are VRF outdoor units, which render
+    # in the dedicated refrigerant cluster rather than "Other equipment".
+    masters = {r.master_key for r in graph.refrigerant_edges}
+    assert [v.key for v in plan_layout(graph).ungrouped if v.key not in masters] == []
+    assert "Other equipment" not in graph.to_mermaid()

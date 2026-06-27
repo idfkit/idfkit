@@ -143,4 +143,18 @@ mermaid = hvac_to_mermaid(doc)
 # whole building to a one-node-per-loop/zone overview.
 one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
 overview = graph.overview_mermaid()
+
+# Zone equipment (fan coils, PTACs, VRF terminal units) is expanded into its
+# internal OA-mixer/fan/coil train and grouped under the zone it serves — not
+# dumped into a flat "Other equipment" box. A water coil shared with a plant loop
+# keeps its plant membership; the air-only fan and mixer cluster with the zone.
+for vertex in graph.vertices:
+    if vertex.zone is not None:
+        print(f"{vertex.obj_type} serves zone {vertex.zone}")
+
+# Variable-refrigerant-flow systems couple their outdoor unit to each terminal
+# unit through a refrigerant network (a named ZoneTerminalUnitList), not through
+# air/water nodes — so those links are tracked separately and drawn dashed.
+for ref in graph.refrigerant_edges:
+    print(f"{ref.master_key} -> {ref.terminal_key}")
 # --8<-- [end:diagram]

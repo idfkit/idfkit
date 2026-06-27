@@ -140,6 +140,17 @@ node N feeds the component whose *inlet* is node N. A water coil that sits on bo
 an air supply branch and a plant demand branch becomes a single graph vertex with
 both loop memberships.
 
+Compound units are expanded rather than drawn as opaque boxes. An
+`AirLoopHVAC:UnitarySystem` and a zone forced-air unit (`ZoneHVAC:FourPipeFanCoil`,
+`ZoneHVAC:PackagedTerminalAirConditioner`, `ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`,
+…) are each replaced by their internal OA-mixer/fan/coil train, so a packaged unit
+reads as its sequence of components. Zone equipment groups under the zone it serves
+instead of a flat "Other equipment" bin, and a VRF outdoor unit is linked to its
+terminal units through the refrigerant network (`graph.refrigerant_edges`, drawn as
+dashed `refrigerant` edges) since that coupling is a named terminal-unit list, not a
+node connection. The expandable-container set is driven by the schema object group
+(`"Zone HVAC Forced Air Units"`), so new zone unit types are picked up automatically.
+
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.

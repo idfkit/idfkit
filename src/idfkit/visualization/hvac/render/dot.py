@@ -54,13 +54,25 @@ def _loop_cluster(loop_id: str, name: str, loop_type: str, layout: Layout, confi
     return out
 
 
-def _zone_cluster(graph: HVACGraph, layout: Layout) -> list[str]:
+def _zone_box(z_name: str, zid: str) -> str:
+    return f'{zid} [label="Zone: {_esc(z_name)}", shape=box, fillcolor="{ZONE_FILL}", color="{ZONE_STROKE}"];'
+
+
+def _zone_cluster(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     out = ["  subgraph cluster_zones {", '    label="Zones"; style=rounded; color="#888888";']
     for z in graph.zones:
-        out.append(
-            f'    {layout.zone_ids[z.name]} [label="Zone: {_esc(z.name)}", '
-            f'shape=box, fillcolor="{ZONE_FILL}", color="{ZONE_STROKE}"];'
-        )
+        zid = layout.zone_ids[z.name]
+        equip = layout.zone_clusters.get(z.name, [])
+        if equip:
+            # Nest the zone's own equipment with the zone box so a zonal system
+            # (fan coil, VRF terminal unit) reads as one cluster.
+            out.append(f"    subgraph cluster_{zid} {{")
+            out.append(f'      label="{_esc(z.name)}"; style=rounded; color="#888888";')
+            out += _vertices_block(equip, "      ", layout, config.max_label_length)
+            out.append("      " + _zone_box(z.name, zid))
+            out.append("    }")
+        else:
+            out.append("    " + _zone_box(z.name, zid))
     out.append("  }")
     return out
 
@@ -90,7 +102,17 @@ def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[
             continue
         label = f' [label="{_esc(e.via_node)}"]' if config.show_node_labels else ""
         out.append(f"  {src} -> {dst}{label};")
-    return out + _zone_edges(graph, layout, config)
+    return out + _zone_edges(graph, layout, config) + _refrigerant_edges(graph, layout)
+
+
+def _refrigerant_edges(graph: HVACGraph, layout: Layout) -> list[str]:
+    out: list[str] = []
+    for r in graph.refrigerant_edges:
+        src = layout.vertex_ids.get(r.master_key)
+        dst = layout.vertex_ids.get(r.terminal_key)
+        if src is not None and dst is not None:
+            out.append(f'  {src} -> {dst} [style=dotted, color="#c9785d", label="refrigerant"];')
+    return out
 
 
 def render_dot(graph: HVACGraph, config: HVACDiagramConfig) -> str:
@@ -109,13 +131,21 @@ def render_dot(graph: HVACGraph, config: HVACDiagramConfig) -> str:
     layout = plan_layout(graph)
     for loop in graph.loops:
         lines += _loop_cluster(loop.loop_id, loop.name, loop.loop_type, layout, config)
-    if layout.ungrouped:
+    masters = {r.master_key for r in graph.refrigerant_edges}
+    other = [v for v in layout.ungrouped if v.key not in masters]
+    refrigerant_masters = [v for v in layout.ungrouped if v.key in masters]
+    if refrigerant_masters:
+        lines.append("  subgraph cluster_refrigerant {")
+        lines.append('    label="VRF refrigerant system"; style=rounded; color="#888888";')
+        lines += _vertices_block(refrigerant_masters, "    ", layout, config.max_label_length)
+        lines.append("  }")
+    if other:
         lines.append("  subgraph cluster_other {")
         lines.append('    label="Other equipment"; style=rounded; color="#888888";')
-        lines += _vertices_block(layout.ungrouped, "    ", layout, config.max_label_length)
+        lines += _vertices_block(other, "    ", layout, config.max_label_length)
         lines.append("  }")
     if graph.zones:
-        lines += _zone_cluster(graph, layout)
+        lines += _zone_cluster(graph, layout, config)
     lines += _edges(graph, layout, config)
     lines.append("}")
     return "\n".join(lines)

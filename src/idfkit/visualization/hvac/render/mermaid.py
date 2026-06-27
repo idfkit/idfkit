@@ -62,10 +62,20 @@ def _loop_subgraph(
     return out
 
 
-def _zone_subgraph(graph: HVACGraph, layout: Layout) -> list[str]:
+def _zone_subgraph(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig, used: set[Category]) -> list[str]:
     out = ['  subgraph zones["Zones"]']
     for z in graph.zones:
-        out.append(f'    {layout.zone_ids[z.name]}["Zone: {_esc(z.name)}"]:::zone')
+        zid = layout.zone_ids[z.name]
+        equip = layout.zone_clusters.get(z.name, [])
+        if equip:
+            # Wrap the zone's own equipment (fan coil train, VRF terminal unit, ...)
+            # together with the zone box so a zonal system reads as one cluster.
+            out.append(f'    subgraph {zid}_grp["{_esc(z.name)}"]')
+            out += _vertices_block(equip, "      ", layout, config.max_label_length, used)
+            out.append(f'      {zid}["Zone: {_esc(z.name)}"]:::zone')
+            out.append("    end")
+        else:
+            out.append(f'    {zid}["Zone: {_esc(z.name)}"]:::zone')
     out.append("  end")
     return out
 
@@ -97,7 +107,17 @@ def _edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[
             out.append(f'  {src} -->|"{_esc(e.via_node)}"| {dst}')
         else:
             out.append(f"  {src} --> {dst}")
-    return out + _zone_edges(graph, layout, config)
+    return out + _zone_edges(graph, layout, config) + _refrigerant_edges(graph, layout)
+
+
+def _refrigerant_edges(graph: HVACGraph, layout: Layout) -> list[str]:
+    out: list[str] = []
+    for r in graph.refrigerant_edges:
+        src = layout.vertex_ids.get(r.master_key)
+        dst = layout.vertex_ids.get(r.terminal_key)
+        if src is not None and dst is not None:
+            out.append(f"  {src} -.->|refrigerant| {dst}")
+    return out
 
 
 def _classdefs(used: set[Category], has_zones: bool) -> list[str]:
@@ -126,12 +146,19 @@ def render_mermaid(graph: HVACGraph, config: HVACDiagramConfig) -> str:
 
     for loop in graph.loops:
         lines += _loop_subgraph(loop.loop_id, loop.name, loop.loop_type, layout, config, used)
-    if layout.ungrouped:
+    masters = {r.master_key for r in graph.refrigerant_edges}
+    other = [v for v in layout.ungrouped if v.key not in masters]
+    refrigerant_masters = [v for v in layout.ungrouped if v.key in masters]
+    if refrigerant_masters:
+        lines.append('  subgraph refrigerant["VRF refrigerant system"]')
+        lines += _vertices_block(refrigerant_masters, "    ", layout, config.max_label_length, used)
+        lines.append("  end")
+    if other:
         lines.append('  subgraph other["Other equipment"]')
-        lines += _vertices_block(layout.ungrouped, "    ", layout, config.max_label_length, used)
+        lines += _vertices_block(other, "    ", layout, config.max_label_length, used)
         lines.append("  end")
     if graph.zones:
-        lines += _zone_subgraph(graph, layout)
+        lines += _zone_subgraph(graph, layout, config, used)
     lines += _edges(graph, layout, config)
     lines += _classdefs(used, bool(graph.zones))
     return "\n".join(lines)
