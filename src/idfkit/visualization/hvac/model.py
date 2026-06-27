@@ -130,11 +130,6 @@ class HVACVertex:
     memberships: tuple[LoopMembership, ...]
     zone: str | None = None
 
-    @property
-    def loop_ids(self) -> tuple[str, ...]:
-        """Loop ids this vertex belongs to, in membership order."""
-        return tuple(m.loop_id for m in self.memberships)
-
 
 @dataclass(frozen=True)
 class HVACEdge:
