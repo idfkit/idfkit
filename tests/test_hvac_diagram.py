@@ -1101,6 +1101,50 @@ def test_vrf_refrigerant_network(master_type: str) -> None:
     assert graph.subset(loop_types=["AirLoopHVAC"]).refrigerant_edges == ()
 
 
+def _complex_graph() -> HVACGraph:
+    """A graph that trips the complexity heuristic (13 zones) without a huge fixture."""
+    from idfkit.visualization.hvac.model import HVACVertex, HVACZone
+
+    vertex = HVACVertex(
+        key="OTHER::A", obj_type="Fan:OnOff", name="A", category="fan", inlet_nodes=(), outlet_nodes=(), memberships=()
+    )
+    zones = tuple(
+        HVACZone(name=f"Z{i}", air_node=None, inlet_nodes=(), exhaust_nodes=(), return_nodes=(), equipment_keys=())
+        for i in range(13)
+    )
+    return HVACGraph(version=V, vertices=(vertex,), zones=zones)
+
+
+def test_is_complex_heuristic() -> None:
+    assert not build_hvac_graph(_air_and_plant_model()).is_complex
+    assert _complex_graph().is_complex
+
+
+def test_elk_layout_frontmatter() -> None:
+    graph = build_hvac_graph(_air_and_plant_model())
+    # Default (dagre) emits no frontmatter; elk prepends the layout directive.
+    assert not graph.to_mermaid().startswith("---")
+    elk = graph.to_mermaid(HVACDiagramConfig(layout="elk"))
+    assert elk.startswith("---\nconfig:\n  layout: elk\n---\nflowchart")
+
+
+def test_complex_repr_falls_back_to_overview() -> None:
+    # A complex model's inline Jupyter preview shows the overview, not a component
+    # flowchart the default layout cannot render.
+    graph = _complex_graph()
+    md = graph._repr_markdown_()
+    assert "showing the building overview" in md
+    assert "```mermaid" in md
+    # The overview, not the full component view (which would carry the hint comment).
+    assert "%%" not in md
+
+
+def test_complex_to_mermaid_carries_layout_hint() -> None:
+    mer = _complex_graph().to_mermaid()
+    assert "%%" in mer
+    assert 'layout="elk"' in mer
+
+
 def test_reheat_coil_attaches_to_terminal_loop() -> None:
     from idfkit.visualization.hvac.layout import plan_layout
 

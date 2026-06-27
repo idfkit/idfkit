@@ -423,12 +423,14 @@ graph.to_mermaid(HVACDiagramConfig(direction="TB", show_node_labels=False))
 | `group_by_side` | `True` | Nest supply/demand subgraphs inside each loop |
 | `show_return_air` | `True` | Draw the return leg (zone → mixer) as a dashed edge |
 | `max_label_length` | 40 | Truncate long component names in labels |
+| `layout` | `"dagre"` | Mermaid layout engine: `"dagre"` (universal) or `"elk"` (needed for large multi-loop models) |
 
 ### Large models
 
 A whole-building flowchart can run to hundreds of nodes (a hospital or
-high-rise has dozens of loops), which no Mermaid/Graphviz renderer draws
-legibly. Two tools keep it readable:
+high-rise has dozens of loops), which the default Mermaid/Graphviz layout
+(dagre) cannot draw legibly — and with dozens of subgraphs it fails to render
+at all. Three tools keep it readable:
 
 ```python
 graph = build_hvac_graph(model)
@@ -440,10 +442,15 @@ graph.subset(loop_types=["PlantLoop", "CondenserLoop"]).to_dot()
 # Or collapse the whole building to one node per loop and per zone, with
 # plant→air-loop coupling and the zones each loop serves:
 graph.overview_mermaid()
+
+# Or render the full detail with the ELK layout engine, which handles many
+# subgraphs (needs an ELK-capable Mermaid viewer — GitHub, mermaid.live, mmdc):
+graph.to_mermaid(HVACDiagramConfig(layout="elk"))
 ```
 
-`to_mermaid()` also prepends a `%%` hint pointing at these when a model exceeds
-~150 components.
+When a model is complex (`graph.is_complex`), `to_mermaid()` prepends a `%%` hint
+pointing at these, and the Jupyter inline preview (`_repr_markdown_`) falls back to
+the overview automatically so it never emits a diagram the notebook cannot render.
 
 ### Functions
 

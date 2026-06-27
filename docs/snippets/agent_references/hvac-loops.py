@@ -139,10 +139,13 @@ data = graph.to_dict()
 # Convenience: go straight from a document, skipping the explicit graph.
 mermaid = hvac_to_mermaid(doc)
 
-# Large models (hundreds of components): filter to one loop, or collapse the
-# whole building to a one-node-per-loop/zone overview.
+# Large models: a whole-building flowchart has so many subgraphs that Mermaid's
+# default dagre layout fails to render it. graph.is_complex flags these. Filter to
+# one loop, collapse to a one-node-per-loop/zone overview, or render the full
+# detail with the ELK layout engine (needs an ELK-capable Mermaid viewer).
 one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
 overview = graph.overview_mermaid()
+detailed = graph.to_mermaid(HVACDiagramConfig(layout="elk"))
 
 # Zone equipment (fan coils, PTACs, VRF terminal units) is expanded into its
 # internal OA-mixer/fan/coil train and grouped under the zone it serves — not

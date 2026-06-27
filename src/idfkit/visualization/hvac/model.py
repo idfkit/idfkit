@@ -65,6 +65,11 @@ class HVACDiagramConfig:
         include_controls: Reserved — controls and setpoint managers are excluded
             from the flow graph regardless (kept for forward compatibility).
         max_label_length: Truncate component names longer than this in labels.
+        layout: Mermaid layout engine. ``"dagre"`` (default) is universally
+            supported but its cluster layout fails on large multi-loop models
+            (dozens of subgraphs). ``"elk"`` handles those reliably but requires
+            the viewer to have the Mermaid ELK plugin (GitHub, mermaid.live, and
+            ``mmdc`` do; older embedded renderers may not).
     """
 
     direction: Literal["LR", "RL", "TB", "BT"] = "LR"
@@ -73,6 +78,7 @@ class HVACDiagramConfig:
     show_return_air: bool = True
     include_controls: bool = False
     max_label_length: int = 40
+    layout: Literal["dagre", "elk"] = "dagre"
 
 
 @dataclass(frozen=True)
@@ -220,6 +226,17 @@ class HVACGraph:
         """True when no HVAC components were found."""
         return not self.vertices
 
+    @property
+    def is_complex(self) -> bool:
+        """True when the full component diagram is too large to lay out reliably.
+
+        The Mermaid/Graphviz default (dagre) layout fails on flowcharts with many
+        subgraphs — a whole-building model with dozens of loops and zones. Use
+        :meth:`overview_mermaid`, :meth:`subset`, or ``HVACDiagramConfig(layout="elk")``
+        for those; :meth:`_repr_markdown_` falls back to the overview automatically.
+        """
+        return len(self.vertices) > 80 or len(self.loops) > 5 or len(self.zones) > 12
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable view of the graph."""
         return {
@@ -336,5 +353,19 @@ class HVACGraph:
         )
 
     def _repr_markdown_(self) -> str:
-        """Render as a Mermaid code fence so the graph displays in Jupyter."""
+        """Render as a Mermaid code fence so the graph displays in Jupyter.
+
+        For a complex model the full component flowchart overruns the default
+        Mermaid (dagre) layout, so the inline preview falls back to the building
+        overview with a pointer to the detailed views, rather than emitting a
+        diagram the notebook cannot render.
+        """
+        if self.is_complex:
+            note = (
+                f"> **{len(self.vertices)} components across {len(self.loops)} loops, "
+                f"{len(self.zones)} zones** — showing the building overview. "
+                "For the full diagram use `graph.subset(loop_names=[...])`, or "
+                '`graph.to_mermaid(HVACDiagramConfig(layout="elk"))` in an ELK-capable viewer.'
+            )
+            return f"{note}\n\n```mermaid\n{self.overview_mermaid()}\n```"
         return f"```mermaid\n{self.to_mermaid()}\n```"
