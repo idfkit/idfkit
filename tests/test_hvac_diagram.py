@@ -890,17 +890,18 @@ def _fan_coil_model() -> IDFDocument:
     return doc
 
 
-def _vrf_zone_model() -> IDFDocument:
+def _vrf_zone_model(master_type: str = "AirConditioner:VariableRefrigerantFlow") -> IDFDocument:
     """A zone served by a VRF terminal unit driven by an outdoor condensing unit.
 
     Exercises the ``_object_name`` field pairing (VRF terminal units), the bare
     ``_node`` suffix on VRF DX-coil air nodes, and the refrigerant network linking
-    the master to each terminal unit through a ZoneTerminalUnitList.
+    the master to each terminal unit through a ZoneTerminalUnitList. *master_type*
+    selects the outdoor-unit variant (base vs. FluidTemperatureControl).
     """
     doc = new_document(V)
     doc.add("Zone", "Z", validate=False)
     doc.add(
-        "AirConditioner:VariableRefrigerantFlow",
+        master_type,
         "VRF HP",
         {"zone_terminal_unit_list_name": "VRF List"},
         validate=False,
@@ -1067,16 +1068,24 @@ def test_fan_coil_groups_under_zone() -> None:
     assert coil.zone == "Z"
 
 
-def test_vrf_refrigerant_network() -> None:
+@pytest.mark.parametrize(
+    "master_type",
+    [
+        "AirConditioner:VariableRefrigerantFlow",
+        "AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl",
+    ],
+)
+def test_vrf_refrigerant_network(master_type: str) -> None:
     from idfkit.visualization.hvac.layout import plan_layout
 
-    graph = build_hvac_graph(_vrf_zone_model())
+    graph = build_hvac_graph(_vrf_zone_model(master_type))
     # The terminal-unit container box is dropped; its DX coils became vertices
     # despite their bare ``_node``-suffixed air-node fields.
     assert graph.vertex(_vkey("ZoneHVAC:TerminalUnit:VariableRefrigerantFlow", "TU1")) is None
     assert graph.vertex(_vkey("Coil:Cooling:DX:VariableRefrigerantFlow", "TU1 Cooling")) is not None
-    # The refrigerant network links the outdoor unit to each terminal DX coil.
-    master = _vkey("AirConditioner:VariableRefrigerantFlow", "VRF HP")
+    # The refrigerant network links the outdoor unit (any VRF variant) to each
+    # terminal DX coil.
+    master = _vkey(master_type, "VRF HP")
     terminals = {r.terminal_key for r in graph.refrigerant_edges if r.master_key == master}
     assert _vkey("Coil:Cooling:DX:VariableRefrigerantFlow", "TU1 Cooling") in terminals
     assert _vkey("Coil:Heating:DX:VariableRefrigerantFlow", "TU1 Heating") in terminals

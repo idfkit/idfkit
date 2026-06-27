@@ -135,11 +135,6 @@ class HVACVertex:
         """Loop ids this vertex belongs to, in membership order."""
         return tuple(m.loop_id for m in self.memberships)
 
-    @property
-    def primary_membership(self) -> LoopMembership | None:
-        """The membership used to place this vertex in a rendered subgraph."""
-        return self.memberships[0] if self.memberships else None
-
 
 @dataclass(frozen=True)
 class HVACEdge:

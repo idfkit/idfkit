@@ -90,7 +90,9 @@ _LOOP_SPECS: dict[LoopType, dict[str, str | None]] = {
 
 _LOOP_ORDER: dict[LoopType, int] = {"AirLoopHVAC": 0, "PlantLoop": 1, "CondenserLoop": 2}
 
-_VRF_MASTER_TYPE = "AirConditioner:VariableRefrigerantFlow"
+# Every VRF outdoor unit type shares this prefix: the base unit plus the
+# FluidTemperatureControl and FluidTemperatureControl:HR (heat-recovery) variants.
+_VRF_MASTER_PREFIX = "AirConditioner:VariableRefrigerantFlow"
 _VRF_TERMINAL_TYPE = "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow"
 #: VRF terminal-unit DX coils (canonical schema names) — the refrigerant-bearing
 #: children the outdoor unit drives.
@@ -551,13 +553,12 @@ class _GraphBuilder:
         ``ZoneTerminalUnitList``, not through air/water nodes — so it is tracked as
         a separate refrigerant edge from the master to each terminal's DX coil.
         """
-        if _VRF_MASTER_TYPE not in self.present:
-            return
-        for ac in self._objs(_VRF_MASTER_TYPE):
-            master = self._vertex(_VRF_MASTER_TYPE, ac.name)
-            for tu_name in self._vrf_terminal_unit_names(ac.data.get("zone_terminal_unit_list_name")):
-                for coil_key in self._vrf_terminal_coils(tu_name):
-                    self.refrigerant_links.append((master.key, coil_key))
+        for master_type in (t for t in self.present if t.startswith(_VRF_MASTER_PREFIX)):
+            for ac in self._objs(master_type):
+                master = self._vertex(master_type, ac.name)
+                for tu_name in self._vrf_terminal_unit_names(ac.data.get("zone_terminal_unit_list_name")):
+                    for coil_key in self._vrf_terminal_coils(tu_name):
+                        self.refrigerant_links.append((master.key, coil_key))
 
     def _vrf_terminal_unit_names(self, list_name: object) -> list[str]:
         # ZoneTerminalUnitList's identifier is the ``zone_terminal_unit_list_name``
@@ -577,21 +578,14 @@ class _GraphBuilder:
         return names
 
     def _vrf_terminal_coils(self, tu_name: str) -> list[str]:
-        """Vertex keys of a VRF terminal unit's DX coils (or any child as fallback)."""
+        """Vertex keys of a VRF terminal unit's DX cooling/heating coils."""
         if _VRF_TERMINAL_TYPE not in self.present:
             return []
         tu = self.doc.get_collection(_VRF_TERMINAL_TYPE).get(tu_name)
         if tu is None:
             return []
-        children = [(ct, cn) for ct, cn in child_component_refs(tu, self.schema)]
-        coils = [_vkey(ct, cn) for ct, cn in children if ct in _VRF_COIL_TYPES]
-        keys = [k for k in coils if self.vertices.get(k) is not None]
-        if keys:
-            return keys
-        # FluidTemperatureControl coils have no air nodes (no vertex); fall back to
-        # the first child that does exist so the refrigerant link still draws.
-        fallback = next((_vkey(ct, cn) for ct, cn in children if self.vertices.get(_vkey(ct, cn)) is not None), None)
-        return [fallback] if fallback is not None else []
+        coils = (_vkey(ct, cn) for ct, cn in child_component_refs(tu, self.schema) if ct in _VRF_COIL_TYPES)
+        return [k for k in coils if self.vertices.get(k) is not None]
 
     def _pass_air_demand(self) -> None:
         air_loops = [lb for lb in self.loops if lb.is_air]
