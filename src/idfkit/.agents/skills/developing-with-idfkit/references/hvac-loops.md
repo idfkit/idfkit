@@ -216,12 +216,37 @@ mermaid = hvac_to_mermaid(doc)
 # whole building to a one-node-per-loop/zone overview.
 one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
 overview = graph.overview_mermaid()
+
+# Zone equipment (fan coils, PTACs, VRF terminal units) is expanded into its
+# internal OA-mixer/fan/coil train and grouped under the zone it serves — not
+# dumped into a flat "Other equipment" box. A water coil shared with a plant loop
+# keeps its plant membership; the air-only fan and mixer cluster with the zone.
+for vertex in graph.vertices:
+    if vertex.zone is not None:
+        print(f"{vertex.obj_type} serves zone {vertex.zone}")
+
+# Variable-refrigerant-flow systems couple their outdoor unit to each terminal
+# unit through a refrigerant network (a named ZoneTerminalUnitList), not through
+# air/water nodes — so those links are tracked separately and drawn dashed.
+for ref in graph.refrigerant_edges:
+    print(f"{ref.master_key} -> {ref.terminal_key}")
 ```
 
 Connectivity follows the same rule EnergyPlus uses: a component whose *outlet* is
 node N feeds the component whose *inlet* is node N. A water coil that sits on both
 an air supply branch and a plant demand branch becomes a single graph vertex with
 both loop memberships.
+
+Compound units are expanded rather than drawn as opaque boxes. An
+`AirLoopHVAC:UnitarySystem` and a zone forced-air unit (`ZoneHVAC:FourPipeFanCoil`,
+`ZoneHVAC:PackagedTerminalAirConditioner`, `ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`,
+…) are each replaced by their internal OA-mixer/fan/coil train, so a packaged unit
+reads as its sequence of components. Zone equipment groups under the zone it serves
+instead of a flat "Other equipment" bin, and a VRF outdoor unit is linked to its
+terminal units through the refrigerant network (`graph.refrigerant_edges`, drawn as
+dashed `refrigerant` edges) since that coupling is a named terminal-unit list, not a
+node connection. The expandable-container set is driven by the schema object group
+(`"Zone HVAC Forced Air Units"`), so new zone unit types are picked up automatically.
 
 ## Related
 
