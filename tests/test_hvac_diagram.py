@@ -731,6 +731,21 @@ def test_subset_by_type(graph: HVACGraph) -> None:
     assert plant.vertex(_vkey("Fan:VariableVolume", "DOAS Supply Fan")) is None
 
 
+def test_subset_keeps_dual_loop_vertex_in_kept_loop(graph: HVACGraph) -> None:
+    # After dropping the air loop, the water coil must group under the surviving
+    # plant loop's demand side — not fall through to "Other equipment".
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    plant = graph.subset(loop_types=["PlantLoop"])
+    coil = plant.vertex(_vkey("Coil:Cooling:Water", "DOAS Cooling Coil"))
+    assert coil is not None
+    layout = plan_layout(plant)
+    assert coil not in layout.ungrouped
+    grouped = {v for vs in layout.by_group.values() for v in vs}
+    assert coil in grouped
+    assert "Other equipment" not in plant.to_mermaid()
+
+
 def test_subset_by_name(graph: HVACGraph) -> None:
     air = graph.subset(loop_names=["DOAS"])
     assert [loop.name for loop in air.loops] == ["DOAS"]

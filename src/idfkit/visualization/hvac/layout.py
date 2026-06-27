@@ -1,10 +1,12 @@
 """Shared layout planning for the Mermaid and DOT renderers.
 
 Assigns stable, deterministic render ids and groups each vertex into the loop/side
-subgraph it should be drawn in (its *primary* membership). A vertex that belongs
-to more than one loop — a water coil on an air supply branch and a plant demand
-branch — is drawn once, in its first membership; edges to its other loops simply
-cross subgraph boundaries.
+subgraph it should be drawn in. A vertex that belongs to more than one loop — a
+water coil on an air supply branch and a plant demand branch — is drawn once, in
+the first of its memberships whose loop is present in the graph; edges to its
+other loops simply cross subgraph boundaries. Falling through to the first
+*present* membership (rather than always the first) keeps dual-loop components
+inside a kept loop after ``HVACGraph.subset`` filters the other loop out.
 """
 
 from __future__ import annotations
@@ -32,8 +34,13 @@ def plan_layout(graph: HVACGraph) -> Layout:
     by_group: dict[tuple[str, str], list[HVACVertex]] = {}
     ungrouped: list[HVACVertex] = []
     for v in graph.vertices:
-        pm = v.primary_membership
-        if pm is None or pm.loop_id not in loop_ids:
+        # Group under the first membership whose loop is present in this graph. A
+        # dual-loop vertex (e.g. a water coil on an air supply branch *and* a plant
+        # demand branch) lists the air loop first, so after subset(loop_types=[...])
+        # filters that loop out we must fall through to the surviving membership
+        # rather than dropping the coil into "Other equipment".
+        pm = next((m for m in v.memberships if m.loop_id in loop_ids), None)
+        if pm is None:
             ungrouped.append(v)
         else:
             by_group.setdefault((pm.loop_id, pm.side), []).append(v)

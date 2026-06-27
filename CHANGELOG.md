@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - HVAC system diagrams reconstructed directly from an `IDFDocument` — the IDF-native analogue of the EnergyPlus HVAC-Diagram utility, with no simulation run required. `idfkit.visualization.build_hvac_graph(doc)` walks `AirLoopHVAC`/`PlantLoop`/`CondenserLoop` definitions, their branch lists, connectors, supply/return paths, and zone equipment to build a directed `HVACGraph` using the same node-name connectivity rule as `eplusout.bnd` (a component whose outlet is node N feeds the component whose inlet is node N). A water coil shared between an air supply branch and a plant demand branch resolves to a single vertex carrying both loop memberships. Compound container components (`AirLoopHVAC:UnitarySystem`, the unitary heat-pump/heat-cool family, and `CoilSystem:Cooling:*`/`CoilSystem:Heating:DX`) are expanded into their internal fan/coil train so a packaged unit reads as its sequence of components inside the loop rather than as an opaque box that duplicates the flow. Render to a Mermaid flowchart (`to_mermaid()` / `hvac_to_mermaid()`), Graphviz DOT (`to_dot()` / `hvac_to_dot()`), or a JSON-serializable dict (`to_dict()` / `to_json()`); output is deterministic. The document must be expanded first — `build_hvac_graph` raises the new `HVACDiagramError` when `HVACTemplate:*` objects remain, unless `expand=True` is passed. Building is total otherwise, recording dangling-node and unconnected-component issues as `HVACWarning`s on the graph. For large models (a hospital or high-rise has dozens of loops and hundreds of components), `HVACGraph.subset(loop_names=..., loop_types=...)` filters the graph to selected loops and `HVACGraph.overview_mermaid()` collapses the whole building to one node per loop and zone (with plant→air-loop coupling and the zones each loop serves); the component-level Mermaid render also prepends a hint to these above ~150 components. The return-air leg (zone → return mixer/plenum) is drawn as a dashed edge so an air loop reads as a closed supply/return circuit (toggle with `HVACDiagramConfig(show_return_air=False)`). Pure stdlib, zero new dependencies.
 
+## [0.14.0] - 2026-06-11
+
 ### Added
 
 - `SimulationResult` is now a context manager and exposes `SimulationResult.close()`. Closing releases the SQLite connection opened lazily by `result.sql` (and deletes the temporary copy made for remote file system backends). ([#170](https://github.com/idfkit/idfkit/pull/170))
@@ -293,7 +295,6 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[unreleased]: https://github.com/idfkit/idfkit/compare/v0.13.0...HEAD
 [Unreleased]: https://github.com/idfkit/idfkit/compare/v0.14.0...HEAD
 [0.14.0]: https://github.com/idfkit/idfkit/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/idfkit/idfkit/compare/v0.12.2...v0.13.0
