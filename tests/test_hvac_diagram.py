@@ -816,6 +816,76 @@ def test_subset_loop_types_is_case_insensitive() -> None:
     assert len(g.subset(loop_types=["AIRLOOPHVAC"]).loops) == 1
 
 
+def test_fluid_for_field_air_cooled_condenser() -> None:
+    # "condenser air" is an outdoor-air stream, not condenser water.
+    from idfkit.visualization.hvac.classify import fluid_for_field
+
+    assert fluid_for_field("condenser_air_inlet_node_name") == "air"
+    assert fluid_for_field("condenser_water_inlet_node_name") == "water"
+    assert fluid_for_field("condenser_inlet_node_name") == "water"
+    assert fluid_for_field("chilled_water_inlet_node_name") == "water"
+
+
+def test_mermaid_escape_handles_pipe() -> None:
+    # `|` delimits Mermaid edge labels, so it must be escaped in node names.
+    from idfkit.visualization.hvac.render._common import mermaid_escape
+
+    out = mermaid_escape("Air|Node")
+    assert "|" not in out
+    assert "&#124;" in out
+
+
+def test_loop_with_no_vertices_emits_no_empty_subgraph() -> None:
+    import re
+
+    from idfkit.visualization.hvac.model import HVACLoop, HVACVertex
+
+    stray = HVACVertex("FAN:ONOFF::X", "Fan:OnOff", "X", "fan", (), (), ())
+    empty_loop = HVACLoop("L", "Lonely", "AirLoopHVAC", (), ())
+    g = HVACGraph(version=V, loops=(empty_loop,), vertices=(stray,))
+    assert re.search(r"subgraph[^\n]*\n\s*end", g.to_mermaid()) is None
+    assert re.search(r"subgraph[^\n]*\{\s*\}", g.to_dot()) is None
+
+
+def test_empty_container_leaves_no_dangling_zone_equipment() -> None:
+    # A forced-air unit that expands to no vertices must not leave a zone
+    # equipment_key pointing at the dropped container box.
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        "Z Equip",
+        {
+            "zone_name": "Z",
+            "zone_conditioning_equipment_list_name": "Z Equip List",
+            "zone_air_inlet_node_or_nodelist_name": "Z Inlet",
+            "zone_air_node_name": "Z Air Node",
+            "zone_return_air_node_or_nodelist_name": "Z Return",
+        },
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentList",
+        "Z Equip List",
+        {"equipment": [{"zone_equipment_object_type": "ZoneHVAC:FourPipeFanCoil", "zone_equipment_name": "Empty FC"}]},
+        validate=False,
+    )
+    doc.add("ZoneHVAC:FourPipeFanCoil", "Empty FC", {}, validate=False)
+    g = build_hvac_graph(doc)
+    vkeys = {v.key for v in g.vertices}
+    assert not [k for z in g.zones for k in z.equipment_keys if k not in vkeys]
+
+
+def test_split_ungrouped_separates_refrigerant_master() -> None:
+    from idfkit.visualization.hvac.layout import plan_layout, split_ungrouped
+
+    g = build_hvac_graph(_vrf_zone_model())
+    other, masters = split_ungrouped(g, plan_layout(g))
+    master = _vkey("AirConditioner:VariableRefrigerantFlow", "VRF HP")
+    assert master in {v.key for v in masters}
+    assert master not in {v.key for v in other}
+
+
 def test_overview_mermaid(graph: HVACGraph) -> None:
     ov = graph.overview_mermaid()
     assert ov.startswith("flowchart")

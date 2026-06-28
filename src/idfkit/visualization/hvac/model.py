@@ -46,7 +46,6 @@ WarningKind = Literal[
     "unconnected_component",
     "missing_branch",
     "missing_object",
-    "unsupported",
 ]
 
 

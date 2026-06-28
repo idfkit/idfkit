@@ -10,16 +10,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..layout import Layout, plan_layout, truncate, zone_outflow_targets
+from ..layout import Layout, plan_layout, split_ungrouped, truncate, zone_outflow_targets
 from ..style import TEXT_COLOR, ZONE_FILL, ZONE_STROKE, style_for
+from ._common import mermaid_escape as _esc
 
 if TYPE_CHECKING:
     from ..model import Category, HVACDiagramConfig, HVACGraph, HVACVertex
-
-
-def _esc(text: str) -> str:
-    """Escape text for a quoted Mermaid label."""
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _node_def(vertex: HVACVertex, node_id: str, limit: int) -> str:
@@ -43,19 +39,22 @@ def _loop_subgraph(
     loop_id: str, name: str, loop_type: str, layout: Layout, config: HVACDiagramConfig, used: set[Category]
 ) -> list[str]:
     sg = layout.loop_ids[loop_id]
-    out = [f'  subgraph {sg}["{_esc(name)} · {loop_type}"]']
+    body: list[str] = []
     for side in ("supply", "demand"):
         verts = layout.by_group.get((loop_id, side), [])
         if not verts:
             continue
         if config.group_by_side:
-            out.append(f'    subgraph {sg}_{side}["{side}"]')
-            out += _vertices_block(verts, "      ", layout, config.max_label_length, used)
-            out.append("    end")
+            body.append(f'    subgraph {sg}_{side}["{side}"]')
+            body += _vertices_block(verts, "      ", layout, config.max_label_length, used)
+            body.append("    end")
         else:
-            out += _vertices_block(verts, "    ", layout, config.max_label_length, used)
-    out.append("  end")
-    return out
+            body += _vertices_block(verts, "    ", layout, config.max_label_length, used)
+    if not body:
+        # A loop with no rendered vertices (all claimed by an earlier loop) would
+        # be an empty subgraph, which the ELK layout engine rejects — emit nothing.
+        return []
+    return [f'  subgraph {sg}["{_esc(name)} · {loop_type}"]', *body, "  end"]
 
 
 def _zone_subgraph(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig, used: set[Category]) -> list[str]:
@@ -147,9 +146,7 @@ def render_mermaid(graph: HVACGraph, config: HVACDiagramConfig) -> str:
 
     for loop in graph.loops:
         lines += _loop_subgraph(loop.loop_id, loop.name, loop.loop_type, layout, config, used)
-    masters = {r.master_key for r in graph.refrigerant_edges}
-    other = [v for v in layout.ungrouped if v.key not in masters]
-    refrigerant_masters = [v for v in layout.ungrouped if v.key in masters]
+    other, refrigerant_masters = split_ungrouped(graph, layout)
     if refrigerant_masters:
         lines.append('  subgraph refrigerant["VRF refrigerant system"]')
         lines += _vertices_block(refrigerant_masters, "    ", layout, config.max_label_length, used)

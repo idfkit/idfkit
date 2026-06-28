@@ -13,6 +13,7 @@ from collections import Counter
 from typing import TYPE_CHECKING
 
 from ..style import TEXT_COLOR, ZONE_FILL, ZONE_STROKE
+from ._common import mermaid_escape as _esc
 
 if TYPE_CHECKING:
     from ..model import HVACDiagramConfig, HVACGraph
@@ -22,10 +23,6 @@ _LOOP_CLASS: dict[str, str] = {
     "PlantLoop": "plantloop",
     "CondenserLoop": "condenserloop",
 }
-
-
-def _esc(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _loop_coupling_edges(graph: HVACGraph, loop_node: dict[str, str], loop_type: dict[str, str]) -> list[str]:

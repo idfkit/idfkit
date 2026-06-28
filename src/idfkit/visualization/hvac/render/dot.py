@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..layout import Layout, plan_layout, truncate, zone_outflow_targets
+from ..layout import Layout, plan_layout, split_ungrouped, truncate, zone_outflow_targets
 from ..style import ZONE_FILL, ZONE_STROKE, style_for
 
 if TYPE_CHECKING:
@@ -34,24 +34,28 @@ def _vertices_block(vertices: list[HVACVertex], indent: str, layout: Layout, lim
 
 def _loop_cluster(loop_id: str, name: str, loop_type: str, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     cluster = layout.loop_ids[loop_id]
-    out = [
-        f"  subgraph cluster_{cluster} {{",
-        f'    label="{_esc(name)} ({loop_type})";',
-        '    style=rounded; color="#888888";',
-    ]
+    body: list[str] = []
     for side in ("supply", "demand"):
         verts = layout.by_group.get((loop_id, side), [])
         if not verts:
             continue
         if config.group_by_side:
-            out.append(f"    subgraph cluster_{cluster}_{side} {{")
-            out.append(f'      label="{side}";')
-            out += _vertices_block(verts, "      ", layout, config.max_label_length)
-            out.append("    }")
+            body.append(f"    subgraph cluster_{cluster}_{side} {{")
+            body.append(f'      label="{side}";')
+            body += _vertices_block(verts, "      ", layout, config.max_label_length)
+            body.append("    }")
         else:
-            out += _vertices_block(verts, "    ", layout, config.max_label_length)
-    out.append("  }")
-    return out
+            body += _vertices_block(verts, "    ", layout, config.max_label_length)
+    if not body:
+        # Skip a loop with no rendered vertices rather than emit an empty cluster.
+        return []
+    return [
+        f"  subgraph cluster_{cluster} {{",
+        f'    label="{_esc(name)} ({loop_type})";',
+        '    style=rounded; color="#888888";',
+        *body,
+        "  }",
+    ]
 
 
 def _zone_box(z_name: str, zid: str) -> str:
@@ -131,9 +135,7 @@ def render_dot(graph: HVACGraph, config: HVACDiagramConfig) -> str:
     layout = plan_layout(graph)
     for loop in graph.loops:
         lines += _loop_cluster(loop.loop_id, loop.name, loop.loop_type, layout, config)
-    masters = {r.master_key for r in graph.refrigerant_edges}
-    other = [v for v in layout.ungrouped if v.key not in masters]
-    refrigerant_masters = [v for v in layout.ungrouped if v.key in masters]
+    other, refrigerant_masters = split_ungrouped(graph, layout)
     if refrigerant_masters:
         lines.append("  subgraph cluster_refrigerant {")
         lines.append('    label="VRF refrigerant system"; style=rounded; color="#888888";')

@@ -61,6 +61,18 @@ def plan_layout(graph: HVACGraph) -> Layout:
     )
 
 
+def split_ungrouped(graph: HVACGraph, layout: Layout) -> tuple[list[HVACVertex], list[HVACVertex]]:
+    """Partition the ungrouped vertices into ``(other, refrigerant_masters)``.
+
+    VRF outdoor units are pulled out so the renderers can draw them in a dedicated
+    "VRF refrigerant system" cluster rather than the generic "Other equipment" bin.
+    """
+    masters = {r.master_key for r in graph.refrigerant_edges}
+    other = [v for v in layout.ungrouped if v.key not in masters]
+    refrigerant_masters = [v for v in layout.ungrouped if v.key in masters]
+    return other, refrigerant_masters
+
+
 def truncate(text: str, limit: int) -> str:
     """Shorten *text* to *limit* characters with an ellipsis (``limit <= 0`` keeps all)."""
     if limit > 0 and len(text) > limit:

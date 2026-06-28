@@ -198,10 +198,12 @@ def fluid_for_field(field_name: str) -> str:
     low = field_name.lower()
     if "steam" in low:
         return "steam"
-    if "water" in low or "chilled" in low or "condenser" in low or "glycol" in low:
+    if "water" in low or "chilled" in low or "glycol" in low:
         return "water"
     if "air" in low:
         return "air"
+    if "condenser" in low:  # bare condenser (no air/water qualifier) is condenser water
+        return "water"
     return "unknown"
 
 

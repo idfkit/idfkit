@@ -56,36 +56,50 @@ _EXCLUDED_GROUPS: frozenset[str] = frozenset({"Setpoint Managers", "Controllers"
 #: Port direction (distinct from :data:`~.model.Side`, which is supply/demand).
 _Direction = Literal["inlet", "outlet"]
 
+
 # Per-loop-type field names. CondenserLoop uses ``condenser_side_*`` /
 # ``condenser_demand_side_*`` where Plant/Air use ``plant_side_*`` / ``branch_list_name``.
-_LOOP_SPECS: dict[LoopType, dict[str, str | None]] = {
-    "AirLoopHVAC": {
-        "fluid": "air",
-        "supply_bl": "branch_list_name",
-        "demand_bl": None,
-        "demand_inlet": "demand_side_inlet_node_names",
-        "demand_outlet": "demand_side_outlet_node_name",
-        "supply_inlet": "supply_side_inlet_node_name",
-        "supply_outlet": "supply_side_outlet_node_names",
-    },
-    "PlantLoop": {
-        "fluid": "water",
-        "supply_bl": "plant_side_branch_list_name",
-        "demand_bl": "demand_side_branch_list_name",
-        "demand_inlet": "demand_side_inlet_node_name",
-        "demand_outlet": "demand_side_outlet_node_name",
-        "supply_inlet": "plant_side_inlet_node_name",
-        "supply_outlet": "plant_side_outlet_node_name",
-    },
-    "CondenserLoop": {
-        "fluid": "water",
-        "supply_bl": "condenser_side_branch_list_name",
-        "demand_bl": "condenser_demand_side_branch_list_name",
-        "demand_inlet": "demand_side_inlet_node_name",
-        "demand_outlet": "demand_side_outlet_node_name",
-        "supply_inlet": "condenser_side_inlet_node_name",
-        "supply_outlet": "condenser_side_outlet_node_name",
-    },
+@dataclass(frozen=True)
+class _LoopSpec:
+    """The field names that locate a loop type's branch lists and boundary nodes."""
+
+    fluid: str
+    supply_bl: str
+    demand_bl: str | None
+    demand_inlet: str
+    demand_outlet: str
+    supply_inlet: str
+    supply_outlet: str
+
+
+_LOOP_SPECS: dict[LoopType, _LoopSpec] = {
+    "AirLoopHVAC": _LoopSpec(
+        fluid="air",
+        supply_bl="branch_list_name",
+        demand_bl=None,
+        demand_inlet="demand_side_inlet_node_names",
+        demand_outlet="demand_side_outlet_node_name",
+        supply_inlet="supply_side_inlet_node_name",
+        supply_outlet="supply_side_outlet_node_names",
+    ),
+    "PlantLoop": _LoopSpec(
+        fluid="water",
+        supply_bl="plant_side_branch_list_name",
+        demand_bl="demand_side_branch_list_name",
+        demand_inlet="demand_side_inlet_node_name",
+        demand_outlet="demand_side_outlet_node_name",
+        supply_inlet="plant_side_inlet_node_name",
+        supply_outlet="plant_side_outlet_node_name",
+    ),
+    "CondenserLoop": _LoopSpec(
+        fluid="water",
+        supply_bl="condenser_side_branch_list_name",
+        demand_bl="condenser_demand_side_branch_list_name",
+        demand_inlet="demand_side_inlet_node_name",
+        demand_outlet="demand_side_outlet_node_name",
+        supply_inlet="condenser_side_inlet_node_name",
+        supply_outlet="condenser_side_outlet_node_name",
+    ),
 }
 
 _LOOP_ORDER: dict[LoopType, int] = {"AirLoopHVAC": 0, "PlantLoop": 1, "CondenserLoop": 2}
@@ -254,17 +268,20 @@ class _GraphBuilder:
             for obj in self._objs(loop_type):
                 loop_id = _vkey(loop_type, obj.name)
                 lb = _LoopBuild(loop_id=loop_id, name=obj.name, loop_type=loop_type, is_air=loop_type == "AirLoopHVAC")
-                fluid = spec["fluid"] or "unknown"
-                self._map_branchlist(obj.data.get(spec["supply_bl"] or ""), loop_id, "supply", fluid)
-                demand_bl = spec["demand_bl"]
-                if demand_bl is not None:
-                    self._map_branchlist(obj.data.get(demand_bl), loop_id, "demand", fluid)
-                boundary: dict[str, set[str]] = {}
-                for key in ("demand_inlet", "demand_outlet", "supply_inlet", "supply_outlet"):
-                    field_name = spec[key]
-                    nodes = {n.upper() for n in (self._resolve_nodes(obj.data.get(field_name)) if field_name else [])}
-                    boundary[key] = nodes
-                    self.boundary_nodes |= nodes
+                self._map_branchlist(obj.data.get(spec.supply_bl), loop_id, "supply", spec.fluid)
+                if spec.demand_bl is not None:
+                    self._map_branchlist(obj.data.get(spec.demand_bl), loop_id, "demand", spec.fluid)
+                boundary = {
+                    key: {n.upper() for n in self._resolve_nodes(obj.data.get(field_name))}
+                    for key, field_name in (
+                        ("demand_inlet", spec.demand_inlet),
+                        ("demand_outlet", spec.demand_outlet),
+                        ("supply_inlet", spec.supply_inlet),
+                        ("supply_outlet", spec.supply_outlet),
+                    )
+                }
+                self.boundary_nodes |= boundary["demand_inlet"] | boundary["demand_outlet"]
+                self.boundary_nodes |= boundary["supply_inlet"] | boundary["supply_outlet"]
                 lb.demand_inlets |= boundary["demand_inlet"]
                 lb.demand_outlets |= boundary["demand_outlet"]
                 # A loop links its supply outlet to its demand inlet and its demand
@@ -537,13 +554,13 @@ class _GraphBuilder:
         unit is not a dead box.
         """
         if is_expandable_container(obj_type, self._group(obj_type)):
-            child_keys = [
+            # The container box is dropped; reference its child vertices. If it
+            # produced none, return nothing rather than a key with no vertex.
+            return [
                 _vkey(ct, cn)
                 for ct, cn in self._container_children(obj_type, name)
                 if self.vertices.get(_vkey(ct, cn)) is not None
             ]
-            if child_keys:
-                return child_keys
         return [self._resolve_equipment(obj_type, name)]
 
     def _pass_vrf(self) -> None:
