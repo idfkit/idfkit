@@ -15,7 +15,7 @@ third-party package.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
@@ -318,28 +318,56 @@ class HVACGraph:
     ) -> HVACGraph:
         """Return a new graph restricted to the selected loops.
 
-        Filter by loop name (case-insensitive) and/or loop type
-        (``"AirLoopHVAC"``, ``"PlantLoop"``, ``"CondenserLoop"``). The result
-        keeps every vertex with membership in a selected loop, the edges among
-        them, and the zones they serve — so ``graph.subset(loop_names=["VAV_1"])``
-        renders just that one air loop. Passing neither argument returns an
-        equivalent graph.
+        Filter by loop name and/or loop type (``"AirLoopHVAC"``, ``"PlantLoop"``,
+        ``"CondenserLoop"``), both matched case-insensitively. The result keeps
+        every component on a selected loop, the edges among the kept components,
+        and — so the diagram stays honest about *how* each space is conditioned —
+        the zones those loops serve together with each served zone's full
+        equipment cluster (zone-only fans, OA mixers, VRF terminal coils that
+        carry no loop membership) and the refrigerant links among kept
+        components, pulling in the outdoor unit each link references. A served
+        zone is therefore never rendered as a bare box. Passing neither argument
+        returns an equivalent graph.
         """
+        if loop_names is None and loop_types is None:
+            # No filter selects every loop, so the result is the whole graph.
+            return HVACGraph(
+                version=self.version,
+                loops=self.loops,
+                vertices=self.vertices,
+                nodes=self.nodes,
+                edges=self.edges,
+                zones=self.zones,
+                warnings=self.warnings,
+                refrigerant_edges=self.refrigerant_edges,
+                _by_key={v.key: v for v in self.vertices},
+            )
         name_set = {n.strip().upper() for n in loop_names} if loop_names is not None else None
-        type_set = set(loop_types) if loop_types is not None else None
+        type_set = {t.strip().upper() for t in loop_types} if loop_types is not None else None
         selected_loops = tuple(
             loop
             for loop in self.loops
             if (name_set is None or loop.name.strip().upper() in name_set)
-            and (type_set is None or loop.loop_type in type_set)
+            and (type_set is None or loop.loop_type.strip().upper() in type_set)
         )
         selected_ids = {loop.loop_id for loop in selected_loops}
-        keys = {v.key for v in self.vertices if any(m.loop_id in selected_ids for m in v.memberships)}
+        # Components on a selected loop, then the zones they serve and each served
+        # zone's whole equipment cluster (including zone-only vertices with no loop
+        # membership) so a kept zone shows its full conditioning train.
+        loop_keys = {v.key for v in self.vertices if any(m.loop_id in selected_ids for m in v.memberships)}
+        served_zones = {z.name for z in self.zones if any(k in loop_keys for k in z.equipment_keys)}
+        keys = loop_keys | {v.key for v in self.vertices if v.zone in served_zones}
+        # Refrigerant links whose terminal is in view, plus the outdoor unit they reference.
+        refrigerant = tuple(r for r in self.refrigerant_edges if r.terminal_key in keys)
+        keys |= {r.master_key for r in refrigerant}
         vertices = tuple(v for v in self.vertices if v.key in keys)
         edges = tuple(e for e in self.edges if e.src in keys and e.dst in keys)
-        zones = tuple(z for z in self.zones if any(k in keys for k in z.equipment_keys))
         nodes = tuple(n for n in self.nodes if keys.intersection((*n.producers, *n.consumers)))
-        refrigerant = tuple(r for r in self.refrigerant_edges if r.master_key in keys and r.terminal_key in keys)
+        zones = tuple(
+            replace(z, equipment_keys=tuple(k for k in z.equipment_keys if k in keys))
+            for z in self.zones
+            if z.name in served_zones
+        )
         return HVACGraph(
             version=self.version,
             loops=selected_loops,

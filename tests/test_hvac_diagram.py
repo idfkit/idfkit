@@ -754,6 +754,68 @@ def test_subset_by_name(graph: HVACGraph) -> None:
     assert "PlantLoop" not in air.to_mermaid()
 
 
+def _vrf_airloop_graph() -> HVACGraph:
+    """An air loop serving a zone whose primary conditioning is a VRF terminal unit.
+
+    The air terminal carries the air-loop membership; the VRF coil and fan are
+    zone-clustered (no loop membership); the outdoor unit links to the coil through
+    a refrigerant edge. Mirrors VariableRefrigerantFlow_5Zone_wAirloop.
+    """
+    from idfkit.visualization.hvac.model import (
+        HVACLoop,
+        HVACRefrigerantEdge,
+        HVACVertex,
+        HVACZone,
+        LoopMembership,
+    )
+
+    def vtx(key: str, cat: str, memberships: tuple = (), zone: str | None = None) -> HVACVertex:
+        ot, name = key.split("::")
+        return HVACVertex(key, ot, name, cat, (), (), memberships, zone)  # type: ignore[arg-type]
+
+    term = vtx("ADU::T", "terminal", (LoopMembership("L", "demand"),), zone="Z")
+    coil = vtx("COIL:COOLING:DX:VARIABLEREFRIGERANTFLOW::C", "coil", (), zone="Z")
+    fan = vtx("FAN:SYSTEMMODEL::F", "fan", (), zone="Z")
+    master = vtx("AIRCONDITIONER:VARIABLEREFRIGERANTFLOW::M", "other")
+    loop = HVACLoop("L", "Main Air", "AirLoopHVAC", (), (term.key,))
+    zone = HVACZone("Z", None, (), (), (), (term.key, coil.key, fan.key))
+    return HVACGraph(
+        version=V,
+        loops=(loop,),
+        vertices=(term, coil, fan, master),
+        zones=(zone,),
+        refrigerant_edges=(HVACRefrigerantEdge(master.key, coil.key),),
+    )
+
+
+def test_subset_keeps_served_zone_equipment_and_refrigerant() -> None:
+    # Subsetting to the air loop must keep the served zone's full conditioning
+    # train (zone-only VRF coil + fan, no loop membership) and the refrigerant
+    # network, pulling in the outdoor unit — never a bare zone box.
+    s = _vrf_airloop_graph().subset(loop_names=["Main Air"])
+    keys = {v.key for v in s.vertices}
+    assert "COIL:COOLING:DX:VARIABLEREFRIGERANTFLOW::C" in keys
+    assert "FAN:SYSTEMMODEL::F" in keys
+    assert "AIRCONDITIONER:VARIABLEREFRIGERANTFLOW::M" in keys
+    assert len(s.refrigerant_edges) == 1
+    # No zone equipment_key dangles past a kept vertex.
+    assert not [k for z in s.zones for k in z.equipment_keys if k not in keys]
+
+
+def test_subset_no_args_is_equivalent() -> None:
+    g = _vrf_airloop_graph()
+    s = g.subset()
+    assert {v.key for v in s.vertices} == {v.key for v in g.vertices}
+    assert s.refrigerant_edges == g.refrigerant_edges
+    assert {z.name for z in s.zones} == {z.name for z in g.zones}
+
+
+def test_subset_loop_types_is_case_insensitive() -> None:
+    g = _vrf_airloop_graph()
+    assert len(g.subset(loop_types=["airloophvac"]).loops) == 1
+    assert len(g.subset(loop_types=["AIRLOOPHVAC"]).loops) == 1
+
+
 def test_overview_mermaid(graph: HVACGraph) -> None:
     ov = graph.overview_mermaid()
     assert ov.startswith("flowchart")

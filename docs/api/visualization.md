@@ -435,7 +435,10 @@ at all. Three tools keep it readable:
 ```python
 graph = build_hvac_graph(model)
 
-# Focus on one loop (or a set), by name or by type:
+# Focus on one loop (or a set), by name or by type (both case-insensitive). A
+# subset keeps each served zone's full conditioning train — including zone-only
+# equipment (fan-coil fans, VRF terminal coils) and the refrigerant links to
+# their outdoor unit — so a kept zone is never shown as a bare box:
 graph.subset(loop_names=["VAV_1"]).to_mermaid()
 graph.subset(loop_types=["PlantLoop", "CondenserLoop"]).to_dot()
 
