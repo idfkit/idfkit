@@ -265,6 +265,34 @@ class ExpandObjectsError(IdfKitError):
         super().__init__(_format_subprocess_failure(message, exit_code=exit_code, stderr=stderr))
 
 
+class HVACDiagramError(IdfKitError):
+    """Raised when an HVAC diagram cannot be built from a document.
+
+    The cause is a document that still contains ``HVACTemplate:*`` objects:
+    templates are not real HVAC topology and must be expanded (via
+    :meth:`idfkit.IDFDocument.expand`) before a diagram can be generated.
+
+    Attributes:
+        template_types: Sorted tuple of unexpanded ``HVACTemplate:*`` object
+            types found in the document.
+        after_expand: ``True`` if templates remained even after expansion ran.
+    """
+
+    def __init__(self, template_types: Sequence[str], *, after_expand: bool = False) -> None:
+        self.template_types = tuple(template_types)
+        self.after_expand = after_expand
+        if after_expand:
+            head = "HVAC templates remain after running ExpandObjects; cannot build the diagram."
+        else:
+            head = "Cannot build an HVAC diagram: the document still contains unexpanded HVAC templates."
+        listed = ", ".join(self.template_types)
+        super().__init__(
+            f"{head}\nUnexpanded template objects: {listed}\n"
+            "Call model.expand() first (requires an EnergyPlus installation), "
+            "or pass expand=True to build the diagram from the expanded model."
+        )
+
+
 class SimulationError(IdfKitError):
     """Raised when an EnergyPlus simulation fails."""
 

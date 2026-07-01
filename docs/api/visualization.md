@@ -372,6 +372,104 @@ All view functions accept a `zones` parameter to display only specific zones:
 fig = view_model(model, zones=["Zone1", "Zone2"])
 ```
 
+## HVAC System Diagrams
+
+`idfkit.visualization` reconstructs the HVAC topology of a model — air, plant, and
+condenser loops, their supply/demand sides, branches, splitters/mixers, and zone
+equipment — directly from the IDF objects, with **no simulation run**. It is the
+IDF-native analogue of the EnergyPlus HVAC-Diagram utility (which reads the
+post-run `eplusout.bnd` file). Output renders to a Mermaid flowchart, a Graphviz
+DOT graph, or a JSON-serializable dict.
+
+```python
+from idfkit import load_idf
+from idfkit.visualization import build_hvac_graph, hvac_to_mermaid
+
+model = load_idf("expanded_system.idf")
+
+# Build the graph (raises HVACDiagramError if HVACTemplate:* objects remain;
+# pass expand=True to run ExpandObjects first — requires an EnergyPlus install).
+graph = build_hvac_graph(model)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components")
+
+# Render
+mermaid = graph.to_mermaid()       # or hvac_to_mermaid(model)
+dot = graph.to_dot()               # pipe through `dot -Tsvg` for an image
+data = graph.to_dict()             # structured view (also graph.to_json())
+```
+
+The connectivity rule matches EnergyPlus: a component whose *outlet* is node `N`
+feeds the component whose *inlet* is node `N`. A water coil that sits on both an
+air supply branch and a plant demand branch becomes a **single** vertex carrying
+both loop memberships, so the coupling between loops is visible in the diagram.
+
+Building never raises on unusual topology — it records `HVACWarning`s (dangling
+nodes, unconnected components, missing branches) on the returned graph.
+
+### Configuration
+
+Pass an `HVACDiagramConfig` to either renderer:
+
+```python
+from idfkit.visualization import HVACDiagramConfig
+
+graph.to_mermaid(HVACDiagramConfig(direction="TB", show_node_labels=False))
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `direction` | `"LR"` | Flow direction: `"LR"`, `"RL"`, `"TB"`, `"BT"` |
+| `show_node_labels` | `True` | Label each edge with the node it flows through |
+| `group_by_side` | `True` | Nest supply/demand subgraphs inside each loop |
+| `show_return_air` | `True` | Draw the return leg (zone → mixer) as a dashed edge |
+| `max_label_length` | 40 | Truncate long component names in labels |
+| `layout` | `"dagre"` | Mermaid layout engine: `"dagre"` (universal) or `"elk"` (needed for large multi-loop models) |
+
+### Large models
+
+A whole-building flowchart can run to hundreds of nodes (a hospital or
+high-rise has dozens of loops), which the default Mermaid/Graphviz layout
+(dagre) cannot draw legibly — and with dozens of subgraphs it fails to render
+at all. Three tools keep it readable:
+
+```python
+graph = build_hvac_graph(model)
+
+# Focus on one loop (or a set), by name or by type (both case-insensitive). A
+# subset keeps each served zone's full conditioning train — including zone-only
+# equipment (fan-coil fans, VRF terminal coils) and the refrigerant links to
+# their outdoor unit — so a kept zone is never shown as a bare box:
+graph.subset(loop_names=["VAV_1"]).to_mermaid()
+graph.subset(loop_types=["PlantLoop", "CondenserLoop"]).to_dot()
+
+# Or collapse the whole building to one node per loop and per zone, with
+# plant→air-loop coupling and the zones each loop serves:
+graph.overview_mermaid()
+
+# Or render the full detail with the ELK layout engine, which handles many
+# subgraphs (needs an ELK-capable Mermaid viewer — GitHub, mermaid.live, mmdc):
+graph.to_mermaid(HVACDiagramConfig(layout="elk"))
+```
+
+When a model is complex (`graph.is_complex`), `to_mermaid()` prepends a `%%` hint
+pointing at these, and the Jupyter inline preview (`_repr_markdown_`) falls back to
+the overview automatically so it never emits a diagram the notebook cannot render.
+
+### Functions
+
+#### `build_hvac_graph(doc, *, expand=False)`
+
+Reconstruct an `HVACGraph` from a document. With `expand=True`, runs
+`doc.expand()` first when templates are present.
+
+#### `hvac_to_mermaid(source, config=None, *, expand=False)` / `hvac_to_dot(...)`
+
+Render straight from a document or a prebuilt `HVACGraph`.
+
+#### `HVACGraph.subset(*, loop_names=None, loop_types=None)` / `HVACGraph.overview_mermaid()`
+
+Filter the graph to selected loops, or render a building-level overview.
+
 ## See Also
 
 - [Thermal Properties](thermal.md) — R-value, U-value, SHGC calculations

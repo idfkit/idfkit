@@ -117,3 +117,47 @@ for coil in doc.get_collection("Coil:Cooling:Water"):
     downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
     assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
 # --8<-- [end:mistake-walk-good]
+
+
+# --8<-- [start:diagram]
+from idfkit.visualization import HVACDiagramConfig, build_hvac_graph, hvac_to_mermaid
+
+# Build a topology graph from an *expanded* document (no HVACTemplate:* objects).
+# Raises HVACDiagramError if templates remain; pass expand=True to run
+# ExpandObjects first (needs an EnergyPlus install).
+graph = build_hvac_graph(doc)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components, {len(graph.edges)} links")
+for warning in graph.warnings:
+    print(warning.kind, warning.message)
+
+# Render to Mermaid (paste into mermaid.live or a Markdown file), Graphviz DOT,
+# or a plain JSON-serializable dict.
+mermaid = graph.to_mermaid(HVACDiagramConfig(direction="LR"))
+dot = graph.to_dot()
+data = graph.to_dict()
+
+# Convenience: go straight from a document, skipping the explicit graph.
+mermaid = hvac_to_mermaid(doc)
+
+# Large models: a whole-building flowchart has so many subgraphs that Mermaid's
+# default dagre layout fails to render it. graph.is_complex flags these. Filter to
+# one loop, collapse to a one-node-per-loop/zone overview, or render the full
+# detail with the ELK layout engine (needs an ELK-capable Mermaid viewer).
+one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
+overview = graph.overview_mermaid()
+detailed = graph.to_mermaid(HVACDiagramConfig(layout="elk"))
+
+# Zone equipment (fan coils, PTACs, VRF terminal units) is expanded into its
+# internal OA-mixer/fan/coil train and grouped under the zone it serves — not
+# dumped into a flat "Other equipment" box. A water coil shared with a plant loop
+# keeps its plant membership; the air-only fan and mixer cluster with the zone.
+for vertex in graph.vertices:
+    if vertex.zone is not None:
+        print(f"{vertex.obj_type} serves zone {vertex.zone}")
+
+# Variable-refrigerant-flow systems couple their outdoor unit to each terminal
+# unit through a refrigerant network (a named ZoneTerminalUnitList), not through
+# air/water nodes — so those links are tracked separately and drawn dashed.
+for ref in graph.refrigerant_edges:
+    print(f"{ref.master_key} -> {ref.terminal_key}")
+# --8<-- [end:diagram]

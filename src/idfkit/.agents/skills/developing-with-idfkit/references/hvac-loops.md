@@ -178,6 +178,79 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
         assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
     ```
 
+## Diagram an HVAC system
+
+Once a loop graph exists, `idfkit.visualization.build_hvac_graph` reconstructs its
+topology — air, plant, and condenser loops, their supply/demand sides, branches,
+splitters/mixers, zone equipment — directly from the IDF objects, with no
+simulation run. It is the IDF-native analogue of the EnergyPlus HVAC-Diagram
+utility (which reads the post-run `eplusout.bnd` file). Render the result to a
+Mermaid flowchart, Graphviz DOT, or a JSON-serializable dict.
+
+The document must be **expanded** first: `build_hvac_graph` raises
+`HVACDiagramError` if `HVACTemplate:*` objects remain (pass `expand=True` to run
+`ExpandObjects` first). Building never raises on odd topology — it records
+`HVACWarning`s (dangling nodes, unconnected components) on the returned graph.
+
+```python
+from idfkit.visualization import HVACDiagramConfig, build_hvac_graph, hvac_to_mermaid
+
+# Build a topology graph from an *expanded* document (no HVACTemplate:* objects).
+# Raises HVACDiagramError if templates remain; pass expand=True to run
+# ExpandObjects first (needs an EnergyPlus install).
+graph = build_hvac_graph(doc)
+print(f"{len(graph.loops)} loops, {len(graph.vertices)} components, {len(graph.edges)} links")
+for warning in graph.warnings:
+    print(warning.kind, warning.message)
+
+# Render to Mermaid (paste into mermaid.live or a Markdown file), Graphviz DOT,
+# or a plain JSON-serializable dict.
+mermaid = graph.to_mermaid(HVACDiagramConfig(direction="LR"))
+dot = graph.to_dot()
+data = graph.to_dict()
+
+# Convenience: go straight from a document, skipping the explicit graph.
+mermaid = hvac_to_mermaid(doc)
+
+# Large models: a whole-building flowchart has so many subgraphs that Mermaid's
+# default dagre layout fails to render it. graph.is_complex flags these. Filter to
+# one loop, collapse to a one-node-per-loop/zone overview, or render the full
+# detail with the ELK layout engine (needs an ELK-capable Mermaid viewer).
+one_loop = graph.subset(loop_names=["VAV_1"]).to_mermaid()
+overview = graph.overview_mermaid()
+detailed = graph.to_mermaid(HVACDiagramConfig(layout="elk"))
+
+# Zone equipment (fan coils, PTACs, VRF terminal units) is expanded into its
+# internal OA-mixer/fan/coil train and grouped under the zone it serves — not
+# dumped into a flat "Other equipment" box. A water coil shared with a plant loop
+# keeps its plant membership; the air-only fan and mixer cluster with the zone.
+for vertex in graph.vertices:
+    if vertex.zone is not None:
+        print(f"{vertex.obj_type} serves zone {vertex.zone}")
+
+# Variable-refrigerant-flow systems couple their outdoor unit to each terminal
+# unit through a refrigerant network (a named ZoneTerminalUnitList), not through
+# air/water nodes — so those links are tracked separately and drawn dashed.
+for ref in graph.refrigerant_edges:
+    print(f"{ref.master_key} -> {ref.terminal_key}")
+```
+
+Connectivity follows the same rule EnergyPlus uses: a component whose *outlet* is
+node N feeds the component whose *inlet* is node N. A water coil that sits on both
+an air supply branch and a plant demand branch becomes a single graph vertex with
+both loop memberships.
+
+Compound units are expanded rather than drawn as opaque boxes. An
+`AirLoopHVAC:UnitarySystem` and a zone forced-air unit (`ZoneHVAC:FourPipeFanCoil`,
+`ZoneHVAC:PackagedTerminalAirConditioner`, `ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`,
+…) are each replaced by their internal OA-mixer/fan/coil train, so a packaged unit
+reads as its sequence of components. Zone equipment groups under the zone it serves
+instead of a flat "Other equipment" bin, and a VRF outdoor unit is linked to its
+terminal units through the refrigerant network (`graph.refrigerant_edges`, drawn as
+dashed `refrigerant` edges) since that coupling is a named terminal-unit list, not a
+node connection. The expandable-container set is driven by the schema object group
+(`"Zone HVAC Forced Air Units"`), so new zone unit types are picked up automatically.
+
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.
