@@ -65,7 +65,11 @@ def render_overview_mermaid(graph: HVACGraph, config: HVACDiagramConfig) -> str:
     if not graph.loops and not graph.zones:
         return f'flowchart {config.direction}\n  empty["No HVAC loops found"]'
 
-    lines: list[str] = [f"flowchart {config.direction}"]
+    lines: list[str] = []
+    if config.layout == "elk":
+        # Match render_mermaid: ELK lays out large graphs the default dagre engine cannot.
+        lines += ["---", "config:", "  layout: elk", "---"]
+    lines.append(f"flowchart {config.direction}")
     loop_node: dict[str, str] = {}
     loop_type: dict[str, str] = {loop.loop_id: loop.loop_type for loop in graph.loops}
     for i, loop in enumerate(graph.loops):

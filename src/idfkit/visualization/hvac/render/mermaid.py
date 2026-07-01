@@ -77,17 +77,21 @@ def _zone_subgraph(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig, 
 
 def _zone_edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     out: list[str] = []
-    returns = zone_outflow_targets(graph) if config.show_return_air else {}
+    outflow = zone_outflow_targets(graph)  # components air leaves the zone into (return mixer, exhaust fan)
     for z in graph.zones:
         zid = layout.zone_ids[z.name]
+        exhaust = set(outflow.get(z.name, ()))
         for key in z.equipment_keys:
+            if key in exhaust:
+                continue  # exhaust device removes air from the zone — drawn as a return leg, not supply
             sid = layout.vertex_ids.get(key)
             if sid is not None:
                 out.append(f"  {sid} --> {zid}")  # supply: equipment delivers to zone
-        for key in returns.get(z.name, ()):
-            tid = layout.vertex_ids.get(key)
-            if tid is not None:
-                out.append(f"  {zid} -.->|return| {tid}")  # return: zone air back to the mixer
+        if config.show_return_air:
+            for key in outflow.get(z.name, ()):
+                tid = layout.vertex_ids.get(key)
+                if tid is not None:
+                    out.append(f"  {zid} -.->|return| {tid}")  # return: zone air back to the mixer
     return out
 
 
@@ -136,7 +140,7 @@ def render_mermaid(graph: HVACGraph, config: HVACDiagramConfig) -> str:
         # ELK lays out many-subgraph diagrams that the default dagre engine cannot.
         lines += ["---", "config:", "  layout: elk", "---"]
     lines.append(f"flowchart {config.direction}")
-    if graph.is_complex:
+    if graph.is_complex and config.layout == "dagre":
         lines.append(
             f"%% {len(graph.vertices)} components across {len(graph.loops)} loops — the default "
             "layout may fail to render this many subgraphs; use graph.subset(loop_names=[...]), "

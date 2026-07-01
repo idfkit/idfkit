@@ -287,11 +287,14 @@ class _GraphBuilder:
                 # A loop links its supply outlet to its demand inlet and its demand
                 # outlet back to its supply inlet (EnergyPlus joins these implicitly,
                 # under different node names) — alias them so edges span both sides.
-                for a in boundary["supply_outlet"]:
-                    for b in boundary["demand_inlet"]:
+                # Sort so the surviving union-find root (and thus the merged node's
+                # display name and edge labels) is deterministic when a boundary
+                # resolves to more than one node — set order varies with PYTHONHASHSEED.
+                for a in sorted(boundary["supply_outlet"]):
+                    for b in sorted(boundary["demand_inlet"]):
                         self._union(a, b)
-                for a in boundary["demand_outlet"]:
-                    for b in boundary["supply_inlet"]:
+                for a in sorted(boundary["demand_outlet"]):
+                    for b in sorted(boundary["supply_inlet"]):
                         self._union(a, b)
                 self.loops.append(lb)
 
@@ -531,6 +534,11 @@ class _GraphBuilder:
             for key in self._resolve_equipment_keys(ct, cn):
                 keys.append(key)
                 vb = self.vertices.get(key)
+                # Node-less zone equipment (electric baseboard/radiant) has no flow-node
+                # ports, so _pass_components skipped it; materialize it here so it still
+                # renders in its zone instead of dangling.
+                if vb is None and key == _vkey(ct, cn) and self.doc.get_collection(ct).get(cn) is not None:
+                    vb = self._vertex(ct, cn, category_for(ct, self._group(ct)))
                 if vb is not None:
                     vb.zone = zone_name
         return keys
@@ -570,29 +578,35 @@ class _GraphBuilder:
         ``ZoneTerminalUnitList``, not through air/water nodes — so it is tracked as
         a separate refrigerant edge from the master to each terminal's DX coil.
         """
+        tu_lists = self._terminal_unit_lists()
         for master_type in (t for t in self.present if t.startswith(_VRF_MASTER_PREFIX)):
             for ac in self._objs(master_type):
                 master = self._vertex(master_type, ac.name)
-                for tu_name in self._vrf_terminal_unit_names(ac.data.get("zone_terminal_unit_list_name")):
+                list_name = ac.data.get("zone_terminal_unit_list_name")
+                want = list_name.strip().upper() if isinstance(list_name, str) else ""
+                for tu_name in tu_lists.get(want, ()):
                     for coil_key in self._vrf_terminal_coils(tu_name):
                         self.refrigerant_links.append((master.key, coil_key))
 
-    def _vrf_terminal_unit_names(self, list_name: object) -> list[str]:
-        # ZoneTerminalUnitList's identifier is the ``zone_terminal_unit_list_name``
-        # field (not a standard ``name``), so match on the field rather than .get().
-        if not isinstance(list_name, str) or not list_name.strip():
-            return []
-        want = list_name.strip().upper()
-        names: list[str] = []
+    def _terminal_unit_lists(self) -> dict[str, list[str]]:
+        """Index every ZoneTerminalUnitList by name (upper) -> its terminal-unit names.
+
+        Built once so VRF linking is O(masters + lists), not O(masters x lists).
+        The list's identifier is the ``zone_terminal_unit_list_name`` field (not a
+        standard ``name``), so it is keyed off that field.
+        """
+        out: dict[str, list[str]] = {}
         for lst in self._objs("ZoneTerminalUnitList"):
             field_name = lst.data.get("zone_terminal_unit_list_name")
-            if not isinstance(field_name, str) or field_name.strip().upper() != want:
+            if not isinstance(field_name, str) or not field_name.strip():
                 continue
+            names: list[str] = []
             for item in lst.extensible_items():
                 n = item.get("zone_terminal_unit_name")
                 if isinstance(n, str) and n.strip():
                     names.append(n.strip())
-        return names
+            out[field_name.strip().upper()] = names
+        return out
 
     def _vrf_terminal_coils(self, tu_name: str) -> list[str]:
         """Vertex keys of a VRF terminal unit's DX cooling/heating coils."""
@@ -751,7 +765,9 @@ class _GraphBuilder:
     def _build_refrigerant_edges(self) -> tuple[HVACRefrigerantEdge, ...]:
         seen: set[tuple[str, str]] = set()
         out: list[HVACRefrigerantEdge] = []
-        for master_key, terminal_key in self.refrigerant_links:
+        # Sort so the output is deterministic; self.refrigerant_links is built by
+        # iterating self.present (a set), whose order varies with PYTHONHASHSEED.
+        for master_key, terminal_key in sorted(self.refrigerant_links):
             marker = (master_key, terminal_key)
             if marker in seen:
                 continue
@@ -836,10 +852,13 @@ class _GraphBuilder:
                     HVACWarning("suspicious_node", f"Node '{display}' is referenced by only one component", display)
                 )
         for vb in sorted(self.vertices.values(), key=lambda v: v.key):
-            if vb.key not in connected:
-                self.warnings.append(
-                    HVACWarning("unconnected_component", f"{vb.obj_type} '{vb.name}' has no connections", vb.key)
-                )
+            if vb.key in connected:
+                continue
+            if vb.zone is not None and not vb.inlets and not vb.outlets:
+                continue  # node-less zone equipment (baseboard/radiant) is intentionally connectionless
+            self.warnings.append(
+                HVACWarning("unconnected_component", f"{vb.obj_type} '{vb.name}' has no connections", vb.key)
+            )
 
 
 def build_hvac_graph(doc: IDFDocument, *, expand: bool = False) -> HVACGraph:
@@ -860,6 +879,10 @@ def build_hvac_graph(doc: IDFDocument, *, expand: bool = False) -> HVACGraph:
     Raises:
         HVACDiagramError: If the document still contains ``HVACTemplate:*``
             objects and ``expand`` is ``False``.
+        EnergyPlusNotFoundError: If ``expand`` is ``True`` and no EnergyPlus
+            installation is available to run the preprocessor.
+        ExpandObjectsError: If ``expand`` is ``True`` and the ExpandObjects
+            preprocessor fails on the document.
     """
     templates = hvac_template_types(doc)
     if templates:

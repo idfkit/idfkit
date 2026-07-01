@@ -886,6 +886,109 @@ def test_split_ungrouped_separates_refrigerant_master() -> None:
     assert master not in {v.key for v in other}
 
 
+def test_node_less_zone_equipment_renders() -> None:
+    # Electric baseboards have no flow nodes; they must still appear as a zone
+    # vertex, not collapse the whole diagram to the empty placeholder.
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        "ZE",
+        {"zone_name": "Z", "zone_conditioning_equipment_list_name": "ZL", "zone_air_node_name": "ZA"},
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentList",
+        "ZL",
+        {
+            "equipment": [
+                {"zone_equipment_object_type": "ZoneHVAC:Baseboard:Convective:Electric", "zone_equipment_name": "BB"}
+            ]
+        },
+        validate=False,
+    )
+    doc.add("ZoneHVAC:Baseboard:Convective:Electric", "BB", {}, validate=False)
+    g = build_hvac_graph(doc)
+    assert not g.is_empty
+    assert g.vertex(_vkey("ZoneHVAC:Baseboard:Convective:Electric", "BB")) is not None
+    # A node-less unit is intentionally connectionless, not an unconnected-component defect.
+    assert not [w for w in g.warnings if w.kind == "unconnected_component"]
+
+
+def test_exhaust_fan_not_drawn_as_supply() -> None:
+    from idfkit.visualization.hvac.layout import plan_layout
+
+    doc = new_document(V)
+    doc.add("Zone", "Z", validate=False)
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        "ZE",
+        {
+            "zone_name": "Z",
+            "zone_conditioning_equipment_list_name": "ZL",
+            "zone_air_node_name": "ZA",
+            "zone_air_exhaust_node_or_nodelist_name": "ZX",
+        },
+        validate=False,
+    )
+    doc.add(
+        "ZoneHVAC:EquipmentList",
+        "ZL",
+        {"equipment": [{"zone_equipment_object_type": "Fan:ZoneExhaust", "zone_equipment_name": "EF"}]},
+        validate=False,
+    )
+    doc.add("Fan:ZoneExhaust", "EF", {"air_inlet_node_name": "ZX", "air_outlet_node_name": "EFout"}, validate=False)
+    g = build_hvac_graph(doc)
+    lay = plan_layout(g)
+    ef, zid = lay.vertex_ids[_vkey("Fan:ZoneExhaust", "EF")], lay.zone_ids["Z"]
+    mer = g.to_mermaid()
+    assert f"{ef} --> {zid}" not in mer  # no false supply arrow into the zone
+    assert f"{zid} -.->|return| {ef}" in mer  # air leaves the zone through the exhaust fan
+
+
+def test_furnace_is_expandable_container() -> None:
+    from idfkit.visualization.hvac.classify import is_expandable_container
+
+    assert is_expandable_container("AirLoopHVAC:Unitary:Furnace:HeatCool", None)
+    assert is_expandable_container("AirLoopHVAC:Unitary:Furnace:HeatOnly", None)
+    # The 'Unitary Equipment' group also holds a non-container performance object.
+    assert not is_expandable_container("UnitarySystemPerformance:Multispeed", None)
+
+
+def test_subset_keeps_relevant_warnings() -> None:
+    from idfkit.visualization.hvac.model import HVACLoop, HVACVertex, HVACWarning, LoopMembership
+
+    def pump(key: str, loop: str) -> HVACVertex:
+        return HVACVertex(
+            key, "Pump:VariableSpeed", key.split("::")[1], "pump", (), (), (LoopMembership(loop, "supply"),)
+        )
+
+    v, v2 = pump("PUMP:VARIABLESPEED::P", "L"), pump("PUMP:VARIABLESPEED::Q", "L2")
+    loops = (HVACLoop("L", "CHW", "PlantLoop", (v.key,), ()), HVACLoop("L2", "HW", "PlantLoop", (v2.key,), ()))
+    warnings = (
+        HVACWarning("unconnected_component", "P has no connections", v.key),
+        HVACWarning("missing_branch", "Branch X missing", "X"),
+        HVACWarning("unconnected_component", "Q has no connections", v2.key),
+    )
+    g = HVACGraph(version=V, loops=loops, vertices=(v, v2), warnings=warnings)
+    refs = {w.ref for w in g.subset(loop_names=["CHW"]).warnings}
+    assert v.key in refs  # kept vertex's diagnostic survives
+    assert "X" in refs  # model-level diagnostic survives
+    assert v2.key not in refs  # diagnostic for the filtered-out loop is dropped
+
+
+def test_overview_honors_elk_layout() -> None:
+    g = build_hvac_graph(_air_and_plant_model())
+    assert g.overview_mermaid(HVACDiagramConfig(layout="elk")).startswith("---\nconfig:\n  layout: elk\n---")
+    assert not g.overview_mermaid().startswith("---")
+
+
+def test_complexity_hint_suppressed_under_elk() -> None:
+    g = _complex_graph()
+    assert "%%" in g.to_mermaid()  # dagre default carries the advisory
+    assert "%%" not in g.to_mermaid(HVACDiagramConfig(layout="elk"))  # already on elk — no stale hint
+
+
 def test_overview_mermaid(graph: HVACGraph) -> None:
     ov = graph.overview_mermaid()
     assert ov.startswith("flowchart")

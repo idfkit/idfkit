@@ -83,17 +83,21 @@ def _zone_cluster(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -
 
 def _zone_edges(graph: HVACGraph, layout: Layout, config: HVACDiagramConfig) -> list[str]:
     out: list[str] = []
-    returns = zone_outflow_targets(graph) if config.show_return_air else {}
+    outflow = zone_outflow_targets(graph)  # components air leaves the zone into (return mixer, exhaust fan)
     for z in graph.zones:
         zid = layout.zone_ids[z.name]
+        exhaust = set(outflow.get(z.name, ()))
         for key in z.equipment_keys:
+            if key in exhaust:
+                continue  # exhaust device removes air from the zone — drawn as a return leg, not supply
             sid = layout.vertex_ids.get(key)
             if sid is not None:
                 out.append(f"  {sid} -> {zid};")
-        for key in returns.get(z.name, ()):
-            tid = layout.vertex_ids.get(key)
-            if tid is not None:
-                out.append(f'  {zid} -> {tid} [style=dashed, label="return"];')
+        if config.show_return_air:
+            for key in outflow.get(z.name, ()):
+                tid = layout.vertex_ids.get(key)
+                if tid is not None:
+                    out.append(f'  {zid} -> {tid} [style=dashed, label="return"];')
     return out
 
 

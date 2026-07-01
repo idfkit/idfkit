@@ -367,6 +367,11 @@ class HVACGraph:
             for z in self.zones
             if z.name in served_zones
         )
+        # Keep every diagnostic still relevant to the subset: drop only those whose
+        # ref is a vertex that was filtered out (e.g. an unconnected_component on a
+        # removed loop); model-level warnings (node/branch names, refs) are retained.
+        all_vertex_keys = {v.key for v in self.vertices}
+        warnings = tuple(w for w in self.warnings if w.ref in keys or w.ref not in all_vertex_keys)
         return HVACGraph(
             version=self.version,
             loops=selected_loops,
@@ -374,7 +379,7 @@ class HVACGraph:
             nodes=nodes,
             edges=edges,
             zones=zones,
-            warnings=(),
+            warnings=warnings,
             refrigerant_edges=refrigerant,
             _by_key={v.key: v for v in vertices},
         )

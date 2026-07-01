@@ -45,6 +45,8 @@ COMPOUND_CONTAINER_TYPES: frozenset[str] = frozenset({
     "AirLoopHVAC:UnitaryHeatCool",
     "AirLoopHVAC:UnitaryHeatOnly",
     "AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass",
+    "AirLoopHVAC:Unitary:Furnace:HeatCool",
+    "AirLoopHVAC:Unitary:Furnace:HeatOnly",
     "CoilSystem:Cooling:DX",
     "CoilSystem:Heating:DX",
     "CoilSystem:Cooling:Water",
