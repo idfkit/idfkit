@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `intersect_and_match(doc, options=None)` — a robust intersect-and-split surface matcher. Coplanar, oppositely-facing surfaces from adjacent zones that overlap are split into congruent matched fragments (interior `Surface` boundary, cross-referenced) plus exterior remainders. A single long wall shared with several smaller neighbouring zones is split into one matched fragment per neighbour (the one-to-many case the old matcher could not handle). Works for walls and horizontal floor/ceiling pairs, re-homes detailed windows onto the fragment that contains them (a window straddling a cut leaves the surface unsplit and is reported, never silently clipped), and returns a typed `MatchReport`. Tunable via `MatchOptions` (tolerances, snap grid, sliver thresholds, surface classes). Convex-preserving and dependency-free. ([#173](https://github.com/idfkit/idfkit/pull/173))
+
+### Changed
+
+- **Breaking:** `intersect_match()` now intersects **and splits** surfaces instead of only linking congruent pairs. Previously it matched only same-size surfaces (areas within ±10%), bound each surface to at most one partner, and only considered `Wall` surfaces; it now splits partially-overlapping and unequal surfaces, matches every overlapping neighbour, and also matches `Floor`, `Ceiling`, and `Roof` surfaces. It is now a thin wrapper over `intersect_and_match()` with default options (still returns `None`). Models with partially-overlapping coplanar surfaces, or with non-wall surfaces that happen to be coplanar and oppositely-facing, will gain interior boundaries and split surfaces where the old behaviour left them exterior. ([#173](https://github.com/idfkit/idfkit/pull/173))
+
 ## [0.14.0] - 2026-06-11
 
 ### Added

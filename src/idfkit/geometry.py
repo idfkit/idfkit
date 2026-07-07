@@ -1261,11 +1261,13 @@ def _is_left_of_edge(
     ) >= 0
 
 
-def _line_intersect_2d(
+def line_intersect_2d(
     a1: tuple[float, float],
     a2: tuple[float, float],
     b1: tuple[float, float],
     b2: tuple[float, float],
+    *,
+    eps: float = 1e-12,
 ) -> tuple[float, float] | None:
     """Intersection of two infinite lines through (a1, a2) and (b1, b2)."""
     d1x = a2[0] - a1[0]
@@ -1273,7 +1275,7 @@ def _line_intersect_2d(
     d2x = b2[0] - b1[0]
     d2y = b2[1] - b1[1]
     denom = d1x * d2y - d1y * d2x
-    if abs(denom) < 1e-12:
+    if abs(denom) < eps:
         return None
     t = ((b1[0] - a1[0]) * d2y - (b1[1] - a1[1]) * d2x) / denom
     return (a1[0] + t * d1x, a1[1] + t * d1y)
@@ -1306,17 +1308,17 @@ def _sutherland_hodgman(
             if curr_inside:
                 output.append(current)
                 if not nxt_inside:
-                    pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                    pt = line_intersect_2d(current, nxt, edge_start, edge_end)
                     if pt is not None:
                         output.append(pt)
             elif nxt_inside:
-                pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                pt = line_intersect_2d(current, nxt, edge_start, edge_end)
                 if pt is not None:
                     output.append(pt)
     return output
 
 
-def _is_convex_2d(poly: Sequence[tuple[float, float]]) -> bool:
+def is_convex_2d(poly: Sequence[tuple[float, float]], *, eps: float = 1e-12) -> bool:
     """Return ``True`` if the 2-D polygon is convex."""
     n = len(poly)
     if n < 3:
@@ -1327,7 +1329,7 @@ def _is_convex_2d(poly: Sequence[tuple[float, float]]) -> bool:
         x2, y2 = poly[(i + 1) % n]
         x3, y3 = poly[(i + 2) % n]
         cross = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2)
-        if abs(cross) < 1e-12:
+        if abs(cross) < eps:
             continue
         if sign is None:
             sign = cross
@@ -1368,8 +1370,8 @@ def polygon_intersection_2d(
         The intersection polygon vertices, or ``None`` if disjoint or
         both polygons are concave.
     """
-    a_convex = _is_convex_2d(poly_a)
-    b_convex = _is_convex_2d(poly_b)
+    a_convex = is_convex_2d(poly_a)
+    b_convex = is_convex_2d(poly_b)
 
     if (a_convex and b_convex) or b_convex:
         result = _sutherland_hodgman(poly_a, poly_b)
@@ -1453,96 +1455,26 @@ def polygon_contains_2d(
 # ---------------------------------------------------------------------------
 
 
-def intersect_match(doc: IDFDocument) -> None:  # noqa: C901
-    """Match adjacent surfaces and set boundary conditions.
+def intersect_match(doc: IDFDocument) -> None:
+    """Intersect and match adjacent interzone surfaces, splitting as needed.
 
-    Scans all ``BuildingSurface:Detailed`` walls and identifies pairs
-    whose polygons are coincident (same plane, overlapping area).  For
-    each matched pair, the boundary conditions are updated so the
-    surfaces reference each other.
-
-    This is the idfkit equivalent of geomeppy's
-    ``idf.intersect_match()``.
-
-    The algorithm is O(n²) over exterior walls but uses normal-vector
-    and centroid-distance filters to skip most comparisons quickly.
+    Coplanar, oppositely-facing surfaces that overlap are split into
+    congruent matched fragments (interior ``Surface`` boundary conditions)
+    plus exterior remainders.  A single surface abutting several smaller
+    neighbours is split into one matched fragment per neighbour — the
+    long-wall-shared-with-many-zones case.  The document is modified in place.
 
     Args:
         doc: The document to modify in-place.
 
     !!! note
-        This implementation handles the common case of full-overlap
-        matching (same-size surfaces on opposite sides of a shared
-        wall).  Partial intersection and surface splitting are **not**
-        implemented — use EnergyPlus' ``ExpandObjects`` preprocessor
-        or manual surface definition for complex cases.
+        This is a thin wrapper over
+        [`intersect_and_match`][idfkit.surface_matching.intersect_and_match],
+        which returns a
+        [`MatchReport`][idfkit.surface_matching.MatchReport] and accepts a
+        [`MatchOptions`][idfkit.surface_matching.MatchOptions] for tuning
+        tolerances and scope.  Call it directly when you need either.
     """
-    walls: list[IDFObject] = []
-    for surface in doc["BuildingSurface:Detailed"]:
-        st = getattr(surface, "surface_type", None) or ""
-        if st.upper() == "WALL":
-            walls.append(surface)
-    logger.debug("intersect_match: checking %d walls", len(walls))
+    from .surface_matching import intersect_and_match
 
-    matched: set[int] = set()
-
-    for i, wall_a in enumerate(walls):
-        if id(wall_a) in matched:
-            continue
-        coords_a = get_surface_coords(wall_a)
-        if coords_a is None:
-            continue
-
-        normal_a = coords_a.normal
-        centroid_a = coords_a.centroid
-
-        for j in range(i + 1, len(walls)):
-            wall_b = walls[j]
-            if id(wall_b) in matched:
-                continue
-            coords_b = get_surface_coords(wall_b)
-            if coords_b is None:
-                continue
-
-            # Quick filter: normals must be anti-parallel
-            normal_b = coords_b.normal
-            dot = normal_a.dot(normal_b)
-            if dot > -0.99:
-                continue
-
-            # Quick filter: centroids must be close
-            centroid_b = coords_b.centroid
-            dist = (centroid_a - centroid_b).length()
-            if dist > 1.0:  # Allow 1 m tolerance for thick walls
-                continue
-
-            # Check coplanarity: centroid_b must lie on plane of A
-            d = (centroid_b - centroid_a).dot(normal_a)
-            if abs(d) > 0.5:  # Allow 0.5 m for wall thickness
-                continue
-
-            # Check area similarity
-            area_a = coords_a.area
-            area_b = coords_b.area
-            if area_a < 1e-6:
-                continue
-            ratio = area_b / area_a
-            if ratio < 0.9 or ratio > 1.1:
-                continue
-
-            # Match found — update boundary conditions
-            wall_a.outside_boundary_condition = "Surface"
-            wall_a.outside_boundary_condition_object = wall_b.name
-            wall_a.sun_exposure = "NoSun"
-            wall_a.wind_exposure = "NoWind"
-
-            wall_b.outside_boundary_condition = "Surface"
-            wall_b.outside_boundary_condition_object = wall_a.name
-            wall_b.sun_exposure = "NoSun"
-            wall_b.wind_exposure = "NoWind"
-
-            matched.add(id(wall_a))
-            matched.add(id(wall_b))
-            break
-
-    logger.debug("intersect_match: matched %d surfaces", len(matched))
+    intersect_and_match(doc)

@@ -78,6 +78,7 @@ nav:
       - Validation: api/validation.md
       - Geometry: api/geometry.md
       - Geometry Builders: api/geometry_builders.md
+      - Surface Matching: api/surface_matching.md
       - Zoning: api/zoning.md
       - References: api/references.md
       - Thermal: api/thermal.md
