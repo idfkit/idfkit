@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-07-07
+
 ### Added
 
 - `intersect_and_match(doc, options=None)` — a robust intersect-and-split surface matcher. Coplanar, oppositely-facing surfaces from adjacent zones that overlap are split into congruent matched fragments (interior `Surface` boundary, cross-referenced) plus exterior remainders. A single long wall shared with several smaller neighbouring zones is split into one matched fragment per neighbour (the one-to-many case the old matcher could not handle). Works for walls and horizontal floor/ceiling pairs, re-homes detailed windows onto the fragment that contains them (a window straddling a cut leaves the surface unsplit and is reported, never silently clipped), and returns a typed `MatchReport`. Tunable via `MatchOptions` (tolerances, snap grid, sliver thresholds, surface classes). Convex-preserving and dependency-free. ([#173](https://github.com/idfkit/idfkit/pull/173))
@@ -300,7 +302,8 @@ Initial public release.
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
 [unreleased]: https://github.com/idfkit/idfkit/compare/v0.13.0...HEAD
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/idfkit/idfkit/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/idfkit/idfkit/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/idfkit/idfkit/compare/v0.12.2...v0.13.0
 [0.12.2]: https://github.com/idfkit/idfkit/compare/v0.12.1...v0.12.2
