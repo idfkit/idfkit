@@ -1353,12 +1353,18 @@ class TestIntersectMatch:
         assert wall_b.outside_boundary_condition == "Surface"
         assert wall_b.outside_boundary_condition_object == "WallA"
 
-    def test_no_match_different_areas(self) -> None:
-        """Walls with significantly different areas are not matched as adjacent surfaces."""
+    def test_partial_overlap_splits_and_matches(self) -> None:
+        """A smaller wall overlapping a larger one splits the larger and matches the overlap.
+
+        Under the intersect-and-split algorithm, unequal overlapping walls are
+        no longer skipped: the overlap becomes a matched interior fragment and
+        the leftover stays exterior.  Total area on the big wall's zone is
+        conserved.
+        """
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "A", {})
         doc.add("Zone", "B", {})
-        # Big wall
+        # Big wall (10 x 3 = 30 m²)
         doc.add(
             "BuildingSurface:Detailed",
             "BigWall",
@@ -1376,7 +1382,7 @@ class TestIntersectMatch:
             },
             validate=False,
         )
-        # Small wall (same plane, anti-parallel normal, but different area)
+        # Small wall (same plane, anti-parallel normal, 1 x 1 = 1 m², inside the big wall)
         doc.add(
             "BuildingSurface:Detailed",
             "SmallWall",
@@ -1395,9 +1401,25 @@ class TestIntersectMatch:
             validate=False,
         )
         intersect_match(doc)
-        big = doc.getobject("BuildingSurface:Detailed", "BigWall")
-        assert big is not None
-        assert big.outside_boundary_condition == "Outdoors"
+
+        # SmallWall is now interior, matched to a BigWall fragment.
+        small = doc.getobject("BuildingSurface:Detailed", "SmallWall")
+        assert small is not None
+        assert small.outside_boundary_condition == "Surface"
+        partner_name = small.outside_boundary_condition_object
+        assert partner_name.startswith("BigWall")
+
+        zone_a = [s for s in doc["BuildingSurface:Detailed"] if getattr(s, "zone_name", "") == "A"]
+        matched = [s for s in zone_a if s.outside_boundary_condition == "Surface"]
+        remainder = [s for s in zone_a if s.outside_boundary_condition == "Outdoors"]
+        # One matched fragment (the 1 m² overlap) plus exterior remainder pieces.
+        assert len(matched) == 1
+        assert matched[0].outside_boundary_condition_object == "SmallWall"
+        assert abs(get_surface_coords(matched[0]).area - 1.0) < 1e-6
+        assert len(remainder) >= 1
+        # Area is conserved across the split.
+        total = sum(get_surface_coords(s).area for s in zone_a)
+        assert abs(total - 30.0) < 1e-6
 
     def test_no_match_normals_not_antiparallel(self) -> None:
         """Walls with non-antiparallel normals are not matched as adjacent surfaces."""

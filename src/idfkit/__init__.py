@@ -120,6 +120,13 @@ from .schedules.builder import (
 # Schema access
 from .schema import EpJSONSchema, SchemaManager, get_schema, get_schema_manager
 
+# Surface intersect-and-match
+from .surface_matching import (
+    MatchOptions,
+    MatchReport,
+    intersect_and_match,
+)
+
 # Validation
 from .validation import (
     ValidationError,
@@ -408,6 +415,8 @@ __all__ = [
     "IDFParser",
     "IdfKitError",
     "InvalidFieldError",
+    "MatchOptions",
+    "MatchReport",
     "MigrationError",
     "MigrationReport",
     "NoDesignDaysError",
@@ -458,6 +467,7 @@ __all__ = [
     "get_idf_version",
     "get_schema",
     "get_schema_manager",
+    "intersect_and_match",
     "intersect_match",
     "io_reference_url",
     "is_supported_version",

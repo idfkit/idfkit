@@ -73,13 +73,13 @@ These walk every `BuildingSurface:Detailed`, `Shading:*`, and `FenestrationSurfa
 
 ## Surface matching
 
-`intersect_match()` finds pairs of surfaces that overlap (e.g. interior walls shared between two zones) and sets their `outside_boundary_condition` to `Surface` and `outside_boundary_condition_object` to point at each other:
+`intersect_and_match()` finds coplanar, oppositely-facing surfaces from adjacent zones that overlap and **splits** them as needed into congruent matched fragments (interior `Surface` boundary, cross-referenced) plus exterior remainders. A single long wall shared with several smaller neighbouring zones is split into one matched fragment per neighbour. It works for walls and horizontal floor/ceiling pairs alike, returns a typed `MatchReport`, and accepts a `MatchOptions` for tuning tolerances and scope. Detailed windows are re-homed onto the fragment that contains them; a window straddling a cut leaves that surface unsplit and is recorded in `report.fenestration_conflicts` (never silently clipped). `intersect_match()` is a void-returning shorthand that runs it with default options.
 
 ```python
 --8<-- "docs/snippets/agent_references/geometry-and-surfaces.py:intersect-match"
 ```
 
-For ceiling↔floor matching specifically (often what you want for multi-story models), see [geometry-builders-and-zoning.md](geometry-builders-and-zoning.md) for `link_horizontal_surfaces` and `detect_horizontal_adjacencies`.
+For higher-level ceiling↔floor helpers, see [geometry-builders-and-zoning.md](geometry-builders-and-zoning.md) for `link_horizontal_surfaces` and `detect_horizontal_adjacencies`.
 
 ## 2D polygon utilities
 

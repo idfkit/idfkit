@@ -1453,96 +1453,26 @@ def polygon_contains_2d(
 # ---------------------------------------------------------------------------
 
 
-def intersect_match(doc: IDFDocument) -> None:  # noqa: C901
-    """Match adjacent surfaces and set boundary conditions.
+def intersect_match(doc: IDFDocument) -> None:
+    """Intersect and match adjacent interzone surfaces, splitting as needed.
 
-    Scans all ``BuildingSurface:Detailed`` walls and identifies pairs
-    whose polygons are coincident (same plane, overlapping area).  For
-    each matched pair, the boundary conditions are updated so the
-    surfaces reference each other.
-
-    This is the idfkit equivalent of geomeppy's
-    ``idf.intersect_match()``.
-
-    The algorithm is O(n²) over exterior walls but uses normal-vector
-    and centroid-distance filters to skip most comparisons quickly.
+    Coplanar, oppositely-facing surfaces that overlap are split into
+    congruent matched fragments (interior ``Surface`` boundary conditions)
+    plus exterior remainders.  A single surface abutting several smaller
+    neighbours is split into one matched fragment per neighbour — the
+    long-wall-shared-with-many-zones case.  The document is modified in place.
 
     Args:
         doc: The document to modify in-place.
 
     !!! note
-        This implementation handles the common case of full-overlap
-        matching (same-size surfaces on opposite sides of a shared
-        wall).  Partial intersection and surface splitting are **not**
-        implemented — use EnergyPlus' ``ExpandObjects`` preprocessor
-        or manual surface definition for complex cases.
+        This is a thin wrapper over
+        [`intersect_and_match`][idfkit.surface_matching.intersect_and_match],
+        which returns a
+        [`MatchReport`][idfkit.surface_matching.MatchReport] and accepts a
+        [`MatchOptions`][idfkit.surface_matching.MatchOptions] for tuning
+        tolerances and scope.  Call it directly when you need either.
     """
-    walls: list[IDFObject] = []
-    for surface in doc["BuildingSurface:Detailed"]:
-        st = getattr(surface, "surface_type", None) or ""
-        if st.upper() == "WALL":
-            walls.append(surface)
-    logger.debug("intersect_match: checking %d walls", len(walls))
+    from .surface_matching import intersect_and_match
 
-    matched: set[int] = set()
-
-    for i, wall_a in enumerate(walls):
-        if id(wall_a) in matched:
-            continue
-        coords_a = get_surface_coords(wall_a)
-        if coords_a is None:
-            continue
-
-        normal_a = coords_a.normal
-        centroid_a = coords_a.centroid
-
-        for j in range(i + 1, len(walls)):
-            wall_b = walls[j]
-            if id(wall_b) in matched:
-                continue
-            coords_b = get_surface_coords(wall_b)
-            if coords_b is None:
-                continue
-
-            # Quick filter: normals must be anti-parallel
-            normal_b = coords_b.normal
-            dot = normal_a.dot(normal_b)
-            if dot > -0.99:
-                continue
-
-            # Quick filter: centroids must be close
-            centroid_b = coords_b.centroid
-            dist = (centroid_a - centroid_b).length()
-            if dist > 1.0:  # Allow 1 m tolerance for thick walls
-                continue
-
-            # Check coplanarity: centroid_b must lie on plane of A
-            d = (centroid_b - centroid_a).dot(normal_a)
-            if abs(d) > 0.5:  # Allow 0.5 m for wall thickness
-                continue
-
-            # Check area similarity
-            area_a = coords_a.area
-            area_b = coords_b.area
-            if area_a < 1e-6:
-                continue
-            ratio = area_b / area_a
-            if ratio < 0.9 or ratio > 1.1:
-                continue
-
-            # Match found — update boundary conditions
-            wall_a.outside_boundary_condition = "Surface"
-            wall_a.outside_boundary_condition_object = wall_b.name
-            wall_a.sun_exposure = "NoSun"
-            wall_a.wind_exposure = "NoWind"
-
-            wall_b.outside_boundary_condition = "Surface"
-            wall_b.outside_boundary_condition_object = wall_a.name
-            wall_b.sun_exposure = "NoSun"
-            wall_b.wind_exposure = "NoWind"
-
-            matched.add(id(wall_a))
-            matched.add(id(wall_b))
-            break
-
-    logger.debug("intersect_match: matched %d surfaces", len(matched))
+    intersect_and_match(doc)

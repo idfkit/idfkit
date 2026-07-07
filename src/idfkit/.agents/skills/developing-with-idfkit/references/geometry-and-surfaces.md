@@ -141,16 +141,26 @@ for orientation, ratio in [("North", 0.3), ("South", 0.5), ("East", 0.4), ("West
 
 ## Surface matching
 
-`intersect_match()` finds pairs of surfaces that overlap (e.g. interior walls shared between two zones) and sets their `outside_boundary_condition` to `Surface` and `outside_boundary_condition_object` to point at each other:
+`intersect_and_match()` finds coplanar, oppositely-facing surfaces from adjacent zones that overlap and **splits** them as needed into congruent matched fragments (interior `Surface` boundary, cross-referenced) plus exterior remainders. A single long wall shared with several smaller neighbouring zones is split into one matched fragment per neighbour. It works for walls and horizontal floor/ceiling pairs alike, returns a typed `MatchReport`, and accepts a `MatchOptions` for tuning tolerances and scope. Detailed windows are re-homed onto the fragment that contains them; a window straddling a cut leaves that surface unsplit and is recorded in `report.fenestration_conflicts` (never silently clipped). `intersect_match()` is a void-returning shorthand that runs it with default options.
 
 ```python
-from idfkit import intersect_match
+from idfkit import MatchOptions, intersect_and_match, intersect_match
 
+# Split-and-match: overlapping coplanar surfaces from adjacent zones are split
+# into congruent matched fragments (interior "Surface" boundary, cross-referenced)
+# plus exterior remainders. A long wall shared with several smaller zones is split
+# into one matched fragment per neighbour. Returns a typed MatchReport.
+report = intersect_and_match(doc)
+print(report.pairs_matched, report.surfaces_split, report.fenestration_conflicts)
+
+# Tune tolerances and scope with MatchOptions (e.g. walls only, thicker walls):
+intersect_and_match(doc, MatchOptions(surface_classes=("WALL",), max_thickness=0.6))
+
+# intersect_match() is the void-returning shorthand for the default options:
 intersect_match(doc)  # mutates surfaces in place
-# Every shared interior wall now has its boundary linked to the matching surface in the neighbour zone.
 ```
 
-For ceiling↔floor matching specifically (often what you want for multi-story models), see [geometry-builders-and-zoning.md](geometry-builders-and-zoning.md) for `link_horizontal_surfaces` and `detect_horizontal_adjacencies`.
+For higher-level ceiling↔floor helpers, see [geometry-builders-and-zoning.md](geometry-builders-and-zoning.md) for `link_horizontal_surfaces` and `detect_horizontal_adjacencies`.
 
 ## 2D polygon utilities
 
