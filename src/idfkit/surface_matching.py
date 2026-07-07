@@ -29,7 +29,8 @@ The algorithm is dependency-free and convex-preserving:
 
 The remainder is computed with a convex-cutter *onion difference* built entirely
 on half-plane clipping, so every output piece stays convex (EnergyPlus-friendly
-and window-safe). Concave cutters (rare) are ear-clipped into triangles first.
+and window-safe). A concave cutter or subject (rare) is ear-clipped into
+triangles first.
 """
 
 from __future__ import annotations
@@ -40,9 +41,14 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from .geometry import (
+    Polygon2D as Poly2D,
+)
+from .geometry import (
     Polygon3D,
     Vector3D,
     get_surface_coords,
+    is_convex_2d,
+    line_intersect_2d,
     polygon_area_2d,
     polygon_contains_2d,
     polygon_intersection_2d,
@@ -55,9 +61,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-Poly2D = list[tuple[float, float]]
-
 _EPS = 1e-9
+_LINE_EPS = 1e-15
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +77,8 @@ class MatchOptions:
     Attributes:
         angle_tol_deg: Two surfaces are treated as coplanar when the angle
             between their normals (modulo sign) is within this tolerance.
+            Defaults to ~8.1°, matching the ``dot <= -0.99`` antiparallel
+            tolerance of the previous ``intersect_match`` implementation.
         max_thickness: Maximum plane-offset difference (metres) tolerated when
             clustering surfaces onto one plane — absorbs construction thickness.
         snap_tol: 2-D snap-rounding grid (metres). Projected coordinates are
@@ -85,7 +92,7 @@ class MatchOptions:
             same zone are never matched to each other.
     """
 
-    angle_tol_deg: float = 2.0
+    angle_tol_deg: float = 8.1
     max_thickness: float = 0.5
     snap_tol: float = 1e-4
     min_area: float = 1e-4
@@ -144,22 +151,7 @@ def _bbox_disjoint(a: Poly2D, b: Poly2D) -> bool:
 
 
 def _is_convex(poly: Poly2D) -> bool:
-    n = len(poly)
-    if n < 3:
-        return False
-    sign: float | None = None
-    for i in range(n):
-        x1, y1 = poly[i]
-        x2, y2 = poly[(i + 1) % n]
-        x3, y3 = poly[(i + 2) % n]
-        cross = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2)
-        if abs(cross) < _EPS:
-            continue
-        if sign is None:
-            sign = cross
-        elif cross * sign < 0:
-            return False
-    return True
+    return is_convex_2d(poly, eps=_EPS)
 
 
 def _line_intersect(
@@ -168,13 +160,7 @@ def _line_intersect(
     b1: tuple[float, float],
     b2: tuple[float, float],
 ) -> tuple[float, float] | None:
-    d1x, d1y = a2[0] - a1[0], a2[1] - a1[1]
-    d2x, d2y = b2[0] - b1[0], b2[1] - b1[1]
-    denom = d1x * d2y - d1y * d2x
-    if abs(denom) < 1e-15:
-        return None
-    t = ((b1[0] - a1[0]) * d2y - (b1[1] - a1[1]) * d2x) / denom
-    return (a1[0] + t * d1x, a1[1] + t * d1y)
+    return line_intersect_2d(a1, a2, b1, b2, eps=_LINE_EPS)
 
 
 def _clip_halfplane(
@@ -214,6 +200,13 @@ def _clip_halfplane(
     return out
 
 
+def _ear_cross(verts: list[tuple[float, float]], idx: list[int], k: int) -> float:
+    """Cross product at candidate ear tip ``idx[k]`` (larger = more convex)."""
+    m = len(idx)
+    a, b, c = verts[idx[(k - 1) % m]], verts[idx[k]], verts[idx[(k + 1) % m]]
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
 def _triangulate(poly: Poly2D) -> list[Poly2D]:
     """Ear-clip a simple polygon into triangles (each convex)."""
     verts = _ensure_ccw(_clean_poly(poly))
@@ -242,7 +235,14 @@ def _triangulate(poly: Poly2D) -> list[Poly2D]:
             ear_found = True
             break
         if not ear_found:
-            break
+            # No strictly-valid ear (degenerate/near-collinear vertices from
+            # snap-rounding can starve the strict test). Clip the least-reflex
+            # candidate anyway so triangulation always covers the full
+            # polygon instead of silently dropping the untriangulated tail.
+            best_k = max(range(m), key=lambda k: _ear_cross(verts, idx, k))
+            i0, i1, i2 = idx[(best_k - 1) % m], idx[best_k], idx[(best_k + 1) % m]
+            triangles.append([verts[i0], verts[i1], verts[i2]])
+            idx.pop(best_k)
     if len(idx) == 3:
         triangles.append([verts[idx[0]], verts[idx[1]], verts[idx[2]]])
     return triangles
@@ -288,7 +288,17 @@ def _convex_difference(subject: Poly2D, cutter: Poly2D) -> list[Poly2D]:
 
 
 def _difference_one(subject: Poly2D, cutter: Poly2D) -> list[Poly2D]:
-    """``subject`` minus an arbitrary simple ``cutter``."""
+    """``subject`` minus an arbitrary simple ``cutter``, as convex pieces.
+
+    ``_convex_difference`` only guarantees convex output when ``subject``
+    itself is convex, so a concave subject is triangulated first (a concave
+    cutter is already handled below).
+    """
+    if not _is_convex(subject):
+        pieces: list[Poly2D] = []
+        for tri in _triangulate(subject):
+            pieces.extend(_difference_one(tri, cutter))
+        return pieces
     if _is_convex(cutter):
         return _convex_difference(subject, cutter)
     pieces = [subject]
@@ -537,7 +547,8 @@ def _process_cluster(doc: IDFDocument, cluster: list[_Surf], opts: MatchOptions,
     if not plus or not minus:
         return
 
-    regions = _build_regions(plus, minus, opts)
+    regions, region_drops = _build_regions(plus, minus, opts)
+    report.slivers_dropped += region_drops
     if not regions:
         return
 
@@ -546,15 +557,22 @@ def _process_cluster(doc: IDFDocument, cluster: list[_Surf], opts: MatchOptions,
     conflicted: set[int] = set()
     surviving: list[_Region] = []
     frags_by_surf: dict[int, list[_Frag]] = {}
+    remainder_drops = 0
     while True:
         surviving = [
             r for r in regions if id(r.plus.surf.obj) not in conflicted and id(r.minus.surf.obj) not in conflicted
         ]
-        frags_by_surf = {id(p.surf.obj): _fragments_for(p, surviving, opts) for p in projected}
+        frags_by_surf = {}
+        remainder_drops = 0
+        for p in projected:
+            frags, dropped = _fragments_for(p, surviving, opts)
+            frags_by_surf[id(p.surf.obj)] = frags
+            remainder_drops += dropped
         new_conflicts = _detect_conflicts(doc, projected, frags_by_surf, frame, opts, conflicted)
         if not new_conflicts:
             break
         conflicted |= new_conflicts
+    report.slivers_dropped += remainder_drops
 
     for name in sorted({_name_of(p, conflicted) for p in projected if id(p.surf.obj) in conflicted}):
         if name:
@@ -567,8 +585,9 @@ def _name_of(p: _ProjSurf, conflicted: set[int]) -> str:
     return p.surf.obj.name if id(p.surf.obj) in conflicted else ""
 
 
-def _build_regions(plus: list[_ProjSurf], minus: list[_ProjSurf], opts: MatchOptions) -> list[_Region]:
+def _build_regions(plus: list[_ProjSurf], minus: list[_ProjSurf], opts: MatchOptions) -> tuple[list[_Region], int]:
     regions: list[_Region] = []
+    dropped = 0
     rid = 0
     for p in plus:
         for m in minus:
@@ -580,22 +599,30 @@ def _build_regions(plus: list[_ProjSurf], minus: list[_ProjSurf], opts: MatchOpt
             if inter is None:
                 continue
             inter = _clean_poly(list(inter))
-            if len(inter) < 3 or abs(_signed_area(inter)) < opts.min_area:
+            if len(inter) < 3:
+                continue
+            if abs(_signed_area(inter)) < opts.min_area or _min_edge_len(inter) < opts.min_edge:
+                dropped += 1
                 continue
             regions.append(_Region(rid, p, m, _ensure_ccw(inter)))
             rid += 1
-    return regions
+    return regions, dropped
 
 
-def _fragments_for(p: _ProjSurf, regions: list[_Region], opts: MatchOptions) -> list[_Frag]:
+def _fragments_for(p: _ProjSurf, regions: list[_Region], opts: MatchOptions) -> tuple[list[_Frag], int]:
     mine = [r for r in regions if r.plus.surf.obj is p.surf.obj or r.minus.surf.obj is p.surf.obj]
     frags: list[_Frag] = [_Frag(r.overlap, "matched", r) for r in mine]
     remainder = _difference_many(p.poly2d, [r.overlap for r in mine])
+    dropped = 0
     for piece in remainder:
         piece = _clean_poly(piece)
-        if len(piece) >= 3 and abs(_signed_area(piece)) >= opts.min_area and _min_edge_len(piece) >= opts.min_edge:
+        if len(piece) < 3:
+            continue
+        if abs(_signed_area(piece)) >= opts.min_area and _min_edge_len(piece) >= opts.min_edge:
             frags.append(_Frag(_ensure_ccw(piece), "remainder", None))
-    return frags
+        else:
+            dropped += 1
+    return frags, dropped
 
 
 def _detect_conflicts(
@@ -631,12 +658,19 @@ def _detect_conflicts(
 
 
 def _collect_children(doc: IDFDocument, name: str) -> tuple[list[IDFObject], list[IDFObject]]:
+    """Split objects referencing *name* into re-homable windows and blockers.
+
+    ``detailed`` holds ``FenestrationSurface:Detailed`` objects attached via
+    ``building_surface_name`` — they get re-homed onto the fragment that
+    contains them. Everything else that references *name* in any field (a
+    simple ``Window``/``Door``, an AirflowNetwork surface component, a
+    ``SurfaceProperty:*``, ...) goes to ``others`` and blocks the split,
+    since it cannot be safely re-homed onto a specific fragment.
+    """
     detailed: list[IDFObject] = []
     others: list[IDFObject] = []
-    for ref in doc.references.get_referencing(name):
-        if (getattr(ref, "building_surface_name", None) or "") != name:
-            continue
-        if ref.obj_type == "FenestrationSurface:Detailed":
+    for ref, field_name in doc.references.get_referencing_with_fields(name):
+        if field_name == "building_surface_name" and ref.obj_type == "FenestrationSurface:Detailed":
             detailed.append(ref)
         else:
             others.append(ref)

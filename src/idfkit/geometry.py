@@ -1261,11 +1261,13 @@ def _is_left_of_edge(
     ) >= 0
 
 
-def _line_intersect_2d(
+def line_intersect_2d(
     a1: tuple[float, float],
     a2: tuple[float, float],
     b1: tuple[float, float],
     b2: tuple[float, float],
+    *,
+    eps: float = 1e-12,
 ) -> tuple[float, float] | None:
     """Intersection of two infinite lines through (a1, a2) and (b1, b2)."""
     d1x = a2[0] - a1[0]
@@ -1273,7 +1275,7 @@ def _line_intersect_2d(
     d2x = b2[0] - b1[0]
     d2y = b2[1] - b1[1]
     denom = d1x * d2y - d1y * d2x
-    if abs(denom) < 1e-12:
+    if abs(denom) < eps:
         return None
     t = ((b1[0] - a1[0]) * d2y - (b1[1] - a1[1]) * d2x) / denom
     return (a1[0] + t * d1x, a1[1] + t * d1y)
@@ -1306,17 +1308,17 @@ def _sutherland_hodgman(
             if curr_inside:
                 output.append(current)
                 if not nxt_inside:
-                    pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                    pt = line_intersect_2d(current, nxt, edge_start, edge_end)
                     if pt is not None:
                         output.append(pt)
             elif nxt_inside:
-                pt = _line_intersect_2d(current, nxt, edge_start, edge_end)
+                pt = line_intersect_2d(current, nxt, edge_start, edge_end)
                 if pt is not None:
                     output.append(pt)
     return output
 
 
-def _is_convex_2d(poly: Sequence[tuple[float, float]]) -> bool:
+def is_convex_2d(poly: Sequence[tuple[float, float]], *, eps: float = 1e-12) -> bool:
     """Return ``True`` if the 2-D polygon is convex."""
     n = len(poly)
     if n < 3:
@@ -1327,7 +1329,7 @@ def _is_convex_2d(poly: Sequence[tuple[float, float]]) -> bool:
         x2, y2 = poly[(i + 1) % n]
         x3, y3 = poly[(i + 2) % n]
         cross = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2)
-        if abs(cross) < 1e-12:
+        if abs(cross) < eps:
             continue
         if sign is None:
             sign = cross
@@ -1368,8 +1370,8 @@ def polygon_intersection_2d(
         The intersection polygon vertices, or ``None`` if disjoint or
         both polygons are concave.
     """
-    a_convex = _is_convex_2d(poly_a)
-    b_convex = _is_convex_2d(poly_b)
+    a_convex = is_convex_2d(poly_a)
+    b_convex = is_convex_2d(poly_b)
 
     if (a_convex and b_convex) or b_convex:
         result = _sutherland_hodgman(poly_a, poly_b)

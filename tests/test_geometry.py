@@ -11,8 +11,6 @@ from idfkit.geometry import (
     Polygon3D,
     Vector3D,
     _inset_polygon,  # pyright: ignore[reportPrivateUsage]
-    _is_convex_2d,  # pyright: ignore[reportPrivateUsage]
-    _line_intersect_2d,  # pyright: ignore[reportPrivateUsage]
     _orientation_to_azimuth,  # pyright: ignore[reportPrivateUsage]
     _point_in_polygon_2d,  # pyright: ignore[reportPrivateUsage]
     _sutherland_hodgman,  # pyright: ignore[reportPrivateUsage]
@@ -28,6 +26,8 @@ from idfkit.geometry import (
     get_zone_origin,
     get_zone_rotation,
     intersect_match,
+    is_convex_2d,
+    line_intersect_2d,
     polygon_area_2d,
     polygon_contains_2d,
     polygon_difference_2d,
@@ -533,15 +533,15 @@ class TestPolygonArea2D:
 class TestIsConvex2D:
     def test_square_is_convex(self) -> None:
         poly = [(0, 0), (1, 0), (1, 1), (0, 1)]
-        assert _is_convex_2d(poly)
+        assert is_convex_2d(poly)
 
     def test_l_shape_not_convex(self) -> None:
         poly = [(0, 0), (2, 0), (2, 1), (1, 1), (1, 2), (0, 2)]
-        assert not _is_convex_2d(poly)
+        assert not is_convex_2d(poly)
 
     def test_triangle_is_convex(self) -> None:
         poly = [(0, 0), (4, 0), (2, 3)]
-        assert _is_convex_2d(poly)
+        assert is_convex_2d(poly)
 
 
 class TestPointInPolygon2D:
@@ -1204,18 +1204,18 @@ class TestInsetPolygon:
 
 
 # ---------------------------------------------------------------------------
-# _line_intersect_2d
+# line_intersect_2d
 # ---------------------------------------------------------------------------
 
 
 class TestLineIntersect2D:
     def test_parallel_lines(self) -> None:
         """Parallel lines return None when computing their 2D intersection."""
-        result = _line_intersect_2d((0, 0), (1, 0), (0, 1), (1, 1))
+        result = line_intersect_2d((0, 0), (1, 0), (0, 1), (1, 1))
         assert result is None
 
     def test_intersecting_lines(self) -> None:
-        result = _line_intersect_2d((0, 0), (1, 1), (0, 1), (1, 0))
+        result = line_intersect_2d((0, 0), (1, 1), (0, 1), (1, 0))
         assert result is not None
         assert _close(result[0], 0.5)
         assert _close(result[1], 0.5)
@@ -1236,20 +1236,20 @@ class TestSutherlandHodgman:
 
 
 # ---------------------------------------------------------------------------
-# _is_convex_2d edge cases
+# is_convex_2d edge cases
 # ---------------------------------------------------------------------------
 
 
 class TestIsConvex2DEdgeCases:
     def test_fewer_than_3_vertices(self) -> None:
         """A polygon with fewer than 3 vertices returns False for the convexity check."""
-        assert not _is_convex_2d([(0, 0), (1, 0)])
+        assert not is_convex_2d([(0, 0), (1, 0)])
 
     def test_collinear_edges_skipped(self) -> None:
         """Collinear edges with near-zero cross product are skipped in the convexity check."""
         # Square with an extra collinear point
         poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
-        assert _is_convex_2d(poly)
+        assert is_convex_2d(poly)
 
 
 # ---------------------------------------------------------------------------
