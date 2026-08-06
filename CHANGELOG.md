@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "Developing with idfkit" bundle), each with a section landing page. Task-based
   pages were retitled to "How to …", reference material (environment variables,
   CLI) was regrouped under Reference, and design/architecture pages under
-  Explanation. Page URLs are unchanged. ([7c85bfa](https://github.com/idfkit/idfkit/commit/7c85bfa))
+  Explanation. Page URLs are unchanged. ([78035c5](https://github.com/idfkit/idfkit/commit/78035c5))
 
 ## [0.15.0] - 2026-07-07
 
