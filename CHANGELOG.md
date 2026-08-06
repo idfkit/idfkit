@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New **"Build your first model"** tutorial — a verified, EnergyPlus-free
-  walkthrough that builds a complete two-storey office model from an empty
-  document, introducing the document, objects, the reference graph, and
-  validation along the way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
+- New **"Build your first model"** tutorial — a verified walkthrough that builds
+  a complete two-storey office model from an empty document, then runs it through
+  EnergyPlus and reads a result back, introducing the document, objects, the
+  reference graph, validation, and the weather and simulation helpers along the
+  way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
 
 ### Changed
 

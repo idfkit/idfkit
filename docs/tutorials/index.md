@@ -11,8 +11,9 @@ the [How-to guides](../how-to/index.md) instead.
 ## Start here
 
 - [**Build your first model**](first-model.md) — create a complete, valid
-  two-storey office model from an empty document, and meet the document,
-  objects, references, and validation along the way. No EnergyPlus required.
+  two-storey office model from an empty document, then run it through EnergyPlus
+  and read a result back, meeting the document, objects, references, validation,
+  and the weather and simulation helpers along the way.
 - [**Core Tutorial**](../getting-started/core-tutorial.ipynb) — a longer
   interactive notebook that works through idfkit end to end.
 

@@ -2,16 +2,22 @@
 
 In this tutorial you'll build a small but complete EnergyPlus model from
 nothing — a two-storey office block with zones, walls, windows, and
-constructions — and write it out as an `.idf` file you could hand straight to
-EnergyPlus. Along the way you'll meet the pieces every idfkit project is made
-of: the document, objects, references, and validation.
+constructions — and then **run it through EnergyPlus and read a result back**.
+Along the way you'll meet the pieces every idfkit project is made of: the
+document, objects, references, validation, and the weather and simulation
+helpers.
 
 You don't need to understand every line yet. Follow the steps in order, run
-each snippet, and watch what happens. By the end you'll have a valid model on
-disk and a feel for how idfkit fits together.
+each snippet, and watch what happens. By the end you'll have built a model,
+simulated it, and pulled a number out of the results.
 
-**You'll need:** idfkit installed (`pip install idfkit`). That's it — this
-tutorial builds and writes a model, so no EnergyPlus installation is required.
+**You'll need:**
+
+- **idfkit** — `pip install idfkit`
+- For the last three steps, **EnergyPlus installed** (any supported version —
+  idfkit migrates the model to match it) and a **network connection** the first
+  time, so idfkit can download the weather data. Steps 1–8 need neither, so you
+  can build and write the whole model before installing EnergyPlus.
 
 Work through it in a Python file or a REPL, adding each snippet as you go.
 
@@ -151,8 +157,70 @@ Finally, serialise the document to an EnergyPlus IDF file:
 ```
 
 You now have an `office.idf` on disk — a valid, two-storey, windowed office
-block that you built from an empty document in eight steps. Open it in a text
-editor and you'll recognise the zones, surfaces, and constructions you created.
+block that you built from an empty document. Open it in a text editor and you'll
+recognise the zones, surfaces, and constructions you created. But the whole point
+of a model is to *run* it, so let's do that next.
+
+## Step 9 — Fetch weather and design days
+
+To simulate, EnergyPlus needs weather data and at least one *design day* — an
+extreme day used for sizing. idfkit fetches both for you: it finds the nearest
+weather station to a latitude/longitude, downloads its files, and injects a
+design day into your model.
+
+```python
+--8<-- "docs/snippets/tutorials/first-model.py:weather"
+```
+
+```
+1
+```
+
+idfkit downloaded a weather file and its design-day (`.ddy`) companion for a
+station near Chicago, added one `SizingPeriod:DesignDay` — a cold winter sizing
+day — and updated the model's `Site:Location` to match. The first run downloads
+and caches the files; later runs reuse the cache.
+
+## Step 10 — Run the simulation
+
+Ask EnergyPlus for an output variable so the run has something to report, then
+simulate. We run only the design day (`design_day=True`), which takes seconds
+rather than the minutes a full-year run needs:
+
+```python
+--8<-- "docs/snippets/tutorials/first-model.py:simulate"
+```
+
+```
+True
+```
+
+`result.success` is `True` — EnergyPlus ran and finished cleanly. Notice
+`auto_migrate=True`: you built a version-24.1 model, but idfkit forward-migrated
+it to whatever EnergyPlus you have installed before running, so you never had to
+deal with the version gap yourself.
+
+## Step 11 — Read a result back
+
+The outputs live in an SQLite database that idfkit reads for you. Count the
+variables, then pull the lobby's temperature series:
+
+```python
+--8<-- "docs/snippets/tutorials/first-model.py:read"
+```
+
+```
+10
+24
+-0.9
+```
+
+Ten temperature series came back — one per zone. The lobby's has 24 hourly
+values (one design day), and its warmest hour is about **−0.9 °C**. That exact
+number will shift a little with your EnergyPlus version and the weather file —
+and it's cold on purpose: we never added a heating system, so the unconditioned
+shell just tracks the winter design conditions. Giving the zones an HVAC system
+is the natural next move — see [How to run a simulation](../simulation/running.md).
 
 ## What you learned
 
@@ -165,6 +233,10 @@ editor and you'll recognise the zones, surfaces, and constructions you created.
   `rename()`.
 - **`validate_document()`** checks the whole model against the schema before you
   write it.
+- **idfkit fetches weather and design days** for you (`StationIndex`,
+  `WeatherDownloader`, `DesignDayManager`) — no hand-built sizing periods.
+- **`simulate()` runs EnergyPlus** and, with `auto_migrate=True`, migrates your
+  model to the installed version first; **`result.sql`** reads the outputs back.
 
 ## Next steps
 

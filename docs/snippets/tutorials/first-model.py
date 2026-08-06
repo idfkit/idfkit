@@ -105,3 +105,48 @@ from idfkit import write_idf
 
 write_idf(doc, "office.idf")
 # --8<-- [end:write]
+
+
+# --8<-- [start:weather]
+from idfkit.weather import DesignDayManager, StationIndex, WeatherDownloader
+
+# idfkit locates, downloads, and caches weather + design-day data for you.
+station = StationIndex.load().nearest(41.88, -87.63, limit=1)[0].station  # near Chicago
+files = WeatherDownloader().download(station)
+
+# Inject a design day (and update Site:Location) from the downloaded .ddy file.
+added = DesignDayManager(files.ddy).apply_to_model(doc, update_location=True)
+print(len(added))  # 1 — a winter heating design day
+# --8<-- [end:weather]
+
+
+# --8<-- [start:simulate]
+# Ask EnergyPlus to report each zone's air temperature.
+doc.add(
+    "Output:Variable",
+    key_value="*",
+    variable_name="Zone Mean Air Temperature",
+    reporting_frequency="Hourly",
+)
+
+from idfkit.simulation import simulate
+
+# design_day=True runs only the sizing design day (seconds, not minutes). The
+# model is version 24.1; auto_migrate forward-migrates it to your installed
+# EnergyPlus first.
+result = simulate(doc, files.epw, design_day=True, auto_migrate=True)
+print(result.success)  # True
+# --8<-- [end:simulate]
+
+
+# --8<-- [start:read]
+sql = result.sql
+
+# One temperature series per zone — ten, matching the ten zones we built.
+print(len(sql.list_variables()))  # 10
+
+# EnergyPlus upper-cases key values, so the lobby is "OFFICE LOBBY".
+lobby = sql.get_timeseries("Zone Mean Air Temperature", "OFFICE LOBBY")
+print(len(lobby.values))  # 24 — one value per hour of the design day
+print(round(max(lobby.values), 1))  # e.g. -0.9 (varies by EnergyPlus version + weather)
+# --8<-- [end:read]
