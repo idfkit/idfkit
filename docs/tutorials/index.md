@@ -10,12 +10,15 @@ the [How-to guides](../how-to/index.md) instead.
 
 ## Start here
 
-- [**Quick Start**](../getting-started/quick-start.md) — load a model, query and
-  modify objects, run a simulation, and read the results, in about five minutes.
-- [**Core Tutorial**](../getting-started/core-tutorial.ipynb) — an interactive
-  notebook covering basic, advanced, and expert usage end to end.
-- [**Parametric Study**](../examples/parametric-study.ipynb) — build and explore
-  a parametric sweep of models in a notebook.
+- [**Build your first model**](first-model.md) — create a complete, valid
+  two-storey office model from an empty document, and meet the document,
+  objects, references, and validation along the way. No EnergyPlus required.
+- [**Core Tutorial**](../getting-started/core-tutorial.ipynb) — a longer
+  interactive notebook that works through idfkit end to end.
 
 New to idfkit? [Install it first](../getting-started/installation.md), then work
-through the Quick Start.
+through [Build your first model](first-model.md).
+
+Already know what you want to do? The [Common tasks](../how-to/index.md) recipes
+cover the everyday operations — loading existing files, running simulations, and
+more.

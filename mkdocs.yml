@@ -21,12 +21,12 @@ nav:
 
   - Tutorials:
     - tutorials/index.md
-    - Quick Start: getting-started/quick-start.md
+    - Build your first model: tutorials/first-model.md
     - Core Tutorial: getting-started/core-tutorial.ipynb
-    - Parametric Study: examples/parametric-study.ipynb
 
   - How-to guides:
     - how-to/index.md
+    - Common tasks: getting-started/quick-start.md
     - How to install idfkit: getting-started/installation.md
     - How to migrate from eppy: migration.md
     - Working with simulations:
@@ -43,6 +43,7 @@ nav:
       - Handle simulation errors: simulation/errors.md
       - Migrate models between EnergyPlus versions: simulation/migrating-versions.md
       - Design-day sizing workflow: examples/sizing-workflow.ipynb
+      - Run a parametric study: examples/parametric-study.ipynb
     - Weather data:
       - weather/index.md
       - Search for weather stations: weather/station-search.md
@@ -108,7 +109,7 @@ nav:
     - Caching strategy: concepts/caching.md
     - Geocoding & IP location: explanation/geocoding.md
     - Type-safe development: concepts/type-safety.md
-    - Schedule evaluator design: design/schedule-evaluator.md
+    - How the schedule evaluator works: design/schedule-evaluator.md
     - Performance & benchmarks: benchmarks.md
 
   - Developing with idfkit:

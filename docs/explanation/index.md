@@ -15,8 +15,9 @@ which is the [Reference](../reference/index.md)'s job.
 - [Weather data pipeline](../concepts/weather-pipeline.md) — how station search,
   downloads, and design days fit together.
 - [Caching strategy](../concepts/caching.md) — what idfkit caches, and why.
-- [Schedule evaluator design](../design/schedule-evaluator.md) — the design of
-  the pure-Python schedule engine.
+- [How the schedule evaluator works](../design/schedule-evaluator.md) — how the
+  pure-Python schedule engine resolves the Year → Week → Day hierarchy, and why
+  it behaves as it does.
 - [Geocoding & IP location](geocoding.md) — the free services behind address and
   "near me" lookup, and their accuracy and privacy trade-offs.
 

@@ -11,6 +11,8 @@ see the [Explanation](../explanation/index.md) section.
 
 ## Getting set up
 
+- [Common tasks](../getting-started/quick-start.md) — quick recipes for the
+  everyday operations (load, query, modify, simulate, round-trip)
 - [How to install idfkit](../getting-started/installation.md)
 - [How to migrate from eppy](../migration.md)
 
@@ -29,6 +31,7 @@ see the [Explanation](../explanation/index.md) section.
 - [How to handle simulation errors](../simulation/errors.md)
 - [How to migrate models between EnergyPlus versions](../simulation/migrating-versions.md)
 - [Design-day sizing workflow](../examples/sizing-workflow.ipynb)
+- [Run a parametric study](../examples/parametric-study.ipynb)
 
 ## Weather data
 
