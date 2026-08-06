@@ -29,18 +29,11 @@ the migrated [`IDFDocument`][idfkit.document.IDFDocument] in hand:
 --8<-- "docs/snippets/migration_versions/quick_start.py:example"
 ```
 
-The returned [`MigrationReport`][idfkit.migration.report.MigrationReport]
-exposes:
-
-| Attribute | Description |
-|-----------|-------------|
-| `migrated_model` | The migrated `IDFDocument` (`None` on a no-op migration where source equals target). |
-| `source_version` / `target_version` | The version range actually traversed. |
-| `requested_target` | The version originally requested — differs from `target_version` only on partial failures. |
-| `steps` | Ordered tuple of [`MigrationStep`][idfkit.migration.report.MigrationStep] records with stdout/stderr/audit per binary invocation. |
-| `diff` | Structural [`MigrationDiff`][idfkit.migration.report.MigrationDiff] — added/removed object types, count deltas, and per-type field changes. |
-| `success` | `True` only when every step succeeded. |
-| `summary()` | Short human-readable summary suitable for logs or CLI. |
+The returned [`MigrationReport`][idfkit.migration.report.MigrationReport] gives
+you the migrated `migrated_model`, the `source_version`/`target_version` range
+actually traversed, per-step `steps` diagnostics, a structural `diff`, a
+`success` flag, and a `summary()` for logs. For the full field list, see the
+[Migration API reference](../api/migration.md).
 
 ## CLI
 

@@ -89,6 +89,7 @@ nav:
         - ESO / MTR: api/simulation/eso.md
         - Batch: api/simulation/batch.md
         - Cache: api/simulation/cache.md
+        - Progress: api/simulation/progress.md
         - Plotting: api/simulation/plotting.md
         - File Systems: api/simulation/fs.md
       - Migration: api/migration.md

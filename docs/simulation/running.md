@@ -109,59 +109,9 @@ programmatic error handling.
 See the [Preprocessing API](../api/simulation/expand.md) reference for full
 details.
 
-## Function Signature
-
-```python
-def simulate(
-    model: IDFDocument,
-    weather: str | Path,
-    *,
-    output_dir: str | Path | None = None,
-    energyplus: EnergyPlusConfig | None = None,
-    expand_objects: bool = True,
-    annual: bool = False,
-    design_day: bool = False,
-    output_prefix: str = "eplus",
-    output_suffix: Literal["C", "L", "D"] = "C",
-    readvars: bool = False,
-    timeout: float = 3600.0,
-    preprocessor_timeout: float | None = None,
-    extra_args: list[str] | None = None,
-    cache: SimulationCache | None = None,
-    fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
-    auto_migrate: bool = False,
-) -> SimulationResult:
-```
-
-## Parameters
-
-### Required
-
-| Parameter | Description |
-|-----------|-------------|
-| `model` | The EnergyPlus model to simulate |
-| `weather` | Path to the weather file (.epw) |
-
-### Optional
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `output_dir` | Auto temp | Directory for output files |
-| `energyplus` | Auto-detect | Pre-configured EnergyPlus installation |
-| `expand_objects` | `True` | Run ExpandObjects (and Slab/Basement if needed) before simulation |
-| `annual` | `False` | Run annual simulation (`-a` flag) |
-| `design_day` | `False` | Run design-day-only (`-D` flag) |
-| `output_prefix` | `"eplus"` | Prefix for output files |
-| `output_suffix` | `"C"` | Output naming style (C/L/D) |
-| `readvars` | `False` | Run ReadVarsESO after simulation |
-| `timeout` | `3600.0` | Maximum runtime in seconds (main EnergyPlus subprocess only) |
-| `preprocessor_timeout` | `None` | Per-subprocess timeout for ExpandObjects / Slab / Basement.  `None` reads `IDFKIT_PREPROCESSOR_TIMEOUT`, defaulting to 120 s |
-| `extra_args` | `None` | Additional command-line arguments |
-| `cache` | `None` | Simulation cache for result reuse |
-| `fs` | `None` | File system backend for cloud storage |
-| `on_progress` | `None` | Callback or `"tqdm"` for real-time progress updates |
-| `auto_migrate` | `False` | Forward-migrate the model when its version differs from the installed EnergyPlus (see [Migrating Versions](migrating-versions.md)) |
+For the full `simulate()` signature — every keyword argument, its type, and its
+default — see the generated [`simulate()` reference](../api/simulation/runner.md).
+The sections below cover the arguments you'll reach for most often.
 
 ## EnergyPlus Discovery
 
