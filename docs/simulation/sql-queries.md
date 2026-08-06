@@ -29,16 +29,9 @@ Or open directly:
 --8<-- "docs/snippets/simulation/sql-queries/basic_query.py:example"
 ```
 
-### TimeSeriesResult Attributes
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `variable_name` | `str` | Output variable name |
-| `key_value` | `str` | Key (zone, surface, etc.) |
-| `units` | `str` | Variable units |
-| `frequency` | `str` | Reporting frequency |
-| `timestamps` | `tuple[datetime, ...]` | Timestamps for each point |
-| `values` | `tuple[float, ...]` | Numeric values |
+A query returns a `TimeSeriesResult`. For its full list of attributes and
+methods, see the
+[`TimeSeriesResult` reference](../api/simulation/sql.md#timeseriesresult).
 
 ### Filtering by Environment
 
@@ -80,17 +73,8 @@ Requires matplotlib or plotly: `pip install idfkit[plot]`
 --8<-- "docs/snippets/simulation/sql-queries/query_tabular_reports.py:example"
 ```
 
-### TabularRow Attributes
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `report_name` | `str` | Report name |
-| `report_for` | `str` | Report scope (e.g., "Entire Facility") |
-| `table_name` | `str` | Table name within report |
-| `row_name` | `str` | Row label |
-| `column_name` | `str` | Column label |
-| `units` | `str` | Value units |
-| `value` | `str` | Cell value as string |
+Each row is a `TabularRow`. For its full list of attributes, see the
+[`TabularRow` reference](../api/simulation/sql.md#tabularrow).
 
 ### Filter by Table
 
@@ -118,16 +102,8 @@ Requires matplotlib or plotly: `pip install idfkit[plot]`
 --8<-- "docs/snippets/simulation/sql-queries/list_available_variables.py:example"
 ```
 
-### VariableInfo Attributes
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `name` | `str` | Variable name |
-| `key_value` | `str` | Key value |
-| `frequency` | `str` | Reporting frequency |
-| `units` | `str` | Variable units |
-| `is_meter` | `bool` | Whether this is a meter |
-| `variable_type` | `str` | Variable type (Zone, HVAC, etc.) |
+Each entry is a `VariableInfo`. For its full list of attributes, see the
+[`VariableInfo` reference](../api/simulation/sql.md#variableinfo).
 
 ### Search Variables
 
@@ -151,13 +127,8 @@ Requires matplotlib or plotly: `pip install idfkit[plot]`
 | Design Run Period | 2 | `SizingPeriod:WeatherFileDays` |
 | Weather File Run Period | 3 | Regular `RunPeriod` simulation |
 
-### EnvironmentInfo Attributes
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `index` | `int` | Environment period index |
-| `name` | `str` | Environment name |
-| `environment_type` | `int` | Type code (1, 2, or 3) |
+Each environment is an `EnvironmentInfo`. For its full list of attributes, see
+the [`EnvironmentInfo` reference](../api/simulation/sql.md#environmentinfo).
 
 ## Timestamps
 
