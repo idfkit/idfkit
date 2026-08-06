@@ -17,6 +17,8 @@ which is the [Reference](../reference/index.md)'s job.
 - [Caching strategy](../concepts/caching.md) — what idfkit caches, and why.
 - [Schedule evaluator design](../design/schedule-evaluator.md) — the design of
   the pure-Python schedule engine.
+- [Geocoding & IP location](geocoding.md) — the free services behind address and
+  "near me" lookup, and their accuracy and privacy trade-offs.
 
 ## Working effectively
 

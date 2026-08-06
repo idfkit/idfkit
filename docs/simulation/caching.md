@@ -1,39 +1,16 @@
 # How to cache simulation results
 
 The `SimulationCache` provides content-addressed caching to avoid redundant
-simulations. Cache keys are computed from model content, weather data, and
-simulation flags.
+simulations: identical inputs return a stored result instead of re-running
+EnergyPlus. For how the cache key is computed, what gets stored, and why
+invalidation is automatic, see
+[Caching strategy](../concepts/caching.md).
 
 ## Basic Usage
 
 ```python
 --8<-- "docs/snippets/simulation/caching/basic_usage.py:example"
 ```
-
-## How It Works
-
-### Cache Key Computation
-
-The cache key is a SHA-256 digest of:
-
-1. **Normalized IDF content** — Model text with `Output:SQLite` ensured
-2. **Weather file bytes** — Complete weather file content
-3. **Simulation flags** — `annual`, `design_day`, `expand_objects`, etc.
-
-```python
---8<-- "docs/snippets/simulation/caching/cache_key_computation.py:example"
-```
-
-### What Gets Cached
-
-The **entire run directory** is copied into the cache:
-
-- SQLite output database (`.sql`)
-- Error report (`.err`)
-- Variable files (`.rdd`, `.mdd`)
-- All other output files
-
-Cached results have full access to all outputs, identical to a fresh run.
 
 ## Cache Location
 
@@ -73,63 +50,12 @@ Default locations by platform:
 
 ## Batch Processing
 
-Share a cache across batch simulations:
+Share a cache across batch simulations. The cache is thread- and process-safe
+(atomic writes via a temp directory and rename), so a shared cache is safe for
+concurrent `simulate_batch()` runs and across multiple processes:
 
 ```python
 --8<-- "docs/snippets/simulation/caching/batch_processing.py:example"
-```
-
-## Cache Invalidation
-
-Content-addressed caching means **automatic invalidation**:
-
-| Change | Effect |
-|--------|--------|
-| Modify model | Different key → fresh simulation |
-| Change weather file | Different key → fresh simulation |
-| Change flags | Different key → fresh simulation |
-| Same inputs | Same key → cache hit |
-
-No manual invalidation is needed.
-
-## Cache Key Details
-
-### Model Normalization
-
-Before hashing, the model is:
-
-1. Copied to avoid mutation
-2. Has `Output:SQLite` added if missing
-3. Written to IDF text format
-
-This ensures models differing only in `Output:SQLite` produce the same key.
-
-### Flag Influence
-
-Flags that affect the cache key:
-
-- `expand_objects`
-- `annual`
-- `design_day`
-- `output_suffix`
-- `extra_args`
-
-Flags that don't affect the key:
-
-- `output_dir` (just affects where results go)
-- `timeout` (affects execution, not results)
-- `readvars` (post-processing only)
-
-## Thread and Process Safety
-
-The cache is safe for concurrent access:
-
-- **Atomic writes** — Uses temp directory + rename
-- **Thread-safe** — Safe for `simulate_batch()` with shared cache
-- **Process-safe** — Multiple Python processes can share the cache
-
-```python
---8<-- "docs/snippets/simulation/caching/thread_and_process_safety.py:example"
 ```
 
 ## Storage Considerations

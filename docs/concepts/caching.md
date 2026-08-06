@@ -25,6 +25,14 @@ digest of:
 --8<-- "docs/snippets/concepts/caching/simulation_cache.py:example"
 ```
 
+Only inputs that change the *results* feed the key. `expand_objects`, `annual`,
+`design_day`, `output_suffix`, and `extra_args` all influence it; `output_dir`
+(where results are written), `timeout` (execution only), and `readvars`
+(post-processing only) deliberately do not, so re-running with a different
+output directory still hits the cache. Before hashing, the model is copied and
+given an `Output:SQLite` object if it lacks one, so two models differing only in
+that object produce the same key.
+
 ### How It Works
 
 1. Before simulation, compute the cache key

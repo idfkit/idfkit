@@ -105,6 +105,7 @@ nav:
     - Simulation architecture: concepts/simulation-architecture.md
     - Weather data pipeline: concepts/weather-pipeline.md
     - Caching strategy: concepts/caching.md
+    - Geocoding & IP location: explanation/geocoding.md
     - Type-safe development: concepts/type-safety.md
     - Schedule evaluator design: design/schedule-evaluator.md
     - Performance & benchmarks: benchmarks.md

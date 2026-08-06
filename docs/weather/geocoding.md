@@ -50,20 +50,16 @@ The geocoder accepts various address formats:
 
 ## Rate Limiting
 
-Nominatim requires a maximum of 1 request per second. The `geocode()`
-function automatically handles rate limiting:
+The free Nominatim service allows at most one request per second. `geocode()`
+handles that limit for you and retries once when the server pushes back, so you
+don't have to throttle calls yourself:
 
 ```python
 --8<-- "docs/snippets/weather/geocoding/rate_limiting.py:example"
 ```
 
-## No API Key Required
-
-Nominatim is a free service that doesn't require an API key. However:
-
-- Be respectful of usage limits
-- Avoid bulk geocoding (use batch geocoding services for large datasets)
-- Cache results when possible
+For bulk geocoding, and for why the limit exists, see
+[About geocoding and IP-based location](../explanation/geocoding.md).
 
 ## Caching Results
 
@@ -78,12 +74,6 @@ For repeated lookups, cache the coordinates:
 ```python
 --8<-- "docs/snippets/weather/geocoding/complete_workflow.py:example"
 ```
-
-## Accuracy Notes
-
-- Geocoding accuracy varies by location and address specificity
-- Results may vary slightly over time as OpenStreetMap data is updated
-- For critical applications, verify coordinates manually
 
 ## Alternative: Direct Coordinates
 
@@ -138,17 +128,13 @@ unlocatable IP (e.g. some VPNs):
 --8<-- "docs/snippets/weather/geocoding/detect_location_error_handling.py:example"
 ```
 
-### Privacy and Accuracy Notes
-
-- Calling `detect_location()` sends your machine's public IP address to
-  [ipapi.co](https://ipapi.co/) over HTTPS. If you'd rather not, use
-  `geocode("city, country")` or pass coordinates directly.
-- Accuracy is **city-level**. That is sufficient for choosing a TMYx
-  station within ~50 km, but not for precise positioning.
-- The cache is on the local filesystem; nothing is sent anywhere else.
+Accuracy is city-level and the call discloses your public IP; see
+[About geocoding and IP-based location](../explanation/geocoding.md) for what
+that means and how to avoid it.
 
 ## See Also
 
+- [About geocoding and IP-based location](../explanation/geocoding.md) — service limits, accuracy, and privacy
 - [Station Search](station-search.md) — Find weather stations
 - [Weather Downloads](downloads.md) — Download weather files
 - [Weather Overview](index.md) — Module overview
