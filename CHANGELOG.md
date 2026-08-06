@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New **"Build your first model"** tutorial — a verified, EnergyPlus-free
+  walkthrough that builds a complete two-storey office model from an empty
+  document, introducing the document, objects, the reference graph, and
+  validation along the way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
+
 ### Changed
 
 - Reorganised the documentation site around the [Diátaxis](https://diataxis.fr)
