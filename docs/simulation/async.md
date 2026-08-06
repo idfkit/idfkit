@@ -1,4 +1,4 @@
-# Async Simulation
+# How to run simulations asynchronously
 
 The async simulation API provides non-blocking counterparts to `simulate()`
 and `simulate_batch()`, built on Python's `asyncio` module.  Use these when

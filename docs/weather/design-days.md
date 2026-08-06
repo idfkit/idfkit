@@ -1,4 +1,4 @@
-# Design Days
+# How to apply design days
 
 The `DesignDayManager` parses DDY files and applies ASHRAE design day
 conditions to your EnergyPlus models for HVAC sizing.

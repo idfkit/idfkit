@@ -1,4 +1,4 @@
-# Installation
+# How to install idfkit
 
 idfkit is available on PyPI and can be installed with pip or uv.
 

@@ -1,4 +1,4 @@
-# Plotting
+# How to plot simulation results
 
 The simulation module provides pluggable plotting backends for visualizing
 results with matplotlib or plotly.

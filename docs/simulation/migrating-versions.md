@@ -1,4 +1,4 @@
-# Migrating Versions
+# How to migrate models between EnergyPlus versions
 
 EnergyPlus ships a new release roughly twice a year, and each release can
 rename objects, drop fields, or alter defaults. idfkit's

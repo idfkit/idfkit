@@ -1,4 +1,4 @@
-# Station Search
+# How to search for weather stations
 
 The `StationIndex` provides fast searching and filtering of ~70,000 weather
 station dataset entries (covering ~17,300 unique physical stations) from

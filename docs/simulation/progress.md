@@ -1,4 +1,4 @@
-# Simulation Progress Tracking
+# How to track simulation progress
 
 The `on_progress` callback provides real-time visibility into what EnergyPlus
 is doing during a simulation.  It fires for warmup iterations, simulation day

@@ -1,4 +1,4 @@
-# Simulation Caching
+# How to cache simulation results
 
 The `SimulationCache` provides content-addressed caching to avoid redundant
 simulations. Cache keys are computed from model content, weather data, and

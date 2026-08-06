@@ -1,4 +1,4 @@
-# Version Compatibility Linting
+# How to check version compatibility
 
 idfkit includes a built-in **compatibility linter** that statically analyses
 Python source files and detects cross-version breakage caused by EnergyPlus

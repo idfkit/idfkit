@@ -1,4 +1,4 @@
-# Batch Processing
+# How to run batch simulations
 
 The `simulate_batch()` function runs multiple EnergyPlus simulations in
 parallel using a thread pool, ideal for parametric studies and sensitivity

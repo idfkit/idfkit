@@ -1,4 +1,4 @@
-# Error Handling
+# How to handle simulation errors
 
 This page covers error handling in the simulation module, including
 parsing EnergyPlus error reports and handling simulation failures.

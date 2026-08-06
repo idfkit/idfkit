@@ -1,4 +1,4 @@
-# Geocoding
+# How to geocode addresses
 
 The weather module provides two ways to resolve coordinates without
 hard-coding them:

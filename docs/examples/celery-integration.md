@@ -1,6 +1,6 @@
-# Celery Integration
+# How to run simulations as Celery tasks
 
-This tutorial shows how to run EnergyPlus simulations as distributed
+This guide shows how to run EnergyPlus simulations as distributed
 [Celery](https://docs.celeryq.dev/) tasks.  The pattern works well when you
 need to:
 

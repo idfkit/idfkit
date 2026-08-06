@@ -1,4 +1,4 @@
-# Parsing Results
+# How to access simulation results
 
 The `SimulationResult` class provides structured access to all EnergyPlus
 output files with lazy loading for efficient memory usage.

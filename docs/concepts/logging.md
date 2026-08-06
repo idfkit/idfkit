@@ -1,4 +1,4 @@
-# Logging
+# How to configure logging
 
 idfkit uses Python's standard `logging` module throughout the library.
 Every module logs through a namespaced logger (e.g. `idfkit.idf_parser`,

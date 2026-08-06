@@ -1,4 +1,4 @@
-# Distributed Simulations with Scythe
+# How to run distributed simulations with Scythe
 
 [Scythe](https://github.com/szvsw/scythe) is a lightweight framework for running
 embarrassingly parallel experiments at scale via the

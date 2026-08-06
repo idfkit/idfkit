@@ -1,4 +1,4 @@
-# Output Discovery
+# How to discover output variables
 
 The `OutputVariableIndex` helps you discover available output variables
 and meters from EnergyPlus, then add them to your model for future simulations.

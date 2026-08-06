@@ -1,4 +1,4 @@
-# Weather Downloads
+# How to download weather files
 
 The `WeatherDownloader` downloads EPW and DDY weather files from
 climate.onebuilding.org with automatic caching.

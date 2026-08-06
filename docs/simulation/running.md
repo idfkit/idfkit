@@ -1,4 +1,4 @@
-# Running Simulations
+# How to run a simulation
 
 The `simulate()` function executes EnergyPlus as a subprocess and returns
 a structured `SimulationResult` with access to all output files.

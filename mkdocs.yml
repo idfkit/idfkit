@@ -16,95 +16,98 @@ exclude_docs: |
 nav:
   - Home: index.md
 
-  - Get Started:
-    - Installation: getting-started/installation.md
+  # Documentation is organised by the Diátaxis framework: Tutorials (learning),
+  # How-to guides (tasks), Reference (facts), and Explanation (understanding).
+
+  - Tutorials:
+    - tutorials/index.md
     - Quick Start: getting-started/quick-start.md
     - Core Tutorial: getting-started/core-tutorial.ipynb
-    - Migrating from eppy: migration.md
-
-  - Concepts:
-    - Simulation Architecture: concepts/simulation-architecture.md
-    - Weather Data Pipeline: concepts/weather-pipeline.md
-    - Caching Strategy: concepts/caching.md
-    - Environment Variables: concepts/environment-variables.md
-    - Logging: concepts/logging.md
-    - Cloud & Remote Storage: concepts/cloud-storage.md
-    - Type-Safe Development: concepts/type-safety.md
-    - Version Compatibility: concepts/version-compatibility.md
-    - Schedule Evaluator Design: design/schedule-evaluator.md
-
-  - Simulation:
-    - Overview: simulation/index.md
-    - Running Simulations: simulation/running.md
-    - Async Simulation: simulation/async.md
-    - Parsing Results: simulation/results.md
-    - SQL Output Queries: simulation/sql-queries.md
-    - Batch Processing: simulation/batch.md
-    - Progress Tracking: simulation/progress.md
-    - Caching: simulation/caching.md
-    - Plotting: simulation/plotting.md
-    - Output Discovery: simulation/output-discovery.md
-    - Error Handling: simulation/errors.md
-    - Migrating Versions: simulation/migrating-versions.md
-
-  - Schedules:
-    - Overview: schedules/index.md
-
-  - Weather:
-    - Overview: weather/index.md
-    - Station Search: weather/station-search.md
-    - Weather Downloads: weather/downloads.md
-    - Design Days: weather/design-days.md
-    - Geocoding: weather/geocoding.md
-
-  - Examples:
     - Parametric Study: examples/parametric-study.ipynb
-    - Design Day Sizing: examples/sizing-workflow.ipynb
-    - Cloud Simulations (S3): examples/cloud-simulations.md
-    - Celery Integration: examples/celery-integration.md
-    - Distributed Simulations (Scythe): examples/scythe.md
 
-  - CLI:
-    - TMY Weather: cli/tmy.md
-    - Version Migration: simulation/migrating-versions.md
-    - Compatibility Linter: concepts/version-compatibility.md
+  - How-to guides:
+    - how-to/index.md
+    - How to install idfkit: getting-started/installation.md
+    - How to migrate from eppy: migration.md
+    - Working with simulations:
+      - simulation/index.md
+      - Run a simulation: simulation/running.md
+      - Run simulations asynchronously: simulation/async.md
+      - Access simulation results: simulation/results.md
+      - Query SQL output: simulation/sql-queries.md
+      - Run batch simulations: simulation/batch.md
+      - Track simulation progress: simulation/progress.md
+      - Cache simulation results: simulation/caching.md
+      - Plot simulation results: simulation/plotting.md
+      - Discover output variables: simulation/output-discovery.md
+      - Handle simulation errors: simulation/errors.md
+      - Migrate models between EnergyPlus versions: simulation/migrating-versions.md
+      - Design-day sizing workflow: examples/sizing-workflow.ipynb
+    - Weather data:
+      - weather/index.md
+      - Search for weather stations: weather/station-search.md
+      - Download weather files: weather/downloads.md
+      - Apply design days: weather/design-days.md
+      - Geocode addresses: weather/geocoding.md
+    - Evaluate schedules: schedules/index.md
+    - Scaling out:
+      - Use cloud & remote storage: concepts/cloud-storage.md
+      - Store simulation results in S3: examples/cloud-simulations.md
+      - Run simulations as Celery tasks: examples/celery-integration.md
+      - Run distributed simulations with Scythe: examples/scythe.md
+    - Configuring & operating:
+      - Configure logging: concepts/logging.md
+      - Check version compatibility: concepts/version-compatibility.md
 
-  - API Reference:
-    - Core:
-      - Document: api/document.md
-      - Objects: api/objects.md
-      - I/O: api/io.md
-      - Schema: api/schema.md
-      - Validation: api/validation.md
-      - Geometry: api/geometry.md
-      - Geometry Builders: api/geometry_builders.md
-      - Surface Matching: api/surface_matching.md
-      - Zoning: api/zoning.md
-      - References: api/references.md
-      - Thermal: api/thermal.md
-      - Visualization: api/visualization.md
-      - Exceptions: api/exceptions.md
-      - Versions: api/versions.md
-    - Simulation:
-      - Overview: api/simulation/index.md
-      - Runner: api/simulation/runner.md
-      - Async: api/simulation/async.md
-      - Preprocessing: api/simulation/expand.md
-      - Results: api/simulation/results.md
-      - SQL: api/simulation/sql.md
-      - ESO / MTR: api/simulation/eso.md
-      - Batch: api/simulation/batch.md
-      - Cache: api/simulation/cache.md
-      - Plotting: api/simulation/plotting.md
-      - File Systems: api/simulation/fs.md
-    - Migration: api/migration.md
-    - Schedules:
-      - Overview: api/schedules/index.md
-    - Weather:
-      - Overview: api/weather/index.md
-      - Station: api/weather/station.md
-      - Download: api/weather/download.md
-      - Design Days: api/weather/designday.md
+  - Reference:
+    - reference/index.md
+    - Environment Variables: concepts/environment-variables.md
+    - CLI — idfkit tmy: cli/tmy.md
+    - API Reference:
+      - Core:
+        - Document: api/document.md
+        - Objects: api/objects.md
+        - I/O: api/io.md
+        - Schema: api/schema.md
+        - Validation: api/validation.md
+        - Geometry: api/geometry.md
+        - Geometry Builders: api/geometry_builders.md
+        - Surface Matching: api/surface_matching.md
+        - Zoning: api/zoning.md
+        - References: api/references.md
+        - Thermal: api/thermal.md
+        - Visualization: api/visualization.md
+        - Exceptions: api/exceptions.md
+        - Versions: api/versions.md
+      - Simulation:
+        - Overview: api/simulation/index.md
+        - Runner: api/simulation/runner.md
+        - Async: api/simulation/async.md
+        - Preprocessing: api/simulation/expand.md
+        - Results: api/simulation/results.md
+        - SQL: api/simulation/sql.md
+        - ESO / MTR: api/simulation/eso.md
+        - Batch: api/simulation/batch.md
+        - Cache: api/simulation/cache.md
+        - Plotting: api/simulation/plotting.md
+        - File Systems: api/simulation/fs.md
+      - Migration: api/migration.md
+      - Schedules:
+        - Overview: api/schedules/index.md
+      - Weather:
+        - Overview: api/weather/index.md
+        - Station: api/weather/station.md
+        - Download: api/weather/download.md
+        - Design Days: api/weather/designday.md
+
+  - Explanation:
+    - explanation/index.md
+    - Simulation architecture: concepts/simulation-architecture.md
+    - Weather data pipeline: concepts/weather-pipeline.md
+    - Caching strategy: concepts/caching.md
+    - Type-safe development: concepts/type-safety.md
+    - Schedule evaluator design: design/schedule-evaluator.md
+    - Performance & benchmarks: benchmarks.md
 
   - Developing with idfkit:
     - Document & Objects: agent-references/document-and-objects.md
@@ -127,8 +130,6 @@ nav:
   - Troubleshooting:
     - Common Errors: troubleshooting/errors.md
     - EnergyPlus Issues: troubleshooting/energyplus.md
-
-  - Benchmarks: benchmarks.md
 
 plugins:
   - search

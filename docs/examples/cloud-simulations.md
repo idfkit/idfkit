@@ -1,6 +1,6 @@
-# Cloud Simulations (S3)
+# How to store simulation results in S3
 
-This example demonstrates running simulations with results stored in Amazon S3,
+This guide shows how to run simulations with results stored in Amazon S3,
 suitable for distributed cloud workflows.
 
 ## Prerequisites
