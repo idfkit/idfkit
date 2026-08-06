@@ -1,4 +1,4 @@
-# How to use cloud # Cloud & Remote Storage remote storage
+# How to use cloud and remote storage
 
 idfkit's simulation module supports pluggable storage backends through the
 `FileSystem` protocol, enabling cloud-native workflows with S3 and other
