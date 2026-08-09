@@ -4570,7 +4570,7 @@ fine for picking a TMYx station, not precise enough for surveying.</p>
 <h2 id="json-output">JSON output<a class="headerlink" href="#json-output" title="Permanent link">&para;</a></h2>
 <p>For scripting and CI, pipe through <code>jq</code>:</p>
 <p><img alt="idfkit tmy json" src="../../tape/idfkit_tmy_json.gif" /></p>
-<p>JSON output is auto-enabled when stdout is not a TTY and <code>--first</code> is set; otherwise pass <code>--json</code> explicitly.</p>
+<p>Pass <code>--json</code> to emit JSON. Without it, piped (non-TTY) output is tab-separated for the station list, or plain text for a single <code>--download</code>.</p>
 <h2 id="interactive-map-browser">Interactive map browser<a class="headerlink" href="#interactive-map-browser" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>idfkit<span class="w"> </span>tmy<span class="w"> </span>--browse
 </span></code></pre></div>

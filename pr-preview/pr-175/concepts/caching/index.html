@@ -4581,10 +4581,10 @@ digest of:</p>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">result2</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Only inputs that change the <em>results</em> feed the key. <code>expand_objects</code>, <code>annual</code>,
-<code>design_day</code>, <code>output_suffix</code>, and <code>extra_args</code> all influence it; <code>output_dir</code>
-(where results are written), <code>timeout</code> (execution only), and <code>readvars</code>
-(post-processing only) deliberately do not, so re-running with a different
-output directory still hits the cache. Before hashing, the model is copied and
+<code>design_day</code>, <code>output_suffix</code>, <code>extra_args</code>, and <code>readvars</code> all influence it;
+<code>output_dir</code> (where results are written) and <code>timeout</code> (execution only)
+deliberately do not, so re-running with a different output directory still hits
+the cache. Before hashing, the model is copied and
 given an <code>Output:SQLite</code> object if it lacks one, so two models differing only in
 that object produce the same key.</p>
 <h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>

@@ -3338,10 +3338,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#what-about-esohtml" class="md-nav__link">
+  <a href="#why-sqlite-first" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What About ESO/HTML?
+        Why SQLite first?
       
     </span>
   </a>
@@ -4365,10 +4365,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#what-about-esohtml" class="md-nav__link">
+  <a href="#why-sqlite-first" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What About ESO/HTML?
+        Why SQLite first?
       
     </span>
   </a>
@@ -4574,32 +4574,37 @@ so you don't need to add it manually.</p>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Tabular reports (normally in HTML) are also in SQLite</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">tables</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_tabular_data</span><span class="p">(</span><span class="s2">&quot;AnnualBuildingUtilityPerformanceSummary&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="what-about-esohtml">What About ESO/HTML?<a class="headerlink" href="#what-about-esohtml" title="Permanent link">&para;</a></h3>
-<p>The following output formats are <strong>not parsed</strong> because SQLite provides the
-same data more reliably:</p>
+<h3 id="why-sqlite-first">Why SQLite first?<a class="headerlink" href="#why-sqlite-first" title="Permanent link">&para;</a></h3>
+<p>idfkit reads results from the SQLite output by default because it exposes the
+same data more reliably and uniformly than the text formats. The other output
+formats are still parsed on demand when you need them:</p>
 <table>
 <thead>
 <tr>
 <th>Format</th>
-<th>Alternative</th>
+<th>Accessor</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>ESO/MTR (time-series)</td>
-<td><code>result.sql.get_timeseries()</code></td>
+<td>SQLite (time-series + tabular)</td>
+<td><code>result.sql</code></td>
+</tr>
+<tr>
+<td>ESO / MTR (time-series)</td>
+<td><code>result.eso</code> / <code>result.mtr</code></td>
 </tr>
 <tr>
 <td>HTML (tabular reports)</td>
-<td><code>result.sql.get_tabular_data()</code></td>
+<td><code>result.html</code></td>
 </tr>
 <tr>
-<td>EIO (metadata)</td>
-<td>SQLite metadata tables</td>
+<td>CSV (ReadVarsESO output)</td>
+<td><code>result.csv</code></td>
 </tr>
 </tbody>
 </table>
-<p>If you have a specific need for these formats, please open an issue.</p>
+<p>EIO metadata is available through the SQLite metadata tables.</p>
 <h2 id="lazy-loading">Lazy Loading<a class="headerlink" href="#lazy-loading" title="Permanent link">&para;</a></h2>
 <p><code>SimulationResult</code> uses <strong>lazy loading</strong> — output files are only parsed when
 you access them:</p>
@@ -4628,7 +4633,7 @@ simulations where you might only need specific outputs.</p>
 <h2 id="energyplus-discovery">EnergyPlus Discovery<a class="headerlink" href="#energyplus-discovery" title="Permanent link">&para;</a></h2>
 <p>idfkit auto-discovers EnergyPlus installations using a priority chain:</p>
 <ol>
-<li><strong>Explicit path</strong> — Pass <code>energyplus_dir</code> to <code>simulate()</code> or <code>find_energyplus()</code></li>
+<li><strong>Explicit config</strong> — Pass an <code>EnergyPlusConfig</code> as <code>energyplus=</code> to <code>simulate()</code>, or a <code>path=</code> to <code>find_energyplus()</code></li>
 <li><strong>Environment variable</strong> — Set <code>ENERGYPLUS_DIR</code></li>
 <li><strong>System PATH</strong> — Looks for <code>energyplus</code> executable</li>
 <li><strong><code>/opt/eplus</code></strong> — Standard install location in Claude Code web sessions</li>
