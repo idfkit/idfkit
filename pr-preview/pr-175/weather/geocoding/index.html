@@ -4637,15 +4637,15 @@ failure, so they compose interchangeably with
 <td>Raises <code>GeocodingError</code></td>
 </tr>
 <tr>
-<td>Rate limited</td>
-<td>Automatically retries with delay</td>
+<td>Rate limiting</td>
+<td>Avoided — calls are serialized to ≤1 request/second</td>
 </tr>
 </tbody>
 </table>
 <h2 id="rate-limiting">Rate Limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h2>
 <p>The free Nominatim service allows at most one request per second. <code>geocode()</code>
-handles that limit for you and retries once when the server pushes back, so you
-don't have to throttle calls yourself:</p>
+serializes calls to honour that limit for you, so you don't have to throttle
+calls yourself:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># These are automatically spaced 1 second apart</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">for</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">addresses</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">geocode</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>  <span class="c1"># Rate limited internally</span>

@@ -4344,8 +4344,8 @@ API key, which is what makes them convenient defaults — but "free and keyless"
 is a design choice with consequences, not a free lunch.</p>
 <p>Because there's no account, there's no service-level agreement: you're a guest
 on shared infrastructure. Nominatim's usage policy asks for <strong>at most one
-request per second</strong> and discourages bulk geocoding; <code>geocode()</code> honours that
-limit for you and retries once when the server pushes back. If you need to
+request per second</strong> and discourages bulk geocoding; <code>geocode()</code> serializes
+calls to honour that limit for you. If you need to
 geocode thousands of addresses, that etiquette is the wrong tool — a paid batch
 geocoding service exists precisely so you don't hammer a community resource.</p>
 <h2 id="accuracy-is-coarser-than-it-looks">Accuracy is coarser than it looks<a class="headerlink" href="#accuracy-is-coarser-than-it-looks" title="Permanent link">&para;</a></h2>
