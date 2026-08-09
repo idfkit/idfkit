@@ -1,0 +1,93 @@
+name: Prune stale doc previews
+
+# The PR docs preview workflow (deploy-pr-docs.yml) removes a preview only on a
+# PR `closed` event. If that event is missed or its push races another gh-pages
+# update, the preview directory lingers forever. Enough stale previews bloat the
+# gh-pages branch until GitHub Pages can no longer deploy it within its time
+# limit, which silently freezes the whole docs site. This scheduled job is the
+# safety net: it prunes preview directories for any PR that is no longer open.
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # daily at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  # Serialise with itself; do NOT cancel in-progress (a mid-push cancel could
+  # leave gh-pages in a bad state).
+  group: gh-pages-prune
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Remove previews for closed PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -d pr-preview ]; then
+            echo "No pr-preview directory; nothing to prune."
+            exit 0
+          fi
+
+          removed=0
+          for dir in pr-preview/pr-*; do
+            [ -d "$dir" ] || continue
+            num="${dir##*/pr-}"
+            case "$num" in
+              '' | *[!0-9]*)
+                echo "Skipping non-numeric preview dir: $dir"
+                continue
+                ;;
+            esac
+
+            # A PR is 'open' or 'closed' (merged PRs are 'closed'). Only prune on
+            # a definitive 'closed'. On any API error or unexpected value, keep
+            # the directory — a wrongly kept preview is harmless, a wrongly
+            # deleted one for an open PR would just need re-deploying.
+            state="$(gh api "repos/$REPO/pulls/$num" --jq .state 2>/dev/null || echo error)"
+            if [ "$state" = "closed" ]; then
+              echo "Removing $dir (PR #$num is closed)"
+              git rm -rq "$dir"
+              removed=$((removed + 1))
+            else
+              echo "Keeping $dir (PR #$num state: $state)"
+            fi
+          done
+
+          echo "Removed $removed stale preview(s)."
+
+          if [ "$removed" -eq 0 ]; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "Prune doc previews for closed PRs"
+
+          # Push with rebase-retry to survive a concurrent gh-pages update.
+          for attempt in 1 2 3 4 5; do
+            if git push origin gh-pages; then
+              echo "Pushed."
+              exit 0
+            fi
+            echo "Push failed (attempt $attempt); rebasing onto latest gh-pages…"
+            git pull --rebase origin gh-pages
+            sleep $((attempt * 3))
+          done
+
+          echo "::error::Failed to push pruned gh-pages after multiple attempts."
+          exit 1
