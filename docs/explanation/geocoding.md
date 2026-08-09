@@ -17,8 +17,8 @@ is a design choice with consequences, not a free lunch.
 
 Because there's no account, there's no service-level agreement: you're a guest
 on shared infrastructure. Nominatim's usage policy asks for **at most one
-request per second** and discourages bulk geocoding; `geocode()` honours that
-limit for you and retries once when the server pushes back. If you need to
+request per second** and discourages bulk geocoding; `geocode()` serializes
+calls to honour that limit for you. If you need to
 geocode thousands of addresses, that etiquette is the wrong tool — a paid batch
 geocoding service exists precisely so you don't hammer a community resource.
 

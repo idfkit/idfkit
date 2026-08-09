@@ -46,13 +46,13 @@ The geocoder accepts various address formats:
 |-----------|----------|
 | Address not found | Raises `GeocodingError` |
 | Network error | Raises `GeocodingError` |
-| Rate limited | Automatically retries with delay |
+| Rate limiting | Avoided — calls are serialized to ≤1 request/second |
 
 ## Rate Limiting
 
 The free Nominatim service allows at most one request per second. `geocode()`
-handles that limit for you and retries once when the server pushes back, so you
-don't have to throttle calls yourself:
+serializes calls to honour that limit for you, so you don't have to throttle
+calls yourself:
 
 ```python
 --8<-- "docs/snippets/weather/geocoding/rate_limiting.py:example"
