@@ -42,18 +42,20 @@ so you don't need to add it manually.
 --8<-- "docs/snippets/concepts/simulation-architecture/sqlite_over_eso.py:example"
 ```
 
-### What About ESO/HTML?
+### Why SQLite first?
 
-The following output formats are **not parsed** because SQLite provides the
-same data more reliably:
+idfkit reads results from the SQLite output by default because it exposes the
+same data more reliably and uniformly than the text formats. The other output
+formats are still parsed on demand when you need them:
 
-| Format | Alternative |
-|--------|-------------|
-| ESO/MTR (time-series) | `result.sql.get_timeseries()` |
-| HTML (tabular reports) | `result.sql.get_tabular_data()` |
-| EIO (metadata) | SQLite metadata tables |
+| Format | Accessor |
+|--------|----------|
+| SQLite (time-series + tabular) | `result.sql` |
+| ESO / MTR (time-series) | `result.eso` / `result.mtr` |
+| HTML (tabular reports) | `result.html` |
+| CSV (ReadVarsESO output) | `result.csv` |
 
-If you have a specific need for these formats, please open an issue.
+EIO metadata is available through the SQLite metadata tables.
 
 ## Lazy Loading
 
@@ -85,7 +87,7 @@ This ensures:
 
 idfkit auto-discovers EnergyPlus installations using a priority chain:
 
-1. **Explicit path** — Pass `energyplus_dir` to `simulate()` or `find_energyplus()`
+1. **Explicit config** — Pass an `EnergyPlusConfig` as `energyplus=` to `simulate()`, or a `path=` to `find_energyplus()`
 2. **Environment variable** — Set `ENERGYPLUS_DIR`
 3. **System PATH** — Looks for `energyplus` executable
 4. **`/opt/eplus`** — Standard install location in Claude Code web sessions

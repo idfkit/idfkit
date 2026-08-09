@@ -77,7 +77,7 @@ For scripting and CI, pipe through `jq`:
 
 ![idfkit tmy json](../tape/idfkit_tmy_json.gif)
 
-JSON output is auto-enabled when stdout is not a TTY and `--first` is set; otherwise pass `--json` explicitly.
+Pass `--json` to emit JSON. Without it, piped (non-TTY) output is tab-separated for the station list, or plain text for a single `--download`.
 
 ## Interactive map browser
 

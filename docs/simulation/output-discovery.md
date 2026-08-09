@@ -61,18 +61,18 @@ From files directly:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
+| `key` | `str` | The key value (e.g. `"*"` or `"ZONE 1"`) |
 | `name` | `str` | Variable name |
+| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
 | `units` | `str` | Variable units |
-| `key_options` | `str` | Key types (e.g., "Zone", "*") |
 
 ### OutputMeter Attributes
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `name` | `str` | Meter name |
+| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
 | `units` | `str` | Meter units |
-| `resource_type` | `str` | Resource being measured |
-| `end_use` | `str` | End use category |
 
 ## Adding Outputs to Model
 
