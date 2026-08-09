@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected the `idfkit tmy --json` help text, which claimed JSON output was
   "auto-enabled when piped if `--first`". No such auto-enabling exists — piped
   output is tab-separated (station list) or plain text (single download) unless
-  `--json` is passed. Documentation updated to match. ([7db8a0c](https://github.com/idfkit/idfkit/commit/7db8a0c))
+  `--json` is passed. Documentation updated to match. ([a32ba3d](https://github.com/idfkit/idfkit/commit/a32ba3d))
 
 ### Added
 
