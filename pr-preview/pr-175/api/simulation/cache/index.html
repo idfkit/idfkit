@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../../agent-references/" class="md-tabs__link">
           
   
   
@@ -2877,10 +2877,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#idfkit.simulation.cache.SimulationCache.clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#idfkit.simulation.cache.SimulationCache.compute_key" class="md-nav__link">
     <span class="md-ellipsis">
       
         compute_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idfkit.simulation.cache.SimulationCache.contains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        contains
       
     </span>
   </a>
@@ -2903,28 +2925,6 @@
     <span class="md-ellipsis">
       
         put
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.simulation.cache.SimulationCache.contains" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        contains
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.simulation.cache.SimulationCache.clear" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        clear
       
     </span>
   </a>
@@ -3670,6 +3670,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3717,8 +3721,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3732,8 +3737,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3745,6 +3756,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4383,10 +4396,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#idfkit.simulation.cache.SimulationCache.clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#idfkit.simulation.cache.SimulationCache.compute_key" class="md-nav__link">
     <span class="md-ellipsis">
       
         compute_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idfkit.simulation.cache.SimulationCache.contains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        contains
       
     </span>
   </a>
@@ -4409,28 +4444,6 @@
     <span class="md-ellipsis">
       
         put
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.simulation.cache.SimulationCache.contains" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        contains
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.simulation.cache.SimulationCache.clear" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        clear
       
     </span>
   </a>
@@ -4951,6 +4964,37 @@ of the simulation run directory plus a <code>_cache_meta.json</code> manifest.</
 <div class="doc doc-object doc-function">
 
 
+<h3 id="idfkit.simulation.cache.SimulationCache.clear" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">clear</span><span class="p">()</span></code>
+
+<a href="#idfkit.simulation.cache.SimulationCache.clear" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove all cached entries.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/idfkit/simulation/cache.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-214">214</a></span>
+<span class="normal"><a href="#__codelineno-0-215">215</a></span>
+<span class="normal"><a href="#__codelineno-0-216">216</a></span>
+<span class="normal"><a href="#__codelineno-0-217">217</a></span>
+<span class="normal"><a href="#__codelineno-0-218">218</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove all cached entries.&quot;&quot;&quot;</span>
+</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+</span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="p">)</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleared simulation cache at </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="idfkit.simulation.cache.SimulationCache.compute_key" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">compute_key</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">expand_objects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annual</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">design_day</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">output_suffix</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">readvars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
@@ -5262,6 +5306,33 @@ same key.</p>
 </span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="n">key</span> <span class="o">=</span> <span class="n">CacheKey</span><span class="p">(</span><span class="n">hex_digest</span><span class="o">=</span><span class="n">h</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
 </span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Computed cache key </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">hex_digest</span><span class="p">[:</span><span class="mi">12</span><span class="p">])</span>
 </span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="k">return</span> <span class="n">key</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="idfkit.simulation.cache.SimulationCache.contains" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></code>
+
+<a href="#idfkit.simulation.cache.SimulationCache.contains" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check whether a cache entry exists for <em>key</em>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/idfkit/simulation/cache.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-210">210</a></span>
+<span class="normal"><a href="#__codelineno-0-211">211</a></span>
+<span class="normal"><a href="#__codelineno-0-212">212</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">CacheKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a cache entry exists for *key*.&quot;&quot;&quot;</span>
+</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">/</span> <span class="n">key</span><span class="o">.</span><span class="n">hex_digest</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_META_FILE</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5607,64 +5678,6 @@ directory is copied into the cache atomically.</p>
 </span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a>        <span class="c1"># Another thread/process beat us, or a real filesystem error</span>
 </span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a>        <span class="c1"># — clean up the temporary directory.</span>
 </span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a>        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="idfkit.simulation.cache.SimulationCache.contains" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></code>
-
-<a href="#idfkit.simulation.cache.SimulationCache.contains" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Check whether a cache entry exists for <em>key</em>.</p>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/idfkit/simulation/cache.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-210">210</a></span>
-<span class="normal"><a href="#__codelineno-0-211">211</a></span>
-<span class="normal"><a href="#__codelineno-0-212">212</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">CacheKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a cache entry exists for *key*.&quot;&quot;&quot;</span>
-</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span> <span class="o">/</span> <span class="n">key</span><span class="o">.</span><span class="n">hex_digest</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_META_FILE</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="idfkit.simulation.cache.SimulationCache.clear" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">clear</span><span class="p">()</span></code>
-
-<a href="#idfkit.simulation.cache.SimulationCache.clear" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Remove all cached entries.</p>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/idfkit/simulation/cache.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-214">214</a></span>
-<span class="normal"><a href="#__codelineno-0-215">215</a></span>
-<span class="normal"><a href="#__codelineno-0-216">216</a></span>
-<span class="normal"><a href="#__codelineno-0-217">217</a></span>
-<span class="normal"><a href="#__codelineno-0-218">218</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove all cached entries.&quot;&quot;&quot;</span>
-</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-</span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="p">)</span>
-</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleared simulation cache at </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dir</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

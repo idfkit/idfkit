@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -3710,6 +3710,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3757,8 +3761,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3772,8 +3777,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3785,6 +3796,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4788,7 +4801,7 @@ underlying EnergyPlus subprocess:</p>
 </span></code></pre></div>
 <h2 id="parametric-study">Parametric Study<a class="headerlink" href="#parametric-study" title="Permanent link">&para;</a></h2>
 <p>Create model variants and analyze results — the async equivalent of the
-pattern shown in <a href="../batch/#parametric-studies">Batch Processing</a>:</p>
+pattern shown in <a href="../batch/#parametric-studies">batch simulations</a>:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">async_simulate_batch</span><span class="p">,</span> <span class="n">SimulationJob</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
@@ -4966,9 +4979,9 @@ the per-subprocess 120 s default.</p>
 never raises due to a single job failing.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../running/">Running Simulations</a> — Sync simulation guide</li>
-<li><a href="../batch/">Batch Processing</a> — Sync batch guide</li>
-<li><a href="../migrating-versions/">Migrating Versions</a> — Forward-migrate models with <code>auto_migrate</code> or <code>async_migrate</code></li>
+<li><a href="../running/">How to run a simulation</a> — Sync simulation guide</li>
+<li><a href="../batch/">How to run batch simulations</a> — Sync batch guide</li>
+<li><a href="../migrating-versions/">How to migrate models between EnergyPlus versions</a> — Forward-migrate models with <code>auto_migrate</code> or <code>async_migrate</code></li>
 <li><a href="../../concepts/simulation-architecture/">Simulation Architecture</a> — Design decisions</li>
 </ul>
 

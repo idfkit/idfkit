@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -3654,6 +3654,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3701,8 +3705,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3716,8 +3721,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3729,6 +3740,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4555,7 +4568,7 @@ output files with lazy loading for efficient memory usage.</p>
 </span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Severe: </span><span class="si">{</span><span class="n">errors</span><span class="o">.</span><span class="n">severe_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warnings: </span><span class="si">{</span><span class="n">errors</span><span class="o">.</span><span class="n">warning_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>See <a href="../errors/">Error Handling</a> for detailed error parsing.</p>
+<p>See <a href="../errors/">how to handle simulation errors</a> for detailed error parsing.</p>
 <h2 id="sql-database">SQL Database<a class="headerlink" href="#sql-database" title="Permanent link">&para;</a></h2>
 <p>Query time-series and tabular data from the SQLite output:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">sql</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">sql</span>
@@ -4570,7 +4583,7 @@ output files with lazy loading for efficient memory usage.</p>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="c1"># Tabular reports</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">rows</span> <span class="o">=</span> <span class="n">sql</span><span class="o">.</span><span class="n">get_tabular_data</span><span class="p">(</span><span class="n">report_name</span><span class="o">=</span><span class="s2">&quot;AnnualBuildingUtilityPerformanceSummary&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>See <a href="../sql-queries/">SQL Output Queries</a> for detailed SQL parsing.</p>
+<p>See <a href="../sql-queries/">how to query simulation SQL output</a> for detailed SQL parsing.</p>
 <h2 id="output-variables">Output Variables<a class="headerlink" href="#output-variables" title="Permanent link">&para;</a></h2>
 <p>Discover available output variables from <code>.rdd</code>/<code>.mdd</code> files:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">variables</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">variables</span>
@@ -4583,7 +4596,7 @@ output files with lazy loading for efficient memory usage.</p>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="c1"># Add outputs to model for next run</span>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">variables</span><span class="o">.</span><span class="n">add_all_to_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filter_pattern</span><span class="o">=</span><span class="s2">&quot;Zone.*Temperature&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>See <a href="../output-discovery/">Output Discovery</a> for variable discovery.</p>
+<p>See <a href="../output-discovery/">how to discover output variables</a> for variable discovery.</p>
 <h2 id="csv-output">CSV Output<a class="headerlink" href="#csv-output" title="Permanent link">&para;</a></h2>
 <p>Parse CSV time-series output:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">csv_result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">csv</span>
@@ -4651,7 +4664,7 @@ directory lives inside a <code>tempfile.TemporaryDirectory</code> or is removed 
 <code>shutil.rmtree</code>. POSIX systems don't lock on open, so this only affects
 Windows.</p>
 <p><code>SimulationResult</code> is a context manager: exiting the <code>with</code> block calls
-<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;" href="../../api/simulation/#idfkit.simulation.SimulationResult.close"><code>close()</code></a>, which releases
+<a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;" href="../../api/simulation/results/#idfkit.simulation.result.SimulationResult.close"><code>close()</code></a>, which releases
 the connection. Close the result before the run directory is removed:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># The result context exits first - closing the SQLite connection - then</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1"># TemporaryDirectory cleans up, so rmtree succeeds even on Windows.</span>
@@ -4692,9 +4705,9 @@ generated from the source — see the
 <a href="../../api/simulation/results/#simulationresult"><code>SimulationResult</code> reference</a>.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../sql-queries/">SQL Output Queries</a> — Detailed SQL database access</li>
-<li><a href="../output-discovery/">Output Discovery</a> — Finding available variables</li>
-<li><a href="../errors/">Error Handling</a> — Parsing error reports</li>
+<li><a href="../sql-queries/">How to query simulation SQL output</a> — Detailed SQL database access</li>
+<li><a href="../output-discovery/">How to discover output variables</a> — Finding available variables</li>
+<li><a href="../errors/">How to handle simulation errors</a> — Parsing error reports</li>
 </ul>
 
 

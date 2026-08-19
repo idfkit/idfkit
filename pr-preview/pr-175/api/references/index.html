@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -2421,6 +2421,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#idfkit.references.logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        logger
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#idfkit.references.ReferenceGraph" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2431,17 +2442,6 @@
   
     <nav class="md-nav" aria-label="ReferenceGraph">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.references.ReferenceGraph.__len__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        __len__
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#idfkit.references.ReferenceGraph.clear" class="md-nav__link">
@@ -3697,6 +3697,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3744,8 +3748,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3759,8 +3764,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3772,6 +3783,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4387,6 +4400,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#idfkit.references.logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        logger
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#idfkit.references.ReferenceGraph" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4397,17 +4421,6 @@
   
     <nav class="md-nav" aria-label="ReferenceGraph">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#idfkit.references.ReferenceGraph.__len__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        __len__
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#idfkit.references.ReferenceGraph.clear" class="md-nav__link">
@@ -4625,6 +4638,26 @@ automatically kept in sync as objects are added, removed, or renamed.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="idfkit.references.logger" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#idfkit.references.logger" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
 
 
 
@@ -5251,33 +5284,6 @@ zone, that link is available for instant queries:</p>
 
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="idfkit.references.ReferenceGraph.__len__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__len__</span><span class="p">()</span></code>
-
-<a href="#idfkit.references.ReferenceGraph.__len__" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Return total number of references tracked.</p>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/idfkit/references.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-286">286</a></span>
-<span class="normal"><a href="#__codelineno-0-287">287</a></span>
-<span class="normal"><a href="#__codelineno-0-288">288</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-286"><a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="__span-0-287"><a id="__codelineno-0-287" name="__codelineno-0-287"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return total number of references tracked.&quot;&quot;&quot;</span>
-</span><span id="__span-0-288"><a id="__codelineno-0-288" name="__codelineno-0-288"></a>    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">refs</span><span class="p">)</span> <span class="k">for</span> <span class="n">refs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_references</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
 
 <div class="doc doc-object doc-function">
 

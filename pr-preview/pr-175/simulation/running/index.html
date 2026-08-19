@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -979,6 +979,17 @@
     <span class="md-ellipsis">
       
         Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
       
     </span>
   </a>
@@ -3833,6 +3844,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3880,8 +3895,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3895,8 +3911,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3908,6 +3930,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4523,6 +4547,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#simulation-modes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4869,6 +4904,11 @@ a structured <code>SimulationResult</code> with access to all output files.</p>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Runtime: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">runtime_seconds</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output directory: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">run_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
+<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
+<p>For the full <code>simulate()</code> signature, with every keyword argument, its type, and
+its default, see the generated
+<a href="../../api/simulation/runner/"><code>simulate()</code> reference</a>. The sections below cover
+the arguments you'll reach for most often.</p>
 <h2 id="simulation-modes">Simulation Modes<a class="headerlink" href="#simulation-modes" title="Permanent link">&para;</a></h2>
 <h3 id="design-day-only">Design-Day Only<a class="headerlink" href="#design-day-only" title="Permanent link">&para;</a></h3>
 <p>Fast simulation using only design day conditions:</p>
@@ -4945,9 +4985,6 @@ structured <code>preprocessor</code>, <code>exit_code</code>, and <code>stderr</
 programmatic error handling.</p>
 <p>See the <a href="../../api/simulation/expand/">Preprocessing API</a> reference for full
 details.</p>
-<p>For the full <code>simulate()</code> signature — every keyword argument, its type, and its
-default — see the generated <a href="../../api/simulation/runner/"><code>simulate()</code> reference</a>.
-The sections below cover the arguments you'll reach for most often.</p>
 <h2 id="energyplus-discovery">EnergyPlus Discovery<a class="headerlink" href="#energyplus-discovery" title="Permanent link">&para;</a></h2>
 <p>By default, <code>simulate()</code> auto-discovers EnergyPlus:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Auto-discovery</span>
@@ -5065,7 +5102,7 @@ The sections below cover the arguments you'll reach for most often.</p>
 </span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
 </span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="p">)</span>
 </span></code></pre></div>
-<p>See <a href="../../concepts/cloud-storage/">Cloud &amp; Remote Storage</a> for details.</p>
+<p>See <a href="../../concepts/cloud-storage/">how to use cloud and remote storage</a> for details.</p>
 <h2 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h2>
 <p>Enable content-addressed caching to avoid redundant simulations:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">idfkit.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationCache</span>
@@ -5078,7 +5115,7 @@ The sections below cover the arguments you'll reach for most often.</p>
 </span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="c1"># Second run: instant cache hit</span>
 </span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">result2</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 </span></code></pre></div>
-<p>See <a href="../caching/">Caching</a> for details.</p>
+<p>See <a href="../caching/">how to cache simulation results</a> for details.</p>
 <h2 id="version-migration">Version Migration<a class="headerlink" href="#version-migration" title="Permanent link">&para;</a></h2>
 <p>When <code>model.version</code> differs from the installed EnergyPlus,
 <code>simulate()</code> raises <a class="autorefs autorefs-internal" href="../../api/exceptions/#idfkit.exceptions.VersionMismatchError"><code>VersionMismatchError</code></a>
@@ -5096,14 +5133,15 @@ transparently before the run; the resulting
       &lt;small class=&quot;doc doc-label doc-label-class-attribute&quot;&gt;&lt;code&gt;class-attribute&lt;/code&gt;&lt;/small&gt;
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt;" href="../../api/simulation/results/#idfkit.simulation.result.SimulationResult.migration_report"><code>SimulationResult.migration_report</code></a>.
-See <a href="../migrating-versions/">Migrating Versions</a> for the full workflow.</p>
+See <a href="../migrating-versions/">how to migrate models between versions</a> for the
+full workflow.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../migrating-versions/">Migrating Versions</a> — Forward-migrate IDF models across EnergyPlus releases</li>
-<li><a href="../progress/">Progress Tracking</a> — Real-time progress with <code>on_progress</code></li>
-<li><a href="../results/">Parsing Results</a> — Working with <code>SimulationResult</code></li>
-<li><a href="../batch/">Batch Processing</a> — Running multiple simulations</li>
-<li><a href="../errors/">Error Handling</a> — Understanding error reports</li>
+<li><a href="../migrating-versions/">How to migrate models between EnergyPlus versions</a> — Forward-migrate IDF models across EnergyPlus releases</li>
+<li><a href="../progress/">How to track simulation progress</a> — Real-time progress with <code>on_progress</code></li>
+<li><a href="../results/">How to access simulation results</a> — Working with <code>SimulationResult</code></li>
+<li><a href="../batch/">How to run batch simulations</a> — Running multiple simulations</li>
+<li><a href="../errors/">How to handle simulation errors</a> — Understanding error reports</li>
 </ul>
 
 

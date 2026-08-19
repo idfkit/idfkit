@@ -388,7 +388,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -3456,6 +3456,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3503,8 +3507,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3518,8 +3523,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3531,6 +3542,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4961,7 +4974,8 @@ from the installed EnergyPlus, and <code>auto_migrate</code> is <code>False</cod
 than the installed EnergyPlus cannot be downgraded. Install a newer
 EnergyPlus or load the model explicitly at an older version.</p>
 </div>
-<p>See <a href="../../simulation/migrating-versions/">Migrating Versions</a> for the full workflow.</p>
+<p>See <a href="../../simulation/migrating-versions/">how to migrate models between versions</a>
+for the full workflow.</p>
 <h2 id="performance-issues">Performance Issues<a class="headerlink" href="#performance-issues" title="Permanent link">&para;</a></h2>
 <h3 id="slow-station-index-loading">Slow Station Index Loading<a class="headerlink" href="#slow-station-index-loading" title="Permanent link">&para;</a></h3>
 <p><strong>Cause:</strong> First load compiles the index from source files.</p>
@@ -4980,7 +4994,7 @@ EnergyPlus or load the model explicitly at an older version.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../energyplus/">EnergyPlus Issues</a> — EnergyPlus-specific errors</li>
-<li><a href="../../simulation/errors/">Simulation Error Handling</a> — Detailed error parsing</li>
+<li><a href="../../simulation/errors/">How to handle simulation errors</a> — Detailed error parsing</li>
 </ul>
 
 

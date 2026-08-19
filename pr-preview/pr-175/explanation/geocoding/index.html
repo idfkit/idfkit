@@ -390,7 +390,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../agent-references/document-and-objects/" class="md-tabs__link">
+        <a href="../../agent-references/" class="md-tabs__link">
           
   
   
@@ -3563,6 +3563,10 @@
     
       
         
+          
+        
+      
+        
       
         
       
@@ -3610,8 +3614,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -3625,8 +3630,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
@@ -3638,6 +3649,8 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -4369,10 +4382,12 @@ sends your machine's public IP address to ipapi.co over HTTPS. If you'd rather
 not disclose either, the escape hatch is always available: call
 <code>geocode("city, country")</code> with a deliberately coarse query, or supply
 <code>(lat, lon)</code> yourself and make no network call at all.</p>
-<p>Results are cached on the local filesystem — Nominatim lookups and the
-IP-location result (the latter for one hour by default) — under idfkit's weather
-cache directory. That cache is purely a local file; nothing about your queries
-is sent anywhere beyond the two services named above.</p>
+<p>Only the IP-location result is cached on disk, in <code>ipgeo.json</code> under idfkit's
+weather cache directory, for one hour by default. That cache is purely a local
+file; nothing about your queries is sent anywhere beyond the two services named
+above. <code>geocode()</code> keeps no cache at all, so every call is a fresh request: if
+you geocode the same addresses repeatedly, store the coordinates yourself rather
+than paying the 1 req/s rate limit again.</p>
 <h2 id="when-to-reach-for-each">When to reach for each<a class="headerlink" href="#when-to-reach-for-each" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You have a <strong>known address</strong> → <code>geocode()</code>.</li>
