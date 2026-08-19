@@ -93,5 +93,5 @@ Pass `cache=None` (the default) to skip caching:
 ## See Also
 
 - [Caching Strategy](../concepts/caching.md) — Design concepts
-- [Running Simulations](running.md) — Basic simulation guide
-- [Batch Processing](batch.md) — Parallel execution
+- [How to run a simulation](running.md) — Basic simulation guide
+- [How to run batch simulations](batch.md) — Parallel execution

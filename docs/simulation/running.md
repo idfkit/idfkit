@@ -9,6 +9,13 @@ a structured `SimulationResult` with access to all output files.
 --8<-- "docs/snippets/simulation/running/basic_usage.py:example"
 ```
 
+## Parameters
+
+For the full `simulate()` signature, with every keyword argument, its type, and
+its default, see the generated
+[`simulate()` reference](../api/simulation/runner.md). The sections below cover
+the arguments you'll reach for most often.
+
 ## Simulation Modes
 
 ### Design-Day Only
@@ -109,10 +116,6 @@ programmatic error handling.
 See the [Preprocessing API](../api/simulation/expand.md) reference for full
 details.
 
-For the full `simulate()` signature — every keyword argument, its type, and its
-default — see the generated [`simulate()` reference](../api/simulation/runner.md).
-The sections below cover the arguments you'll reach for most often.
-
 ## EnergyPlus Discovery
 
 By default, `simulate()` auto-discovers EnergyPlus:
@@ -206,7 +209,7 @@ For remote storage backends (S3, etc.):
 --8<-- "docs/snippets/simulation/running/cloud_storage.py:example"
 ```
 
-See [Cloud & Remote Storage](../concepts/cloud-storage.md) for details.
+See [how to use cloud and remote storage](../concepts/cloud-storage.md) for details.
 
 ## Caching
 
@@ -216,7 +219,7 @@ Enable content-addressed caching to avoid redundant simulations:
 --8<-- "docs/snippets/simulation/running/caching.py:example"
 ```
 
-See [Caching](caching.md) for details.
+See [how to cache simulation results](caching.md) for details.
 
 ## Version Migration
 
@@ -226,12 +229,13 @@ by default. Pass `auto_migrate=True` to forward-migrate the model
 transparently before the run; the resulting
 [`MigrationReport`][idfkit.migration.report.MigrationReport] is attached to
 [`SimulationResult.migration_report`][idfkit.simulation.result.SimulationResult.migration_report].
-See [Migrating Versions](migrating-versions.md) for the full workflow.
+See [how to migrate models between versions](migrating-versions.md) for the
+full workflow.
 
 ## See Also
 
-- [Migrating Versions](migrating-versions.md) — Forward-migrate IDF models across EnergyPlus releases
-- [Progress Tracking](progress.md) — Real-time progress with `on_progress`
-- [Parsing Results](results.md) — Working with `SimulationResult`
-- [Batch Processing](batch.md) — Running multiple simulations
-- [Error Handling](errors.md) — Understanding error reports
+- [How to migrate models between EnergyPlus versions](migrating-versions.md) — Forward-migrate IDF models across EnergyPlus releases
+- [How to track simulation progress](progress.md) — Real-time progress with `on_progress`
+- [How to access simulation results](results.md) — Working with `SimulationResult`
+- [How to run batch simulations](batch.md) — Running multiple simulations
+- [How to handle simulation errors](errors.md) — Understanding error reports

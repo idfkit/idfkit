@@ -25,6 +25,15 @@ _SOURCE_DIR = _REPO_ROOT / "docs" / "agent-references"
 _SKILL_DIR = _REPO_ROOT / "src" / "idfkit" / ".agents" / "skills" / "developing-with-idfkit"
 
 
+def _baked_sources() -> list[Path]:
+    """Source templates the baker turns into bundle files.
+
+    ``index.md`` is the docs-site landing page for the section, not a reference
+    topic, so the baker skips it and so must the sync assertions below.
+    """
+    return [p for p in sorted(_SOURCE_DIR.glob("*.md")) if p.name != "index.md"]
+
+
 def _source_to_bundle(source: Path) -> Path:
     """Map a source template path to its baked destination."""
     if source.name == "SKILL.md":
@@ -33,7 +42,7 @@ def _source_to_bundle(source: Path) -> Path:
 
 
 def test_source_templates_exist() -> None:
-    sources = sorted(_SOURCE_DIR.glob("*.md"))
+    sources = _baked_sources()
     assert sources, "no agent-reference source templates found"
     # SKILL.md + 16 topic references.
     assert len(sources) == 17, f"expected 17 source templates, found {len(sources)}"
@@ -44,7 +53,7 @@ def test_bundle_in_sync_with_source() -> None:
 
     If this fails, run: uv run python -m idfkit.codegen.bake_references
     """
-    for source in sorted(_SOURCE_DIR.glob("*.md")):
+    for source in _baked_sources():
         expected = bake_markdown(source.read_text(encoding="utf-8"))
         bundle = _source_to_bundle(source)
         assert bundle.is_file(), f"missing bundled file for {source.name}; run the baker"

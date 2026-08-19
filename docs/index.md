@@ -122,7 +122,7 @@ pip install idfkit
 | Page | Description |
 |------|-------------|
 | [Core Tutorial](getting-started/core-tutorial.ipynb) | Interactive notebook covering basic, advanced, and expert usage |
-| [Migrating from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
-| [Migrating Versions](simulation/migrating-versions.md) | Forward-migrate IDF models across EnergyPlus releases |
+| [How to migrate from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
+| [How to migrate models between EnergyPlus versions](simulation/migrating-versions.md) | Forward-migrate IDF models across EnergyPlus releases |
 | [Benchmarks](benchmarks.md) | Performance comparison against eppy and other tools |
 | [Troubleshooting](troubleshooting/errors.md) | Common errors and solutions |

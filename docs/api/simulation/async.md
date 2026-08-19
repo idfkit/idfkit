@@ -29,9 +29,3 @@ Non-blocking simulation execution using `asyncio`.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - index
-        - label
-        - result
-        - completed
-        - total

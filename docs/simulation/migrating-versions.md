@@ -119,5 +119,5 @@ which transition broke.
 
 - [Migration API](../api/migration.md) — full reference for `migrate`, `MigrationReport`, and the `Migrator` protocol.
 - [Version Compatibility](../concepts/version-compatibility.md) — the sibling `idfkit check` subcommand for *statically* linting your Python code for cross-version breakage before you migrate.
-- [Running Simulations](running.md) — full `simulate()` parameter reference.
-- [Error Handling](errors.md) — handling `VersionMismatchError` from `simulate()`.
+- [How to run a simulation](running.md) — full `simulate()` parameter reference.
+- [How to handle simulation errors](errors.md) — handling `VersionMismatchError` from `simulate()`.

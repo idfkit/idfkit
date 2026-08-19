@@ -9,12 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `validate_document()` no longer reports spurious range errors on EnergyPlus
+  8.9.0 through 9.5.0. Those schemas are JSON Schema draft-04, where
+  `exclusiveMinimum`/`exclusiveMaximum` are booleans qualifying the sibling
+  `minimum`/`maximum`; idfkit compared values against the boolean itself, which
+  Python coerces to `1`. Any value at or below 1 in a positive-bounded field was
+  rejected, so a `Material` 0.2 m thick failed with
+  `Value 0.2 must be greater than True`. Both dialects are now handled.
+
 - Corrected the `idfkit tmy --json` help text, which claimed JSON output was
   "auto-enabled when piped if `--first`". No such auto-enabling exists — piped
   output is tab-separated (station list) or plain text (single download) unless
   `--json` is passed. Documentation updated to match. ([a32ba3d](https://github.com/idfkit/idfkit/commit/a32ba3d))
+- The "Build your first model" tutorial no longer hard-codes EnergyPlus 24.1.
+  It now pins the document to the version `find_energyplus()` discovers, falling
+  back to `LATEST_VERSION` when EnergyPlus isn't installed. Previously the
+  tutorial promised any supported version would work, but readers on EnergyPlus
+  8.9 through 23.2 hit `VersionMismatchError` at the simulation step, because
+  backward migration does not exist.
+- Removed a hand-maintained `members:` allow-list from every API reference page.
+  The lists silently dropped nine names that no longer existed in the source
+  (`SQLResult.get_available_variables`, `WeatherStation.time_zone`,
+  `DesignDayType.HUMIDIF_99_6`, and others) and omitted 68 real public members,
+  including `SQLResult.list_variables()`. The pages now render every public
+  member, so the reference matches the code in both directions.
+- Corrected several documentation claims that contradicted the implementation: a
+  non-existent on-disk cache for `geocode()` results (only `detect_location()`
+  caches, to `ipgeo.json`), a rule that SQL key values must be upper-cased
+  (`get_timeseries()` matches case-insensitively), and an outdated three-member
+  `DayType` with a stale `evaluate()` signature on the schedule-evaluator page.
+- Rewrote 76 cross-page link labels that still used pre-Diátaxis page titles, and
+  pointed the Tutorials index's "Common tasks" link at the page of that name
+  rather than at the How-to landing page.
+- Listed `idfkit migrate` and `idfkit check` on the Reference landing page. Only
+  `idfkit tmy` was shown, which made the CLI look weather-only.
+- Restored the `Schedule:File` field semantics (`Column Number`,
+  `Rows to Skip at Top`, `Column Separator`, `Minutes per Item`) to the
+  schedule-evaluator page, and gave the `simulate()` parameter pointer on
+  "How to run a simulation" its own heading so it appears in the page's contents.
 
 ### Added
+
+- New **"Developing with idfkit"** landing page documenting the
+  `developing-with-idfkit` skill: what the bundled agent references are, why they
+  are version-matched to the installed idfkit, and how to install the skill for
+  Claude Code, Cursor, Copilot, Gemini CLI, and Codex.
 
 - New **"Build your first model"** tutorial — a verified walkthrough that builds
   a complete two-storey office model from an empty document, then runs it through
@@ -30,7 +69,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "Developing with idfkit" bundle), each with a section landing page. Task-based
   pages were retitled to "How to …", reference material (environment variables,
   CLI) was regrouped under Reference, and design/architecture pages under
-  Explanation. Page URLs are unchanged. ([78035c5](https://github.com/idfkit/idfkit/commit/78035c5))
+  Explanation. Every page kept its URL except `/idfkit-dev-guide/`, noted under
+  Removed below. ([78035c5](https://github.com/idfkit/idfkit/commit/78035c5))
+
+### Removed
+
+- The `idfkit-dev-guide` page, which held a block of API notes to paste into a
+  project's `CLAUDE.md`. It was published but never linked from the navigation,
+  and had drifted from the library (it still advertised `doc.removeidfobject`
+  and pre-0.15 `intersect_match()` behaviour). Agent-facing guidance now lives in
+  the version-matched `developing-with-idfkit` skill that ships in the wheel, and
+  is documented under "Developing with idfkit". **Breaking:** the
+  `/idfkit-dev-guide/` URL now returns 404.
 
 ## [0.15.0] - 2026-07-07
 

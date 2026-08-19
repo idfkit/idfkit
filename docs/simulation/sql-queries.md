@@ -177,6 +177,6 @@ See [Releasing File Handles](results.md#releasing-file-handles) for details.
 
 ## See Also
 
-- [Parsing Results](results.md) — Overview of result parsing
-- [Plotting](plotting.md) — Visualizing query results
-- [Output Discovery](output-discovery.md) — Finding available variables
+- [How to access simulation results](results.md) — Overview of result parsing
+- [How to plot simulation results](plotting.md) — Visualizing query results
+- [How to discover output variables](output-discovery.md) — Finding available variables

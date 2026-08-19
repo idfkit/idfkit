@@ -152,7 +152,7 @@ Upload simulation results directly to S3 from workers:
 ```
 
 Workers need AWS credentials (environment variables, IAM role, or
-`~/.aws/credentials`).  See [Cloud Simulations (S3)](cloud-simulations.md)
+`~/.aws/credentials`).  See [how to store simulation results in S3](cloud-simulations.md)
 for details.
 
 ## Task Composition
@@ -255,7 +255,7 @@ celery -A tasks result <task-id>
 
 ## See Also
 
-- [Batch Processing](../simulation/batch.md) — Single-machine parallel execution
-- [Async Simulation](../simulation/async.md) — Non-blocking execution for async apps
-- [Cloud Simulations (S3)](cloud-simulations.md) — S3 result storage
-- [Caching](../simulation/caching.md) — Content-addressed simulation caching
+- [How to run batch simulations](../simulation/batch.md) — Single-machine parallel execution
+- [How to run simulations asynchronously](../simulation/async.md) — Non-blocking execution for async apps
+- [How to store simulation results in S3](cloud-simulations.md) — S3 result storage
+- [How to cache simulation results](../simulation/caching.md) — Content-addressed simulation caching

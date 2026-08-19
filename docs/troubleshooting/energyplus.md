@@ -285,5 +285,5 @@ When reporting issues, include:
 ## See Also
 
 - [Common Errors](errors.md) — General error reference
-- [Simulation Error Handling](../simulation/errors.md) — Parsing error reports
-- [Running Simulations](../simulation/running.md) — Simulation guide
+- [How to handle simulation errors](../simulation/errors.md) — Parsing error reports
+- [How to run a simulation](../simulation/running.md) — Simulation guide

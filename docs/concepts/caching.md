@@ -154,6 +154,6 @@ Pass `cache=None` (the default) to skip caching:
 
 ## See Also
 
-- [Simulation Caching](../simulation/caching.md) — Practical guide
-- [Weather Downloads](../weather/downloads.md) — Weather file caching
+- [How to cache simulation results](../simulation/caching.md) — Practical guide
+- [How to download weather files](../weather/downloads.md) — Weather file caching
 - [Simulation Architecture](simulation-architecture.md) — Design decisions

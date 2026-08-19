@@ -8,10 +8,20 @@ consumed by ``docs/tutorials/first-model.md`` via ``--8<--`` includes.
 from __future__ import annotations
 
 # --8<-- [start:new]
-from idfkit import new_document
+from idfkit import EnergyPlusNotFoundError, LATEST_VERSION, find_closest_version, new_document
+from idfkit.simulation import find_energyplus
 
-doc = new_document(version=(24, 1, 0))
-print(doc.version)  # (24, 1, 0)
+# Pin the model to the EnergyPlus you have installed, so Step 10 runs without a
+# version gap. No EnergyPlus yet? Fall back to the newest version idfkit knows.
+try:
+    config = find_energyplus()
+    version = find_closest_version(config.version) or LATEST_VERSION
+except EnergyPlusNotFoundError:
+    config = None
+    version = LATEST_VERSION
+
+doc = new_document(version=version)
+print(f"Building for EnergyPlus {doc.version[0]}.{doc.version[1]}.{doc.version[2]}")
 # --8<-- [end:new]
 
 
@@ -131,10 +141,11 @@ doc.add(
 
 from idfkit.simulation import simulate
 
-# design_day=True runs only the sizing design day (seconds, not minutes). The
-# model is version 24.1; auto_migrate forward-migrates it to your installed
-# EnergyPlus first.
-result = simulate(doc, files.epw, design_day=True, auto_migrate=True)
+# design_day=True runs only the sizing design day (seconds, not minutes). Pass
+# the config from Step 1 so idfkit doesn't search for EnergyPlus a second time.
+# auto_migrate is a safety net: the document already matches your install unless
+# you started Step 1 without EnergyPlus.
+result = simulate(doc, files.epw, design_day=True, auto_migrate=True, energyplus=config)
 print(result.success)  # True
 # --8<-- [end:simulate]
 
@@ -145,8 +156,8 @@ sql = result.sql
 # One temperature series per zone — ten, matching the ten zones we built.
 print(len(sql.list_variables()))  # 10
 
-# EnergyPlus upper-cases key values, so the lobby is "OFFICE LOBBY".
-lobby = sql.get_timeseries("Zone Mean Air Temperature", "OFFICE LOBBY")
+# Key values are matched case-insensitively, so write the name as you named it.
+lobby = sql.get_timeseries("Zone Mean Air Temperature", "Office Lobby")
 print(len(lobby.values))  # 24 — one value per hour of the design day
 print(round(max(lobby.values), 1))  # e.g. -0.9 (varies by EnergyPlus version + weather)
 # --8<-- [end:read]

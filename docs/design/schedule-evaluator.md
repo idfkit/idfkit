@@ -172,6 +172,22 @@ writes everything else:
 --8<-- "docs/snippets/design/schedule-evaluator/4_schedulefile_support.py:example"
 ```
 
+The evaluator reads four fields off the object to locate a value, each with an
+EnergyPlus default it falls back to when the field is blank:
+
+| Field | Meaning | Default |
+| ----- | ------- | ------- |
+| `Column Number` | Which CSV column holds the values, counting from 1 | `1` |
+| `Rows to Skip at Top` | Header rows to discard before reading values | `0` |
+| `Column Separator` | One of `Comma`, `Tab`, `Space`, `Semicolon` | `Comma` |
+| `Minutes per Item` | Minutes each row covers: `60`, `30`, `15`, `10`, `5`, or `1` | `60` |
+
+`Minutes per Item` is what turns a row index into a datetime: the evaluator
+computes minutes elapsed since January 1 and divides, so a 15-minute file
+resolves four rows per hour. Parsed columns are cached per object, keyed on file
+path plus column, rows-skipped, and separator, so two `Schedule:File` objects
+reading different columns of the same CSV never share cached values.
+
 ## See also
 
 - [How to evaluate schedules](../schedules/index.md) — the task-oriented recipes.

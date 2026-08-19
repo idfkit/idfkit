@@ -325,6 +325,6 @@ JSON-serializable via `dataclasses.asdict()`:
 ## See Also
 
 - [Progress API reference](../api/simulation/progress.md) -- generated reference for `SimulationProgress` and `ProgressParser`
-- [Running Simulations](running.md) -- Full `simulate()` parameter reference
-- [Async Simulation](async.md) -- Non-blocking execution guide
-- [Batch Processing](batch.md) -- Parallel execution guide
+- [How to run a simulation](running.md) -- Full `simulate()` parameter reference
+- [How to run simulations asynchronously](async.md) -- Non-blocking execution guide
+- [How to run batch simulations](batch.md) -- Parallel execution guide

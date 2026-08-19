@@ -119,9 +119,9 @@ definitions at the bottom are updated.
 idfkit ships agent-readable reference docs at
 [`src/idfkit/.agents/skills/developing-with-idfkit/`](src/idfkit/.agents/skills/developing-with-idfkit/SKILL.md):
 a `SKILL.md` dispatch document and one focused markdown file per major
-feature under `references/`. They are packaged in the wheel, consumed by
-tooling such as [`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp) over
-MCP at `idfkit://references/{topic}`, and published on the docs site under
+feature under `references/`. They are packaged in the wheel, surfaced to
+agents by the [idfkit plugin](https://github.com/idfkit/idfkit-plugin) as the
+`developing-with-idfkit` skill, and published on the docs site under
 "Developing with idfkit".
 
 **These bundled files are GENERATED — never hand-edit them.** Sources:

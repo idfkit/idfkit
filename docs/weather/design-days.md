@@ -163,6 +163,6 @@ DDY files also contain `Site:Location` data:
 
 ## See Also
 
-- [Weather Downloads](downloads.md) — Get DDY files
-- [Station Search](station-search.md) — Find weather stations
+- [How to download weather files](downloads.md) — Get DDY files
+- [How to search for weather stations](station-search.md) — Find weather stations
 - [Weather Pipeline](../concepts/weather-pipeline.md) — Architecture details

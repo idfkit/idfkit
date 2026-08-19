@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from idfkit import IDFDocument, IDFObject
+from idfkit.schedules import DayType, Interpolation
 from typing import Any
 
 day_schedule_type: Any = ...  # type: ignore[assignment]
@@ -16,7 +17,16 @@ week_type: Any = ...  # type: ignore[assignment]
 
 
 # --8<-- [start:example]
-def evaluate_year(obj: IDFObject, dt: datetime, doc: IDFDocument) -> float:
+def evaluate_year(
+    obj: IDFObject,
+    dt: datetime,
+    doc: IDFDocument,
+    day_type: DayType = DayType.NORMAL,
+    holidays: set[date] | None = None,
+    custom_day_1: set[date] | None = None,
+    custom_day_2: set[date] | None = None,
+    interpolation: Interpolation = Interpolation.NO,
+) -> float:
     # 1. Find which date range contains dt
     # 2. Get the referenced week schedule name
     # 3. Look up week schedule in document
@@ -26,7 +36,16 @@ def evaluate_year(obj: IDFObject, dt: datetime, doc: IDFDocument) -> float:
     return evaluate_week(week_obj, dt, doc)
 
 
-def evaluate_week_daily(obj: IDFObject, dt: datetime, doc: IDFDocument) -> float:
+def evaluate_week_daily(
+    obj: IDFObject,
+    dt: datetime,
+    doc: IDFDocument,
+    day_type: DayType = DayType.NORMAL,
+    holidays: set[date] | None = None,
+    custom_day_1: set[date] | None = None,
+    custom_day_2: set[date] | None = None,
+    interpolation: Interpolation = Interpolation.NO,
+) -> float:
     # Schedule:Week:Daily has 12 fields: Sunday-Saturday + Holiday + Summer/Winter DD + Custom
     day_index = dt.weekday()  # 0=Mon, need to map to E+ order (Sun=0)
     field_map = {6: 0, 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}  # Python weekday → E+ field

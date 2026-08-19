@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import time
 from idfkit import IDFObject
+from idfkit.schedules import Interpolation
 
 
 # --8<-- [start:example]
@@ -23,8 +24,13 @@ class CompactDayRule:
     time_values: list[tuple[time, float]]  # [(08:00, 0.0), (18:00, 1.0), ...]
 
 
-def parse_compact(obj: IDFObject) -> list[CompactPeriod]:
-    """Parse Schedule:Compact fields into structured data."""
+def parse_compact(obj: IDFObject) -> tuple[list[CompactPeriod], Interpolation]:
+    """Parse Schedule:Compact fields into structured data.
+
+    Returns the periods alongside the schedule's ``Interpolate to Timestep``
+    setting, which the day-level evaluator needs. Results are cached per object
+    identity, so re-evaluating the same schedule doesn't re-parse it.
+    """
 
 
 # --8<-- [end:example]

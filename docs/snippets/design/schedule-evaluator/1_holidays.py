@@ -16,8 +16,12 @@ class SpecialDay:
     day_type: str  # "Holiday", "CustomDay1", "CustomDay2", etc.
 
 
-def extract_special_days(doc: IDFDocument) -> list[SpecialDay]:
-    """Parse all RunPeriodControl:SpecialDays objects."""
+def extract_special_days(doc: IDFDocument, year: int) -> list[SpecialDay]:
+    """Parse all RunPeriodControl:SpecialDays objects.
+
+    The year is required because EnergyPlus writes special days as month/day
+    without a year, so the concrete dates depend on the calendar year.
+    """
     ...
 
 

@@ -135,7 +135,7 @@ that means and how to avoid it.
 ## See Also
 
 - [About geocoding and IP-based location](../explanation/geocoding.md) — service limits, accuracy, and privacy
-- [Station Search](station-search.md) — Find weather stations
-- [Weather Downloads](downloads.md) — Download weather files
+- [How to search for weather stations](station-search.md) — Find weather stations
+- [How to download weather files](downloads.md) — Download weather files
 - [Weather Overview](index.md) — Module overview
 - [`idfkit tmy --nearby`](../cli/tmy.md#detect-location-from-ip-nearby) — CLI shortcut around `detect_location()`

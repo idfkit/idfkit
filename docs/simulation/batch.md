@@ -141,6 +141,6 @@ Store results in S3:
 
 ## See Also
 
-- [Running Simulations](running.md) — Single simulation guide
-- [Caching](caching.md) — Content-addressed caching
+- [How to run a simulation](running.md) — Single simulation guide
+- [How to cache simulation results](caching.md) — Content-addressed caching
 - [Examples: Parametric Study](../examples/parametric-study.ipynb) — Complete example

@@ -12,9 +12,14 @@ to the code. For task-oriented walkthroughs, see the
 
 ## Configuration & CLI
 
-- [Environment variables](../concepts/environment-variables.md) — every variable
+- [Environment variables](../concepts/environment-variables.md): every variable
   idfkit reads, where it's read, and its default.
-- [`idfkit tmy`](../cli/tmy.md) — the weather-data command-line tool.
+- [`idfkit tmy`](../cli/tmy.md): search for and download weather files.
+- [`idfkit migrate`](../simulation/migrating-versions.md): forward-migrate a
+  model to a newer EnergyPlus version, with its `--to` and `--json` flags and
+  documented exit codes.
+- [`idfkit check`](../concepts/version-compatibility.md): lint a model for
+  objects and fields that don't exist in a target version.
 
 ## API
 

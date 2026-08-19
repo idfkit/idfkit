@@ -156,6 +156,6 @@ Here are some representative messages you will see at each level:
 
 ## See Also
 
-- [Error Handling](../simulation/errors.md) — Handling simulation failures
+- [How to handle simulation errors](../simulation/errors.md) — Handling simulation failures
 - [Caching Strategy](caching.md) — Cache hit/miss diagnostics
 - [Troubleshooting](../troubleshooting/errors.md) — Common error solutions

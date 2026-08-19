@@ -14,27 +14,41 @@ simulated it, and pulled a number out of the results.
 **You'll need:**
 
 - **idfkit** — `pip install idfkit`
-- For the last three steps, **EnergyPlus installed** (any supported version —
-  idfkit migrates the model to match it) and a **network connection** the first
-  time, so idfkit can download the weather data. Steps 1–8 need neither, so you
-  can build and write the whole model before installing EnergyPlus.
+- For the last three steps, **EnergyPlus installed** (8.9 or newer) and a
+  **network connection** the first time, so idfkit can download the weather
+  data. Steps 1–8 need neither, so you can build and write the whole model
+  before installing EnergyPlus.
 
 Work through it in a Python file or a REPL, adding each snippet as you go.
 
 ## Step 1 — Start a new document
 
 Everything in idfkit lives in a **document**: the in-memory container for one
-EnergyPlus model. Create an empty one, pinned to a specific EnergyPlus version:
+EnergyPlus model. Every document is pinned to one EnergyPlus version, because
+that version decides which objects and fields are valid. Pin it to the
+EnergyPlus you actually have, so the simulation in Step 10 has no version gap to
+close:
 
 ```python
 --8<-- "docs/snippets/tutorials/first-model.py:new"
 ```
 
-You'll see the version you asked for:
+You'll see whichever version idfkit found on your machine:
 
 ```
-(24, 1, 0)
+Building for EnergyPlus 26.1.0
 ```
+
+If you don't have EnergyPlus yet, `find_energyplus()` raises
+`EnergyPlusNotFoundError` and the fallback pins the document to
+`LATEST_VERSION` instead, so Steps 1–8 still work offline.
+
+!!! note "If you install EnergyPlus later"
+
+    idfkit can migrate a model *forward* to a newer EnergyPlus, but never
+    backward, because EnergyPlus ships no reverse transition binaries. So if
+    you ran Step 1 with no EnergyPlus and then installed an **older** release,
+    re-run Step 1 to re-pin the document before you simulate.
 
 The document already holds a few required singleton objects (a `Building`, the
 geometry rules, and so on), pre-seeded so the model is well-formed from the
@@ -195,10 +209,12 @@ rather than the minutes a full-year run needs:
 True
 ```
 
-`result.success` is `True` — EnergyPlus ran and finished cleanly. Notice
-`auto_migrate=True`: you built a version-24.1 model, but idfkit forward-migrated
-it to whatever EnergyPlus you have installed before running, so you never had to
-deal with the version gap yourself.
+`result.success` is `True` — EnergyPlus ran and finished cleanly. Passing
+`energyplus=config` reuses the installation you already found in Step 1 instead
+of searching for it again. `auto_migrate=True` is the safety net: your document
+is already pinned to the installed version, so there's normally nothing to
+migrate, but if you pinned it to `LATEST_VERSION` back when EnergyPlus wasn't
+installed, idfkit forward-migrates it for you here.
 
 ## Step 11 — Read a result back
 
@@ -235,8 +251,10 @@ is the natural next move — see [How to run a simulation](../simulation/running
   write it.
 - **idfkit fetches weather and design days** for you (`StationIndex`,
   `WeatherDownloader`, `DesignDayManager`) — no hand-built sizing periods.
-- **`simulate()` runs EnergyPlus** and, with `auto_migrate=True`, migrates your
-  model to the installed version first; **`result.sql`** reads the outputs back.
+- **`find_energyplus()` locates your EnergyPlus**, and pinning the document to
+  its version keeps model and engine in step; `auto_migrate=True` closes the gap
+  forward if one opens up.
+- **`simulate()` runs EnergyPlus** and **`result.sql`** reads the outputs back.
 
 ## Next steps
 

@@ -157,6 +157,6 @@ outputs, then run a second simulation with those outputs requested:
 
 ## See Also
 
-- [SQL Output Queries](sql-queries.md) — Querying recorded data
-- [Parsing Results](results.md) — Working with SimulationResult
-- [Running Simulations](running.md) — Basic simulation guide
+- [How to query simulation SQL output](sql-queries.md) — Querying recorded data
+- [How to access simulation results](results.md) — Working with SimulationResult
+- [How to run a simulation](running.md) — Basic simulation guide

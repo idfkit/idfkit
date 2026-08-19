@@ -22,8 +22,3 @@ Core simulation execution functions.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - version
-        - executable
-        - install_dir
-        - idd_path

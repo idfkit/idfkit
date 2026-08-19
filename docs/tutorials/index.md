@@ -20,6 +20,7 @@ the [How-to guides](../how-to/index.md) instead.
 New to idfkit? [Install it first](../getting-started/installation.md), then work
 through [Build your first model](first-model.md).
 
-Already know what you want to do? The [Common tasks](../how-to/index.md) recipes
+Already know what you want to do? The
+[Common tasks](../getting-started/quick-start.md) recipes
 cover the everyday operations — loading existing files, running simulations, and
 more.

@@ -8,13 +8,6 @@ Content-addressed simulation result caching.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - cache_dir
-        - compute_key
-        - get
-        - put
-        - contains
-        - clear
 
 ## CacheKey
 
@@ -22,8 +15,6 @@ Content-addressed simulation result caching.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - hex_digest
 
 ## default_simulation_cache_dir
 

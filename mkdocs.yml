@@ -113,6 +113,7 @@ nav:
     - Performance & benchmarks: benchmarks.md
 
   - Developing with idfkit:
+    - agent-references/index.md
     - Document & Objects: agent-references/document-and-objects.md
     - Parsing IDF/epJSON: agent-references/parsing-idf-epjson.md
     - Writing Output: agent-references/writing-output.md
@@ -145,6 +146,14 @@ plugins:
           paths: ["src"]
           inventories:
             - https://docs.python.org/3/objects.inv
+          options:
+            # The API pages carry no hand-maintained `members:` allow-lists: they
+            # silently dropped names that no longer existed and omitted real ones,
+            # so the reference drifted from the code in both directions. Render
+            # every public member instead, including dataclass fields documented
+            # in a class-level Attributes: block rather than inline.
+            filters: ["!^_"]
+            show_if_no_docstring: true
   - mkdocs-jupyter:
       include_source: true
       execute: false

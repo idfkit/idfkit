@@ -165,5 +165,5 @@ completion order.  Breaking out of the loop cancels remaining tasks.
 ## See Also
 
 - [Caching Strategy](caching.md) — Content-addressed result caching
-- [Cloud & Remote Storage](cloud-storage.md) — S3 and custom backends
-- [Running Simulations](../simulation/running.md) — Practical guide
+- [How to use cloud and remote storage](cloud-storage.md) — S3 and custom backends
+- [How to run a simulation](../simulation/running.md) — Practical guide

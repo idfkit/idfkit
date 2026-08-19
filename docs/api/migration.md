@@ -23,17 +23,6 @@ Forward-migrate IDF models across EnergyPlus versions by orchestrating the
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - migrated_model
-        - source_version
-        - target_version
-        - requested_target
-        - steps
-        - diff
-        - success
-        - completed_steps
-        - failed_step
-        - summary
 
 ## MigrationStep
 
@@ -48,12 +37,6 @@ Forward-migrate IDF models across EnergyPlus versions by orchestrating the
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - added_object_types
-        - removed_object_types
-        - object_count_delta
-        - field_changes
-        - is_empty
 
 ## FieldDelta
 

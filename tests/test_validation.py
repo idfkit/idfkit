@@ -513,3 +513,41 @@ class TestValidateFieldRange:
     def test_below_exclusive_maximum_passes(self) -> None:
         errors = _validate_field_range(self._obj(), "thickness", 9.9, {"exclusiveMaximum": 10.0})
         assert errors == []
+
+
+class TestValidateFieldRangeDraft04:
+    """Schemas for EnergyPlus 8.9.0-9.5.0 are JSON Schema draft-04.
+
+    There, ``exclusiveMinimum``/``exclusiveMaximum`` are booleans qualifying the
+    sibling ``minimum``/``maximum`` rather than carrying a bound of their own.
+    Treating the boolean as a number silently compares against ``1``.
+    """
+
+    def _obj(self) -> IDFObject:
+        return IDFObject(obj_type="Material", name="Concrete")
+
+    def test_value_below_one_passes_exclusive_minimum_zero(self) -> None:
+        """Regression: 0.2 with {minimum: 0.0, exclusiveMinimum: true} is valid.
+
+        Comparing 0.2 against the boolean resolved it to ``0.2 <= True`` (i.e.
+        ``0.2 <= 1``), rejecting every EnergyPlus 8.9-9.5 model with a material
+        thinner than a metre.
+        """
+        errors = _validate_field_range(self._obj(), "thickness", 0.2, {"minimum": 0.0, "exclusiveMinimum": True})
+        assert errors == []
+
+    def test_at_bound_fails_when_exclusive(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 0.0, {"minimum": 0.0, "exclusiveMinimum": True})
+        assert any(e.code == "E006" for e in errors)
+
+    def test_at_bound_passes_when_not_exclusive(self) -> None:
+        errors = _validate_field_range(self._obj(), "thickness", 0.0, {"minimum": 0.0})
+        assert errors == []
+
+    def test_value_above_one_passes_exclusive_maximum(self) -> None:
+        errors = _validate_field_range(self._obj(), "fraction", 5.0, {"maximum": 10.0, "exclusiveMaximum": True})
+        assert errors == []
+
+    def test_at_upper_bound_fails_when_exclusive(self) -> None:
+        errors = _validate_field_range(self._obj(), "fraction", 10.0, {"maximum": 10.0, "exclusiveMaximum": True})
+        assert any(e.code == "E008" for e in errors)

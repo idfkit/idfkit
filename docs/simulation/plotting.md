@@ -144,6 +144,6 @@ Convert to pandas and use native plotting:
 
 ## See Also
 
-- [SQL Output Queries](sql-queries.md) — Getting time series data
-- [Parsing Results](results.md) — Working with SimulationResult
+- [How to query simulation SQL output](sql-queries.md) — Getting time series data
+- [How to access simulation results](results.md) — Working with SimulationResult
 - [Examples: Parametric Study](../examples/parametric-study.ipynb) — Visualization examples

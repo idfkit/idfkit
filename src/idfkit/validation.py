@@ -457,57 +457,77 @@ def _validate_field_range(
     value: float | int,
     field_schema: dict[str, Any],
 ) -> list[ValidationError]:
-    """Validate numeric field range."""
+    """Validate numeric field range.
+
+    Handles both JSON Schema dialects EnergyPlus has shipped. Schemas for 8.9.0
+    through 9.5.0 are draft-04, where ``exclusiveMinimum``/``exclusiveMaximum``
+    are *booleans* that make the sibling ``minimum``/``maximum`` exclusive. From
+    9.6.0 on they are draft-06+, where the same keys hold the bound itself.
+    Comparing a value against the draft-04 boolean would silently treat it as
+    ``1``, rejecting every value at or below 1 in a positive-bounded field.
+    """
     errors: list[ValidationError] = []
 
-    # Check minimum
-    if "minimum" in field_schema and value < field_schema["minimum"]:
-        errors.append(
-            ValidationError(
-                severity=Severity.ERROR,
-                obj_type=obj.obj_type,
-                obj_name=obj.name,
-                field=field_name,
-                message=f"Value {value} is below minimum {field_schema['minimum']}",
-                code="E005",
-            )
-        )
+    exclusive_min = field_schema.get("exclusiveMinimum")
+    exclusive_max = field_schema.get("exclusiveMaximum")
+    # draft-04: the flag qualifies `minimum`/`maximum` rather than carrying a bound.
+    min_is_exclusive = exclusive_min is True
+    max_is_exclusive = exclusive_max is True
 
-    # Check exclusive minimum
-    if "exclusiveMinimum" in field_schema and value <= field_schema["exclusiveMinimum"]:
+    # Check minimum
+    if "minimum" in field_schema:
+        minimum = field_schema["minimum"]
+        if value <= minimum if min_is_exclusive else value < minimum:
+            relation = "must be greater than" if min_is_exclusive else "is below minimum"
+            errors.append(
+                ValidationError(
+                    severity=Severity.ERROR,
+                    obj_type=obj.obj_type,
+                    obj_name=obj.name,
+                    field=field_name,
+                    message=f"Value {value} {relation} {minimum}",
+                    code="E006" if min_is_exclusive else "E005",
+                )
+            )
+
+    # Check exclusive minimum (draft-06+, where the key carries the bound)
+    if isinstance(exclusive_min, (int, float)) and not isinstance(exclusive_min, bool) and value <= exclusive_min:
         errors.append(
             ValidationError(
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 field=field_name,
-                message=f"Value {value} must be greater than {field_schema['exclusiveMinimum']}",
+                message=f"Value {value} must be greater than {exclusive_min}",
                 code="E006",
             )
         )
 
     # Check maximum
-    if "maximum" in field_schema and value > field_schema["maximum"]:
-        errors.append(
-            ValidationError(
-                severity=Severity.ERROR,
-                obj_type=obj.obj_type,
-                obj_name=obj.name,
-                field=field_name,
-                message=f"Value {value} is above maximum {field_schema['maximum']}",
-                code="E007",
+    if "maximum" in field_schema:
+        maximum = field_schema["maximum"]
+        if value >= maximum if max_is_exclusive else value > maximum:
+            relation = "must be less than" if max_is_exclusive else "is above maximum"
+            errors.append(
+                ValidationError(
+                    severity=Severity.ERROR,
+                    obj_type=obj.obj_type,
+                    obj_name=obj.name,
+                    field=field_name,
+                    message=f"Value {value} {relation} {maximum}",
+                    code="E008" if max_is_exclusive else "E007",
+                )
             )
-        )
 
-    # Check exclusive maximum
-    if "exclusiveMaximum" in field_schema and value >= field_schema["exclusiveMaximum"]:
+    # Check exclusive maximum (draft-06+, where the key carries the bound)
+    if isinstance(exclusive_max, (int, float)) and not isinstance(exclusive_max, bool) and value >= exclusive_max:
         errors.append(
             ValidationError(
                 severity=Severity.ERROR,
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 field=field_name,
-                message=f"Value {value} must be less than {field_schema['exclusiveMaximum']}",
+                message=f"Value {value} must be less than {exclusive_max}",
                 code="E008",
             )
         )

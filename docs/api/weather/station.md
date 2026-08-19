@@ -8,15 +8,6 @@ Weather station index, search, and geocoding.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - load
-        - refresh
-        - check_for_updates
-        - search
-        - nearest
-        - filter
-        - get_by_wmo
-        - countries
 
 ## WeatherStation
 
@@ -24,18 +15,6 @@ Weather station index, search, and geocoding.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - city
-        - state
-        - country
-        - wmo
-        - source_data
-        - latitude
-        - longitude
-        - time_zone
-        - elevation
-        - url
-        - display_name
 
 ## SearchResult
 
@@ -43,9 +22,6 @@ Weather station index, search, and geocoding.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - station
-        - score
 
 ## SpatialResult
 
@@ -53,9 +29,6 @@ Weather station index, search, and geocoding.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - station
-        - distance_km
 
 ## geocode
 

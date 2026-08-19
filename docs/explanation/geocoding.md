@@ -47,10 +47,12 @@ not disclose either, the escape hatch is always available: call
 `geocode("city, country")` with a deliberately coarse query, or supply
 `(lat, lon)` yourself and make no network call at all.
 
-Results are cached on the local filesystem — Nominatim lookups and the
-IP-location result (the latter for one hour by default) — under idfkit's weather
-cache directory. That cache is purely a local file; nothing about your queries
-is sent anywhere beyond the two services named above.
+Only the IP-location result is cached on disk, in `ipgeo.json` under idfkit's
+weather cache directory, for one hour by default. That cache is purely a local
+file; nothing about your queries is sent anywhere beyond the two services named
+above. `geocode()` keeps no cache at all, so every call is a fresh request: if
+you geocode the same addresses repeatedly, store the coordinates yourself rather
+than paying the 1 req/s rate limit again.
 
 ## When to reach for each
 

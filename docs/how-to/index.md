@@ -47,7 +47,7 @@ see the [Explanation](../explanation/index.md) section.
 
 ## Scaling out
 
-- [How to use cloud & remote storage](../concepts/cloud-storage.md)
+- [How to use cloud and remote storage](../concepts/cloud-storage.md)
 - [How to store simulation results in S3](../examples/cloud-simulations.md)
 - [How to run simulations as Celery tasks](../examples/celery-integration.md)
 - [How to run distributed simulations with Scythe](../examples/scythe.md)

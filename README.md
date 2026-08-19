@@ -185,8 +185,10 @@ idfkit ships agent-readable reference docs in
 [`src/idfkit/.agents/skills/developing-with-idfkit/`](src/idfkit/.agents/skills/developing-with-idfkit/SKILL.md).
 The directory is packaged in the wheel, so it's also accessible from an
 installed copy via `importlib.resources.files("idfkit") / ".agents"`.
-The companion [`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp) server
-exposes these references over MCP at `idfkit://references/{topic}`.
+The [idfkit plugin](https://github.com/idfkit/idfkit-plugin) packages them as
+the `developing-with-idfkit` skill for Claude Code, Cursor, Copilot, Gemini, and
+Codex: it resolves the idfkit installed in your project and loads the references
+baked into that exact version.
 
 ## Development
 

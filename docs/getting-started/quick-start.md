@@ -107,6 +107,6 @@ unmodified objects:
 
 - [Core Tutorial](core-tutorial.ipynb) - Complete interactive walkthrough
 - [Simulation Guide](../simulation/index.md) - Deep dive into simulation features
-- [Migrating Versions](../simulation/migrating-versions.md) - Move models forward across EnergyPlus releases
+- [How to migrate models between EnergyPlus versions](../simulation/migrating-versions.md) - Move models forward across EnergyPlus releases
 - [Weather Guide](../weather/index.md) - Weather station search and design days
 - [API Reference](../api/document.md) - Full API documentation

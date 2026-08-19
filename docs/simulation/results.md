@@ -27,7 +27,7 @@ Parse warnings and errors from the `.err` file:
 --8<-- "docs/snippets/simulation/results/error_report.py:example"
 ```
 
-See [Error Handling](errors.md) for detailed error parsing.
+See [how to handle simulation errors](errors.md) for detailed error parsing.
 
 ## SQL Database
 
@@ -37,7 +37,7 @@ Query time-series and tabular data from the SQLite output:
 --8<-- "docs/snippets/simulation/results/sql_database.py:example"
 ```
 
-See [SQL Output Queries](sql-queries.md) for detailed SQL parsing.
+See [how to query simulation SQL output](sql-queries.md) for detailed SQL parsing.
 
 ## Output Variables
 
@@ -47,7 +47,7 @@ Discover available output variables from `.rdd`/`.mdd` files:
 --8<-- "docs/snippets/simulation/results/output_variables.py:example"
 ```
 
-See [Output Discovery](output-discovery.md) for variable discovery.
+See [how to discover output variables](output-discovery.md) for variable discovery.
 
 ## CSV Output
 
@@ -128,6 +128,6 @@ generated from the source — see the
 
 ## See Also
 
-- [SQL Output Queries](sql-queries.md) — Detailed SQL database access
-- [Output Discovery](output-discovery.md) — Finding available variables
-- [Error Handling](errors.md) — Parsing error reports
+- [How to query simulation SQL output](sql-queries.md) — Detailed SQL database access
+- [How to discover output variables](output-discovery.md) — Finding available variables
+- [How to handle simulation errors](errors.md) — Parsing error reports

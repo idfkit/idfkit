@@ -163,6 +163,34 @@ reportUnusedImport = false
 #   reportFunctionMemberAccess, reportIndexIssue, reportOptionalSubscript,
 #   reportOperatorIssue.
 
+# The tutorials are the first code a new user copies, so they get the same
+# drift-catching treatment as the agent references: a renamed builder or a
+# changed kwarg must fail `make check`, not ship broken. Same rule set as the
+# block above, and it MUST also precede the broader docs/snippets block.
+[[tool.pyright.executionEnvironments]]
+root = "docs/snippets/tutorials"
+reportTypedDictNotRequiredAccess = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportUnknownLambdaType = false
+reportMissingParameterType = false
+reportMissingTypeStubs = false
+reportMissingTypeArgument = false
+reportMissingModuleSource = false
+reportUntypedFunctionDecorator = false
+reportUntypedBaseClass = false
+reportUnusedVariable = false
+reportUnusedExpression = false
+reportUnusedFunction = false
+reportPossiblyUnboundVariable = false
+reportReturnType = false
+reportOptionalMemberAccess = false
+reportAssignmentType = false
+reportUnusedImport = false
+# Drift-catching rules deliberately left ON, as above.
+
 [[tool.pyright.executionEnvironments]]
 root = "docs/snippets"
 reportTypedDictNotRequiredAccess = false

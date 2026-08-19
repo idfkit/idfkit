@@ -59,7 +59,7 @@ machine's coordinates from its public IP (cached on disk for 1 hour):
 
 The CLI exposes the same flow as
 [`idfkit tmy --nearby`](../cli/tmy.md#detect-location-from-ip-nearby).
-See [Geocoding](geocoding.md#detect-location-from-ip) for caching, error
+See [how to geocode addresses](geocoding.md#detect-location-from-ip) for caching, error
 handling, and privacy notes.
 
 ### ASHRAE Design Days
@@ -118,7 +118,7 @@ which provides:
 
 ## Next Steps
 
-- [Station Search](station-search.md) — Find weather stations
-- [Weather Downloads](downloads.md) — Download EPW/DDY files
-- [Design Days](design-days.md) — Apply ASHRAE conditions
+- [How to search for weather stations](station-search.md) — Find weather stations
+- [How to download weather files](downloads.md) — Download EPW/DDY files
+- [How to apply design days](design-days.md) — Apply ASHRAE conditions
 - [Weather Pipeline Concepts](../concepts/weather-pipeline.md) — Architecture details
