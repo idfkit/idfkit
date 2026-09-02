@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +270,7 @@ def validate_object(
     )
 
 
-def _validate_object(  # noqa: C901
+def _validate_object(
     obj: IDFObject,
     schema: EpJSONSchema,
     check_required: bool = True,
@@ -338,17 +338,152 @@ def _validate_object(  # noqa: C901
                 )
             continue
 
-        # Check type
-        if check_types:
-            type_errors = _validate_field_type(obj, field_name, value, field_schema)
-            errors.extend(type_errors)
-
-        # Check range
-        if check_ranges and isinstance(value, (int, float)):
-            range_errors = _validate_field_range(obj, field_name, value, field_schema)
-            errors.extend(range_errors)
+        errors.extend(
+            _validate_field(
+                obj,
+                field_name,
+                value,
+                field_schema,
+                check_types=check_types,
+                check_ranges=check_ranges,
+            )
+        )
 
     return errors
+
+
+def _validate_field(
+    obj: IDFObject,
+    field_name: str,
+    value: Any,
+    field_schema: dict[str, Any],
+    *,
+    check_types: bool = True,
+    check_ranges: bool = True,
+) -> list[ValidationError]:
+    """Validate one field value against its schema, emitting **at most one** finding.
+
+    This is the single entry point for per-field checks. Type, enum and bounds used
+    to be checked by two independently-called helpers, which both under-reported
+    (an ``anyOf`` field's constraints live inside its branches and were never read)
+    and, once the constraints were read, would have double-reported the same field.
+
+    ``anyOf`` fields follow ordinary JSON Schema semantics: the value is valid when it
+    *fully* satisfies at least one branch — that branch's type, its ``enum`` if it has
+    one, and its bounds if it has any.
+    """
+    if "anyOf" in field_schema:
+        return _validate_any_of_field(
+            obj,
+            field_name,
+            value,
+            field_schema["anyOf"],
+            check_types=check_types,
+            check_ranges=check_ranges,
+        )
+
+    errors: list[ValidationError] = []
+    if check_types:
+        errors = _validate_field_type(obj, field_name, value, field_schema)
+    if not errors and check_ranges and _is_numeric(value):
+        errors = _validate_field_range(obj, field_name, value, field_schema)
+    return errors[:1]
+
+
+def _validate_any_of_field(
+    obj: IDFObject,
+    field_name: str,
+    value: Any,
+    branches: list[dict[str, Any]],
+    *,
+    check_types: bool = True,
+    check_ranges: bool = True,
+) -> list[ValidationError]:
+    """Apply the ``anyOf`` rule, emitting at most one finding.
+
+    1. Collect the branches whose *type* the value satisfies.
+    2. Empty set — the value is of no acceptable type: ``E002``.
+    3. Any collected branch also satisfying its enum and its bounds — valid.
+    4. Otherwise report the first collected branch's most specific failure, using the
+       same codes a non-``anyOf`` field would use. Reporting ``E002`` for an
+       out-of-range number would tell the user their number is not a number.
+    """
+    matched = [branch for branch in branches if _value_matches_type(value, branch)]
+
+    if not matched:
+        if not check_types:
+            return []
+        return [
+            ValidationError(
+                severity=Severity.ERROR,
+                obj_type=obj.obj_type,
+                obj_name=obj.name,
+                field=field_name,
+                message=f"Value '{value}' does not match any valid type",
+                code="E002",
+            )
+        ]
+
+    failures: list[ValidationError] = []
+    for branch in matched:
+        failure = _branch_constraint_failure(
+            obj,
+            field_name,
+            value,
+            branch,
+            check_types=check_types,
+            check_ranges=check_ranges,
+        )
+        if failure is None:
+            # This branch is fully satisfied, so the value is valid.
+            return []
+        failures.append(failure)
+
+    # Declaration order: the first branch the value matched on type reports the failure.
+    return failures[:1]
+
+
+def _branch_constraint_failure(
+    obj: IDFObject,
+    field_name: str,
+    value: Any,
+    branch: dict[str, Any],
+    *,
+    check_types: bool,
+    check_ranges: bool,
+) -> ValidationError | None:
+    """Return the most specific constraint failure for one already type-matched branch.
+
+    ``None`` means the branch is fully satisfied. A disabled check counts as satisfied.
+    """
+    if check_types and "enum" in branch and not _value_matches_enum(value, branch["enum"]):
+        return ValidationError(
+            severity=Severity.ERROR,
+            obj_type=obj.obj_type,
+            obj_name=obj.name,
+            field=field_name,
+            message=f"Value '{value}' not in allowed values: {branch['enum']}",
+            code="E004",
+        )
+
+    if check_ranges and _is_numeric(value):
+        range_errors = _validate_field_range(obj, field_name, value, branch)
+        if range_errors:
+            return range_errors[0]
+
+    return None
+
+
+def _is_numeric(value: Any) -> bool:
+    """True for an int or float, but not for a bool (``True`` is not a number here)."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _value_matches_enum(value: Any, enum: list[Any]) -> bool:
+    """Enum membership: strings compare case-insensitively, numbers compare by value."""
+    if value in enum:
+        return True
+    return isinstance(value, str) and value.lower() in [str(member).lower() for member in enum]
 
 
 def _validate_field_type(
@@ -357,28 +492,13 @@ def _validate_field_type(
     value: Any,
     field_schema: dict[str, Any],
 ) -> list[ValidationError]:
-    """Validate field value type."""
-    errors: list[ValidationError] = []
+    """Validate the type and enum of a field with a single schema (no ``anyOf``).
 
-    # Handle anyOf (multiple valid types)
-    if "anyOf" in field_schema:
-        valid = False
-        for sub_schema in field_schema["anyOf"]:
-            if _value_matches_type(value, sub_schema):
-                valid = True
-                break
-        if not valid:
-            errors.append(
-                ValidationError(
-                    severity=Severity.ERROR,
-                    obj_type=obj.obj_type,
-                    obj_name=obj.name,
-                    field=field_name,
-                    message=f"Value '{value}' does not match any valid type",
-                    code="E002",
-                )
-            )
-        return errors
+    ``anyOf`` fields are handled by :func:`_validate_any_of_field`, which weighs type,
+    enum and bounds together per branch; routing them here would check the type of one
+    branch against the constraints of another. :func:`_validate_field` dispatches.
+    """
+    errors: list[ValidationError] = []
 
     # Handle single type
     expected_type = field_schema.get("type")
@@ -395,43 +515,35 @@ def _validate_field_type(
         )
 
     # Check enum values
-    if "enum" in field_schema and value not in field_schema["enum"]:
-        # Case-insensitive check for strings
-        if isinstance(value, str):
-            enum_lower = [str(e).lower() for e in field_schema["enum"]]
-            if value.lower() not in enum_lower:
-                errors.append(
-                    ValidationError(
-                        severity=Severity.ERROR,
-                        obj_type=obj.obj_type,
-                        obj_name=obj.name,
-                        field=field_name,
-                        message=f"Value '{value}' not in allowed values: {field_schema['enum']}",
-                        code="E004",
-                    )
-                )
-        else:
-            errors.append(
-                ValidationError(
-                    severity=Severity.ERROR,
-                    obj_type=obj.obj_type,
-                    obj_name=obj.name,
-                    field=field_name,
-                    message=f"Value '{value}' not in allowed values: {field_schema['enum']}",
-                    code="E004",
-                )
+    if "enum" in field_schema and not _value_matches_enum(value, field_schema["enum"]):
+        errors.append(
+            ValidationError(
+                severity=Severity.ERROR,
+                obj_type=obj.obj_type,
+                obj_name=obj.name,
+                field=field_name,
+                message=f"Value '{value}' not in allowed values: {field_schema['enum']}",
+                code="E004",
             )
+        )
 
     return errors
 
 
 def _value_matches_type(value: Any, schema: dict[str, Any]) -> bool:
-    """Check if a value matches a type schema."""
+    """Check whether a value satisfies a schema's ``type``.
+
+    Only the type is considered: ``enum`` and bounds are constraints checked once the
+    branch is known to match on type, never a reason for it not to match. A schema with
+    no ``type`` constrains nothing here and matches any value.
+    """
     expected_type = schema.get("type")
 
     if expected_type == "number":
-        return isinstance(value, (int, float))
+        return _is_numeric(value)
     elif expected_type == "integer":
+        if isinstance(value, bool):
+            return False
         return isinstance(value, int) or (isinstance(value, float) and value.is_integer())
     elif expected_type == "string":
         return isinstance(value, str)
@@ -442,13 +554,7 @@ def _value_matches_type(value: Any, schema: dict[str, Any]) -> bool:
     elif expected_type == "object":
         return isinstance(value, dict)
 
-    # Check enum
-    if "enum" in schema:
-        return value in schema["enum"] or (
-            isinstance(value, str) and value.lower() in [str(e).lower() for e in schema["enum"]]
-        )
-
-    return True  # Unknown type - assume valid
+    return True  # No type constraint - any value matches
 
 
 def _validate_field_range(
@@ -535,22 +641,199 @@ def _validate_field_range(
     return errors
 
 
+# Reference lists that no field anywhere in a schema contributes to, keyed by schema version.
+_UNPOPULATED_LISTS: dict[tuple[int, int, int], frozenset[str]] = {}
+
+
+def _unpopulated_reference_lists(schema: EpJSONSchema) -> frozenset[str]:
+    """Return the reference lists nothing in *schema* can ever put a name into.
+
+    A field carrying ``object_list`` points into a reference list; a field or a name carrying
+    ``reference`` contributes to one. Four lists in the EnergyPlus schema are pointed into and
+    never contributed to, all of the form ``valid*EquipmentTypes``. They enumerate object TYPE
+    names, not object names, so ``component_1_object_type = "OutdoorAir:Mixer"`` is a correct
+    value that no object in the document will ever declare. Reporting those as dangling accuses
+    a valid model of naming something that does not exist.
+    """
+    cached = _UNPOPULATED_LISTS.get(schema.version)
+    if cached is not None:
+        return cached
+
+    contributed: set[str] = set()
+    pointed: set[str] = set()
+
+    def scan(properties: dict[str, Any]) -> None:
+        for spec in properties.values():
+            contributed.update(spec.get("reference", ()) or ())
+            pointed.update(spec.get("object_list", ()) or ())
+            if spec.get("type") == "array":
+                scan(spec.get("items", {}).get("properties", {}))
+
+    for obj_type in schema.object_types:
+        outer: dict[str, Any] = schema.get_object_schema(obj_type) or {}
+        name_spec: dict[str, Any] = outer.get("name") or {}
+        name_refs: list[str] = name_spec.get("reference") or []
+        contributed.update(name_refs)
+        scan((schema.get_inner_schema(obj_type) or {}).get("properties", {}))
+
+    result = frozenset(pointed - contributed)
+    _UNPOPULATED_LISTS[schema.version] = result
+    return result
+
+
+def _is_zonelist_expanded_name(target: str, container_names: set[str], valid_names: set[str]) -> bool:
+    """Whether *target* looks like a name EnergyPlus produced by expanding a ZoneList.
+
+    An object assigned to a ``ZoneList`` (or a ``SpaceList``) is expanded by EnergyPlus into
+    one instance per member, named ``<member name>`` + a single space + ``<object name>``. A
+    reference may legitimately point at one of those instances, and no object in the file
+    declares that name. ``5ZoneAirCooledDemandLimiting.idf`` does exactly this: an
+    ``ElectricEquipment`` named ``AllZones with Electric Equipment`` is assigned to a
+    ``ZoneList``, and a ``DemandManager:ElectricEquipment`` then references
+    ``Space1-1 AllZones with Electric Equipment``. The schema documents the convention on the
+    field itself: "if ZoneList option is used on the ElectricEquipment object, a single
+    equipment object from that assignment can be selected by entering
+    ``<Zone Name><space><Global ElectricEquipment Object Name>``".
+
+    Every space is tried as the split point, not only the first: zone names and object names
+    both routinely contain spaces.
+
+    This is deliberately an approximation. It does not verify that the referenced object is
+    actually assigned to a ZoneList that contains that zone, which would be stricter and more
+    correct. The simpler rule cannot produce a false negative on a valid model, which is what
+    matters here, and the precise version needs ZoneList membership resolution that the Python
+    and TypeScript libraries do not share today.
+
+    Args:
+        target: The uppercased reference target that matched no declared name
+        container_names: Uppercased names declared by ``Zone`` and ``Space`` objects
+        valid_names: Every uppercased name the document declares
+
+    Returns:
+        True if some split of *target* at a space yields a zone/space prefix and a declared suffix.
+    """
+    parts = target.split(" ")
+    for split in range(1, len(parts)):
+        prefix = " ".join(parts[:split])
+        if prefix not in container_names:
+            continue
+        if " ".join(parts[split:]) in valid_names:
+            return True
+    return False
+
+
+def _is_implicit_remainder_space(target: str, zone_names: set[str]) -> bool:
+    """Whether *target* names the implicit space EnergyPlus adds to a partly-spaced zone.
+
+    When a ``Zone`` carries ``Space`` objects that do not cover all of its surfaces,
+    EnergyPlus creates one more space for the leftovers and names it ``<Zone Name>-Remainder``,
+    hyphen-joined. No object declares that name, and references to it are valid.
+    ``5ZoneAirCooledWithSpacesHVAC.idf`` does this: ``Zone 5`` declares the spaces
+    ``Space 5 Office`` and ``Space 5 Conference``, and ``Zone 5-Remainder`` is referenced
+    twelve times without ever being declared.
+
+    Separate from [_is_zonelist_expanded_name][idfkit.validation._is_zonelist_expanded_name],
+    not a case of it: ``Zone 5-Remainder`` is joined with a hyphen, so splitting it at its
+    spaces yields the prefix ``Zone`` and the suffix ``5-Remainder``, neither of which any
+    object declares, and the ZoneList rule correctly declines it.
+
+    Args:
+        target: The uppercased reference target that matched no declared name
+        zone_names: Uppercased names declared by ``Zone`` objects
+
+    Returns:
+        True if *target* is a declared zone name followed by the literal ``-Remainder``.
+    """
+    suffix = "-REMAINDER"
+    if not target.endswith(suffix):
+        return False
+    return target[: -len(suffix)] in zone_names
+
+
+def _reference_field_spec(schema: EpJSONSchema, obj_type: str, field_name: str) -> dict[str, Any]:
+    """Return the schema spec for a reference field, looking inside extensible groups too.
+
+    A reference field is not always positional: it may live inside an extensible group, where
+    the schema describes it under the array property's ``items.properties`` rather than at the
+    top level of the object's properties.
+    """
+    properties: dict[str, Any] = (schema.get_inner_schema(obj_type) or {}).get("properties", {})
+    spec = properties.get(field_name)
+    if isinstance(spec, dict):
+        return cast("dict[str, Any]", spec)
+    for prop in properties.values():
+        if prop.get("type") != "array":
+            continue
+        inner: dict[str, Any] = prop.get("items", {}).get("properties", {})
+        nested = inner.get(field_name)
+        if isinstance(nested, dict):
+            return cast("dict[str, Any]", nested)
+    return {}
+
+
+@dataclass(frozen=True)
+class _DeclaredNames:
+    """The uppercased names a document declares, split by what each set is used for."""
+
+    #: Every name any object declares, whether through its name field or a `reference` field.
+    all_names: set[str]
+    #: Names a ZoneList/SpaceList expansion can prefix an object name with: Zone and Space.
+    containers: set[str]
+    #: Zone names, the only thing an implicit remainder space can be built from.
+    zones: set[str]
+
+
+def _declared_names(doc: IDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
+    """Collect the names a document declares.
+
+    An object usually declares its name through its name field, but not always. A field may
+    carry `reference`, meaning it CONTRIBUTES its value to a reference list, as opposed to
+    `object_list`, which points into one. Anonymous types have no name field at all and
+    declare themselves this way: `FluidProperties:Name` names a refrigerant through its
+    `fluid_name` field, and `FluidProperties:Superheated` then points at it. Collecting only
+    `obj.name` makes those declarations invisible and reports every reference to them as
+    dangling. Eleven fields in the 26.1.0 schema declare a reference this way.
+    """
+    declared = _DeclaredNames(all_names=set(), containers=set(), zones=set())
+    for obj_type, collection in doc.collections.items():
+        inner: dict[str, Any] = schema.get_inner_schema(obj_type) or {}
+        contributing = [name for name, spec in inner.get("properties", {}).items() if spec.get("reference")]
+        type_upper = obj_type.upper()
+        for obj in collection:
+            if obj.name:
+                name_upper = obj.name.upper()
+                declared.all_names.add(name_upper)
+                if type_upper in ("ZONE", "SPACE"):
+                    declared.containers.add(name_upper)
+                if type_upper == "ZONE":
+                    declared.zones.add(name_upper)
+            for field_name in contributing:
+                value = obj.data.get(field_name)
+                if isinstance(value, str) and value:
+                    declared.all_names.add(value.upper())
+    return declared
+
+
 def _validate_references(
     doc: IDFDocument,
     schema: EpJSONSchema,
 ) -> list[ValidationError]:
     """Validate all object references."""
     errors: list[ValidationError] = []
+    declared = _declared_names(doc, schema)
+    valid_names = declared.all_names
 
-    # Build set of all valid names
-    valid_names: set[str] = set()
-    for collection in doc.collections.values():
-        for obj in collection:
-            if obj.name:
-                valid_names.add(obj.name.upper())
-
-    # Check for dangling references
+    # Check for dangling references, skipping fields whose reference list nothing populates.
+    unpopulated = _unpopulated_reference_lists(schema)
     for obj, field_name, target in doc.references.get_dangling_references(valid_names):
+        field_spec = _reference_field_spec(schema, obj.obj_type, field_name)
+        lists: list[str] = field_spec.get("object_list") or []
+        if lists and all(name in unpopulated for name in lists):
+            continue
+        if _is_zonelist_expanded_name(target, declared.containers, valid_names):
+            continue
+        if _is_implicit_remainder_space(target, declared.zones):
+            continue
         errors.append(
             ValidationError(
                 severity=Severity.ERROR,

@@ -16,7 +16,7 @@ import sys
 import warnings
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat import EppyDocumentMixin
 from .cst import DocumentCST
@@ -744,12 +744,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if new_name:
                 collection.by_name[new_key] = obj
 
-        # 2. Update referencing objects' _data directly (bypass _set_field to avoid recursion)
-        referencing = self._references.get_referencing_with_fields(old_name)
-        for ref_obj, field_name in referencing:
-            current = ref_obj.data.get(field_name, "")
+        # 2. Update referencing objects' _data directly (bypass _set_field to avoid recursion).
+        #    An edge carrying a group index points inside an extensible group, so the value to
+        #    rewrite is in the wrapper array rather than at the top level of _data.
+        referencing = self._references.get_referencing_edges(old_name)
+        for ref_obj, field_name, group_index in referencing:
+            slot = self._rename_slot(ref_obj, field_name, group_index)
+            if slot is None:
+                continue
+            current = slot.get(field_name, "")
             if isinstance(current, str) and current.upper() == old_name.upper():
-                ref_obj.data[field_name] = new_name
+                slot[field_name] = new_name
                 object.__setattr__(ref_obj, "_source_text", None)
 
         # 3. Update graph indexes
@@ -767,6 +772,19 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             len(referencing),
         )
 
+    def _rename_slot(self, ref_obj: IDFObject, field_name: str, group_index: int | None) -> dict[str, Any] | None:
+        """Return the dict holding *field_name* for a reference edge, or None if it is gone."""
+        if group_index is None:
+            return ref_obj.data
+        wrapper_key, _ = self._extensible_ref_fields(ref_obj)
+        if wrapper_key is None:
+            return None
+        groups = ref_obj.data.get(wrapper_key)
+        if not isinstance(groups, list) or group_index >= len(cast("list[Any]", groups)):
+            return None
+        group = cast("list[Any]", groups)[group_index]
+        return cast("dict[str, Any]", group) if isinstance(group, dict) else None
+
     def notify_reference_change(self, obj: IDFObject, field_name: str, old_value: Any, new_value: Any) -> None:
         """Called by IDFObject._set_field when a reference field changes."""
         old_str = old_value if isinstance(old_value, str) else None
@@ -776,7 +794,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def _index_object_references(self, obj: IDFObject) -> None:
         """Index all references in an object using pre-computed ref_fields."""
         # Fast path: use pre-computed ref_fields from parser / _ParsingCache
-        ref_fields = object.__getattribute__(obj, "_ref_fields")
+        ref_fields: frozenset[str] | None = object.__getattribute__(obj, "_ref_fields")
         if ref_fields is not None:
             data = obj.data
             register = self._references.register
@@ -784,6 +802,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 value = data.get(field_name)
                 if value and isinstance(value, str) and value.strip():
                     register(obj, field_name, value)
+            self._index_extensible_references(obj)
             return
 
         # Fallback for objects without pre-computed ref_fields
@@ -796,6 +815,41 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 value = obj.data.get(field_name)
                 if value and isinstance(value, str) and value.strip():
                     self._references.register(obj, field_name, value)
+        self._index_extensible_references(obj)
+
+    def _index_extensible_references(self, obj: IDFObject) -> None:
+        """Index the reference fields that live inside an object's extensible groups.
+
+        A reference field is not always positional. Ninety of them in the 26.1.0 schema sit
+        inside an extensible group instead -- ``Schedule:Week:Compact.schedule_day_name``,
+        ``Schedule:Year.schedule_week_name``, ``SpaceList.space_name`` among them -- where the
+        value lives in ``obj.data[wrapper_key][i][field]`` rather than ``obj.data[field]``.
+        Indexing only the top level leaves those pointers invisible to every dependency query
+        and to the dangling-reference check.
+        """
+        wrapper_key, ext_ref_fields = self._extensible_ref_fields(obj)
+        if wrapper_key is None or not ext_ref_fields:
+            return
+        self._references.reindex_extensible(obj, wrapper_key, ext_ref_fields)
+
+    def _extensible_ref_fields(self, obj: IDFObject) -> tuple[str | None, frozenset[str]]:
+        """Return an object's extensible wrapper key and the reference fields inside a group."""
+        wrapper_key: str | None = object.__getattribute__(obj, "_wrapper_key")
+        ref_fields: frozenset[str] | None = object.__getattribute__(obj, "_ref_fields")
+        extensibles: frozenset[str] = object.__getattribute__(obj, "_extensibles")
+        if ref_fields is None or wrapper_key is None:
+            # Objects built without the parser's pre-computed metadata: fall back to the schema.
+            if not self._schema:
+                return (None, frozenset())
+            cache = self._schema.get_parsing_cache(obj.obj_type)
+            if cache is None:
+                return (None, frozenset())
+            wrapper_key = cache.ext_wrapper_key
+            ref_fields = cache.ref_fields
+            extensibles = frozenset(cache.ext_field_names)
+        # ref_fields holds both positional and extensible-inner reference field names; the
+        # extensible ones are exactly those that are also declared extensible.
+        return (wrapper_key, ref_fields & extensibles)
 
     def get_referencing(self, name: str) -> set[IDFObject]:
         """Get all objects that reference a given name.

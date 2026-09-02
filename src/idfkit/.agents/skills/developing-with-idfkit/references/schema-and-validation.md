@@ -118,14 +118,23 @@ for issue in issues:
 
 Common codes (see `ValidationError.code`):
 
-- `E001` — required field missing
-- `E002` — invalid type
-- `E003` — value out of range
-- `E004` — unknown reference target
+- `E001` — required field missing or blank
+- `E002` — value matches none of a field's permitted types
+- `E003` — type mismatch on a single-typed field
+- `E004` — value not among a field's permitted values
+- `E005` — below the minimum; `E006` — not above an exclusive minimum
+- `E007` — above the maximum; `E008` — not below an exclusive maximum
+- `E009` — reference to a name no object declares
 - `E010` — singleton constraint violated (>1 instance of a `maxProperties: 1` type)
-- `W001` — schema not available (validator skipped)
+- `W002` — unknown object type; `W003` — unknown field
 
 These codes are stable; agents and CI checks can filter on them.
+
+A field yields at most one finding. Where a field admits several types, for example a number or the
+literal `Autosize`, the value is judged against each permitted form in turn: it is accepted as soon
+as one form fits completely, and otherwise the finding describes the closest form's failure. So an
+out-of-range number reports `E007` rather than `E002`, which would only say that a number is not a
+number.
 
 ## Introspecting the schema
 

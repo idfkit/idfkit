@@ -452,6 +452,8 @@ class IDFObject(EppyObjectMixin):
     _source_text: str | None
     _wrapper_key: str | None
     _ext_inner_names: tuple[str, ...]
+    _extensibles: frozenset[str]
+    _version: int
 
     def __init__(
         self,
@@ -792,6 +794,28 @@ class IDFObject(EppyObjectMixin):
         """
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
+        self._reindex_extensible_references()
+
+    def _reindex_extensible_references(self) -> None:
+        """Refresh the reference graph after an extensible group was mutated.
+
+        ``ExtensibleGroup``/``ExtensibleList`` write into ``data[wrapper_key]`` directly
+        instead of going through :meth:`_set_field`, so the per-field hook that keeps
+        top-level reference edges current never fires for them. Re-indexing the wrapper is
+        the equivalent for group edits; it is a no-op for the overwhelming majority of
+        extensible types, whose inner fields (vertices, coefficients, ...) reference nothing.
+        """
+        ref_fields = self._ref_fields
+        if not ref_fields:
+            return
+        ext_ref_fields = ref_fields & self._extensibles
+        if not ext_ref_fields:
+            return
+        doc = self._document
+        wrapper_key = self._wrapper_key
+        if doc is None or wrapper_key is None:
+            return
+        doc.references.reindex_extensible(self, wrapper_key, ext_ref_fields)
 
     def _set_field(self, python_key: str, value: Any) -> None:
         """Centralized data-field write with reference graph notification."""
