@@ -109,7 +109,7 @@ level = "conformance-2026.5"
 # same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
 # copy that declares no level.
 [tool.idfkit.governance]
-level = "governance-2026.6"
+level = "governance-2026.7"
 
 [tool.pyright]
 pythonVersion = "3.10"

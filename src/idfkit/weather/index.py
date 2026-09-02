@@ -10,6 +10,7 @@ import math
 import os
 import re
 import sys
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -48,9 +49,17 @@ _DISABLE_UPDATE_CHECK_ENV_VAR = "IDFKIT_NO_WEATHER_UPDATE_CHECK"
 _UPDATE_CHECK_TIMESTAMP_FILE = "last_update_check"
 _UPDATE_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 
+# Explicit cache-location override, honoured ahead of the platform resolution.
+_CACHE_DIR_ENV_VAR = "IDFKIT_CACHE_DIR"
 
-def default_cache_dir() -> Path:
-    """Return the platform-appropriate cache directory for idfkit weather data."""
+# Preferred locations already reported as unwritable. The fallback warning is
+# worth saying, but only once per location per process: `default_cache_dir()`
+# is called by several entry points and a per-call warning would drown the run.
+_WARNED_FALLBACK_LOCATIONS: set[Path] = set()
+
+
+def _platform_cache_dir() -> Path:
+    """Return the platform-appropriate cache directory, ignoring every override."""
     if sys.platform == "win32":
         base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
         return base / "idfkit" / "cache" / "weather"
@@ -60,6 +69,90 @@ def default_cache_dir() -> Path:
     xdg = os.environ.get("XDG_CACHE_HOME")
     base = Path(xdg) if xdg else Path.home() / ".cache"
     return base / "idfkit" / "weather"
+
+
+def _temp_cache_dir() -> Path:
+    """Return the last-resort cache directory under the system temp directory."""
+    return Path(tempfile.gettempdir()) / "idfkit" / "weather"
+
+
+def _is_writable_dir(path: Path) -> bool:
+    """Return ``True`` if *path* is a writable directory, or could be created as one.
+
+    Walks up to the nearest existing ancestor and tests that, so a cache
+    directory that does not exist yet is judged by the directory it would be
+    created in. The check reads only: nothing is created, so calling
+    ``default_cache_dir()`` stays free of side effects.
+
+    Costs two syscalls (``stat`` plus ``access``) when the directory exists,
+    and one more pair per missing level otherwise. That is deliberate rather
+    than cached: ``default_cache_dir()`` is called once per operation, never
+    in a loop, and every caller follows it with disk or network work that
+    costs orders of magnitude more. A process-lifetime cache would instead go
+    stale on the machines this exists for, where a volume is mounted, a
+    permission is fixed, or a temp directory is swept mid-run.
+
+    The answer is a snapshot: a location can stop being writable between this
+    check and the write. Callers already handle ``OSError`` from the write
+    itself; this only decides which location they are pointed at.
+    """
+    candidate = path
+    while True:
+        if candidate.exists():
+            return candidate.is_dir() and os.access(candidate, os.W_OK | os.X_OK)
+        parent = candidate.parent
+        if parent == candidate:  # reached the filesystem root without finding anything
+            return False
+        candidate = parent
+
+
+def default_cache_dir() -> Path:
+    """Return the cache directory for idfkit weather data.
+
+    Resolution order:
+
+    1. ``IDFKIT_CACHE_DIR``, when set to a non-blank value. The value is used
+       verbatim (with a leading ``~`` expanded) as the weather cache
+       directory, and is **never** overridden by the writable fallback below:
+       naming a location and then silently getting a different one defeats
+       the point of naming it, and a pre-populated cache that idfkit quietly
+       walks away from turns an offline run into a failed download. When that
+       location cannot be written, the write fails loudly, naming the path the
+       caller chose. A read-only warm cache mounted for reads is a supported
+       configuration and is left alone.
+    2. The platform-appropriate location: ``%LOCALAPPDATA%`` on Windows,
+       ``~/Library/Caches`` on macOS, ``$XDG_CACHE_HOME`` or ``~/.cache``
+       elsewhere.
+    3. The system temp directory, when the platform location above cannot be
+       written (a read-only ``$HOME`` in a locked-down container, say). The
+       relocation is logged once per location at ``WARNING``, because a cache
+       that moves silently costs the user the downloads they warmed.
+
+    A blank or whitespace-only ``IDFKIT_CACHE_DIR`` counts as unset rather
+    than as an error: clearing a variable by assigning it the empty string is
+    ordinary shell practice, and crashing on it would fail far from the cause.
+    """
+    override = os.environ.get(_CACHE_DIR_ENV_VAR, "").strip()
+    if override:
+        return Path(override).expanduser()
+
+    preferred = _platform_cache_dir()
+    if _is_writable_dir(preferred):
+        return preferred
+
+    fallback = _temp_cache_dir()
+    if preferred not in _WARNED_FALLBACK_LOCATIONS:
+        _WARNED_FALLBACK_LOCATIONS.add(preferred)
+        logger.warning(
+            "Weather cache directory %s is not writable; falling back to %s. "
+            "Weather files cached earlier under the first location will not be "
+            "read, so downloads may repeat. Set %s to choose a writable "
+            "location explicitly.",
+            preferred,
+            fallback,
+            _CACHE_DIR_ENV_VAR,
+        )
+    return fallback
 
 
 # ---------------------------------------------------------------------------

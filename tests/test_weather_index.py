@@ -6,6 +6,9 @@ import gzip
 import json
 import logging
 import os
+import sys
+import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -13,19 +16,24 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from idfkit.weather.index import (
+    _CACHE_DIR_ENV_VAR,  # pyright: ignore[reportPrivateUsage]
     _CACHED_INDEX,  # pyright: ignore[reportPrivateUsage]
+    _WARNED_FALLBACK_LOCATIONS,  # pyright: ignore[reportPrivateUsage]
     StationIndex,
     _download_file,  # pyright: ignore[reportPrivateUsage]
     _ensure_index_file,  # pyright: ignore[reportPrivateUsage]
     _extract_wmo_from_filename,  # pyright: ignore[reportPrivateUsage]
     _head_last_modified,  # pyright: ignore[reportPrivateUsage]
     _is_epw_filename,  # pyright: ignore[reportPrivateUsage]
+    _is_writable_dir,  # pyright: ignore[reportPrivateUsage]
     _load_compressed_index,  # pyright: ignore[reportPrivateUsage]
     _parse_kml,  # pyright: ignore[reportPrivateUsage]
     _parse_url_metadata,  # pyright: ignore[reportPrivateUsage]
+    _platform_cache_dir,  # pyright: ignore[reportPrivateUsage]
     _save_compressed_index,  # pyright: ignore[reportPrivateUsage]
     _score_station,  # pyright: ignore[reportPrivateUsage]
     _strip_weather_extension,  # pyright: ignore[reportPrivateUsage]
+    _temp_cache_dir,  # pyright: ignore[reportPrivateUsage]
     default_cache_dir,
 )
 from idfkit.weather.station import WeatherStation
@@ -129,6 +137,13 @@ def _fixture_stations() -> list[WeatherStation]:
 
 
 class TestDefaultCacheDir:
+    """Platform resolution, with no override set."""
+
+    @pytest.fixture(autouse=True)
+    def _no_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The platform branches only run when IDFKIT_CACHE_DIR is unset."""
+        monkeypatch.delenv(_CACHE_DIR_ENV_VAR, raising=False)
+
     def test_win32(self) -> None:
         with patch("idfkit.weather.index.sys") as mock_sys:
             mock_sys.platform = "win32"
@@ -167,6 +182,175 @@ class TestDefaultCacheDir:
             with patch.dict(os.environ, {"XDG_CACHE_HOME": "/tmp/xdg"}, clear=False):  # noqa: S108
                 result = default_cache_dir()
                 assert result == Path("/tmp/xdg/idfkit/weather")  # noqa: S108
+
+
+# ---------------------------------------------------------------------------
+# default_cache_dir: IDFKIT_CACHE_DIR override and writable fallback
+# ---------------------------------------------------------------------------
+
+
+_ROOT_CANNOT_TEST_PERMISSIONS = hasattr(os, "geteuid") and os.geteuid() == 0
+
+requires_posix_permissions = pytest.mark.skipif(
+    sys.platform == "win32" or _ROOT_CANNOT_TEST_PERMISSIONS,
+    reason="needs POSIX mode bits enforced against a non-root user",
+)
+
+
+@pytest.fixture
+def read_only_dir(tmp_path: Path) -> Iterator[Path]:
+    """A genuinely unwritable directory, restored even when the test fails."""
+    directory = tmp_path / "read-only-home"
+    directory.mkdir()
+    directory.chmod(0o500)
+    try:
+        yield directory
+    finally:
+        directory.chmod(0o700)
+
+
+@pytest.fixture(autouse=True)
+def _reset_fallback_warnings() -> Iterator[None]:
+    """The fallback warning is once-per-location per process; isolate the tests."""
+    _WARNED_FALLBACK_LOCATIONS.clear()
+    yield
+    _WARNED_FALLBACK_LOCATIONS.clear()
+
+
+class TestCacheDirOverride:
+    """IDFKIT_CACHE_DIR wins over the platform resolution."""
+
+    def test_override_wins_over_platform_path(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        chosen = tmp_path / "chosen-cache"
+        monkeypatch.setenv(_CACHE_DIR_ENV_VAR, str(chosen))
+
+        result = default_cache_dir()
+
+        assert result == chosen
+        assert result != _platform_cache_dir()
+
+    def test_override_need_not_exist_yet(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        chosen = tmp_path / "not" / "created" / "yet"
+        monkeypatch.setenv(_CACHE_DIR_ENV_VAR, str(chosen))
+
+        assert default_cache_dir() == chosen
+        assert not chosen.exists()  # resolution must not create anything
+
+    def test_override_expands_leading_tilde(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv(_CACHE_DIR_ENV_VAR, "~/idfkit-cache-under-home")
+
+        assert default_cache_dir() == Path.home() / "idfkit-cache-under-home"
+
+    @pytest.mark.parametrize("blank", ["", "   ", "\t\n"])
+    def test_blank_override_counts_as_unset(self, blank: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv(_CACHE_DIR_ENV_VAR, blank)
+
+        assert default_cache_dir() == _platform_cache_dir()
+
+    def test_unset_resolves_to_todays_platform_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The ordinary case is unchanged: no override, writable home."""
+        monkeypatch.delenv(_CACHE_DIR_ENV_VAR, raising=False)
+
+        assert default_cache_dir() == _platform_cache_dir()
+
+
+class TestCacheDirWritableFallback:
+    """A preferred location that cannot be written falls back to the temp directory."""
+
+    @staticmethod
+    def _point_platform_paths_at(directory: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Aim every platform branch's base directory at *directory*.
+
+        Setting all three keeps the test honest on whichever platform it runs:
+        HOME drives the macOS branch and the POSIX ``~/.cache`` default,
+        XDG_CACHE_HOME the POSIX branch, LOCALAPPDATA the Windows branch.
+        """
+        monkeypatch.delenv(_CACHE_DIR_ENV_VAR, raising=False)
+        monkeypatch.setenv("HOME", str(directory))
+        monkeypatch.setenv("XDG_CACHE_HOME", str(directory))
+        monkeypatch.setenv("LOCALAPPDATA", str(directory))
+
+    @requires_posix_permissions
+    def test_falls_back_to_temp_when_preferred_unwritable(
+        self, read_only_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._point_platform_paths_at(read_only_dir, monkeypatch)
+        assert not _is_writable_dir(_platform_cache_dir())  # the setup really is read-only
+
+        result = default_cache_dir()
+
+        assert result == _temp_cache_dir()
+        assert result.is_relative_to(tempfile.gettempdir())
+        assert not result.is_relative_to(read_only_dir)
+
+    @requires_posix_permissions
+    def test_fallback_warns_naming_both_locations(
+        self, read_only_dir: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        self._point_platform_paths_at(read_only_dir, monkeypatch)
+        preferred = _platform_cache_dir()
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.weather.index"):
+            default_cache_dir()
+
+        assert len(caplog.records) == 1
+        message = caplog.records[0].getMessage()
+        assert str(preferred) in message
+        assert str(_temp_cache_dir()) in message
+        assert _CACHE_DIR_ENV_VAR in message
+
+    @requires_posix_permissions
+    def test_fallback_warns_once_per_location(
+        self, read_only_dir: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        self._point_platform_paths_at(read_only_dir, monkeypatch)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.weather.index"):
+            first = default_cache_dir()
+            second = default_cache_dir()
+
+        assert first == second == _temp_cache_dir()
+        assert len(caplog.records) == 1  # not once per call
+
+    @requires_posix_permissions
+    def test_explicit_override_does_not_fall_back(
+        self, read_only_dir: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """A named location is honoured even when unwritable, so the write fails loudly."""
+        monkeypatch.setenv(_CACHE_DIR_ENV_VAR, str(read_only_dir))
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.weather.index"):
+            result = default_cache_dir()
+
+        assert result == read_only_dir
+        assert result != _temp_cache_dir()
+        assert caplog.records == []
+
+    def test_no_fallback_when_preferred_is_writable(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        self._point_platform_paths_at(tmp_path, monkeypatch)
+
+        assert default_cache_dir() == _platform_cache_dir()
+
+
+class TestIsWritableDir:
+    def test_existing_writable_directory(self, tmp_path: Path) -> None:
+        assert _is_writable_dir(tmp_path)
+
+    def test_missing_directory_judged_by_nearest_existing_ancestor(self, tmp_path: Path) -> None:
+        assert _is_writable_dir(tmp_path / "a" / "b" / "c")
+
+    def test_path_occupied_by_a_file(self, tmp_path: Path) -> None:
+        occupied = tmp_path / "not-a-directory"
+        occupied.write_text("")
+        assert not _is_writable_dir(occupied)
+
+    @requires_posix_permissions
+    def test_read_only_directory(self, read_only_dir: Path) -> None:
+        assert not _is_writable_dir(read_only_dir)
+
+    @requires_posix_permissions
+    def test_missing_directory_under_a_read_only_parent(self, read_only_dir: Path) -> None:
+        assert not _is_writable_dir(read_only_dir / "would-need-creating")
 
 
 # ---------------------------------------------------------------------------

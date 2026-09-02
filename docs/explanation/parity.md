@@ -79,8 +79,8 @@ Ids get added and deprecated. They do not get renamed.
 <!-- BEGIN GENERATED FROM parity.toml. Edit the ledger, not this page. -->
 
 Generated from
-[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.6/governance/parity.toml)
-at `governance-2026.6`, the governance tag this release pins. Correct the ledger and
+[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.7/governance/parity.toml)
+at `governance-2026.7`, the governance tag this release pins. Correct the ledger and
 regenerate; a correction made on this page would be overwritten, and it would never
 reach either library's CI gate.
 
@@ -92,9 +92,9 @@ permanent.
 
 | Availability | Python | JavaScript |
 | ------------ | ------ | ---------- |
-| complete | 26 | 10 |
-| partial | 2 | 1 |
-| absent, not yet | 0 | 16 |
+| complete | 26 | 12 |
+| partial | 2 | 2 |
+| absent, not yet | 0 | 13 |
 | absent, never | 2 | 3 |
 
 | Capability | Tier | Python | JavaScript |
@@ -104,9 +104,9 @@ permanent.
 | [Documents, collections, and objects](#document-model) | 1 | complete | complete |
 | [Reference graph](#references) | 1 | complete | complete |
 | [Schema access and the version registry](#schema-access) | 1 | complete | complete |
-| [Model validation](#validation) | 1 | complete | absent (not yet) |
-| [Describing an object type from the schema](#introspection) | 1 | complete | absent (not yet) |
-| [Building EnergyPlus documentation URLs](#documentation-urls) | 1 | complete | absent (not yet) |
+| [Model validation](#validation) | 1 | complete | complete |
+| [Describing an object type from the schema](#introspection) | 1 | complete | partial |
+| [Building EnergyPlus documentation URLs](#documentation-urls) | 1 | complete | complete |
 | [Static types generated from the schema](#generated-object-types) | 1 | partial | complete |
 | [Diagnostics from a parse](#parse-diagnostics) | 1 | partial | complete |
 | [Weather station index and file retrieval](#weather-index) | 1 | complete | partial |
@@ -213,12 +213,7 @@ possibility.
 
 ### Model validation { #validation }
 
-**Python** complete &middot; **JavaScript** absent (not yet) &middot; Tier 1 &middot; ledger id `validation`
-
-!!! warning "Not in JavaScript yet"
-
-    A temporary gap, not a boundary. The port is tracked in
-    [idfkit-js#25](https://github.com/idfkit/idfkit-js/issues/25).
+**Python** complete &middot; **JavaScript** complete &middot; Tier 1 &middot; ledger id `validation`
 
 ??? note "Vocabulary this capability owns in the naming register"
 
@@ -230,12 +225,24 @@ possibility.
 
 ### Describing an object type from the schema { #introspection }
 
-**Python** complete &middot; **JavaScript** absent (not yet) &middot; Tier 1 &middot; ledger id `introspection`
+**Python** complete &middot; **JavaScript** partial &middot; Tier 1 &middot; ledger id `introspection`
 
-!!! warning "Not in JavaScript yet"
+!!! info "What differs, and why"
 
-    A temporary gap, not a boundary. The port is tracked in
-    [idfkit-js#26](https://github.com/idfkit/idfkit-js/issues/26).
+    TypeScript never populates `memo` or `note`. Both are members of the two types, so the field set
+    matches, but they are always undefined. Python fills `memo` for 845 of 858 object types and `note`
+    for 6,212 of 12,712 fields in 26.1.0, both from epJSON keys that `@idfkit/schemas` drops on purpose
+    to keep the bundle off the parse critical path. The `@idfkit/schemas/docs` subpath its own header
+    comment promises does not exist. Describing a type is what a REPL, a notebook, and an LSP hover are
+    for, so the prose is most of the value; this is partial rather than complete.
+
+    Two further differences, both small and both pinned by tests. `enumValues` omits the empty string
+    that Python includes for 1,378 of its 2,293 enum-bearing fields, and omits the sentinel lists
+    (`Autosize`, `Autocalculate`) Python recovers from an anyOf branch for 769 fields. Field ORDER
+    differs for exactly two types in 26.1.0, `ZoneProperty:UserViewFactors:BySurfaceName` and
+    `ZoneTerminalUnitList`, and for six more in 8.9.0 through 9.2.0, because the bundle sorts property
+    keys for content-addressing and those types carry no positional field list to restore declaration
+    order from.
 
 ??? note "Vocabulary this capability owns in the naming register"
 
@@ -245,12 +252,7 @@ possibility.
 
 ### Building EnergyPlus documentation URLs { #documentation-urls }
 
-**Python** complete &middot; **JavaScript** absent (not yet) &middot; Tier 1 &middot; ledger id `documentation-urls`
-
-!!! warning "Not in JavaScript yet"
-
-    A temporary gap, not a boundary. The port is tracked in
-    [idfkit-js#27](https://github.com/idfkit/idfkit-js/issues/27).
+**Python** complete &middot; **JavaScript** complete &middot; Tier 1 &middot; ledger id `documentation-urls`
 
 ??? note "Vocabulary this capability owns in the naming register"
 

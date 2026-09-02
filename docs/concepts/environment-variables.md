@@ -51,6 +51,42 @@ catch hangs quickly.
     export IDFKIT_PREPROCESSOR_TIMEOUT=30    # fail fast in CI
     ```
 
+### `IDFKIT_CACHE_DIR`
+
+Explicit location for the weather cache: the downloaded EPW and DDY files
+under `files/`, and the IP-geocode cache. Set it when the platform default is
+unsuitable, such as a build that pre-populates the cache at a path it controls
+so a later network-isolated run can read it.
+
+- **Read in:** `idfkit.weather.index`
+- **Default:** unset, so the platform location applies (see
+  `XDG_CACHE_HOME` and `LOCALAPPDATA` below, or `~/Library/Caches/idfkit/weather`
+  on macOS).
+- **Activation:** set to a directory path, used exactly as given. A leading
+  `~` is expanded. The directory is created on first write, not on startup.
+- **Blank value:** an empty or whitespace-only value counts as unset, so
+  `IDFKIT_CACHE_DIR=` restores the platform default.
+- **No fallback:** unlike the platform location, an explicit override is
+  honoured even when it is not writable. Naming a location and silently
+  getting a different one defeats the point of naming it, so a failed write
+  raises `OSError` naming the path you chose. A warm cache mounted read-only
+  keeps working, because reads need no write permission.
+- **Scope:** the weather cache only. The simulation result cache has its own
+  `cache_dir` argument and is unaffected.
+- **Example:**
+
+    ```bash
+    export IDFKIT_CACHE_DIR=/opt/idfkit-cache
+    ```
+
+!!! info "Writable fallback"
+    When `IDFKIT_CACHE_DIR` is unset and the platform location cannot be
+    written, for instance a container with a read-only `$HOME`, idfkit falls
+    back to `<system temp>/idfkit/weather` rather than failing, and logs a
+    warning naming both locations. Files cached earlier under the platform
+    location are not read from the fallback, so set `IDFKIT_CACHE_DIR`
+    explicitly wherever the cache has to survive.
+
 ### `IDFKIT_NO_WEATHER_UPDATE_CHECK`
 
 Opt-out flag that suppresses the once-per-day freshness nudge emitted when
@@ -114,6 +150,7 @@ fallback root when scanning for `EnergyPlusV*` installs at the drive root.
 |-----------------------------------|----------------------------------------|--------------------------------------|
 | `ENERGYPLUS_DIR`                  | EnergyPlus install path                | unset (PATH + platform defaults)     |
 | `IDFKIT_PREPROCESSOR_TIMEOUT`     | Per-subprocess preprocessor timeout    | unset (120 s)                        |
+| `IDFKIT_CACHE_DIR`                | Weather cache location                 | unset (platform cache dir)           |
 | `IDFKIT_NO_WEATHER_UPDATE_CHECK`  | Disable weather index freshness nudge  | unset (check enabled)                |
 | `XDG_CACHE_HOME`                  | Linux cache root                       | `~/.cache`                           |
 | `LOCALAPPDATA`                    | Windows cache root                     | `%UserProfile%\AppData\Local`        |
@@ -121,5 +158,6 @@ fallback root when scanning for `EnergyPlusV*` installs at the drive root.
 | `SYSTEMDRIVE`                     | Windows EnergyPlus discovery fallback  | `C:`                                 |
 
 !!! note "macOS"
-    On macOS, idfkit does not consult an environment variable for cache
-    locations — caches live under `~/Library/Caches/idfkit/`.
+    On macOS, idfkit consults no *platform* variable for cache locations:
+    caches live under `~/Library/Caches/idfkit/`. `IDFKIT_CACHE_DIR` still
+    applies, and still wins, on every platform.
