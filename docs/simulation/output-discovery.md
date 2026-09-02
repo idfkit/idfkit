@@ -1,4 +1,4 @@
-# Output Discovery
+# How to discover output variables
 
 The `OutputVariableIndex` helps you discover available output variables
 and meters from EnergyPlus, then add them to your model for future simulations.
@@ -61,18 +61,18 @@ From files directly:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
+| `key` | `str` | The key value (e.g. `"*"` or `"ZONE 1"`) |
 | `name` | `str` | Variable name |
+| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
 | `units` | `str` | Variable units |
-| `key_options` | `str` | Key types (e.g., "Zone", "*") |
 
 ### OutputMeter Attributes
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `name` | `str` | Meter name |
+| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
 | `units` | `str` | Meter units |
-| `resource_type` | `str` | Resource being measured |
-| `end_use` | `str` | End use category |
 
 ## Adding Outputs to Model
 
@@ -157,6 +157,6 @@ outputs, then run a second simulation with those outputs requested:
 
 ## See Also
 
-- [SQL Output Queries](sql-queries.md) — Querying recorded data
-- [Parsing Results](results.md) — Working with SimulationResult
-- [Running Simulations](running.md) — Basic simulation guide
+- [How to query simulation SQL output](sql-queries.md) — Querying recorded data
+- [How to access simulation results](results.md) — Working with SimulationResult
+- [How to run a simulation](running.md) — Basic simulation guide

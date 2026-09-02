@@ -1,4 +1,4 @@
-# Simulation Progress Tracking
+# How to track simulation progress
 
 The `on_progress` callback provides real-time visibility into what EnergyPlus
 is doing during a simulation.  It fires for warmup iterations, simulation day
@@ -322,28 +322,9 @@ JSON-serializable via `dataclasses.asdict()`:
   is `None`. Your progress indicator should handle this gracefully --
   show a spinner or simply log the phase name.
 
-## API Reference
-
-### Functions
-
-| Function | `on_progress` Support |
-|----------|----------------------|
-| `simulate()` | `"tqdm"`, sync callback, or `None` |
-| `async_simulate()` | `"tqdm"`, sync/async callback, or `None` |
-| `simulate_batch()` | Sync callback or `None` (events include `job_index`/`job_label`) |
-| `async_simulate_batch()` | Sync/async callback or `None` (events include `job_index`/`job_label`) |
-| `async_simulate_batch_stream()` | Sync/async callback or `None` (events include `job_index`/`job_label`) |
-
-### Classes / Factories
-
-| Name | Description |
-|------|-------------|
-| `SimulationProgress` | Frozen dataclass for progress events |
-| `ProgressParser` | Stateful EnergyPlus stdout line parser |
-| `tqdm_progress()` | Context manager yielding a callback for customised tqdm bars |
-
 ## See Also
 
-- [Running Simulations](running.md) -- Full `simulate()` parameter reference
-- [Async Simulation](async.md) -- Non-blocking execution guide
-- [Batch Processing](batch.md) -- Parallel execution guide
+- [Progress API reference](../api/simulation/progress.md) -- generated reference for `SimulationProgress` and `ProgressParser`
+- [How to run a simulation](running.md) -- Full `simulate()` parameter reference
+- [How to run simulations asynchronously](async.md) -- Non-blocking execution guide
+- [How to run batch simulations](batch.md) -- Parallel execution guide

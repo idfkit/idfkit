@@ -1,4 +1,4 @@
-# Logging
+# How to configure logging
 
 idfkit uses Python's standard `logging` module throughout the library.
 Every module logs through a namespaced logger (e.g. `idfkit.idf_parser`,
@@ -156,6 +156,6 @@ Here are some representative messages you will see at each level:
 
 ## See Also
 
-- [Error Handling](../simulation/errors.md) — Handling simulation failures
+- [How to handle simulation errors](../simulation/errors.md) — Handling simulation failures
 - [Caching Strategy](caching.md) — Cache hit/miss diagnostics
 - [Troubleshooting](../troubleshooting/errors.md) — Common error solutions

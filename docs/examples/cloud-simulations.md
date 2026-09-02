@@ -1,6 +1,6 @@
-# Cloud Simulations (S3)
+# How to store simulation results in S3
 
-This example demonstrates running simulations with results stored in Amazon S3,
+This guide shows how to run simulations with results stored in Amazon S3,
 suitable for distributed cloud workflows.
 
 ## Prerequisites
@@ -123,6 +123,6 @@ For heavy analysis, download everything locally first:
 
 ## See Also
 
-- [Cloud Storage Concepts](../concepts/cloud-storage.md) — Architecture details
-- [Batch Processing](../simulation/batch.md) — Parallel execution
-- [Caching](../simulation/caching.md) — Local result caching
+- [How to use cloud and remote storage](../concepts/cloud-storage.md) — Architecture details
+- [How to run batch simulations](../simulation/batch.md) — Parallel execution
+- [How to cache simulation results](../simulation/caching.md) — Local result caching

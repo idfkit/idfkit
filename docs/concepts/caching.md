@@ -25,6 +25,14 @@ digest of:
 --8<-- "docs/snippets/concepts/caching/simulation_cache.py:example"
 ```
 
+Only inputs that change the *results* feed the key. `expand_objects`, `annual`,
+`design_day`, `output_suffix`, `extra_args`, and `readvars` all influence it;
+`output_dir` (where results are written) and `timeout` (execution only)
+deliberately do not, so re-running with a different output directory still hits
+the cache. Before hashing, the model is copied and
+given an `Output:SQLite` object if it lacks one, so two models differing only in
+that object produce the same key.
+
 ### How It Works
 
 1. Before simulation, compute the cache key
@@ -146,6 +154,6 @@ Pass `cache=None` (the default) to skip caching:
 
 ## See Also
 
-- [Simulation Caching](../simulation/caching.md) — Practical guide
-- [Weather Downloads](../weather/downloads.md) — Weather file caching
+- [How to cache simulation results](../simulation/caching.md) — Practical guide
+- [How to download weather files](../weather/downloads.md) — Weather file caching
 - [Simulation Architecture](simulation-architecture.md) — Design decisions

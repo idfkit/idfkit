@@ -81,4 +81,4 @@ is required.
 
 - [Version Compatibility](version-compatibility.md) — static linting for cross-version issues
 - [API Reference: Document](../api/document.md) — full `IDFDocument` API
-- [Quick Start](../getting-started/quick-start.md) — getting started guide
+- [Build your first model](../tutorials/first-model.md) — build a model from scratch

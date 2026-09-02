@@ -1,4 +1,4 @@
-# Station Search
+# How to search for weather stations
 
 The `StationIndex` provides fast searching and filtering of ~70,000 weather
 station dataset entries (covering ~17,300 unique physical stations) from
@@ -188,6 +188,6 @@ The index uses efficient data structures for fast searching:
 
 ## See Also
 
-- [Weather Downloads](downloads.md) — Download files for a station
-- [Geocoding](geocoding.md) — Convert addresses to coordinates
+- [How to download weather files](downloads.md) — Download files for a station
+- [How to geocode addresses](geocoding.md) — Convert addresses to coordinates
 - [Weather Pipeline](../concepts/weather-pipeline.md) — Architecture details

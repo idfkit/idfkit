@@ -35,7 +35,7 @@ Check your installation:
 | [`SimulationCache`](caching.md) | Content-addressed result caching |
 | [`OutputVariableIndex`](output-discovery.md) | Discover available output variables |
 | [`ErrorReport`](errors.md) | Parse error and warning messages |
-| [Plotting](plotting.md) | Visualize results with matplotlib/plotly |
+| [How to plot simulation results](plotting.md) | Visualize results with matplotlib/plotly |
 
 ## Key Features
 
@@ -103,7 +103,7 @@ pip install idfkit[s3]
 
 ## Next Steps
 
-- [Running Simulations](running.md) — Detailed guide to `simulate()`
-- [Async Simulation](async.md) — Non-blocking execution with `asyncio`
-- [Parsing Results](results.md) — Working with `SimulationResult`
+- [How to run a simulation](running.md) — Detailed guide to `simulate()`
+- [How to run simulations asynchronously](async.md) — Non-blocking execution with `asyncio`
+- [How to access simulation results](results.md) — Working with `SimulationResult`
 - [Simulation Architecture](../concepts/simulation-architecture.md) — Design decisions

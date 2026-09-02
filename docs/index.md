@@ -24,7 +24,7 @@ automatic reference tracking, and built-in simulation support.
 
 <div class="hero-buttons" markdown>
 
-[Get Started :material-arrow-right:](getting-started/installation.md){ .md-button .md-button--primary }
+[Get Started :material-arrow-right:](tutorials/index.md){ .md-button .md-button--primary }
 [API Reference](api/document.md){ .md-button }
 
 </div>
@@ -80,53 +80,40 @@ pip install idfkit
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } **Get Started**
+-   :material-school:{ .lg .middle } **Tutorials**
 
     ---
 
-    Installation, quick start guide, and interactive tutorial.
+    Learning-oriented lessons: install idfkit and build your first model,
+    step by step.
 
-    [:octicons-arrow-right-24: Get Started](getting-started/installation.md)
+    [:octicons-arrow-right-24: Tutorials](tutorials/index.md)
 
--   :material-school:{ .lg .middle } **Concepts**
-
-    ---
-
-    Architecture decisions, caching strategy, and design principles.
-
-    [:octicons-arrow-right-24: Concepts](concepts/simulation-architecture.md)
-
--   :material-play-circle:{ .lg .middle } **Simulation**
+-   :material-map-marker-path:{ .lg .middle } **How-to guides**
 
     ---
 
-    Run EnergyPlus, parse results, batch processing, and caching.
+    Goal-oriented recipes: run simulations, work with weather data, scale
+    out, and more.
 
-    [:octicons-arrow-right-24: Simulation Guide](simulation/index.md)
+    [:octicons-arrow-right-24: How-to guides](how-to/index.md)
 
--   :material-weather-cloudy:{ .lg .middle } **Weather**
-
-    ---
-
-    Station search, downloads, design days, and geocoding.
-
-    [:octicons-arrow-right-24: Weather Guide](weather/index.md)
-
--   :material-flask:{ .lg .middle } **Examples**
+-   :material-api:{ .lg .middle } **Reference**
 
     ---
 
-    Parametric studies, sizing workflows, and cloud simulations.
+    The complete API, CLI, and configuration — generated from the source.
 
-    [:octicons-arrow-right-24: Examples](examples/parametric-study.ipynb)
+    [:octicons-arrow-right-24: Reference](reference/index.md)
 
--   :material-api:{ .lg .middle } **API Reference**
+-   :material-lightbulb-on:{ .lg .middle } **Explanation**
 
     ---
 
-    Complete API documentation for all modules.
+    Understanding-oriented discussion: architecture, caching, and design
+    decisions.
 
-    [:octicons-arrow-right-24: API Reference](api/document.md)
+    [:octicons-arrow-right-24: Explanation](explanation/index.md)
 
 </div>
 
@@ -135,7 +122,7 @@ pip install idfkit
 | Page | Description |
 |------|-------------|
 | [Core Tutorial](getting-started/core-tutorial.ipynb) | Interactive notebook covering basic, advanced, and expert usage |
-| [Migrating from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
-| [Migrating Versions](simulation/migrating-versions.md) | Forward-migrate IDF models across EnergyPlus releases |
+| [How to migrate from eppy](migration.md) | Side-by-side comparison of eppy and idfkit APIs |
+| [How to migrate models between EnergyPlus versions](simulation/migrating-versions.md) | Forward-migrate IDF models across EnergyPlus releases |
 | [Benchmarks](benchmarks.md) | Performance comparison against eppy and other tools |
 | [Troubleshooting](troubleshooting/errors.md) | Common errors and solutions |

@@ -77,7 +77,7 @@ For scripting and CI, pipe through `jq`:
 
 ![idfkit tmy json](../tape/idfkit_tmy_json.gif)
 
-JSON output is auto-enabled when stdout is not a TTY and `--first` is set; otherwise pass `--json` explicitly.
+Pass `--json` to emit JSON. Without it, piped (non-TTY) output is tab-separated for the station list, or plain text for a single `--download`.
 
 ## Interactive map browser
 
@@ -148,7 +148,7 @@ Rebuilds the bundled index from the regional KML files on climate.onebuilding.or
 
 ## See also
 
-- [Weather Downloads](../weather/downloads.md) — the `WeatherDownloader` Python API the CLI wraps
-- [Station Search](../weather/station-search.md) — the `StationIndex` Python API
-- [Geocoding](../weather/geocoding.md) — `--near` uses `geocode()`; `--nearby` uses `detect_location()`
+- [How to download weather files](../weather/downloads.md) — the `WeatherDownloader` Python API the CLI wraps
+- [How to search for weather stations](../weather/station-search.md) — the `StationIndex` Python API
+- [How to geocode addresses](../weather/geocoding.md) — `--near` uses `geocode()`; `--nearby` uses `detect_location()`
 - [Weather Pipeline](../concepts/weather-pipeline.md) — architectural overview

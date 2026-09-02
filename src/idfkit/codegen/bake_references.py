@@ -10,9 +10,10 @@ The agent reference docs have two source-of-truth inputs:
 
 This module flattens the include directives — pulling the marked region out of
 each snippet and inlining it — to produce the bundled, wheel-packaged copies at
-``src/idfkit/.agents/skills/developing-with-idfkit/references/<topic>.md`` that
-idfkit-mcp serves over MCP. MkDocs renders the same source templates via
-``pymdownx.snippets`` for the docs site, so the two stay in lock-step.
+``src/idfkit/.agents/skills/developing-with-idfkit/references/<topic>.md``, which
+the idfkit plugin loads as the ``developing-with-idfkit`` skill. MkDocs renders
+the same source templates via ``pymdownx.snippets`` for the docs site, so the two
+stay in lock-step.
 
 Run via ``python -m idfkit.codegen.bake_references``. A ``check-baker`` Makefile
 target regenerates and ``git diff --exit-code``s the output, mirroring
@@ -86,7 +87,11 @@ def bake_all() -> list[Path]:
 
     _REFERENCES_OUT.mkdir(parents=True, exist_ok=True)
     for source in sorted(_SOURCE_DIR.glob("*.md")):
-        if source.name == "SKILL.md":
+        # SKILL.md is baked above, at the skill root. index.md is the docs-site
+        # landing page for this section: it explains what the skill is and how
+        # to install it, which is meaningless inside the bundle, where SKILL.md
+        # is already the entrypoint.
+        if source.name in {"SKILL.md", "index.md"}:
             continue
         baked = bake_markdown(source.read_text(encoding="utf-8"))
         dest = _REFERENCES_OUT / source.name

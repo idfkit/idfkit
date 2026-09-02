@@ -15,19 +15,6 @@ Parallel simulation execution with thread-pool parallelism.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - model
-        - weather
-        - label
-        - output_dir
-        - expand_objects
-        - annual
-        - design_day
-        - output_prefix
-        - output_suffix
-        - readvars
-        - timeout
-        - extra_args
 
 ## BatchResult
 
@@ -35,9 +22,3 @@ Parallel simulation execution with thread-pool parallelism.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - results
-        - total_runtime_seconds
-        - succeeded
-        - failed
-        - all_succeeded

@@ -1,4 +1,4 @@
-# Running Simulations
+# How to run a simulation
 
 The `simulate()` function executes EnergyPlus as a subprocess and returns
 a structured `SimulationResult` with access to all output files.
@@ -8,6 +8,13 @@ a structured `SimulationResult` with access to all output files.
 ```python
 --8<-- "docs/snippets/simulation/running/basic_usage.py:example"
 ```
+
+## Parameters
+
+For the full `simulate()` signature, with every keyword argument, its type, and
+its default, see the generated
+[`simulate()` reference](../api/simulation/runner.md). The sections below cover
+the arguments you'll reach for most often.
 
 ## Simulation Modes
 
@@ -109,60 +116,6 @@ programmatic error handling.
 See the [Preprocessing API](../api/simulation/expand.md) reference for full
 details.
 
-## Function Signature
-
-```python
-def simulate(
-    model: IDFDocument,
-    weather: str | Path,
-    *,
-    output_dir: str | Path | None = None,
-    energyplus: EnergyPlusConfig | None = None,
-    expand_objects: bool = True,
-    annual: bool = False,
-    design_day: bool = False,
-    output_prefix: str = "eplus",
-    output_suffix: Literal["C", "L", "D"] = "C",
-    readvars: bool = False,
-    timeout: float = 3600.0,
-    preprocessor_timeout: float | None = None,
-    extra_args: list[str] | None = None,
-    cache: SimulationCache | None = None,
-    fs: FileSystem | None = None,
-    on_progress: Callable[[SimulationProgress], Any] | Literal["tqdm"] | None = None,
-    auto_migrate: bool = False,
-) -> SimulationResult:
-```
-
-## Parameters
-
-### Required
-
-| Parameter | Description |
-|-----------|-------------|
-| `model` | The EnergyPlus model to simulate |
-| `weather` | Path to the weather file (.epw) |
-
-### Optional
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `output_dir` | Auto temp | Directory for output files |
-| `energyplus` | Auto-detect | Pre-configured EnergyPlus installation |
-| `expand_objects` | `True` | Run ExpandObjects (and Slab/Basement if needed) before simulation |
-| `annual` | `False` | Run annual simulation (`-a` flag) |
-| `design_day` | `False` | Run design-day-only (`-D` flag) |
-| `output_prefix` | `"eplus"` | Prefix for output files |
-| `output_suffix` | `"C"` | Output naming style (C/L/D) |
-| `readvars` | `False` | Run ReadVarsESO after simulation |
-| `timeout` | `3600.0` | Maximum runtime in seconds (main EnergyPlus subprocess only) |
-| `preprocessor_timeout` | `None` | Per-subprocess timeout for ExpandObjects / Slab / Basement.  `None` reads `IDFKIT_PREPROCESSOR_TIMEOUT`, defaulting to 120 s |
-| `extra_args` | `None` | Additional command-line arguments |
-| `cache` | `None` | Simulation cache for result reuse |
-| `fs` | `None` | File system backend for cloud storage |
-| `on_progress` | `None` | Callback or `"tqdm"` for real-time progress updates |
-| `auto_migrate` | `False` | Forward-migrate the model when its version differs from the installed EnergyPlus (see [Migrating Versions](migrating-versions.md)) |
-
 ## EnergyPlus Discovery
 
 By default, `simulate()` auto-discovers EnergyPlus:
@@ -256,7 +209,7 @@ For remote storage backends (S3, etc.):
 --8<-- "docs/snippets/simulation/running/cloud_storage.py:example"
 ```
 
-See [Cloud & Remote Storage](../concepts/cloud-storage.md) for details.
+See [how to use cloud and remote storage](../concepts/cloud-storage.md) for details.
 
 ## Caching
 
@@ -266,7 +219,7 @@ Enable content-addressed caching to avoid redundant simulations:
 --8<-- "docs/snippets/simulation/running/caching.py:example"
 ```
 
-See [Caching](caching.md) for details.
+See [how to cache simulation results](caching.md) for details.
 
 ## Version Migration
 
@@ -276,12 +229,13 @@ by default. Pass `auto_migrate=True` to forward-migrate the model
 transparently before the run; the resulting
 [`MigrationReport`][idfkit.migration.report.MigrationReport] is attached to
 [`SimulationResult.migration_report`][idfkit.simulation.result.SimulationResult.migration_report].
-See [Migrating Versions](migrating-versions.md) for the full workflow.
+See [how to migrate models between versions](migrating-versions.md) for the
+full workflow.
 
 ## See Also
 
-- [Migrating Versions](migrating-versions.md) — Forward-migrate IDF models across EnergyPlus releases
-- [Progress Tracking](progress.md) — Real-time progress with `on_progress`
-- [Parsing Results](results.md) — Working with `SimulationResult`
-- [Batch Processing](batch.md) — Running multiple simulations
-- [Error Handling](errors.md) — Understanding error reports
+- [How to migrate models between EnergyPlus versions](migrating-versions.md) — Forward-migrate IDF models across EnergyPlus releases
+- [How to track simulation progress](progress.md) — Real-time progress with `on_progress`
+- [How to access simulation results](results.md) — Working with `SimulationResult`
+- [How to run batch simulations](batch.md) — Running multiple simulations
+- [How to handle simulation errors](errors.md) — Understanding error reports

@@ -243,7 +243,7 @@ def add_subparser(
         "--json",
         dest="json_output",
         action="store_true",
-        help="Machine-readable JSON output (auto-enabled when piped if --first)",
+        help="Machine-readable JSON output",
     )
     p.add_argument("-q", "--quiet", action="store_true", help="Suppress progress messages on stderr")
 

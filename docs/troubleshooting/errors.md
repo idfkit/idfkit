@@ -273,7 +273,8 @@ from the installed EnergyPlus, and `auto_migrate` is `False` (the default).
     than the installed EnergyPlus cannot be downgraded. Install a newer
     EnergyPlus or load the model explicitly at an older version.
 
-See [Migrating Versions](../simulation/migrating-versions.md) for the full workflow.
+See [how to migrate models between versions](../simulation/migrating-versions.md)
+for the full workflow.
 
 ## Performance Issues
 
@@ -300,4 +301,4 @@ See [Migrating Versions](../simulation/migrating-versions.md) for the full workf
 ## See Also
 
 - [EnergyPlus Issues](energyplus.md) — EnergyPlus-specific errors
-- [Simulation Error Handling](../simulation/errors.md) — Detailed error parsing
+- [How to handle simulation errors](../simulation/errors.md) — Detailed error parsing

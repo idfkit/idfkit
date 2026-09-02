@@ -1,4 +1,4 @@
-# Migrating from eppy
+# How to migrate from eppy
 
 idfkit provides a compatibility layer so most eppy code works with only
 minor changes. You can migrate gradually -- all the eppy-style methods

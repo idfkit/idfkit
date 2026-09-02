@@ -1,4 +1,4 @@
-# Async Simulation
+# How to run simulations asynchronously
 
 The async simulation API provides non-blocking counterparts to `simulate()`
 and `simulate_batch()`, built on Python's `asyncio` module.  Use these when
@@ -104,7 +104,7 @@ underlying EnergyPlus subprocess:
 ## Parametric Study
 
 Create model variants and analyze results — the async equivalent of the
-pattern shown in [Batch Processing](batch.md#parametric-studies):
+pattern shown in [batch simulations](batch.md#parametric-studies):
 
 ```python
 --8<-- "docs/snippets/simulation/async/parametric_study.py:example"
@@ -223,7 +223,7 @@ never raises due to a single job failing.
 
 ## See Also
 
-- [Running Simulations](running.md) — Sync simulation guide
-- [Batch Processing](batch.md) — Sync batch guide
-- [Migrating Versions](migrating-versions.md) — Forward-migrate models with `auto_migrate` or `async_migrate`
+- [How to run a simulation](running.md) — Sync simulation guide
+- [How to run batch simulations](batch.md) — Sync batch guide
+- [How to migrate models between EnergyPlus versions](migrating-versions.md) — Forward-migrate models with `auto_migrate` or `async_migrate`
 - [Simulation Architecture](../concepts/simulation-architecture.md) — Design decisions

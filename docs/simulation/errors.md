@@ -1,4 +1,4 @@
-# Error Handling
+# How to handle simulation errors
 
 This page covers error handling in the simulation module, including
 parsing EnergyPlus error reports and handling simulation failures.
@@ -88,7 +88,8 @@ result = simulate(report.migrated_model, weather)
 ```
 
 Backward migration (installed EnergyPlus older than the model) is never
-attempted and always raises. See [Migrating Versions](migrating-versions.md).
+attempted and always raises. See
+[how to migrate models between versions](migrating-versions.md).
 
 ### Timeout Handling
 
@@ -199,7 +200,7 @@ Or from string:
 
 ## See Also
 
-- [Running Simulations](running.md) — Basic simulation guide
-- [Parsing Results](results.md) — Working with SimulationResult
-- [Migrating Versions](migrating-versions.md) — Resolving `VersionMismatchError`
+- [How to run a simulation](running.md) — Basic simulation guide
+- [How to access simulation results](results.md) — Working with SimulationResult
+- [How to migrate models between EnergyPlus versions](migrating-versions.md) — Resolving `VersionMismatchError`
 - [Troubleshooting](../troubleshooting/errors.md) — Common error solutions

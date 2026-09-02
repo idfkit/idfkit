@@ -1,4 +1,4 @@
-# Weather Downloads
+# How to download weather files
 
 The `WeatherDownloader` downloads EPW and DDY weather files from
 climate.onebuilding.org with automatic caching.
@@ -158,6 +158,6 @@ Complete workflow:
 
 ## See Also
 
-- [Station Search](station-search.md) — Find weather stations
-- [Design Days](design-days.md) — Apply design day conditions
+- [How to search for weather stations](station-search.md) — Find weather stations
+- [How to apply design days](design-days.md) — Apply design day conditions
 - [Weather Pipeline](../concepts/weather-pipeline.md) — Architecture details

@@ -8,16 +8,6 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove
 
 ## AsyncFileSystem Protocol
 
@@ -25,16 +15,6 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove
 
 ## LocalFileSystem
 
@@ -42,16 +22,6 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove
 
 ## AsyncLocalFileSystem
 
@@ -59,16 +29,6 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove
 
 ## S3FileSystem
 
@@ -76,16 +36,6 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove
 
 ## AsyncS3FileSystem
 
@@ -93,13 +43,3 @@ Pluggable storage backends for simulation I/O.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - read_bytes
-        - write_bytes
-        - read_text
-        - write_text
-        - exists
-        - makedirs
-        - copy
-        - glob
-        - remove

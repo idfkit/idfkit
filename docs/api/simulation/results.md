@@ -8,30 +8,6 @@ Simulation result container and output file access.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - run_dir
-        - success
-        - exit_code
-        - stdout
-        - stderr
-        - runtime_seconds
-        - output_prefix
-        - fs
-        - async_fs
-        - errors
-        - sql
-        - variables
-        - csv
-        - html
-        - sql_path
-        - err_path
-        - eso_path
-        - csv_path
-        - html_path
-        - rdd_path
-        - mdd_path
-        - migration_report
-        - from_directory
 
 ## ErrorReport
 
@@ -39,19 +15,6 @@ Simulation result container and output file access.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - messages
-        - fatal
-        - severe
-        - warnings
-        - fatal_count
-        - severe_count
-        - warning_count
-        - has_fatal
-        - has_severe
-        - summary
-        - from_file
-        - from_string
 
 ## ErrorMessage
 
@@ -66,14 +29,6 @@ Simulation result container and output file access.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - tables
-        - from_file
-        - from_string
-        - titletable
-        - tablebyname
-        - tablebyindex
-        - tablesbyreport
 
 ## HTMLTable
 
@@ -81,10 +36,3 @@ Simulation result container and output file access.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - title
-        - header
-        - rows
-        - report_name
-        - for_string
-        - to_dict

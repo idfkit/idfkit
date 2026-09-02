@@ -1,4 +1,4 @@
-# Installation
+# How to install idfkit
 
 idfkit is available on PyPI and can be installed with pip or uv.
 
@@ -175,5 +175,6 @@ make check
 
 ## Next Steps
 
-- [Quick Start](quick-start.md) - Get up and running in 5 minutes
+- [Build your first model](../tutorials/first-model.md) - Build a complete model from an empty document
+- [Common tasks](quick-start.md) - Quick recipes for everyday operations
 - [Core Tutorial](core-tutorial.ipynb) - In-depth interactive tutorial

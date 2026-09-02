@@ -1,76 +1,49 @@
-# Schedule Evaluator Module Design
+# How the schedule evaluator works
 
-## Overview
+idfkit can compute the value of any EnergyPlus schedule at any moment — or
+across a whole year — **without running a simulation**. This page explains how
+that evaluator is built and why it behaves the way it does. If you just want to
+call it, see [How to evaluate schedules](../schedules/index.md); for the exact
+signatures, see the [API reference](../api/schedules/index.md).
 
-A lightweight module to evaluate EnergyPlus schedules without running a simulation.
-Returns the schedule value at any given datetime or produces hourly time series.
+## Why evaluate schedules without simulating
 
-## Goals
+EnergyPlus schedules encode when a building is occupied, when lights and
+equipment run, and what setpoints apply. Answering "what is this schedule doing
+at 2pm on a summer Tuesday?" normally means running a full simulation and
+reading the output. That is slow, and it fails as a *preview*: you can't see the
+profile you're building until after you've built and run the whole model.
 
-1. **Minimal dependencies** - Core functionality requires only stdlib; pandas/matplotlib optional
-2. **Works with existing idfkit** - Operates on `IDFObject` instances from `IDFDocument`
-3. **Correct EnergyPlus semantics** - Matches E+ interpretation of schedule syntax
-4. **Composable API** - Low-level `evaluate()` + high-level `to_series()`
+The evaluator interprets schedule objects directly, in pure Python. Its design
+goals shape everything below:
 
-## Supported Schedule Types
+- **Stdlib only for the core.** Point evaluation and annual series need nothing
+  beyond the standard library; pandas and matplotlib are optional conveniences.
+- **Operates on the live model.** It reads `IDFObject` instances straight from
+  an `IDFDocument`, so it sees exactly what you'll write out.
+- **Matches EnergyPlus semantics.** The interesting design work is reproducing
+  E+'s interpretation of schedule syntax faithfully — the rest of this page is
+  mostly about those semantics.
 
-| Type | Priority | Complexity |
-|------|----------|------------|
-| `Schedule:Constant` | P0 | Trivial |
-| `Schedule:Day:Hourly` | P0 | Simple - 24 values |
-| `Schedule:Day:Interval` | P0 | Medium - time/value pairs |
-| `Schedule:Day:List` | P1 | Medium - values at fixed intervals |
-| `Schedule:Week:Daily` | P0 | Simple - 7 day schedule refs |
-| `Schedule:Week:Compact` | P1 | Medium - day type rules |
-| `Schedule:Year` | P0 | Medium - date ranges → week refs |
-| `Schedule:Compact` | P0 | Complex - nested DSL |
-| `Schedule:File` | P2 | External CSV parsing |
+## The schedule hierarchy
 
-## Module Structure
-
-```
-src/idfkit/schedules/
-├── __init__.py          # Public API exports
-├── evaluate.py          # Core evaluation logic + dispatch
-├── types.py             # DayType, Interpolation enums, SpecialDay dataclass
-├── compact.py           # Schedule:Compact parser
-├── day.py               # Day schedule handlers (Hourly, Interval, List)
-├── week.py              # Week schedule handlers (Daily, Compact)
-├── year.py              # Year schedule + date matching
-├── file.py              # Schedule:File CSV reader with FileSystem support
-├── holidays.py          # RunPeriodControl:SpecialDays parser
-└── series.py            # pandas integration (optional)
-```
-
-## Public API
-
-### Core Function
+EnergyPlus schedules are layered. A `Schedule:Year` names date ranges, each
+pointing at a `Schedule:Week:*`, which in turn names a `Schedule:Day:*` for each
+kind of day. Evaluating a datetime means walking that hierarchy from the top:
 
 ```python
---8<-- "docs/snippets/design/schedule-evaluator/core_function.py:example"
+--8<-- "docs/snippets/design/schedule-evaluator/hierarchical_schedule_resolution.py:example"
 ```
 
-### Batch Evaluation
+Each level resolves a reference and hands the datetime down to the next. Because
+idfkit already indexes every object by name, each lookup is O(1) — resolving a
+year schedule for one instant is a handful of dictionary hits, not a scan.
 
-```python
---8<-- "docs/snippets/design/schedule-evaluator/batch_evaluation.py:example"
-```
+## Reading the Compact DSL
 
-### Pandas Integration (optional)
-
-```python
---8<-- "docs/snippets/design/schedule-evaluator/pandas_integration_optional.py:example"
-```
-
-### Convenience on IDFDocument
-
-```python
---8<-- "docs/snippets/design/schedule-evaluator/convenience_on_idfdocument.py:example"
-```
-
-## Schedule:Compact Parser
-
-The most complex part. Schedule:Compact uses a mini-DSL:
+`Schedule:Compact` collapses that whole hierarchy into one object using a
+mini-DSL of `Through:` (date ranges), `For:` (day types), and `Until:`
+(time/value pairs):
 
 ```
 Schedule:Compact,
@@ -85,18 +58,21 @@ Schedule:Compact,
   Until: 24:00, 0.0;
 ```
 
-### Parsing Strategy
+The parser turns those flat fields into structured periods and day rules, so
+evaluation becomes "find the period containing the date, find the day rule
+matching the day type, find the first `Until:` time at or after the moment":
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/parsing_strategy.py:example"
 ```
 
-### Day Type Mapping
+## Matching day types to the calendar
 
-EnergyPlus day types to Python weekday:
+Every level of the hierarchy ultimately asks: *what kind of day is this?* The
+evaluator maps EnergyPlus day types onto Python's `datetime.weekday()`:
 
-| E+ Day Type | Python weekday() |
-|-------------|------------------|
+| E+ Day Type | Python `weekday()` |
+|-------------|--------------------|
 | Sunday | 6 |
 | Monday | 0 |
 | Tuesday | 1 |
@@ -104,203 +80,115 @@ EnergyPlus day types to Python weekday:
 | Thursday | 3 |
 | Friday | 4 |
 | Saturday | 5 |
-| Weekdays | 0-4 |
-| Weekends | 5-6 |
-| AllDays | 0-6 |
-| Holidays | (requires holiday list) |
+| Weekdays | 0–4 |
+| Weekends | 5–6 |
+| AllDays | 0–6 |
+| Holidays | (requires the holiday list) |
 | SummerDesignDay | (special) |
 | WinterDesignDay | (special) |
 | AllOtherDays | (fallback) |
 
-## Hierarchical Schedule Resolution
+The special day types don't fall out of the calendar alone — they're why
+holidays and design days each need their own handling, below.
 
-`Schedule:Year` references `Schedule:Week:*` which references `Schedule:Day:*`:
+## Evaluating a day schedule
 
-```python
---8<-- "docs/snippets/design/schedule-evaluator/hierarchical_schedule_resolution.py:example"
-```
-
-## Schedule:Day Evaluation
-
-### Schedule:Day:Hourly
-
-24 values, one per hour:
+At the bottom of the hierarchy, a day schedule gives values by hour or by
+interval. `Schedule:Day:Hourly` is 24 explicit values, one per hour:
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/scheduledayhourly.py:example"
 ```
 
-### Schedule:Day:Interval
-
-Time/value pairs where value applies UNTIL that time:
+`Schedule:Day:Interval` gives time/value pairs, where each value applies *until*
+its stated time — a step function unless interpolation is requested:
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/scheduledayinterval.py:example"
 ```
 
-## Error Handling
+### Interpolation: step vs. average
 
-```python
---8<-- "docs/snippets/design/schedule-evaluator/error_handling.py:example"
+EnergyPlus offers two ways to resolve a moment that falls between a schedule's
+native intervals, and the evaluator reproduces both. With interpolation off (the
+default), the schedule is a **step function** — the value at the start of an
+interval holds until the next one:
+
+```
+Schedule interval: 0–15min = 0.0, 15–30min = 0.5
+At 10min: 0.0
+At 20min: 0.5
 ```
 
-## Testing Strategy
+With **average** interpolation, values are blended linearly when the evaluation
+timestep doesn't align with the interval boundaries:
 
-1. **Unit tests per schedule type** - Test each parser/evaluator in isolation
-2. **Known-value tests** - Compare against EnergyPlus ESO output for same schedule
-3. **Round-trip tests** - `values()` output matches E+ hourly report
-4. **Edge cases** - Leap years, DST (E+ doesn't use DST), midnight boundaries
-
-### Example Test
-
-```python
---8<-- "docs/snippets/design/schedule-evaluator/example_test.py:example"
+```
+Schedule interval: 0–15min = 0.0, 15–30min = 0.5
+At 10min: 0.0
+At 20min: 0.25   (average of 0.0 and 0.5)
 ```
 
-## Dependencies
+Matching this exactly matters: an occupancy fraction previewed with the wrong
+interpolation mode won't match what EnergyPlus actually simulates.
 
-### Required
-- None (stdlib only for core)
+## Design decisions
 
-### Internal (from idfkit)
-- `idfkit.simulation.fs.FileSystem` - For Schedule:File CSV reading
-- `idfkit.simulation.fs.LocalFileSystem` - Default filesystem
+A few behaviours don't follow mechanically from the schedule syntax and had to
+be decided deliberately.
 
-### Optional
-- `pandas` - for `to_series()` and DataFrame integration
+### Holidays
 
-```toml
-[project.optional-dependencies]
-# No new deps needed - reuse existing
-dataframes = ["pandas>=2.0"]  # Already exists
-```
-
-### FileSystem Integration
-
-The `FileSystem` protocol enables Schedule:File to work with remote storage:
-
-```python
---8<-- "docs/snippets/design/schedule-evaluator/filesystem_integration.py:example"
-```
-
-## Implementation Order
-
-1. **Phase 1: Foundation** (~120 LOC)
-   - `types.py`: Enums (`DayType`, `Interpolation`), `SpecialDay` dataclass
-   - `holidays.py`: Parse `RunPeriodControl:SpecialDays`
-   - `day.py`: `Schedule:Constant`, `Schedule:Day:Hourly`, `Schedule:Day:Interval`
-
-2. **Phase 2: Hierarchical schedules** (~150 LOC)
-   - `week.py`: `Schedule:Week:Daily`, `Schedule:Week:Compact`
-   - `year.py`: `Schedule:Year`, date range matching
-   - Reference resolution across schedule types
-
-3. **Phase 3: Compact parser** (~200 LOC)
-   - `compact.py`: `Schedule:Compact` DSL parser
-   - `Through:`, `For:`, `Until:` syntax
-   - Day type matching (Weekdays, Weekends, Holidays, Design days)
-
-4. **Phase 4: Schedule:File** (~100 LOC)
-   - `file.py`: CSV parsing with `FileSystem` protocol
-   - Column/separator handling
-   - Value caching
-
-5. **Phase 5: Integration** (~80 LOC)
-   - `evaluate.py`: Dispatch + interpolation logic
-   - `series.py`: `to_series()` pandas wrapper
-   - `IDFDocument` convenience methods
-
-Total estimate: ~650 LOC + tests
-
-## Design Decisions
-
-### 1. Holidays
-
-Holidays are extracted from `RunPeriodControl:SpecialDays` objects in the document.
+Holidays aren't in the schedule objects themselves — they come from
+`RunPeriodControl:SpecialDays` in the document. The evaluator extracts them so
+that a `For: Holidays` rule resolves against the model's actual holiday
+calendar:
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/1_holidays.py:example"
 ```
 
-Day types from `RunPeriodControl:SpecialDays`:
-- `Holiday` - Standard holiday
-- `CustomDay1`, `CustomDay2` - User-defined special day types
+The same mechanism carries `CustomDay1` and `CustomDay2`, EnergyPlus's
+user-defined special-day types.
 
-### 2. Design Days
+### Design days
 
-Expose `SummerDesignDay` and `WinterDesignDay` via explicit parameter:
+`SummerDesignDay` and `WinterDesignDay` never occur on the calendar — they're
+sizing conditions. Rather than guess when they apply, the evaluator exposes them
+through an explicit `day_type` override, so sizing previews are opt-in:
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/2_design_days.py:example"
 ```
 
-### 3. Interpolation
+### Schedule:File
 
-Match EnergyPlus interpolation behavior exactly. E+ has two modes:
-
-**"No" (default)**: Step function - value at each interval applies until the next interval.
-```
-Schedule interval: 0-15min=0.0, 15-30min=0.5
-Timestep 10min: value = 0.0
-Timestep 20min: value = 0.5
-```
-
-**"Average"**: Linear interpolation when timestep doesn't align with intervals.
-```
-Schedule interval: 0-15min=0.0, 15-30min=0.5
-Timestep 10min: value = 0.0
-Timestep 20min: value = 0.25  (average of 0.0 and 0.5)
-```
-
-```python
-class Interpolation(Enum):
-    NO = "no"           # Step function (default)
-    AVERAGE = "average" # Linear interpolation
-    LINEAR = "linear"   # Alias for AVERAGE
-
-def values(
-    schedule: IDFObject,
-    year: int = 2024,
-    timestep: int = 1,  # per hour
-    interpolation: Interpolation = Interpolation.NO,
-    ...
-) -> list[float]:
-    """
-    Generate schedule values with specified interpolation.
-
-    The interpolation mode affects how values are computed when the
-    evaluation timestep doesn't align with the schedule's native intervals.
-    """
-```
-
-### 4. Schedule:File Support
-
-Support external CSV files via the existing `FileSystem` protocol:
+`Schedule:File` reads values from an external CSV. Reusing idfkit's
+`FileSystem` protocol here means the same schedule works whether the CSV lives
+on local disk or in remote storage, matching how the simulation module reads and
+writes everything else:
 
 ```python
 --8<-- "docs/snippets/design/schedule-evaluator/4_schedulefile_support.py:example"
 ```
 
-**Schedule:File fields:**
-| Field | Description |
-|-------|-------------|
-| Name | Schedule name |
-| Schedule Type Limits Name | Reference to ScheduleTypeLimits |
-| File Name | Path to CSV file (relative or absolute) |
-| Column Number | 1-based column index in CSV |
-| Rows to Skip at Top | Header rows to skip |
-| Number of Hours of Data | Usually 8760 (or 8784 for leap year) |
-| Column Separator | Comma, Tab, Space, Semicolon |
-| Interpolate to Timestep | "No" or "Average" |
-| Minutes per Item | 60, 30, 15, 10, 5, or 1 |
+The evaluator reads four fields off the object to locate a value, each with an
+EnergyPlus default it falls back to when the field is blank:
 
-**CSV parsing with FileSystem:**
-```python
---8<-- "docs/snippets/design/schedule-evaluator/4_schedulefile_support_2.py:example"
-```
+| Field | Meaning | Default |
+| ----- | ------- | ------- |
+| `Column Number` | Which CSV column holds the values, counting from 1 | `1` |
+| `Rows to Skip at Top` | Header rows to discard before reading values | `0` |
+| `Column Separator` | One of `Comma`, `Tab`, `Space`, `Semicolon` | `Comma` |
+| `Minutes per Item` | Minutes each row covers: `60`, `30`, `15`, `10`, `5`, or `1` | `60` |
 
-**Caching:** Schedule:File data should be cached after first read to avoid repeated I/O:
+`Minutes per Item` is what turns a row index into a datetime: the evaluator
+computes minutes elapsed since January 1 and divides, so a 15-minute file
+resolves four rows per hour. Parsed columns are cached per object, keyed on file
+path plus column, rows-skipped, and separator, so two `Schedule:File` objects
+reading different columns of the same CSV never share cached values.
 
-```python
---8<-- "docs/snippets/design/schedule-evaluator/4_schedulefile_support_3.py:example"
-```
+## See also
+
+- [How to evaluate schedules](../schedules/index.md) — the task-oriented recipes.
+- [API reference: schedules](../api/schedules/index.md) — signatures and types.

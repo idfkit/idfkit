@@ -1,4 +1,4 @@
-# Cloud & Remote Storage
+# How to use cloud and remote storage
 
 idfkit's simulation module supports pluggable storage backends through the
 `FileSystem` protocol, enabling cloud-native workflows with S3 and other
@@ -244,4 +244,4 @@ For repeated access, consider downloading to local disk:
 
 - [Simulation Architecture](simulation-architecture.md) — Overall design
 - [Caching Strategy](caching.md) — Local caching
-- [Cloud Simulations Example](../examples/cloud-simulations.md) — Complete example
+- [How to store simulation results in S3](../examples/cloud-simulations.md) — Complete example

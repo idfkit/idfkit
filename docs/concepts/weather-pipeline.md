@@ -157,6 +157,6 @@ The cache location follows platform conventions:
 
 ## See Also
 
-- [Station Search](../weather/station-search.md) — Practical search guide
-- [Design Days](../weather/design-days.md) — Applying design days to models
+- [How to search for weather stations](../weather/station-search.md) — Practical search guide
+- [How to apply design days](../weather/design-days.md) — Applying design days to models
 - [Caching Strategy](caching.md) — General caching architecture

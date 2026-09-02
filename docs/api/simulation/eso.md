@@ -11,16 +11,6 @@ extracted lazily with a single targeted scan (`get_column`), or all at once with
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - from_file
-        - from_string
-        - from_bytes
-        - variables
-        - environments
-        - columns
-        - get_variable
-        - get_column
-        - to_dataframe
 
 ## ESOColumn
 
@@ -28,13 +18,6 @@ extracted lazily with a single targeted scan (`get_column`), or all at once with
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - variable
-        - environment_index
-        - timestamps
-        - values
-        - to_dataframe
-        - plot
 
 ## ESOVariable
 
@@ -42,13 +25,6 @@ extracted lazily with a single targeted scan (`get_column`), or all at once with
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - report_id
-        - variable_name
-        - key_value
-        - units
-        - frequency
-        - num_values
 
 ## ESOEnvironment
 
@@ -56,10 +32,3 @@ extracted lazily with a single targeted scan (`get_column`), or all at once with
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - index
-        - title
-        - latitude
-        - longitude
-        - time_zone
-        - elevation

@@ -1,4 +1,4 @@
-# Distributed Simulations with Scythe
+# How to run distributed simulations with Scythe
 
 [Scythe](https://github.com/szvsw/scythe) is a lightweight framework for running
 embarrassingly parallel experiments at scale via the
@@ -204,6 +204,6 @@ results.
 
 - [Scythe documentation](https://szvsw.github.io/scythe/)
 - [Scythe example repository](https://github.com/szvsw/scythe-example)
-- [Batch Processing](../simulation/batch.md) -- idfkit's built-in thread-pool batch runner
-- [Cloud Simulations (S3)](cloud-simulations.md) -- Using idfkit with S3 directly
-- [Running Simulations](../simulation/running.md) -- Single simulation guide
+- [How to run batch simulations](../simulation/batch.md) -- idfkit's built-in thread-pool batch runner
+- [How to store simulation results in S3](cloud-simulations.md) -- Using idfkit with S3 directly
+- [How to run a simulation](../simulation/running.md) -- Single simulation guide

@@ -1,7 +1,9 @@
-# Quick Start
+# Common tasks
 
-Get up and running with idfkit in 5 minutes. This guide covers the essential
-operations you'll use every day.
+Quick recipes for the operations you'll use every day. Each section is
+self-contained — jump to the one you need. If you're brand new to idfkit, work
+through [Build your first model](../tutorials/first-model.md) first, then come
+back here.
 
 ## Load a Model
 
@@ -105,6 +107,6 @@ unmodified objects:
 
 - [Core Tutorial](core-tutorial.ipynb) - Complete interactive walkthrough
 - [Simulation Guide](../simulation/index.md) - Deep dive into simulation features
-- [Migrating Versions](../simulation/migrating-versions.md) - Move models forward across EnergyPlus releases
+- [How to migrate models between EnergyPlus versions](../simulation/migrating-versions.md) - Move models forward across EnergyPlus releases
 - [Weather Guide](../weather/index.md) - Weather station search and design days
 - [API Reference](../api/document.md) - Full API documentation

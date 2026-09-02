@@ -199,11 +199,10 @@ Every variable that command surfaces should appear in the docs page.
 idfkit ships agent-readable reference docs at
 [`src/idfkit/.agents/skills/developing-with-idfkit/`](src/idfkit/.agents/skills/developing-with-idfkit/SKILL.md):
 a `SKILL.md` dispatch document and one focused markdown file per major
-feature under `references/`. They are packaged in the wheel and consumed
-by tooling such as
-[`idfkit-mcp`](https://github.com/idfkit/idfkit-mcp), which exposes them
-over MCP at `idfkit://references/{topic}`. The same content is published
-on the docs site under "Developing with idfkit".
+feature under `references/`. They are packaged in the wheel and surfaced to
+agents by the [idfkit plugin](https://github.com/idfkit/idfkit-plugin), which
+ships them as the `developing-with-idfkit` skill. The same content is
+published on the docs site under "Developing with idfkit".
 
 **These bundled files are GENERATED — never hand-edit them.** The sources are:
 

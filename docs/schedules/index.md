@@ -1,4 +1,4 @@
-# Schedules Overview
+# How to evaluate schedules
 
 The schedules module lets you evaluate EnergyPlus schedules without running a
 simulation. This is useful for previewing schedule profiles, validating inputs,

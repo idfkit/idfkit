@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from idfkit import IDFObject
+from idfkit.schedules import Interpolation
 from typing import Any
 
 dt: Any = ...  # type: ignore[assignment]
@@ -10,7 +11,11 @@ parse_time: Any = ...  # type: ignore[assignment]
 
 
 # --8<-- [start:example]
-def evaluate_day_interval(obj: IDFObject, dt: datetime) -> float:
+def evaluate_day_interval(
+    obj: IDFObject,
+    dt: datetime,
+    interpolation: Interpolation = Interpolation.NO,
+) -> float:
     # Fields: Time 1, Value Until Time 1, Time 2, Value Until Time 2, ...
     current_time = dt.time()
     last_value = 0.0

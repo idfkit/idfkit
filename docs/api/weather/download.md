@@ -8,9 +8,6 @@ Weather file downloading and caching.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - cache_dir
-        - download
 
 ## WeatherFiles
 
@@ -18,12 +15,6 @@ Weather file downloading and caching.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - epw
-        - ddy
-        - stat
-        - zip_path
-        - station
 
 ## PartialWeatherFiles
 
@@ -31,9 +22,3 @@ Weather file downloading and caching.
     options:
       show_root_heading: true
       show_source: true
-      members:
-        - epw
-        - ddy
-        - stat
-        - zip_path
-        - station
