@@ -6,7 +6,7 @@ doc: IDFDocument = ...  # type: ignore[assignment]
 obj: IDFObject = ...  # type: ignore[assignment]
 zone: IDFObject = ...  # type: ignore[assignment]
 # --8<-- [start:example]
-from idfkit import load_idf, write_idf
+from idfkit import load_idf, save_idf
 
 # Load an existing IDF file
 doc = load_idf("in.idf")
@@ -23,5 +23,5 @@ for obj in doc.get_referencing("Office"):
     print(obj.obj_type, obj.name)
 
 # Write back to IDF (or epJSON)
-write_idf(doc, "out.idf")
+save_idf(doc, "out.idf")
 # --8<-- [end:example]

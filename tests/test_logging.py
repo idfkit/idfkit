@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 import idfkit
-from idfkit import new_document, validate_document, write_idf
+from idfkit import new_document, save_idf, validate_document, write_idf
 
 
 class TestNullHandler:
@@ -115,7 +115,7 @@ class TestWriterLogging:
         doc.add("Zone", "WriterZone")
         out = tmp_path / "out.idf"
         with _capture_logs("idfkit.writers") as records:
-            write_idf(doc, out)
+            save_idf(doc, out)
         messages = [r.message for r in records]
         assert any("Wrote IDF" in m for m in messages)
 

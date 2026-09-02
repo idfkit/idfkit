@@ -42,7 +42,8 @@ def parse_epjson(
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
         preserve_formatting: If ``True``, store the raw JSON text so that
-            :func:`~idfkit.writers.write_epjson` can reproduce it
+            :func:`~idfkit.writers.write_epjson` and
+            :func:`~idfkit.writers.save_epjson` can reproduce it
             byte-for-byte when no objects have been modified.
 
     Returns:

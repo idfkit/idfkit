@@ -96,7 +96,7 @@ Validation is enabled by default, so typos are caught immediately:
 ## Lossless Round-Trip
 
 Pass `preserve_formatting=True` to build a Concrete Syntax Tree (CST) so that
-`write_idf` reproduces the original formatting, comments, and whitespace for
+`write_idf` and `save_idf` reproduce the original formatting, comments, and whitespace for
 unmodified objects:
 
 ```python

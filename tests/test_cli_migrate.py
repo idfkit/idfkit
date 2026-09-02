@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 import idfkit.compat._cli as cli_module
-from idfkit import load_idf, new_document, write_idf
+from idfkit import load_idf, new_document, save_idf
 from idfkit.compat._cli import main
 from idfkit.exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
 from idfkit.migration.report import FieldDelta, MigrationDiff, MigrationReport, MigrationStep
@@ -21,7 +21,7 @@ def source_idf(tmp_path: Path) -> Path:
     """A minimal IDF file at v24.1.0 on disk."""
     doc = new_document(version=(24, 1, 0))
     path = tmp_path / "source.idf"
-    write_idf(doc, path)
+    save_idf(doc, path)
     return path
 
 

@@ -7,7 +7,7 @@ surface: IDFObject = ...  # type: ignore[assignment]
 rect: list[tuple[float, float]] = ...  # type: ignore[assignment]
 
 # --8<-- [start:quickstart]
-from idfkit import new_document, write_idf, ZoningScheme, create_block, footprint_rectangle
+from idfkit import new_document, save_idf, ZoningScheme, create_block, footprint_rectangle
 
 doc = new_document()
 create_block(
@@ -18,7 +18,7 @@ create_block(
     num_stories=3,
     zoning=ZoningScheme.CORE_PERIMETER,
 )
-write_idf(doc, "block.idf")
+save_idf(doc, "block.idf")
 # --8<-- [end:quickstart]
 
 

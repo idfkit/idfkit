@@ -93,7 +93,7 @@ uv add idfkit
 ## Quick Example
 
 ```python
-from idfkit import load_idf, write_idf
+from idfkit import load_idf, save_idf
 
 # Load an existing IDF file
 doc = load_idf("in.idf")
@@ -110,7 +110,7 @@ for obj in doc.get_referencing("Office"):
     print(obj.obj_type, obj.name)
 
 # Write back to IDF (or epJSON)
-write_idf(doc, "out.idf")
+save_idf(doc, "out.idf")
 ```
 
 > **Note:** `load_idf()` defaults to strict parsing (`strict=True`) and raises
@@ -120,11 +120,11 @@ write_idf(doc, "out.idf")
 ### Creating a model from scratch
 
 ```python
-from idfkit import new_document, write_idf
+from idfkit import new_document, save_idf
 
 doc = new_document()
 doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
-write_idf(doc, "new_building.idf")
+save_idf(doc, "new_building.idf")
 ```
 
 ## Simulation

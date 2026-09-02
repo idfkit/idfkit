@@ -1,6 +1,6 @@
 # Writing output
 
-idfkit serializes `IDFDocument` to both EnergyPlus formats. Pick `write_idf` for `.idf` (what `energyplus` expects by default) or `write_epjson` for the JSON variant.
+idfkit serializes `IDFDocument` to both EnergyPlus formats. Each format has a pair of functions: `write_*` returns the serialized text, `save_*` puts it on disk. Pick the `idf` pair for `.idf` (what `energyplus` expects by default) or the `epjson` pair for the JSON variant.
 
 ## When to use
 
@@ -19,8 +19,10 @@ idfkit serializes `IDFDocument` to both EnergyPlus formats. Pick `write_idf` for
 
 | Symbol | Purpose |
 |---|---|
-| `write_idf(doc, filepath=None, encoding="latin-1", output_type="standard", *, preserve_formatting=None)` | Serialize to IDF. Returns `str` if `filepath` is `None`. |
-| `write_epjson(doc, filepath=None, indent=2, *, preserve_formatting=None)` | Serialize to epJSON. Returns `str` if `filepath` is `None`. |
+| `write_idf(doc, output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and return the text. Never touches the disk. |
+| `save_idf(doc, path, encoding="latin-1", output_type="standard", *, preserve_formatting=None)` | Serialize to IDF and write it to `path`. |
+| `write_epjson(doc, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and return the text. Never touches the disk. |
+| `save_epjson(doc, path, indent=2, *, preserve_formatting=None)` | Serialize to epJSON and write it to `path`. |
 | `idfkit.writers.convert_idf_to_epjson(src, dst)` | Convenience converter. |
 | `idfkit.writers.convert_epjson_to_idf(src, dst)` | Convenience converter. |
 | `IDFWriter(doc, output_type=...)` | Lower-level writer with a `to_string()` method. |
@@ -28,7 +30,7 @@ idfkit serializes `IDFDocument` to both EnergyPlus formats. Pick `write_idf` for
 
 ## Output formatting modes
 
-`write_idf(..., output_type=)` mirrors eppy's `idf.outputtype`:
+`output_type=` on `write_idf` and `save_idf` mirrors eppy's `idf.outputtype`:
 
 - `"standard"` (default) — full `!- Field Name` comments, one field per line. Best for hand editing.
 - `"nocomment"` — one field per line, no comments. Smaller, still diff-friendly.
@@ -42,11 +44,11 @@ epJSON formatting is controlled by `indent` (default 2; pass `indent=0` for the 
 
 ## Encoding
 
-EnergyPlus expects `latin-1` for IDF files (that's the writer default). Don't override unless you have a downstream tool that requires UTF-8 — many EnergyPlus utilities will choke on non-`latin-1` IDFs.
+EnergyPlus expects `latin-1` for IDF files (that's the `save_idf` default). Don't override unless you have a downstream tool that requires UTF-8 — many EnergyPlus utilities will choke on non-`latin-1` IDFs.
 
 ## Lossless round-trips (IDF only)
 
-To preserve every byte of whitespace, comments, and object ordering for objects you didn't touch, pair `load_idf(..., preserve_formatting=True)` with `write_idf(...)`:
+To preserve every byte of whitespace, comments, and object ordering for objects you didn't touch, pair `load_idf(..., preserve_formatting=True)` with `save_idf(...)`:
 
 ```python
 --8<-- "docs/snippets/agent_references/writing-output.py:preserve"
@@ -67,7 +69,7 @@ For epJSON, lossless is all-or-nothing: any mutation falls back to the standard 
 
 ## Strings vs. files
 
-Pass `filepath=None` (or omit it) to get the serialized string back. Useful for tests:
+`write_idf` and `write_epjson` return the serialized string and never touch the disk. Useful for tests:
 
 ```python
 --8<-- "docs/snippets/agent_references/writing-output.py:string"
@@ -101,10 +103,10 @@ If you generate many output files in a loop, reuse the document where you can an
 
     ```python
     doc = load_idf("building.idf")             # no CST
-    write_idf(doc, "out.idf")                  # reformatted, NOT byte-identical
+    save_idf(doc, "out.idf")                   # reformatted, NOT byte-identical
     ```
 
-!!! success "pair load + write"
+!!! success "pair load + save"
 
     ```python
     --8<-- "docs/snippets/agent_references/writing-output.py:mistake-preserve-good"
@@ -113,7 +115,7 @@ If you generate many output files in a loop, reuse the document where you can an
 !!! failure "UTF-8 by default for IDF"
 
     ```python
-    write_idf(doc, "out.idf", encoding="utf-8")   # EnergyPlus may reject non-latin-1 bytes
+    save_idf(doc, "out.idf", encoding="utf-8")    # EnergyPlus may reject non-latin-1 bytes
     ```
 
 !!! success "let the default win"
@@ -126,7 +128,7 @@ If you generate many output files in a loop, reuse the document where you can an
 
     ```python
     doc = load_idf("building.idf", preserve_formatting=True)
-    write_idf(doc, "out.idf", output_type="compressed")   # CST is ignored when output_type isn't "standard"
+    save_idf(doc, "out.idf", output_type="compressed")    # CST is ignored when output_type isn't "standard"
     ```
 
 !!! success "be explicit about your intent"

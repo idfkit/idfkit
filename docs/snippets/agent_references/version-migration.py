@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from idfkit import IDFDocument, write_idf
+from idfkit import IDFDocument, save_idf
 from idfkit.migration import (
     AsyncMigrator,
     AsyncSubprocessMigrator,
@@ -176,6 +176,6 @@ migrate(doc, target_version=(25, 2, 0), energyplus=config)
 # --8<-- [start:mistake-automigrate-good]
 report = migrate(doc, target_version=config.version)
 new_doc = report.migrated_model  # IDFDocument at the target version
-write_idf(new_doc, "migrated.idf")
+save_idf(new_doc, "migrated.idf")
 result = simulate(new_doc, "weather.epw")
 # --8<-- [end:mistake-automigrate-good]

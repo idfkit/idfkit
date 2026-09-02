@@ -25,7 +25,7 @@ from idfkit.idf_parser import (  # pyright: ignore[reportPrivateUsage]
     parse_idf,
 )
 from idfkit.schema import get_schema
-from idfkit.writers import write_idf
+from idfkit.writers import save_idf, write_idf
 
 # ---------------------------------------------------------------------------
 # Shared helpers for coverage gap tests
@@ -148,7 +148,6 @@ class TestNamelessObjects:
     def test_timestep_roundtrip(self, minimal_idf: Path) -> None:
         doc = parse_idf(minimal_idf)
         output = write_idf(doc)
-        assert output is not None
         # Should write "4" as the field value, not as the name
         assert "Timestep," in output
         assert "4;" in output
@@ -296,7 +295,7 @@ ZoneHVAC:IdealLoadsAirSystem,
         """Empty schedule fields should survive roundtrip."""
         doc1 = parse_idf(hvac_equipment_idf)
         output_path = tmp_path / "roundtrip.idf"
-        write_idf(doc1, output_path)
+        save_idf(doc1, output_path)
 
         # Check written IDF has empty fields in correct positions
         content = output_path.read_text(encoding="latin-1")
@@ -346,7 +345,7 @@ class TestExtensibleFields:
     def test_surface_vertices_roundtrip(self, minimal_idf: Path, tmp_path: Path) -> None:
         doc = parse_idf(minimal_idf)
         output_path = tmp_path / "roundtrip.idf"
-        write_idf(doc, output_path)
+        save_idf(doc, output_path)
         doc2 = parse_idf(output_path)
         wall = doc2["BuildingSurface:Detailed"][0]
         verts = wall.data["vertices"]
@@ -386,7 +385,7 @@ class TestFullRoundtrip:
     def test_object_counts_preserved(self, minimal_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(minimal_idf)
         output_path = tmp_path / "roundtrip.idf"
-        write_idf(doc1, output_path)
+        save_idf(doc1, output_path)
         doc2 = parse_idf(output_path)
 
         # Compare object counts per type
@@ -398,14 +397,14 @@ class TestFullRoundtrip:
     def test_total_object_count_preserved(self, minimal_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(minimal_idf)
         output_path = tmp_path / "roundtrip.idf"
-        write_idf(doc1, output_path)
+        save_idf(doc1, output_path)
         doc2 = parse_idf(output_path)
         assert len(doc1) == len(doc2)
 
     def test_data_preserved_after_roundtrip(self, minimal_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(minimal_idf)
         output_path = tmp_path / "roundtrip.idf"
-        write_idf(doc1, output_path)
+        save_idf(doc1, output_path)
         doc2 = parse_idf(output_path)
 
         # Check specific values survive
@@ -655,7 +654,6 @@ Zone,
 
         # Round-trip should produce output with the zone
         output = write_idf(doc)
-        assert output is not None
         assert "CST Zone" in output
 
     def test_cst_unmatched_node_warning(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:

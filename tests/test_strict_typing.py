@@ -186,22 +186,22 @@ class TestLoadIdfStrict:
     """Test that load_idf's strict parameter works."""
 
     def test_load_idf_default_strict(self, tmp_path: Path) -> None:
-        from idfkit import load_idf, write_idf
+        from idfkit import load_idf, save_idf
 
         # Create a minimal IDF file
         doc = new_document()
         path = tmp_path / "test.idf"
-        write_idf(doc, str(path))
+        save_idf(doc, str(path))
 
         loaded = load_idf(str(path))
         assert loaded.strict is True
 
     def test_load_idf_strict_false(self, tmp_path: Path) -> None:
-        from idfkit import load_idf, write_idf
+        from idfkit import load_idf, save_idf
 
         doc = new_document()
         path = tmp_path / "test.idf"
-        write_idf(doc, str(path))
+        save_idf(doc, str(path))
 
         loaded = load_idf(str(path), strict=False)
         assert loaded.strict is False
@@ -211,21 +211,21 @@ class TestLoadEpjsonStrict:
     """Test that load_epjson's strict parameter works."""
 
     def test_load_epjson_default_strict(self, tmp_path: Path) -> None:
-        from idfkit import load_epjson, write_epjson
+        from idfkit import load_epjson, save_epjson
 
         doc = new_document()
         path = tmp_path / "test.epJSON"
-        write_epjson(doc, str(path))
+        save_epjson(doc, str(path))
 
         loaded = load_epjson(str(path))
         assert loaded.strict is True
 
     def test_load_epjson_strict_false(self, tmp_path: Path) -> None:
-        from idfkit import load_epjson, write_epjson
+        from idfkit import load_epjson, save_epjson
 
         doc = new_document()
         path = tmp_path / "test.epJSON"
-        write_epjson(doc, str(path))
+        save_epjson(doc, str(path))
 
         loaded = load_epjson(str(path), strict=False)
         assert loaded.strict is False

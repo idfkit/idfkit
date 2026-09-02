@@ -103,7 +103,7 @@ For batch workflows, preload the schema once and pass it to every `IDFParser` so
     ```python
     doc = load_idf("building.idf", strict=False)
     zone.x_orign = 10.0                        # silently dropped on the floor
-    write_idf(doc, "out.idf")                  # x_origin unchanged
+    save_idf(doc, "out.idf")                   # x_origin unchanged
     ```
 
 !!! success "keep strict mode on for authoring"
@@ -128,10 +128,10 @@ For batch workflows, preload the schema once and pass it to every `IDFParser` so
 
     ```python
     doc = load_idf("building.idf")             # no CST → format-only writer
-    write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
+    save_idf(doc, "out.idf")                   # not byte-identical, even with no edits
     ```
 
-!!! success "pair load + write"
+!!! success "pair load + save"
 
     ```python
     --8<-- "docs/snippets/agent_references/parsing-idf-epjson.py:mistake-preserve-good"

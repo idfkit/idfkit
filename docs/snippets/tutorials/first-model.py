@@ -111,9 +111,9 @@ print(len(result.errors))  # 0
 
 
 # --8<-- [start:write]
-from idfkit import write_idf
+from idfkit import save_idf
 
-write_idf(doc, "office.idf")
+save_idf(doc, "office.idf")
 # --8<-- [end:write]
 
 

@@ -80,11 +80,12 @@ ledger, where permanent single-language capabilities are recorded as such.
 <!-- BEGIN GENERATED FROM naming.toml. Edit the register, not this page. -->
 
 Generated from
-[`governance/naming.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.4/governance/naming.toml)
-at `governance-2026.4`, the governance tag this release pins. It governs `idfkit` and
-`@idfkit/core`, and it is read at a pinned governance-YYYY.N tag of idfkit-conformance,
-never the default branch. Correct the register and regenerate; a correction made on this
-page would be overwritten, and it would never reach either library's naming gate.
+[`governance/naming.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.6/governance/naming.toml)
+at `governance-2026.6`, the governance tag this release pins. It governs `idfkit` and
+`@idfkit/core` and `@idfkit/weather`, and it is read at a pinned governance-YYYY.N tag
+of idfkit-conformance, never the default branch. Correct the register and regenerate; a
+correction made on this page would be overwritten, and it would never reach either
+library's naming gate.
 
 ## Guessing a name before you look it up
 
@@ -283,6 +284,56 @@ row marked divergent or excluded links to the entry that says why, and a cell re
 | refresh the station index | *absent* | `refreshStationIndex` | [divergent](#refresh-the-station-index) |
 | geocode a place name | `geocode` | `geocode` | aligned |
 | detect the current location | `detect_location` | `detectLocation` | aligned |
+
+### The rest of the weather surface { #map-the-rest-of-the-weather-surface }
+
+| Concept | Python | TypeScript | Kind |
+| ------- | ------ | ---------- | ---- |
+| a text search result | `SearchResult` | `SearchResult` | aligned |
+| a proximity search result | `SpatialResult` | `SpatialResult` | aligned |
+| which field a text search matched | *absent* | `MatchField` | [divergent](#which-field-a-text-search-matched) |
+| the station wire record | *absent* | `StationRecord` | [divergent](#the-station-wire-record) |
+| the station index wire form | *absent* | `IndexData` | [divergent](#the-station-index-wire-form) |
+
+### Building the station index, and keeping it fresh { #map-building-the-station-index-and-keeping-it-fresh }
+
+| Concept | Python | TypeScript | Kind |
+| ------- | ------ | ---------- | ---- |
+| great-circle distance between two points | `haversine_km` | `haversineKm` | aligned |
+| parse a KML station index | *absent* | `parseKml` | [divergent](#parse-a-kml-station-index) |
+| read station metadata from a download URL | *absent* | `parseUrlMetadata` | [divergent](#read-station-metadata-from-a-download-url) |
+| check the station index for updates | `StationIndex.check_for_updates` | `checkForUpdates` | aligned |
+| build an index from index data | *absent* | `indexFromData` | [divergent](#build-an-index-from-index-data) |
+| the upstream index file list | *absent* | `INDEX_FILES` | [divergent](#the-upstream-index-file-list) |
+| the upstream index base URL | *absent* | `SOURCES_BASE_URL` | [divergent](#the-upstream-index-base-url) |
+| fetch a prebuilt station index | *absent* | `loadStationIndex` | [divergent](#fetch-a-prebuilt-station-index) |
+| the bundled station index | `StationIndex.load` | `loadBundledIndex` | [divergent](#the-bundled-station-index) |
+
+### Retrieving the files, and the disk edge { #map-retrieving-the-files-and-the-disk-edge }
+
+| Concept | Python | TypeScript | Kind |
+| ------- | ------ | ---------- | ---- |
+| download a station's EPW file | `WeatherDownloader.get_epw` | `fetchEpw` | [divergent](#download-a-stations-epw-file) |
+| download an EPW file by filename | `WeatherDownloader.get_epw_by_filename` | `fetchEpwByFilename` | [divergent](#download-an-epw-file-by-filename) |
+| download a station's archive | *absent* | `fetchWeatherArchive` | [divergent](#download-a-stations-archive) |
+| the retrieved weather files | `WeatherFiles` | `WeatherFiles` | [divergent](#the-retrieved-weather-files) |
+| read a ZIP archive | *absent* | `unzip` | [divergent](#read-a-zip-archive) |
+
+### Geocoding, beside `geocode a place name` and `detect the current location` { #map-geocoding-beside-geocode-a-place-name-and-detect-the-current-location }
+
+| Concept | Python | TypeScript | Kind |
+| ------- | ------ | ---------- | ---- |
+| a geocoding failure | `GeocodingError` | `GeocodingError` | aligned |
+| the geocoding rate limiter | `RateLimiter` | `RateLimiter` | aligned |
+| the injectable fetch | *absent* | `FetchLike` | [divergent](#the-injectable-fetch) |
+| write weather files to disk | *absent* | `saveWeatherFiles` | [divergent](#write-weather-files-to-disk) |
+| the written weather file paths | *absent* | `SavedWeatherFiles` | [divergent](#the-written-weather-file-paths) |
+
+### The weather options-object types { #map-the-weather-options-object-types }
+
+| Concept | Python | TypeScript | Kind |
+| ------- | ------ | ---------- | ---- |
+| the weather options-object types | *absent* | [10 names](#the-weather-options-object-types) | [excluded](#the-weather-options-object-types) |
 
 ### The formatting-preserving round-trip (registered ahead of the port) { #map-the-formatting-preserving-round-trip-registered-ahead-of-the-port }
 
@@ -747,6 +798,62 @@ FR-075).
 **search stations**
 
 Same receiver, same name, same argument, and `SearchResult` on both sides.
+
+**a text search result**
+
+One hit from `StationIndex.search`: the station, a relevance score from 0 to 1, and the
+field that matched. Identical names, and the field carrying the last of the three is
+spelled `match_field` in Python and `matchField` in TypeScript by the field-casing rule.
+Python reaches the type at `idfkit.weather.SearchResult` rather than through the
+top-level `__all__`.
+
+**a proximity search result**
+
+One hit from `StationIndex.nearest`: the station and its great-circle distance,
+`distance_km` in Python and `distanceKm` in TypeScript. Same construction and same
+reasoning as `a text search result` above.
+
+**great-circle distance between two points**
+
+The Haversine formula over four decimal degrees, in kilometres. Both sides use the same
+6371 km radius and the same clamp before the `asin`, so `nearest` orders a query
+identically in either library. Python reaches it at
+`idfkit.weather.spatial.haversine_km`.
+
+**check the station index for updates**
+
+The same operation under corresponding names: send HEAD requests for the upstream KML
+files, compare `Last-Modified` against the values the index was built with, and answer
+false when the index carries none or the probe cannot be completed.
+
+The receiver differs and the names do not. Python hangs it on the index, because the
+index it compares against is the one it is called on. TypeScript takes the index as an
+argument, because everything reaching the network there is a free function taking an
+overridable `fetch`. That is the `download a weather file` divergence, not a second name
+for this operation.
+
+Python also fires this check by itself from `StationIndex.load`, at most once a day.
+That nudge has no TypeScript counterpart, for the reason `refresh the station index`
+above gives, and the parity ledger records the consequence under `weather-index`.
+
+**a geocoding failure**
+
+Identical names, and one of the few failures the JavaScript side throws rather than
+returns: an address that resolves to nothing leaves no partial answer to hand back, so
+there is no value for the failure to be. Python reaches it at
+`idfkit.weather.GeocodingError`.
+
+**the geocoding rate limiter**
+
+Nominatim asks callers to stay under one request per second, and both libraries hold to
+it with an object of this name carrying a minimum interval, a `wait`, and a `reset`. The
+implementations differ as the languages do: Python takes a lock, because threads exist
+there, and TypeScript chains a promise, because they do not.
+
+Public on both sides and advertised on neither. Python reaches it at
+`idfkit.weather.geocode.RateLimiter` rather than through the sub-package's `__all__`,
+the same shape as `idfkit.exceptions.ParseDiagnostic`. Registered so that the two
+spellings cannot drift apart, not as a promise that either is prominent.
 
 **preserve formatting on a round-trip**
 
@@ -1334,6 +1441,304 @@ JavaScript has no writable cache directory to throttle against in a browser, so 
 nudge cannot exist there. It exposes the refresh explicitly instead and does nothing on
 its own. A Python counterpart would be a second public path to something already
 automatic, which FR-005 prohibits.
+
+### Which field a text search matched
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `MatchField` |
+
+The same six strings on both sides: `wmo`, `name`, `state`, `country`, `filename`, and
+the empty string for no match. TypeScript names the union because it appears in a
+checked signature, on `SearchResult.matchField`, so a `switch` over it is exhaustive and
+a misspelled case is a compile error.
+
+Python annotates `SearchResult.match_field` as `str` and documents the same values on
+the field itself. A `Literal` alias there is a fair thing to want and is additive rather
+than part of this feature, so this is recorded as a divergence rather than as an
+exclusion: it is a name Python may grow later, not one it must never have. Registering
+the TypeScript spelling fixes it either way.
+
+### The station wire record
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `StationRecord` |
+
+One station as `stations.json.gz` stores it, with the snake_case keys both libraries
+read and write, so that an index refreshed by either side loads in the other. TypeScript
+names the record because `WeatherStation.fromJSON` and `toJSON` carry it in their
+signatures, and because those keys deliberately do not match the camelCase class they
+convert to, which is exactly the mismatch a checked type is for.
+
+Python moves the same content through `WeatherStation.to_dict` and `from_dict` as
+`dict[str, Any]`. A TypedDict there would add real checking, so this too is a divergence
+rather than an exclusion.
+
+### The station index wire form
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `IndexData` |
+
+The whole serialized index: when it was built, the upstream `Last-Modified` values it
+was built against, and the array of station records. TypeScript names it because
+`indexFromData` takes it and `loadStationIndex` parses into it, so a caller that fetched
+or imported the JSON itself hands over a value the compiler has checked.
+
+Python reads the same file inside `StationIndex.load` and never hands the parsed payload
+back, so there is no signature for the type to appear in. As with `the station wire
+record`, that is a consequence of who opens the file rather than a name Python must
+never have.
+
+### Parse a KML station index
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `parseKml` |
+
+Both libraries build their index by regex over the upstream KML descriptions rather than
+through a DOM, and for the same reason: each description is a small HTML table inside a
+CDATA block, and a parser with no XML dependency runs in a worker or an edge runtime.
+
+The step is public in TypeScript and private in Python because the two take different
+inputs. TypeScript's takes the fetched text, which is the only form a browser ever has,
+and the package's own offline index builder runs over that same text. Python's
+`_parse_kml` takes a `Path` to a file `StationIndex.refresh` has already downloaded, so
+a caller holding KML text could not call it in any case. Publishing it would mean
+changing what it accepts first, which is a change to the code rather than to its name.
+
+### Read station metadata from a download URL
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `parseUrlMetadata` |
+
+Country, state, city, and WMO number, recovered from the filename in a station's ZIP
+URL. Public in TypeScript because it is the half of index building a caller can reuse on
+its own, against a URL it already holds, with no KML anywhere in sight.
+
+Python keeps `_parse_url_metadata` private beside `_parse_kml`, for the same reason that
+one is private: the index-building path there is `StationIndex.refresh`, which owns the
+whole download, and neither half of it is offered separately.
+
+### Build an index from index data
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `indexFromData` |
+
+Turn an already-parsed `IndexData` into a searchable `StationIndex`, synchronously and
+with no I/O. TypeScript needs the name because its callers legitimately hold the
+payload: one has fetched it, one has imported it through a bundler, and
+`loadBundledIndex` reads it off disk in Node. All three then need the same pure step.
+
+Python has no such caller. `StationIndex.load` opens the file, decompresses it, and
+returns the index in one call, and `StationIndex.from_stations` covers the other
+construction anyone wants, from stations the caller built itself. A Python counterpart
+would be a public name for the middle of a method nobody stands in.
+
+### The upstream index file list
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `INDEX_FILES` |
+
+The ten regional KML files that together cover the globe, identical on both sides down
+to the order. TypeScript exports the list because `refreshStationIndex` and
+`checkForUpdates` both accept a `baseUrl` and a `fetch`, so a caller routing around the
+missing CORS header has to know which ten files will be requested through its proxy.
+
+Python's `_INDEX_FILES` is private because `StationIndex.refresh` offers no such
+override: it owns the whole download, so the list names nothing a Python caller could
+point anywhere else.
+
+### The upstream index base URL
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `SOURCES_BASE_URL` |
+
+`https://climate.onebuilding.org/sources`, the same string on both sides. Public in
+TypeScript for the reason `the upstream index file list` is public: it is the default a
+caller replaces through `baseUrl`, and a proxy prefix is built by rewriting it.
+
+Python's `_SOURCES_BASE_URL` is private for the reason its file list is private. Nothing
+in the Python API accepts a base URL, so exporting the default would publish a constant
+no signature takes.
+
+### Fetch a prebuilt station index
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `loadStationIndex` |
+
+Fetch `stations.json.gz` from a URL, inflate it, and build the index. It exists because
+a browser cannot read the copy inside `node_modules`: the page serves that file from its
+own origin and points this at it.
+
+Python needs no counterpart, and the absence must not be read as a gap. Its index is
+installed with the package and `StationIndex.load` reads it from disk, so there is no
+URL to load from. Neither library retrieves an index over the network to get started
+(FR-043, FR-075): this names how a browser reaches the copy it was already shipped, not
+a different starting point.
+
+### The bundled station index
+
+| Python | TypeScript |
+| ------ | ---------- |
+| `StationIndex.load` | `loadBundledIndex` |
+
+The same operation, read the index shipped inside the package from disk with no network
+call, under two names that cannot be shared.
+
+Python's is `StationIndex.load` because the index is always on disk there: `load` is the
+register's verb for reading from a path, the class is the only place to reach it, and a
+cached copy written by a refresh is preferred over the bundled one transparently.
+TypeScript's says `bundled` because it has to distinguish itself from
+`loadStationIndex`, which is the portable path and loads over the network, and because
+it lives in `@idfkit/weather/node` where it touches `node:fs`. Spelling it `load` there
+would name the disk path as the default in a package whose default runtime has no disk.
+
+Python's `load` also fires the throttled freshness check recorded under `refresh the
+station index`. The Node function does not, and has no cache directory to throttle
+against.
+
+### Download a station's EPW file
+
+| Python | TypeScript |
+| ------ | ---------- |
+| `WeatherDownloader.get_epw` | `fetchEpw` |
+
+The shortest path to one station's EPW, and the two libraries return different things
+because their callers need different things. Python returns a `Path`, because the file
+is in its cache and a path is what EnergyPlus is given. TypeScript returns the EPW text,
+because a browser has no disk and the text is what `@idfkit/engine` takes.
+
+The verbs follow the receivers, exactly as in `download a weather file`: `get_` reads
+something the downloader's cache already holds or will hold, and `fetch` names the
+platform primitive the free function reaches through. Neither could take the other's
+spelling without describing something it does not do.
+
+### Download an EPW file by filename
+
+| Python | TypeScript |
+| ------ | ---------- |
+| `WeatherDownloader.get_epw_by_filename` | `fetchEpwByFilename` |
+
+Resolve a canonical EPW filename to a station through the index, then retrieve that
+station's EPW. The same `get_` against `fetch` split as `download a station's EPW file`
+above, for the same reason.
+
+The index arrives differently, which is the packaging asymmetry rather than a second
+naming disagreement: Python's is an optional keyword defaulting to the bundled index,
+because it can always find one on disk. TypeScript's is a required argument, because the
+caller had to obtain an index already and the function has nowhere to load one from.
+
+### Download a station's archive
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `fetchWeatherArchive` |
+
+The low-level retrieval step: fetch the station's ZIP and return every member as raw
+bytes. Public in TypeScript because it is the only way to reach the members with no
+decoded convenience field, `.clm`, `.wea`, `.rain`, and `.pvsyst` among them, and
+because a caller can hand the bytes anywhere.
+
+Python reaches the same members as files. `WeatherDownloader.download` extracts the
+archive into the cache and hands back `WeatherFiles.zip_path` beside the extracted
+paths, so the archive is already addressable, and a method returning bytes would be a
+second route to the same content in a language whose caller asked for paths.
+
+### The retrieved weather files
+
+| Python | TypeScript |
+| ------ | ---------- |
+| `WeatherFiles` | `WeatherFiles` |
+
+Identical names, different values, and recorded rather than reconciled for the same
+reason as `version`: `files.epw` is a `Path` in Python and the EPW text in TypeScript,
+so code written from one side's documentation reads against the other and is wrong at
+runtime.
+
+Each is right where it lives, and the difference is the packaging asymmetry the parity
+ledger records under `weather-index`. Python downloads into a cache directory, so paths
+are what it has and what it should hand back, and `zip_path` and a guaranteed `ddy`
+follow from the same fact. TypeScript writes nothing to disk, so text is the only thing
+it can return, and it carries the undecoded members beside the three it decodes as a map
+of bytes.
+
+Renaming either side would not fix the collision and would spend a rename budget on
+making it harder to find. `write weather files to disk` below names the step that turns
+one into the other in Node.
+
+Python's `PartialWeatherFiles`, returned by `download(station, only=...)`, is the same
+record with every path optional. It has no TypeScript counterpart and is not a gap:
+selective extraction is a property of writing into a cache, and the JavaScript side
+decodes from memory whatever the archive held.
+
+### Read a ZIP archive
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `unzip` |
+
+Read a ZIP into a map of member name to bytes. TypeScript ships one and exports it
+because JavaScript has no archive reader in its standard library and this package takes
+no dependencies: it reads the central directory itself and inflates with
+`DecompressionStream('deflate-raw')`, which browsers and Node 20 and later both have.
+
+Python has `zipfile` in its standard library and `WeatherDownloader` uses it directly. A
+public `unzip` there would be a wrapper over a module the caller can already import,
+which is a public name for an import statement.
+
+### The injectable fetch
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `FetchLike` |
+
+The subset of the `fetch` signature every network call in the package accepts, so that a
+caller can substitute its own. It exists because climate.onebuilding.org sends no
+`Access-Control-Allow-Origin` header: from a page, the only way to reach it is through a
+proxy the caller supplies, and this type is what makes that argument checked rather than
+hopeful.
+
+Python has nothing to inject and needs no name for it. `WeatherDownloader` reaches the
+network with `urllib.request` and owns its own requests, and a Python caller runs under
+no same-origin policy, so a seam here would name an override nobody has a reason to
+pass.
+
+### Write weather files to disk
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `saveWeatherFiles` |
+
+Write a retrieved `WeatherFiles` into a directory, Latin-1, the encoding EPW uses, and
+return the paths. It is a separate step, and a Node-only one, because the portable half
+writes nothing to disk. That is the asymmetry the parity ledger records under
+`weather-index`.
+
+Python has no counterpart and lacks nothing. Retrieving and saving are one operation
+there: `WeatherDownloader.download` puts the files in its cache directory on the way to
+returning their paths, so a second name would be a public spelling for something already
+done. The verb is still the register's `save`, so the two surfaces do not disagree about
+the word for putting bytes on a disk, only about how many steps it takes to get there.
+
+### The written weather file paths
+
+| Python | TypeScript |
+| ------ | ---------- |
+| *absent* | `SavedWeatherFiles` |
+
+Where `saveWeatherFiles` put each file, or the absent value for one the archive did not
+carry. TypeScript needs a second record because its `WeatherFiles` holds text: the paths
+do not exist until a Node caller has written them.
+
+Python needs no second record because its `WeatherFiles` is paths already, which is the
+`the retrieved weather files` divergence seen from the disk-writing side.
 
 ### A schedule as a series
 
@@ -2072,6 +2477,43 @@ whole of both mixins, including the further eppy members reachable from the same
 (`addidfobjects`, `removeidfobjects`, `copyidfobject`, `key`, `fieldvalues`,
 `getfieldidd`, `getfieldidd_item`, `getrange`, `checkrange`, `save`, `run`, `update`).
 None of them crosses to TypeScript either.
+
+### The weather options-object types
+
+**Python**: none, and never.
+
+**TypeScript**, 10 names:
+
+- `SearchOptions`
+- `NearestOptions`
+- `FilterOptions`
+- `LoadIndexOptions`
+- `RefreshIndexOptions`
+- `FetchWeatherOptions`
+- `GeocodeOptions`
+- `DetectLocationOptions`
+- `SaveWeatherFilesOptions`
+- `WeatherStationFields`
+
+Ten interfaces naming argument objects, under one entry for the same reason `the
+options-object types` covers the five in `@idfkit/core`: TypeScript has to name an
+option bag, because it arrives as one argument and its type is what makes a misspelled
+option a compile error instead of a silently ignored key, and Python passes the same
+options as keyword arguments, which the language names and checks at the call site by
+itself.
+
+Nine are options in the plain sense, on `search`, `nearest`, `filter`,
+`loadStationIndex`, `refreshStationIndex`, the three retrieval functions, `geocode` and
+`detectLocation`, and `saveWeatherFiles`. The tenth, `WeatherStationFields`, is the same
+mechanism at a constructor rather than at a call: `new WeatherStation(fields)` takes one
+object, so its shape needs a name, where Python's `WeatherStation` is a frozen dataclass
+whose constructor keywords are that list already.
+
+Excluded is terminal. A Python counterpart appearing later fails the gate.
+
+Option NAMES are not excluded here, only the containers that carry them. An option that
+is a concept of its own gets its own entry, as `preserve formatting on a round-trip`
+does, and the `fetch` these bags accept is typed by `the injectable fetch` above.
 
 ### The local simulation surface
 

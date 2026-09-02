@@ -195,9 +195,9 @@ def simulate(
         run_dir = prepare_run_directory(local_output_dir, weather_path)
         idf_path = run_dir / "model.idf"
 
-        from ..writers import write_idf
+        from ..writers import save_idf
 
-        write_idf(sim_model, idf_path)
+        save_idf(sim_model, idf_path)
 
         cmd = build_command(
             config=config,

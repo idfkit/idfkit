@@ -161,10 +161,10 @@ def _run_chain(
     prefix of successfully-completed steps.
     """
     from ..idf_parser import parse_idf
-    from ..writers import write_idf
+    from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
-    write_idf(model, initial_idf)
+    save_idf(model, initial_idf)
     current_text = initial_idf.read_text(encoding="latin-1")
 
     steps: list[MigrationStep] = []

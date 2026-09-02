@@ -100,7 +100,7 @@ class SimulationCache:
         normalised = model.copy()
         if "Output:SQLite" not in normalised:
             normalised.add("Output:SQLite", "", option_type="SimpleAndTabular")
-        idf_text: str = write_idf(normalised) or ""
+        idf_text: str = write_idf(normalised)
 
         weather_path = Path(weather).resolve()
         weather_bytes = weather_path.read_bytes()

@@ -242,7 +242,7 @@ def benchmark_idfkit(idf_path: str) -> dict[str, dict[str, float]]:
 
     # 6. Write to string
     def write():
-        write_idf(model, None)
+        write_idf(model)
 
     results["Write IDF to string"] = bench(write)
 

@@ -11,7 +11,7 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 ## Quick start
 
 ```python
-from idfkit import load_idf, new_document, write_idf
+from idfkit import load_idf, new_document, save_idf
 
 # Create or load
 doc = new_document()  # blank model at LATEST_VERSION
@@ -28,7 +28,7 @@ print(zone.ceiling_height)  # 3.0
 zone.ceiling_height = 3.5
 
 # Persist
-write_idf(doc, "out.idf")
+save_idf(doc, "out.idf")
 ```
 
 ## Core API

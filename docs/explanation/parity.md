@@ -79,8 +79,8 @@ Ids get added and deprecated. They do not get renamed.
 <!-- BEGIN GENERATED FROM parity.toml. Edit the ledger, not this page. -->
 
 Generated from
-[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.4/governance/parity.toml)
-at `governance-2026.4`, the governance tag this release pins. Correct the ledger and
+[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.6/governance/parity.toml)
+at `governance-2026.6`, the governance tag this release pins. Correct the ledger and
 regenerate; a correction made on this page would be overwritten, and it would never
 reach either library's CI gate.
 
@@ -150,6 +150,7 @@ possibility.
     - detect a document version
     - an epJSON document value
     - read IDF from disk, keeping diagnostics
+    - detect an epJSON document version
 
 ### Writing IDF and epJSON { #write }
 
@@ -333,6 +334,29 @@ possibility.
     - a weather station
     - download a weather file
     - refresh the station index
+    - a text search result
+    - a proximity search result
+    - which field a text search matched
+    - the station wire record
+    - the upstream index base URL
+    - fetch a prebuilt station index
+    - parse a KML station index
+    - read station metadata from a download URL
+    - great-circle distance between two points
+    - the retrieved weather files
+    - read a ZIP archive
+    - the injectable fetch
+    - write weather files to disk
+    - the written weather file paths
+    - the weather options-object types
+    - the station index wire form
+    - build an index from index data
+    - the upstream index file list
+    - the bundled station index
+    - check the station index for updates
+    - download a station's archive
+    - download a station's EPW file
+    - download an EPW file by filename
 
 ### Geocoding a place name { #geocoding }
 
@@ -342,6 +366,8 @@ possibility.
 
     - geocode a place name
     - detect the current location
+    - the geocoding rate limiter
+    - a geocoding failure
 
 ## Tier 2: portable, not ported yet { #tier-2 }
 

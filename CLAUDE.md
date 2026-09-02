@@ -57,12 +57,12 @@ make build
 
 ```
 src/idfkit/                  # Main package
-  __init__.py                # Public API: load_idf, load_epjson, new_document, write_*
+  __init__.py                # Public API: load_idf, load_epjson, new_document, write_*, save_*
   document.py                # IDFDocument - main container class for EnergyPlus models
   objects.py                 # IDFObject (thin dict wrapper) and IDFCollection (indexed by name)
   idf_parser.py              # IDF format tokenizer and parser
   epjson_parser.py           # epJSON format parser
-  writers.py                 # write_idf() and write_epjson()
+  writers.py                 # write_idf()/save_idf() and write_epjson()/save_epjson()
   schema.py                  # EpJSONSchema loading and SchemaManager (cached by version)
   validation.py              # Document and object validation against schema
   geometry.py                # Vector3D, Polygon3D, surface/zone calculations, WWR, intersect_match

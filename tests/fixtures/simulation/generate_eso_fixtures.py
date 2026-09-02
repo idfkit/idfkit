@@ -24,7 +24,7 @@ from pathlib import Path
 
 import idfkit
 from idfkit.simulation import find_energyplus
-from idfkit.writers import write_idf
+from idfkit.writers import save_idf
 
 _HERE = Path(__file__).parent
 _EXAMPLE = "1ZoneUncontrolled.idf"
@@ -48,7 +48,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         idf_path = tmp_path / "in.idf"
-        write_idf(doc, idf_path)
+        save_idf(doc, idf_path)
         out_dir = tmp_path / "out"
         subprocess.run(  # noqa: S603
             [str(config.executable), "-w", str(weather), "-d", str(out_dir), "-r", str(idf_path)],

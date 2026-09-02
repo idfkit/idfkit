@@ -1,10 +1,12 @@
 """
 Writers for IDF and epJSON formats.
 
-Provides serialization of IDFDocument to both formats.
+Provides serialization of IDFDocument to both formats. Each format has two entry points:
+``write_*`` serializes to a string and never touches the disk, and ``save_*`` serializes and
+writes the result to a path.
 
-The [write_idf][idfkit.writers.write_idf] function accepts an *output_type* parameter that
-mirrors eppy's ``idf.outputtype`` options:
+The [write_idf][idfkit.writers.write_idf] and [save_idf][idfkit.writers.save_idf] functions
+accept an *output_type* parameter that mirrors eppy's ``idf.outputtype`` options:
 
 - ``"standard"`` (default): field comments included (``!- Field Name``).
 - ``"nocomment"``: no field comments, one field per line.
@@ -16,7 +18,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 logger = logging.getLogger(__name__)
 
@@ -41,60 +43,37 @@ def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
     return f"{v[0]}.{v[1]}"
 
 
-@overload
 def write_idf(
     doc: IDFDocument[bool],
-    filepath: None = ...,
-    encoding: str = ...,
-    output_type: OutputType = ...,
-    *,
-    preserve_formatting: bool | None = ...,
-) -> str: ...
-
-
-@overload
-def write_idf(
-    doc: IDFDocument[bool],
-    filepath: Path | str,
-    encoding: str = ...,
-    output_type: OutputType = ...,
-    *,
-    preserve_formatting: bool | None = ...,
-) -> None: ...
-
-
-def write_idf(
-    doc: IDFDocument[bool],
-    filepath: Path | str | None = None,
-    encoding: str = "latin-1",
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
-) -> str | None:
+) -> str:
     """
-    Write document to IDF format.
+    Serialize a document to IDF text.
+
+    Returns the text; it never touches the disk. Use
+    [save_idf][idfkit.writers.save_idf] to put the text on disk.
 
     Args:
-        doc: The document to write.
-        filepath: Output path (if ``None``, returns a string).
-        encoding: Output encoding.
-        output_type: Output formatting mode — ``"standard"`` (with
+        doc: The document to serialize.
+        output_type: Output formatting mode, ``"standard"`` (with
             comments), ``"nocomment"`` (no comments), or
-            ``"compressed"`` (single-line objects).  Mirrors eppy's
-            ``idf.outputtype``.  Ignored when *preserve_formatting* is
-            explicitly ``True``.  When *preserve_formatting* is ``None``
+            ``"compressed"`` (single-line objects). Mirrors eppy's
+            ``idf.outputtype``. Ignored when *preserve_formatting* is
+            explicitly ``True``. When *preserve_formatting* is ``None``
             and *output_type* is not ``"standard"``, the explicit output
             type takes precedence and lossless mode is disabled.
         preserve_formatting: If ``True``, reproduce the original source
             text for unmodified objects and apply standard formatting only
-            to objects that were mutated or added after parsing.  Requires
+            to objects that were mutated or added after parsing. Requires
             the document to have been parsed with
-            ``preserve_formatting=True``.  When ``None`` (the default),
+            ``preserve_formatting=True``. When ``None`` (the default),
             automatically uses lossless output if a CST is available and
             *output_type* is ``"standard"``.
 
     Returns:
-        IDF string if *filepath* is ``None``, otherwise ``None``.
+        The IDF text.
 
     Examples:
         Serialize the model to an IDF string for inspection:
@@ -107,25 +86,11 @@ def write_idf(
         >>> "Zone," in idf_str
         True
 
-        Write to disk for EnergyPlus simulation:
-
-            ```python
-            write_idf(model, "in.idf")
-            ```
-
         Use compressed format for batch parametric runs:
 
         >>> compressed = write_idf(model, output_type="compressed")
         >>> "\\n" not in compressed.split("Zone")[1].split(";")[0]
         True
-
-        Lossless round-trip:
-
-            ```python
-            from idfkit import load_idf, write_idf
-            model = load_idf("building.idf", preserve_formatting=True)
-            write_idf(model, "building_copy.idf")  # byte-identical
-            ```
     """
     if preserve_formatting is not None:
         use_preserve = preserve_formatting
@@ -140,58 +105,76 @@ def write_idf(
         writer = IDFWriter(doc, output_type=output_type)
         content = writer.to_string()
 
-    if filepath:
-        filepath = Path(filepath)
-        with open(filepath, "w", encoding=encoding) as f:
-            f.write(content)
-        logger.info("Wrote IDF (%d objects) to %s", len(doc), filepath)
-        return None
-
     logger.debug("Serialized IDF (%d objects) to string", len(doc))
     return content
 
 
-@overload
-def write_epjson(
+def save_idf(
     doc: IDFDocument[bool],
-    filepath: None = ...,
-    indent: int = ...,
+    path: Path | str,
+    encoding: str = "latin-1",
+    output_type: OutputType = "standard",
     *,
-    preserve_formatting: bool | None = ...,
-) -> str: ...
+    preserve_formatting: bool | None = None,
+) -> None:
+    """
+    Serialize a document to IDF text and write it to *path*.
+
+    The disk-writing counterpart of [write_idf][idfkit.writers.write_idf].
+
+    Args:
+        doc: The document to save.
+        path: Output path.
+        encoding: Output encoding.
+        output_type: Output formatting mode, as for
+            [write_idf][idfkit.writers.write_idf].
+        preserve_formatting: Lossless output control, as for
+            [write_idf][idfkit.writers.write_idf].
+
+    Examples:
+        Write to disk for EnergyPlus simulation:
+
+            ```python
+            save_idf(model, "in.idf")
+            ```
+
+        Lossless round-trip:
+
+            ```python
+            from idfkit import load_idf, save_idf
+            model = load_idf("building.idf", preserve_formatting=True)
+            save_idf(model, "building_copy.idf")  # byte-identical
+            ```
+    """
+    content = write_idf(doc, output_type, preserve_formatting=preserve_formatting)
+    path = Path(path)
+    with open(path, "w", encoding=encoding) as f:
+        f.write(content)
+    logger.info("Wrote IDF (%d objects) to %s", len(doc), path)
 
 
-@overload
 def write_epjson(
     doc: IDFDocument[bool],
-    filepath: Path | str,
-    indent: int = ...,
-    *,
-    preserve_formatting: bool | None = ...,
-) -> None: ...
-
-
-def write_epjson(
-    doc: IDFDocument[bool],
-    filepath: Path | str | None = None,
     indent: int = 2,
     *,
     preserve_formatting: bool | None = None,
-) -> str | None:
+) -> str:
     """
-    Write document to epJSON format.
+    Serialize a document to epJSON text.
+
+    Returns the text; it never touches the disk. Use
+    [save_epjson][idfkit.writers.save_epjson] to put the text on disk.
 
     Args:
-        doc: The document to write
-        filepath: Output path (if None, returns string)
-        indent: JSON indentation
+        doc: The document to serialize.
+        indent: JSON indentation.
         preserve_formatting: If ``True``, return the original JSON text
-            verbatim when no objects have been modified.  When ``None``
+            verbatim when no objects have been modified. When ``None``
             (the default), automatically uses lossless output if raw text
             is available and no objects were mutated.
 
     Returns:
-        JSON string if filepath is None, otherwise None
+        The epJSON text.
 
     Examples:
         Serialize the model to epJSON for use with EnergyPlus v9.3+:
@@ -203,12 +186,6 @@ def write_epjson(
         >>> json_str = write_epjson(model)
         >>> '"Zone"' in json_str
         True
-
-        Write to disk:
-
-            ```python
-            write_epjson(model, "in.epJSON")
-            ```
     """
     # Note: epJSON preservation is all-or-nothing (any mutation or addition
     # falls back to the standard JSON writer), unlike IDF which has per-object
@@ -220,29 +197,49 @@ def write_epjson(
     if use_preserve and doc.raw_text is not None:
         all_clean = all(obj.source_text is not None for obj in doc.all_objects)
         if all_clean:
-            content = doc.raw_text
-            if filepath:
-                filepath = Path(filepath)
-                with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(content)
-                logger.info("Wrote epJSON (%d objects, lossless) to %s", len(doc), filepath)
-                return None
             logger.debug("Serialized epJSON (%d objects, lossless) to string", len(doc))
-            return content
+            return doc.raw_text
 
     # Fall back to standard writer.
     writer = EpJSONWriter(doc)
     data = writer.to_dict()
 
-    if filepath:
-        filepath = Path(filepath)
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=indent)
-        logger.info("Wrote epJSON (%d objects) to %s", len(doc), filepath)
-        return None
-
     logger.debug("Serialized epJSON (%d objects) to string", len(doc))
     return json.dumps(data, indent=indent)
+
+
+def save_epjson(
+    doc: IDFDocument[bool],
+    path: Path | str,
+    indent: int = 2,
+    *,
+    preserve_formatting: bool | None = None,
+) -> None:
+    """
+    Serialize a document to epJSON text and write it to *path*.
+
+    The disk-writing counterpart of
+    [write_epjson][idfkit.writers.write_epjson].
+
+    Args:
+        doc: The document to save.
+        path: Output path.
+        indent: JSON indentation.
+        preserve_formatting: Lossless output control, as for
+            [write_epjson][idfkit.writers.write_epjson].
+
+    Examples:
+        Write to disk:
+
+            ```python
+            save_epjson(model, "in.epJSON")
+            ```
+    """
+    content = write_epjson(doc, indent, preserve_formatting=preserve_formatting)
+    path = Path(path)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    logger.info("Wrote epJSON (%d objects) to %s", len(doc), path)
 
 
 def _emit_cst_node(
@@ -632,7 +629,7 @@ def convert_idf_to_epjson(
     epjson_path = idf_path.with_suffix(".epJSON") if epjson_path is None else Path(epjson_path)
 
     doc = parse_idf(idf_path)
-    write_epjson(doc, epjson_path)
+    save_epjson(doc, epjson_path)
 
     return epjson_path
 
@@ -668,6 +665,6 @@ def convert_epjson_to_idf(
     idf_path = epjson_path.with_suffix(".idf") if idf_path is None else Path(idf_path)
 
     doc = parse_epjson(epjson_path)
-    write_idf(doc, idf_path)
+    save_idf(doc, idf_path)
 
     return idf_path

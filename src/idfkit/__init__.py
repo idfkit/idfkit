@@ -18,8 +18,8 @@ Basic usage:
     surfaces = model.get_referencing("MyZone")
 
     # Write back
-    from idfkit import write_idf
-    write_idf(model, "modified.idf")
+    from idfkit import save_idf
+    save_idf(model, "modified.idf")
 """
 
 from __future__ import annotations
@@ -146,7 +146,7 @@ from .versions import (
 )
 
 # Writing functions
-from .writers import write_epjson, write_idf
+from .writers import save_epjson, save_idf, write_epjson, write_idf
 
 # Zoning
 from .zoning import (
@@ -214,7 +214,8 @@ def load_idf(
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
         preserve_formatting: When ``True``, build a Concrete Syntax Tree
-            (CST) so that :func:`write_idf` reproduces the original
+            (CST) so that :func:`write_idf` and :func:`save_idf`
+            reproduce the original
             formatting, comments, and whitespace for unmodified objects.
 
     Returns:
@@ -240,7 +241,7 @@ def load_idf(
 
             ```python
             model = load_idf("building.idf", preserve_formatting=True)
-            write_idf(model, "building_copy.idf")  # byte-identical
+            save_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
     from pathlib import Path
@@ -293,7 +294,8 @@ def load_epjson(
             IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
             of returning ``None``.
         preserve_formatting: When ``True``, store the raw JSON text so
-            that :func:`write_epjson` can reproduce it byte-for-byte
+            that :func:`write_epjson` and :func:`save_epjson` can
+            reproduce it byte-for-byte
             when no objects have been modified.
 
     Returns:
@@ -484,6 +486,8 @@ __all__ = [
     "polygon_difference_2d",
     "polygon_intersection_2d",
     "rotate_building",
+    "save_epjson",
+    "save_idf",
     "scale_building",
     "search_url",
     "set_default_constructions",
@@ -496,3 +500,14 @@ __all__ = [
     "write_epjson",
     "write_idf",
 ]
+
+# FR-008: assembly artefacts are deleted, not registered. These names are bound at module scope
+# only so that the module can be assembled, they are absent from ``__all__``, and leaving them
+# bound leaks them into ``dir(idfkit)`` and into editor completion on ``idfkit.``. The unbinding
+# goes through ``globals()`` rather than a plain ``del``: a plain ``del`` at module scope makes
+# every static analyser treat the name as unbound for the whole module, so the ``Literal`` and
+# ``overload`` annotations above stop resolving. Deleting through the namespace dict removes the
+# names at runtime, which is where the leak is, and leaves the annotations intact.
+for _assembly_artefact in ("PackageNotFoundError", "TYPE_CHECKING", "Literal", "annotations", "logging", "overload"):
+    globals().pop(_assembly_artefact, None)
+globals().pop("_assembly_artefact", None)

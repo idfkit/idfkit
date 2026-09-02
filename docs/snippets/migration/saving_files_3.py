@@ -4,8 +4,8 @@ from idfkit import IDFDocument
 
 doc: IDFDocument = ...  # type: ignore[assignment]
 # --8<-- [start:example]
-from idfkit import write_idf, write_epjson
+from idfkit import save_idf, save_epjson
 
-write_idf(doc, "out.idf")
-write_epjson(doc, "out.epJSON")  # or convert to epJSON
+save_idf(doc, "out.idf")
+save_epjson(doc, "out.epJSON")  # or convert to epJSON
 # --8<-- [end:example]

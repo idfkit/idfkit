@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `save_idf(doc, path, ...)` and `save_epjson(doc, path, ...)` write a serialized
+  model to disk. They are the disk-writing half of the `write_*` split described
+  under Changed.
+
 - New **"Developing with idfkit"** landing page documenting the
   `developing-with-idfkit` skill: what the bundled agent references are, why they
   are version-matched to the installed idfkit, and how to install the skill for
@@ -62,6 +66,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
 
 ### Changed
+
+- **Breaking:** `write_idf()` and `write_epjson()` now only serialize to a string.
+  Their `filepath` parameter is gone, along with the three `@overload` stanzas per
+  function that existed solely to express "the return type depends on whether a
+  path was passed". Writing to disk is now `save_idf()` and `save_epjson()`, which
+  keep the `encoding`, `output_type`, `indent`, and `preserve_formatting`
+  parameters they had. Replace `write_idf(doc, path)` with `save_idf(doc, path)`
+  and `write_epjson(doc, path)` with `save_epjson(doc, path)`; a `write_*` call
+  that already omitted the path is unchanged and now has a plain `str` return type
+  instead of `str | None`. One operation, one verb: `write` serializes, `save`
+  puts the result on disk.
+
+- **Breaking:** the module surface of `idfkit` no longer leaks the names it
+  imports to assemble itself. `idfkit.overload`, `idfkit.Literal`,
+  `idfkit.TYPE_CHECKING`, `idfkit.logging`, `idfkit.annotations`, and
+  `idfkit.PackageNotFoundError` were never in `__all__` and were never part of the
+  API, but they were bound on the module and showed up in `dir(idfkit)` and in
+  editor completion on `idfkit.`. Import them from `typing`, `logging`, and
+  `importlib.metadata` instead.
 
 - Reorganised the documentation site around the [Diátaxis](https://diataxis.fr)
   framework. The navigation is now grouped into Tutorials, How-to guides,

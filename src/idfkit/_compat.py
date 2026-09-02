@@ -423,8 +423,8 @@ class EppyDocumentMixin:
 
         !!! tip
             Also the recommended idfkit API.  For format conversion, use
-            [write_idf][idfkit.writers.write_idf] or
-            [write_epjson][idfkit.writers.write_epjson] directly.
+            [save_idf][idfkit.writers.save_idf] or
+            [save_epjson][idfkit.writers.save_epjson] directly.
 
         Args:
             filepath: Explicit path override.  If ``None``, uses
@@ -451,13 +451,13 @@ class EppyDocumentMixin:
                 model.save("5ZoneAirCooled_v2.idf")
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
         target = Path(filepath) if filepath else self.filepath
         if target is None:
             msg = "No filepath set - pass a path or use saveas()"
             raise ValueError(msg)
-        write_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
         self.filepath = target
 
     def saveas(
@@ -489,10 +489,10 @@ class EppyDocumentMixin:
                 model.save()   # now writes to HighInsulation_Variant.idf
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
         target = Path(filepath)
-        write_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
         self.filepath = target
 
     def savecopy(
@@ -525,9 +525,9 @@ class EppyDocumentMixin:
                 model.save()   # still writes to Baseline.idf
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
-        write_idf(self, Path(filepath), encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, Path(filepath), encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
 
     # -- Simulation ----------------------------------------------------------
 

@@ -12,7 +12,7 @@ idfkit's `geometry_builders` and `zoning` modules are for **synthesizing** build
 ## Quick start
 
 ```python
-from idfkit import new_document, write_idf, ZoningScheme, create_block, footprint_rectangle
+from idfkit import new_document, save_idf, ZoningScheme, create_block, footprint_rectangle
 
 doc = new_document()
 create_block(
@@ -23,7 +23,7 @@ create_block(
     num_stories=3,
     zoning=ZoningScheme.CORE_PERIMETER,
 )
-write_idf(doc, "block.idf")
+save_idf(doc, "block.idf")
 ```
 
 That single call produces zones, floors, ceilings, exterior walls, interior walls, ground/roof boundary conditions, and inter-floor links for an entire 3-story block.
