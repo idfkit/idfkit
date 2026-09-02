@@ -40,6 +40,7 @@ see the [Explanation](../explanation/index.md) section.
 - [How to download weather files](../weather/downloads.md)
 - [How to apply design days](../weather/design-days.md)
 - [How to geocode addresses](../weather/geocoding.md)
+- [How to warm the weather cache for an offline run](warm-the-weather-cache.md)
 
 ## Schedules
 

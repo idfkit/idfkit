@@ -80,8 +80,8 @@ ledger, where permanent single-language capabilities are recorded as such.
 <!-- BEGIN GENERATED FROM naming.toml. Edit the register, not this page. -->
 
 Generated from
-[`governance/naming.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.6/governance/naming.toml)
-at `governance-2026.6`, the governance tag this release pins. It governs `idfkit` and
+[`governance/naming.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.7/governance/naming.toml)
+at `governance-2026.7`, the governance tag this release pins. It governs `idfkit` and
 `@idfkit/core` and `@idfkit/weather`, and it is read at a pinned governance-YYYY.N tag
 of idfkit-conformance, never the default branch. Correct the register and regenerate; a
 correction made on this page would be overwritten, and it would never reach either

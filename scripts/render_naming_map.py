@@ -41,6 +41,13 @@ from typing import Any, cast
 
 import tomllib
 
+# `scripts/` is sys.path[0] when this file is run as a script, but not when it is imported by
+# path, which is how docs/hooks/parity_macro.py loads it. Make the sibling import work in both.
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _governance_source import read_pinned
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PAGE_PATH = REPO_ROOT / "docs" / "explanation" / "naming-map.md"
 PYPROJECT_PATH = REPO_ROOT / "pyproject.toml"
@@ -906,10 +913,15 @@ def main(argv: list[str] | None = None) -> int:
             f"naming register not found at {register_path}; check out idfkit-conformance or set IDFKIT_GOVERNANCE_DIR"
         )
 
-    raw_text = register_path.read_text(encoding="utf-8")
+    level = resolve_level()
+    overridden = args.register is not None or bool(os.environ.get("IDFKIT_GOVERNANCE_DIR"))
+    source = read_pinned(register_path, level, override=overridden)
+    if not source.pinned:
+        print(f"note: reading {source.description}", file=sys.stderr)
+    raw_text = source.text
     register = parse_register(tomllib.loads(raw_text), raw_text)
     if register.problems:
-        print(f"{register_path}: the register does not satisfy its own contract")
+        print(f"{source.description}: the register does not satisfy its own contract")
         for problem in register.problems:
             print(f"  - {problem}")
         return 2
@@ -922,12 +934,12 @@ def main(argv: list[str] | None = None) -> int:
         if updated != current:
             print(f"{PAGE_PATH} is stale. Run: uv run python scripts/render_naming_map.py")
             return 1
-        print(f"{PAGE_PATH} is up to date with {register_path} ({len(register.entries)} entries)")
+        print(f"{PAGE_PATH} is up to date with {source.description} ({len(register.entries)} entries)")
         return 0
 
     if updated != current:
         PAGE_PATH.write_text(updated, encoding="utf-8")
-        print(f"rewrote {PAGE_PATH} from {register_path} ({len(register.entries)} entries)")
+        print(f"rewrote {PAGE_PATH} from {source.description} ({len(register.entries)} entries)")
     else:
         print(f"{PAGE_PATH} already matches {register_path} ({len(register.entries)} entries)")
     return 0

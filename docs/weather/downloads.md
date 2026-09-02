@@ -122,6 +122,13 @@ Common errors:
 
 Once files are cached, no network is needed:
 
+!!! tip "Running somewhere with no network at all?"
+    Caching the files is necessary but not sufficient. `StationIndex.load()`
+    still fires a throttled freshness check that costs time offline, and the
+    cache location has to be one both the warming environment and the isolated
+    run can see. [How to warm the weather cache for an offline
+    run](../how-to/warm-the-weather-cache.md) covers the whole setup.
+
 ```python
 --8<-- "docs/snippets/weather/downloads/offline_usage.py:example"
 ```

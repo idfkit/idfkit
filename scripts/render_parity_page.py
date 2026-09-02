@@ -35,6 +35,13 @@ from typing import Any, cast
 
 import tomllib
 
+# `scripts/` is sys.path[0] when this file is run as a script, but not when it is imported by
+# path, which is how docs/hooks/parity_macro.py loads it. Make the sibling import work in both.
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _governance_source import read_pinned
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PAGE_PATH = REPO_ROOT / "docs" / "explanation" / "parity.md"
 PYPROJECT_PATH = REPO_ROOT / "pyproject.toml"
@@ -491,15 +498,18 @@ def main(argv: list[str] | None = None) -> int:
     if not ledger_path.is_file():
         sys.exit(f"parity ledger not found at {ledger_path}")
 
-    with ledger_path.open("rb") as handle:
-        ledger = parse_ledger(tomllib.load(handle))
+    level = resolve_level()
+    source = read_pinned(ledger_path, level, override=args.ledger is not None)
+    if not source.pinned:
+        print(f"note: reading {source.description}", file=sys.stderr)
+    ledger = parse_ledger(tomllib.loads(source.text))
     if ledger.problems:
-        print(f"{ledger_path}: the ledger does not satisfy its own contract")
+        print(f"{source.description}: the ledger does not satisfy its own contract")
         for problem in ledger.problems:
             print(f"  - {problem}")
         return 2
 
-    body = render(ledger.capabilities, resolve_level())
+    body = render(ledger.capabilities, level)
     current = PAGE_PATH.read_text(encoding="utf-8")
     updated = splice(current, body)
 
@@ -507,7 +517,7 @@ def main(argv: list[str] | None = None) -> int:
         if updated != current:
             print(f"{PAGE_PATH} is stale. Run: uv run python scripts/render_parity_page.py")
             return 1
-        print(f"{PAGE_PATH} is up to date with {ledger_path} ({len(ledger.capabilities)} capabilities)")
+        print(f"{PAGE_PATH} is up to date with {source.description} ({len(ledger.capabilities)} capabilities)")
         return 0
 
     if updated != current:
