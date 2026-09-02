@@ -1,0 +1,71 @@
+name: Conformance
+
+# Runs the shared cross-language conformance corpus (idfkit/idfkit-conformance) against this
+# library at the level pinned in pyproject.toml.
+#
+# NO EnergyPlus is provisioned here, on purpose. Every expected epJSON in the corpus is produced
+# offline by ConvertInputFormat and committed alongside its case (FR-013), so the job needs nothing
+# but this package and a Python interpreter. Installing EnergyPlus would also be ruinous: a full set
+# of supported releases is roughly 13.6 GB, and the corpus is required to run in under five minutes
+# on a machine with no simulation software installed (SC-005).
+#
+# SKELETON. T043 finishes this workflow. Until then it is advisory, not blocking. What T043 does:
+#   - drops the `continue-on-error` on the `corpus` job so a failure blocks the merge
+#   - adds this job to the repository's required status checks
+#   - confirms the runner's expectations about the working directory once runners/run.py exists
+# The pinned tag does not exist yet, so this workflow is expected to fail until T042 cuts it.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: conformance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  corpus:
+    name: corpus (python)
+    runs-on: ubuntu-latest
+    # TODO(T043): remove, so a disagreement with the corpus blocks the merge.
+    continue-on-error: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        # tomllib is standard library from 3.11, and the level is read with it below.
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Read the pinned conformance level
+        id: pin
+        # The tag is never restated here. pyproject.toml is the one place it is written, so the CI
+        # job and the release check cannot drift apart (research R2).
+        run: |
+          level=$(python -c '
+          import pathlib
+          import tomllib
+
+          config = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          print(config["tool"]["idfkit"]["conformance"]["level"])
+          ')
+          echo "Pinned conformance level: $level"
+          echo "level=$level" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the conformance corpus at the pinned level
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: ${{ steps.pin.outputs.level }}
+          path: conformance
+
+      - name: Run the corpus against this library
+        run: uv run python conformance/runners/run.py --library python
