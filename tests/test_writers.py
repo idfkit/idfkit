@@ -707,3 +707,94 @@ Zone,
         output = write_idf(doc)
         assert output is not None
         assert "MutableZone" in output
+
+
+class TestEpJSONBlankNameIsNotAbsentName:
+    """A blank optional Name keeps the blank verbatim; only a type with no Name field is synthesised."""
+
+    _HEADER = """\
+Version, 26.1;
+
+Building, Conformance;
+
+GlobalGeometryRules,
+  UpperLeftCorner,
+  Counterclockwise,
+  World;
+"""
+
+    def test_blank_name_keyed_as_empty_string(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+WeatherProperty:SkyTemperature,
+  ,
+  ClarkAllen;
+
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 1,
+  Brunt;
+"""
+        )
+        idf_path = tmp_path / "blank_vs_absent.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        sky = data["WeatherProperty:SkyTemperature"]
+        assert sky == {
+            "": {"calculation_type": "ClarkAllen"},
+            "WeatherProperty:SkyTemperature 1": {"calculation_type": "Brunt"},
+        }
+
+    def test_synthetic_key_never_collides_with_a_real_name(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 1,
+  Brunt;
+
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 2,
+  Idso;
+
+WeatherProperty:SkyTemperature,
+  ,
+  ClarkAllen;
+"""
+        )
+        idf_path = tmp_path / "synthetic_collision.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        sky = data["WeatherProperty:SkyTemperature"]
+        assert sky == {
+            "": {"calculation_type": "ClarkAllen"},
+            "WeatherProperty:SkyTemperature 1": {"calculation_type": "Brunt"},
+            "WeatherProperty:SkyTemperature 2": {"calculation_type": "Idso"},
+        }
+
+    def test_type_without_a_name_field_still_gets_a_synthetic_key(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+Output:Variable,
+  *,
+  Zone Mean Air Temperature,
+  Hourly;
+
+Output:Variable,
+  *,
+  Site Outdoor Air Drybulb Temperature,
+  Hourly;
+"""
+        )
+        idf_path = tmp_path / "nameless.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        assert list(data["Output:Variable"]) == ["Output:Variable 1", "Output:Variable 2"]
+        assert list(data["GlobalGeometryRules"]) == ["GlobalGeometryRules 1"]

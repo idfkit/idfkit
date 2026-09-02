@@ -1,19 +1,19 @@
 name: Conformance
 
-# Runs the shared cross-language conformance corpus (idfkit/idfkit-conformance) against this
-# library at the level pinned in pyproject.toml.
+# Holds this library against the three shared artefacts published by idfkit/idfkit-conformance:
+# the cross-language conformance corpus, the naming register, and the parity ledger.
 #
-# NO EnergyPlus is provisioned here, on purpose. Every expected epJSON in the corpus is produced
-# offline by ConvertInputFormat and committed alongside its case (FR-013), so the job needs nothing
-# but this package and a Python interpreter. Installing EnergyPlus would also be ruinous: a full set
-# of supported releases is roughly 13.6 GB, and the corpus is required to run in under five minutes
-# on a machine with no simulation software installed (SC-005).
+# EVERY JOB HERE BLOCKS THE MERGE. There is no `continue-on-error`, no `|| true`, and no step that
+# swallows a non-zero status. A gate that cannot fail is not a gate, and the only correct way to
+# turn one of these jobs green is to land the change it is asking for.
 #
-# SKELETON. T043 finishes this workflow. Until then it is advisory, not blocking. What T043 does:
-#   - drops the `continue-on-error` on the `corpus` job so a failure blocks the merge
-#   - adds this job to the repository's required status checks
-#   - confirms the runner's expectations about the working directory once runners/run.py exists
-# The pinned tag does not exist yet, so this workflow is expected to fail until T042 cuts it.
+# NO EnergyPlus is provisioned, on purpose. Every expected epJSON in the corpus is produced offline
+# by ConvertInputFormat and committed alongside its case (FR-013), so a run needs nothing but this
+# package and a Python interpreter. Provisioning EnergyPlus would also be ruinous: a full set of the
+# supported releases is roughly 13.6 GB, and the corpus is required to run in under five minutes on
+# a machine with no simulation software installed (SC-005).
+#
+# idfkit/idfkit-conformance is a public repository, so `actions/checkout` needs no token for it.
 
 on:
   push:
@@ -26,46 +26,133 @@ permissions:
   contents: read
 
 concurrency:
-  group: conformance-${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  levels:
+    name: levels
+    runs-on: ubuntu-latest
+    outputs:
+      conformance: ${{ steps.pin.outputs.conformance }}
+      governance: ${{ steps.pin.outputs.governance }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Read the pinned levels
+        id: pin
+        # Neither tag is ever restated here. pyproject.toml is the one place they are written, so
+        # this workflow and the release check cannot drift apart (research R2). The runner image
+        # ships Python 3.12, so tomllib is standard library and no environment setup is needed.
+        run: |
+          levels=$(python3 - <<'PY'
+          import pathlib
+          import tomllib
+
+          tool = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["tool"]["idfkit"]
+          print("conformance=" + tool["conformance"]["level"])
+          print("governance=" + tool["governance"]["level"])
+          PY
+          )
+          echo "$levels"
+          echo "$levels" >> "$GITHUB_OUTPUT"
+
   corpus:
     name: corpus (python)
+    needs: levels
     runs-on: ubuntu-latest
-    # TODO(T043): remove, so a disagreement with the corpus blocks the merge.
-    continue-on-error: true
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
       - name: Set up the environment
-        # tomllib is standard library from 3.11, and the level is read with it below.
+        # 3.11 is the floor the corpus runner needs: it reads case files with tomllib, which is
+        # standard library only from 3.11. The library itself is tested across 3.10 to 3.13 in
+        # main.yml; this job is about the corpus, not about the supported interpreter range.
         uses: ./.github/actions/setup-python-env
         with:
           python-version: "3.11"
-
-      - name: Read the pinned conformance level
-        id: pin
-        # The tag is never restated here. pyproject.toml is the one place it is written, so the CI
-        # job and the release check cannot drift apart (research R2).
-        run: |
-          level=$(python -c '
-          import pathlib
-          import tomllib
-
-          config = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
-          print(config["tool"]["idfkit"]["conformance"]["level"])
-          ')
-          echo "Pinned conformance level: $level"
-          echo "level=$level" >> "$GITHUB_OUTPUT"
 
       - name: Check out the conformance corpus at the pinned level
         uses: actions/checkout@v4
         with:
           repository: idfkit/idfkit-conformance
-          ref: ${{ steps.pin.outputs.level }}
+          ref: ${{ needs.levels.outputs.conformance }}
           path: conformance
+          # Full history, so the runner names the level it ran from the corpus's own git tag rather
+          # than falling back to manifest.json.
+          fetch-depth: 0
 
       - name: Run the corpus against this library
-        run: uv run python conformance/runners/run.py --library python
+        working-directory: conformance
+        # The runner imports idfkit out of <library>/src and refuses a site-packages copy, so
+        # --library points at this checkout. `uv run --project` supplies the installed environment
+        # without moving the working directory off the corpus.
+        run: uv run --frozen --project "$GITHUB_WORKSPACE" python runners/run.py --library "$GITHUB_WORKSPACE"
+
+  naming:
+    name: naming register
+    needs: levels
+    runs-on: ubuntu-latest
+    # THIS JOB IS RED TODAY, AND THAT IS THE POINT. It reports 8 blocking findings: 6 FR-008
+    # module-surface artefacts, plus the save_idf / save_epjson split that the rename batch has not
+    # landed yet. The rename batch is what turns it green.
+    #
+    # Do not "fix" the red build by adding `continue-on-error`, by allowlisting the findings, or by
+    # unpinning the register. A gate that is green because it was weakened tells nobody anything,
+    # and the naming register stops being a record of the shared surface the moment its gate is
+    # advisory. If this job blocks you, land the rename, not a workaround.
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        # 3.11 for tomllib, which both gate scripts need to read the pin and the artefacts.
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Check out the conformance corpus at the pinned governance level
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: ${{ needs.levels.outputs.governance }}
+          path: conformance
+          # Full history and tags: the gate reads the register with `git show <tag>:...` rather than
+          # from the working tree, so the tag has to resolve inside the checkout (FR-081).
+          fetch-depth: 0
+
+      - name: Check the public surface against the pinned naming register
+        # The gate reads the committed src/idfkit/document.pyi, it does not regenerate it. Stub
+        # freshness is main.yml's job, where `make check` runs check-stubs and diffs the result, so
+        # a stale stub blocks the same pull request there rather than being re-litigated here.
+        run: uv run python scripts/check_naming_register.py --conformance-repo "$GITHUB_WORKSPACE/conformance"
+
+  parity:
+    name: parity ledger
+    needs: levels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Check out the conformance corpus at the pinned governance level
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: ${{ needs.levels.outputs.governance }}
+          path: conformance
+          # Full history and tags, for the same reason as the naming job: the ledger is read with
+          # `git show <tag>:governance/parity.toml`, never from the working tree.
+          fetch-depth: 0
+
+      - name: Check the parity ledger against the exported capability set
+        # No --governance-dir here, ever. The override reads a working tree instead of the pinned
+        # tag, and a green run under it is not evidence about the tag.
+        run: uv run python scripts/check_parity_ledger.py --conformance-repo "$GITHUB_WORKSPACE/conformance"

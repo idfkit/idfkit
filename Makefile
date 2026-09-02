@@ -33,8 +33,34 @@ check-baker: ## Verify bundled agent references match their source templates + s
 	@git diff --exit-code src/idfkit/.agents/skills/developing-with-idfkit || \
 		(echo "❌ Bundled agent references are out of date. Run: uv run python -m idfkit.codegen.bake_references" && exit 1)
 
+# Where the shared governance artefacts live. Both gates read naming.toml and parity.toml out of
+# this checkout at the tag pinned in pyproject.toml, never from its working tree.
+CONFORMANCE_REPO ?= ../idfkit-conformance
+
+.PHONY: check-naming
+check-naming: ## Check the public surface against the pinned naming register
+	@if [ -d "$(CONFORMANCE_REPO)/.git" ]; then \
+		echo "🚀 Checking the public surface against the pinned naming register"; \
+		uv run python scripts/check_naming_register.py --conformance-repo $(CONFORMANCE_REPO); \
+	else \
+		echo "⏭️  Skipping naming register check ($(CONFORMANCE_REPO) not found)"; \
+	fi
+
+.PHONY: check-parity
+check-parity: ## Check the parity ledger against the exported capability set
+	@if [ -d "$(CONFORMANCE_REPO)/.git" ]; then \
+		echo "🚀 Checking the parity ledger against the exported capability set"; \
+		uv run python scripts/check_parity_ledger.py --conformance-repo $(CONFORMANCE_REPO); \
+	else \
+		echo "⏭️  Skipping parity ledger check ($(CONFORMANCE_REPO) not found)"; \
+	fi
+
+# check-naming and check-parity come after check-stubs on purpose: the naming gate reads the
+# generated document.pyi and does not refresh it. The skip above is for a working copy with no
+# sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
+# jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-doc-locations check-baker ## Run code quality tools.
+check: check-stubs check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"

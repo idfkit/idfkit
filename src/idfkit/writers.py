@@ -529,10 +529,16 @@ class EpJSONWriter:
                 continue
 
             result[obj_type] = {}
+            # A blank Name is not an absent Name. Only a type that declares no Name field at all
+            # gets the synthetic "<Type> N" key, numbered 1-based in file order. A type whose Name
+            # field is optional and left blank keeps the blank verbatim, so its key is "". Keying a
+            # blank Name as "<Type> N" manufactures a name into a namespace the writer does not own,
+            # and any object the user genuinely named "<Type> N" is then silently overwritten.
+            type_has_name = self._type_has_name(obj_type, collection.first())
             nameless_counter = 0
             for obj in collection:
                 obj_data = self._object_to_dict(obj)
-                if obj.name:
+                if type_has_name:
                     key = obj.name
                 else:
                     # Generate unique key for nameless objects (e.g. Output:Variable)
@@ -541,6 +547,21 @@ class EpJSONWriter:
                 result[obj_type][key] = obj_data
 
         return result
+
+    def _type_has_name(self, obj_type: str, sample: IDFObject | None) -> bool:
+        """Whether *obj_type* declares a Name field.
+
+        Answered from the document schema when one is loaded, otherwise from the schema dict carried
+        by the objects themselves. With no schema information at all the answer is ``True``, which
+        matches what the IDF parser assumes when it has no parsing cache for a type: the first field
+        is the name.
+        """
+        schema = self._doc.schema
+        if schema is not None:
+            return schema.has_name(obj_type)
+        if sample is not None and sample.schema_dict is not None:
+            return "name" in sample.schema_dict
+        return True
 
     def _object_to_dict(self, obj: IDFObject) -> dict[str, Any]:
         """Convert object to epJSON dict (excluding name).
