@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from idfkit import IDFDocument
-from idfkit.simulation import SimulationResult
 from idfkit.weather import DesignDayManager, StationIndex, WeatherDownloader, WeatherFiles, WeatherStation
 
 ddm: DesignDayManager = ...  # type: ignore[assignment]
@@ -11,7 +10,6 @@ index: StationIndex = ...  # type: ignore[assignment]
 lat: float = ...  # type: ignore[assignment]
 lon: float = ...  # type: ignore[assignment]
 model: IDFDocument = ...  # type: ignore[assignment]
-results: list[SimulationResult | None] = ...  # type: ignore[assignment]
 station: WeatherStation = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 from idfkit import load_idf

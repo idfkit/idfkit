@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from idfkit.simulation import TimeSeriesResult
 from typing import Any
+
+from idfkit.simulation import TimeSeriesResult
 
 fig: Any = ...  # type: ignore[assignment]
 ts: TimeSeriesResult = ...  # type: ignore[assignment]
 # --8<-- [start:example]
-from idfkit.simulation import PlotlyBackend
+from idfkit.simulation.plotting.plotly import PlotlyBackend
 
 backend = PlotlyBackend()
 fig = backend.line(

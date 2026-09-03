@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from idfkit.simulation import SimulationResult
+from idfkit.simulation import SQLResult
 
-result: SimulationResult = ...  # type: ignore[assignment]
+sql: SQLResult = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 from idfkit.simulation import plot_energy_balance
 
+# `sql` is result.sql from a completed simulation
 fig = plot_energy_balance(
-    result,
+    sql,
     title="Annual Energy Balance",
 )
 # --8<-- [end:example]

@@ -21,6 +21,6 @@ jobs = [
 batch = simulate_batch(jobs, max_workers=4)
 
 print(f"Completed: {len(batch.succeeded)}/{len(batch)}")
-for i, result in enumerate(batch):
+for i, result in enumerate(batch.results):
     print(f"  Job {i}: {'Success' if result.success else 'Failed'}")
 # --8<-- [end:example]

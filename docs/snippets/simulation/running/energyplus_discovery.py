@@ -13,7 +13,7 @@ result = simulate(model, weather)
 # Explicit path
 from idfkit.simulation import find_energyplus
 
-config = find_energyplus("/custom/path/EnergyPlus-24-1-0")
+config = find_energyplus(path="/custom/path/EnergyPlus-24-1-0")
 result = simulate(model, weather, energyplus=config)
 
 # Environment variable

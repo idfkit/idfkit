@@ -15,7 +15,7 @@ if not batch.all_succeeded:
     print(f"{len(batch.failed)} jobs failed")
 
 # Handle failures individually
-for i, result in enumerate(batch):
+for i, result in enumerate(batch.results):
     if not result.success:
         print(f"Job {i} failed:")
         for err in result.errors.fatal:

@@ -26,6 +26,6 @@ jobs = [
 batch = simulate_batch(jobs, max_workers=4, fs=fs)
 
 # All results stored in S3
-for i, result in enumerate(batch):
+for i, result in enumerate(batch.results):
     print(f"Case {i}: s3://my-bucket/batch-42/case-{i}/")
 # --8<-- [end:example]

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from idfkit.simulation import SimulationResult
 from idfkit.weather import StationIndex, WeatherDownloader, WeatherFiles, WeatherStation
 
 downloader: WeatherDownloader = ...  # type: ignore[assignment]
 files: WeatherFiles = ...  # type: ignore[assignment]
 index: StationIndex = ...  # type: ignore[assignment]
-results: list[SimulationResult | None] = ...  # type: ignore[assignment]
 station: WeatherStation = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 from idfkit.weather import StationIndex, WeatherDownloader

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 # --8<-- [start:example]
-from celery import Celery, chain
+# tasks.py
+from celery import Celery
 
 app = Celery("tasks")
 app.config_from_object("celeryconfig")
@@ -22,23 +23,8 @@ def collect_results(sim_result: dict) -> dict:
     )
     return {
         **sim_result,
-        "peak_heating_W": float(heating.max()),
+        "peak_heating_W": max(heating.values),
     }
 
 
-# Compose: simulate → collect_results
-from tasks import simulate_building
-
-workflow = chain(
-    simulate_building.s(
-        idf_path="models/office.idf",
-        weather_path="weather/chicago.epw",
-        output_dir="/tmp/sim-results/chained",
-        design_day=True,
-    ),
-    collect_results.s(),
-)
-
-final = workflow.apply_async()
-print(final.get(timeout=3600))
 # --8<-- [end:example]

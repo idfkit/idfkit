@@ -164,6 +164,13 @@ example, running a simulation and then post-processing the results:
 --8<-- "docs/snippets/examples/celery-integration/chain_workflow.py:example"
 ```
 
+The chain itself is composed in the submitting process, which imports both
+tasks by name:
+
+```python
+--8<-- "docs/snippets/examples/celery-integration/chain_workflow_2.py:example"
+```
+
 ## Deployment with Docker
 
 ### Dockerfile

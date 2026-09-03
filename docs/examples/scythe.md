@@ -53,7 +53,7 @@ Use `FileReference` fields for files that Scythe should manage (upload to / down
 from S3 automatically).
 
 ```python
---8<-- "docs/snippets/examples/scythe/input_output_specs.py:example"
+--8<-- "docs/snippets/examples/scythe-integration/input_output_specs.py:example"
 ```
 
 Key points:
@@ -72,7 +72,7 @@ working directory, and returns a `BuildingSimOutput`. This is where idfkit
 does the heavy lifting.
 
 ```python
---8<-- "docs/snippets/examples/scythe/experiment_function.py:example"
+--8<-- "docs/snippets/examples/scythe-integration/experiment_function.py:example"
 ```
 
 Inside the function you have full access to the idfkit API:
@@ -93,7 +93,7 @@ Use idfkit's weather module to find stations and download EPW/DDY files before
 allocating experiments:
 
 ```python
---8<-- "docs/snippets/examples/scythe/weather_prep.py:example"
+--8<-- "docs/snippets/examples/scythe-integration/weather_prep.py:example"
 ```
 
 You can pass local file paths, HTTP URLs, or S3 URIs as `FileReference` values
@@ -104,7 +104,7 @@ in your input specs. Scythe handles the upload and distribution to workers.
 Create a parameter grid, build input specs, and let Scythe enqueue everything:
 
 ```python
---8<-- "docs/snippets/examples/scythe/allocate.py:example"
+--8<-- "docs/snippets/examples/scythe-integration/allocate.py:example"
 ```
 
 This creates `4 x 3 x 3 x 2 = 72` simulation tasks. Scythe uploads the IDF,
@@ -121,7 +121,7 @@ Each worker imports the registered experiments and starts the Scythe worker
 loop:
 
 ```python
---8<-- "docs/snippets/examples/scythe/worker.py:example"
+--8<-- "docs/snippets/examples/scythe-integration/worker.py:example"
 ```
 
 Workers pull tasks from the Hatchet queue, download input artifacts from S3,

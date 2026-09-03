@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from idfkit import IDFDocument
+from typing import Any
 
-idf: IDFDocument = ...  # type: ignore[assignment]
+# `idf` is an eppy IDF object, not an idfkit IDFDocument: this block shows the
+# API being migrated *from*.
+idf: Any = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 idf.outputtype = "nocomment"
 idf.saveas("out.idf")

@@ -11,7 +11,7 @@ variant: IDFDocument = ...  # type: ignore[assignment]
 variants: list[IDFDocument] = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 import asyncio
-from idfkit.simulation import async_simulate_batch_stream, SimulationJob
+from idfkit.simulation import async_simulate_batch_stream, SimulationJob, SimulationResult
 
 
 async def main():
@@ -20,7 +20,7 @@ async def main():
     ]
 
     # Collect events and reorder by original index
-    results = [None] * len(jobs)
+    results: list[SimulationResult | None] = [None] * len(jobs)
     async for event in async_simulate_batch_stream(jobs, max_concurrent=4):
         results[event.index] = event.result
         pct = event.completed / event.total * 100

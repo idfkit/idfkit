@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from idfkit.simulation import HTMLResult, SimulationResult
+from idfkit.simulation import SimulationResult
+from idfkit.simulation.parsers.html import HTMLResult
 from typing import Any
 
 data: Any = ...  # type: ignore[assignment]

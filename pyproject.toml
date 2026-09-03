@@ -117,10 +117,6 @@ typeCheckingMode = "strict"
 exclude = [
     "benchmarks", "src/idfkit/schemas", "src/idfkit/weather/data",
     ".venv", "**/node_modules", "**/__pycache__",
-    # Snippets with async/return at module level (doc fragments, not full modules)
-    "docs/snippets/concepts/simulation-architecture/streaming.py",
-    "docs/snippets/simulation/async/early_termination.py",
-    "docs/snippets/simulation/sql-queries/error_handling.py",
     # Generated type stubs — used as stubs by pyright, not analyzed directly
     "src/idfkit/_generated_types.pyi",
     "src/idfkit/document.pyi",
@@ -205,6 +201,17 @@ reportAssignmentType = false
 reportUnusedImport = false
 # Drift-catching rules deliberately left ON, as above.
 
+# Every other snippet under docs/snippets. Constitution VI requires that renaming
+# a documented operation breaks the documentation checks, so the four rules that
+# actually detect API drift stay ON here, exactly as they do in the two blocks
+# above: reportAttributeAccessIssue, reportCallIssue, reportArgumentType and
+# reportFunctionMemberAccess. A snippet that calls a method the library does not
+# have, or passes an argument the signature does not accept, now fails
+# `make check` instead of shipping. What stays OFF is the "unknown type" /
+# "untyped" / "unused" noise that snippet style legitimately provokes, plus the
+# structural rules (index, operator, iterable) that partial doc fragments trip
+# over without indicating drift. This block MUST remain last: pyright uses the
+# FIRST matching execution environment.
 [[tool.pyright.executionEnvironments]]
 root = "docs/snippets"
 reportTypedDictNotRequiredAccess = false
@@ -224,7 +231,6 @@ reportUnusedVariable = false
 reportUnusedExpression = false
 reportUnusedFunction = false
 reportAssignmentType = false
-reportAttributeAccessIssue = false
 reportOptionalIterable = false
 reportOptionalSubscript = false
 reportIncompatibleMethodOverride = false
@@ -232,13 +238,10 @@ reportPossiblyUnboundVariable = false
 reportMatchNotExhaustive = false
 reportMissingModuleSource = false
 reportOperatorIssue = false
-reportArgumentType = false
-reportCallIssue = false
 reportGeneralTypeIssues = false  # deprecated but still needed for "not iterable" errors
 reportIndexIssue = false
 reportInvalidTypeForm = false
 reportUnnecessaryComparison = false
-reportFunctionMemberAccess = false
 reportUnknownLambdaType = false
 
 [tool.pytest.ini_options]

@@ -9,6 +9,6 @@ variables: OutputVariableIndex | None = ...  # type: ignore[assignment]
 variables.add_all_to_model(
     model,
     filter_pattern="Temperature",
-    reporting_frequency="Hourly",
+    frequency="Hourly",
 )
 # --8<-- [end:example]

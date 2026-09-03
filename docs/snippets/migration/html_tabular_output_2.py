@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from idfkit import IDFDocument
-from idfkit.simulation import HTMLResult, SimulationResult, simulate
+from idfkit.simulation import SimulationResult, simulate
+from idfkit.simulation.parsers.html import HTMLResult
 from typing import Any
 
 doc: IDFDocument = ...  # type: ignore[assignment]

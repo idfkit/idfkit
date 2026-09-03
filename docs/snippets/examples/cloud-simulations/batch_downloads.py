@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from idfkit import IDFObject
 from idfkit.simulation import S3FileSystem, SimulationResult
 from typing import Any
 
 data: Any = ...  # type: ignore[assignment]
 fs: S3FileSystem = ...  # type: ignore[assignment]
-obj: IDFObject = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 import tempfile
 from pathlib import Path

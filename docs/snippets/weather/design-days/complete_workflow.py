@@ -44,5 +44,5 @@ added = ddm.apply_to_model(
 )
 
 print(f"Added {len(added)} design days")
-print(f"Location: {model['Site:Location'].values()[0].name}")
+print(f"Location: {model['Site:Location'][0].name}")
 # --8<-- [end:example]

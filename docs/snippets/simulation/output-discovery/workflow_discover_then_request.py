@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from idfkit import IDFDocument, IDFObject
+from idfkit import IDFDocument
 from idfkit.simulation import SimulationResult, TimeSeriesResult
 
 model: IDFDocument = ...  # type: ignore[assignment]
 result: SimulationResult = ...  # type: ignore[assignment]
 ts: TimeSeriesResult = ...  # type: ignore[assignment]
 weather: str = ...  # type: ignore[assignment]
-zone: IDFObject = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 from idfkit.simulation import simulate
 
@@ -22,7 +21,7 @@ print(f"Found {len(matches)} matching variables")
 result.variables.add_all_to_model(
     model,
     filter_pattern="Zone Mean Air Temperature",
-    reporting_frequency="Hourly",
+    frequency="Hourly",
 )
 
 # Step 4: Full run with outputs

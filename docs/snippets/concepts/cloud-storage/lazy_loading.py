@@ -11,5 +11,5 @@ result = SimulationResult.from_directory("run-001", fs=s3_fs)
 # ...
 
 # Downloads only the SQLite file
-ts = result.sql.get_timeseries(...)
+ts = result.sql.get_timeseries("Zone Mean Air Temperature", "ZONE 1")
 # --8<-- [end:example]

@@ -4,7 +4,8 @@ from idfkit.simulation import TimeSeriesResult
 
 ts: TimeSeriesResult = ...  # type: ignore[assignment]
 # --8<-- [start:example]
-from idfkit.simulation import MatplotlibBackend, PlotlyBackend
+from idfkit.simulation.plotting.matplotlib import MatplotlibBackend
+from idfkit.simulation.plotting.plotly import PlotlyBackend
 
 # Force matplotlib
 fig = ts.plot(backend=MatplotlibBackend())

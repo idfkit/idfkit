@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from idfkit.simulation import SimulationResult
+from idfkit.simulation import SQLResult
 
-result: SimulationResult = ...  # type: ignore[assignment]
+sql: SQLResult = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 from idfkit.simulation import plot_temperature_profile
 
+# `sql` is result.sql from a completed simulation
 fig = plot_temperature_profile(
-    result,
-    zone_name="THERMAL ZONE 1",
+    sql,
+    ["THERMAL ZONE 1", "THERMAL ZONE 2"],
     title="Zone Temperatures",
 )
 # --8<-- [end:example]

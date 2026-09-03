@@ -17,7 +17,7 @@ fig = ts.plot()
 fig = ts.plot(title="My Custom Title")
 
 # Explicit backend
-from idfkit.simulation import MatplotlibBackend
+from idfkit.simulation.plotting.matplotlib import MatplotlibBackend
 
 fig = ts.plot(backend=MatplotlibBackend())
 # --8<-- [end:example]

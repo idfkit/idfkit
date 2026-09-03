@@ -8,7 +8,7 @@ result: SimulationResult = ...  # type: ignore[assignment]
 # --8<-- [start:example]
 batch = simulate_batch(jobs)
 
-for i, result in enumerate(batch):
+for i, result in enumerate(batch.results):
     if not result.success:
         print(f"Job {i} failed:")
         print(f"  Exit code: {result.exit_code}")

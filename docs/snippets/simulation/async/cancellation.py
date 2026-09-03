@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from asyncio import asyncio
+import asyncio
+
 from idfkit import IDFDocument
 from idfkit.simulation import async_simulate
 

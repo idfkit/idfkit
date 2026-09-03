@@ -26,6 +26,9 @@ pip install idfkit[plot,plotly]
 
 ## Built-in Visualizations
 
+Each of these takes the SQL database from a completed run, `result.sql`,
+shown below as `sql`.
+
 ### Temperature Profile
 
 ```python
@@ -77,6 +80,9 @@ Create custom backends by implementing the `PlotBackend` protocol:
 ```python
 --8<-- "docs/snippets/simulation/plotting/plotbackend_protocol.py:example"
 ```
+
+The backend classes live in their own modules so that importing
+`idfkit.simulation` never pulls in matplotlib or plotly.
 
 ## Matplotlib Backend
 

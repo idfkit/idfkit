@@ -31,7 +31,7 @@ for insulation in [0.05, 0.10, 0.15, 0.20]:
 batch = simulate_batch(jobs, max_workers=4)
 
 # Analyze results
-for job, result in zip(jobs, batch):
+for job, result in zip(jobs, batch.results):
     if result.success:
         ts = result.sql.get_timeseries(
             "Zone Mean Air Temperature",
