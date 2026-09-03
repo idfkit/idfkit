@@ -61,7 +61,7 @@ thanks to O(1) dict-based indexing:
   <img alt="benchmark chart" src="docs/assets/benchmark.svg">
 </picture>
 
-See [full benchmark results](https://py.idfkit.com/benchmarks/)
+See [full benchmark results](https://developers.idfkit.com/benchmarks/)
 for all six operations (load, get by type, get by name, add, modify, write) across four tools.
 
 ## Installation
@@ -143,7 +143,7 @@ print(f"Max temp: {max(ts.values):.1f}°C")
 ```
 
 > **Note:** `result.sql` requires EnergyPlus to produce SQLite output (the
-> default). See the [Simulation Guide](https://py.idfkit.com/simulation/)
+> default). See the [Simulation Guide](https://developers.idfkit.com/simulation/)
 > for details on output configuration.
 
 ## Weather
@@ -160,24 +160,53 @@ print(results[0].station.display_name)
 
 `pip install idfkit` ships an `idfkit` command with three subcommands:
 
-- `idfkit check` — static lint for cross-version EnergyPlus breakage ([docs](https://py.idfkit.com/concepts/version-compatibility/))
-- `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://py.idfkit.com/simulation/migrating-versions/))
-- `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://py.idfkit.com/cli/tmy/))
+- `idfkit check` — static lint for cross-version EnergyPlus breakage ([docs](https://developers.idfkit.com/concepts/version-compatibility/))
+- `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://developers.idfkit.com/simulation/migrating-versions/))
+- `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://developers.idfkit.com/cli/tmy/))
 
 ![idfkit tmy search](tape/idfkit_tmy_search.gif)
+
+## The JavaScript sibling
+
+idfkit has a sibling library for JavaScript and TypeScript,
+[idfkit-js](https://github.com/idfkit/idfkit-js), published as `@idfkit/core`.
+The two share a vocabulary and are held to a
+[conformance corpus](https://developers.idfkit.com/explanation/conformance/)
+that proves they read and write the same files the same way.
+
+They are not equivalent, and this page will not imply that they are. All
+thirteen first-tier capabilities exist in both: parsing, the object model,
+references, writers, schema access, validation, introspection, documentation
+addresses, generated object types, parse diagnostics, the weather station index,
+weather file retrieval, and geocoding. Almost everything else on this page is
+Python-only today, including running EnergyPlus locally, reading simulation
+results, geometry authoring, zoning, schedules, thermal properties, and
+migration. Some of that is a port not yet done; some of it, such as driving a
+locally installed EnergyPlus, is permanent.
+
+[Capability parity](https://developers.idfkit.com/explanation/parity/) is the
+record. It lists every public capability, its state in each language, and
+whether an absence is temporary or permanent, and a check blocks any change that
+lands or removes a capability without updating it. Read it rather than inferring
+from the shared name.
+
+Matching version numbers between the two are never evidence of agreement: they
+release independently. What each release states is the conformance level it
+passes, readable as `idfkit.CONFORMANCE_LEVEL`.
 
 ## Documentation
 
 Full documentation is available at
-**[py.idfkit.com](https://py.idfkit.com/)**.
+**[developers.idfkit.com](https://developers.idfkit.com/)**, which teaches both
+languages from one navigation. `py.idfkit.com` is retired and redirects there.
 
 Key sections:
 
-- [Getting Started](https://py.idfkit.com/getting-started/installation/) — Installation, quick start, interactive tutorial
-- [Simulation Guide](https://py.idfkit.com/simulation/) — Run EnergyPlus, parse results, batch processing
-- [Weather Guide](https://py.idfkit.com/weather/) — Station search, downloads, design days
-- [API Reference](https://py.idfkit.com/api/document/) — Complete API documentation
-- [Migrating from eppy](https://py.idfkit.com/migration/) — Side-by-side comparison
+- [Getting Started](https://developers.idfkit.com/getting-started/installation/) — Installation, quick start, interactive tutorial
+- [Simulation Guide](https://developers.idfkit.com/simulation/) — Run EnergyPlus, parse results, batch processing
+- [Weather Guide](https://developers.idfkit.com/weather/) — Station search, downloads, design days
+- [API Reference](https://developers.idfkit.com/api/document/) — Complete API documentation
+- [Migrating from eppy](https://developers.idfkit.com/migration/) — Side-by-side comparison
 
 ### For AI coding assistants
 
