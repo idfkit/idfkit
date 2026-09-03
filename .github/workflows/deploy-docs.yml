@@ -1,10 +1,22 @@
 name: deploy-docs
 
+# Publishes the unified site to developers.idfkit.com (FR-051).
+#
+# This deploy uses force_orphan, so it replaces gh-pages with a single commit and the
+# previous published tree survives in neither the branch nor its history. That tree IS
+# the last full build of py.idfkit.com, and FR-090 requires it be retained as a
+# restorable artefact before the cutover. The guard below refuses to run until it is.
+# Once the archive exists this guard is satisfied forever and costs one API call.
+
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
+
+env:
+  ARCHIVE_ARTIFACT_NAME: py.idfkit.com-last-full-build
 
 jobs:
   deploy-docs:
@@ -13,8 +25,28 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Require the retained last full build of py.idfkit.com
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          live=$(gh api \
+            "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${ARCHIVE_ARTIFACT_NAME}&per_page=100" \
+            --jq '[.artifacts[] | select(.expired == false)] | length')
+          if [ "${live}" = "0" ]; then
+            echo "::error::No unexpired '${ARCHIVE_ARTIFACT_NAME}' artefact exists. This deploy"
+            echo "::error::orphans gh-pages, which still holds the last full build of"
+            echo "::error::py.idfkit.com, and that build cannot be rebuilt from current sources."
+            echo "::error::Run the archive-retired-site workflow first (FR-090)."
+            exit 1
+          fi
+          echo "${live} unexpired copy or copies of ${ARCHIVE_ARTIFACT_NAME} are retained."
+
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
+
+      - name: Set up the parity ledger
+        uses: ./.github/actions/setup-parity-ledger
 
       - name: Install Cairo
         run: |
@@ -39,4 +71,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           force_orphan: true
-          cname: py.idfkit.com
+          cname: developers.idfkit.com

@@ -29,6 +29,9 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
 
+      - name: Set up the parity ledger
+        uses: ./.github/actions/setup-parity-ledger
+
       - name: Install Cairo
         run: |
           sudo apt-get update

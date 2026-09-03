@@ -35,5 +35,12 @@
 /docs/                                  @idfkit/python-maintainers @idfkit/javascript-maintainers
 /mkdocs.yml                             @idfkit/python-maintainers @idfkit/javascript-maintainers
 
+# The site's own check, added by T118. FR-057 asks for "their own checks and named
+# owners", so the gate that proves the site builds strictly and builds outside this
+# repository is covered by the same rule as the site itself, for the reason the
+# CODEOWNERS entry below gives: a protection one language's maintainers can relax
+# alone is not a protection.
+/.github/workflows/docs.yml             @idfkit/python-maintainers @idfkit/javascript-maintainers
+
 # This file itself, so the review rule cannot be relaxed without the same review.
 /.github/CODEOWNERS                     @idfkit/python-maintainers @idfkit/javascript-maintainers

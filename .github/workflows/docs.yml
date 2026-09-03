@@ -1,0 +1,231 @@
+name: Docs
+
+# The unified documentation site (FR-051, FR-057, FR-058, FR-084).
+#
+# The site teaches two libraries and is built from this repository alone. NOTHING HERE SETS UP A
+# NODE TOOLCHAIN AND NOTHING HERE CHECKS OUT idfkit-js, and nothing may be added that does. The
+# JavaScript reference reaches the site as a pinned, published artifact (research R8); a Node build
+# step or a sibling checkout would make the site unbuildable from either repository alone, which is
+# what FR-058 and Principle V forbid. If a change to this file needs `setup-node`, the change is
+# wrong, not the rule.
+#
+# Two jobs, and they are asking different questions:
+#
+#   strict    Does the site build, with every warning treated as an error?
+#   portable  Does it still build from somewhere that is not this repository?
+#
+# `portable` is the gate that keeps the eventual move to idfkit/idfkit-developers a move rather
+# than a rewrite (research R7, T118a). It builds the wheel, installs `idfkit` from it instead of
+# resolving it out of `src/`, copies the documentation tree to a scratch directory outside the
+# checkout, and runs the same strict build there. An include or a plugin path that reaches outside
+# the documentation tree fails on the day it is introduced instead of on extraction day.
+#
+# A BUILD PREREQUISITE THAT IS EASY TO MISS. `docs/hooks/parity_macro.py` resolves every
+# `{{ parity("id") }}` token against `governance/parity.toml` in idfkit/idfkit-conformance, read
+# with `git show` at the immutable governance tag (FR-081). So a docs build now needs that
+# repository checked out with its tags fetched, and a build without it fails rather than rendering
+# from whatever happens to be on disk (FR-084). idfkit/idfkit-conformance is public, so
+# `actions/checkout` needs no token for it.
+#
+# The tag is never restated in this file. It is read from `[tool.idfkit.governance] level` in
+# pyproject.toml by the `pins` job below, the same way .github/workflows/conformance.yml reads it,
+# because a restated pin is a pin that goes stale silently.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pins:
+    name: pins
+    runs-on: ubuntu-latest
+    outputs:
+      governance: ${{ steps.pin.outputs.governance }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Read the pinned governance level
+        id: pin
+        # Only the governance level, because the parity ledger is the only shared artefact a docs
+        # build reads. The conformance corpus level is conformance.yml's business. The runner image
+        # ships Python 3.12, so tomllib is standard library and no environment setup is needed.
+        run: |
+          level=$(python3 - <<'PY'
+          import pathlib
+          import tomllib
+
+          tool = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["tool"]["idfkit"]
+          print("governance=" + tool["governance"]["level"])
+          PY
+          )
+          echo "$level"
+          echo "$level" >> "$GITHUB_OUTPUT"
+
+  strict:
+    name: strict build
+    needs: pins
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        # 3.11 is the floor: docs/hooks/parity_macro.py and the render script it shares its ledger
+        # model with both read TOML with tomllib, which is standard library only from 3.11. The
+        # library itself is tested across 3.10 to 3.13 in main.yml; this job is about the site.
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Check out the conformance repository at the pinned governance level
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: ${{ needs.pins.outputs.governance }}
+          path: conformance
+          # Full history and tags: the parity macro reads the ledger with `git show <tag>:...`
+          # rather than from the working tree, so the tag has to resolve inside the checkout.
+          fetch-depth: 0
+
+      - name: Install Cairo
+        # mkdocs-material's `social` plugin renders preview cards through cairosvg, which needs the
+        # native library. Same step as deploy-docs.yml and main.yml.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2
+
+      - name: Build the site, warnings are failures
+        env:
+          # Where the ledger's repository is. The tag still comes from pyproject.toml and the read
+          # is still `git show <tag>:governance/parity.toml`. IDFKIT_GOVERNANCE_DIR, which would
+          # read a working tree instead of the tag, is NOT set here and must never be: a green run
+          # under that override is not evidence about the pinned tag (FR-084).
+          IDFKIT_CONFORMANCE_DIR: ${{ github.workspace }}/conformance
+        run: uv run mkdocs build --strict
+
+  portable:
+    name: portable build (outside the repository)
+    needs: pins
+    runs-on: ubuntu-latest
+    env:
+      # Outside $GITHUB_WORKSPACE on purpose. A scratch directory inside the checkout would let a
+      # relative path escape the documentation tree and still resolve, which is the one thing this
+      # job exists to catch.
+      SCRATCH: ${{ runner.temp }}/docs-portability
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Check out the conformance repository at the pinned governance level
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: ${{ needs.pins.outputs.governance }}
+          path: conformance
+          fetch-depth: 0
+
+      - name: Install Cairo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2
+
+      - name: Build the wheel
+        # The site must render from a distribution, not from a source tree. After extraction
+        # `idfkit` is a pinned PyPI dependency of the site build; this is that arrangement, one
+        # release early.
+        run: uv build --wheel --out-dir dist
+
+      - name: Export the pinned documentation toolchain
+        # The same MkDocs, Material, mkdocstrings and griffe versions the `strict` job resolves,
+        # taken from uv.lock, so a difference between the two builds is attributable to the
+        # location and not to a plugin that moved underneath them. --no-emit-project keeps the
+        # project itself out: `idfkit` arrives from the wheel on the next step but one.
+        run: uv export --frozen --no-hashes --no-emit-project --only-group dev -o "$RUNNER_TEMP/docs-toolchain.txt"
+
+      - name: Copy the documentation tree to the scratch directory
+        # cp -RL materialises the tree: docs/ carries committed symlinks whose targets live outside
+        # it (the terminal recordings under tape/, and the weather browser's assets under src/), and
+        # those are page content that travels with the pages. Build wiring is a different animal and
+        # gets no such treatment: an `--8<--` include, a hooks: path or a custom_dir that leaves the
+        # documentation tree has nothing to resolve against here and fails the build below. The
+        # listing is printed so a new escaping symlink is at least visible in the log.
+        run: |
+          mkdir -p "$SCRATCH"
+          echo "Committed symlinks under docs/ whose target leaves the documentation tree:"
+          git ls-files -s docs \
+            | awk '$1 == "120000" { print $4 }' \
+            | while read -r link; do printf '  %s -> %s\n' "$link" "$(readlink "$link")"; done
+          cp -RL docs "$SCRATCH/docs"
+          cp mkdocs.yml "$SCRATCH/mkdocs.yml"
+
+      - name: KNOWN GAP, the parity hook reaches outside the documentation tree
+        # docs/hooks/parity_macro.py imports scripts/render_parity_page.py by an absolute path
+        # derived from its own location (`Path(__file__).resolve().parents[2] / "scripts"`), so the
+        # hook listed in mkdocs.yml does not survive being copied on its own. That is precisely the
+        # class of coupling this job is meant to reject, and it is carried here as a named,
+        # temporary exception rather than hidden, because the fix is a design decision about where
+        # the ledger model lives and not something a CI job should make.
+        #
+        # DO NOT GROW THIS STEP. If a second file has to be added here, the hook needs restructuring
+        # instead: move the ledger model under docs/hooks/, or publish it with the package. Deleting
+        # this step whole is the definition of done.
+        #
+        # The paragraph above is enforced rather than trusted. The guard below counts the files
+        # under docs/ that compute a path out of their own location, and fails if a second one
+        # appears. Without it, "do not grow this step" is a comment, and the next reach-outside
+        # gets appended here the way this one was.
+        run: |
+          set -euo pipefail
+          reaching=$(grep -rln 'parents\[' docs --include='*.py' | sort)
+          expected="docs/hooks/parity_macro.py"
+          if [ "$reaching" != "$expected" ]; then
+            echo "::error::The set of documentation files reaching outside the tree has changed."
+            echo "::error::Expected exactly: ${expected}"
+            echo "::error::Found:"
+            echo "$reaching" | sed 's/^/::error::  /'
+            echo "::error::Restructure the new one instead of adding it to this step. Moving the"
+            echo "::error::ledger model under docs/hooks/ removes the original and this whole step."
+            exit 1
+          fi
+          mkdir -p "$SCRATCH/scripts"
+          cp scripts/render_parity_page.py scripts/_governance_source.py "$SCRATCH/scripts/"
+
+      - name: Install idfkit from the wheel, outside the repository
+        run: |
+          uv venv "$SCRATCH/.venv" --python 3.11
+          uv pip install --python "$SCRATCH/.venv/bin/python" \
+            -r "$RUNNER_TEMP/docs-toolchain.txt" dist/idfkit-*.whl
+          "$SCRATCH/.venv/bin/python" -c 'import idfkit; print("idfkit resolved from", idfkit.__file__)'
+
+      - name: Build the site from the scratch directory, warnings are failures
+        env:
+          # mkdocstrings' Python handler keeps `paths: ["src"]` in mkdocs.yml and needs no
+          # allowance for it: there is no src/ here, griffe finds `idfkit` on sys.path in the
+          # scratch environment instead, and the reference renders from the installed wheel. That
+          # one line is deleted at extraction as a tidy-up, not as a fix.
+          #
+          # The two variables below are the documented overrides for a build that is not sitting in
+          # the repository. The level is still the one pyproject.toml pins, passed down from the
+          # `pins` job rather than restated; the ledger is still read at that tag with `git show`.
+          # IDFKIT_GOVERNANCE_DIR stays unset here too.
+          IDFKIT_GOVERNANCE_LEVEL: ${{ needs.pins.outputs.governance }}
+          IDFKIT_CONFORMANCE_DIR: ${{ github.workspace }}/conformance
+        run: |
+          cd "$SCRATCH"
+          "$SCRATCH/.venv/bin/mkdocs" build --strict

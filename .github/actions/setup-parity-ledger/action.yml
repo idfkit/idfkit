@@ -1,0 +1,46 @@
+name: Set up the parity ledger
+description: >-
+  Check out idfkit-conformance at the governance level pinned in pyproject.toml and point the
+  documentation build at it.
+
+# Any job that builds the documentation needs this. `docs/hooks/parity_macro.py` resolves
+# `{{ parity("id") }}` tokens by reading governance/parity.toml out of the conformance
+# repository with `git show <tag>:...`, and a build without it aborts rather than rendering
+# the page with the parity statements missing, which is what FR-084 requires of a pinned
+# artefact. Three workflows built the site without it and passed only because a developer
+# machine happens to have a sibling clone.
+
+runs:
+  using: composite
+  steps:
+    - name: Read the pinned governance level
+      id: pin
+      shell: bash
+      # The tag is never restated in YAML. A restated pin is a pin that goes stale silently.
+      run: |
+        level=$(python3 - <<'PY'
+        import pathlib
+        import tomllib
+
+        tool = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["tool"]["idfkit"]
+        print(tool["governance"]["level"])
+        PY
+        )
+        echo "governance=$level" >> "$GITHUB_OUTPUT"
+        echo "pinned governance level: $level"
+
+    - name: Check out the conformance repository at that level
+      uses: actions/checkout@v4
+      with:
+        repository: idfkit/idfkit-conformance
+        ref: ${{ steps.pin.outputs.governance }}
+        path: conformance
+        # Full history and tags: the ledger is read at the tag, not from the working tree,
+        # so the tag has to resolve inside the checkout.
+        fetch-depth: 0
+
+    - name: Point the documentation build at it
+      shell: bash
+      # IDFKIT_GOVERNANCE_DIR is deliberately not set. It would read a working tree instead
+      # of the tag, and a green build under that override is not evidence about the pin.
+      run: echo "IDFKIT_CONFORMANCE_DIR=${GITHUB_WORKSPACE}/conformance" >> "$GITHUB_ENV"
