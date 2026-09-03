@@ -34,7 +34,7 @@ async def main():
     batch = await async_simulate_batch(jobs, max_concurrent=4)
 
     # Analyze results
-    for job, result in zip(jobs, batch.results):
+    for job, result in zip(jobs, batch):
         if result.success:
             ts = result.sql.get_timeseries(
                 "Zone Mean Air Temperature",

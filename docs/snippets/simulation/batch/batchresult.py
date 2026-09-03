@@ -8,7 +8,9 @@ jobs: list[SimulationJob] = ...  # type: ignore[assignment]
 batch = simulate_batch(jobs)
 
 # Access results
-batch.results  # All results as tuple
+for result in batch:  # A BatchResult is a Sequence of results, in job order
+    print(result.success)
+batch.results  # The same results as a tuple
 batch[0]  # First result (by index)
 len(batch)  # Number of jobs
 

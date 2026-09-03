@@ -22,7 +22,7 @@ async def main():
     batch = await async_simulate_batch(jobs, max_concurrent=4)
 
     print(f"Completed: {len(batch.succeeded)}/{len(batch)}")
-    for i, result in enumerate(batch.results):
+    for i, result in enumerate(batch):
         print(f"  Job {i}: {'Success' if result.success else 'Failed'}")
 
 

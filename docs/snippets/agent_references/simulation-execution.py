@@ -102,7 +102,7 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     jobs.append(SimulationJob(model=variant, weather="weather.epw", label=f"wwr_{int(wwr * 100)}"))
 
 batch = simulate_batch(jobs, max_workers=4)
-for job, result in zip(jobs, batch.results):
+for job, result in zip(jobs, batch):
     print(job.label, result.errors.summary())
 # --8<-- [end:batch]
 

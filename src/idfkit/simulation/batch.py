@@ -12,11 +12,11 @@ import logging
 import os
 import tempfile
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, overload
 
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
@@ -72,8 +72,19 @@ class SimulationJob:
 
 
 @dataclass(frozen=True, slots=True)
-class BatchResult:
+class BatchResult(Sequence[SimulationResult]):
     """Aggregated results from a batch simulation run.
+
+    A real [Sequence][collections.abc.Sequence] of the results, in job order, so
+    ``for result in batch``, ``enumerate(batch)``, ``batch[0]``, ``len(batch)``,
+    ``reversed(batch)`` and ``result in batch`` all work and all type-check.
+
+    It behaved that way at runtime long before it type-checked. ``__len__`` and
+    ``__getitem__`` alone make an object iterable through the legacy sequence
+    protocol, so ``for result in batch`` ran fine and every static checker rejected
+    it, which pushed seven documented examples into writing ``batch.results``
+    instead. Documenting a workaround for a call that already worked is worse than
+    either fixing it or removing it, so the base class is declared.
 
     Attributes:
         results: Simulation results in the same order as the input jobs.
@@ -101,8 +112,20 @@ class BatchResult:
     def __len__(self) -> int:
         return len(self.results)
 
-    def __getitem__(self, index: int) -> SimulationResult:
+    @overload
+    def __getitem__(self, index: int) -> SimulationResult: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> tuple[SimulationResult, ...]: ...
+
+    def __getitem__(self, index: int | slice) -> SimulationResult | tuple[SimulationResult, ...]:
         return self.results[index]
+
+    def __iter__(self) -> Iterator[SimulationResult]:
+        # Sequence would synthesise this from __getitem__, one index at a time. Iterating the
+        # underlying tuple directly is the same answer without the index arithmetic, and it is
+        # the path every `for result in batch` actually takes.
+        return iter(self.results)
 
 
 def simulate_batch(

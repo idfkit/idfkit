@@ -56,10 +56,18 @@ when one exists.
 | Save copy | `idf.savecopy(path)` | `doc.savecopy(path)` | `doc.savecopy(path)` |
 | Output type | `idf.outputtype = "compressed"` | `doc.save(output_type="compressed")` | -- |
 | Run simulation | `idf.run(weather)` | `simulate(doc, weather)` | `doc.run(weather)` |
-| Batch update | `json_functions.updateidf(idf, d)` | `doc.update(d)` | `doc.update(d)` |
+| Batch update | `json_functions.updateidf(idf, d)` | `doc.update(d)` | `doc.update(d)` |[^update]
 | HTML tables | `readhtml.titletable(html)` | `result.html.titletable()` | -- |
 | Window-wall ratio | `idf.set_wwr(0.4)` | `set_wwr(doc, 0.4)` | -- |
 | Match surfaces | `idf.intersect_match()` | `intersect_match(doc)` | -- |
+
+[^update]:
+    `doc.update(d)` runs, but a type checker cannot see it on `IDFDocument`.
+    The document inherits a generated `TypedDict` so that `doc["Zone"]` resolves
+    to a typed collection without an overload stack, and pyright synthesises
+    `update` for every class in a `TypedDict` hierarchy, outranking any
+    declaration. Annotate the variable as
+    `idfkit._compat.EppyDocumentMixin` where you need the call checked.
 
 ## Creating objects
 
