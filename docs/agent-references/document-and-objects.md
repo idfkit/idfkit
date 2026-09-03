@@ -22,8 +22,8 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 | `load_idf(path)` / `load_epjson(path)` | Parse from disk. See [parsing-idf-epjson.md](parsing-idf-epjson.md). |
 | `doc.version` | `tuple[int, int, int]` — e.g. `(25, 2, 0)`. |
 | `doc.schema` | `EpJSONSchema` for the document's version. |
-| `doc[obj_type]` | Returns the `IDFCollection` for the type. Raises `UnknownObjectTypeError` if the type isn't in the schema. |
-| `doc.get_collection(obj_type)` | Same as `doc[obj_type]`, but returns an empty collection rather than raising. |
+| `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. |
+| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys. It delegates to `doc[obj_type]`; there is no behavioural difference. |
 | `doc.<attr>` | Python-name accessors for common types: `doc.zones`, `doc.buildings`, `doc.materials`, `doc.constructions`, `doc.hvac_templates`, etc. |
 | `doc.add(obj_type, name=None, **fields)` | Create and insert an object. Returns the new `IDFObject`. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |

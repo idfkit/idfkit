@@ -46,17 +46,15 @@ class TestIDFDocumentInit:
 
 
 class TestIDFDocumentCollectionAccess:
-    def test_getitem_creates_empty_collection(self) -> None:
+    def test_getitem_returns_empty_collection_for_absent_type(self) -> None:
         doc = IDFDocument()
         coll = doc["Zone"]
         assert isinstance(coll, IDFCollection)
         assert len(coll) == 0
 
-    def test_getitem_returns_same_collection(self) -> None:
-        doc = IDFDocument()
-        coll1 = doc["Zone"]
-        coll2 = doc["Zone"]
-        assert coll1 is coll2
+    def test_getitem_returns_the_stored_collection_when_the_type_is_present(self, empty_doc: IDFDocument) -> None:
+        empty_doc.add("Zone", "TestZone")
+        assert empty_doc["Zone"] is empty_doc["Zone"]
 
     def test_getattr_python_alias(self, empty_doc: IDFDocument) -> None:
         empty_doc.add("Zone", "TestZone")
@@ -922,7 +920,7 @@ class TestSchedulesDictEdgeCases:
     def test_schedule_with_empty_name_skipped(self, empty_doc: IDFDocument) -> None:
         # Add a schedule with empty name directly into the collection
         empty_sched = IDFObject(obj_type="Schedule:Constant", name="", data={"hourly_value": 1.0})
-        empty_doc["Schedule:Constant"].add(empty_sched)
+        empty_doc.addidfobject(empty_sched)
         sd = empty_doc.schedules_dict
         assert "" not in sd
 
@@ -931,7 +929,7 @@ class TestObjectsByTypeEdgeCases:
     """Test objects_by_type with empty collections."""
 
     def test_empty_collection_not_yielded(self, empty_doc: IDFDocument) -> None:
-        _ = empty_doc["Zone"]  # creates empty collection
+        _ = empty_doc["Zone"]  # a read, which no longer creates a collection
         pairs = list(empty_doc.objects_by_type())
         types = [t for t, _ in pairs]
         assert "Zone" not in types

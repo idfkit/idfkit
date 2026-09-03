@@ -42,13 +42,9 @@ class _IDFObjectsView:
         self._doc = doc
 
     def __getitem__(self, key: str) -> IDFCollection[IDFObject]:
-        collections = self._doc.collections
-        if key in collections:
-            return collections[key]
-        key_upper = key.upper()
-        for obj_type, collection in collections.items():
-            if obj_type.upper() == key_upper:
-                return collection
+        # Document lookup is itself case-insensitive now, and resolves the type
+        # name against the schema, so this view no longer carries its own scan:
+        # one rule, in one place.
         return self._doc[key]
 
     def __contains__(self, key: object) -> bool:
@@ -106,6 +102,7 @@ class EppyDocumentMixin:
         @staticmethod
         def _compute_ref_fields(schema: EpJSONSchema, obj_type: str) -> frozenset[str]: ...
         def _index_object_references(self, obj: IDFObject) -> None: ...
+        def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]: ...
 
     # -- Object access -------------------------------------------------------
 
@@ -153,7 +150,10 @@ class EppyDocumentMixin:
             >>> model.getobject("Zone", "NonExistent") is None
             True
         """
-        collection = self._collections.get(obj_type)
+        # Through ``__getitem__`` so the type name is resolved the same way it
+        # is everywhere else: a raw dict hit would miss ``getobject("zone", ...)``
+        # on a document whose collections are keyed by the schema's spelling.
+        collection = self[obj_type]
         if collection:
             return collection.get(name)
         return None
@@ -223,7 +223,7 @@ class EppyDocumentMixin:
                 self._compute_ref_fields(self._schema, obj.obj_type),
             )
 
-        self[obj.obj_type].add(obj)
+        self._collection_for_write(obj.obj_type).add(obj)
         self._index_object_references(obj)
         return obj
 

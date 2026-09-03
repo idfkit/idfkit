@@ -228,7 +228,49 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         Get collection by object type name.
 
+        The type name is matched case-insensitively, because EnergyPlus itself
+        matches it that way: ``model["zone"]``, ``model["ZONE"]`` and
+        ``model["Zone"]`` are the same collection, whatever casing the source
+        file used.  Every type-name-keyed entry point on the document resolves
+        the same way, so ``in``, [get_collection][idfkit.document.IDFDocument.get_collection],
+        [getobject][idfkit._compat.EppyDocumentMixin.getobject] and
+        [removeidfobject][idfkit.document.IDFDocument.removeidfobject] all agree
+        with this one.
+
         Returns an empty collection if no objects of that type exist yet.
+
+        !!! note "Why an unknown type name returns empty rather than raising"
+
+            ``model["Zoen"]`` returns an empty collection rather than raising.
+            The alternative catches typos, and it was weighed and rejected for
+            three reasons.  A document carrying no schema cannot tell a typo
+            from a valid type at all, so raising would make the behaviour
+            depend on whether a schema happened to be loaded, which is exactly
+            the kind of split answer the two-library API contract forbids.
+            ``"Foo" in model`` must answer False rather than raise, and a
+            ``__getitem__`` that raises where ``__contains__`` does not is
+            two rules for one question.  And callers already probe with
+            ``model["Foo"]`` and test emptiness, so raising is a breaking
+            change with no migration path.
+
+            The typo is caught on the paths that can afford to be strict, and
+            those are the ones that write: [add][idfkit.document.IDFDocument.add]
+            raises [UnknownObjectTypeError][idfkit.exceptions.UnknownObjectTypeError]
+            for a type in no schema, the IDF and epJSON parsers reject one, and
+            [describe][idfkit.document.IDFDocument.describe] raises for a name it
+            cannot look up.  To ask the question directly, use
+            ``model.schema.resolve_type_name(name) is not None``.
+
+            What this method must never do, and no longer does, is *store* the
+            empty collection it returns.  A read that mutates the document is
+            wrong on its own terms: probing five misspelled names used to leave
+            five junk keys in ``collections``, visible to every later iteration
+            over the document.  The empty collection returned for an absent type
+            is detached, so adding to it does not add to the document; use
+            [add][idfkit.document.IDFDocument.add] for that.
+
+            ``@idfkit/core`` resolves and declines to store on exactly the same
+            terms, in ``IdfDocument.all()``.
 
         Examples:
             Access all zones in the model:
@@ -242,20 +284,87 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> len(model["Zone"])
             2
 
+            Casing of the type name does not matter:
+
+            >>> len(model["zone"]), len(model["ZONE"])
+            (2, 2)
+
             Look up a specific zone by name (O(1)):
 
             >>> model["Zone"]["Perimeter_ZN_1"].name
             'Perimeter_ZN_1'
+
+            An unknown type name is empty, and reading it leaves no trace:
+
+            >>> len(model["Zoen"])
+            0
+            >>> "Zoen" in model.collections
+            False
         """
-        try:
-            return self._collections[obj_type]
-        except KeyError:
-            coll: IDFCollection[IDFObject] = IDFCollection(obj_type)
-            self._collections[obj_type] = coll
-            return coll
+        # Hot path: an already-canonical name that is already a key. One dict
+        # hit, no schema call. Everything else is a miss and can afford to
+        # resolve.
+        collection = self._collections.get(obj_type)
+        if collection is not None:
+            return collection
+        return self._lookup_collection(obj_type)
+
+    def _lookup_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
+        """Resolve *obj_type* and return its stored collection, or a detached empty one.
+
+        Never writes to ``_collections``; see the note in
+        [__getitem__][idfkit.document.IDFDocument.__getitem__].
+
+        With a schema loaded the schema is the authority, and one more dict
+        lookup settles the question: every collection is filed under the
+        canonical spelling by
+        [_collection_for_write][idfkit.document.IDFDocument._collection_for_write],
+        so a canonical key that is absent means the type is absent.  Without a
+        schema nothing can canonicalise a name, so the existing collections
+        are the only authority there is and the case-insensitive scan is what
+        reads them.
+        """
+        canonical = self._resolve_schema_obj_type(obj_type)
+        collection = self._collections.get(canonical)
+        if collection is not None:
+            return collection
+
+        if self._schema is None:
+            obj_type_upper = obj_type.upper()
+            for existing_type, existing in self._collections.items():
+                if existing_type.upper() == obj_type_upper:
+                    return existing
+
+        return IDFCollection(canonical)
+
+    def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]:
+        """Get the collection objects of *obj_type* are filed under, creating and storing it if absent.
+
+        The only path that may add a key to ``_collections``.  Reads go through
+        [_lookup_collection][idfkit.document.IDFDocument._lookup_collection] and
+        never grow the document.  The key created is the schema's canonical
+        spelling, so a mis-cased ``addidfobject`` does not open a second
+        collection beside the real one.
+        """
+        collection = self._collections.get(obj_type)
+        if collection is not None:
+            return collection
+
+        canonical = self._resolve_schema_obj_type(obj_type)
+        collection = self._collections.get(canonical)
+        if collection is not None:
+            return collection
+
+        created: IDFCollection[IDFObject] = IDFCollection(canonical)
+        self._collections[canonical] = created
+        return created
 
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
-        """Get collection by type name (typed for dynamic string keys)."""
+        """Get collection by type name (typed for dynamic string keys).
+
+        Same lookup as ``model[obj_type]``, including the case-insensitive
+        match and the refusal to store anything on a miss.
+        """
         return self[obj_type]
 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
@@ -300,6 +409,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     def __contains__(self, obj_type: str) -> bool:
         """Check if document has objects of a type.
 
+        Matched case-insensitively and resolved against the schema, the same
+        way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
+        ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
+        An unrecognised type name answers False rather than raising.
+
         Examples:
             Check whether the model contains any zones or materials:
 
@@ -309,10 +423,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             Zone('Office')
             >>> "Zone" in model
             True
+            >>> "zone" in model
+            True
             >>> "Material" in model
             False
+            >>> "Zoen" in model
+            False
         """
-        return obj_type in self._collections and len(self._collections[obj_type]) > 0
+        return len(self[obj_type]) > 0
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over object type names."""
@@ -627,8 +745,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if errors:
                 raise ValidationFailedError(errors)
 
-        # Add to collection
-        self[resolved_obj_type].add(obj)
+        # Add to collection (the write path: this may create the collection)
+        self._collection_for_write(resolved_obj_type).add(obj)
 
         # Index references
         self._index_object_references(obj)
@@ -664,8 +782,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         obj_type = obj.obj_type
 
-        if obj_type in self._collections:
-            self._collections[obj_type].remove(obj)
+        # Resolved, not a raw dict hit: ``attach``-style callers file an object
+        # under the schema's spelling, so a mis-cased ``obj.obj_type`` would
+        # look in a collection that does not exist and leave the object in the
+        # document while reporting it removed.
+        self._lookup_collection(obj_type).remove(obj)
 
         # Remove from reference graph
         self._references.unregister(obj)
@@ -735,14 +856,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Called by IDFObject._set_name when a name changes."""
         # 1. Update collection index
         obj_type = obj.obj_type
-        if obj_type in self._collections:
-            collection = self._collections[obj_type]
-            old_key = old_name.upper()
-            if old_key in collection.by_name:
-                del collection.by_name[old_key]
-            new_key = new_name.upper()
-            if new_name:
-                collection.by_name[new_key] = obj
+        collection = self._lookup_collection(obj_type)
+        old_key = old_name.upper()
+        if old_key in collection.by_name:
+            del collection.by_name[old_key]
+        if new_name:
+            collection.by_name[new_name.upper()] = obj
 
         # 2. Update referencing objects' _data directly (bypass _set_field to avoid recursion).
         #    An edge carrying a group index points inside an extensible group, so the value to
