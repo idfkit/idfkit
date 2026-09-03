@@ -75,24 +75,45 @@ class TestFindClosestVersion:
     def test_exact_match(self) -> None:
         assert find_closest_version((24, 1, 0)) == (24, 1, 0)
 
-    def test_patch_fallback(self) -> None:
-        """Version 9.0.0 should fall back to 8.9.0 (9.0.1 is in the registry)."""
-        result = find_closest_version((9, 0, 0))
-        assert result == (8, 9, 0)
+    def test_two_component_header_resolves_within_its_release_line(self) -> None:
+        """``Version, 9.0;`` arrives as (9, 0, 0) and must resolve to 9.0.1, not 8.9.0.
+
+        9.0.1 is the only supported release whose patch is not zero, so it is the
+        only one a two-component IDF header cannot match exactly. Resolving it
+        down to 8.9.0 instead is a silent misread: see
+        ``test_never_crosses_a_minor_boundary`` for what that costs.
+        """
+        assert find_closest_version((9, 0, 0)) == (9, 0, 1)
+
+    def test_patch_beyond_the_release_line_resolves_within_it(self) -> None:
+        assert find_closest_version((24, 1, 5)) == (24, 1, 0)
 
     def test_too_old(self) -> None:
         """Version older than minimum should return None."""
         assert find_closest_version((7, 0, 0)) is None
 
     def test_future_version(self) -> None:
-        """Version beyond latest should return latest."""
-        result = find_closest_version((99, 0, 0))
-        assert result == LATEST_VERSION
+        """A version newer than every supported release degrades to the newest.
 
-    def test_between_versions(self) -> None:
-        """Version between supported versions should fall back to lower."""
-        result = find_closest_version((10, 0, 0))
-        assert result == (9, 6, 0)
+        This is a deliberate forward tolerance, relied on by the compatibility
+        checker, and it is safe in a way that a backward guess is not: it can only
+        misread a release that does not exist yet, never one that does.
+        """
+        assert find_closest_version((99, 0, 0)) == LATEST_VERSION
+
+    def test_never_crosses_a_minor_boundary(self) -> None:
+        """An unsupported minor between two supported ones resolves to nothing.
+
+        There is no 10.x EnergyPlus release, so 9.6.0 is the numerically closest
+        supported version below (10, 0, 0). Returning it would hand the caller a
+        different release under the name of the one they asked for. IDF is
+        positional, so that parse succeeds against a corrupted model rather than
+        failing: ten object types reorder their fields between 8.9.0 and 9.0.1
+        alone, and ``RunPeriod`` slot 3 is ``end_month`` in one and ``begin_year``
+        in the other. Refusing is the only answer that cannot corrupt silently.
+        """
+        assert find_closest_version((10, 0, 0)) is None
+        assert find_closest_version((26, 0, 0)) is None
 
 
 class TestCompressedSchemaLoading:
