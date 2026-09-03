@@ -1,0 +1,100 @@
+name: archive-retired-site
+
+# Retain the last full build of py.idfkit.com as a restorable artefact (FR-090).
+#
+# RUN THIS BEFORE ANYTHING ELSE IN THE CUTOVER. The last full build of py.idfkit.com is the
+# content of this repository's gh-pages branch, and every deploy here uses force_orphan, which
+# replaces that branch with a single new commit. Once deploy-docs.yml has published the unified
+# site, the old build is not on the branch and not in its history. There is no second chance.
+#
+# The artefact this uploads is the thing that makes the cutover reversible. Its retention window
+# is stated below, in one place, on purpose: when it expires the cutover is irreversible.
+# The full procedure, including the revert, is in redirects/README.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The branch or commit holding the last full build. Normally gh-pages.
+        required: true
+        default: gh-pages
+      expect_path:
+        description: >
+          A file that exists in the last full build and nowhere else. The run fails if it is
+          missing, which is how you find out you are archiving the wrong tree.
+        required: true
+        default: idfkit-dev-guide/index.html
+
+permissions:
+  contents: read
+
+env:
+  # The retired host this archives, and the name the artefact is downloaded under.
+  RETIRED_HOST: py.idfkit.com
+  ARTIFACT_NAME: py.idfkit.com-last-full-build
+  # THE RETENTION WINDOW, in days. 90 is the GitHub maximum for a public repository
+  # (1 to 90 for public, 1 to 400 for private), and this repository is public, so this is the
+  # longest window available. deploy-py-redirects.yml refuses to publish unless an unexpired
+  # artefact under ARTIFACT_NAME exists, so this number is what "reversible" means in practice.
+  RETENTION_DAYS: 90
+
+jobs:
+  archive:
+    name: Archive the last full build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the published site
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          path: published
+
+      - name: Verify this is the retired site and not something else
+        run: |
+          set -euo pipefail
+          cd published
+          if [ -f REDIRECTS_ONLY ]; then
+            echo "::error::${{ inputs.ref }} is already the redirect-only build. The last full"
+            echo "::error::build of ${RETIRED_HOST} is gone from this branch. Restore it from an"
+            echo "::error::earlier run of this workflow, or pass a commit SHA as 'ref'."
+            exit 1
+          fi
+          if [ ! -f "${{ inputs.expect_path }}" ]; then
+            echo "::error::${{ inputs.expect_path }} is not in ${{ inputs.ref }}, so this is not the"
+            echo "::error::last full build of ${RETIRED_HOST}. Pass the right ref, or the right"
+            echo "::error::expect_path if the sentinel has changed."
+            exit 1
+          fi
+          echo "Archiving $(git rev-parse HEAD) from ${{ inputs.ref }}"
+          echo "$(find . -name index.html -not -path './.git/*' | wc -l) pages"
+
+      - name: Record what was archived
+        run: |
+          set -euo pipefail
+          cd published
+          {
+            echo "host: ${RETIRED_HOST}"
+            echo "repository: ${GITHUB_REPOSITORY}"
+            echo "ref: ${{ inputs.ref }}"
+            echo "commit: $(git rev-parse HEAD)"
+            echo "archived_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "retention_days: ${RETENTION_DAYS}"
+            echo "restore: see redirects/README.md, 'Reverting the cutover'"
+          } > ARCHIVE-MANIFEST.txt
+          cat ARCHIVE-MANIFEST.txt
+
+      - name: Upload the last full build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            published
+            !published/.git
+          retention-days: ${{ env.RETENTION_DAYS }}
+          if-no-files-found: error
+
+      - name: Say when this expires
+        run: |
+          echo "::notice::${ARTIFACT_NAME} is retained for ${RETENTION_DAYS} days."
+          echo "::notice::After $(date -u -d "+${RETENTION_DAYS} days" +%Y-%m-%d) the last full build"
+          echo "::notice::of ${RETIRED_HOST} no longer exists anywhere and the cutover is irreversible."
