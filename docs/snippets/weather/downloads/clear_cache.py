@@ -4,7 +4,7 @@ from idfkit.weather import WeatherDownloader
 
 downloader: WeatherDownloader = ...  # type: ignore[assignment]
 # --8<-- [start:example]
-import shutil
-
-shutil.rmtree(downloader.cache_dir)
+# Removes the cached weather files. The station index is kept, so the next
+# download resolves stations without going back to the network for the index.
+downloader.clear_cache()
 # --8<-- [end:example]
