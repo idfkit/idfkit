@@ -3,6 +3,8 @@
 The simulation module provides subprocess-based EnergyPlus execution with
 structured result parsing, batch processing, and content-addressed caching.
 
+{{ parity("local-simulation") }}
+
 ## Quick Start
 
 ```python

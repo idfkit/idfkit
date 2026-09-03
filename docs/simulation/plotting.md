@@ -3,6 +3,8 @@
 The simulation module provides pluggable plotting backends for visualizing
 results with matplotlib or plotly.
 
+{{ parity("result-plotting") }}
+
 ## Quick Start
 
 ```python

@@ -2,6 +2,8 @@
 
 This page covers common EnergyPlus-related issues and their solutions.
 
+{{ parity("local-simulation") }}
+
 ## Installation Problems
 
 ### EnergyPlus Not Found

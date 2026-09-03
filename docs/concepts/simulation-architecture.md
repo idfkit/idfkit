@@ -3,6 +3,8 @@
 This page explains the design decisions behind idfkit's simulation module
 and why certain approaches were chosen.
 
+{{ parity("local-simulation") }}
+
 ## Subprocess Execution
 
 idfkit runs EnergyPlus as a **subprocess** rather than linking to its

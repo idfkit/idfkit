@@ -24,6 +24,8 @@ immediately without invoking any external process.
     heat-transfer objects.  Use the individual functions only when you need
     to inspect or modify the preprocessed model before simulation.
 
+{{ parity("local-simulation") }}
+
 ## expand_objects
 
 ::: idfkit.simulation.expand.expand_objects

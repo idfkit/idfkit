@@ -9,6 +9,8 @@ checks whether a specific model still holds up under the other version. It does
 not migrate anything; that is a separate job, and the last section says where
 it lives.
 
+{{ parity("schema-compatibility-check") }}
+
 ## Diff the two schemas
 
 === "Python"

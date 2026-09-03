@@ -7,6 +7,8 @@ The parser itself needs nothing special: `@idfkit/core` has no I/O and no
 `node:*` imports, so a bundler pulls in the parser and nothing else. The only
 question is where the schema comes from, and the answers below are about that.
 
+{{ parity("parse") }}
+
 ## Serve the bundle
 
 Copy the data directory to a path your server serves:

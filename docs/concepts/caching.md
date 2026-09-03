@@ -3,6 +3,8 @@
 idfkit uses content-addressed caching to avoid redundant work across
 both simulation and weather operations.
 
+{{ parity("local-simulation") }}
+
 ## Content-Addressed Caching
 
 Cache keys are computed from the **content** of inputs, not filenames or

@@ -9,6 +9,8 @@ take strings. None of them can read a file, fetch a URL, or return a promise.
 Everything that touches a disk or a network lives in one of two places:
 `@idfkit/core/node`, or `SchemaBundle`.
 
+{{ parity("parse") }}
+
 ## Why not simply accept a path
 
 Because a function that can read a file has to be async, and async is

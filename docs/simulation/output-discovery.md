@@ -3,6 +3,8 @@
 The `OutputVariableIndex` helps you discover available output variables
 and meters from EnergyPlus, then add them to your model for future simulations.
 
+{{ parity("output-variable-selection") }}
+
 ## Basic Usage
 
 ```python
@@ -59,20 +61,13 @@ From files directly:
 
 ### OutputVariable Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `key` | `str` | The key value (e.g. `"*"` or `"ZONE 1"`) |
-| `name` | `str` | Variable name |
-| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
-| `units` | `str` | Variable units |
+Every field of [`OutputVariable`][idfkit.simulation.OutputVariable], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 ### OutputMeter Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `name` | `str` | Meter name |
-| `frequency` | `str` | Default reporting frequency (e.g. `"hourly"`) |
-| `units` | `str` | Meter units |
+Every field of [`OutputMeter`][idfkit.simulation.OutputMeter], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 ## Adding Outputs to Model
 

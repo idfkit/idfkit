@@ -5,6 +5,8 @@ footprint into thermal zones and creates all `Zone`,
 `BuildingSurface:Detailed`, and (optionally) `Construction:AirBoundary`
 objects needed for simulation.
 
+{{ parity("zoning") }}
+
 ## Quick Start
 
 ```python

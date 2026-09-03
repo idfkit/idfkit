@@ -21,6 +21,8 @@ step to select one.
 The schema key carries the patch component that the release name usually drops:
 9.0 is keyed `9.0.1`.
 
+{{ parity("schema-access") }}
+
 ## Reading the list at runtime
 
 Both libraries expose the list, oldest first, and the newest entry on its own.

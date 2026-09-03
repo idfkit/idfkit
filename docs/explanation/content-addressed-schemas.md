@@ -8,6 +8,8 @@ The raw epJSON schemas are about 10 MB each and there are 17 of them, roughly
 11.9 MB gzipped for the set. On a page load that number decides your
 architecture, so the browser bundle stores the same information differently.
 
+{{ parity("schema-access") }}
+
 ## Most of a schema is the previous schema
 
 Object-type definitions barely change between EnergyPlus releases. `Zone` has

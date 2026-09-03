@@ -10,6 +10,8 @@ This guide reads a repeating section, adds and removes groups, replaces one
 wholesale, and covers the two things that surprise people: renames propagate
 into groups, and the empty slots in front of a group are load-bearing.
 
+{{ parity("document-model") }}
+
 ## Reach the section
 
 The two libraries address the section differently. Python names it by the

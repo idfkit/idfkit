@@ -4,6 +4,8 @@ The schedules module lets you evaluate EnergyPlus schedules without running a
 simulation. This is useful for previewing schedule profiles, validating inputs,
 and understanding building operation patterns.
 
+{{ parity("schedules") }}
+
 ## Quick Start
 
 ```python

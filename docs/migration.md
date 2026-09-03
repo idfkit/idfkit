@@ -4,6 +4,8 @@ idfkit provides a compatibility layer so most eppy code works with only
 minor changes. You can migrate gradually -- all the eppy-style methods
 listed below are available alongside the newer idfkit API.
 
+{{ parity("eppy-compatibility") }}
+
 ## Loading a file
 
 **eppy** requires you to locate and pass the IDD file yourself:
@@ -56,7 +58,7 @@ when one exists.
 | Save copy | `idf.savecopy(path)` | `doc.savecopy(path)` | `doc.savecopy(path)` |
 | Output type | `idf.outputtype = "compressed"` | `doc.save(output_type="compressed")` | -- |
 | Run simulation | `idf.run(weather)` | `simulate(doc, weather)` | `doc.run(weather)` |
-| Batch update | `json_functions.updateidf(idf, d)` | `doc.update(d)` | `doc.update(d)` |[^update]
+| Batch update | `json_functions.updateidf(idf, d)` | `doc.update(d)` | `doc.update(d)`[^update] |
 | HTML tables | `readhtml.titletable(html)` | `result.html.titletable()` | -- |
 | Window-wall ratio | `idf.set_wwr(0.4)` | `set_wwr(doc, 0.4)` | -- |
 | Match surfaces | `idf.intersect_match()` | `intersect_match(doc)` | -- |

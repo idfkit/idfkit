@@ -5,6 +5,8 @@
 `zone.ceiling_height` is a real property. It is not a `Proxy` trap, and the
 difference is not academic.
 
+{{ parity("document-model") }}
+
 ## The obvious translation, and why it was rejected
 
 The Python library resolves `zone.ceiling_height` at runtime through

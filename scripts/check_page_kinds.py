@@ -125,7 +125,16 @@ PAGE_SUFFIXES = frozenset({".md", ".ipynb"})
 
 # Top-level directories under docs/ that hold build inputs rather than pages. Pages are only ever
 # .md or .ipynb, so this exists for the occasional markdown file living beside them.
-NON_PAGE_DIRECTORIES = frozenset({"hooks", "overrides", "snippets", "stylesheets", "assets", "javascripts"})
+NON_PAGE_DIRECTORIES = frozenset({
+    "hooks",
+    "overrides",
+    "snippets",
+    "stylesheets",
+    "assets",
+    "javascripts",
+    "templates",
+    "typedoc",
+})
 
 # Pages generated from the governance files, listed by the script that writes each one.
 #

@@ -3,6 +3,8 @@
 The `SQLResult` class provides structured access to EnergyPlus's SQLite
 output database, containing time-series data, tabular reports, and metadata.
 
+{{ parity("local-simulation") }}
+
 ## Opening the Database
 
 ```python

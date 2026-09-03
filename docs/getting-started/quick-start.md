@@ -1,15 +1,24 @@
 # Common tasks
 
-Quick recipes for the operations you'll use every day. Each section is
+Quick recipes for the operations you'll use every day, in both languages where both have
+them and with the difference stated where they do not. Each section is
 self-contained — jump to the one you need. If you're brand new to idfkit, work
 through [Build your first model](../tutorials/first-model.md) first, then come
 back here.
 
 ## Load a Model
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/load_a_model.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/load_a_model.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/load_a_model.ts:example"
+    ```
 
 `load_idf()` uses strict parsing by default (`strict_parsing=True`) and raises
 `IDFParseError` for malformed objects. Use `strict_parsing=False` only as a
@@ -19,38 +28,73 @@ migration/compatibility fallback for legacy or noisy files.
 
 Access objects with O(1) dictionary lookups:
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/query_objects.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/query_objects.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/query_objects.ts:example"
+    ```
 
 ## Modify Fields
 
 Change field values with attribute assignment:
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/modify_fields.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/modify_fields.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/modify_fields.ts:example"
+    ```
 
 ## Discover Available Fields
 
 Not sure what fields an object type has? Use `describe()` to see all available fields:
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/discover_available_fields.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/discover_available_fields.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/discover_available_fields.ts:example"
+    ```
 
 In REPL/Jupyter, use tab completion to explore object fields:
 
-```python
-zone = model["Zone"]["Office"]
-zone.<TAB>  # Shows: x_origin, y_origin, z_origin, multiplier, ...
+```text
+>>> zone = model["Zone"]["Office"]
+>>> zone.<TAB>
+x_origin, y_origin, z_origin, multiplier, ...
 ```
 
-Validation is enabled by default, so typos are caught immediately:
+Both libraries catch a misspelled field name. They catch it at different moments,
+and the difference is the one thing worth knowing about the two type systems:
+Python validates when the object is built, TypeScript when the file is compiled.
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/discover_available_fields_3.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/discover_available_fields_3.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/discover_available_fields_3.ts:example"
+    ```
 
 !!! tip "IDE Support"
     idfkit ships type stubs for all 858 EnergyPlus object types — your IDE
@@ -59,39 +103,75 @@ Validation is enabled by default, so typos are caught immediately:
 
 ## Create a New Model
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/create_a_new_model.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/create_a_new_model.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/create_a_new_model.ts:example"
+    ```
 
 ## Write Output
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/write_output.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/write_output.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/write_output.ts:example"
+    ```
 
 ## Run a Simulation
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/run_a_simulation.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/run_a_simulation.py:example"
+    ```
+
+{{ parity("local-simulation") }}
 
 ## Query Results
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/query_results.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/query_results.py:example"
+    ```
+
+{{ parity("local-simulation") }}
 
 ## Find Weather Stations
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/find_weather_stations.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/find_weather_stations.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    --8<-- "docs/snippets/js/getting-started/quick-start/find_weather_stations.ts:example"
+    ```
 
 ## Apply Design Days
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/apply_design_days.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/apply_design_days.py:example"
+    ```
+
+{{ parity("design-day-sizing") }}
 
 ## Lossless Round-Trip
 
@@ -99,9 +179,13 @@ Pass `preserve_formatting=True` to build a Concrete Syntax Tree (CST) so that
 `write_idf` and `save_idf` reproduce the original formatting, comments, and whitespace for
 unmodified objects:
 
-```python
---8<-- "docs/snippets/getting-started/quick-start/lossless_roundtrip.py:example"
-```
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/getting-started/quick-start/lossless_roundtrip.py:example"
+    ```
+
+{{ parity("lossless-round-trip") }}
 
 ## Next Steps
 

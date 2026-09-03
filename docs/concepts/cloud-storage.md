@@ -4,6 +4,8 @@ idfkit's simulation module supports pluggable storage backends through the
 `FileSystem` protocol, enabling cloud-native workflows with S3 and other
 storage systems.
 
+{{ parity("local-simulation") }}
+
 ## The FileSystem Protocol
 
 The `FileSystem` protocol defines a minimal interface for file operations:

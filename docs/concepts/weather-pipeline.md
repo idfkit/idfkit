@@ -3,6 +3,8 @@
 This page explains how idfkit's weather module works and the concepts
 behind weather station data and design days.
 
+{{ parity("weather-download") }}
+
 ## Data Source: climate.onebuilding.org
 
 idfkit's weather station index is built from the **climate.onebuilding.org**

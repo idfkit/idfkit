@@ -26,6 +26,8 @@ a path to EnergyPlus.
     use. Pass `--download DIR` to fetch the EPW/DDY/STAT bundle for a station
     without writing any code. There is no JavaScript equivalent.
 
+{{ parity("weather-download") }}
+
 ## Download the files for a station
 
 Resolve a station, then ask for its files.

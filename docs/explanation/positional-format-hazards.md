@@ -23,6 +23,8 @@ validates, and simulates a different building than the one on disk. Two rules
 below exist for exactly that reason, and both apply to any library that touches
 the format.
 
+{{ parity("parse") }}
+
 ## Trailing fields may be trimmed only when no extensible group follows
 
 EnergyPlus defaults omitted trailing fields, and a long run of bare commas is

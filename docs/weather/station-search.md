@@ -4,6 +4,8 @@ The `StationIndex` provides fast searching and filtering of ~70,000 weather
 station dataset entries (covering ~17,300 unique physical stations) from
 climate.onebuilding.org.
 
+{{ parity("weather-index") }}
+
 ## Loading the Index
 
 ```python
@@ -20,10 +22,12 @@ Fuzzy text search across station names, cities, and WMO numbers:
 
 ### SearchResult Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `station` | `WeatherStation` | The matching station |
-| `score` | `float` | Match score (0.0 to 1.0) |
+::: idfkit.weather.SearchResult
+    options:
+      heading_level: 4
+      show_root_heading: false
+      show_source: false
+
 
 ### Search Tips
 
@@ -69,10 +73,12 @@ def nearest(
 
 ### SpatialResult Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `station` | `WeatherStation` | The nearby station |
-| `distance_km` | `float` | Distance in kilometers |
+::: idfkit.weather.SpatialResult
+    options:
+      heading_level: 4
+      show_root_heading: false
+      show_source: false
+
 
 ## Search by Address
 
@@ -112,29 +118,8 @@ Note: WMO numbers are **not unique** — multiple entries can share a WMO
 
 ## WeatherStation Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `city` | `str` | City/station name |
-| `state` | `str` | State/province/region |
-| `country` | `str` | Country name |
-| `wmo` | `str` | WMO station number |
-| `source` | `str` | Dataset source identifier (e.g., `"TMYx.2009-2023"`) |
-| `latitude` | `float` | Station latitude |
-| `longitude` | `float` | Station longitude |
-| `timezone` | `float` | UTC offset (hours from GMT) |
-| `elevation` | `float` | Elevation in meters |
-| `url` | `str` | Download URL for weather files |
-| `ashrae_climate_zone` | `str` | ASHRAE HOF climate zone (e.g., `"4A - Mixed - Humid"`) |
-| `heating_design_db_c` | `float` | 99% heating design dry-bulb temperature (°C) |
-| `cooling_design_db_c` | `float` | 1% cooling design dry-bulb temperature (°C) |
-| `heating_design_db_f` | `float` | 99% heating design dry-bulb temperature (°F, computed) |
-| `cooling_design_db_f` | `float` | 1% cooling design dry-bulb temperature (°F, computed) |
-| `hdd18` | `int` | Heating degree-days, base 18 °C |
-| `cdd10` | `int` | Cooling degree-days, base 10 °C |
-| `design_conditions_source_wmo` | `str \| None` | WMO of a neighbouring station whose design conditions are inherited; `None` for stations with their own design data |
-| `display_name` | `str` | Formatted name (city, state, country) |
-| `filename_stem` | `str` | Canonical EPW filename stem from URL |
-| `dataset_variant` | `str` | TMYx variant (e.g., `"TMYx.2009-2023"`) |
+Every field of [`WeatherStation`][idfkit.weather.WeatherStation], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 The five climate metrics (`ashrae_climate_zone`, the two design DBs,
 HDD18, and CDD10) are populated for every station in the bundled index.

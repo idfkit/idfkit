@@ -100,6 +100,12 @@ jobs:
       - name: Compare the vendored examples against the pinned release
         run: uv run python scripts/sync_js_snippets.py --check
 
+      - name: Every capability page declares the capability it describes
+        # FR-047, SC-017. The parity macro renders availability where the reader is, and this is
+        # what stops a page being added without one. It needs no network and no checkout, so it
+        # runs here beside the drift check rather than in a job of its own.
+        run: uv run python scripts/check_capability_declarations.py
+
   strict:
     name: strict build
     needs: pins

@@ -11,6 +11,8 @@ slim form.
 Keys are single letters. This file is parsed on every cold start, and in a
 browser that start is a page load.
 
+{{ parity("schema-access") }}
+
 ## Bundle layout
 
 ```

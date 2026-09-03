@@ -3,6 +3,8 @@
 This guide shows how to run simulations with results stored in Amazon S3,
 suitable for distributed cloud workflows.
 
+{{ parity("local-simulation") }}
+
 ## Prerequisites
 
 Install S3 support:

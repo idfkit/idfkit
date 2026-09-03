@@ -3,6 +3,8 @@
 This page covers error handling in the simulation module, including
 parsing EnergyPlus error reports and handling simulation failures.
 
+{{ parity("local-simulation") }}
+
 ## Error Report
 
 The `ErrorReport` class parses the `.err` file produced by EnergyPlus:
@@ -46,10 +48,8 @@ EnergyPlus uses several error severity levels:
 
 Each error/warning is an `ErrorMessage` object:
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `severity` | `str` | "Fatal", "Severe", "Warning", etc. |
-| `message` | `str` | The error message text |
+Every field of [`ErrorMessage`][idfkit.simulation.ErrorMessage], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 ## Simulation Exceptions
 

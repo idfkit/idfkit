@@ -3,6 +3,8 @@
 This page covers common errors you may encounter when using idfkit and how
 to resolve them.
 
+{{ parity("local-simulation") }}
+
 ## idfkit Errors
 
 ### EnergyPlusNotFoundError

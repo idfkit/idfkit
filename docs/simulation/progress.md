@@ -5,6 +5,8 @@ is doing during a simulation.  It fires for warmup iterations, simulation day
 changes, post-processing steps, and completion -- enabling progress bars, live
 logs, and remote monitoring.
 
+{{ parity("local-simulation") }}
+
 ## Quick Start
 
 The fastest way to get a progress bar is the built-in tqdm integration:
@@ -57,17 +59,8 @@ All simulation functions accept `on_progress`:
 
 Each callback invocation receives a `SimulationProgress` event:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `phase` | `str` | `"initializing"`, `"warmup"`, `"simulating"`, `"postprocessing"`, or `"complete"` |
-| `message` | `str` | Raw EnergyPlus stdout line (stripped) |
-| `percent` | <code>float &#124; None</code> | Estimated 0-100 completion, or `None` when indeterminate |
-| `environment` | <code>str &#124; None</code> | Current simulation environment name |
-| `warmup_day` | <code>int &#124; None</code> | Current warmup iteration (1-based) |
-| `sim_day` | <code>int &#124; None</code> | Current day-of-year (1-based) |
-| `sim_total_days` | <code>int &#124; None</code> | Total simulation days when known |
-| `job_index` | <code>int &#124; None</code> | Batch job index (only set in batch mode) |
-| `job_label` | <code>str &#124; None</code> | Batch job label (only set in batch mode) |
+Every field of [`SimulationProgress`][idfkit.simulation.SimulationProgress], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 ### Simulation Phases
 

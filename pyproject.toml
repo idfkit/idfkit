@@ -70,6 +70,12 @@ dev = [
     "mkdocs-jupyter>=0.24.0",
     "mkdocs-material[imaging]>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
+    # The TypeScript half of the reference. It normally shells out to TypeDoc; here it reads the
+    # pinned artifact through docs/hooks/typedoc_shim.py, so no Node toolchain is involved and
+    # FR-058 holds. pydantic opts mkdocstrings option validation in, so a typo in mkdocs.yml
+    # fails the build rather than being ignored.
+    "mkdocstrings-typescript>=0.1",
+    "pydantic>=2",
     "pandas-stubs>=2.0",
     "matplotlib-stubs>=0.2.0",
     "types-boto3[s3]>=1.0.0",
@@ -321,6 +327,11 @@ ignore = [
 "tests/*" = ["S101"]
 "benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905", "S112", "TRY003", "BLE001"]
 "scripts/*" = ["T201"]
+# The documentation hooks print, and they raise with the long messages that are the whole point:
+# a build that stops because the pinned TypeDoc artifact is missing has to say which file, why
+# there is no fallback, and the command that fixes it. A three-word exception class in front of
+# that would be ceremony, and TRY003 is already waived in benchmarks/ for the same reason.
+"docs/hooks/*" = ["T201", "TRY003"]
 "docs/snippets/*" = ["E402", "F706", "F821", "F841", "F811", "I", "S", "B", "TRY", "UP008"]
 "src/idfkit/__init__.py" = ["F403"]  # TYPE_CHECKING star import from _generated_types
 "src/idfkit/document.pyi" = ["F405"]  # star import from _generated_types

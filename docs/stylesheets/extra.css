@@ -145,3 +145,11 @@
 .md-social__link svg {
   fill: currentcolor;
 }
+
+/* The pinned levels in the footer (FR-063, SC-023). Small and quiet: it is provenance, not
+   navigation, and it should not compete with the copyright line above it. */
+.md-copyright__levels {
+  margin-top: 0.2rem;
+  font-size: 0.9em;
+  opacity: 0.85;
+}

@@ -3,6 +3,8 @@
 Geometry utility functions for EnergyPlus surface manipulation.  For
 creating building zones and surfaces, see [Zoning](zoning.md).
 
+{{ parity("geometry-authoring") }}
+
 ## Quick Start
 
 ```python

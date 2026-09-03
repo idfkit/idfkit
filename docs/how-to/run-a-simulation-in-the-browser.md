@@ -12,6 +12,8 @@ The seam between the two libraries is plain IDF text, which is the practical
 payoff of
 [keeping the core synchronous and string-based](../explanation/sync-core-async-edge.md).
 
+{{ parity("browser-simulation") }}
+
 ## Install and serve the engine assets
 
 ```bash

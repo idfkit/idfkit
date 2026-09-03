@@ -15,6 +15,8 @@ need to:
     machines**, integrate with an existing task queue, or require features
     like retries, priority queues, and persistent result storage.
 
+{{ parity("local-simulation") }}
+
 ## Prerequisites
 
 Install idfkit and Celery with a Redis broker:

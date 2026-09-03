@@ -10,6 +10,8 @@ By default, **no output is produced** — idfkit never calls
 [library logging best practice](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
 You opt in to log output by configuring handlers in your own application.
 
+{{ parity("parse-diagnostics") }}
+
 ## Quick Start
 
 The simplest way to see idfkit logs is to enable `basicConfig`:

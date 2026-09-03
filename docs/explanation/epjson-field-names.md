@@ -12,6 +12,8 @@ Both libraries choose the epJSON spelling, unchanged. Fields are
 never `Ceiling Height`. There is no name-conversion layer to learn, and that
 absence is deliberate.
 
+{{ parity("document-model") }}
+
 ## The name on disk is the name in your code
 
 === "Python"

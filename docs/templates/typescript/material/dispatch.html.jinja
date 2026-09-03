@@ -1,0 +1,25 @@
+{#-
+  Render a whole module when one is asked for.
+
+  The shipped dispatch template gates its `module` branch behind
+  `config.show_submodules`, but that option is not declared on the handler's
+  frozen options dataclass -- setting it in `mkdocs.yml` raises "Invalid
+  options", and leaving it unset makes the branch permanently false. So
+  `::: @idfkit/core` collects the module successfully and then renders nothing at
+  all, silently.
+
+  Rendering by module is what keeps this reference honest: a new export appears
+  on the page because it is exported, not because someone remembered to list it.
+  Listing every symbol by hand instead would reintroduce exactly the drift this
+  generated reference exists to remove.
+
+  Everything that is not a module falls through to the shipped template
+  untouched.
+-#}
+{% if obj.kind.value == "module" %}
+  {% with module = obj %}
+    {% include "module.html.jinja" with context %}
+  {% endwith %}
+{% else %}
+  {% include "_base/dispatch.html.jinja" with context %}
+{% endif %}

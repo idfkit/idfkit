@@ -26,6 +26,8 @@ and choice lists reach the editor's tooltip rather than a reference tab:
 --8<-- "docs/snippets/js/explanation/generated-types/static_types_generated_from_the_schema_2.ts:example"
 ```
 
+{{ parity("generated-object-types") }}
+
 ## How this differs from the Python stubs
 
 Both libraries generate types from the epJSON schema, and the parity ledger

@@ -20,6 +20,8 @@ There are two ways to migrate a model:
     [`VersionMismatchError`][idfkit.exceptions.VersionMismatchError] with
     `direction == "backward"`.
 
+{{ parity("version-migration") }}
+
 ## Explicit Migration
 
 Call [`migrate()`][idfkit.migration.runner.migrate] directly when you need

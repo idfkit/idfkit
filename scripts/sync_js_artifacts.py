@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""Vendor the TypeScript documentation examples this site publishes (FR-064, FR-066).
+"""Vendor what the site needs from idfkit-js: the examples and the reference (FR-062, FR-064).
 
-The site teaches two languages from one page, so a page that shows Python from a checked file
-and TypeScript from hand-typed text is half-checked. The TypeScript half is written, compiled
-and published in idfkit/idfkit-js, at `docs-YYYY.N`, and lands here under `docs/snippets/js/`.
+Two things, published together on one `docs-YYYY.N` tag of idfkit/idfkit-js:
+
+    docs/snippets/js/          every TypeScript example the pages include, as the real modules
+                               that repository compiles. A page that shows Python from a checked
+                               file and TypeScript from hand-typed text is half-checked.
+    docs/typedoc/typedoc.json  the TypeDoc output the TypeScript reference is generated from
+                               (Principle V), read by docs/hooks/typedoc_shim.py in place of
+                               running TypeDoc, which this build has no toolchain for (FR-058).
+
+One tag rather than two, so the reference and the examples always describe the same commit.
 
 WHY THE TREE IS COMMITTED RATHER THAN DOWNLOADED AT BUILD TIME
 
@@ -26,9 +33,9 @@ Three sources, and they are not interchangeable:
 
 Usage::
 
-    python scripts/sync_js_snippets.py --from-release
-    python scripts/sync_js_snippets.py --from-sibling ../idfkit-js
-    python scripts/sync_js_snippets.py --check
+    python scripts/sync_js_artifacts.py --from-release
+    python scripts/sync_js_artifacts.py --from-sibling ../idfkit-js
+    python scripts/sync_js_artifacts.py --check
 """
 
 from __future__ import annotations
@@ -47,8 +54,10 @@ from typing import Any, Protocol
 
 REPO = Path(__file__).resolve().parents[1]
 VENDORED = REPO / "docs" / "snippets" / "js"
+VENDORED_TYPEDOC = REPO / "docs" / "typedoc" / "typedoc.json"
 SOURCE_REPO = "idfkit/idfkit-js"
 ASSET = "docs-snippets.tar.gz"
+TYPEDOC_ASSET = "typedoc.json"
 CANNOT_RUN = 2
 
 
@@ -96,17 +105,15 @@ def pinned_level() -> str:
     return level  # type: ignore[return-value]
 
 
-def download_release(level: str, into: Path) -> Path:
-    """Unpack the pinned release's snippet asset into *into*, and return the snippet root."""
-    url = f"https://github.com/{SOURCE_REPO}/releases/download/{level}/{ASSET}"
-    archive = into / ASSET
+def _fetch(level: str, asset: str, destination: Path) -> None:
+    url = f"https://github.com/{SOURCE_REPO}/releases/download/{level}/{asset}"
     print(f"Fetching {url}")
     try:
-        with urllib.request.urlopen(url) as response, archive.open("wb") as handle:  # noqa: S310
+        with urllib.request.urlopen(url) as response, destination.open("wb") as handle:  # noqa: S310
             shutil.copyfileobj(response, handle)
     except urllib.error.HTTPError as error:
         fail_to_run(
-            f"cannot fetch {ASSET} at {level} from {SOURCE_REPO}: HTTP {error.code}.",
+            f"cannot fetch {asset} at {level} from {SOURCE_REPO}: HTTP {error.code}.",
             "  FR-084 requires an artefact be published and versioned before anything pins it.",
             "  Publish the level from idfkit-js (.github/workflows/publish-docs-artifacts.yml),",
             "  or work against a local checkout with --from-sibling and understand that a run",
@@ -114,6 +121,15 @@ def download_release(level: str, into: Path) -> Path:
         )
     except urllib.error.URLError as error:
         fail_to_run(f"cannot reach {SOURCE_REPO} to fetch {level}: {error.reason}")
+
+
+def download_release(level: str, into: Path) -> tuple[Path, Path]:
+    """Unpack the pinned release into *into*; return the snippet root and the TypeDoc JSON."""
+    archive = into / ASSET
+    _fetch(level, ASSET, archive)
+    typedoc = into / TYPEDOC_ASSET
+    _fetch(level, TYPEDOC_ASSET, typedoc)
+
     extracted = into / "extracted"
     extracted.mkdir()
     with tarfile.open(archive) as tar:
@@ -124,18 +140,24 @@ def download_release(level: str, into: Path) -> Path:
     root = extracted / "docs-snippets"
     if not root.is_dir():
         fail_to_run(f"{ASSET} at {level} carries no docs-snippets/ directory.")
-    return root
+    return root, typedoc
 
 
-def copy_from_sibling(path: Path) -> Path:
+def copy_from_sibling(path: Path) -> tuple[Path, Path]:
     root = path / "docs-snippets"
+    typedoc = path / ".typedoc.json"
     if not root.is_dir():
         fail_to_run(f"No docs-snippets/ under {path}. Pass the root of an idfkit-js checkout.")
+    if not typedoc.is_file():
+        fail_to_run(
+            f"No .typedoc.json under {path}. Run `npm run docs:api` in that checkout first: the "
+            f"reference is generated there, never here."
+        )
     print(
-        f"!! Reading {root}, a working tree, instead of the pinned release.\n"
+        f"!! Reading {path}, a working tree, instead of the pinned release.\n"
         f"   This is an override. A build made this way says nothing about the pinned tag."
     )
-    return root
+    return root, typedoc
 
 
 def differences(left: Path, right: Path) -> list[str]:
@@ -167,35 +189,45 @@ def main() -> int:
     level = pinned_level()
     with tempfile.TemporaryDirectory(prefix="idfkit-js-snippets-") as tmp:
         if args.from_sibling:
-            root = copy_from_sibling(Path(args.from_sibling).expanduser().resolve())
+            root, typedoc = copy_from_sibling(Path(args.from_sibling).expanduser().resolve())
         else:
-            root = download_release(level, Path(tmp))
+            root, typedoc = download_release(level, Path(tmp))
 
         if args.check:
             if not VENDORED.is_dir():
                 print(f"❌ {VENDORED.relative_to(REPO)} does not exist.", file=sys.stderr)
                 return 1
+            if not VENDORED_TYPEDOC.is_file():
+                print(f"❌ {VENDORED_TYPEDOC.relative_to(REPO)} does not exist.", file=sys.stderr)
+                return 1
             found = differences(VENDORED, root)
+            if VENDORED_TYPEDOC.read_bytes() != typedoc.read_bytes():
+                found.append(f"  differs: {VENDORED_TYPEDOC.relative_to(REPO)}")
             if found:
-                print(f"❌ The vendored TypeScript examples differ from {level}:", file=sys.stderr)
+                print(f"❌ The vendored artifacts differ from {level}:", file=sys.stderr)
                 for line in found:
                     print(line, file=sys.stderr)
                 print(
-                    "   Run: uv run python scripts/sync_js_snippets.py --from-release",
+                    "   Run: uv run python scripts/sync_js_artifacts.py --from-release",
                     file=sys.stderr,
                 )
                 return 1
-            print(f"✅ The vendored TypeScript examples match {level}.")
+            print(f"✅ The vendored examples and TypeDoc reference match {level}.")
             return 0
 
         if VENDORED.exists():
             shutil.rmtree(VENDORED)
         shutil.copytree(root, VENDORED)
-        # Not the compiler's business, and not a page's either: the preamble and the region
-        # markers travel, but nothing else does.
-        subprocess.run(["git", "add", "--intent-to-add", "-A", str(VENDORED)], cwd=REPO, check=False)  # noqa: S603, S607
+        VENDORED_TYPEDOC.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(typedoc, VENDORED_TYPEDOC)
+        subprocess.run(  # noqa: S603
+            ["git", "add", "--intent-to-add", "-A", str(VENDORED), str(VENDORED_TYPEDOC)],  # noqa: S607
+            cwd=REPO,
+            check=False,
+        )
         count = sum(1 for _ in VENDORED.rglob("*.ts"))
-        print(f"Vendored {count} TypeScript examples from {level} into {VENDORED.relative_to(REPO)}")
+        size = VENDORED_TYPEDOC.stat().st_size
+        print(f"Vendored {count} TypeScript examples and a {size:,}-byte TypeDoc reference from {level}")
     return 0
 
 

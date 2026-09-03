@@ -6,6 +6,8 @@ that evaluator is built and why it behaves the way it does. If you just want to
 call it, see [How to evaluate schedules](../schedules/index.md); for the exact
 signatures, see the [API reference](../api/schedules/index.md).
 
+{{ parity("schedules") }}
+
 ## Why evaluate schedules without simulating
 
 EnergyPlus schedules encode when a building is occupied, when lights and

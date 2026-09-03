@@ -3,6 +3,8 @@
 The `idfkit.thermal` module provides functions to calculate thermal properties
 for EnergyPlus construction assemblies, including R-value, U-value, and SHGC.
 
+{{ parity("thermal-properties") }}
+
 ## Quick Start
 
 ```python

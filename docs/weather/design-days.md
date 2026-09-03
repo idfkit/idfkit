@@ -7,6 +7,8 @@ For design days in the context of a whole model, [Simulate an office
 block](../tutorials/office-block.md) sizes a real building against them. This
 page is the reference for the one step.
 
+{{ parity("design-day-sizing") }}
+
 ## Basic Usage
 
 ```python

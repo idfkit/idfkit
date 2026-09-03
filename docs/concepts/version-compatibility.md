@@ -23,6 +23,8 @@ the versions you claim to support.
     `idfkit migrate` CLI and the `idfkit.migrate()` API, both driving the
     `IDFVersionUpdater` transition binaries.
 
+{{ parity("schema-compatibility-check") }}
+
 ## Let the loader read the version out of the file
 
 The loading entry points detect the version themselves, resolve it against the
@@ -330,18 +332,12 @@ sarif_json = format_sarif(diagnostics)
 
 Each diagnostic is a frozen dataclass:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | `str` | Machine-readable code (e.g. `"C001"`) |
-| `message` | `str` | Human-readable description |
-| `severity` | `CompatSeverity` | `WARNING` or `ERROR` |
-| `filename` | `str` | Source file path |
-| `line` | `int` | 1-based line number |
-| `col` | `int` | 0-based column offset |
-| `end_col` | `int` | 0-based end column offset |
-| `from_version` | `str` | Version where the literal is valid |
-| `to_version` | `str` | Version where the literal is invalid |
-| `suggested_fix` | <code>str &#124; None</code> | Optional suggested replacement |
+::: idfkit.compat.Diagnostic
+    options:
+      heading_level: 4
+      show_root_heading: false
+      show_source: false
+
 
 Call `diagnostic.to_dict()` for a plain dictionary suitable for JSON
 serialisation.

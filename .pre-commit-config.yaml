@@ -9,17 +9,20 @@ repos:
         args: [--unsafe]
       - id: check-json
         exclude: ^.devcontainer/devcontainer.json
+      # docs/typedoc/ is a vendored release asset of another repository, compared byte for
+      # byte against that release by scripts/sync_js_artifacts.py --check. Reformatting it, even
+      # to something tidier, makes the comparison fail and the copy unverifiable.
       - id: pretty-format-json
-        exclude: ^(.devcontainer/devcontainer.json|.*\.ipynb$|src/idfkit/schemas/doc_locations\.json$)
+        exclude: ^(.devcontainer/devcontainer.json|.*\.ipynb$|src/idfkit/schemas/doc_locations\.json$|docs/typedoc/)
         args: [--autofix, --no-sort-keys]
       # old-sitemaps/ holds the address inventories of the two retired sites,
       # captured live and unrecoverable once they stop publishing (FR-086). They
       # are evidence, not source: nothing may rewrite them, including a hook that
       # only means to add a trailing newline.
       - id: end-of-file-fixer
-        exclude: ^old-sitemaps/
+        exclude: ^(old-sitemaps/|docs/typedoc/)
       - id: trailing-whitespace
-        exclude: ^old-sitemaps/
+        exclude: ^(old-sitemaps/|docs/typedoc/)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.14.9"

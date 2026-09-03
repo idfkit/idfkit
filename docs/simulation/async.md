@@ -6,6 +6,8 @@ you need to run EnergyPlus simulations inside an async application (FastAPI,
 Jupyter async, event-driven orchestrators) or when you want streaming
 progress without callbacks.
 
+{{ parity("local-simulation") }}
+
 ## When to Use Async vs Sync
 
 | Scenario | Recommended |
@@ -73,13 +75,8 @@ Default: `min(len(jobs), os.cpu_count())`
 
 Each event contains:
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `index` | `int` | Position of this job in the original sequence |
-| `label` | `str` | Human-readable label from `SimulationJob` |
-| `result` | `SimulationResult` | The simulation result |
-| `completed` | `int` | Number of jobs completed so far |
-| `total` | `int` | Total number of jobs |
+Every field of [`SimulationEvent`][idfkit.simulation.SimulationEvent], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 Events arrive in **completion order**, not submission order.  Use `event.index`
 to map back to the original job.

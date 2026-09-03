@@ -9,6 +9,8 @@ This guide turns strict parsing off, collects what the parser could not make
 sense of, and says where the two other checks live: schema validation and
 reference integrity, neither of which a parse performs.
 
+{{ parity("parse-diagnostics") }}
+
 ## Turn strict parsing off
 
 === "Python"

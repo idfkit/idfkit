@@ -12,6 +12,8 @@ Both return a `(latitude, longitude)` tuple and raise `GeocodingError` on
 failure, so they compose interchangeably with
 [`StationIndex.nearest()`](station-search.md).
 
+{{ parity("geocoding") }}
+
 ## Basic Usage
 
 ```python

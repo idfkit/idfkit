@@ -4,6 +4,8 @@ The `simulate_batch()` function runs multiple EnergyPlus simulations in
 parallel using a thread pool, ideal for parametric studies and sensitivity
 analyses.
 
+{{ parity("local-simulation") }}
+
 ## Basic Usage
 
 ```python
@@ -20,21 +22,8 @@ Define individual simulations with `SimulationJob`:
 
 ### SimulationJob Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `model` | `IDFDocument` | Required | EnergyPlus model |
-| `weather` | <code>str &#124; Path</code> | Required | Weather file path |
-| `label` | `str` | `""` | Human-readable label |
-| `output_dir` | <code>str &#124; Path &#124; None</code> | `None` | Output directory |
-| `expand_objects` | `bool` | `True` | Run ExpandObjects |
-| `annual` | `bool` | `False` | Annual simulation |
-| `design_day` | `bool` | `False` | Design-day-only |
-| `output_prefix` | `str` | `"eplus"` | Output file prefix |
-| `output_suffix` | <code>"C" &#124; "L" &#124; "D"</code> | `"C"` | Output naming style |
-| `readvars` | `bool` | `False` | Run ReadVarsESO |
-| `timeout` | `float` | `3600.0` | Max runtime (seconds) for the EnergyPlus subprocess |
-| `preprocessor_timeout` | <code>float &#124; None</code> | `None` | Per-subprocess timeout for ExpandObjects / Slab / Basement.  `None` reads `IDFKIT_PREPROCESSOR_TIMEOUT` (default 120 s) — see [Running Simulations › Preprocessor Timeout](running.md#preprocessor-timeout) |
-| `extra_args` | <code>tuple[str, ...] &#124; None</code> | `None` | Extra CLI args |
+Every field of [`SimulationJob`][idfkit.simulation.SimulationJob], with its type and its default, is in the API reference. It is generated from the source, so it cannot fall behind the way the table that used to sit here did.
+
 
 ## Parametric Studies
 

@@ -16,6 +16,8 @@ queuing or storage infrastructure.
     [Scythe documentation](https://szvsw.github.io/scythe/) for the latest
     API details and setup instructions.
 
+{{ parity("local-simulation") }}
+
 ## Prerequisites
 
 Install both packages:

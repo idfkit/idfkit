@@ -4,6 +4,8 @@ idfkit ships auto-generated type stubs for all 858 EnergyPlus object types.
 Your IDE gets autocomplete, inline documentation, and error detection out of
 the box — no plugins or configuration needed.
 
+{{ parity("generated-object-types") }}
+
 ## IDE Autocomplete and Inline Docs
 
 Every object type has a typed attribute accessor on `IDFDocument` and typed

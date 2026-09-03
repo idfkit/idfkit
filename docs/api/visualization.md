@@ -4,6 +4,8 @@ The `idfkit.visualization` module provides SVG diagram generation for
 construction assemblies, showing layer sequence, thicknesses, and thermal
 properties.
 
+{{ parity("svg-visualisation") }}
+
 ## Quick Start
 
 ### In Jupyter/IPython
@@ -138,18 +140,12 @@ svg = generate_construction_svg(props, config)
 
 ### SVGConfig Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `width` | 600 | Total SVG width in pixels |
-| `height` | 200 | Total SVG height in pixels |
-| `padding` | 20 | Padding around the diagram |
-| `header_height` | 40 | Height of header section |
-| `footer_height` | 50 | Height of footer/labels |
-| `min_layer_width` | 30 | Minimum layer width in pixels |
-| `font_family` | system-ui | Font family for text |
-| `font_size` | 12 | Base font size |
-| `font_size_small` | 10 | Small label font size |
-| `theme` | `"light"` | Color theme: `"light"`, `"dark"`, or `"auto"` |
+::: idfkit.visualization.SVGConfig
+    options:
+      heading_level: 4
+      show_root_heading: false
+      show_source: false
+
 
 ## Theming
 
@@ -341,19 +337,12 @@ config = ModelViewConfig(
 
 #### ModelViewConfig Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `width` | 1000 | Figure width in pixels |
-| `height` | 700 | Figure height in pixels |
-| `color_by` | `ColorBy.ZONE` | Coloring strategy |
-| `show_fenestration` | `True` | Show windows and doors |
-| `show_edges` | `True` | Show wireframe edges |
-| `show_labels` | `True` | Show zone name labels |
-| `opacity` | 0.85 | Surface opacity (0-1) |
-| `fenestration_opacity` | 0.4 | Window/door opacity (0-1) |
-| `background_color` | `#f8f9fa` | Plot background color |
-| `edge_color` | `rgba(40,40,40,0.6)` | Wireframe edge color |
-| `edge_width` | 1.5 | Wireframe edge width |
+::: idfkit.visualization.ModelViewConfig
+    options:
+      heading_level: 5
+      show_root_heading: false
+      show_source: false
+
 
 #### ColorBy Options
 

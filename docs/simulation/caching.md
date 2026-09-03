@@ -6,6 +6,8 @@ EnergyPlus. For how the cache key is computed, what gets stored, and why
 invalidation is automatic, see
 [Caching strategy](../concepts/caching.md).
 
+{{ parity("local-simulation") }}
+
 ## Basic Usage
 
 ```python

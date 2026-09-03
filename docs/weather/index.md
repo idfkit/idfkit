@@ -3,6 +3,8 @@
 The weather module provides tools for searching weather stations, downloading
 weather files, and applying ASHRAE design day conditions to your models.
 
+{{ parity("weather-index") }}
+
 ## Try It — Interactive Station Browser
 
 The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Click a marker to inspect a station, or use the filter panel to narrow the ~17,000 entries. [Open in a new tab ↗](browse/index.html?static=1)

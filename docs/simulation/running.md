@@ -7,6 +7,8 @@ If you have not run a model before, [Simulate an office
 block](../tutorials/office-block.md) walks the whole path from geometry to a
 heating load. This page is the reference for the one step.
 
+{{ parity("local-simulation") }}
+
 ## Basic Usage
 
 ```python
