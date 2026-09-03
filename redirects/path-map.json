@@ -143,13 +143,13 @@
         "/how-to/parse-in-the-browser/": "/how-to/parse-in-the-browser/",
         "/how-to/run-a-simulation/": "/how-to/run-a-simulation-in-the-browser/",
         "/reference/": "/reference/",
-        "/reference/core-node/": "/reference/",
-        "/reference/core/": "/reference/",
-        "/reference/schemas/": "/reference/",
+        "/reference/core-node/": "/reference/typescript/core-node/",
+        "/reference/core/": "/reference/typescript/core/",
+        "/reference/schemas/": "/reference/typescript/schemas/",
         "/reference/slim-schema-format/": "/reference/slim-schema-format/",
         "/reference/versions/": "/reference/versions/",
-        "/reference/weather-node/": "/reference/",
-        "/reference/weather/": "/reference/",
+        "/reference/weather-node/": "/reference/typescript/weather-node/",
+        "/reference/weather/": "/reference/typescript/weather/",
         "/tutorials/": "/tutorials/",
         "/tutorials/first-model/": "/tutorials/first-model/"
       }
