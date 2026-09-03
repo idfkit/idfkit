@@ -81,8 +81,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up the environment
-        # 3.11 is the floor: docs/hooks/parity_macro.py and the render script it shares its ledger
-        # model with both read TOML with tomllib, which is standard library only from 3.11. The
+        # 3.11 is the floor: docs/hooks/parity_ledger.py, and the hook and the render script that
+        # share it, read TOML with tomllib, which is standard library only from 3.11. The
         # library itself is tested across 3.10 to 3.13 in main.yml; this job is about the site.
         uses: ./.github/actions/setup-python-env
         with:
@@ -174,37 +174,34 @@ jobs:
           cp -RL docs "$SCRATCH/docs"
           cp mkdocs.yml "$SCRATCH/mkdocs.yml"
 
-      - name: KNOWN GAP, the parity hook reaches outside the documentation tree
-        # docs/hooks/parity_macro.py imports scripts/render_parity_page.py by an absolute path
-        # derived from its own location (`Path(__file__).resolve().parents[2] / "scripts"`), so the
-        # hook listed in mkdocs.yml does not survive being copied on its own. That is precisely the
-        # class of coupling this job is meant to reject, and it is carried here as a named,
-        # temporary exception rather than hidden, because the fix is a design decision about where
-        # the ledger model lives and not something a CI job should make.
+      - name: No documentation file computes a path out of its own location
+        # Nothing is copied alongside the tree above, and nothing may need to be. The scratch build
+        # below gets docs/ and mkdocs.yml, exactly what the eventual idfkit/idfkit-developers
+        # repository will hold, and it has to succeed on that alone.
         #
-        # DO NOT GROW THIS STEP. If a second file has to be added here, the hook needs restructuring
-        # instead: move the ledger model under docs/hooks/, or publish it with the package. Deleting
-        # this step whole is the definition of done.
+        # This step used to carry one named exception: docs/hooks/parity_macro.py imported
+        # scripts/render_parity_page.py through `Path(__file__).resolve().parents[2]`, so the hook
+        # mkdocs.yml lists did not survive being copied on its own, and the two files it needed were
+        # copied in after it. The ledger model now lives in docs/hooks/parity_ledger.py and the
+        # render script imports down into it, so the exception is gone and the expected set below is
+        # empty (T172, research R7).
         #
-        # The paragraph above is enforced rather than trusted. The guard below counts the files
-        # under docs/ that compute a path out of their own location, and fails if a second one
-        # appears. Without it, "do not grow this step" is a comment, and the next reach-outside
-        # gets appended here the way this one was.
+        # Keep it empty. A file under docs/ that walks up out of its own directory is the coupling
+        # this whole job exists to reject, and the answer is to restructure it the way the parity
+        # hook was restructured, never to copy its target in here.
         run: |
           set -euo pipefail
-          reaching=$(grep -rln 'parents\[' docs --include='*.py' | sort)
-          expected="docs/hooks/parity_macro.py"
-          if [ "$reaching" != "$expected" ]; then
-            echo "::error::The set of documentation files reaching outside the tree has changed."
-            echo "::error::Expected exactly: ${expected}"
-            echo "::error::Found:"
+          reaching=$(grep -rln 'parents\[\|\.parent\.parent' docs --include='*.py' | sort || true)
+          if [ -n "$reaching" ]; then
+            echo "::error::A documentation file computes a path out of its own location:"
             echo "$reaching" | sed 's/^/::error::  /'
-            echo "::error::Restructure the new one instead of adding it to this step. Moving the"
-            echo "::error::ledger model under docs/hooks/ removes the original and this whole step."
+            echo "::error::The documentation tree has to build where this repository is not, so it"
+            echo "::error::cannot reach into it. Move what the file needs under docs/, and import"
+            echo "::error::that from the repository side, the way scripts/render_parity_page.py"
+            echo "::error::imports docs/hooks/parity_ledger.py."
             exit 1
           fi
-          mkdir -p "$SCRATCH/scripts"
-          cp scripts/render_parity_page.py scripts/_governance_source.py "$SCRATCH/scripts/"
+          echo "No file under docs/ reaches outside the documentation tree."
 
       - name: Install idfkit from the wheel, outside the repository
         run: |

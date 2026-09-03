@@ -11,8 +11,9 @@ properties are worth pinning down here rather than discovering in a broken docs 
 Every test builds its own capabilities, so none of this needs a conformance checkout, a git tag, or
 a network. The reading of the pinned ledger is exercised by the docs build itself.
 
-The hook and the render script are both imported by path, the way MkDocs imports a hook: neither is
-part of the distributed package and neither is importable as ``idfkit.something``.
+The hook is imported by path, the way MkDocs imports a hook: it is not part of the distributed
+package and is not importable as ``idfkit.something``. It carries the ledger model itself, imported
+from its sibling ``docs/hooks/parity_ledger.py``, so nothing here reaches into ``scripts/``.
 """
 
 from __future__ import annotations
@@ -51,7 +52,7 @@ def capability(**overrides: Any) -> Any:
         "typescript": "complete",
     }
     fields.update(overrides)
-    return macro.renderer().Capability(**fields)
+    return macro.Capability(**fields)
 
 
 def page(source: str, *, src_uri: str = "how-to/example.md", **entries: Any) -> str:

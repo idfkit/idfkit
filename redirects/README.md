@@ -193,7 +193,3 @@ cannot lapse unnoticed between deciding to cut over and doing it.
 
 - The five generated TypeScript API reference addresses are provisional, marked in `notes`.
   Repoint them when the TypeDoc artefact is pinned onto the unified site.
-- `idfkit/.github/workflows/deploy-pr-docs.yml` still builds per-PR previews at
-  `py.idfkit.com/pr-preview/pr-N/` and comments that URL. Repoint `PREVIEW_URL` at
-  `developers.idfkit.com`. Until then, a preview link on an open pull request resolves through
-  the host fallback to the unified site root. This is recorded in `notes` as well.

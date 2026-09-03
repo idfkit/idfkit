@@ -9,6 +9,9 @@ permissions:
   contents: write
   id-token: write
 
+env:
+  ARCHIVE_ARTIFACT_NAME: py.idfkit.com-last-full-build
+
 
 jobs:
 
@@ -60,12 +63,42 @@ jobs:
   deploy-docs:
     needs: publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Require the retained last full build of py.idfkit.com
+        # Same guard, same reason, as deploy-docs.yml. This deploy also uses force_orphan, so it
+        # also replaces gh-pages with a single commit whose history does not contain the tree it
+        # replaced. Publishing a release before archive-retired-site has run would destroy the last
+        # full build of py.idfkit.com with no way back (FR-090).
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          live=$(gh api \
+            "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${ARCHIVE_ARTIFACT_NAME}&per_page=100" \
+            --jq '[.artifacts[] | select(.expired == false)] | length')
+          if [ "${live}" = "0" ]; then
+            echo "::error::No unexpired '${ARCHIVE_ARTIFACT_NAME}' artefact exists. This deploy"
+            echo "::error::orphans gh-pages, which still holds the last full build of"
+            echo "::error::py.idfkit.com, and that build cannot be rebuilt from current sources."
+            echo "::error::Run the archive-retired-site workflow first (FR-090)."
+            exit 1
+          fi
+          echo "${live} unexpired copy or copies of ${ARCHIVE_ARTIFACT_NAME} are retained."
+
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
+
+      - name: Set up the parity ledger
+        # The site cannot be built without it: docs/hooks/parity_macro.py reads the ledger out of
+        # idfkit-conformance at the pinned governance tag and aborts the build rather than render a
+        # page with its parity statements missing (FR-084). Same step as deploy-docs.yml.
+        uses: ./.github/actions/setup-parity-ledger
 
       - name: Install Cairo
         run: |
@@ -90,4 +123,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           force_orphan: true
-          cname: py.idfkit.com
+          cname: developers.idfkit.com

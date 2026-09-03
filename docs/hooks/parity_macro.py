@@ -30,13 +30,21 @@ WHERE THE LEDGER COMES FROM
 ``governance/parity.toml`` in ``idfkit/idfkit-conformance``, read with ``git show`` at the immutable
 ``governance-YYYY.N`` tag pinned in ``[tool.idfkit.governance] level``, never from a branch: a
 moving ref would change what this site claims without any change landing in it. The checkout is
-found in the order ``scripts/render_parity_page.py`` uses (``$IDFKIT_CONFORMANCE_DIR``, then a
-sibling ``idfkit-conformance``), and this module imports that script rather than restating its
-lookup, its ledger model, or its contract checks. ``$IDFKIT_GOVERNANCE_DIR`` reads a working tree
-instead and says so loudly, matching the override ``scripts/check_parity_ledger.py`` offers.
+found by ``parity_ledger.resolve_ledger_path`` (``$IDFKIT_CONFORMANCE_DIR``, then a sibling
+``idfkit-conformance`` checkout). ``$IDFKIT_GOVERNANCE_DIR`` reads a working tree instead and says
+so loudly, matching the override ``scripts/check_parity_ledger.py`` offers.
 
 The ledger is read lazily, on the first page that uses the macro, so a docs build of a tree with no
 conformance checkout and no parity tokens still works.
+
+WHAT THIS MODULE MAY REACH FOR
+
+``parity_ledger``, which sits beside it, and nothing else outside the documentation tree. That is
+the whole reason the ledger model lives where it does. This hook is listed in ``mkdocs.yml``, so it
+runs in every build of this documentation, including a build of a copy of ``docs/`` sitting
+somewhere with no ``scripts/``, no ``pyproject.toml`` and no repository around it (research R7).
+``scripts/render_parity_page.py`` imports the same model downward, from the repository into the
+tree. It used to be the other way round, and this hook could not be copied.
 
 Like the two render scripts, this is maintainer-side tooling and is not part of the distributed
 package, so it needs Python 3.11 or newer for ``tomllib`` even though ``idfkit`` supports 3.10.
@@ -46,7 +54,6 @@ from __future__ import annotations
 
 import difflib
 import functools
-import importlib.util
 import logging
 import os
 import posixpath
@@ -60,6 +67,29 @@ from typing import TYPE_CHECKING, Any
 import tomllib  # pyright: ignore[reportMissingTypeStubs]
 from mkdocs.exceptions import PluginError
 
+# MkDocs loads a hook by path, so this file's own directory is not on sys.path and the sibling
+# below cannot be imported without help. Putting that directory on the path keeps the import a
+# plain one and keeps the reach inside the documentation tree, which is what makes the tree
+# copyable. Nothing but this path edit may sit between the imports above and the import below.
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from parity_ledger import (
+    JAVASCRIPT,
+    LEDGER_RELATIVE,
+    PYTHON,
+    Capability,
+    indent_block,
+    issue_sentence,
+    ledger_repo_root,
+    parse_ledger,
+    project_pyproject,
+    resolve_ledger_path,
+    resolve_level,
+    state_label,
+    wrap,
+)
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
@@ -67,12 +97,8 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("mkdocs.hooks.parity_macro")
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-RENDERER_PATH = REPO_ROOT / "scripts" / "render_parity_page.py"
-
 # The page every notice links back to, as a docs-relative source path.
 PARITY_PAGE = "explanation/parity.md"
-LEDGER_RELATIVE = "governance/parity.toml"
 
 # The token, on a line of its own, in either quote style, with whitespace anywhere it can go.
 TOKEN = re.compile(
@@ -96,39 +122,21 @@ class LedgerSource:
     level: str
     origin: str
     pinned: bool
-    capabilities: dict[str, Any]
+    capabilities: dict[str, Capability]
 
 
 def _refuse(function: Callable[..., Any], *args: Any) -> Any:
-    """Call a render-script helper, turning its ``sys.exit`` into a build failure.
+    """Call a ``parity_ledger`` resolver, turning its ``sys.exit`` into a build failure.
 
-    ``render_parity_page`` is a command-line script and exits on a missing ledger or a missing
-    governance pin. A hook must not take the interpreter down mid-build, so the message it would
-    have printed becomes the build error instead.
+    Those resolvers serve a command-line script too, and there exiting on a missing ledger or a
+    missing governance pin is the right behaviour. A hook must not take the interpreter down
+    mid-build, so the message the resolver would have printed becomes the build error instead.
     """
     try:
         return function(*args)
     except SystemExit as stop:
         message = str(stop.code)
         raise PluginError(message) from stop
-
-
-@functools.cache
-def renderer() -> Any:
-    """``scripts/render_parity_page.py``, imported for its ledger model and its prose helpers.
-
-    Imported by path rather than copied: the ledger's dataclass, its contract checks, and the
-    wording of the issue sentence have one definition, and the macro and the generated page cannot
-    drift apart. The script guards its entry point, so importing it runs nothing.
-    """
-    spec = importlib.util.spec_from_file_location("idfkit_parity_renderer", RENDERER_PATH)
-    if spec is None or spec.loader is None:
-        message = f"cannot import {RENDERER_PATH}, which the parity macro shares its ledger model with"
-        raise PluginError(message)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 def _git_show(repo: Path, ref: str, relative: str) -> str:
@@ -166,19 +174,21 @@ def _ledger_text(level: str) -> tuple[str, str, bool]:
         )
         return path.read_text(encoding="utf-8"), str(path), False
 
-    # The same lookup order as scripts/render_parity_page.py, so one checkout serves the generated
+    # One lookup, shared with scripts/render_parity_page.py, so one checkout serves the generated
     # page and this macro. The working-tree file locates the repository; the text comes from the tag.
-    ledger_path = Path(_refuse(renderer().resolve_ledger_path, None, None)).resolve()
-    repo = ledger_path.parents[1]
-    return _git_show(repo, level, LEDGER_RELATIVE), f"{repo} at {level}", True
+    ledger_path = Path(_refuse(resolve_ledger_path)).resolve()
+    repo = ledger_repo_root(ledger_path)
+    return _git_show(repo, level, LEDGER_RELATIVE.as_posix()), f"{repo} at {level}", True
 
 
 @functools.cache
 def ledger() -> LedgerSource:
     """Parse the ledger once per build, and refuse to run against one that fails its own contract."""
-    level = str(_refuse(renderer().resolve_level))
+    # No pyproject.toml means no pin here, and the level then comes from IDFKIT_GOVERNANCE_LEVEL.
+    # That is the ordinary case for a documentation tree built outside the repository.
+    level = str(_refuse(resolve_level, project_pyproject()))
     text, origin, pinned = _ledger_text(level)
-    parsed = renderer().parse_ledger(tomllib.loads(text))
+    parsed = parse_ledger(tomllib.loads(text))
     if parsed.problems:
         problems = "\n".join(f"    - {problem}" for problem in parsed.problems)
         message = f"the parity ledger read from {origin} does not satisfy its own contract:\n{problems}"
@@ -203,24 +213,24 @@ class Notice:
 
     def render(self) -> str:
         body = "\n\n".join(paragraph for paragraph in self.paragraphs if paragraph.strip())
-        return f'!!! {self.kind} "{self.title}"\n\n{renderer().indent_block(body)}\n'
+        return f'!!! {self.kind} "{self.title}"\n\n{indent_block(body)}\n'
 
 
 def wrap_prose(text: str) -> str:
     """Hard-wrap ledger prose, keeping its paragraph breaks.
 
-    ``render_parity_page.wrap`` collapses all whitespace, which is right for one paragraph and wrong
-    for the multi-paragraph ``differences`` and ``note`` fields, so each paragraph is wrapped alone.
+    ``parity_ledger.wrap`` collapses all whitespace, which is right for one paragraph and wrong for
+    the multi-paragraph ``differences`` and ``note`` fields, so each paragraph is wrapped alone.
     """
     paragraphs = [block for block in re.split(r"\n[ \t]*\n", text.strip()) if block.strip()]
-    return "\n\n".join(renderer().wrap(paragraph) for paragraph in paragraphs)
+    return "\n\n".join(wrap(paragraph) for paragraph in paragraphs)
 
 
 def linkify_ids(text: str, known_ids: set[str], link: str) -> str:
     """Point a code span naming another ledger id at that capability's entry on the parity page.
 
-    ``render_parity_page`` does the same thing with a bare fragment, because there the target is the
-    same page. Here the target is another page, so the fragment needs the path in front of it.
+    ``parity_ledger.linkify_ids`` does the same thing with a bare fragment, because there the target
+    is the same page. Here the target is another page, so the fragment needs the path in front of it.
     """
 
     def replace(match: re.Match[str]) -> str:
@@ -230,25 +240,23 @@ def linkify_ids(text: str, known_ids: set[str], link: str) -> str:
     return re.sub(r"`([A-Za-z0-9][A-Za-z0-9-]*)`", replace, text)
 
 
-def _states(capability: Any) -> str:
-    module = renderer()
-    python = module.state_label(capability.python, capability.absence_kind)
-    javascript = module.state_label(capability.typescript, capability.absence_kind)
+def _states(capability: Capability) -> str:
+    python = state_label(capability.python, capability.absence_kind)
+    javascript = state_label(capability.typescript, capability.absence_kind)
     return f"Python {python}, JavaScript {javascript}"
 
 
-def _full_entry(capability: Any, link: str) -> str:
+def _full_entry(capability: Capability, link: str) -> str:
     return (
         f"The full entry, including the vocabulary this capability owns, is on "
         f"[the capability parity page]({link}#{capability.capability_id})."
     )
 
 
-def _partial_notice(capability: Any, link: str, known_ids: set[str]) -> Notice:
-    module = renderer()
+def _partial_notice(capability: Capability, link: str, known_ids: set[str]) -> Notice:
     differing = [
         language
-        for language, state in ((module.PYTHON, capability.python), (module.JAVASCRIPT, capability.typescript))
+        for language, state in ((PYTHON, capability.python), (JAVASCRIPT, capability.typescript))
         if state == "partial"
     ]
     where = " and ".join(differing)
@@ -261,14 +269,14 @@ def _partial_notice(capability: Any, link: str, known_ids: set[str]) -> Notice:
         kind="info",
         title=f"Differs in {where}",
         paragraphs=(
-            renderer().wrap(lead),
+            wrap(lead),
             wrap_prose(linkify_ids(capability.differences or "", known_ids, link)),
-            renderer().wrap(_full_entry(capability, link)),
+            wrap(_full_entry(capability, link)),
         ),
     )
 
 
-def _permanent_notice(capability: Any, link: str, known_ids: set[str]) -> Notice:
+def _permanent_notice(capability: Capability, link: str, known_ids: set[str]) -> Notice:
     present = capability.present_language
     absent = capability.absent_language
     title = f"{present} only, permanently" if present else "Permanently absent"
@@ -288,14 +296,14 @@ def _permanent_notice(capability: Any, link: str, known_ids: set[str]) -> Notice
         kind="abstract",
         title=title,
         paragraphs=(
-            renderer().wrap(lead),
+            wrap(lead),
             wrap_prose(linkify_ids(capability.note or "", known_ids, link)),
-            renderer().wrap(_full_entry(capability, link)),
+            wrap(_full_entry(capability, link)),
         ),
     )
 
 
-def _gap_notice(capability: Any, link: str) -> Notice:
+def _gap_notice(capability: Capability, link: str) -> Notice:
     absent = capability.absent_language
     present = capability.present_language
     title = f"Not in {absent} yet" if absent else "Not implemented yet"
@@ -303,15 +311,15 @@ def _gap_notice(capability: Any, link: str) -> Notice:
         lead = f"**{capability.title}** is available in {present} and is not in {absent} today."
     else:
         lead = f"**{capability.title}** is not available today."
-    lead += " A temporary gap, not a boundary. " + renderer().issue_sentence(capability.issue or "")
+    lead += " A temporary gap, not a boundary. " + issue_sentence(capability.issue or "")
     return Notice(
         kind="warning",
         title=title,
-        paragraphs=(renderer().wrap(lead), renderer().wrap(_full_entry(capability, link))),
+        paragraphs=(wrap(lead), wrap(_full_entry(capability, link))),
     )
 
 
-def build_notices(capability: Any, link: str, known_ids: set[str]) -> tuple[Notice, ...]:
+def build_notices(capability: Capability, link: str, known_ids: set[str]) -> tuple[Notice, ...]:
     """Every block one capability contributes to a page. Empty when both libraries carry it in full.
 
     A capability that is complete on both sides renders nothing at all, not an empty admonition: a
@@ -339,7 +347,7 @@ def parity_page_link(src_uri: str) -> str:
     return posixpath.relpath(PARITY_PAGE, directory or ".")
 
 
-def resolve(capability_id: str, src_uri: str, capabilities: Mapping[str, Any]) -> Any:
+def resolve(capability_id: str, src_uri: str, capabilities: Mapping[str, Capability]) -> Capability:
     """The capability this id names, or a build failure that says what to write instead (T126)."""
     capability = capabilities.get(capability_id)
     if capability is not None:
@@ -356,7 +364,7 @@ def resolve(capability_id: str, src_uri: str, capabilities: Mapping[str, Any]) -
     raise PluginError(message)
 
 
-def substitute(markdown: str, src_uri: str, capabilities: Mapping[str, Any]) -> str:
+def substitute(markdown: str, src_uri: str, capabilities: Mapping[str, Capability]) -> str:
     """Replace every parity token on a page, leaving fenced code and every other brace alone."""
     link = parity_page_link(src_uri)
     known_ids = set(capabilities)

@@ -189,7 +189,7 @@
     {
       "host": "py.idfkit.com",
       "path": "/pr-preview/",
-      "note": "NOT A PUBLISHED ADDRESS, recorded as a dependency. .github/workflows/deploy-pr-docs.yml publishes per-PR previews under /pr-preview/pr-N/ on this host and comments the URL on the pull request. Once this host serves redirects only, those previews and their links move to the unified host; that workflow's PREVIEW_URL must be repointed at developers.idfkit.com. No prefix_fallbacks entry is given for /pr-preview/, so a stale preview link resolves through the host fallback to the unified site root rather than to a dead end."
+      "note": "NOT A PUBLISHED ADDRESS, recorded as a dependency. .github/workflows/deploy-pr-docs.yml publishes per-PR previews under /pr-preview/pr-N/ and comments the URL on the pull request. Those previews live on this repository's gh-pages branch, which now serves developers.idfkit.com, so the workflow's PREVIEW_URL names that host and the previews never moved. No prefix_fallbacks entry is given for /pr-preview/, so a preview link written before the cutover resolves through the host fallback to the unified site root rather than to a dead end."
     }
   ]
 }
