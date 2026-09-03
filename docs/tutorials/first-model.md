@@ -41,11 +41,7 @@ name, because it has no name field at all.
 === "Python"
 
     ```python
-    from idfkit import new_document, version_string
-
-    doc = new_document(version=(26, 1, 0))
-
-    print(version_string(doc.version))
+    --8<-- "docs/snippets/tutorials/first-model.py:create"
     ```
 
 === "TypeScript"
@@ -82,9 +78,7 @@ ordinary properties from there on.
 === "Python"
 
     ```python
-    zone = doc.add("Zone", "Open Office", ceiling_height=2.7, multiplier=1)
-
-    print(zone.name, zone.ceiling_height)
+    --8<-- "docs/snippets/tutorials/first-model.py:zone"
     ```
 
 === "TypeScript"
@@ -117,28 +111,7 @@ construction names a material. Add them in that order.
 === "Python"
 
     ```python
-    doc.add(
-        "Material",
-        "Brick 100mm",
-        roughness="MediumRough",
-        thickness=0.1,
-        conductivity=0.89,
-        density=1920,
-        specific_heat=790,
-    )
-
-    doc.add("Construction", "Exterior Wall", outside_layer="Brick 100mm")
-
-    wall = doc.add(
-        "BuildingSurface:Detailed",
-        "North Wall",
-        surface_type="Wall",
-        construction_name="Exterior Wall",
-        zone_name="Open Office",
-        outside_boundary_condition="Outdoors",
-        sun_exposure="SunExposed",
-        wind_exposure="WindExposed",
-    )
+    --8<-- "docs/snippets/tutorials/first-model.py:surface"
     ```
 
 === "TypeScript"
@@ -174,14 +147,7 @@ TypeScript reaches every group under one property, `wall.extensible`.
 === "Python"
 
     ```python
-    wall.vertices.extend([
-        {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
-        {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
-        {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
-        {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
-    ])
-
-    print(len(wall.vertices))
+    --8<-- "docs/snippets/tutorials/first-model.py:vertices"
     ```
 
 === "TypeScript"
@@ -213,11 +179,7 @@ with it.
 === "Python"
 
     ```python
-    from idfkit import validate_document
-
-    result = validate_document(doc)
-
-    print(len(result.errors))
+    --8<-- "docs/snippets/tutorials/first-model.py:validate"
     ```
 
 === "TypeScript"
@@ -249,12 +211,7 @@ Instead, ask the document to do the rename.
 === "Python"
 
     ```python
-    print(wall.zone_name)
-
-    doc.rename("Zone", "Open Office", "Open Plan")
-
-    print(wall.zone_name)
-    print(", ".join(o.name for o in doc.get_referencing("Open Plan")))
+    --8<-- "docs/snippets/tutorials/first-model.py:rename"
     ```
 
 === "TypeScript"
@@ -304,9 +261,7 @@ sides.
 === "Python"
 
     ```python
-    from idfkit import save_idf
-
-    save_idf(doc, "office.idf")
+    --8<-- "docs/snippets/tutorials/first-model.py:save"
     ```
 
 === "TypeScript"
@@ -333,18 +288,7 @@ its own, so reading takes no more setup than writing did.
 === "Python"
 
     ```python
-    from idfkit import load_idf
-
-    reread = load_idf("office.idf")
-
-    print(version_string(reread.version))
-
-    for z in reread["Zone"]:
-        print(f"{z.name}: ceiling {z.ceiling_height} m")
-
-    wall_again = reread["BuildingSurface:Detailed"]["North Wall"]
-    print(len(wall_again.vertices))
-    print(wall_again.vertices[0].vertex_z_coordinate)
+    --8<-- "docs/snippets/tutorials/first-model.py:reread"
     ```
 
 === "TypeScript"
@@ -404,5 +348,8 @@ difference.
   installation; in TypeScript it is [How to run a simulation in the
   browser](../how-to/run-a-simulation-in-the-browser.md), which runs EnergyPlus
   compiled to WebAssembly.
+- [Simulate an office block](office-block.md), the next tutorial, which builds a
+  real two-storey block instead of one wall and takes it all the way to a
+  heating load. It needs a local EnergyPlus, so it is Python only.
 - [What each language has](../explanation/parity.md), before you plan work
   around a capability one of them does not carry yet.

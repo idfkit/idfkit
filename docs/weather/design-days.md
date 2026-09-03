@@ -3,6 +3,10 @@
 The `DesignDayManager` parses DDY files and applies ASHRAE design day
 conditions to your EnergyPlus models for HVAC sizing.
 
+For design days in the context of a whole model, [Simulate an office
+block](../tutorials/office-block.md) sizes a real building against them. This
+page is the reference for the one step.
+
 ## Basic Usage
 
 ```python

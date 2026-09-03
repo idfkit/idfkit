@@ -1,163 +1,108 @@
-"""Verified code for the "Build your first model" tutorial.
+"""Verified Python code for the "Build your first model" tutorial.
 
 This is a single, coherent script: every region runs top-to-bottom against the
-one ``doc`` created in the first region. The named regions are display markers
+one ``doc`` created in the first region, and the values it prints are the ones
+the page shows underneath each step. The named regions are display markers
 consumed by ``docs/tutorials/first-model.md`` via ``--8<--`` includes.
+
+The page's TypeScript tabs are the same lesson in the other language and stay
+literal on the page: the site builds without the second language's toolchain
+(FR-058), so there is nothing here to check them against.
 """
 
 from __future__ import annotations
 
-# --8<-- [start:new]
-from idfkit import EnergyPlusNotFoundError, LATEST_VERSION, find_closest_version, new_document
-from idfkit.simulation import find_energyplus
+# --8<-- [start:create]
+from idfkit import new_document, version_string
 
-# Pin the model to the EnergyPlus you have installed, so Step 10 runs without a
-# version gap. No EnergyPlus yet? Fall back to the newest version idfkit knows.
-try:
-    config = find_energyplus()
-    version = find_closest_version(config.version) or LATEST_VERSION
-except EnergyPlusNotFoundError:
-    config = None
-    version = LATEST_VERSION
+doc = new_document(version=(26, 1, 0))
 
-doc = new_document(version=version)
-print(f"Building for EnergyPlus {doc.version[0]}.{doc.version[1]}.{doc.version[2]}")
-# --8<-- [end:new]
+print(version_string(doc.version))
+# --8<-- [end:create]
 
 
-# --8<-- [start:block]
-from idfkit import ZoningScheme, create_block, footprint_rectangle
+# --8<-- [start:zone]
+zone = doc.add("Zone", "Open Office", ceiling_height=2.7, multiplier=1)
 
-create_block(
-    doc,
-    name="Office",
-    footprint=footprint_rectangle(width=20.0, depth=12.0),
-    floor_to_floor=3.0,
-    num_stories=2,
-    zoning=ZoningScheme.CORE_PERIMETER,
-    perimeter_depth=4.0,
-)
-
-print(len(doc["Zone"]))  # 10
-print(len(doc["BuildingSurface:Detailed"]))  # 60
-# --8<-- [end:block]
+print(zone.name, zone.ceiling_height)
+# --8<-- [end:zone]
 
 
-# --8<-- [start:constructions]
-# An opaque wall construction: one concrete layer.
+# --8<-- [start:surface]
 doc.add(
     "Material",
-    "Concrete",
+    "Brick 100mm",
     roughness="MediumRough",
-    thickness=0.2,
-    conductivity=1.4,
-    density=2400,
-    specific_heat=900,
+    thickness=0.1,
+    conductivity=0.89,
+    density=1920,
+    specific_heat=790,
 )
-doc.add("Construction", "Exterior Wall", outside_layer="Concrete")
 
-# A window construction: one simple-glazing layer.
-doc.add(
-    "WindowMaterial:SimpleGlazingSystem",
-    "Glazing",
-    u_factor=1.8,
-    solar_heat_gain_coefficient=0.4,
+doc.add("Construction", "Exterior Wall", outside_layer="Brick 100mm")
+
+wall = doc.add(
+    "BuildingSurface:Detailed",
+    "North Wall",
+    surface_type="Wall",
+    construction_name="Exterior Wall",
+    zone_name="Open Office",
+    outside_boundary_condition="Outdoors",
+    sun_exposure="SunExposed",
+    wind_exposure="WindExposed",
 )
-doc.add("Construction", "Exterior Window", outside_layer="Glazing")
-# --8<-- [end:constructions]
+# --8<-- [end:surface]
 
 
-# --8<-- [start:windows]
-from idfkit import set_default_constructions, set_wwr
+# --8<-- [start:vertices]
+wall.vertices.extend([
+    {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
+    {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+    {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+    {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
+])
 
-# Punch windows into the exterior walls at 40% window-to-wall ratio, using the
-# glazing construction. Do this first so the windows claim their own construction.
-windows = set_wwr(doc, wwr=0.4, construction="Exterior Window")
-
-# Assign the opaque construction to every surface that still lacks one.
-filled = set_default_constructions(doc, construction_name="Exterior Wall")
-
-print(len(windows))  # 8
-print(filled)  # 60
-# --8<-- [end:windows]
-
-
-# --8<-- [start:inspect]
-zone = doc["Zone"].first()
-print(zone.name)  # Office Story 1 Perimeter_South
-# --8<-- [end:inspect]
-
-
-# --8<-- [start:rename]
-old_name = zone.name
-referencing = doc.references.get_referencing(old_name)
-print(len(referencing))  # 6 — the surfaces bounding this zone
-
-doc.rename("Zone", old_name, "Office Lobby")
-
-# The references followed the rename automatically: nothing dangles.
-print(len(doc.references.get_referencing(old_name)))  # 0
-print(len(doc.references.get_referencing("Office Lobby")))  # 6
-# --8<-- [end:rename]
+print(len(wall.vertices))
+# --8<-- [end:vertices]
 
 
 # --8<-- [start:validate]
 from idfkit import validate_document
 
 result = validate_document(doc)
-print(result.is_valid)  # True
-print(len(result.errors))  # 0
+
+print(len(result.errors))
 # --8<-- [end:validate]
 
 
-# --8<-- [start:write]
+# --8<-- [start:rename]
+print(wall.zone_name)
+
+doc.rename("Zone", "Open Office", "Open Plan")
+
+print(wall.zone_name)
+print(", ".join(o.name for o in doc.get_referencing("Open Plan")))
+# --8<-- [end:rename]
+
+
+# --8<-- [start:save]
 from idfkit import save_idf
 
 save_idf(doc, "office.idf")
-# --8<-- [end:write]
+# --8<-- [end:save]
 
 
-# --8<-- [start:weather]
-from idfkit.weather import DesignDayManager, StationIndex, WeatherDownloader
+# --8<-- [start:reread]
+from idfkit import load_idf
 
-# idfkit locates, downloads, and caches weather + design-day data for you.
-station = StationIndex.load().nearest(41.88, -87.63, limit=1)[0].station  # near Chicago
-files = WeatherDownloader().download(station)
+reread = load_idf("office.idf")
 
-# Inject a design day (and update Site:Location) from the downloaded .ddy file.
-added = DesignDayManager(files.ddy).apply_to_model(doc, update_location=True)
-print(len(added))  # 1 — a winter heating design day
-# --8<-- [end:weather]
+print(version_string(reread.version))
 
+for z in reread["Zone"]:
+    print(f"{z.name}: ceiling {z.ceiling_height} m")
 
-# --8<-- [start:simulate]
-# Ask EnergyPlus to report each zone's air temperature.
-doc.add(
-    "Output:Variable",
-    key_value="*",
-    variable_name="Zone Mean Air Temperature",
-    reporting_frequency="Hourly",
-)
-
-from idfkit.simulation import simulate
-
-# design_day=True runs only the sizing design day (seconds, not minutes). Pass
-# the config from Step 1 so idfkit doesn't search for EnergyPlus a second time.
-# auto_migrate is a safety net: the document already matches your install unless
-# you started Step 1 without EnergyPlus.
-result = simulate(doc, files.epw, design_day=True, auto_migrate=True, energyplus=config)
-print(result.success)  # True
-# --8<-- [end:simulate]
-
-
-# --8<-- [start:read]
-sql = result.sql
-
-# One temperature series per zone — ten, matching the ten zones we built.
-print(len(sql.list_variables()))  # 10
-
-# Key values are matched case-insensitively, so write the name as you named it.
-lobby = sql.get_timeseries("Zone Mean Air Temperature", "Office Lobby")
-print(len(lobby.values))  # 24 — one value per hour of the design day
-print(round(max(lobby.values), 1))  # e.g. -0.9 (varies by EnergyPlus version + weather)
-# --8<-- [end:read]
+wall_again = reread["BuildingSurface:Detailed"]["North Wall"]
+print(len(wall_again.vertices))
+print(wall_again.vertices[0].vertex_z_coordinate)
+# --8<-- [end:reread]
