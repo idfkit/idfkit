@@ -121,6 +121,8 @@ build-and-publish: build publish ## Build and publish.
 .PHONY: docs-test
 docs-test: ## Test if documentation can be built without warnings or errors
 	@./scripts/build_docs.sh -s
+	@echo "🚀 Checking the built site hosts no engine bytes"
+	@uv run python scripts/check_engine_assets.py site
 
 .PHONY: docs
 docs: ## Build and serve the documentation

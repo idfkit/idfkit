@@ -4,8 +4,8 @@ import { writeIdf } from '@idfkit/core';
 declare const csvText: string;
 declare const epwText: string;
 import type { IdfDocument } from '@idfkit/core';
-import type { EnergyPlus } from '@idfkit/engine';
-declare const ep: EnergyPlus;
+import type { EnergyPlusEngine } from '@idfkit/engine';
+declare const ep: EnergyPlusEngine;
 declare const document: IdfDocument;
 
 // --8<-- [start:example]

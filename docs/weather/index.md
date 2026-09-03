@@ -5,6 +5,28 @@ weather files, and applying ASHRAE design day conditions to your models.
 
 {{ parity("weather-index") }}
 
+## How weather is installed
+
+=== "Python"
+
+    Weather comes with the library. `pip install idfkit` installs the station
+    index whether or not you asked for it, because a Python extra gates
+    dependencies rather than files.
+
+    ```bash
+    pip install idfkit
+    ```
+
+=== "TypeScript"
+
+    Weather is an opt-in install and the shared name does not reach it. `npm
+    install idfkit` places no station index on disk and no weather code in your
+    bundle; add the package by name.
+
+    ```bash
+    npm install @idfkit/weather
+    ```
+
 ## Try It — Interactive Station Browser
 
 The same Leaflet-based UI shipped by `idfkit tmy --browse` is embedded below. Click a marker to inspect a station, or use the filter panel to narrow the ~17,000 entries. [Open in a new tab ↗](browse/index.html?static=1)

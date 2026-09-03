@@ -169,6 +169,7 @@ nav:
     - Why accessors and not a Proxy: explanation/accessors-not-proxies.md
     - Content-addressed schemas: explanation/content-addressed-schemas.md
     - A synchronous core with async edges: explanation/sync-core-async-edge.md
+    - Browser simulation: explanation/browser-simulation.md
     - Simulation architecture: concepts/simulation-architecture.md
     - Weather data pipeline: concepts/weather-pipeline.md
     - Caching strategy: concepts/caching.md
@@ -309,6 +310,9 @@ extra:
 # defined window.document$, which is the hook that survives instant navigation.
 extra_javascript:
   - javascripts/tab-sync.js
+  # The reader-initiated browser-simulation runner. It loads nothing until the button on the
+  # browser-simulation how-to is pressed; the file's header says why that is a hard rule.
+  - javascripts/engine-runner.js
 
 extra_css:
   - stylesheets/extra.css

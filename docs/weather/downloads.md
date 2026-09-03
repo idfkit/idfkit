@@ -28,6 +28,28 @@ a path to EnergyPlus.
 
 {{ parity("weather-download") }}
 
+## How weather is installed
+
+=== "Python"
+
+    Weather comes with the library. `pip install idfkit` installs the station
+    index whether or not you asked for it, because a Python extra gates
+    dependencies rather than files.
+
+    ```bash
+    pip install idfkit
+    ```
+
+=== "TypeScript"
+
+    Weather is an opt-in install and the shared name does not reach it. `npm
+    install idfkit` places no station index on disk and no weather code in your
+    bundle; add the package by name.
+
+    ```bash
+    npm install @idfkit/weather
+    ```
+
 ## Download the files for a station
 
 Resolve a station, then ask for its files.

@@ -148,6 +148,14 @@ jobs:
           IDFKIT_CONFORMANCE_DIR: ${{ github.workspace }}/conformance
         run: uv run mkdocs build --strict
 
+      - name: The site hosts no engine bytes and fetches none before a reader asks
+        # FR-072, SC-027. After the build, because it measures the built site. The browser
+        # simulation pages document 51 MB of WebAssembly and embed a runner that executes it;
+        # everything it needs comes from a CDN on activation. Both ways that stops being true
+        # are quiet: a copied binary, and a preload hint that costs nothing in this repository
+        # and 51 MB in every reader's tab.
+        run: uv run python scripts/check_engine_assets.py site
+
   portable:
     name: portable build (outside the repository)
     needs: pins
