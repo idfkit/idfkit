@@ -80,7 +80,7 @@ To reproduce:
 uv run --group benchmark python benchmarks/bench_eso.py --eso path/to/eplusout.eso
 ```
 
-## Supported EnergyPlus versions
+## Version coverage compared across tools
 
 | Tool | Versions | Schema format |
 |---|---|---|

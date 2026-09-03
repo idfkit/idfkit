@@ -16,7 +16,7 @@ Pluggable plotting backends for result visualization.
       show_root_heading: true
       show_source: true
 
-## Built-in Visualizations
+## Visualization functions
 
 ### plot_temperature_profile
 
