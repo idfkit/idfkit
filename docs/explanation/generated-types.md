@@ -16,29 +16,14 @@ npm install --save-dev @idfkit/types-v26-1
 Parameterizing a document with that map is the whole opt-in:
 
 ```ts
-import { loadIdf } from '@idfkit/core/node';
-import type { TypeMap } from '@idfkit/types-v26-1';
-
-const doc = await loadIdf<TypeMap>('model.idf');
-
-doc.all('Zone'); // completes among 858 type names
-doc.add('Zone', 'Z1', { celing_height: 3 }); // compile error: typo
-doc.add('BuildingSurface:Detailed', 'S1', { sun_exposure: 'Sunny' }); // compile error
+--8<-- "docs/snippets/js/explanation/generated-types/static_types_generated_from_the_schema.ts:example"
 ```
 
 The interfaces carry the schema's documentation with them, so units, defaults,
 and choice lists reach the editor's tooltip rather than a reference tab:
 
 ```ts
-export interface Zone {
-  /**
-   * X Origin
-   * Units: m
-   * Default: 0
-   */
-  x_origin?: number;
-  // ...
-}
+--8<-- "docs/snippets/js/explanation/generated-types/static_types_generated_from_the_schema_2.ts:example"
 ```
 
 ## How this differs from the Python stubs
@@ -81,7 +66,7 @@ the same object graph running the same code, and `doc.all('Zone')` really is
 just a string argument. Omit the parameter and everything still works, untyped:
 
 ```ts
-const doc = await loadIdf('model.idf'); // fine, just no completion
+--8<-- "docs/snippets/js/explanation/generated-types/it_costs_nothing_installed_or_not.ts:example"
 ```
 
 ## Two design details that are easy to get wrong

@@ -50,8 +50,7 @@ two versions do not have in common.
 documents:
 
 ```ts
-const delta = (await bundle.load('26.1.0')).changedFrom(await bundle.load('9.4.0'));
-// { added: [...], removed: [...], changed: [...] }
+--8<-- "docs/snippets/js/explanation/content-addressed-schemas/two_consequences_beyond_size.ts:example"
 ```
 
 `changed` falls out of comparing two hashes. There is no structural comparison
@@ -62,9 +61,7 @@ at all.
 Definitions are frozen and shared by identity, not merely by value:
 
 ```ts
-const a = await bundle.load('25.2.0');
-const b = await bundle.load('26.1.0');
-a.get('Zone') === b.get('Zone'); // true
+--8<-- "docs/snippets/js/explanation/content-addressed-schemas/shared_identity_and_why_it_reaches_the_object_model.ts:example"
 ```
 
 `@idfkit/core` keys its per-type prototypes on the definition object rather than

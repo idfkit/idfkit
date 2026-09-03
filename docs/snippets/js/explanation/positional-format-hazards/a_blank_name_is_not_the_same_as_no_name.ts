@@ -1,0 +1,10 @@
+// Preamble, not shown on the page: the values this example assumes it already
+// has, each with the type the page's earlier steps would have given it.
+import type { IdfDocument, IdfObject, Schema, SchemaBundle } from '@idfkit/core';
+declare const doc: IdfDocument;
+
+// --8<-- [start:example]
+for (const obj of doc.all('WeatherProperty:SkyTemperature')) {
+  obj.name; // '' when the file left the name blank
+}
+// --8<-- [end:example]

@@ -111,6 +111,14 @@ level = "conformance-2026.7"
 [tool.idfkit.governance]
 level = "governance-2026.8"
 
+# Documentation artifact level the unified site renders from, as an immutable tag in
+# idfkit-js. It carries the TypeScript examples the pages include and the TypeDoc JSON the
+# TypeScript reference is generated from, published together so the two always describe the same
+# commit. Read from this one value by the sync script and by the CI job that checks the vendored
+# copy against it (FR-062, FR-064).
+[tool.idfkit.docs]
+level = "docs-2026.1"
+
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"

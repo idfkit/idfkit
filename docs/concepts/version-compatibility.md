@@ -41,10 +41,7 @@ file on disk, this is the whole story.
 === "TypeScript"
 
     ```ts
-    import { loadIdf } from 'idfkit/node';
-
-    const doc = await loadIdf('whatever.idf');
-    doc.version; // '9.0.1', say
+    --8<-- "docs/snippets/js/concepts/version-compatibility/let_the_loader_read_the_version_out_of_the_file.ts:example"
     ```
 
 The version each library reports is spelled the way its ecosystem spells
@@ -67,33 +64,14 @@ editor never reaches a loader that could read it off disk. In TypeScript, take
 the three steps yourself, because each fails differently:
 
 ```ts
-import { getIdfVersion, parseIdf, resolveVersion, SchemaBundle, httpSource } from 'idfkit';
-
-const bundle = new SchemaBundle(httpSource('/schemas/'));
-
-const detected = getIdfVersion(text); // '9.0', or undefined
-if (detected === undefined) {
-  throw new Error('No Version object; ask the user which release this is.');
-}
-
-const available = await bundle.versions();
-const resolved = resolveVersion(detected, available);
-if (resolved === undefined) {
-  throw new Error(`EnergyPlus ${detected} is not supported. Available: ${available.join(', ')}`);
-}
-
-const { document } = parseIdf(text, await bundle.load(resolved));
+--8<-- "docs/snippets/js/concepts/version-compatibility/detect_resolve_and_load_text_you_obtained_some_other_way.ts:example"
 ```
 
 `resolveVersion` exists because IDF files write `Version, 9.0;` while schemas are
 keyed `9.0.1`. In Node, `schemaFor` is the same three steps behind one call:
 
 ```ts
-import { getIdfVersion, parseIdf } from 'idfkit';
-import { schemaFor } from 'idfkit/node';
-
-const schema = await schemaFor(getIdfVersion(text));
-const { document } = parseIdf(text, schema);
+--8<-- "docs/snippets/js/concepts/version-compatibility/detect_resolve_and_load_text_you_obtained_some_other_way_2.ts:example"
 ```
 
 Python has no equivalent, because it has nothing to resolve. Its parsers take a
@@ -117,9 +95,7 @@ version explicitly:
 === "TypeScript"
 
     ```ts
-    import { loadIdf } from 'idfkit/node';
-
-    const doc = await loadIdf('fragment.idf', { version: '26.1.0' });
+    --8<-- "docs/snippets/js/concepts/version-compatibility/files_with_no_version_object.ts:example"
     ```
 
 An explicit version overrides detection entirely, so it doubles as a "parse this
@@ -143,13 +119,7 @@ leaving the decision to the caller.
 === "TypeScript"
 
     ```ts
-    import { getEpJsonVersion, parseEpJson } from 'idfkit';
-    import { loadEpJson, schemaFor } from 'idfkit/node';
-
-    const doc = await loadEpJson('whatever.epJSON');
-
-    // Or, from text you already have:
-    const { document } = parseEpJson(text, await schemaFor(getEpJsonVersion(text)));
+    --8<-- "docs/snippets/js/concepts/version-compatibility/epjson_works_the_same_way_with_its_own_detector.ts:example"
     ```
 
 ## Hold one schema source when you work across versions

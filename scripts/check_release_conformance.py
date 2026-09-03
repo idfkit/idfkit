@@ -35,18 +35,37 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:  # pragma: no cover - 3.10 only
-    try:
-        import tomli as tomllib
-    except ModuleNotFoundError:  # pragma: no cover
-        sys.exit("No TOML reader available. Python 3.11+ ships tomllib; on 3.10 install tomli.")
+from typing import Any, Protocol
 
 REPO = Path(__file__).resolve().parents[1]
 CONFORMANCE_TAG_RE = re.compile(r"^conformance-\d{4}\.\d+$")
 CANNOT_RUN = 2
+
+
+class _TomlReader(Protocol):
+    def loads(self, s: str, /) -> dict[str, Any]: ...
+
+
+def _toml_reader() -> _TomlReader | None:
+    """tomllib on 3.11+, tomli on 3.10, None when neither is installed."""
+    try:  # Python 3.11+
+        import tomllib  # pyright: ignore[reportMissingTypeStubs]
+    except ModuleNotFoundError:  # pragma: no cover - exercised only on 3.10
+        try:
+            import tomli  # pyright: ignore[reportMissingImports]
+        except ModuleNotFoundError:  # pragma: no cover
+            return None
+        return tomli  # pyright: ignore[reportReturnType, reportUnknownVariableType]
+    return tomllib
+
+
+def _load_toml(text: str) -> dict[str, Any]:
+    """Parse TOML with whatever reader this interpreter has, or refuse to run."""
+    reader = _toml_reader()
+    if reader is None:
+        fail_to_run("No TOML reader available. Python 3.11+ ships tomllib; on 3.10 install tomli.")
+        raise AssertionError("unreachable")
+    return reader.loads(text)
 
 
 def fail_to_run(*lines: str) -> None:
@@ -66,7 +85,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 def declared_level() -> str:
     """Return ``[tool.idfkit.conformance] level``, the one place the claim is authored."""
-    data = tomllib.loads((REPO / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _load_toml((REPO / "pyproject.toml").read_text(encoding="utf-8"))
     level = data.get("tool", {}).get("idfkit", {}).get("conformance", {}).get("level")
     if not isinstance(level, str) or not level:
         fail_to_run(

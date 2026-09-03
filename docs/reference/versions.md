@@ -40,11 +40,7 @@ Both libraries expose the list, oldest first, and the newest entry on its own.
 === "TypeScript"
 
     ```ts
-    import { schemas } from '@idfkit/core/node';
-
-    const bundle = schemas();
-    (await bundle.versions()).length; // 17
-    await bundle.latest(); // '26.1.0'
+    --8<-- "docs/snippets/js/reference/versions/reading_the_list_at_runtime.ts:example"
     ```
 
     Versions are strings. Both accessors are async because the bundle index is
@@ -83,7 +79,7 @@ differently.
     `loadIdf` turns that into an error naming the versions that were available.
 
     ```ts
-    const doc = await loadIdf('fragment.idf', { version: '26.1.0' });
+    --8<-- "docs/snippets/js/reference/versions/matching_a_file_s_version_to_a_schema.ts:example"
     ```
 
 !!! note "The two libraries resolve `9.0` differently"
@@ -114,10 +110,7 @@ Sort on the numeric components, never on the version string. String order puts
 === "TypeScript"
 
     ```ts
-    import { compareVersions } from '@idfkit/core';
-
-    ['22.1.0', '8.9.0', '9.6.0'].sort(compareVersions);
-    // ['8.9.0', '9.6.0', '22.1.0']
+    --8<-- "docs/snippets/js/reference/versions/comparing_versions.ts:example"
     ```
 
     `versionKey` gives the same ordering as a single number, for when a sort

@@ -94,10 +94,8 @@ packaging:
 
 === "TypeScript"
 
-    ```typescript
-    import { CONFORMANCE_LEVEL } from '@idfkit/core';
-
-    console.log(CONFORMANCE_LEVEL); // 'conformance-2026.7'
+    ```ts
+    --8<-- "docs/snippets/js/explanation/conformance/the_level_tag_is_the_claim.ts:example"
     ```
 
 Neither constant is written by hand. Each is generated from the one declaration

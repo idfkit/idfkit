@@ -31,11 +31,7 @@ not know what it was handed does not have to look the key up.
 === "TypeScript"
 
     ```ts
-    const surface = doc.require('BuildingSurface:Detailed', 'Wall-1');
-
-    surface.extensible.length; // number of vertices
-    surface.extensible[0].vertex_z_coordinate;
-    surface.extensible[0]; // { vertex_x_coordinate: ..., ... }
+    --8<-- "docs/snippets/js/how-to/edit-extensible-groups/reach_the_section.ts:example"
     ```
 
 Each entry is one group, keyed by the group's field names in IDF order. For a
@@ -62,14 +58,7 @@ The list is live: changing it changes the object.
 === "TypeScript"
 
     ```ts
-    surface.extensible.push({
-      vertex_x_coordinate: 0,
-      vertex_y_coordinate: 0,
-      vertex_z_coordinate: 3,
-    });
-
-    surface.extensible.splice(2, 1); // drop the third vertex
-    surface.extensible[0].vertex_z_coordinate = 3.5;
+    --8<-- "docs/snippets/js/how-to/edit-extensible-groups/add_and_remove.ts:example"
     ```
 
 There is no `addVertex` and no `set_vertices`. It is a list, and the list
@@ -92,11 +81,7 @@ rejects a field name the schema does not define rather than storing it.
 === "TypeScript"
 
     ```ts
-    surface.vertices = [
-      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 3 },
-      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
-      { vertex_x_coordinate: 5, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
-    ];
+    --8<-- "docs/snippets/js/how-to/edit-extensible-groups/replace_the_whole_section.ts:example"
     ```
 
 Assigning to the epJSON key replaces the section in both. In TypeScript this is
@@ -106,7 +91,7 @@ splice the generic accessor in place instead, which is usually the reason to
 prefer it:
 
 ```ts
-surface.extensible.splice(0, surface.extensible.length, ...vertices);
+--8<-- "docs/snippets/js/how-to/edit-extensible-groups/replace_the_whole_section_2.ts:example"
 ```
 
 ## Renames reach inside groups
@@ -128,11 +113,7 @@ groups, and both reference graphs index those alongside ordinary fields.
 === "TypeScript"
 
     ```ts
-    const list = doc.require('ZoneList', 'All Zones');
-    list.extensible.push({ zone_name: 'Open Office' });
-
-    doc.require('Zone', 'Open Office').name = 'Open Plan';
-    list.extensible[0].zone_name; // 'Open Plan'
+    --8<-- "docs/snippets/js/how-to/edit-extensible-groups/renames_reach_inside_groups.ts:example"
     ```
 
 A graph that ignored repeating groups would make a rename silently produce a
@@ -202,10 +183,7 @@ installed the generated types:
 === "TypeScript"
 
     ```ts
-    doc.schema.get('BuildingSurface:Detailed')?.x?.fields;
-    // ['vertex_x_coordinate', 'vertex_y_coordinate', 'vertex_z_coordinate']
-    doc.schema.get('BuildingSurface:Detailed')?.x?.key;
-    // 'vertices'
+    --8<-- "docs/snippets/js/how-to/edit-extensible-groups/find_the_field_names_for_a_group.ts:example"
     ```
 
 ## See also

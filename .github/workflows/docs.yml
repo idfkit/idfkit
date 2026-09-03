@@ -72,6 +72,34 @@ jobs:
           echo "$level"
           echo "$level" >> "$GITHUB_OUTPUT"
 
+  js-snippets:
+    name: the vendored TypeScript examples are the pinned ones
+    runs-on: ubuntu-latest
+
+    # THIS JOB IS RED UNTIL docs-2026.1 IS PUBLISHED FROM idfkit-js, AND THAT IS THE POINT.
+    # FR-084: an artefact is published and versioned before anything pins it. The pin is written,
+    # the tree is vendored from the working checkout it will be cut from, and this job is what says
+    # so out loud instead of letting a vendored copy pass for a released one. Publish the level
+    # with idfkit-js/.github/workflows/publish-docs-artifacts.yml and it goes green.
+    #
+    # Do not "fix" it by removing the pin, by allowing the sibling override here, or by making it
+    # advisory. The vendored tree is a copy of another repository's published examples, and a copy
+    # nobody compares is a copy that drifts.
+    #
+    # It reaches the network and the documentation build does not. That separation is deliberate:
+    # FR-058 keeps the build free of any dependency on idfkit-js, and this is not the build.
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.11"
+
+      - name: Compare the vendored examples against the pinned release
+        run: uv run python scripts/sync_js_snippets.py --check
+
   strict:
     name: strict build
     needs: pins

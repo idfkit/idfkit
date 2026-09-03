@@ -131,13 +131,7 @@ directly, or use [idfkit-docs](https://docs.idfkit.com).
 ## Reading a definition
 
 ```ts
-import { localBundle } from '@idfkit/schemas/node';
-
-const schema = await localBundle().load('26.1.0');
-
-schema.resolve('ZONE'); // 'Zone'. IDF type names are case-insensitive
-schema.get('Zone'); // the SlimType
-schema.field('Zone', 'x_origin'); // { t: 'n', u: 'm', d: 0 }
+--8<-- "docs/snippets/js/reference/slim-schema-format/reading_a_definition.ts:example"
 ```
 
 Definitions are frozen and shared by identity across versions with the same

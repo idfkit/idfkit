@@ -22,9 +22,7 @@ reference integrity, neither of which a parse performs.
 === "TypeScript"
 
     ```ts
-    import { parseIdf } from '@idfkit/core';
-
-    const { document, diagnostics } = parseIdf(text, schema, { strict: false });
+    --8<-- "docs/snippets/js/how-to/collect-diagnostics/turn_strict_parsing_off.ts:example"
     ```
 
 You get a document either way. With strict parsing off it is the best
@@ -66,11 +64,7 @@ arrive as an exception and everything else to arrive as a log record.
 === "TypeScript"
 
     ```ts
-    const { document, diagnostics } = parseIdf(text, schema, { strict: false });
-
-    for (const d of diagnostics) {
-      console.warn(`${d.line}: ${d.message}`);
-    }
+    --8<-- "docs/snippets/js/how-to/collect-diagnostics/collect_what_was_skipped.ts:example"
     ```
 
 For a large batch, TypeScript's `onDiagnostic` fires as each problem is found,
@@ -80,10 +74,7 @@ handler already works this way: it is called per record, and nothing
 accumulates unless you accumulate it.
 
 ```ts
-parseIdf(text, schema, {
-  strict: false,
-  onDiagnostic: (d) => report(file, d.line, d.message),
-});
+--8<-- "docs/snippets/js/how-to/collect-diagnostics/collect_what_was_skipped_2.ts:example"
 ```
 
 ## Read the error when you do want to stop
@@ -109,16 +100,7 @@ type when the parser knew which object it was inside.
 === "TypeScript"
 
     ```ts
-    import { IdfParseError, parseIdf } from '@idfkit/core';
-
-    try {
-      parseIdf(text, schema);
-    } catch (error) {
-      if (error instanceof IdfParseError) {
-        console.error(`line ${error.line} (${error.typeName ?? 'unknown type'}): ${error.message}`);
-      }
-      throw error;
-    }
+    --8<-- "docs/snippets/js/how-to/collect-diagnostics/read_the_error_when_you_do_want_to_stop.ts:example"
     ```
 
 ## Keep the diagnostics when reading from a file
@@ -127,11 +109,7 @@ TypeScript's `loadIdf` returns the document directly and discards the
 diagnostics with it. Use `loadIdfWithDiagnostics` when you want both.
 
 ```ts
-import { loadIdfWithDiagnostics } from '@idfkit/core/node';
-
-const { document, diagnostics } = await loadIdfWithDiagnostics('model.idf', {
-  strict: false,
-});
+--8<-- "docs/snippets/js/how-to/collect-diagnostics/keep_the_diagnostics_when_reading_from_a_file.ts:example"
 ```
 
 Python has no equivalent pair: `parse_idf` reads from a path already, and the
@@ -158,12 +136,7 @@ and it returns findings rather than raising.
 === "TypeScript"
 
     ```ts
-    import { validateDocument } from '@idfkit/core';
-
-    const result = validateDocument(document);
-    for (const error of result.errors) {
-      console.error(error.code, error.objType, error.message);
-    }
+    --8<-- "docs/snippets/js/how-to/collect-diagnostics/diagnostics_are_not_validation.ts:example"
     ```
 
 The `code` on a finding is stable across both languages: `E001` is a missing
@@ -188,9 +161,7 @@ question directly.
 === "TypeScript"
 
     ```ts
-    for (const edge of document.danglingReferences()) {
-      console.warn(`${edge.field} points at missing "${edge.target}"`);
-    }
+    --8<-- "docs/snippets/js/how-to/collect-diagnostics/reference_integrity_is_a_third_check.ts:example"
     ```
 
 A document-wide validation run makes this check for you and reports it beside

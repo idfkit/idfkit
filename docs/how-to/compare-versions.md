@@ -31,17 +31,7 @@ it lives.
 === "TypeScript"
 
     ```ts
-    import { localBundle } from '@idfkit/schemas/node';
-
-    const bundle = localBundle();
-    const older = await bundle.load('9.4.0');
-    const newer = await bundle.load('26.1.0');
-
-    const delta = newer.changedFrom(older);
-
-    delta.added;   // type names introduced since 9.4
-    delta.removed; // type names that no longer exist
-    delta.changed; // type names whose definition differs
+    --8<-- "docs/snippets/js/how-to/compare-versions/diff_the_two_schemas.ts:example"
     ```
 
 Read the direction off the call. Python's `diff_schemas(from_index, to_index)`
@@ -85,13 +75,7 @@ releases is a list comparison.
 === "TypeScript"
 
     ```ts
-    const typeName = 'Coil:Cooling:DX:SingleSpeed';
-
-    const before = older.require(typeName).f;
-    const after = newer.require(typeName).f;
-
-    const gained = after.filter((field) => !before.includes(field));
-    const lost = before.filter((field) => !after.includes(field));
+    --8<-- "docs/snippets/js/how-to/compare-versions/compare_one_type_s_field_order.ts:example"
     ```
 
 A type can differ between two releases without gaining or losing a field. A
@@ -121,16 +105,7 @@ naming the object; the codes are the same in both languages.
 === "TypeScript"
 
     ```ts
-    import { validateDocument } from '@idfkit/core';
-
-    const target = await bundle.load('26.1.0');
-    const result = validateDocument(document, { schema: target });
-
-    for (const finding of result.warnings) {
-      if (finding.code === 'W002') {
-        console.warn(`${finding.objType} '${finding.objName}' does not exist in 26.1`);
-      }
-    }
+    --8<-- "docs/snippets/js/how-to/compare-versions/check_whether_a_model_holds_up_under_another_version.ts:example"
     ```
 
 This catches types the target release removed, and it catches fields whose

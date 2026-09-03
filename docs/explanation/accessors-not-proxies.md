@@ -49,9 +49,7 @@ The reference graph is live. Renaming an object rewrites every field elsewhere
 that pointed at the old name:
 
 ```ts
-const zone = doc.require('Zone', 'SPACE1-1');
-zone.name = 'Open Office';
-surface.zone_name; // 'Open Office'
+--8<-- "docs/snippets/js/explanation/accessors-not-proxies/why_the_setter_matters.ts:example"
 ```
 
 Nothing was called to make that happen. There is no `update()`, no

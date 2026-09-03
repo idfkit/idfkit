@@ -39,14 +39,7 @@ Resolve a station, then ask for its files.
 === "TypeScript"
 
     ```ts
-    import { loadBundledIndex } from '@idfkit/weather/node';
-    import { fetchWeatherFiles } from 'idfkit/weather';
-
-    const index = await loadBundledIndex();
-    const [best] = index.search('chicago ohare');
-
-    const files = await fetchWeatherFiles(best.station);
-    console.log(files.epw.length, files.ddy?.length);
+    --8<-- "docs/snippets/js/weather/downloads/download_the_files_for_a_station.ts:example"
     ```
 
 `loadBundledIndex` reads the index shipped inside the package, off disk and with
@@ -67,12 +60,7 @@ When you already have the filename, skip the station lookup.
 === "TypeScript"
 
     ```ts
-    import { fetchEpwByFilename } from 'idfkit/weather';
-
-    const epw = await fetchEpwByFilename(
-      'USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023',
-      index
-    );
+    --8<-- "docs/snippets/js/weather/downloads/download_by_canonical_epw_filename.ts:example"
     ```
 
 The index does the resolving in both languages, but it arrives differently.
@@ -179,9 +167,7 @@ Python and Node are unaffected; a page needs a forwarding proxy you control that
 adds the header. Point `rewriteUrl` at it:
 
 ```ts
-const epw = await fetchEpw(station, {
-  rewriteUrl: (url) => `https://your-proxy.example/?url=${encodeURIComponent(url)}`,
-});
+--8<-- "docs/snippets/js/weather/downloads/fetch_from_a_page_route_around_the_missing_cors_header.ts:example"
 ```
 
 `rewriteUrl` only changes the URL that gets fetched, so any forwarding proxy
@@ -203,11 +189,7 @@ temporarily down.
 === "TypeScript"
 
     ```ts
-    try {
-      const files = await fetchWeatherFiles(station);
-    } catch (error) {
-      console.error(`Download failed: ${String(error)}`);
-    }
+    --8<-- "docs/snippets/js/weather/downloads/handle_a_failed_download.ts:example"
     ```
 
 ## Run offline
@@ -262,12 +244,7 @@ write it out first. `saveWeatherFiles` does the writing, in the Latin-1 encoding
 EPW uses:
 
 ```ts
-import { fetchWeatherFiles } from 'idfkit/weather';
-import { saveWeatherFiles } from '@idfkit/weather/node';
-
-const files = await fetchWeatherFiles(station);
-const saved = await saveWeatherFiles(files, './weather');
-console.log(saved.epw);
+--8<-- "docs/snippets/js/weather/downloads/put_the_files_where_the_simulation_will_find_them.ts:example"
 ```
 
 ## See also

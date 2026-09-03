@@ -70,9 +70,7 @@ is:
 === "TypeScript"
 
     ```ts
-    for (const obj of doc.all('WeatherProperty:SkyTemperature')) {
-      obj.name; // '' when the file left the name blank
-    }
+    --8<-- "docs/snippets/js/explanation/positional-format-hazards/a_blank_name_is_not_the_same_as_no_name.ts:example"
     ```
 
 Conflating the two gives you either a collection where the second blank-named

@@ -27,11 +27,7 @@ absence is deliberate.
 === "TypeScript"
 
     ```ts
-    const zone = doc.require('Zone', 'SPACE1-1');
-    const surface = doc.require('BuildingSurface:Detailed', 'WALL-1');
-
-    zone.ceiling_height;
-    surface.outside_boundary_condition;
+    --8<-- "docs/snippets/js/explanation/epjson-field-names/the_name_on_disk_is_the_name_in_your_code.ts:example"
     ```
 
 The gain is that the epJSON schema, the EnergyPlus documentation, an epJSON file

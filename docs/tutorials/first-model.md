@@ -47,15 +47,7 @@ name, because it has no name field at all.
 === "TypeScript"
 
     ```ts
-    import { IdfDocument } from '@idfkit/core';
-    import { schemas } from '@idfkit/core/node';
-
-    const schema = await schemas().load('26.1.0');
-    const doc = new IdfDocument(schema);
-
-    doc.add('Version', null, { version_identifier: '26.1' });
-
-    console.log(doc.version);
+    --8<-- "docs/snippets/js/tutorials/first-model/step_1_create_an_empty_model.ts:example"
     ```
 
 ```
@@ -84,12 +76,7 @@ ordinary properties from there on.
 === "TypeScript"
 
     ```ts
-    const zone = doc.add('Zone', 'Open Office', {
-      ceiling_height: 2.7,
-      multiplier: 1,
-    });
-
-    console.log(zone.name, zone.ceiling_height);
+    --8<-- "docs/snippets/js/tutorials/first-model/step_2_add_a_zone.ts:example"
     ```
 
 ```
@@ -117,26 +104,7 @@ construction names a material. Add them in that order.
 === "TypeScript"
 
     ```ts
-    doc.add('Material', 'Brick 100mm', {
-      roughness: 'MediumRough',
-      thickness: 0.1,
-      conductivity: 0.89,
-      density: 1920,
-      specific_heat: 790,
-    });
-
-    doc.add('Construction', 'Exterior Wall', {
-      outside_layer: 'Brick 100mm',
-    });
-
-    const wall = doc.add('BuildingSurface:Detailed', 'North Wall', {
-      surface_type: 'Wall',
-      construction_name: 'Exterior Wall',
-      zone_name: 'Open Office',
-      outside_boundary_condition: 'Outdoors',
-      sun_exposure: 'SunExposed',
-      wind_exposure: 'WindExposed',
-    });
+    --8<-- "docs/snippets/js/tutorials/first-model/step_3_add_a_wall_its_construction_and_its_material.ts:example"
     ```
 
 The wall has no shape yet. Its corners live in an *extensible group*, a section
@@ -153,14 +121,7 @@ TypeScript reaches every group under one property, `wall.extensible`.
 === "TypeScript"
 
     ```ts
-    wall.extensible.push(
-      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 2.7 },
-      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
-      { vertex_x_coordinate: 5, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
-      { vertex_x_coordinate: 5, vertex_y_coordinate: 0, vertex_z_coordinate: 2.7 }
-    );
-
-    console.log(wall.extensible.length);
+    --8<-- "docs/snippets/js/tutorials/first-model/step_3_add_a_wall_its_construction_and_its_material_2.ts:example"
     ```
 
 ```
@@ -185,11 +146,7 @@ with it.
 === "TypeScript"
 
     ```ts
-    import { validateDocument } from '@idfkit/core';
-
-    const result = validateDocument(doc);
-
-    console.log(result.errors.length);
+    --8<-- "docs/snippets/js/tutorials/first-model/step_4_check_that_the_model_hangs_together.ts:example"
     ```
 
 ```
@@ -217,17 +174,7 @@ Instead, ask the document to do the rename.
 === "TypeScript"
 
     ```ts
-    console.log(wall.zone_name);
-
-    doc.rename(zone, 'Open Plan');
-
-    console.log(wall.zone_name);
-    console.log(
-      doc.references
-        .referencingObjects('Open Plan')
-        .map((o) => o.name)
-        .join(', ')
-    );
+    --8<-- "docs/snippets/js/tutorials/first-model/step_5_rename_the_zone_and_watch_the_references_follow.ts:example"
     ```
 
 ```
@@ -267,9 +214,7 @@ sides.
 === "TypeScript"
 
     ```ts
-    import { saveIdf } from '@idfkit/core/node';
-
-    await saveIdf(doc, 'office.idf');
+    --8<-- "docs/snippets/js/tutorials/first-model/step_6_write_it_to_an_idf_file.ts:example"
     ```
 
 Open `office.idf` in a text editor. The zone is there under its new name, and so
@@ -294,19 +239,7 @@ its own, so reading takes no more setup than writing did.
 === "TypeScript"
 
     ```ts
-    import { loadIdf } from '@idfkit/core/node';
-
-    const reread = await loadIdf('office.idf');
-
-    console.log(reread.version);
-
-    for (const z of reread.all('Zone')) {
-      console.log(`${z.name}: ceiling ${z.ceiling_height} m`);
-    }
-
-    const wallAgain = reread.require('BuildingSurface:Detailed', 'North Wall');
-    console.log(wallAgain.extensible.length);
-    console.log(wallAgain.extensible[0].vertex_z_coordinate);
+    --8<-- "docs/snippets/js/tutorials/first-model/step_7_read_it_back.ts:example"
     ```
 
 ```

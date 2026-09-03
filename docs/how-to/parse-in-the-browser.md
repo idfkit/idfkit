@@ -18,12 +18,7 @@ cp -r node_modules/@idfkit/schemas/data public/schemas
 Then point `httpSource` at it:
 
 ```ts
-import { parseIdf, SchemaBundle, httpSource } from '@idfkit/core';
-
-const bundle = new SchemaBundle(httpSource('/schemas/'));
-const schema = await bundle.load('26.1.0');
-
-const { document } = parseIdf(idfText, schema);
+--8<-- "docs/snippets/js/how-to/parse-in-the-browser/serve_the_bundle.ts:example"
 ```
 
 `httpSource` fetches the gzipped files and inflates them with
@@ -48,15 +43,7 @@ If you would rather not serve static files at all, supply your own
 `BundleSource` backed by dynamic `import()`:
 
 ```ts
-import { SchemaBundle, type BundleSource } from '@idfkit/core';
-
-const source: BundleSource = {
-  async read(fileName) {
-    return (await import(`./schemas/${fileName}.json`)).default;
-  },
-};
-
-const bundle = new SchemaBundle(source);
+--8<-- "docs/snippets/js/how-to/parse-in-the-browser/do_not_put_the_bundle_behind_a_bundler_import.ts:example"
 ```
 
 That keeps each manifest in its own chunk, fetched on demand.
@@ -68,8 +55,7 @@ real models carry single high bytes in degree signs and accented station names.
 Decode as latin-1, the way `loadIdf` does on the server:
 
 ```ts
-const buffer = await file.arrayBuffer();
-const text = new TextDecoder('latin1').decode(buffer);
+--8<-- "docs/snippets/js/how-to/parse-in-the-browser/read_a_file_the_user_picked_as_latin_1.ts:example"
 ```
 
 Reading it as UTF-8 turns those bytes into U+FFFD, and they will still be
@@ -83,16 +69,7 @@ schema keys have three: `Version, 9.0;` against a bundle keyed `9.0.1`. Loading
 failing, so resolve the version before you load a schema:
 
 ```ts
-import { getIdfVersion, parseIdf, resolveVersion } from '@idfkit/core';
-
-const detected = getIdfVersion(idfText);
-if (detected === undefined) throw new Error('This file has no Version object');
-
-const resolved = resolveVersion(detected, await bundle.versions());
-if (resolved === undefined) throw new Error(`EnergyPlus ${detected} is not in the bundle`);
-
-const schema = await bundle.load(resolved);
-const { document } = parseIdf(idfText, schema);
+--8<-- "docs/snippets/js/how-to/parse-in-the-browser/resolve_the_version_rather_than_assuming_it.ts:example"
 ```
 
 `resolveVersion` matches on major and minor when the patch component does not
@@ -105,16 +82,7 @@ steps in one call.
 Nothing here needs the DOM, so a worker works unchanged:
 
 ```ts
-// worker.ts
-import { parseIdf, writeIdf, SchemaBundle, httpSource } from '@idfkit/core';
-
-const bundle = new SchemaBundle(httpSource('/schemas/'));
-
-self.onmessage = async ({ data }) => {
-  const schema = await bundle.load(data.version);
-  const { document } = parseIdf(data.text, schema);
-  self.postMessage({ objects: document.size, idf: writeIdf(document) });
-};
+--8<-- "docs/snippets/js/how-to/parse-in-the-browser/parse_off_the_main_thread.ts:example"
 ```
 
 Documents themselves are not structured-cloneable: they hold prototypes and a

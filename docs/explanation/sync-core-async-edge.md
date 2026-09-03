@@ -48,9 +48,7 @@ way to make that synchronous in a browser.
 So it is explicit rather than hidden:
 
 ```ts
-const bundle = new SchemaBundle(httpSource('/schemas/'));
-const schema = await bundle.load('26.1.0'); // the async part, once
-const { document } = parseIdf(idfText, schema); // sync from here on
+--8<-- "docs/snippets/js/explanation/sync-core-async-edge/the_one_asynchronous_step.ts:example"
 ```
 
 Hold one `SchemaBundle` for the lifetime of the process. It caches by version,

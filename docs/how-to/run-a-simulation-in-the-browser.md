@@ -22,26 +22,7 @@ npx idfkit-engine-assets public/energyplus   # copy the WASM engine to your own 
 ## Edit, hand over, read back
 
 ```ts
-import { parseIdf, writeIdf, SchemaBundle, httpSource } from '@idfkit/core';
-import { createEnergyPlus } from '@idfkit/engine';
-
-// 1. Edit the model here.
-const schema = await new SchemaBundle(httpSource('/schemas/')).load('26.1.0');
-const { document } = parseIdf(idfText, schema);
-document.require('Zone', 'SPACE1-1').ceiling_height = 3;
-
-// 2. Hand it over as IDF text. Loading compiles a ~28 MB binary, so create the
-//    engine once and reuse it across runs.
-const ep = await createEnergyPlus({ assetBaseUrl: '/energyplus' });
-const result = await ep.run({ idf: writeIdf(document), epw: epwText });
-
-// 3. A failed run is data, not an exception: the err report is worth reading.
-if (result.success) {
-  console.log(result.eso?.variables.size, 'output variables');
-} else {
-  console.error(result.fatalError, result.err?.entries);
-}
-ep.dispose();
+--8<-- "docs/snippets/js/how-to/run-a-simulation-in-the-browser/edit_hand_over_read_back.ts:example"
 ```
 
 ## Keep the versions aligned
@@ -71,18 +52,14 @@ Pass the contents in `files`, keyed by exactly the path written in the model:
 relative to it, and case-sensitive, because the simulation filesystem is.
 
 ```ts
-const result = await ep.run({
-  idf: writeIdf(document),
-  epw: epwText,
-  files: { 'occupancy.csv': csvText },
-});
+--8<-- "docs/snippets/js/how-to/run-a-simulation-in-the-browser/a_model_that_reads_a_file_needs_that_file_handed_over_too.ts:example"
 ```
 
 Read the key off the document rather than hardcoding it, and the two cannot
 drift apart:
 
 ```ts
-const name = document.require('Schedule:File', 'Occupancy').get('file_name');
+--8<-- "docs/snippets/js/how-to/run-a-simulation-in-the-browser/a_model_that_reads_a_file_needs_that_file_handed_over_too_2.ts:example"
 ```
 
 A model naming a file that is not in `files` fails before the engine starts,
