@@ -12,8 +12,14 @@ repos:
       - id: pretty-format-json
         exclude: ^(.devcontainer/devcontainer.json|.*\.ipynb$|src/idfkit/schemas/doc_locations\.json$)
         args: [--autofix, --no-sort-keys]
+      # old-sitemaps/ holds the address inventories of the two retired sites,
+      # captured live and unrecoverable once they stop publishing (FR-086). They
+      # are evidence, not source: nothing may rewrite them, including a hook that
+      # only means to add a trailing newline.
       - id: end-of-file-fixer
+        exclude: ^old-sitemaps/
       - id: trailing-whitespace
+        exclude: ^old-sitemaps/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.14.9"

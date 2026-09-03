@@ -1,170 +1,283 @@
 # How to download weather files
 
-The `WeatherDownloader` downloads EPW and DDY weather files from
-climate.onebuilding.org with automatic caching.
+You have a weather station and you need its files: the EPW for an annual run,
+the DDY for design-day sizing. This guide fetches them, by station or by
+canonical EPW filename, one at a time or in bulk. To choose the station in the
+first place, see [How to search for weather stations](station-search.md).
+
+One difference runs through everything below. Python downloads into a cache
+directory and hands back `Path` objects. TypeScript writes nothing to disk and
+hands back the file contents as text. Neither is a reduced version of the other:
+a browser has no filesystem to cache into, and a Python caller is about to pass
+a path to EnergyPlus.
+
+!!! info "In JavaScript, weather is a separate install"
+    `pip install idfkit` installs weather support and its station index
+    unconditionally. `npm install idfkit` installs neither. `@idfkit/weather` is
+    an optional peer dependency of the shared `idfkit` package, so the installer
+    leaves it out by default and the 1.7 MB station index stays off disk for
+    everyone who never asks for weather. Importing `idfkit/weather` without it
+    fails with a message naming the package to install. See [How to install
+    idfkit](../getting-started/installation.md#weather-is-a-separate-install-in-javascript),
+    which also covers the fact that the npm packages are not published yet.
 
 !!! tip "Prefer the shell?"
-    The [`idfkit tmy`](../cli/tmy.md) CLI wraps this API for interactive use. Pass `--download DIR` to fetch the EPW/DDY/STAT bundle for a station without writing any Python.
+    The [`idfkit tmy`](../cli/tmy.md) CLI wraps the Python API for interactive
+    use. Pass `--download DIR` to fetch the EPW/DDY/STAT bundle for a station
+    without writing any code. There is no JavaScript equivalent.
 
-## Basic Usage
+## Download the files for a station
 
-```python
---8<-- "docs/snippets/weather/downloads/basic_usage.py:example"
-```
+Resolve a station, then ask for its files.
 
-## Download by Filename
+=== "Python"
 
-If you have the canonical EPW filename, download directly without a manual
-station lookup:
+    ```python
+    --8<-- "docs/snippets/weather/downloads/basic_usage.py:example"
+    ```
 
-```python
---8<-- "docs/snippets/weather/downloads/download_by_filename.py:example"
-```
+=== "TypeScript"
 
-## Selective Extraction
+    ```ts
+    import { loadBundledIndex } from '@idfkit/weather/node';
+    import { fetchWeatherFiles } from 'idfkit/weather';
 
-By default `download()` extracts the full bundle and requires both an EPW
-and a DDY to be present. Pass `only={".epw"}` (or any iterable of suffixes)
-to extract just the files you need — useful when you only want the EPW for
-an annual run, or when iterating over thousands of stations and you want
-to skip the STAT file entirely.
+    const index = await loadBundledIndex();
+    const [best] = index.search('chicago ohare');
+
+    const files = await fetchWeatherFiles(best.station);
+    console.log(files.epw.length, files.ddy?.length);
+    ```
+
+`loadBundledIndex` reads the index shipped inside the package, off disk and with
+no network call, so it exists only in Node. In a browser, serve the index from
+your own origin and load it with `loadStationIndex`; [How to search for weather
+stations](station-search.md) covers both paths.
+
+## Download by canonical EPW filename
+
+When you already have the filename, skip the station lookup.
+
+=== "Python"
+
+    ```python
+    --8<-- "docs/snippets/weather/downloads/download_by_filename.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { fetchEpwByFilename } from 'idfkit/weather';
+
+    const epw = await fetchEpwByFilename(
+      'USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023',
+      index
+    );
+    ```
+
+The index does the resolving in both languages, but it arrives differently.
+Python's `index` argument is optional and defaults to the bundled index, because
+it can always find one on disk. TypeScript's is required, because the caller had
+to obtain an index already and the function has nowhere to load one from. Either
+way, a filename matching no station raises rather than returning nothing.
+
+## Extract only the files you need
+
+By default `download()` extracts the whole bundle and requires both an EPW and a
+DDY to be present. Pass `only={".epw"}`, or any iterable of suffixes, to extract
+just the members you want: useful when the EPW alone will do, or when iterating
+over thousands of stations. Matching ignores case, so `".EPW"` and `"epw"` both
+select `.epw`.
 
 ```python
 --8<-- "docs/snippets/weather/downloads/selective_extraction.py:example"
 ```
 
-When `only=` is set, `download()` returns a `PartialWeatherFiles` whose
-`epw`, `ddy`, and `stat` fields are each `Path | None` — see below.
+There is no TypeScript counterpart, and that is not a gap. Selective extraction
+is a property of writing into a cache; the JavaScript side decodes from memory
+whatever the archive held, and carries the undecoded members beside it.
 
-## WeatherFiles
+## What a download returns
 
-The default `download()` call returns a `WeatherFiles` object:
+The record carries the same station and the same three weather files in both
+languages, and the fields that matter most hold different values.
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `epw` | `Path` | Path to the EPW file |
-| `ddy` | `Path` | Path to the DDY file |
-| `stat` | <code>Path &#124; None</code> | Path to the STAT file (may be None) |
-| `zip_path` | `Path` | Path to the original downloaded ZIP archive |
-| `station` | `WeatherStation` | The station this download corresponds to |
+| Field | Python (`WeatherFiles`) | TypeScript (`WeatherFiles`) |
+|-------|-------------------------|-----------------------------|
+| `epw` | `Path` to the extracted EPW | the EPW text |
+| `ddy` | `Path` to the extracted DDY | the DDY text, or `null` |
+| `stat` | `Path` to the STAT file, or `None` | the STAT text, or `null` |
+| `zip_path` | `Path` to the downloaded ZIP archive | not present |
+| `members` | not present | every archive member as bytes, by filename |
+| `station` | the `WeatherStation` downloaded | the `WeatherStation` downloaded |
+
+The names collide deliberately: `files.epw` is a path in Python and the file
+contents in TypeScript, so code written from one language's documentation
+against the other is wrong at runtime rather than merely awkward. [Parity with
+the Python library](../explanation/parity.md) records the difference and its
+cause.
 
 ```python
 --8<-- "docs/snippets/weather/downloads/weatherfiles.py:example"
 ```
 
-### PartialWeatherFiles
+### Selective extraction returns a `PartialWeatherFiles`
 
-`download(station, only=...)` returns a `PartialWeatherFiles` instead.
-Same shape, but `epw`, `ddy`, and `stat` are all optional — only the
-suffixes you asked for are populated:
+`download(station, only=...)` returns a `PartialWeatherFiles` instead: the same
+record with `epw`, `ddy`, and `stat` each `Path | None`. A field is `None` when
+its suffix was neither requested nor already sitting in the cache from an
+earlier download, so a suffix you did not ask for this time may still come back
+populated.
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `epw` | <code>Path &#124; None</code> | Path to the EPW file, or `None` if not requested |
-| `ddy` | <code>Path &#124; None</code> | Path to the DDY file, or `None` if not requested |
-| `stat` | <code>Path &#124; None</code> | Path to the STAT file, or `None` if not requested |
+| `epw` | <code>Path &#124; None</code> | Path to the EPW file, or `None` if not extracted |
+| `ddy` | <code>Path &#124; None</code> | Path to the DDY file, or `None` if not extracted |
+| `stat` | <code>Path &#124; None</code> | Path to the STAT file, or `None` if not extracted |
 | `zip_path` | `Path` | Path to the original downloaded ZIP archive |
 | `station` | `WeatherStation` | The station this download corresponds to |
 
-## Caching
+## Reuse the cache instead of the network
 
-Downloaded files are cached locally to avoid redundant downloads:
+Python caches; TypeScript does not. `WeatherDownloader.download()` checks the
+cache, fetches the station's ZIP only if it has to, extracts the requested
+members, stores them, and returns their paths, so the second call for a station
+costs no network at all. `fetchWeatherFiles` re-downloads every time, because
+there is nowhere in a browser to put the result. Hold on to the text you were
+given.
 
 ```python
 --8<-- "docs/snippets/weather/downloads/caching.py:example"
 ```
 
-### Cache Location
+### Cache location
 
-Default locations by platform:
-
-| Platform | Default Path |
+| Platform | Default path |
 |----------|--------------|
 | Linux | `~/.cache/idfkit/weather/files/` |
 | macOS | `~/Library/Caches/idfkit/weather/files/` |
 | Windows | `%LOCALAPPDATA%\idfkit\cache\weather\files\` |
 
-### Custom Cache Directory
+Set [`IDFKIT_CACHE_DIR`](../concepts/environment-variables.md#idfkit_cache_dir)
+to override all three, or pass a directory to one downloader:
 
 ```python
 --8<-- "docs/snippets/weather/downloads/custom_cache_directory.py:example"
 ```
 
-### Clear Cache
+### Clear the cache
 
 ```python
 --8<-- "docs/snippets/weather/downloads/clear_cache.py:example"
 ```
 
-## Download Process
+## Fetch from a page: route around the missing CORS header
 
-The downloader:
+climate.onebuilding.org sends no `Access-Control-Allow-Origin` header, so a
+direct fetch from a web page is blocked by the browser's same-origin policy.
+Python and Node are unaffected; a page needs a forwarding proxy you control that
+adds the header. Point `rewriteUrl` at it:
 
-1. Checks if files are already cached
-2. Downloads the ZIP file from the station's URL
-3. Extracts the requested files (full bundle by default; subset when `only=` is given)
-4. Stores in the cache directory
-5. Returns paths to the extracted files
-
-## Error Handling
-
-```python
---8<-- "docs/snippets/weather/downloads/error_handling.py:example"
+```ts
+const epw = await fetchEpw(station, {
+  rewriteUrl: (url) => `https://your-proxy.example/?url=${encodeURIComponent(url)}`,
+});
 ```
 
-Common errors:
+`rewriteUrl` only changes the URL that gets fetched, so any forwarding proxy
+works. Pass your own `fetch` instead when you need to add headers or
+authentication.
 
-- Network connectivity issues
-- Invalid station URL
-- Server temporarily unavailable
+## Handle a failed download
 
-## Offline Usage
+Both libraries reach the network, so both fail on the things networks fail on:
+no connectivity, a station URL that no longer resolves, a server that is
+temporarily down.
 
-Once files are cached, no network is needed:
+=== "Python"
 
-!!! tip "Running somewhere with no network at all?"
-    Caching the files is necessary but not sufficient. `StationIndex.load()`
-    still fires a throttled freshness check that costs time offline, and the
-    cache location has to be one both the warming environment and the isolated
-    run can see. [How to warm the weather cache for an offline
-    run](../how-to/warm-the-weather-cache.md) covers the whole setup.
+    ```python
+    --8<-- "docs/snippets/weather/downloads/error_handling.py:example"
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    try {
+      const files = await fetchWeatherFiles(station);
+    } catch (error) {
+      console.error(`Download failed: ${String(error)}`);
+    }
+    ```
+
+## Run offline
+
+Cached files need no network, so pre-downloading the stations a run will use
+gets you through the download itself.
 
 ```python
 --8<-- "docs/snippets/weather/downloads/offline_usage.py:example"
 ```
 
-## Batch Downloads
+!!! warning "Warming the cache is necessary but not sufficient"
+    `StationIndex.load()` still fires a throttled freshness check: at most once
+    every 24 hours it sends a HEAD request for each of the 10 upstream index
+    files. Offline, every one of them fails slowly and silently, and the first
+    load of the day can block for minutes before returning an index it already
+    had. `IDFKIT_NO_WEATHER_UPDATE_CHECK=1` is what actually suppresses them,
+    and the cache has to sit somewhere both the warming environment and the
+    isolated run can see. [How to warm the weather cache for an offline
+    run](../how-to/warm-the-weather-cache.md) covers the whole setup.
 
-Download files for multiple stations:
+There is nothing to warm in JavaScript, because nothing is cached. That
+library's offline story is settled at install time instead: install
+`@idfkit/weather` and its bundled index comes with it.
+
+## Download for many stations
 
 ```python
 --8<-- "docs/snippets/weather/downloads/batch_downloads.py:example"
 ```
 
-## File Format Details
+## What EPW and DDY files contain
 
-### EPW (EnergyPlus Weather)
+An **EPW** holds hourly weather for a typical meteorological year: temperature,
+humidity, solar radiation, wind, and the rest. It is what an annual simulation
+reads.
 
-- Hourly weather data for a typical meteorological year
-- Contains temperature, humidity, solar radiation, wind, etc.
-- Used by `simulate()` for annual simulations
+A **DDY** holds ASHRAE design day conditions as `SizingPeriod:DesignDay`
+objects. It is what HVAC sizing reads. See [How to apply design
+days](design-days.md) for injecting them into a model.
 
-### DDY (Design Day)
+## Put the files where the simulation will find them
 
-- ASHRAE design day conditions
-- Contains `SizingPeriod:DesignDay` objects
-- Used for HVAC sizing calculations
-
-## Integration Example
-
-Complete workflow:
+In Python the downloaded paths go straight into `simulate()`:
 
 ```python
 --8<-- "docs/snippets/weather/downloads/integration_example.py:example"
 ```
 
-## See Also
+In TypeScript you hold text, so either hand it to an engine that takes text or
+write it out first. `saveWeatherFiles` does the writing, in the Latin-1 encoding
+EPW uses:
 
-- [How to search for weather stations](station-search.md) — Find weather stations
-- [How to apply design days](design-days.md) — Apply design day conditions
-- [Weather Pipeline](../concepts/weather-pipeline.md) — Architecture details
+```ts
+import { fetchWeatherFiles } from 'idfkit/weather';
+import { saveWeatherFiles } from '@idfkit/weather/node';
+
+const files = await fetchWeatherFiles(station);
+const saved = await saveWeatherFiles(files, './weather');
+console.log(saved.epw);
+```
+
+## See also
+
+- [How to search for weather stations](station-search.md) for finding a station,
+  and for loading or refreshing the index
+- [How to apply design days](design-days.md) for using the DDY
+- [How to warm the weather cache for an offline run](../how-to/warm-the-weather-cache.md)
+  for air-gapped and CI environments
+- [How to install idfkit](../getting-started/installation.md) for the packaging
+  difference in full
+- [Weather Data Pipeline](../concepts/weather-pipeline.md) for where the data
+  comes from and how the index is built

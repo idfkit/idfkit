@@ -1,69 +1,231 @@
-# How to check version compatibility
+# How to work across EnergyPlus versions
 
-idfkit includes a built-in **compatibility linter** that statically analyses
-Python source files and detects cross-version breakage caused by EnergyPlus
-schema changes. This is useful when migrating models between EnergyPlus
-versions, or when maintaining code that must work across multiple versions.
+idfkit supports 17 EnergyPlus releases, and their schemas disagree: object types
+come and go, and enumerated choice values are renamed under you. A viewer, a
+converter, or anything else that opens files it did not write cannot hard-code
+`26.1.0`, and code that runs against more than one release cannot assume the
+names it was written with still exist.
 
-The linter parses Python source files using the AST (no code execution) and
-compares extracted string literals against the bundled epJSON schemas for
-different EnergyPlus versions.
+Neither failure is loud. Reading an IDF against the wrong schema does not throw,
+because IDF is positional: a field-order difference mis-maps values into
+neighbouring slots and the parse "succeeds" with a corrupted model. A choice
+value that was removed two releases ago is just a string until EnergyPlus
+rejects it.
 
-!!! tip "Static linting vs. runtime migration"
-    The compatibility linter described here flags cross-version breakage
-    *statically* — it tells you which lines of your code reference object
-    types or choice values that won't exist in another EnergyPlus version.
-    To actually upgrade an existing IDF model, see
-    [how to migrate models between versions](../simulation/migrating-versions.md),
-    which exposes
-    the sibling `idfkit migrate` CLI and the `idfkit.migrate()` Python
-    API — both drive the `IDFVersionUpdater` transition binaries.
+This guide covers both defences. At load time, let the library resolve the
+version out of the file. Before you ship or migrate, lint your source against
+the versions you claim to support.
 
-## What it detects
+!!! tip "Linting is not migration"
+    Everything here is static or read-only: it tells you what would break. To
+    actually upgrade a model, see [how to migrate models between
+    versions](../simulation/migrating-versions.md), which covers the sibling
+    `idfkit migrate` CLI and the `idfkit.migrate()` API, both driving the
+    `IDFVersionUpdater` transition binaries.
+
+## Let the loader read the version out of the file
+
+The loading entry points detect the version themselves, resolve it against the
+schemas they have, and fail with a useful message when there is no match. For a
+file on disk, this is the whole story.
+
+=== "Python"
+
+    ```python
+    from idfkit import load_idf
+
+    model = load_idf("whatever.idf")
+    model.version  # (9, 0, 1), say
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { loadIdf } from 'idfkit/node';
+
+    const doc = await loadIdf('whatever.idf');
+    doc.version; // '9.0.1', say
+    ```
+
+The version each library reports is spelled the way its ecosystem spells
+versions: a `(major, minor, patch)` tuple in Python, a string in TypeScript.
+`idfkit.version_string()` renders the tuple when you need the string form.
+
+What happens to a version that is not one of the 17 also differs, and the
+difference is worth knowing before you rely on either. Python falls back to the
+newest supported release at or below the detected one, so a file claiming
+`24.1.5` is read with the `24.1.0` schema, and only a version older than every
+bundled schema raises `SchemaNotFoundError`. TypeScript's `resolveVersion`
+matches on major and minor and takes the newest patch, and returns nothing at
+all when no release shares that major and minor, so the load throws rather than
+guessing.
+
+## Detect, resolve, and load text you obtained some other way
+
+Text fetched over the network, pulled out of a database, or pasted into an
+editor never reaches a loader that could read it off disk. In TypeScript, take
+the three steps yourself, because each fails differently:
+
+```ts
+import { getIdfVersion, parseIdf, resolveVersion, SchemaBundle, httpSource } from 'idfkit';
+
+const bundle = new SchemaBundle(httpSource('/schemas/'));
+
+const detected = getIdfVersion(text); // '9.0', or undefined
+if (detected === undefined) {
+  throw new Error('No Version object; ask the user which release this is.');
+}
+
+const available = await bundle.versions();
+const resolved = resolveVersion(detected, available);
+if (resolved === undefined) {
+  throw new Error(`EnergyPlus ${detected} is not supported. Available: ${available.join(', ')}`);
+}
+
+const { document } = parseIdf(text, await bundle.load(resolved));
+```
+
+`resolveVersion` exists because IDF files write `Version, 9.0;` while schemas are
+keyed `9.0.1`. In Node, `schemaFor` is the same three steps behind one call:
+
+```ts
+import { getIdfVersion, parseIdf } from 'idfkit';
+import { schemaFor } from 'idfkit/node';
+
+const schema = await schemaFor(getIdfVersion(text));
+const { document } = parseIdf(text, schema);
+```
+
+Python has no equivalent, because it has nothing to resolve. Its parsers take a
+path, `get_schema(version)` returns the schema synchronously from the package's
+own files, and `load_idf()` already chains the two. Write the text to a file and
+load it.
+
+## Files with no `Version` object
+
+Fragments, snippets, and hand-written test inputs often carry none. Pass the
+version explicitly:
+
+=== "Python"
+
+    ```python
+    from idfkit import load_idf
+
+    model = load_idf("fragment.idf", version=(26, 1, 0))
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { loadIdf } from 'idfkit/node';
+
+    const doc = await loadIdf('fragment.idf', { version: '26.1.0' });
+    ```
+
+An explicit version overrides detection entirely, so it doubles as a "parse this
+as if it were 26.1" escape hatch. Use it knowingly: that is precisely the
+mis-mapping the resolution logic exists to prevent. Python rejects a version
+that is not a known EnergyPlus release with `UnsupportedVersionError`, and
+raises `VersionNotFoundError` when detection finds nothing and you passed
+nothing; TypeScript's `getIdfVersion` returns `undefined` for the same input,
+leaving the decision to the caller.
+
+## epJSON works the same way, with its own detector
+
+=== "Python"
+
+    ```python
+    from idfkit import load_epjson
+
+    model = load_epjson("whatever.epJSON")
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { getEpJsonVersion, parseEpJson } from 'idfkit';
+    import { loadEpJson, schemaFor } from 'idfkit/node';
+
+    const doc = await loadEpJson('whatever.epJSON');
+
+    // Or, from text you already have:
+    const { document } = parseEpJson(text, await schemaFor(getEpJsonVersion(text)));
+    ```
+
+## Hold one schema source when you work across versions
+
+A document is bound to one version for its lifetime. There is no
+version-agnostic mode, because field order and reference lists genuinely differ
+between releases, so working across versions means holding several documents,
+not one flexible one.
+
+Keep a single schema source for all of them. Python's `get_schema()` goes
+through a process-wide `SchemaManager` that caches every version it has loaded,
+so repeat calls are free. TypeScript's `SchemaBundle` shares one blob store
+across versions: loading a second version pays only for the definitions it does
+not already share with the first, and the definitions common to both are the
+same frozen object. Hold one bundle for the lifetime of the process rather than
+constructing one per file. See [Content-addressed
+schemas](../explanation/content-addressed-schemas.md) for why that works.
+
+## Lint your source before you migrate
+
+The rest of this page is Python only. `idfkit check` statically analyses Python
+source and reports literals that will not survive a move to another EnergyPlus
+version. It parses with the AST and executes nothing, then compares the string
+literals it extracted against the bundled epJSON schemas for the versions you
+name. There is no TypeScript counterpart: generated type packages such as
+`@idfkit/types-v26-1` catch the same class of mistake at compile time instead.
+
+### What it detects
 
 | Code | Description |
 |------|-------------|
 | `C001` | Object type exists in one schema version but not another |
 | `C002` | Enumerated choice value for a field exists in one version but not another |
 
-## CLI usage
+The linter extracts string literals from these AST patterns:
 
-The `idfkit check` command lints one or more Python files.
+- `doc.add("ObjectType", ...)`: the first positional argument is treated as an
+  EnergyPlus object type.
+- `doc.add("ObjectType", field="value")`: keyword argument string values are
+  checked against the field's enumerated choices in the schema.
+- `doc.add("ObjectType", "Name", {"field": "value"})`: string values in a dict
+  literal argument are also checked.
+- `doc["ObjectType"]`: subscript access is checked when the file imports from
+  `idfkit`.
 
-### Lint migration between two versions
+Dynamic strings, f-strings, and variable references are ignored on purpose, to
+keep false positives low.
+
+### Lint between two versions, or against several
 
 ```bash
+# One migration
 idfkit check my_model.py --from 24.2 --to 25.1
-```
 
-### Lint against multiple target versions
-
-```bash
+# Several target versions at once
 idfkit check my_model.py --targets 24.1,24.2,25.1
 ```
 
-### Machine-readable JSON output (for CI)
+### Emit machine-readable output for CI
 
 ```bash
 idfkit check my_model.py --from 24.2 --to 25.1 --json
-```
-
-### SARIF output (for GitHub Code Scanning / VS Code)
-
-```bash
 idfkit check my_model.py --from 24.2 --to 25.1 --sarif
 ```
 
-SARIF (Static Analysis Results Interchange Format) output can be consumed by:
+SARIF (Static Analysis Results Interchange Format) 2.1.0 output is consumed by:
 
-- **GitHub Code Scanning** — upload via `github/codeql-action/upload-sarif`
-- **VS Code** — install the [SARIF Viewer](https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer) extension
-- Any SARIF 2.1.0-compatible tool
+- **GitHub Code Scanning**, uploaded via `github/codeql-action/upload-sarif`
+- **VS Code**, with the [SARIF
+  Viewer](https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer)
+  extension
+- any other SARIF 2.1.0-compatible tool
 
-### Rule selection
+### Narrow what gets reported
 
-Use `--select` and `--ignore` to control which lint rules are reported, similar
-to ruff's rule selection:
+`--select` and `--ignore` control which rules fire, the way ruff's do:
 
 ```bash
 # Only report object-type issues
@@ -73,11 +235,9 @@ idfkit check my_model.py --from 24.2 --to 25.1 --select C001
 idfkit check my_model.py --from 24.2 --to 25.1 --ignore C002
 ```
 
-### Group filtering
-
-EnergyPlus object types are organised into IDD groups (e.g. *Thermal Zones
-and Surfaces*, *Surface Construction Elements*, *HVAC Templates*). You can
-scope the linter to specific groups or exclude groups you don't care about:
+EnergyPlus object types are organised into IDD groups (*Thermal Zones and
+Surfaces*, *Surface Construction Elements*, *HVAC Templates*, and so on), which
+scope the linter further:
 
 ```bash
 # Only lint HVAC-related objects
@@ -89,13 +249,9 @@ idfkit check my_model.py --from 24.2 --to 25.1 \
     --exclude-group "Detailed Ground Heat Transfer"
 ```
 
-### Severity filtering
-
-By default all diagnostics are reported. Use `--severity` to set a minimum
-threshold:
+By default every diagnostic is reported. `--severity` sets a minimum:
 
 ```bash
-# Only report errors, suppress warnings
 idfkit check my_model.py --from 24.2 --to 25.1 --severity error
 ```
 
@@ -123,14 +279,10 @@ idfkit check my_model.py --from 24.2 --to 25.1 --severity error
 | `--exclude-group GROUPS` | Exclude object types in these IDD groups |
 | `--severity LEVEL` | Minimum severity: `warning` or `error` |
 
-## Pre-commit integration
+### Run the linter on every commit
 
-idfkit ships a [pre-commit](https://pre-commit.com/) hook so you can run the
-compatibility linter automatically on every commit.
-
-### Setup
-
-Add the following to your `.pre-commit-config.yaml`:
+idfkit ships a [pre-commit](https://pre-commit.com/) hook. Add it to your
+`.pre-commit-config.yaml`, then `pre-commit install`:
 
 ```yaml
 repos:
@@ -141,15 +293,8 @@ repos:
         args: ["--from", "24.2", "--to", "25.1"]
 ```
 
-Then install the hook:
-
-```bash
-pre-commit install
-```
-
-### Customising the hook
-
-You can pass any of the CLI flags described above via the `args` key:
+Any CLI flag above goes in `args`, and the standard pre-commit `files` filter
+restricts which paths are linted. The hook runs on Python files by default.
 
 ```yaml
 hooks:
@@ -161,21 +306,10 @@ hooks:
       - "C002"
       - "--group"
       - "Thermal Zones and Surfaces"
-```
-
-The hook runs on Python files by default. To restrict it to specific paths, use
-the standard pre-commit `files` filter:
-
-```yaml
-hooks:
-  - id: idfkit-check
-    args: ["--from", "24.2", "--to", "25.1"]
     files: ^src/.*\.py$
 ```
 
-### CI usage with SARIF
-
-For GitHub Actions, you can upload SARIF results to Code Scanning:
+For GitHub Actions, upload the SARIF results to Code Scanning:
 
 ```yaml
 # .github/workflows/lint.yml
@@ -193,9 +327,7 @@ jobs:
           sarif_file: results.sarif
 ```
 
-## Library API
-
-You can also use the linter programmatically:
+### Call the linter from Python
 
 ```python
 from idfkit.compat import check_compatibility
@@ -212,29 +344,41 @@ for d in diagnostics:
     # my_script.py:12:5: C001 [warning] Object type 'Foo' not found in 25.1.0 (exists in 24.2.0)
 ```
 
-### Group filtering via the library API
+Group filtering and SARIF formatting are available the same way:
 
 ```python
+from idfkit.compat import check_compatibility, format_sarif
+
 diagnostics = check_compatibility(
     source,
     filename="my_script.py",
     targets=[(24, 2, 0), (25, 1, 0)],
     include_groups={"Thermal Zones and Surfaces"},
 )
-```
-
-### SARIF output via the library API
-
-```python
-from idfkit.compat import check_compatibility, format_sarif
-
-diagnostics = check_compatibility(source, "my_script.py", targets=[(24, 2, 0), (25, 1, 0)])
 sarif_json = format_sarif(diagnostics)
 ```
 
-### Working with schema diffs directly
+Each diagnostic is a frozen dataclass:
 
-For lower-level access, use the schema diffing API:
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `str` | Machine-readable code (e.g. `"C001"`) |
+| `message` | `str` | Human-readable description |
+| `severity` | `CompatSeverity` | `WARNING` or `ERROR` |
+| `filename` | `str` | Source file path |
+| `line` | `int` | 1-based line number |
+| `col` | `int` | 0-based column offset |
+| `end_col` | `int` | 0-based end column offset |
+| `from_version` | `str` | Version where the literal is valid |
+| `to_version` | `str` | Version where the literal is invalid |
+| `suggested_fix` | <code>str &#124; None</code> | Optional suggested replacement |
+
+Call `diagnostic.to_dict()` for a plain dictionary suitable for JSON
+serialisation.
+
+### Diff two schemas directly
+
+For lower-level access, skip the linter and compare the schemas:
 
 ```python
 from idfkit.compat import build_schema_index, diff_schemas
@@ -251,38 +395,13 @@ for (obj_type, field), removed in diff.removed_choices.items():
     print(f"  {obj_type}.{field}: removed choices {removed}")
 ```
 
-## Diagnostic structure
+## See also
 
-Each diagnostic is a frozen dataclass with these fields:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | `str` | Machine-readable code (e.g. `"C001"`) |
-| `message` | `str` | Human-readable description |
-| `severity` | `CompatSeverity` | `WARNING` or `ERROR` |
-| `filename` | `str` | Source file path |
-| `line` | `int` | 1-based line number |
-| `col` | `int` | 0-based column offset |
-| `end_col` | `int` | 0-based end column offset |
-| `from_version` | `str` | Version where the literal is valid |
-| `to_version` | `str` | Version where the literal is invalid |
-| `suggested_fix` | `str \| None` | Optional suggested replacement |
-
-Call `diagnostic.to_dict()` to get a plain dictionary suitable for JSON
-serialisation.
-
-## Detected patterns
-
-The linter extracts string literals from these Python AST patterns:
-
-- **`doc.add("ObjectType", ...)`** -- the first positional argument is treated
-  as an EnergyPlus object type.
-- **`doc.add("ObjectType", field="value")`** -- keyword argument string values
-  are checked against the field's enumerated choices in the schema.
-- **`doc.add("ObjectType", "Name", {"field": "value"})`** -- string values in a
-  dict literal argument are also checked.
-- **`doc["ObjectType"]`** -- subscript access is checked when the file imports
-  from `idfkit`.
-
-Dynamic strings, f-strings, and variable references are intentionally ignored to
-keep false positives low.
+- [How to migrate models between EnergyPlus versions](../simulation/migrating-versions.md)
+  for upgrading an existing model rather than checking one
+- [Supported versions](../reference/versions.md) for the 17 releases and how a
+  file's version is matched to a schema
+- [Content-addressed schemas](../explanation/content-addressed-schemas.md) for
+  why holding several versions at once is cheap
+- [Type safety](type-safety.md) for catching the same class of mistake in an
+  editor

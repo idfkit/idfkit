@@ -1,26 +1,25 @@
 # Tutorials
 
-Tutorials are lessons. They take you by the hand through a series of steps to
-build something with idfkit, so you come away knowing how the pieces fit
-together. Follow them start to finish — you don't need to understand every line
-yet, only to do the steps and watch what happens.
+Tutorials are lessons. They take one controlled path from an empty file to a
+working model, so you come away knowing how the pieces fit together rather than
+knowing where a particular function lives. Follow them start to finish, in
+order, without substitutions. You do not need to understand every line yet, only
+to run the steps and watch what happens.
 
-If you already know what you want to accomplish and just need the steps, head to
-the [How-to guides](../how-to/index.md) instead.
+If you already know what you want to accomplish and just need the steps, the
+[how-to guides](../how-to/index.md) are the shorter route.
 
 ## Start here
 
-- [**Build your first model**](first-model.md) — create a complete, valid
-  two-storey office model from an empty document, then run it through EnergyPlus
-  and read a result back, meeting the document, objects, references, validation,
-  and the weather and simulation helpers along the way.
-- [**Core Tutorial**](../getting-started/core-tutorial.ipynb) — a longer
-  interactive notebook that works through idfkit end to end.
+- [**Build your first model**](first-model.md) creates an EnergyPlus model from
+  nothing, watches the reference graph rewrite itself when you rename a zone,
+  writes the model to an IDF file, and reads it back. Python and TypeScript
+  side by side, about fifteen minutes, no EnergyPlus installation needed.
+- [**Core Tutorial**](../getting-started/core-tutorial.ipynb) works through the
+  Python library end to end in a notebook, from basic use to the expert
+  surface. Longer, and Python only.
 
-New to idfkit? [Install it first](../getting-started/installation.md), then work
-through [Build your first model](first-model.md).
-
-Already know what you want to do? The
-[Common tasks](../getting-started/quick-start.md) recipes
-cover the everyday operations — loading existing files, running simulations, and
-more.
+New to the library? Start with [Build your first model](first-model.md). When
+you are done, the [how-to guides](../how-to/index.md) cover the everyday
+operations, and [what each language has](../explanation/parity.md) says which
+of them your language carries today.

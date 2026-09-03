@@ -1,12 +1,21 @@
 site_name: idfkit
 repo_url: https://github.com/idfkit/idfkit
-site_url: https://py.idfkit.com/
-site_description: A fast, modern EnergyPlus IDF/epJSON toolkit for Python with O(1) lookups, automatic reference tracking, 3D geometry, and simulation support.
+# One site for both languages (FR-051). Per-language sites, per-language navigation
+# sections, and per-language addresses for shared material are prohibited: py.idfkit.com
+# and js.idfkit.com redirect here permanently and no longer publish (FR-056).
+site_url: https://developers.idfkit.com/
+site_description: EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site.
 site_author: Samuel Letellier-Duchesne
 edit_uri: edit/main/docs/
 repo_name: idfkit/idfkit
 copyright: Maintained by <a href="https://samuelduchesne.github.io">samuelduchesne</a>.
 
+# FR-059 declares exactly one exception to the four kinds of the Diataxis structure:
+# `agent-references/`, the material addressed to automated tooling and shipped inside
+# the Python wheel. It is a fifth section by explicit amendment, not by drift. A second
+# exception requires amending the specification, not adding a line here, and
+# `scripts/check_page_kinds.py` hard-codes this one name so the set cannot widen by
+# accident.
 exclude_docs: |
   tape/README.md
   # SKILL.md is the agent/MCP dispatch document (bundled in the wheel); its
@@ -21,6 +30,12 @@ nav:
 
   # Documentation is organised by the Diátaxis framework: Tutorials (learning),
   # How-to guides (tasks), Reference (facts), and Explanation (understanding).
+  #
+  # ONE navigation for both languages (FR-051). There is deliberately no Python
+  # section and no TypeScript section: a page that teaches a task teaches it once,
+  # and only the fenced code varies by language (FR-052). A page that applies to one
+  # language only is filed by its kind like any other, and says so in its first line
+  # rather than being quarantined into a language branch.
 
   - Tutorials:
     - tutorials/index.md
@@ -32,6 +47,13 @@ nav:
     - Common tasks: getting-started/quick-start.md
     - How to install idfkit: getting-started/installation.md
     - How to migrate from eppy: migration.md
+    - Reading and editing models:
+      - Collect diagnostics instead of throwing: how-to/collect-diagnostics.md
+      - Edit extensible groups: how-to/edit-extensible-groups.md
+      - Compare two EnergyPlus versions: how-to/compare-versions.md
+    - In the browser:
+      - Parse in the browser: how-to/parse-in-the-browser.md
+      - Run a simulation in the browser: how-to/run-a-simulation-in-the-browser.md
     - Working with simulations:
       - simulation/index.md
       - Run a simulation: simulation/running.md
@@ -62,12 +84,23 @@ nav:
       - Run distributed simulations with Scythe: examples/scythe.md
     - Configuring & operating:
       - Configure logging: concepts/logging.md
-      - Check version compatibility: concepts/version-compatibility.md
+      - Work across EnergyPlus versions: concepts/version-compatibility.md
+    # Troubleshooting pages are how-to guides: each one is a task, taken in order,
+    # by a reader who already knows what went wrong (FR-055, T107). They were a
+    # top-level section, which made them a fifth kind by accident.
+    - Troubleshooting:
+      - Common errors: troubleshooting/errors.md
+      - EnergyPlus issues: troubleshooting/energyplus.md
 
   - Reference:
     - reference/index.md
+    - Supported EnergyPlus versions: reference/versions.md
+    - Slim schema format: reference/slim-schema-format.md
     - Environment Variables: concepts/environment-variables.md
-    - CLI — idfkit tmy: cli/tmy.md
+    - "CLI: idfkit tmy": cli/tmy.md
+    # Generated from source by each language's own tooling (FR-061). The TypeScript
+    # half arrives as a sibling of these subjects when its TypeDoc artefact is
+    # published and pinned; it is not a second, language-named branch.
     - API Reference:
       - Core:
         - Document: api/document.md
@@ -108,14 +141,26 @@ nav:
 
   - Explanation:
     - explanation/index.md
+    - The hazards of a positional format: explanation/positional-format-hazards.md
+    - Why field names come from epJSON: explanation/epjson-field-names.md
+    # Both generated from the pinned governance tag. They were reachable only by
+    # direct link until now, which made a generated page that nothing navigates to.
+    - Capability parity: explanation/parity.md
+    - The naming map: explanation/naming-map.md
+    - How conformance is established: explanation/conformance.md
+    - Type-safe development: concepts/type-safety.md
+    - Static types generated from the schema: explanation/generated-types.md
+    - Why accessors and not a Proxy: explanation/accessors-not-proxies.md
+    - Content-addressed schemas: explanation/content-addressed-schemas.md
+    - A synchronous core with async edges: explanation/sync-core-async-edge.md
     - Simulation architecture: concepts/simulation-architecture.md
     - Weather data pipeline: concepts/weather-pipeline.md
     - Caching strategy: concepts/caching.md
     - Geocoding & IP location: explanation/geocoding.md
-    - Type-safe development: concepts/type-safety.md
     - How the schedule evaluator works: design/schedule-evaluator.md
     - Performance & benchmarks: benchmarks.md
 
+  # The one declared exception to the four kinds (FR-059). See the exclude_docs note.
   - Developing with idfkit:
     - agent-references/index.md
     - Document & Objects: agent-references/document-and-objects.md
@@ -134,10 +179,6 @@ nav:
     - Thermal Properties: agent-references/thermal-properties.md
     - Visualization: agent-references/visualization.md
     - Version Migration: agent-references/version-migration.md
-
-  - Troubleshooting:
-    - Common Errors: troubleshooting/errors.md
-    - EnergyPlus Issues: troubleshooting/energyplus.md
 
 # Build-time substitution, not a plugin: `parity(id)` resolves against the pinned parity
 # ledger and fails the build on an id that does not exist. A macros plugin would make Jinja of
@@ -182,6 +223,10 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.code.select
+    # Language tabs sync site-wide by label, which is what makes one choice of
+    # "Python" or "TypeScript" hold across every page (FR-053). Its prerequisite,
+    # pymdownx.tabbed with alternate_style, is set below.
+    - content.tabs.link
     - content.tooltips
     - navigation.footer
     - navigation.indexes
@@ -224,6 +269,13 @@ extra:
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/idfkit
   generator: false
+
+# The language shim (FR-053, FR-054). Reads ?language= and ?os= on load, activates the
+# matching tab sets, and rewrites the parameter when the reader switches. Must stay a
+# plain entry: it runs at end of body, after the tab markup and after Material has
+# defined window.document$, which is the hook that survives instant navigation.
+extra_javascript:
+  - javascripts/tab-sync.js
 
 extra_css:
   - stylesheets/extra.css

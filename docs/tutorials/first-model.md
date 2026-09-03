@@ -1,266 +1,408 @@
 # Build your first model
 
-In this tutorial you'll build a small but complete EnergyPlus model from
-nothing — a two-storey office block with zones, walls, windows, and
-constructions — and then **run it through EnergyPlus and read a result back**.
-Along the way you'll meet the pieces every idfkit project is made of: the
-document, objects, references, validation, and the weather and simulation
-helpers.
+By the end of this you will have built an EnergyPlus model from nothing,
+watched the reference graph rewrite itself when you rename a zone, written the
+model to an IDF file, and read it back.
 
-You don't need to understand every line yet. Follow the steps in order, run
-each snippet, and watch what happens. By the end you'll have built a model,
-simulated it, and pulled a number out of the results.
+It takes about fifteen minutes, and the code is the same lesson in both
+languages. Every step below carries a Python tab and a TypeScript tab that do
+the same thing and print the same output, so pick your language once and follow
+one column down the page.
 
-**You'll need:**
+## Before you start
 
-- **idfkit** — `pip install idfkit`
-- For the last three steps, **EnergyPlus installed** (8.9 or newer) and a
-  **network connection** the first time, so idfkit can download the weather
-  data. Steps 1–8 need neither, so you can build and write the whole model
-  before installing EnergyPlus.
+You need one of the two libraries and nothing else: no EnergyPlus, no build
+step, no schema files to fetch. Both carry every supported EnergyPlus schema,
+8.9.0 through 26.1.0, so nothing is downloaded while you work.
 
-Work through it in a Python file or a REPL, adding each snippet as you go.
+Python installs from PyPI with `pip install idfkit`, and [How to install
+idfkit](../getting-started/installation.md) covers the extras and the supported
+interpreters. The TypeScript packages are not yet published under the shared
+`idfkit` install name; until they are, work from a checkout of the [idfkit-js
+repository](https://github.com/idfkit/idfkit-js) on Node 20 or newer.
 
-## Step 1 — Start a new document
+Keep the code in one file as you go, `build_model.py` or `build-model.ts`, and
+re-run it after each step. You do not need to know EnergyPlus: where the model
+needs a number, this page gives you one.
 
-Everything in idfkit lives in a **document**: the in-memory container for one
-EnergyPlus model. Every document is pinned to one EnergyPlus version, because
-that version decides which objects and fields are valid. Pin it to the
-EnergyPlus you actually have, so the simulation in Step 10 has no version gap to
-close:
+## Step 1: Create an empty model
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:new"
-```
+Every model is bound to one EnergyPlus version, because field order genuinely
+differs between releases. Pinning it is therefore the first thing you do, and
+it is the one step where the two libraries ask for different work. Python
+resolves the schema from the version you name and seeds the singleton objects
+a model cannot do without (`Version`, `Building`, `SimulationControl`, and
+`GlobalGeometryRules`). The TypeScript core cannot assume a filesystem, because
+the same build has to run in a browser, a worker, and an edge runtime, so you
+load the schema yourself, await it, hand it to the constructor, and add
+`Version` by hand. `Version` takes `null` where every other object takes a
+name, because it has no name field at all.
 
-You'll see whichever version idfkit found on your machine:
+=== "Python"
 
-```
-Building for EnergyPlus 26.1.0
-```
+    ```python
+    from idfkit import new_document, version_string
 
-If you don't have EnergyPlus yet, `find_energyplus()` raises
-`EnergyPlusNotFoundError` and the fallback pins the document to
-`LATEST_VERSION` instead, so Steps 1–8 still work offline.
+    doc = new_document(version=(26, 1, 0))
 
-!!! note "If you install EnergyPlus later"
+    print(version_string(doc.version))
+    ```
 
-    idfkit can migrate a model *forward* to a newer EnergyPlus, but never
-    backward, because EnergyPlus ships no reverse transition binaries. So if
-    you ran Step 1 with no EnergyPlus and then installed an **older** release,
-    re-run Step 1 to re-pin the document before you simulate.
+=== "TypeScript"
 
-The document already holds a few required singleton objects (a `Building`, the
-geometry rules, and so on), pre-seeded so the model is well-formed from the
-start. You'll add the interesting parts next.
+    ```ts
+    import { IdfDocument } from '@idfkit/core';
+    import { schemas } from '@idfkit/core/node';
 
-## Step 2 — Generate the building geometry
+    const schema = await schemas().load('26.1.0');
+    const doc = new IdfDocument(schema);
 
-You *could* place every wall by hand, but idfkit ships high-level **builders**
-that turn a footprint into a fully-zoned block. Give one a rectangle, a
-floor-to-floor height, and a storey count, and ask it to split each floor into a
-core and four perimeter zones:
+    doc.add('Version', null, { version_identifier: '26.1' });
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:block"
-```
-
-The builder created ten zones (five per storey) and sixty surfaces:
+    console.log(doc.version);
+    ```
 
 ```
-10
-60
+26.1.0
 ```
 
-`doc["Zone"]` is a name-indexed collection of every `Zone` object in the model,
-and `len()` tells you how many there are. Your office now has a shape.
+That string is the version in the form both libraries agree on. The underlying
+value differs: Python's `doc.version` is the tuple `(26, 1, 0)`, which sorts and
+compares without a helper, and TypeScript's is the string `'26.1.0'`, which is
+what its schema keys already are. `version_string()` renders the Python tuple
+into the shared form, and anything crossing between the two languages uses the
+string.
 
-## Step 3 — Define constructions
+## Step 2: Add a zone
 
-Those surfaces reference *constructions* that don't exist yet. A construction is
-a stack of material layers, so first add a `Material`, then a `Construction`
-that uses it — and do the same for the glazing your windows will need:
+A zone is a volume of air EnergyPlus solves for. `add` takes the object type,
+the name, and the fields, and hands back the object it created; its fields are
+ordinary properties from there on.
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:constructions"
-```
+=== "Python"
 
-`doc.add(type, name, **fields)` is how you create any object. Field names are
-the EnergyPlus fields in `snake_case` (`specific_heat`, `outside_layer`), and
-the value you pass for `outside_layer` is the *name* of the material — idfkit
-records that as a reference from the construction to the material.
+    ```python
+    zone = doc.add("Zone", "Open Office", ceiling_height=2.7, multiplier=1)
 
-## Step 4 — Add windows and assign constructions
+    print(zone.name, zone.ceiling_height)
+    ```
 
-Punch windows into the exterior walls at a 40% window-to-wall ratio, then give
-every remaining surface the opaque wall construction:
+=== "TypeScript"
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:windows"
-```
+    ```ts
+    const zone = doc.add('Zone', 'Open Office', {
+      ceiling_height: 2.7,
+      multiplier: 1,
+    });
 
-```
-8
-60
-```
-
-`set_wwr()` returns the eight window objects it created, and
-`set_default_constructions()` reports the sixty opaque surfaces it just filled
-in. Notice the order: the windows claimed the glazing construction first, so the
-fill step only touched the surfaces that still lacked one.
-
-## Step 5 — Look at what you built
-
-Objects are looked up by name in O(1), and you read their fields as attributes:
-
-```python
---8<-- "docs/snippets/tutorials/first-model.py:inspect"
-```
+    console.log(zone.name, zone.ceiling_height);
+    ```
 
 ```
-Office Story 1 Perimeter_South
+Open Office 2.7
 ```
 
-`.first()` grabs any one zone from the collection so you can inspect it.
+Those field names are the epJSON names, spelled exactly as the schema spells
+them: `ceiling_height` in both languages, not `ceilingHeight`, and [not the
+IDD's `Ceiling Height`](../explanation/epjson-field-names.md). An editor can
+complete them, from the shipped stubs in Python and from an opt-in type package
+in TypeScript, which is [Static types generated from the
+schema](../explanation/generated-types.md).
 
-## Step 6 — Rename, and watch references follow
+## Step 3: Add a wall, its construction, and its material
 
-Here's the idfkit feature you'll come to rely on. Six surfaces name this zone as
-the space they bound. Rename the zone, and every one of those references updates
-itself — no dangling names left behind:
+Three objects, each naming the next: the wall names a construction, the
+construction names a material. Add them in that order.
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:rename"
+=== "Python"
+
+    ```python
+    doc.add(
+        "Material",
+        "Brick 100mm",
+        roughness="MediumRough",
+        thickness=0.1,
+        conductivity=0.89,
+        density=1920,
+        specific_heat=790,
+    )
+
+    doc.add("Construction", "Exterior Wall", outside_layer="Brick 100mm")
+
+    wall = doc.add(
+        "BuildingSurface:Detailed",
+        "North Wall",
+        surface_type="Wall",
+        construction_name="Exterior Wall",
+        zone_name="Open Office",
+        outside_boundary_condition="Outdoors",
+        sun_exposure="SunExposed",
+        wind_exposure="WindExposed",
+    )
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    doc.add('Material', 'Brick 100mm', {
+      roughness: 'MediumRough',
+      thickness: 0.1,
+      conductivity: 0.89,
+      density: 1920,
+      specific_heat: 790,
+    });
+
+    doc.add('Construction', 'Exterior Wall', {
+      outside_layer: 'Brick 100mm',
+    });
+
+    const wall = doc.add('BuildingSurface:Detailed', 'North Wall', {
+      surface_type: 'Wall',
+      construction_name: 'Exterior Wall',
+      zone_name: 'Open Office',
+      outside_boundary_condition: 'Outdoors',
+      sun_exposure: 'SunExposed',
+      wind_exposure: 'WindExposed',
+    });
+    ```
+
+The wall has no shape yet. Its corners live in an *extensible group*, a section
+of the object that repeats, which both libraries expose as a live list you add
+rows to. Python reaches it under the name of the group, `wall.vertices`;
+TypeScript reaches every group under one property, `wall.extensible`.
+
+=== "Python"
+
+    ```python
+    wall.vertices.extend([
+        {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
+        {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.7},
+    ])
+
+    print(len(wall.vertices))
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    wall.extensible.push(
+      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 2.7 },
+      { vertex_x_coordinate: 0, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
+      { vertex_x_coordinate: 5, vertex_y_coordinate: 0, vertex_z_coordinate: 0 },
+      { vertex_x_coordinate: 5, vertex_y_coordinate: 0, vertex_z_coordinate: 2.7 }
+    );
+
+    console.log(wall.extensible.length);
+    ```
+
+```
+4
 ```
 
+That is a 5 m by 2.7 m wall, listed anticlockwise from the top left, which is
+the order `GlobalGeometryRules` declares and EnergyPlus expects.
+
+## Step 4: Check that the model hangs together
+
+Validation reads the model against the schema and reports what it finds, one
+record per finding. Nothing is raised: you get a result and decide what to do
+with it.
+
+=== "Python"
+
+    ```python
+    from idfkit import validate_document
+
+    result = validate_document(doc)
+
+    print(len(result.errors))
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { validateDocument } from '@idfkit/core';
+
+    const result = validateDocument(doc);
+
+    console.log(result.errors.length);
+    ```
+
 ```
-6
 0
-6
 ```
 
-Before the rename, six objects referenced the old name. After it, the old name
-is referenced by nothing, and the new name is referenced by exactly those same
-six. idfkit tracks every cross-object reference and rewrites them for you when
-you `rename()`.
+No errors means every required field is present and every name the model refers
+to actually exists. Change `Exterior Wall` to `Exteriar Wall` on the wall and
+run it again: both libraries report one error, coded `E009`, for a reference to
+an object that does not exist. Then change it back. The codes are identical in
+both languages and the human-readable messages are not, so match on the code.
 
-## Step 7 — Validate the model
+## Step 5: Rename the zone and watch the references follow
 
-Before writing the model out, ask idfkit to check it against the EnergyPlus
-schema:
+This is the part worth slowing down for. The wall names the zone, so renaming
+the zone would normally mean finding and fixing that name everywhere it appears.
+Instead, ask the document to do the rename.
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:validate"
-```
+=== "Python"
 
-```
-True
-0
-```
+    ```python
+    print(wall.zone_name)
 
-A clean bill of health: every reference resolves and every required field is
-present. (Try commenting out Step 3 and re-running — you'll see validation
-report the surfaces pointing at a construction that doesn't exist.)
+    doc.rename("Zone", "Open Office", "Open Plan")
 
-## Step 8 — Write it to disk
+    print(wall.zone_name)
+    print(", ".join(o.name for o in doc.get_referencing("Open Plan")))
+    ```
 
-Finally, serialise the document to an EnergyPlus IDF file:
+=== "TypeScript"
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:write"
-```
+    ```ts
+    console.log(wall.zone_name);
 
-You now have an `office.idf` on disk — a valid, two-storey, windowed office
-block that you built from an empty document. Open it in a text editor and you'll
-recognise the zones, surfaces, and constructions you created. But the whole point
-of a model is to *run* it, so let's do that next.
+    doc.rename(zone, 'Open Plan');
 
-## Step 9 — Fetch weather and design days
-
-To simulate, EnergyPlus needs weather data and at least one *design day* — an
-extreme day used for sizing. idfkit fetches both for you: it finds the nearest
-weather station to a latitude/longitude, downloads its files, and injects a
-design day into your model.
-
-```python
---8<-- "docs/snippets/tutorials/first-model.py:weather"
-```
+    console.log(wall.zone_name);
+    console.log(
+      doc.references
+        .referencingObjects('Open Plan')
+        .map((o) => o.name)
+        .join(', ')
+    );
+    ```
 
 ```
-1
+Open Office
+Open Plan
+North Wall
 ```
 
-idfkit downloaded a weather file and its design-day (`.ddy`) companion for a
-station near Chicago, added one `SizingPeriod:DesignDay` — a cold winter sizing
-day — and updated the model's `Site:Location` to match. The first run downloads
-and caches the files; later runs reuse the cache.
+The wall's `zone_name` changed and you never touched it. Both libraries keep a
+live reference graph, so the rename moved an edge in that graph and rewrote
+every field anywhere in the model that pointed at the old name. There is no
+`update()` to call and no index to rebuild, so there is nothing to forget.
 
-## Step 10 — Run the simulation
+The two spellings differ where each language's receiver differs. Python hangs
+the query on the document, `doc.get_referencing(name)`, and returns a set;
+TypeScript exposes the graph itself as `doc.references` and hangs the query
+there, `doc.references.referencingObjects(name)`, returning an array. Why
+TypeScript can do this with real properties rather than a `Proxy` is [Accessors,
+not proxies](../explanation/accessors-not-proxies.md).
 
-Ask EnergyPlus for an output variable so the run has something to report, then
-simulate. We run only the design day (`design_day=True`), which takes seconds
-rather than the minutes a full-year run needs:
+## Step 6: Write it to an IDF file
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:simulate"
+Writing is where the two libraries part on shape rather than on vocabulary.
+Python's file API is synchronous, so `save_idf` returns when the file is on
+disk. The TypeScript core is synchronous and pure so that it can run in a
+browser, which pushes everything touching a disk into `@idfkit/core/node`, where
+it is awaited: [a synchronous core with async
+edges](../explanation/sync-core-async-edge.md). The verb is the same on both
+sides.
+
+=== "Python"
+
+    ```python
+    from idfkit import save_idf
+
+    save_idf(doc, "office.idf")
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { saveIdf } from '@idfkit/core/node';
+
+    await saveIdf(doc, 'office.idf');
+    ```
+
+Open `office.idf` in a text editor. The zone is there under its new name, and so
+is the wall's `Zone Name` field further down. Notice the empty fields you never
+set: IDF has no field names, the `!-` markers are comments, and a value's
+meaning comes entirely from how many commas precede it. Those blanks hold
+positions open, which matters most on the wall, where dropping one would shift
+every vertex coordinate into the wrong slot. [The hazards of a positional
+format](../explanation/positional-format-hazards.md) is the long version.
+
+## Step 7: Read it back
+
+Parsing detects the version from the file and resolves the matching schema on
+its own, so reading takes no more setup than writing did.
+
+=== "Python"
+
+    ```python
+    from idfkit import load_idf
+
+    reread = load_idf("office.idf")
+
+    print(version_string(reread.version))
+
+    for z in reread["Zone"]:
+        print(f"{z.name}: ceiling {z.ceiling_height} m")
+
+    wall_again = reread["BuildingSurface:Detailed"]["North Wall"]
+    print(len(wall_again.vertices))
+    print(wall_again.vertices[0].vertex_z_coordinate)
+    ```
+
+=== "TypeScript"
+
+    ```ts
+    import { loadIdf } from '@idfkit/core/node';
+
+    const reread = await loadIdf('office.idf');
+
+    console.log(reread.version);
+
+    for (const z of reread.all('Zone')) {
+      console.log(`${z.name}: ceiling ${z.ceiling_height} m`);
+    }
+
+    const wallAgain = reread.require('BuildingSurface:Detailed', 'North Wall');
+    console.log(wallAgain.extensible.length);
+    console.log(wallAgain.extensible[0].vertex_z_coordinate);
+    ```
+
+```
+26.1.0
+Open Plan: ceiling 2.7 m
+4
+2.7
 ```
 
-```
-True
-```
+The vertices came back as the same rows you added. Collections are iterable in
+both languages, and both offer a lookup that returns nothing on a miss and one
+that fails on a miss. The spellings follow each language's habits: Python reads
+a collection with the subscript operator, `doc["Zone"]["Open Plan"]`, which
+raises `KeyError` when the name is absent, while TypeScript needs a method and
+names it for what it does, `doc.require('Zone', 'Open Plan')`. Where you would
+rather have the absent value than an error, both spell it `get`.
 
-`result.success` is `True` — EnergyPlus ran and finished cleanly. Passing
-`energyplus=config` reuses the installation you already found in Step 1 instead
-of searching for it again. `auto_migrate=True` is the safety net: your document
-is already pinned to the installed version, so there's normally nothing to
-migrate, but if you pinned it to `LATEST_VERSION` back when EnergyPlus wasn't
-installed, idfkit forward-migrates it for you here.
+## What you built
 
-## Step 11 — Read a result back
+You created a model, connected four objects by name, renamed one and watched the
+others follow, wrote real IDF, and parsed it back into the same objects. That is
+the whole object model. Everything else is more object types.
 
-The outputs live in an SQLite database that idfkit reads for you. Count the
-variables, then pull the lobby's temperature series:
+It is also the whole shared vocabulary. The names you used are the ones the two
+libraries agreed on, and where they differ, they differ because the languages
+do: a subscript against a method, a set against an array, a tuple against a
+string, a synchronous call against an awaited one. [The naming
+map](../explanation/naming-map.md) records every pair and the reason for each
+difference.
 
-```python
---8<-- "docs/snippets/tutorials/first-model.py:read"
-```
+## Where to go next
 
-```
-10
-24
--0.9
-```
-
-Ten temperature series came back — one per zone. The lobby's has 24 hourly
-values (one design day), and its warmest hour is about **−0.9 °C**. That exact
-number will shift a little with your EnergyPlus version and the weather file —
-and it's cold on purpose: we never added a heating system, so the unconditioned
-shell just tracks the winter design conditions. Giving the zones an HVAC system
-is the natural next move — see [How to run a simulation](../simulation/running.md).
-
-## What you learned
-
-- A **document** holds one model; **objects** are added with
-  `doc.add(...)` and looked up by name.
-- **Builders** like `create_block()` and `set_wwr()` generate correct geometry
-  so you don't place vertices by hand.
-- **Constructions reference materials**, and **surfaces reference constructions
-  and zones** — and idfkit keeps those references consistent, even across a
-  `rename()`.
-- **`validate_document()`** checks the whole model against the schema before you
-  write it.
-- **idfkit fetches weather and design days** for you (`StationIndex`,
-  `WeatherDownloader`, `DesignDayManager`) — no hand-built sizing periods.
-- **`find_energyplus()` locates your EnergyPlus**, and pinning the document to
-  its version keeps model and engine in step; `auto_migrate=True` closes the gap
-  forward if one opens up.
-- **`simulate()` runs EnergyPlus** and **`result.sql`** reads the outputs back.
-
-## Next steps
-
-- [Common tasks](../getting-started/quick-start.md) — the everyday operations
-  (loading existing files, querying, running a simulation) as quick recipes.
-- [Core Tutorial](../getting-started/core-tutorial.ipynb) — a longer interactive
-  walkthrough in a notebook.
-- [How-to guides](../how-to/index.md) — goal-oriented recipes once you know what
-  you want to do.
+- [How-to guides](../how-to/index.md) for the task you actually came here to do.
+- [Static types generated from the
+  schema](../explanation/generated-types.md), so a misspelled field name becomes
+  an editor error rather than a surprise at simulation time.
+- Run the model you just built. In Python that is [How to run a
+  simulation](../simulation/running.md), which drives a local EnergyPlus
+  installation; in TypeScript it is [How to run a simulation in the
+  browser](../how-to/run-a-simulation-in-the-browser.md), which runs EnergyPlus
+  compiled to WebAssembly.
+- [What each language has](../explanation/parity.md), before you plan work
+  around a capability one of them does not carry yet.

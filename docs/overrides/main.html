@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
+  {# Tab axis registry + pre-paint reconciliation of ?language= / ?os= with Material's own
+     tab memory. Must stay in the head, ahead of the body script that restores tabs. #}
+  {% include "partials/tab-axes.html" %}
+
 {% if page %}
   <!-- Twitter Card defaults -->
   <meta name="twitter:card" content="summary_large_image">
