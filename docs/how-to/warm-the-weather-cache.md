@@ -13,7 +13,7 @@ Everything here is Python. There is no equivalent procedure in JavaScript
 because there is nothing there to warm: that library keeps no cache directory,
 so its offline story is decided at install time rather than at build time.
 
-{{ parity("weather-index") }}
+{{ parity("weather-file-cache") }}
 
 ## What needs warming, and what does not
 
