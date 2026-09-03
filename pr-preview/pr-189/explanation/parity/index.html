@@ -1,0 +1,7263 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site.">
+      
+      
+        <meta name="author" content="Samuel Letellier-Duchesne">
+      
+      
+        <link rel="canonical" href="https://developers.idfkit.com/pr-preview/pr-189/explanation/parity/">
+      
+      
+        <link rel="prev" href="../epjson-field-names/">
+      
+      
+        <link rel="next" href="../naming-map/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Capability parity - idfkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+  <script>
+  window.__idfkitTabAxes = [
+    { param: "language", values: { python: "Python", typescript: "TypeScript" } },
+    { param: "os", values: { macos: "macOS", linux: "Linux", windows: "Windows" } }
+  ];
+  (function () {
+    var promoted = [];
+    var params = new URL(location.href).searchParams;
+    for (var i = 0; i < window.__idfkitTabAxes.length; i++) {
+      var axis = window.__idfkitTabAxes[i];
+      var raw = params.get(axis.param);
+      if (!raw) continue;
+      var label = axis.values[raw.trim().toLowerCase()];
+      if (label && promoted.indexOf(label) < 0) promoted.push(label);
+    }
+    if (!promoted.length) return;
+    var stored = [];
+    try { stored = __md_get("__tabs") || []; } catch (e) { stored = []; }
+    if (!Array.isArray(stored)) stored = [];
+    var next = promoted.concat(stored.filter(function (tab) { return promoted.indexOf(tab) < 0; }));
+    try { __md_set("__tabs", next); } catch (e) { /* storage unavailable; the shim still applies the URL */ }
+  })();
+</script>
+
+
+  <!-- Twitter Card defaults -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Capability parity - idfkit">
+  <meta name="twitter:description" content="EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site.">
+
+  <!-- Additional OG tags -->
+  <meta property="og:site_name" content="idfkit">
+  <meta property="og:locale" content="en_US">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Capability parity",
+    "description": "EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site.",
+    "url": "https://developers.idfkit.com/pr-preview/pr-189/explanation/parity/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "idfkit",
+      "url": "https://developers.idfkit.com/"
+    },
+    "about": {
+      "@type": "SoftwareSourceCode",
+      "name": "idfkit",
+      "url": "https://github.com/idfkit/idfkit",
+      "programmingLanguage": "Python",
+      "codeRepository": "https://github.com/idfkit/idfkit"
+    }
+  }
+  </script>
+
+
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Capability parity - idfkit" />
+<meta property="og:description" content="EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site." />
+<meta property="og:image" content="https://developers.idfkit.com/pr-preview/pr-189/assets/images/social/explanation/parity.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://developers.idfkit.com/pr-preview/pr-189/explanation/parity/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Capability parity - idfkit" />
+<meta property="twitter:description" content="EnergyPlus IDF and epJSON tooling for Python and TypeScript. One API surface, one vocabulary, one site." />
+<meta property="twitter:image" content="https://developers.idfkit.com/pr-preview/pr-189/assets/images/social/explanation/parity.png" />
+</head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#about-capability-parity" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="idfkit" class="md-header__button md-logo" aria-label="idfkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.66 11.2c-.23-.3-.51-.56-.77-.82-.67-.6-1.43-1.03-2.07-1.66C13.33 7.26 13 4.85 13.95 3c-.95.23-1.78.75-2.49 1.32-2.59 2.08-3.61 5.75-2.39 8.9.04.1.08.2.08.33 0 .22-.15.42-.35.5-.23.1-.47.04-.66-.12a.6.6 0 0 1-.14-.17c-1.13-1.43-1.31-3.48-.55-5.12C5.78 10 4.87 12.3 5 14.47c.06.5.12 1 .29 1.5.14.6.41 1.2.71 1.73 1.08 1.73 2.95 2.97 4.96 3.22 2.14.27 4.43-.12 6.07-1.6 1.83-1.66 2.47-4.32 1.53-6.6l-.13-.26c-.21-.46-.77-1.26-.77-1.26m-3.16 6.3c-.28.24-.74.5-1.1.6-1.12.4-2.24-.16-2.9-.82 1.19-.28 1.9-1.16 2.11-2.05.17-.8-.15-1.46-.28-2.23-.12-.74-.1-1.37.17-2.06.19.38.39.76.63 1.06.77 1 1.98 1.44 2.24 2.8.04.14.06.28.06.43.03.82-.33 1.72-.93 2.27"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            idfkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Capability parity
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/idfkit/idfkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    idfkit/idfkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  How-to guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../agent-references/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Developing with idfkit
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="idfkit" class="md-nav__button md-logo" aria-label="idfkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.66 11.2c-.23-.3-.51-.56-.77-.82-.67-.6-1.43-1.03-2.07-1.66C13.33 7.26 13 4.85 13.95 3c-.95.23-1.78.75-2.49 1.32-2.59 2.08-3.61 5.75-2.39 8.9.04.1.08.2.08.33 0 .22-.15.42-.35.5-.23.1-.47.04-.66-.12a.6.6 0 0 1-.14-.17c-1.13-1.43-1.31-3.48-.55-5.12C5.78 10 4.87 12.3 5 14.47c.06.5.12 1 .29 1.5.14.6.41 1.2.71 1.73 1.08 1.73 2.95 2.97 4.96 3.22 2.14.27 4.43-.12 6.07-1.6 1.83-1.66 2.47-4.32 1.53-6.6l-.13-.26c-.21-.46-.77-1.26-.77-1.26m-3.16 6.3c-.28.24-.74.5-1.1.6-1.12.4-2.24-.16-2.9-.82 1.19-.28 1.9-1.16 2.11-2.05.17-.8-.15-1.46-.28-2.23-.12-.74-.1-1.37.17-2.06.19.38.39.76.63 1.06.77 1 1.98 1.44 2.24 2.8.04.14.06.28.06.43.03.82-.33 1.72-.93 2.27"/></svg>
+
+    </a>
+    idfkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/idfkit/idfkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    idfkit/idfkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tutorials/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/first-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build your first model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/office-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulate an office block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/core-tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../how-to/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common tasks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to install idfkit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to migrate from eppy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading and editing models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reading and editing models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/collect-diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collect diagnostics instead of throwing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/edit-extensible-groups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edit extensible groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/compare-versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compare two EnergyPlus versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In the browser
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    In the browser
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/parse-in-the-browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parse in the browser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-a-simulation-in-the-browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run a simulation in the browser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../simulation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with simulations
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_7" id="__nav_3_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Working with simulations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/running/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run a simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/async/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run simulations asynchronously
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access simulation results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/sql-queries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query SQL output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/batch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run batch simulations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track simulation progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache simulation results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plot simulation results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/output-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discover output variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle simulation errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../simulation/migrating-versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrate models between EnergyPlus versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/sizing-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Day Sizing Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/parametric-study/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parametric Study Example
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../weather/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Weather data
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Weather data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weather/station-search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search for weather stations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weather/downloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download weather files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weather/design-days/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apply design days
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weather/geocoding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geocode addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/warm-the-weather-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Warm the weather cache for an offline run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schedules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_10" id="__nav_3_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling out
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Scaling out
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/cloud-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use cloud & remote storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/cloud-simulations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store simulation results in S3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/celery-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run simulations as Celery tasks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/scythe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run distributed simulations with Scythe
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_11" id="__nav_3_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuring & operating
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuring & operating
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/version-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Work across EnergyPlus versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_12" id="__nav_3_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/energyplus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EnergyPlus issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported EnergyPlus versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/slim-schema-format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Slim schema format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/environment-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/tmy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI: idfkit tmy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6_1" id="__nav_4_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/objects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Objects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/geometry_builders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry Builders
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/surface_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface Matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/zoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zoning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/references/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    References
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/thermal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thermal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/simulation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_6_2" id="__nav_4_6_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Simulation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/async/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Async
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/expand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/sql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/eso/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ESO / MTR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/batch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/simulation/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File Systems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/schedules/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedules
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schedules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/weather/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Weather
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_6_5" id="__nav_4_6_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_6_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Weather
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/weather/station/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Station
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/weather/download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/weather/designday/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Days
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6_6" id="__nav_4_6_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TypeScript packages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_6_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    TypeScript packages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/typescript/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    @idfkit/core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/typescript/core-node/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    @idfkit/core/node
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/typescript/schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    @idfkit/schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/typescript/weather/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    @idfkit/weather
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/typescript/weather-node/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    @idfkit/weather/node
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Explanation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../positional-format-hazards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hazards of a positional format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../epjson-field-names/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why field names come from epJSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability parity
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability parity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#three-states-not-two" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three states, not two
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-kinds-of-absence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two kinds of absence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-entry-per-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One entry per mechanism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ids-are-load-bearing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ids are load-bearing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every capability at a glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 1: the shared core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 1: the shared core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading IDF and epJSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing IDF and epJSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documents, collections, and objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema access and the version registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Describing an object type from the schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building EnergyPlus documentation URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-object-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static types generated from the schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parse-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostics from a parse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The weather station index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving weather and design-day files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conformance-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring the conformance level a release passes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geocoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geocoding a place name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 2: portable, not ported yet
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 2: portable, not ported yet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lossless-round-trip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting-preserving round-trip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading geometry from a model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-authoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and transforming geometry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intersecting and matching surfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generating zoned blocks from a footprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thermal-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Construction thermal properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedule evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-variable-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the output variable dictionary and selecting variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-day-sizing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design days and ASHRAE sizing conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 3: tooling and Node-bound capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 3: tooling and Node-bound capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward-migrating a model between EnergyPlus versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-compatibility-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking source against another EnergyPlus version's schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-plotting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plotting simulation results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permanently-single-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permanently single-language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Permanently single-language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a locally installed EnergyPlus and reading its results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#browser-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running EnergyPlus in the browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#svg-visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rendering a model to a vector image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scene-rendering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rendering a three-dimensional scene
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eppy-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        eppy compatibility surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-file-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching retrieved weather files on disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../naming-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The naming map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How conformance is established
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/type-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type-safe development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generated-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static types generated from the schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../accessors-not-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why accessors and not a Proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content-addressed-schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Content-addressed schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sync-core-async-edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A synchronous core with async edges
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser-simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Browser simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../what-is-not-finished/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is not finished
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/simulation-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/weather-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Weather data pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../geocoding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geocoding & IP location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/schedule-evaluator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How the schedule evaluator works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance & benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-references/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developing with idfkit
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developing with idfkit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/document-and-objects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Document & Objects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/parsing-idf-epjson/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parsing IDF/epJSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/writing-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/schema-and-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema & Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/reference-tracking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference Tracking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/geometry-and-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry & Surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/geometry-builders-and-zoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry Builders & Zoning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/hvac-templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HVAC Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/hvac-loops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HVAC Loops
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/simulation-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/result-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Result Parsing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/weather-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Weather Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/schedule-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedule Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/thermal-properties/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thermal Properties
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-references/version-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Version Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#three-states-not-two" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three states, not two
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-kinds-of-absence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two kinds of absence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-entry-per-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One entry per mechanism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ids-are-load-bearing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ids are load-bearing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every capability at a glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 1: the shared core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 1: the shared core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading IDF and epJSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing IDF and epJSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documents, collections, and objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema access and the version registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Describing an object type from the schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building EnergyPlus documentation URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-object-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static types generated from the schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parse-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostics from a parse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The weather station index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving weather and design-day files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conformance-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring the conformance level a release passes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geocoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geocoding a place name
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 2: portable, not ported yet
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 2: portable, not ported yet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lossless-round-trip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting-preserving round-trip
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading geometry from a model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-authoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and transforming geometry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intersecting and matching surfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generating zoned blocks from a footprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thermal-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Construction thermal properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedule evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-variable-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the output variable dictionary and selecting variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-day-sizing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design days and ASHRAE sizing conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 3: tooling and Node-bound capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 3: tooling and Node-bound capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward-migrating a model between EnergyPlus versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-compatibility-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking source against another EnergyPlus version's schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-plotting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plotting simulation results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permanently-single-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permanently single-language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Permanently single-language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a locally installed EnergyPlus and reading its results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#browser-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running EnergyPlus in the browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#svg-visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rendering a model to a vector image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scene-rendering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rendering a three-dimensional scene
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eppy-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        eppy compatibility surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weather-file-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching retrieved weather files on disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/idfkit/idfkit/edit/main/docs/explanation/parity.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/idfkit/idfkit/raw/main/docs/explanation/parity.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+    </a>
+  
+
+
+<h1 id="about-capability-parity">About capability parity<a class="headerlink" href="#about-capability-parity" title="Permanent link">&para;</a></h1>
+<p>Two libraries now answer to one name. That is the point of the unification, and
+it is also its sharpest risk. Once both are called <code>idfkit</code>, a reader who finds
+something in Python and not in JavaScript has no way to tell whether they have
+met a deliberate boundary or a defect, and the reasonable assumption is defect.</p>
+<p>The parity ledger removes the guesswork. Every public capability of either
+library appears on it exactly once, with its availability in both languages, and
+every absence is described rather than left to be discovered. A written-down
+absence is documentation. An undocumented one is a bug report waiting to be
+filed against behaviour that is working as designed.</p>
+<p>This page is the reader-facing view of that ledger. Everything below the
+generated marker comes from <code>governance/parity.toml</code> in the
+<a href="https://github.com/idfkit/idfkit-conformance">conformance repository</a>, read at
+the immutable governance tag this release pins, so the page you are reading and
+the file both libraries' CI gates read cannot disagree. For the vocabulary side
+of the same governance, which name each concept carries in each language, see
+<a href="../naming-map/">the naming map</a>.</p>
+<h2 id="three-states-not-two">Three states, not two<a class="headerlink" href="#three-states-not-two" title="Permanent link">&para;</a></h2>
+<p>A capability is <code>complete</code>, <code>partial</code>, or <code>absent</code> in each language.</p>
+<p>The middle state is the one that earns its keep. A capability that exists in
+both languages and behaves differently is neither present nor absent, and
+calling it present is precisely the lie this ledger exists to prevent. Anything
+recorded as <code>partial</code> carries a description of what differs, because <code>partial</code>
+with nothing said about it is indistinguishable from <code>complete</code>.</p>
+<h2 id="two-kinds-of-absence">Two kinds of absence<a class="headerlink" href="#two-kinds-of-absence" title="Permanent link">&para;</a></h2>
+<p>An absence alone tells you almost nothing. What you need to know is whether to
+wait or to plan around it, so every absent side is recorded as one of two kinds.</p>
+<ul>
+<li><strong>Not yet.</strong> The second language could have this and does not have it today.
+  The entry names the issue tracking the port. Expect this to change.</li>
+<li><strong>Never.</strong> The capability is permanently single-language, and the entry says
+  why. A permanent record is a stronger claim than a temporary one, so moving a
+  capability out of <code>never</code> takes a constitutional amendment rather than an edit
+  to the ledger.</li>
+</ul>
+<p>On the page, a temporary gap is an amber notice naming a tracking issue and a
+permanent one is a plain notice naming a reason. In the table at the top, the
+same distinction reads as <code>absent (not yet)</code> against <code>absent (never)</code>.</p>
+<h2 id="one-entry-per-mechanism">One entry per mechanism<a class="headerlink" href="#one-entry-per-mechanism" title="Permanent link">&para;</a></h2>
+<p>Where the two libraries do something recognisably similar by fundamentally
+different means, that is two capabilities and not one.</p>
+<p>Simulation is the case that forces the rule. Python drives a locally installed
+EnergyPlus through a subprocess; JavaScript runs a WebAssembly build in the
+browser. Recorded as a single <code>simulation</code> entry, whichever language the entry
+was written from would make the other read as deficient, and every page
+describing it would print a gap notice for a capability that is not missing.
+Visual output splits for the same reason: a static vector image drawn once is
+not a real-time rendered scene.</p>
+<p>So <a href="#local-simulation"><code>local-simulation</code></a> and
+<a href="#browser-simulation"><code>browser-simulation</code></a> appear separately, as do
+<a href="#svg-visualisation"><code>svg-visualisation</code></a> and
+<a href="#scene-rendering"><code>scene-rendering</code></a>. Neither pair is ever collapsed. When you
+read one of them as Python-only or JavaScript-only, its partner entry is where
+the other language's answer lives.</p>
+<h2 id="the-ids-are-load-bearing">The ids are load-bearing<a class="headerlink" href="#the-ids-are-load-bearing" title="Permanent link">&para;</a></h2>
+<p>Each capability's ledger id is a permanent public identifier, and it does three
+jobs at once. It is the anchor on this page, so a link to <code>#local-simulation</code>
+keeps resolving. It is the argument the <code>parity()</code> macro takes on every page
+that describes the capability, which is how availability reaches the point of
+use instead of living only here. And it is what the gates in both libraries
+match their exported surface against.</p>
+<p>Ids get added and deprecated. They do not get renamed.</p>
+<!-- BEGIN GENERATED FROM parity.toml. Edit the ledger, not this page. -->
+
+<p>Generated from
+<a href="https://github.com/idfkit/idfkit-conformance/blob/governance-2026.9/governance/parity.toml"><code>governance/parity.toml</code></a>
+at <code>governance-2026.9</code>, the governance tag this release pins. Correct the ledger and
+regenerate; a correction made on this page would be overwritten, and it would never
+reach either library's CI gate.</p>
+<h2 id="at-a-glance">Every capability at a glance<a class="headerlink" href="#at-a-glance" title="Permanent link">&para;</a></h2>
+<p>33 capabilities, counted by availability and then listed in full. Follow a capability to
+read what differs where the two libraries differ, and whether an absence is temporary or
+permanent.</p>
+<table>
+<thead>
+<tr>
+<th>Availability</th>
+<th>Python</th>
+<th>JavaScript</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>complete</td>
+<td>28</td>
+<td>12</td>
+</tr>
+<tr>
+<td>partial</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>absent, not yet</td>
+<td>0</td>
+<td>13</td>
+</tr>
+<tr>
+<td>absent, never</td>
+<td>2</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Tier</th>
+<th>Python</th>
+<th>JavaScript</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#parse">Reading IDF and epJSON</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#write">Writing IDF and epJSON</a></td>
+<td>1</td>
+<td>partial</td>
+<td>partial</td>
+</tr>
+<tr>
+<td><a href="#document-model">Documents, collections, and objects</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#references">Reference graph</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#schema-access">Schema access and the version registry</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#validation">Model validation</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#introspection">Describing an object type from the schema</a></td>
+<td>1</td>
+<td>complete</td>
+<td>partial</td>
+</tr>
+<tr>
+<td><a href="#documentation-urls">Building EnergyPlus documentation URLs</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#generated-object-types">Static types generated from the schema</a></td>
+<td>1</td>
+<td>partial</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#parse-diagnostics">Diagnostics from a parse</a></td>
+<td>1</td>
+<td>partial</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#weather-index">The weather station index</a></td>
+<td>1</td>
+<td>complete</td>
+<td>partial</td>
+</tr>
+<tr>
+<td><a href="#weather-download">Retrieving weather and design-day files</a></td>
+<td>1</td>
+<td>complete</td>
+<td>partial</td>
+</tr>
+<tr>
+<td><a href="#conformance-declaration">Declaring the conformance level a release passes</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#geocoding">Geocoding a place name</a></td>
+<td>1</td>
+<td>complete</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#lossless-round-trip">Formatting-preserving round-trip</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#geometry-extraction">Reading geometry from a model</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#geometry-authoring">Building and transforming geometry</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#surface-matching">Intersecting and matching surfaces</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#zoning">Generating zoned blocks from a footprint</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#thermal-properties">Construction thermal properties</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#schedules">Schedule evaluation</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#output-variable-selection">Reading the output variable dictionary and selecting variables</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#design-day-sizing">Design days and ASHRAE sizing conditions</a></td>
+<td>2</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#version-migration">Forward-migrating a model between EnergyPlus versions</a></td>
+<td>3</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#command-line">Command-line interface</a></td>
+<td>3</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#schema-compatibility-check">Checking source against another EnergyPlus version's schema</a></td>
+<td>3</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#result-plotting">Plotting simulation results</a></td>
+<td>3</td>
+<td>complete</td>
+<td>absent (not yet)</td>
+</tr>
+<tr>
+<td><a href="#local-simulation">Running a locally installed EnergyPlus and reading its results</a></td>
+<td>permanent</td>
+<td>complete</td>
+<td>absent (never)</td>
+</tr>
+<tr>
+<td><a href="#browser-simulation">Running EnergyPlus in the browser</a></td>
+<td>permanent</td>
+<td>absent (never)</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#svg-visualisation">Rendering a model to a vector image</a></td>
+<td>permanent</td>
+<td>complete</td>
+<td>absent (never)</td>
+</tr>
+<tr>
+<td><a href="#scene-rendering">Rendering a three-dimensional scene</a></td>
+<td>permanent</td>
+<td>absent (never)</td>
+<td>complete</td>
+</tr>
+<tr>
+<td><a href="#eppy-compatibility">eppy compatibility surface</a></td>
+<td>permanent</td>
+<td>complete</td>
+<td>absent (never)</td>
+</tr>
+<tr>
+<td><a href="#weather-file-cache">Caching retrieved weather files on disk</a></td>
+<td>permanent</td>
+<td>complete</td>
+<td>absent (never)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tier-1">Tier 1: the shared core<a class="headerlink" href="#tier-1" title="Permanent link">&para;</a></h2>
+<p>Both libraries carry these, and both are expected to keep carrying them. A difference
+you meet inside this tier is either stated below or a bug, and there is no third
+possibility.</p>
+<h3 id="parse">Reading IDF and epJSON<a class="headerlink" href="#parse" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>parse</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>parse IDF from a string</li>
+<li>parse epJSON from a string</li>
+<li>read IDF from disk</li>
+<li>read epJSON from disk</li>
+<li>the parse error type</li>
+<li>detect a document version</li>
+<li>an epJSON document value</li>
+<li>read IDF from disk, keeping diagnostics</li>
+<li>detect an epJSON document version</li>
+</ul>
+</details>
+<h3 id="write">Writing IDF and epJSON<a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> partial &middot; <strong>JavaScript</strong> partial &middot; Tier 1 &middot; ledger id <code>write</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>Both libraries write both formats, and every document either one writes is read back by the other
+and by EnergyPlus. What they do NOT do is produce the same bytes. One model written from Python and
+from JavaScript gives two files whose object headers match and whose every field line differs, and
+neither is more correct than the other, so the difference is recorded here rather than resolved by
+changing a writer both ecosystems have already published.</p>
+<p>Measured, not asserted. <code>5ZoneAirCooled.idf</code> from EnergyPlus 26.1.0, 359 objects, through
+<code>load_idf</code>/<code>save_idf</code> and through <code>loadIdf</code>/<code>saveIdf</code>, differs in seven ways:</p>
+<ol>
+<li>Python opens the file with <code>!-Generator idfkit v&lt;version&gt;</code> and <code>!-Option SortedOrder</code>.
+     TypeScript writes no header.</li>
+<li>Python orders objects by type name, alphabetically, with Version pinned first, which is what
+     its <code>SortedOrder</code> header declares. TypeScript groups objects by type in the order the types
+     first appeared in the source, with Version pinned first.</li>
+<li>Python indents field lines two spaces. TypeScript indents four, and takes an <code>indent</code> option.</li>
+<li>Both align the <code>!-</code> comment at column 30. They therefore overflow at different values, and on
+     overflow Python writes the comment flush against the comma while TypeScript keeps one space.</li>
+<li>Python renders a float with <code>%g</code>, so an integral value loses its decimal point: <code>30.</code> in the
+     source comes back as <code>30</code>, and <code>0.0</code> as <code>0</code>. TypeScript consults the schema and writes <code>30.0</code>
+     and <code>0.0</code>, because JavaScript has one number type and a real-valued field would otherwise be
+     indistinguishable from an integer one on the way out.</li>
+<li>Python title-cases every word of the field-name comment, <code>!- Number Of Vertices</code> and
+     <code>!- View Factor To Ground</code>. TypeScript keeps a list of minor words lowercase so the comment
+     reads as EnergyPlus writes it, <code>!- Number of Vertices</code> and <code>!- View Factor to Ground</code>. Both
+     drop the unit suffix the source carries, <code>{deg}</code> and the rest.</li>
+<li>Python numbers the comment on each repeat of an extensible group, <code>!- Vertex X Coordinate 2</code>.
+     TypeScript repeats the unnumbered name on every repeat.</li>
+</ol>
+<p>Blank lines differ with them: Python puts one between every pair of objects, TypeScript one between
+objects of the same type and two at each type boundary. On this file that is 4031 lines against
+4125, for the same 359 objects.</p>
+<p><code>partial</code> on BOTH sides, because neither writer's controls contain the other's. Python's <code>write_idf</code>
+takes <code>output_type</code>, so <code>"nocomment"</code> and <code>"compressed"</code>, and <code>preserve_formatting</code>; it offers no way
+to set the indent, the comment column, or the ordering. TypeScript's <code>writeIdf</code> takes <code>comments</code>,
+<code>commentColumn</code>, <code>indent</code>, and <code>versionFirst</code>; it has no compressed mode and no lossless mode, the
+second of which is <a href="#lossless-round-trip"><code>lossless-round-trip</code></a> rather than part of this entry.</p>
+<p>What is proven, and by what. The corpus asserts that a document survives its OWN writer without
+structural loss: assertion 3 re-parses each library's IDF output and compares object types, names,
+field names, field values, and field order against the document it started from. It does not compare
+the text, and <code>runners/compare.md</code> forbids any comparator from ever doing so, because one JSON value
+has many JSON texts. So the seven differences above are outside every assertion the corpus runs, and
+recording them here is the only place a reader meets them. A reader who needs byte-identical output
+from both languages does not have it and is not going to: pass EnergyPlus the model, not a diff.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>serialize IDF to a string</li>
+<li>serialize epJSON to a string</li>
+<li>write IDF to disk</li>
+<li>write epJSON to disk</li>
+<li>serialize a document to an epJSON value</li>
+<li>serialize one object</li>
+</ul>
+</details>
+<h3 id="document-model">Documents, collections, and objects<a class="headerlink" href="#document-model" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>document-model</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the document class</li>
+<li>the collection class</li>
+<li>the object class</li>
+<li>an extensible group</li>
+<li>create a new document</li>
+<li>add an object</li>
+<li>remove an object</li>
+<li>rename an object</li>
+<li>every object of a type</li>
+<li>untyped collection access</li>
+<li>one object, or nothing</li>
+<li>one object, or an error</li>
+<li>collection to a sequence</li>
+<li>an object's type name</li>
+<li>version</li>
+</ul>
+</details>
+<h3 id="references">Reference graph<a class="headerlink" href="#references" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>references</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the reference graph</li>
+<li>objects referencing a name</li>
+<li>a reference edge</li>
+</ul>
+</details>
+<h3 id="schema-access">Schema access and the version registry<a class="headerlink" href="#schema-access" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>schema-access</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>load a schema for a version</li>
+<li>the supported version list</li>
+<li>resolve a version string</li>
+<li>one version's schema</li>
+<li>the difference between two schema versions</li>
+<li>resolve the schema for a detected version</li>
+<li>the process-wide schema source</li>
+</ul>
+</details>
+<h3 id="validation">Model validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>validation</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>validate a document</li>
+<li>validate an object</li>
+<li>validation result</li>
+<li>validation finding</li>
+<li>validation severity</li>
+</ul>
+</details>
+<h3 id="introspection">Describing an object type from the schema<a class="headerlink" href="#introspection" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> partial &middot; Tier 1 &middot; ledger id <code>introspection</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>TypeScript never populates <code>memo</code> or <code>note</code>. Both are members of the two types, so the field set
+matches, but they are always undefined. Python fills <code>memo</code> for 845 of 858 object types and <code>note</code>
+for 6,212 of 12,712 fields in 26.1.0, both from epJSON keys that <code>@idfkit/schemas</code> drops on purpose
+to keep the bundle off the parse critical path. The <code>@idfkit/schemas/docs</code> subpath its own header
+comment promises does not exist. Describing a type is what a REPL, a notebook, and an LSP hover are
+for, so the prose is most of the value; this is partial rather than complete.</p>
+<p>Two further differences, both small and both pinned by tests. <code>enumValues</code> omits the empty string
+that Python includes for 1,378 of its 2,293 enum-bearing fields, and omits the sentinel lists
+(<code>Autosize</code>, <code>Autocalculate</code>) Python recovers from an anyOf branch for 769 fields. Field ORDER
+differs for exactly two types in 26.1.0, <code>ZoneProperty:UserViewFactors:BySurfaceName</code> and
+<code>ZoneTerminalUnitList</code>, and for six more in 8.9.0 through 9.2.0, because the bundle sorts property
+keys for content-addressing and those types carry no positional field list to restore declaration
+order from.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>describe an object type</li>
+<li>object description</li>
+<li>field description</li>
+</ul>
+</details>
+<h3 id="documentation-urls">Building EnergyPlus documentation URLs<a class="headerlink" href="#documentation-urls" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>documentation-urls</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>resolved documentation URL</li>
+<li>documentation URL for an object type</li>
+<li>I/O reference URL</li>
+<li>engineering reference URL</li>
+<li>documentation search URL</li>
+</ul>
+</details>
+<h3 id="generated-object-types">Static types generated from the schema<a class="headerlink" href="#generated-object-types" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> partial &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>generated-object-types</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>Coverage differs, and the difference is visible to anyone not on the newest release. The Python
+stub set is generated for one EnergyPlus version at a time and is currently shipped for 26.1.0
+only, so a model loaded at 9.4 gets the 26.1 field names and choice lists from the editor. The
+TypeScript type maps are emitted per version and selected by the caller, who parameterises the
+document with the map for the version being read, so an older model is typed as that older model
+or is left untyped rather than mistyped.</p>
+<p>Application differs too. Python's stubs apply implicitly to every document. TypeScript's are opt-in
+by construction: an unparameterised document stays untyped, which is what version-generic code
+needs.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>generated object types</li>
+<li>a version type map</li>
+</ul>
+</details>
+<h3 id="parse-diagnostics">Diagnostics from a parse<a class="headerlink" href="#parse-diagnostics" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> partial &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>parse-diagnostics</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>Both libraries produce diagnostics for a malformed input; only one hands them back. Python raises
+IDFParseError carrying the diagnostics that stopped the parse, and reports the recoverable ones
+(skipped malformed objects, discarded formatting trees, surplus fields on a non-extensible type)
+through the logging module, where a caller who wants them must install a handler. TypeScript
+returns them: parseIdf and loadIdfWithDiagnostics both yield a ParseResult whose <code>diagnostics</code>
+array holds the non-fatal findings alongside the document.</p>
+<p>This matters to the conformance corpus, whose <code>diagnostics</code> assertion compares what each side
+reports for a malformed case (contracts/conformance-corpus.md).</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>a parse diagnostic</li>
+<li>diagnostics from a parse</li>
+</ul>
+</details>
+<h3 id="weather-index">The weather station index<a class="headerlink" href="#weather-index" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> partial &middot; Tier 1 &middot; ledger id <code>weather-index</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>Installation differs, and the difference is deliberate. <code>pip install idfkit</code> installs weather and
+its station index unconditionally, because Python extras gate dependencies rather than files, so a
+Python reader has weather whether or not they wanted it. <code>npm install idfkit</code> installs neither:
+weather is an opt-in peer there, added with <code>npm install @idfkit/weather</code>. Both libraries ship
+their own index once installed and neither retrieves one to get started (FR-043, FR-075,
+research R11). A JavaScript reader who follows a weather page without installing that package
+gets a resolution error, not a smaller feature, which is why the packaging is recorded here as a
+stated difference rather than left as an undescribed detail.</p>
+<p>Freshness handling differs. Python fires a throttled nudge from StationIndex.load(): at most once
+every 24 hours it probes the upstream KML files, warns when the bundled or cached index is behind,
+records the check under the cache directory, and can be turned off with
+IDFKIT_NO_WEATHER_UPDATE_CHECK. JavaScript has no such nudge and no timestamp to throttle against.
+It exposes checkForUpdates and refreshStationIndex for a caller who asks, and does nothing on its
+own, because the nudge is built on a writable cache directory and a browser-targeted package has
+none. The consequence for a reader is concrete: a stale index goes unmentioned in JavaScript until
+they check for themselves.</p>
+<p>The installation difference above is the whole weather surface's, not the index's alone. It is
+stated here because the index is where a reader meets it first, and <a href="#weather-download"><code>weather-download</code></a> and
+<a href="#weather-file-cache"><code>weather-file-cache</code></a> refer back to it rather than repeat it.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the station index</li>
+<li>search stations</li>
+<li>a weather station</li>
+<li>refresh the station index</li>
+<li>a text search result</li>
+<li>a proximity search result</li>
+<li>which field a text search matched</li>
+<li>the station wire record</li>
+<li>the upstream index base URL</li>
+<li>fetch a prebuilt station index</li>
+<li>parse a KML station index</li>
+<li>read station metadata from a download URL</li>
+<li>great-circle distance between two points</li>
+<li>the weather options-object types</li>
+<li>the station index wire form</li>
+<li>build an index from index data</li>
+<li>the upstream index file list</li>
+<li>the bundled station index</li>
+<li>check the station index for updates</li>
+</ul>
+</details>
+<h3 id="weather-download">Retrieving weather and design-day files<a class="headerlink" href="#weather-download" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> partial &middot; Tier 1 &middot; ledger id <code>weather-download</code></p>
+<div class="admonition info">
+<p class="admonition-title">What differs, and why</p>
+<p>Both libraries retrieve a station's ZIP archive from climate.onebuilding.org and unpack the EPW,
+DDY, and STAT members out of it. What they hand back differs, and it differs in the first line a
+reader writes. Python's WeatherDownloader.download returns a WeatherFiles whose epw, ddy, stat, and
+zip_path are Path objects, because the files are on disk by the time it returns and a path is what
+EnergyPlus is given. TypeScript's fetchWeatherFiles returns a WeatherFiles whose epw, ddy, and stat
+are the file TEXT, alongside a members map holding every archive member as bytes, because a browser
+has no disk and the text is what @idfkit/engine takes. Same name, different values, which the
+naming register records under <code>the retrieved weather files</code>: code written from one language's
+documentation is wrong at runtime against the other rather than merely awkward.</p>
+<p>Three things exist on one side only, and each follows from that one fact rather than from a gap.
+Python's download(station, only={".epw"}) extracts a chosen subset and returns PartialWeatherFiles;
+selective extraction is a property of writing into a cache, and the JavaScript side decodes from
+memory whatever the archive held. TypeScript's FetchWeatherOptions carries fetch, rewriteUrl, and
+signal, because climate.onebuilding.org sends no Access-Control-Allow-Origin header and a page can
+reach it only through a proxy the caller supplies; Python runs under no same-origin policy and owns
+its own urllib requests. TypeScript splits retrieving from writing, so @idfkit/weather/node adds
+saveWeatherFiles and SavedWeatherFiles, where in Python the two are one operation.</p>
+<p>Resolving a canonical EPW filename differs in one argument. Python's index parameter is optional and
+defaults to the bundled index, because it can always find one on disk. TypeScript's is required,
+because the caller had to obtain an index already and the function has nowhere to load one from.</p>
+<p>typescript = "partial" records the missing selective extraction and nothing else. It is not a
+verdict on the on-disk cache: that is <a href="#weather-file-cache"><code>weather-file-cache</code></a>, which is permanently absent by decision
+rather than missing.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>download a weather file</li>
+<li>download a station's EPW file</li>
+<li>download an EPW file by filename</li>
+<li>download a station's archive</li>
+<li>the retrieved weather files</li>
+<li>read a ZIP archive</li>
+<li>the injectable fetch</li>
+<li>write weather files to disk</li>
+<li>the written weather file paths</li>
+</ul>
+</details>
+<h3 id="conformance-declaration">Declaring the conformance level a release passes<a class="headerlink" href="#conformance-declaration" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>conformance-declaration</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>declared conformance level</li>
+</ul>
+</details>
+<h3 id="geocoding">Geocoding a place name<a class="headerlink" href="#geocoding" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> complete &middot; Tier 1 &middot; ledger id <code>geocoding</code></p>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>geocode a place name</li>
+<li>detect the current location</li>
+<li>the geocoding rate limiter</li>
+<li>a geocoding failure</li>
+</ul>
+</details>
+<h2 id="tier-2">Tier 2: portable, not ported yet<a class="headerlink" href="#tier-2" title="Permanent link">&para;</a></h2>
+<p>Capabilities the second language could have and does not have today. Every entry carries
+a tracking issue, because recording any of them as permanent would claim more than the
+code supports.</p>
+<h3 id="lossless-round-trip">Formatting-preserving round-trip<a class="headerlink" href="#lossless-round-trip" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>lossless-round-trip</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/12">idfkit-js#12</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>preserve formatting on a round-trip</li>
+</ul>
+</details>
+<h3 id="geometry-extraction">Reading geometry from a model<a class="headerlink" href="#geometry-extraction" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>geometry-extraction</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/13">idfkit-js#13</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>three-dimensional vector</li>
+<li>three-dimensional polygon</li>
+<li>read a surface's coordinates</li>
+<li>a zone's origin</li>
+<li>a zone's rotation</li>
+<li>transform relative coordinates to world coordinates</li>
+<li>a surface's area</li>
+<li>a surface's tilt</li>
+<li>a surface's azimuth</li>
+<li>a zone's floor area</li>
+<li>a zone's volume</li>
+</ul>
+</details>
+<h3 id="geometry-authoring">Building and transforming geometry<a class="headerlink" href="#geometry-authoring" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>geometry-authoring</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/14">idfkit-js#14</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>set the window to wall ratio</li>
+<li>rotate a building</li>
+<li>translate a building</li>
+<li>scale a building</li>
+<li>add a shading block</li>
+<li>set default constructions</li>
+</ul>
+</details>
+<h3 id="surface-matching">Intersecting and matching surfaces<a class="headerlink" href="#surface-matching" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>surface-matching</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/15">idfkit-js#15</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>intersect and match surfaces</li>
+<li>a surface match report</li>
+</ul>
+</details>
+<h3 id="zoning">Generating zoned blocks from a footprint<a class="headerlink" href="#zoning" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>zoning</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/16">idfkit-js#16</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>create a zoned block</li>
+<li>a zone footprint</li>
+<li>a zoning scheme</li>
+<li>link blocks</li>
+</ul>
+</details>
+<h3 id="thermal-properties">Construction thermal properties<a class="headerlink" href="#thermal-properties" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>thermal-properties</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/17">idfkit-js#17</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>construction thermal properties</li>
+<li>a construction's U-value</li>
+<li>a construction's R-value</li>
+<li>a construction's solar heat gain coefficient</li>
+<li>a construction's layers</li>
+</ul>
+</details>
+<h3 id="schedules">Schedule evaluation<a class="headerlink" href="#schedules" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>schedules</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/18">idfkit-js#18</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>evaluate a schedule</li>
+<li>a schedule's values for a year</li>
+<li>a schedule as a series</li>
+<li>create a constant schedule</li>
+<li>create a compact schedule</li>
+<li>extract special days</li>
+<li>the holidays in a model</li>
+</ul>
+</details>
+<h3 id="output-variable-selection">Reading the output variable dictionary and selecting variables<a class="headerlink" href="#output-variable-selection" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>output-variable-selection</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/19">idfkit-js#19</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>read the output variable dictionary</li>
+<li>an output variable</li>
+<li>an output meter</li>
+<li>select output variables for a run</li>
+</ul>
+</details>
+<h3 id="design-day-sizing">Design days and ASHRAE sizing conditions<a class="headerlink" href="#design-day-sizing" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 2 &middot; ledger id <code>design-day-sizing</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/20">idfkit-js#20</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>apply ASHRAE sizing conditions</li>
+<li>the design day manager</li>
+</ul>
+</details>
+<h2 id="tier-3">Tier 3: tooling and Node-bound capabilities<a class="headerlink" href="#tier-3" title="Permanent link">&para;</a></h2>
+<p>Absent from JavaScript today and not permanently so. Each one is reachable in Node,
+which is why none of them is recorded as permanent.</p>
+<h3 id="version-migration">Forward-migrating a model between EnergyPlus versions<a class="headerlink" href="#version-migration" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 3 &middot; ledger id <code>version-migration</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/21">idfkit-js#21</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>migrate a model to a newer version</li>
+<li>a migration report</li>
+<li>a migration step</li>
+</ul>
+</details>
+<h3 id="command-line">Command-line interface<a class="headerlink" href="#command-line" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 3 &middot; ledger id <code>command-line</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/22">idfkit-js#22</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the command line entry point</li>
+</ul>
+</details>
+<h3 id="schema-compatibility-check">Checking source against another EnergyPlus version's schema<a class="headerlink" href="#schema-compatibility-check" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 3 &middot; ledger id <code>schema-compatibility-check</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/23">idfkit-js#23</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>check source compatibility with a version</li>
+<li>diff two schemas</li>
+<li>a compatibility diagnostic</li>
+</ul>
+</details>
+<h3 id="result-plotting">Plotting simulation results<a class="headerlink" href="#result-plotting" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (not yet) &middot; Tier 3 &middot; ledger id <code>result-plotting</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Not in JavaScript yet</p>
+<p>A temporary gap, not a boundary. The port is tracked in
+<a href="https://github.com/idfkit/idfkit-js/issues/24">idfkit-js#24</a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>plot an energy balance</li>
+<li>plot a temperature profile</li>
+<li>plot comfort hours</li>
+<li>a plotting backend</li>
+</ul>
+</details>
+<h2 id="permanently-single-language">Permanently single-language<a class="headerlink" href="#permanently-single-language" title="Permanent link">&para;</a></h2>
+<p>Pairs of capabilities that were never one capability. Neither library is missing
+anything here, which is why these entries sit apart from the gaps above: each pair is
+two different mechanisms serving two different runtimes.</p>
+<h3 id="local-simulation">Running a locally installed EnergyPlus and reading its results<a class="headerlink" href="#local-simulation" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (never) &middot; Permanently single-language &middot; ledger id <code>local-simulation</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">Python only, permanently</p>
+<p>Requires an EnergyPlus installation on the machine and a subprocess to drive it, then reads the
+eplusout files that run leaves on disk. Neither the installation nor the subprocess is available in
+a browser, which is the runtime the JavaScript library targets. JavaScript reaches EnergyPlus by
+the other mechanism instead: see <a href="#browser-simulation"><code>browser-simulation</code></a>, which is not a workaround for this entry but
+a different capability.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the local simulation surface</li>
+</ul>
+</details>
+<h3 id="browser-simulation">Running EnergyPlus in the browser<a class="headerlink" href="#browser-simulation" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> absent (never) &middot; <strong>JavaScript</strong> complete &middot; Permanently single-language &middot; ledger id <code>browser-simulation</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">JavaScript only, permanently</p>
+<p>Delivered by @idfkit/engine, installed separately and deliberately not part of the shared install
+name: not a subpath, not a dependency, not an optional peer (research R19). The WebAssembly build
+exists to reach a runtime Python does not target, so Python has no counterpart and is not getting
+one. @idfkit/engine-assets is roughly 51 MB and versions on the EnergyPlus release it carries,
+while the loader versions on its own API, which is a second reason the facade does not carry it.</p>
+<p>This is not a gap in Python. Python runs EnergyPlus by the other mechanism: see
+<a href="#local-simulation"><code>local-simulation</code></a>.</p>
+</div>
+<h3 id="svg-visualisation">Rendering a model to a vector image<a class="headerlink" href="#svg-visualisation" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (never) &middot; Permanently single-language &middot; ledger id <code>svg-visualisation</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">Python only, permanently</p>
+<p>A Python-side capability with no JavaScript counterpart and no plan for one. The output is a static
+vector image produced for a notebook, a report, or a file on disk, which is a Python workflow. A
+JavaScript caller wanting to look at a model is already in a runtime that draws, and is served by
+the other mechanism: see <a href="#scene-rendering"><code>scene-rendering</code></a>. Recording the two as one <code>visualization</code> entry would
+make each language read as missing something the other has, which is exactly the failure FR-078
+and FR-068 forbid.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the vector image surface</li>
+</ul>
+</details>
+<h3 id="scene-rendering">Rendering a three-dimensional scene<a class="headerlink" href="#scene-rendering" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> absent (never) &middot; <strong>JavaScript</strong> complete &middot; Permanently single-language &middot; ledger id <code>scene-rendering</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">JavaScript only, permanently</p>
+<p>Delivered by @idfkit/viewer, installed by its own name like the simulation engine, and NOT reachable
+through the shared install name: no subpath, no dependency, no export-map entry, and no reserved
+name in the naming register. A reader reaches it by installing it explicitly, and the documentation
+says so rather than implying the facade carries it.</p>
+<p>Python has no counterpart and is not getting one. A real-time interactive scene needs a rendering
+context that a Python process does not have, and Python's static vector output is a different
+mechanism serving a different workflow: see <a href="#svg-visualisation"><code>svg-visualisation</code></a>. Neither is a gap in the other.</p>
+</div>
+<h3 id="eppy-compatibility">eppy compatibility surface<a class="headerlink" href="#eppy-compatibility" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (never) &middot; Permanently single-language &middot; ledger id <code>eppy-compatibility</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">Python only, permanently</p>
+<p>A Python ecosystem concern with no JavaScript counterpart. These methods exist solely so that code
+written against eppy keeps working after a move to idfkit; every one of them names an idfkit
+alternative in its own docstring. There is no eppy in JavaScript, so there is nothing to be
+compatible with. Listed explicitly so it is never ported by mistake.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>eppy compatibility surface</li>
+</ul>
+</details>
+<h3 id="weather-file-cache">Caching retrieved weather files on disk<a class="headerlink" href="#weather-file-cache" title="Permanent link">&para;</a></h3>
+<p><strong>Python</strong> complete &middot; <strong>JavaScript</strong> absent (never) &middot; Permanently single-language &middot; ledger id <code>weather-file-cache</code></p>
+<div class="admonition abstract">
+<p class="admonition-title">Python only, permanently</p>
+<p>FR-031, stated as a decision rather than a backlog item: the on-disk cache for retrieved weather and
+design-day files is Python's, and JavaScript MUST NOT grow one. Moving this entry out of <code>never</code>
+needs a constitutional amendment, not an edit here.</p>
+<p>What Python has. WeatherDownloader owns a cache directory, per platform by default and moved with
+cache_dir or IDFKIT_CACHE_DIR. download() looks in it first and reaches the network only on a miss
+or past max_age, so the second call for a station costs nothing; clear_cache empties it. Everything
+downstream follows: the record it returns is paths rather than text, zip_path addresses the archive
+it kept, and selective extraction through only= is meaningful because a suffix skipped this time may
+already be sitting there from an earlier call.</p>
+<p>Why JavaScript will not have one. @idfkit/weather targets a browser, a worker, and an edge runtime
+as well as Node. Two of those have no directory it could own, and picking one in Node would make the
+package behave differently depending on where it runs, which is the one thing a portable package
+must not do. So it fetches every time and returns text the caller keeps. saveWeatherFiles in
+@idfkit/weather/node writes a retrieved bundle where the caller says, and that is a caller-directed
+write rather than a cache: it consults nothing on the way in and remembers nothing on the way out.</p>
+<p>This is not a gap in JavaScript, and it is why several one-sided names exist on each side. The
+station index is shipped, not cached, in both languages (FR-043, FR-075), so nothing here changes
+how either library finds a station: that is <a href="#weather-index"><code>weather-index</code></a>. Retrieval itself is present in both
+languages: that is <a href="#weather-download"><code>weather-download</code></a>.</p>
+</div>
+<details class="note">
+<summary>Vocabulary this capability owns in the naming register</summary>
+<ul>
+<li>the weather file cache</li>
+</ul>
+</details>
+<!-- END GENERATED FROM parity.toml. -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../epjson-field-names/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Why field names come from epJSON">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Why field names come from epJSON
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../naming-map/" class="md-footer__link md-footer__link--next" aria-label="Next: The naming map">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                The naming map
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">Maintained by <a href="https://samuelduchesne.github.io">samuelduchesne</a>.</div>
+  
+  <div class="md-copyright__levels">
+    Built at
+    <a href="https://github.com/idfkit/idfkit-conformance/releases/tag/conformance-2026.7"
+       title="The conformance corpus level the Python library declares it passes">
+      conformance-2026.7</a>,
+    <a href="https://github.com/idfkit/idfkit-conformance/releases/tag/governance-2026.9"
+       title="The tag the parity ledger and naming register on this site were read at">
+      governance-2026.9</a>,
+    <a href="https://github.com/idfkit/idfkit-js/releases/tag/docs-2026.1"
+       title="The tag the TypeScript examples and reference on this site came from">
+      docs-2026.1</a>.
+    <a href="../conformance/">What these mean</a>.
+  </div>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/idfkit/idfkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/idfkit" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/tab-sync.js"></script>
+      
+        <script src="../../javascripts/engine-runner.js"></script>
+      
+    
+  </body>
+</html>

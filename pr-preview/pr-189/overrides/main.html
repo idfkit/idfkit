@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {# Tab axis registry + pre-paint reconciliation of ?language= / ?os= with Material's own
+     tab memory. Must stay in the head, ahead of the body script that restores tabs. #}
+  {% include "partials/tab-axes.html" %}
+
+{% if page %}
+  <!-- Twitter Card defaults -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.meta.get('title', page.title) }} - idfkit">
+  <meta name="twitter:description" content="{{ page.meta.get('description', config.site_description) }}">
+
+  <!-- Additional OG tags -->
+  <meta property="og:site_name" content="idfkit">
+  <meta property="og:locale" content="en_US">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": {{ page.meta.get('title', page.title) | tojson }},
+    "description": {{ page.meta.get('description', config.site_description) | tojson }},
+    "url": "{{ page.canonical_url }}",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "idfkit",
+      "url": "https://developers.idfkit.com/"
+    },
+    "about": {
+      "@type": "SoftwareSourceCode",
+      "name": "idfkit",
+      "url": "https://github.com/idfkit/idfkit",
+      "programmingLanguage": "Python",
+      "codeRepository": "https://github.com/idfkit/idfkit"
+    }
+  }
+  </script>
+{% endif %}
+{% endblock %}
