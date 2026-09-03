@@ -79,20 +79,20 @@ Ids get added and deprecated. They do not get renamed.
 <!-- BEGIN GENERATED FROM parity.toml. Edit the ledger, not this page. -->
 
 Generated from
-[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.8/governance/parity.toml)
-at `governance-2026.8`, the governance tag this release pins. Correct the ledger and
+[`governance/parity.toml`](https://github.com/idfkit/idfkit-conformance/blob/governance-2026.9/governance/parity.toml)
+at `governance-2026.9`, the governance tag this release pins. Correct the ledger and
 regenerate; a correction made on this page would be overwritten, and it would never
 reach either library's CI gate.
 
 ## Every capability at a glance { #at-a-glance }
 
-32 capabilities, counted by availability and then listed in full. Follow a capability to
+33 capabilities, counted by availability and then listed in full. Follow a capability to
 read what differs where the two libraries differ, and whether an absence is temporary or
 permanent.
 
 | Availability | Python | JavaScript |
 | ------------ | ------ | ---------- |
-| complete | 27 | 11 |
+| complete | 28 | 12 |
 | partial | 3 | 4 |
 | absent, not yet | 0 | 13 |
 | absent, never | 2 | 4 |
@@ -111,6 +111,7 @@ permanent.
 | [Diagnostics from a parse](#parse-diagnostics) | 1 | partial | complete |
 | [The weather station index](#weather-index) | 1 | complete | partial |
 | [Retrieving weather and design-day files](#weather-download) | 1 | complete | partial |
+| [Declaring the conformance level a release passes](#conformance-declaration) | 1 | complete | complete |
 | [Geocoding a place name](#geocoding) | 1 | complete | complete |
 | [Formatting-preserving round-trip](#lossless-round-trip) | 2 | complete | absent (not yet) |
 | [Reading geometry from a model](#geometry-extraction) | 2 | complete | absent (not yet) |
@@ -449,6 +450,14 @@ possibility.
     - the injectable fetch
     - write weather files to disk
     - the written weather file paths
+
+### Declaring the conformance level a release passes { #conformance-declaration }
+
+**Python** complete &middot; **JavaScript** complete &middot; Tier 1 &middot; ledger id `conformance-declaration`
+
+??? note "Vocabulary this capability owns in the naming register"
+
+    - declared conformance level
 
 ### Geocoding a place name { #geocoding }
 

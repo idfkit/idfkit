@@ -115,7 +115,7 @@ level = "conformance-2026.7"
 # same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
 # copy that declares no level.
 [tool.idfkit.governance]
-level = "governance-2026.8"
+level = "governance-2026.9"
 
 # Documentation artifact level the unified site renders from, as an immutable tag in
 # idfkit-js. It carries the TypeScript examples the pages include and the TypeDoc JSON the
