@@ -7,6 +7,21 @@
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
+> [!IMPORTANT]
+> **The next release renames how you write a model to disk.** `write_idf(doc, path)`
+> becomes `save_idf(doc, path)`, and `write_epjson(doc, path)` becomes
+> `save_epjson(doc, path)`. `write_*` now only returns a string.
+>
+> Worth knowing before you upgrade, because neither failure names the cause:
+> `write_epjson(doc, path)` raises `TypeError: can't multiply sequence by
+> non-int of type 'PosixPath'`, and `write_idf(doc, path)` fails silently,
+> writing nothing and leaving an empty file that surfaces later as
+> `Could not detect EnergyPlus version in file`.
+>
+> Search for `write_idf(` and `write_epjson(` called with two positional
+> arguments, or run a type checker, which rejects both. Full notes in the
+> [changelog](CHANGELOG.md#migration).
+
 > [!NOTE]
 > idfkit is in **beta**. The API may change between minor versions. We're looking
 > for early adopters and testers — especially users of eppy who want

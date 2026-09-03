@@ -7,52 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- `validate_document()` no longer reports spurious range errors on EnergyPlus
-  8.9.0 through 9.5.0. Those schemas are JSON Schema draft-04, where
-  `exclusiveMinimum`/`exclusiveMaximum` are booleans qualifying the sibling
-  `minimum`/`maximum`; idfkit compared values against the boolean itself, which
-  Python coerces to `1`. Any value at or below 1 in a positive-bounded field was
-  rejected, so a `Material` 0.2 m thick failed with
-  `Value 0.2 must be greater than True`. Both dialects are now handled.
-
-- Corrected the `idfkit tmy --json` help text, which claimed JSON output was
-  "auto-enabled when piped if `--first`". No such auto-enabling exists — piped
-  output is tab-separated (station list) or plain text (single download) unless
-  `--json` is passed. Documentation updated to match. ([a32ba3d](https://github.com/idfkit/idfkit/commit/a32ba3d))
-- The "Build your first model" tutorial no longer hard-codes EnergyPlus 24.1.
-  It now pins the document to the version `find_energyplus()` discovers, falling
-  back to `LATEST_VERSION` when EnergyPlus isn't installed. Previously the
-  tutorial promised any supported version would work, but readers on EnergyPlus
-  8.9 through 23.2 hit `VersionMismatchError` at the simulation step, because
-  backward migration does not exist.
-- Removed a hand-maintained `members:` allow-list from every API reference page.
-  The lists silently dropped nine names that no longer existed in the source
-  (`SQLResult.get_available_variables`, `WeatherStation.time_zone`,
-  `DesignDayType.HUMIDIF_99_6`, and others) and omitted 68 real public members,
-  including `SQLResult.list_variables()`. The pages now render every public
-  member, so the reference matches the code in both directions.
-- Corrected several documentation claims that contradicted the implementation: a
-  non-existent on-disk cache for `geocode()` results (only `detect_location()`
-  caches, to `ipgeo.json`), a rule that SQL key values must be upper-cased
-  (`get_timeseries()` matches case-insensitively), and an outdated three-member
-  `DayType` with a stale `evaluate()` signature on the schedule-evaluator page.
-- Rewrote 76 cross-page link labels that still used pre-Diátaxis page titles, and
-  pointed the Tutorials index's "Common tasks" link at the page of that name
-  rather than at the How-to landing page.
-- Listed `idfkit migrate` and `idfkit check` on the Reference landing page. Only
-  `idfkit tmy` was shown, which made the CLI look weather-only.
-- Restored the `Schedule:File` field semantics (`Column Number`,
-  `Rows to Skip at Top`, `Column Separator`, `Minutes per Item`) to the
-  schedule-evaluator page, and gave the `simulate()` parameter pointer on
-  "How to run a simulation" its own heading so it appears in the page's contents.
-
 ### Added
 
 - `save_idf(doc, path, ...)` and `save_epjson(doc, path, ...)` write a serialized
   model to disk. They are the disk-writing half of the `write_*` split described
   under Changed.
+
+- `idfkit.CONFORMANCE_LEVEL` names the cross-language conformance corpus level
+  this release is checked against. It is not a version number and is not
+  comparable to one: two installed libraries agree about the formats when they
+  report the same level, whatever their own versions say. The equivalent constant
+  is exported from `@idfkit/core` in JavaScript.
+
+- `HTMLResult` and `HTMLTable` are importable from `idfkit.simulation`, beside
+  `SQLResult`, `CSVResult`, and `ESOResult`. `result.html` returned a type you
+  could not import from the module the documentation sent you to; reaching into
+  `idfkit.simulation.parsers.html` is no longer necessary.
 
 - New **"Developing with idfkit"** landing page documenting the
   `developing-with-idfkit` skill: what the bundled agent references are, why they
@@ -104,6 +74,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the version-matched `developing-with-idfkit` skill that ships in the wheel, and
   is documented under "Developing with idfkit". **Breaking:** the
   `/idfkit-dev-guide/` URL now returns 404.
+
+### Fixed
+
+- `BatchResult` is a real `Sequence[SimulationResult]`. `for result in batch`,
+  `enumerate(batch)`, `reversed(batch)`, `result in batch`, and slicing all worked
+  at runtime through the legacy sequence protocol and were rejected by every type
+  checker, so typed code had to write `batch.results` instead. The base class is
+  now declared and the natural call type-checks.
+
+- `validate_document()` no longer reports spurious range errors on EnergyPlus
+  8.9.0 through 9.5.0. Those schemas are JSON Schema draft-04, where
+  `exclusiveMinimum`/`exclusiveMaximum` are booleans qualifying the sibling
+  `minimum`/`maximum`; idfkit compared values against the boolean itself, which
+  Python coerces to `1`. Any value at or below 1 in a positive-bounded field was
+  rejected, so a `Material` 0.2 m thick failed with
+  `Value 0.2 must be greater than True`. Both dialects are now handled.
+
+- Corrected the `idfkit tmy --json` help text, which claimed JSON output was
+  "auto-enabled when piped if `--first`". No such auto-enabling exists — piped
+  output is tab-separated (station list) or plain text (single download) unless
+  `--json` is passed. Documentation updated to match. ([a32ba3d](https://github.com/idfkit/idfkit/commit/a32ba3d))
+- The "Build your first model" tutorial no longer hard-codes EnergyPlus 24.1.
+  It now pins the document to the version `find_energyplus()` discovers, falling
+  back to `LATEST_VERSION` when EnergyPlus isn't installed. Previously the
+  tutorial promised any supported version would work, but readers on EnergyPlus
+  8.9 through 23.2 hit `VersionMismatchError` at the simulation step, because
+  backward migration does not exist.
+- Removed a hand-maintained `members:` allow-list from every API reference page.
+  The lists silently dropped nine names that no longer existed in the source
+  (`SQLResult.get_available_variables`, `WeatherStation.time_zone`,
+  `DesignDayType.HUMIDIF_99_6`, and others) and omitted 68 real public members,
+  including `SQLResult.list_variables()`. The pages now render every public
+  member, so the reference matches the code in both directions.
+- Corrected several documentation claims that contradicted the implementation: a
+  non-existent on-disk cache for `geocode()` results (only `detect_location()`
+  caches, to `ipgeo.json`), a rule that SQL key values must be upper-cased
+  (`get_timeseries()` matches case-insensitively), and an outdated three-member
+  `DayType` with a stale `evaluate()` signature on the schedule-evaluator page.
+- Rewrote 76 cross-page link labels that still used pre-Diátaxis page titles, and
+  pointed the Tutorials index's "Common tasks" link at the page of that name
+  rather than at the How-to landing page.
+- Listed `idfkit migrate` and `idfkit check` on the Reference landing page. Only
+  `idfkit tmy` was shown, which made the CLI look weather-only.
+- Restored the `Schedule:File` field semantics (`Column Number`,
+  `Rows to Skip at Top`, `Column Separator`, `Minutes per Item`) to the
+  schedule-evaluator page, and gave the `simulate()` parameter pointer on
+  "How to run a simulation" its own heading so it appears in the page's contents.
+
+### Migration
+
+The two breaking changes above are both mechanical, but the `write_*` split is
+worth knowing by its symptoms, because **neither failure names the cause**.
+
+| Before                     | After                     |
+| -------------------------- | ------------------------- |
+| `write_idf(doc, path)`     | `save_idf(doc, path)`     |
+| `write_epjson(doc, path)`  | `save_epjson(doc, path)`  |
+| `write_idf(doc)`           | unchanged, now returns `str` rather than `str \| None` |
+
+`write_epjson(doc, path)` now passes your path as the `indent` argument, so it
+fails inside the serializer:
+
+```
+TypeError: can't multiply sequence by non-int of type 'PosixPath'
+```
+
+`write_idf(doc, path)` passes it as `output_type`, which is worse, because it
+does not fail at all. It returns the serialized string, writes nothing, and
+leaves an empty file behind. The failure surfaces later and somewhere else, most
+often as:
+
+```
+VersionNotFoundError: Could not detect EnergyPlus version in file: ...
+```
+
+on a file that is empty because nothing was ever written to it. If you meet
+either of these after upgrading, search your code for `write_idf(` and
+`write_epjson(` called with two positional arguments.
+
+A type checker catches both immediately: `pyright` and `mypy` both reject
+`write_idf(doc, path)` against the new signature. If you run neither, the grep
+above is the check.
+
+**Checked against a real consumer.** `idfkit-mcp` upgraded across this release
+with **seven changed call sites**, every one of them this rename. Nothing else in
+the release reached it, and `pyright` was clean afterwards.
 
 ## [0.15.0] - 2026-07-07
 
