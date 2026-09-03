@@ -51,6 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       governance: ${{ steps.pin.outputs.governance }}
+      conformance: ${{ steps.pin.outputs.conformance }}
+      docs: ${{ steps.pin.outputs.docs }}
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -67,6 +69,11 @@ jobs:
 
           tool = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["tool"]["idfkit"]
           print("governance=" + tool["governance"]["level"])
+          # The other two are for the portable build, which has no pyproject.toml to read them
+          # from. The site refuses to build without all three rather than render a page that
+          # cannot say which levels it came from.
+          print("conformance=" + tool["conformance"]["level"])
+          print("docs=" + tool["docs"]["level"])
           PY
           )
           echo "$level"
@@ -312,6 +319,13 @@ jobs:
           # IDFKIT_GOVERNANCE_DIR stays unset here too.
           IDFKIT_GOVERNANCE_LEVEL: ${{ needs.pins.outputs.governance }}
           IDFKIT_CONFORMANCE_DIR: ${{ github.workspace }}/conformance
+          # Both of these come from pyproject.toml in the `strict` build, which runs inside the
+          # repository. Here there is no pyproject.toml, on purpose: the scratch tree is docs/ and
+          # mkdocs.yml, exactly what idfkit/idfkit-developers will hold. Supplying them through the
+          # environment is not a workaround for that, it is the arrangement the extracted repository
+          # will use, exercised one release early, the same way the wheel install above is.
+          IDFKIT_CONFORMANCE_LEVEL: ${{ needs.pins.outputs.conformance }}
+          IDFKIT_DOCS_LEVEL: ${{ needs.pins.outputs.docs }}
         run: |
           cd "$SCRATCH"
           "$SCRATCH/.venv/bin/mkdocs" build --strict
