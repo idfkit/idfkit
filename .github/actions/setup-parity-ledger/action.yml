@@ -17,13 +17,33 @@ runs:
       id: pin
       shell: bash
       # The tag is never restated in YAML. A restated pin is a pin that goes stale silently.
+      #
+      # Read without tomllib, unlike the identical-looking readers in docs.yml and
+      # conformance.yml. Those run as a job's first step, so `python3` is the runner image's
+      # 3.12 and tomllib is standard library, which is what their comments claim. This action
+      # gets no such guarantee: every caller runs setup-python-env first, and that puts the
+      # supported floor, 3.10, on PATH, where tomllib does not exist. The code was written
+      # under the first condition and used under the second, and check-docs failed with
+      # ModuleNotFoundError before reaching the checkout below.
       run: |
         level=$(python3 - <<'PY'
         import pathlib
-        import tomllib
+        import re
+        import sys
 
-        tool = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["tool"]["idfkit"]
-        print(tool["governance"]["level"])
+        section = None
+        for line in pathlib.Path("pyproject.toml").read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = stripped[1:-1].strip()
+                continue
+            if section == "tool.idfkit.governance":
+                match = re.match(r'level\s*=\s*"([^"]+)"', stripped)
+                if match:
+                    print(match.group(1))
+                    break
+        else:
+            sys.exit("no level in [tool.idfkit.governance] of pyproject.toml")
         PY
         )
         echo "governance=$level" >> "$GITHUB_OUTPUT"
