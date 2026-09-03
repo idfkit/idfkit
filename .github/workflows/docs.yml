@@ -98,7 +98,7 @@ jobs:
           python-version: "3.11"
 
       - name: Compare the vendored examples against the pinned release
-        run: uv run python scripts/sync_js_snippets.py --check
+        run: uv run python scripts/sync_js_artifacts.py --check
 
       - name: Every capability page declares the capability it describes
         # FR-047, SC-017. The parity macro renders availability where the reader is, and this is
@@ -240,19 +240,57 @@ jobs:
         # Keep it empty. A file under docs/ that walks up out of its own directory is the coupling
         # this whole job exists to reject, and the answer is to restructure it the way the parity
         # hook was restructured, never to copy its target in here.
+        #
+        # HOW FAR IS TOO FAR DEPENDS ON THE FILE. This was a fixed grep for `parents[` or
+        # `.parent.parent`, which is not the rule it meant to enforce, and on the first run this
+        # workflow ever completed it rejected compliant code: docs/hooks/typedoc_shim.py reaches
+        # `.parent.parent` to address docs/typedoc/typedoc.json, which is one level UP to docs/ and
+        # then back down, never leaving the tree. That file's own comment states the real rule, that
+        # `parents[2]` would be the escape. One pattern cannot express it, because a file at
+        # docs/a/b/f.py may walk one level further than a file at docs/hooks/f.py before it is out.
+        # So measure per file rather than matching a shape.
         run: |
           set -euo pipefail
-          reaching=$(grep -rln 'parents\[\|\.parent\.parent' docs --include='*.py' | sort || true)
-          if [ -n "$reaching" ]; then
-            echo "::error::A documentation file computes a path out of its own location:"
-            echo "$reaching" | sed 's/^/::error::  /'
-            echo "::error::The documentation tree has to build where this repository is not, so it"
-            echo "::error::cannot reach into it. Move what the file needs under docs/, and import"
-            echo "::error::that from the repository side, the way scripts/render_parity_page.py"
-            echo "::error::imports docs/hooks/parity_ledger.py."
-            exit 1
-          fi
-          echo "No file under docs/ reaches outside the documentation tree."
+          python3 - <<'GUARD'
+          import pathlib
+          import re
+          import sys
+
+          docs = pathlib.Path("docs")
+          # `.parent` chains, not counting the `.parents[` accessor that merely starts the same way.
+          chain = re.compile(r"(?:\.parent\b(?!s))+")
+          indexed = re.compile(r"\.parents\[\s*(\d+)\s*\]")
+          findings = []
+
+          for path in sorted(docs.rglob("*.py")):
+              # Directory levels between docs/ and this file. A file may take that many steps up,
+              # plus one to stand on docs/ itself. One more and it is outside the tree.
+              levels = len(path.relative_to(docs).parts) - 1
+              text = path.read_text(encoding="utf-8")
+              for number, line in enumerate(text.splitlines(), start=1):
+                  if line.lstrip().startswith("#"):
+                      continue
+                  for match in chain.finditer(line):
+                      steps = match.group(0).count(".parent")
+                      if steps > levels + 1:
+                          findings.append((path, number, match.group(0).strip(), steps, levels + 1))
+                  for match in indexed.finditer(line):
+                      steps = int(match.group(1)) + 1
+                      if steps > levels + 1:
+                          findings.append((path, number, match.group(0).strip(), steps, levels + 1))
+
+          if findings:
+              print("::error::A documentation file computes a path out of its own location:")
+              for path, number, snippet, steps, allowed in findings:
+                  print(f"::error::  {path}:{number}  {snippet} walks {steps} up, {allowed} stays inside docs/")
+              print("::error::The documentation tree has to build where this repository is not, so it")
+              print("::error::cannot reach into it. Move what the file needs under docs/, and import")
+              print("::error::that from the repository side, the way scripts/render_parity_page.py")
+              print("::error::imports docs/hooks/parity_ledger.py.")
+              sys.exit(1)
+
+          print("No file under docs/ reaches outside the documentation tree.")
+          GUARD
 
       - name: Install idfkit from the wheel, outside the repository
         run: |
