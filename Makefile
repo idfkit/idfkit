@@ -15,6 +15,13 @@ check-stubs: ## Verify generated type stubs are up-to-date
 	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi || \
 		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
 
+.PHONY: check-conformance-level
+check-conformance-level: ## Verify the exported CONFORMANCE_LEVEL matches the declared one
+	@echo "🚀 Checking the exported conformance level against the declaration"
+	@uv run python -m idfkit.codegen.generate_conformance
+	@git diff --exit-code src/idfkit/_conformance.py || \
+		(echo "❌ idfkit.CONFORMANCE_LEVEL is stale against [tool.idfkit.conformance] in pyproject.toml. Run: uv run python -m idfkit.codegen.generate_conformance" && exit 1)
+
 .PHONY: check-doc-locations
 check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit-docs build)
 	@if [ -d "../idfkit-docs/dist" ]; then \
@@ -60,7 +67,7 @@ check-parity: ## Check the parity ledger against the exported capability set
 # sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
 # jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
+check: check-stubs check-conformance-level check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"
@@ -90,8 +97,16 @@ clean-build: ## Clean build artifacts
 	@echo "🚀 Removing build artifacts"
 	@uv run python -c "import shutil; import os; shutil.rmtree('dist') if os.path.exists('dist') else None"
 
+.PHONY: release-check
+release-check: ## Assert the corpus passes at the level this release declares (FR-024)
+	@uv run python scripts/check_release_conformance.py --conformance-repo $(CONFORMANCE_REPO)
+
+# release-check is a prerequisite of publish, not an adjacent target, because FR-024 makes the
+# declared level a claim the release asserts rather than one a maintainer remembers to verify.
+# Unlike check-naming and check-parity above, it does NOT skip when the conformance checkout is
+# missing: skipping would publish the claim unexamined, which is the failure the requirement names.
 .PHONY: publish
-publish: ## Publish a release to PyPI.
+publish: release-check ## Publish a release to PyPI.
 	@echo "🚀 Publishing."
 	@uvx twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 

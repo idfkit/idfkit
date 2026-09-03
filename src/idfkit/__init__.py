@@ -37,6 +37,10 @@ try:
 except PackageNotFoundError:
     __version__ = "0.0.0+unknown"
 
+# The conformance corpus level this release declares (FR-024), generated from
+# [tool.idfkit.conformance] in pyproject.toml so the claim and the pin stay one fact.
+from ._conformance import CONFORMANCE_LEVEL
+
 # Core classes
 # Documentation URL builder
 from .docs import DocsUrl, docs_url_for_object, engineering_reference_url, io_reference_url, search_url
@@ -400,6 +404,7 @@ def new_document(
 
 __all__ = [
     "ASHRAE_PERIMETER_DEPTH",
+    "CONFORMANCE_LEVEL",
     "ENERGYPLUS_VERSIONS",
     "LATEST_VERSION",
     "MINIMUM_VERSION",

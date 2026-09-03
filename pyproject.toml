@@ -122,6 +122,18 @@ exclude = [
     "src/idfkit/document.pyi",
 ]
 
+# The codegen modules are maintainer tools, not library code. They are never imported by an
+# installed package: they produce files that are committed, and `make check` regenerates and
+# diffs those files. So they may assume the interpreter a maintainer and CI actually run, 3.11,
+# which is what lets generate_conformance.py read pyproject.toml with the standard-library
+# tomllib rather than a dependency. The library itself is still analysed at 3.10 by the block
+# below, and still supports it. This MUST precede the broader src/idfkit block: pyright uses the
+# FIRST matching execution environment.
+[[tool.pyright.executionEnvironments]]
+root = "src/idfkit/codegen"
+pythonVersion = "3.11"
+reportTypedDictNotRequiredAccess = false
+
 # IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
 # All keys are total=False (the document is not a real TypedDict at runtime),
 # so we scope the suppression to the package rather than globally.
