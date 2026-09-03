@@ -160,12 +160,21 @@ jobs:
     name: portable build (outside the repository)
     needs: pins
     runs-on: ubuntu-latest
-    env:
-      # Outside $GITHUB_WORKSPACE on purpose. A scratch directory inside the checkout would let a
-      # relative path escape the documentation tree and still resolve, which is the one thing this
-      # job exists to catch.
-      SCRATCH: ${{ runner.temp }}/docs-portability
     steps:
+      - name: Choose a scratch directory outside the checkout
+        # Outside $GITHUB_WORKSPACE on purpose. A scratch directory inside the checkout would let a
+        # relative path escape the documentation tree and still resolve, which is the one thing this
+        # job exists to catch.
+        #
+        # Set here rather than in a job-level `env:` block, where this lived until it was found to
+        # have never run. The `runner` context is not available to `jobs.<id>.env`, so
+        # `${{ runner.temp }}` there is not an empty string but a workflow the parser rejects
+        # outright: every job in this file, not just this one, failed to start. A startup failure
+        # creates no check runs, so `gh pr checks` reported green while `strict`, `portable`,
+        # `js-snippets` and `pins` had never executed once. $RUNNER_TEMP is the same directory,
+        # reached through a default environment variable that a `run:` step does have.
+        run: echo "SCRATCH=$RUNNER_TEMP/docs-portability" >> "$GITHUB_ENV"
+
       - name: Check out
         uses: actions/checkout@v4
 
