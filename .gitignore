@@ -1,12 +1,3 @@
-docs/source
-
-# The weather browser's four files are part of the library's distribution and part of a page.
-# They were symlinks into src/ while the site lived here; scripts/copy_shipped_assets.py now
-# copies them out of the INSTALLED distribution before every build. Never commit them: a
-# committed copy is a snapshot, and a snapshot of a shipped asset drifts silently. It does not
-# fail a build, it shows a reader a weather browser the library no longer has.
-docs/weather/browse/
-
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 
 # Byte-compiled / optimized / DLL files
@@ -23,7 +14,6 @@ build/
 develop-eggs/
 dist/
 downloads/
-!docs/snippets/**/downloads/
 eggs/
 .eggs/
 lib/

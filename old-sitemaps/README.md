@@ -35,3 +35,14 @@ It is the input to 003-T037: every address in it must resolve against the new ho
 tolerance of zero.
 
 Do not regenerate this file either.
+
+## `developers.idfkit.com.retired.txt`
+
+The 17 addresses in the inventory above that the site deliberately stopped serving, in the
+same feature that captured it. Replaying the inventory must subtract these before comparing,
+and must find nothing else missing.
+
+They were never published: `developers.idfkit.com` had no DNS record and `deploy-docs.yml`
+had never run, so there is no bookmark to break and no redirect to write. The file exists so
+that the difference between "retired on purpose" and "lost in a migration" is written down
+rather than remembered, which is the same reason the inventories themselves exist.

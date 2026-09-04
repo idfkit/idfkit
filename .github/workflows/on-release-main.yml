@@ -9,8 +9,12 @@ permissions:
   contents: write
   id-token: write
 
-env:
-  ARCHIVE_ARTIFACT_NAME: py.idfkit.com-last-full-build
+# The deploy-docs job that stood here is gone. It built the site out of this repository and
+# published it to developers.idfkit.com on every release, which after feature 003 would be a second
+# place the site can be published from. 003-FR-005 allows exactly one, and it is
+# idfkit-developers. The ARCHIVE_ARTIFACT_NAME env this job read went with it; the interlock it
+# guarded still exists, in archive-retired-site.yml and deploy-py-redirects.yml, which are about
+# py.idfkit.com and stay here.
 
 
 jobs:
@@ -58,69 +62,3 @@ jobs:
 
       - name: Publish package
         run: uv publish
-
-
-  deploy-docs:
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: read
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Require the retained last full build of py.idfkit.com
-        # Same guard, same reason, as deploy-docs.yml. This deploy also uses force_orphan, so it
-        # also replaces gh-pages with a single commit whose history does not contain the tree it
-        # replaced. Publishing a release before archive-retired-site has run would destroy the last
-        # full build of py.idfkit.com with no way back (FR-090).
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          live=$(gh api \
-            "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${ARCHIVE_ARTIFACT_NAME}&per_page=100" \
-            --jq '[.artifacts[] | select(.expired == false)] | length')
-          if [ "${live}" = "0" ]; then
-            echo "::error::No unexpired '${ARCHIVE_ARTIFACT_NAME}' artefact exists. This deploy"
-            echo "::error::orphans gh-pages, which still holds the last full build of"
-            echo "::error::py.idfkit.com, and that build cannot be rebuilt from current sources."
-            echo "::error::Run the archive-retired-site workflow first (FR-090)."
-            exit 1
-          fi
-          echo "${live} unexpired copy or copies of ${ARCHIVE_ARTIFACT_NAME} are retained."
-
-      - name: Set up the environment
-        uses: ./.github/actions/setup-python-env
-
-      - name: Set up the parity ledger
-        # The site cannot be built without it: docs/hooks/parity_macro.py reads the ledger out of
-        # idfkit-conformance at the pinned governance tag and aborts the build rather than render a
-        # page with its parity statements missing (FR-084). Same step as deploy-docs.yml.
-        uses: ./.github/actions/setup-parity-ledger
-
-      - name: Install Cairo
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libcairo2
-
-      - name: Build documentation
-        run: ./scripts/build_docs.sh
-
-      - name: Preserve PR previews from gh-pages
-        run: |
-          git fetch origin gh-pages:gh-pages || true
-          if git show gh-pages:pr-preview >/dev/null 2>&1; then
-            git worktree add --detach gh-pages-ref gh-pages
-            cp -r gh-pages-ref/pr-preview site/pr-preview
-            git worktree remove gh-pages-ref
-          fi
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
-          force_orphan: true
-          cname: developers.idfkit.com

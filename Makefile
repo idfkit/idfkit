@@ -44,11 +44,6 @@ check-baker: ## Verify bundled agent references match their source templates + s
 # this checkout at the tag pinned in pyproject.toml, never from its working tree.
 CONFORMANCE_REPO ?= ../idfkit-conformance
 
-.PHONY: check-capabilities
-check-capabilities: ## Verify every capability page declares the capability it describes
-	@echo "🚀 Checking that every capability page declares a capability"
-	@uv run python scripts/check_capability_declarations.py
-
 .PHONY: check-naming
 check-naming: ## Check the public surface against the pinned naming register
 	@if [ -d "$(CONFORMANCE_REPO)/.git" ]; then \
@@ -72,13 +67,13 @@ check-parity: ## Check the parity ledger against the exported capability set
 # sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
 # jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-conformance-level check-doc-locations check-baker check-capabilities check-naming check-parity ## Run code quality tools.
+check: check-stubs check-conformance-level check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running pyright"
-	@uv run pyright src/ docs/snippets
+	@uv run pyright src/ agent_references/snippets
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@uv run deptry src
 
@@ -117,16 +112,6 @@ publish: release-check ## Publish a release to PyPI.
 
 .PHONY: build-and-publish
 build-and-publish: build publish ## Build and publish.
-
-.PHONY: docs-test
-docs-test: ## Test if documentation can be built without warnings or errors
-	@./scripts/build_docs.sh -s
-	@echo "🚀 Checking the built site hosts no engine bytes"
-	@uv run python scripts/check_engine_assets.py site
-
-.PHONY: docs
-docs: ## Build and serve the documentation
-	@uv run mkdocs serve
 
 .PHONY: help
 help:

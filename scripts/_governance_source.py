@@ -1,3 +1,29 @@
+# ==================================================================================================
+# THIS FILE IS DUPLICATED. THERE ARE TWO COPIES AND THEY MUST STAY BYTE-IDENTICAL.
+#
+#     idfkit/scripts/_governance_source.py
+#     idfkit-developers/scripts/_governance_source.py
+#
+# Four callers read governance artifacts at a pinned tag, and feature 003 put them in two
+# repositories: check_naming_register.py and check_parity_ledger.py are library gates and stayed
+# with the library, while render_parity_page.py and render_naming_map.py act on the pages and
+# followed the site.
+#
+# Duplication is the chosen answer, not an oversight. Publishing ~90 lines as a package would make
+# a release cycle out of a file that changes twice a year, and a stale pin on it would be one more
+# thing that can silently disagree. Moving it into idfkit-conformance would turn a data repository
+# into a code dependency of both libraries, which is worse than a copy.
+#
+# The cost is real and is paid deliberately: A CHANGE TO ONE COPY MUST LAND IN THE OTHER IN THE
+# SAME FEATURE. If they drift, the pinned read means two different things in two repositories, and
+# a page and a gate can disagree about the same tag, which is exactly the failure this module was
+# written to stop. tests/test_governance_source_matches.py compares them and blocks the merge.
+#
+# Note the banner is identical in both copies, naming both paths rather than "the other one".
+# A header that pointed outward would make the files differ and defeat the comparison that keeps
+# them honest.
+# ==================================================================================================
+
 """Read a governance file at the immutable tag a release pins.
 
 FR-081: governance is read at the ``governance-YYYY.N`` tag in

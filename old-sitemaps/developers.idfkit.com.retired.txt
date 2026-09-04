@@ -1,0 +1,43 @@
+# Addresses in developers.idfkit.com.txt that the site deliberately no longer serves.
+#
+# Captured 2026-09-03, in the same feature that captured the inventory beside it (003).
+#
+# These 17 are NOT a regression against 003-FR-006 and must not be counted as one when the
+# inventory is replayed. They are a deliberate retirement, and none of them was ever served
+# to anyone: developers.idfkit.com had no DNS record and deploy-docs.yml had never run when
+# the site moved, so the inventory beside this file is a listing of a BUILD, not of a
+# published site. There is no bookmark to break and nothing to redirect.
+#
+# WHY THEY WERE RETIRED
+#
+# The 16 topic pages were published copies of the reference set idfkit bakes into its wheel
+# as the `developing-with-idfkit` skill. The skill resolves the idfkit installed in the
+# reader's project and loads the references baked into that exact version. A page can only
+# ever show one version, the one the site pins. The published copy was therefore the single
+# artifact in the arrangement that could be wrong for a given reader, which is the drift the
+# skill exists to prevent.
+#
+# The 17th, the section landing page, survived as one explanation page at
+# explanation/developing-with-an-ai-assistant/, which is the only address this feature ADDED.
+#
+# The templates and snippets moved back into the library, where the thing they are baked into
+# ships. Nothing crosses a repository boundary now, and 001-FR-059's declared Diataxis
+# exception is retired with them: the site is the four kinds and nothing else.
+
+agent-references/document-and-objects/index.html
+agent-references/geometry-and-surfaces/index.html
+agent-references/geometry-builders-and-zoning/index.html
+agent-references/hvac-loops/index.html
+agent-references/hvac-templates/index.html
+agent-references/index.html
+agent-references/parsing-idf-epjson/index.html
+agent-references/reference-tracking/index.html
+agent-references/result-parsing/index.html
+agent-references/schedule-evaluation/index.html
+agent-references/schema-and-validation/index.html
+agent-references/simulation-execution/index.html
+agent-references/thermal-properties/index.html
+agent-references/version-migration/index.html
+agent-references/visualization/index.html
+agent-references/weather-data/index.html
+agent-references/writing-output/index.html

@@ -89,7 +89,7 @@ def options(root: Path, **kwargs: Any) -> Any:
         map_path=kwargs.get("map_path", root / "redirects" / "path-map.json"),
         package_root=root,
         site_dir=kwargs.get("site_dir", root / "site"),
-        config_path=kwargs.get("config_path", root / "mkdocs.yml"),
+        config_path=kwargs.get("config_path", root / "old-sitemaps" / "developers.idfkit.com.txt"),
         hosts=kwargs.get("hosts", ()),
         sitemaps=kwargs.get("sitemaps", ()),
         live=kwargs.get("live", False),
@@ -215,12 +215,14 @@ class TestWhatFails:
 
 
 class TestWhatCountsAsExisting:
-    def test_the_navigation_answers_when_there_is_no_built_site(self, tmp_path: Path) -> None:
+    def test_the_inventory_answers_when_there_is_no_built_site(self, tmp_path: Path) -> None:
+        # The site lives in idfkit-developers now, so there is no mkdocs.yml here to read a
+        # navigation out of. The captured inventory answers instead, and it is the better
+        # authority: it lists what a build actually produced rather than what a nav means to.
         write_sitemap(tmp_path, HOST, ["/", "/simulation/running/"])
-        (tmp_path / "mkdocs.yml").write_text(
-            "site_name: test\nnav:\n  - Home: index.md\n  - How-to guides:\n    - Running: simulation/running.md\n",
-            encoding="utf-8",
-        )
+        inventory = tmp_path / "old-sitemaps" / "developers.idfkit.com.txt"
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text("index.html\nsimulation/running/index.html\n", encoding="utf-8")
         write_map(tmp_path, {HOST: host_entry(identity(["/", "/simulation/running/"]))})
         report = gate.run(options(tmp_path))
 

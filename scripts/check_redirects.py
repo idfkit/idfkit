@@ -33,7 +33,7 @@ TWO MODES, AND WHY BOTH
 
 **Offline** is the default and the mode CI runs on every pull request. It resolves each captured
 address through the map and confirms the target exists, either in a built site under ``site/`` or in
-the navigation ``mkdocs.yml`` declares. It needs no network, so it runs on a pull request opened
+the captured address inventory lists. It needs no network, so it runs on a pull request opened
 months before the cutover and fails the day a page the map points at is renamed or removed.
 
 **Live** (``--live``) is run once, after the cutover. It requests each old address for real and
@@ -43,7 +43,7 @@ firmly than it forbids a broken link, because a stale copy outranks the real pag
 
 WHAT COUNTS AS EXISTING, OFFLINE
 
-A target exists when a built site under ``site/`` publishes it, or when ``mkdocs.yml`` navigates to
+A target exists when a built site under ``site/`` publishes it, or when the captured inventory lists
 it. Both are consulted and the report says which answered, because a stale ``site/`` would otherwise
 vouch for a page that no longer has a source file, and a navigation entry vouches for a page that
 has not been built yet. With neither available there is nothing to check against, and the gate
@@ -97,7 +97,7 @@ EXIT_REFUSED = 2
 
 DEFAULT_MAP = Path("redirects") / "path-map.json"
 DEFAULT_SITE_DIR = "site"
-DEFAULT_CONFIG = "mkdocs.yml"
+DEFAULT_INVENTORY = "old-sitemaps/developers.idfkit.com.txt"
 
 # The captured inventory is named after the host it came from. build_redirect_site.py reads the same
 # convention, and old-sitemaps/README.md is why neither file may be regenerated.
@@ -249,7 +249,7 @@ class TargetIndex:
         if self.site_dir is not None:
             parts.append(f"built site {self.site_dir} ({len(self.built)} published paths)")
         if self.config_path is not None:
-            parts.append(f"navigation {self.config_path} ({len(self.navigated)} paths)")
+            parts.append(f"inventory {self.config_path} ({len(self.navigated)} addresses)")
         return " and ".join(parts) if parts else "nothing"
 
 
@@ -509,18 +509,33 @@ def built_paths(site_dir: Path) -> frozenset[str]:
     return frozenset(found)
 
 
-def navigated_paths(config_path: Path) -> frozenset[str]:
-    """Every address the navigation in mkdocs.yml declares, read through the page-kinds gate."""
-    if str(Path(__file__).resolve().parent) not in sys.path:
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from check_page_kinds import load_config, read_navigation
+def navigated_paths(inventory_path: Path) -> frozenset[str]:
+    """Every address the unified site serves, read from the inventory captured before the move.
 
-    config = load_config(config_path.read_text(encoding="utf-8"))
-    navigation = read_navigation(config, config_path)
-    sources = set(navigation.paths)
-    if navigation.home:
-        sources.add(navigation.home)
-    return frozenset(_nav_url(source) for source in sources)
+    This used to parse the navigation out of mkdocs.yml through check_page_kinds. Feature 003
+    moved both of those to idfkit/idfkit-developers, so neither is here to read, and this file
+    stayed because it answers for the retired host rather than for the site.
+
+    The inventory is a better authority than the navigation ever was. A navigation tree lists what
+    the site MEANS to publish; old-sitemaps/developers.idfkit.com.txt is a listing of what a build
+    actually produced, captured immediately before the site left this repository, which is the same
+    kind of evidence as the two retired hosts' sitemaps beside it. A redirect target that resolves
+    against the inventory is one a reader can actually reach.
+
+    One line per address, as `find site -name '*.html'` emits them, relative to the site root.
+    """
+    found: set[str] = set()
+    for line in inventory_path.read_text(encoding="utf-8").splitlines():
+        relative = line.strip()
+        if not relative or relative.startswith("#"):
+            continue
+        if relative == "index.html":
+            found.add("/")
+        elif relative.endswith("/index.html"):
+            found.add(f"/{relative[: -len('index.html')]}")
+        else:
+            found.add(f"/{relative}")
+    return frozenset(found)
 
 
 def build_index(site_dir: Path | None, config_path: Path | None) -> TargetIndex:
@@ -854,7 +869,7 @@ def _options(args: argparse.Namespace, package_root: Path) -> Options:
         map_path=Path(str(args.map)).resolve() if args.map else package_root / DEFAULT_MAP,
         package_root=package_root,
         site_dir=Path(str(args.site_dir)).resolve() if args.site_dir else package_root / DEFAULT_SITE_DIR,
-        config_path=Path(str(args.config)).resolve() if args.config else package_root / DEFAULT_CONFIG,
+        config_path=Path(str(args.inventory)).resolve() if args.inventory else package_root / DEFAULT_INVENTORY,
         hosts=tuple(str(host) for host in cast("list[Any]", args.from_host)),
         sitemaps=tuple(Path(str(path)).resolve() for path in cast("list[Any]", args.sitemap)),
         live=bool(args.live),
@@ -885,7 +900,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--site-dir", default=None, help=f"Built site to resolve against (default: {DEFAULT_SITE_DIR})."
     )
-    parser.add_argument("--config", default=None, help=f"mkdocs.yml to resolve against (default: {DEFAULT_CONFIG}).")
+    parser.add_argument(
+        "--inventory",
+        default=None,
+        help=f"Captured address inventory to resolve against (default: {DEFAULT_INVENTORY}).",
+    )
     parser.add_argument(
         "--live",
         action="store_true",

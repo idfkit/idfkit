@@ -16,9 +16,12 @@
 # entry and the rule does not bind. Pair this file with a branch protection rule
 # on the default branch that requires review from Code Owners.
 #
-# FR-057 asks for the documentation source to carry named owners drawn from both
-# libraries. The "docs/" and "mkdocs.yml" entries in this same file satisfy that
-# requirement; task T119 confirms it. No separate docs CODEOWNERS file is needed.
+# 001-FR-057 asks for the documentation source to carry named owners drawn from
+# both libraries. It no longer does so here: feature 003 moved the site to
+# idfkit/idfkit-developers, whose own CODEOWNERS names both teams on the whole
+# repository. That arrangement is stronger than the entries it replaces, because
+# standing to review and standing to merge are different things and only the
+# second follows from write access to the repository the file sits in.
 #
 # Scope note: the naming register and the parity ledger are not covered here.
 # They live in the idfkit-conformance repository and are covered by its own
@@ -31,16 +34,11 @@
 # unified API and has a TypeScript counterpart.
 /src/idfkit/__init__.py                 @idfkit/python-maintainers @idfkit/javascript-maintainers
 
-# The documentation source and its build configuration (FR-057).
-/docs/                                  @idfkit/python-maintainers @idfkit/javascript-maintainers
-/mkdocs.yml                             @idfkit/python-maintainers @idfkit/javascript-maintainers
-
-# The site's own check, added by T118. FR-057 asks for "their own checks and named
-# owners", so the gate that proves the site builds strictly and builds outside this
-# repository is covered by the same rule as the site itself, for the reason the
-# CODEOWNERS entry below gives: a protection one language's maintainers can relax
-# alone is not a protection.
-/.github/workflows/docs.yml             @idfkit/python-maintainers @idfkit/javascript-maintainers
+# The redirect map for the retired host. It is the one piece of the documentation
+# arrangement that stayed here, because it answers for py.idfkit.com rather than
+# for the site, and a wrong entry sends a reader of either language to the wrong
+# page.
+/redirects/                             @idfkit/python-maintainers @idfkit/javascript-maintainers
 
 # This file itself, so the review rule cannot be relaxed without the same review.
 /.github/CODEOWNERS                     @idfkit/python-maintainers @idfkit/javascript-maintainers
