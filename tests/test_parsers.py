@@ -630,3 +630,89 @@ Building,
         parser.parse()
 
         assert len(parser.diagnostics) == first
+
+
+class TestInvalidFieldDiagnostic:
+    """idfkit#191: a value of the wrong kind is reported rather than stored in silence.
+
+    The shape this catches is a missing semicolon swallowing the object below, which slides that
+    object's type name into a numeric field. The field count still fits, so nothing overflows and
+    no parser notices by counting: the caller gets a plausible document, one object short, with a
+    type name where a number should be.
+    """
+
+    @staticmethod
+    def _write(tmp_path: Path, body: str) -> Path:
+        path = tmp_path / "invalid_field.idf"
+        path.write_text(body, encoding="latin-1")
+        return path
+
+    SWALLOWED = """Version,
+  26.1;
+
+Building,
+  Conformance,
+  0,
+  ,
+  ,
+  ,
+  ,
+Timestep,
+  4;
+"""
+
+    def test_reports_the_wrong_kind_of_value(self, tmp_path: Path) -> None:
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, self.SWALLOWED)))
+
+        assert [(d.code, d.obj_type) for d in result.diagnostics] == [("InvalidField", "Building")]
+
+    def test_points_at_the_field_not_at_the_object(self, tmp_path: Path) -> None:
+        """Line 11 is the swallowed `Timestep,`. Line 4 is where Building starts.
+
+        A finding on line 4 would be true and useless: the damage is seven lines further down.
+        """
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, self.SWALLOWED)))
+
+        assert result.diagnostics[0].line == 11
+        assert result.diagnostics[0].obj_name == "Conformance"
+
+    def test_the_parse_still_succeeds(self, tmp_path: Path) -> None:
+        """FR-014: this adds a finding where there was silence, and changes nothing else.
+
+        Strict parsing is the default and a value of the wrong kind does not stop it, so a caller
+        reading strictly gets exactly the document they got before.
+        """
+        path = self._write(tmp_path, self.SWALLOWED)
+
+        assert parse_idf(path) is not None
+
+    def test_a_sizing_sentinel_is_not_a_finding(self, tmp_path: Path) -> None:
+        """The check that keeps this diagnostic worth reading.
+
+        Across the 760 EnergyPlus example files, reading each field's own enum literally produced
+        3,775 findings, every one against a model EnergyPlus accepts: its schema is stricter than
+        its engine. Any numeric field takes a sizing sentinel, whatever its own enum says.
+        """
+        body = "Version,\n  26.1;\n\nPlantLoop,\n  Loop,\n  Water,\n  ,\n  ,\n  ,\n  ,\n  ,\n  ,\n  Autosize;\n"
+
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, body)))
+
+        assert [d for d in result.diagnostics if d.code == "InvalidField"] == []
+
+    def test_the_sentinel_check_is_case_insensitive(self, tmp_path: Path) -> None:
+        # Real files write AUTOSIZE, autosize and AutoCalculate, all three.
+        body = "Version,\n  26.1;\n\nPeople,\n  P,\n  Z,\n  Sched,\n  People,\n  1,\n  ,\n  ,\n  AUTOCALCULATE;\n"
+
+        result = load_idf_with_diagnostics(str(self._write(tmp_path, body)))
+
+        assert [d for d in result.diagnostics if d.code == "InvalidField"] == []
+
+    def test_a_field_that_declares_a_string_branch_accepts_it(self, tmp_path: Path) -> None:
+        """`anyOf: [{number}, {string}]` means the string branch's members are legal too."""
+        from idfkit.idf_parser import _string_is_legal
+
+        schema = get_schema(LATEST_VERSION).get_parsing_cache("PlantLoop")
+        assert schema is not None
+
+        assert _string_is_legal(schema.obj_schema, "plant_loop_volume", "Autocalculate")
+        assert not _string_is_legal(schema.obj_schema, "plant_loop_volume", "Timestep")

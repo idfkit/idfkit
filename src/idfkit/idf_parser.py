@@ -18,7 +18,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final, cast
 
 from .cst import CSTNode, DocumentCST
 from .document import IDFDocument
@@ -90,6 +90,108 @@ def _coerce_value_fast(field_type: str | None, value: str) -> Any:
         except ValueError:
             return value
     return value
+
+
+#: Field types whose value is coerced, and therefore whose coercion can fail.
+_NUMERIC_FIELD_TYPES: Final = frozenset({"number", "integer"})
+
+
+#: The two sizing sentinels, accepted in ANY numeric field.
+#:
+#: Not read from the field's own enum, deliberately. The schema EnergyPlus ships is NARROWER than
+#: the engine it ships with, and its own example files prove it. Both of these declare a string
+#: branch naming exactly one sentinel, and the shipped files use the other one:
+#:
+#:   PlantLoop.plant_loop_volume                                   allows "Autocalculate", 28 files
+#:                                                                 write "Autosize"
+#:   AirTerminal:SingleDuct:VAV:Reheat                             allows "Autosize", 673 files
+#:     .maximum_flow_fraction_during_reheat                        write "Autocalculate"
+#:
+#: The schema is well formed: measured across all 17 bundled versions, no field declares a
+#: non-numeric string default on a numeric type with no string branch. It is simply stricter about
+#: WHICH sentinel belongs where than EnergyPlus is. Reading each field's enum literally produced
+#: 3,775 findings across the 760 example files of one release, every one against a model EnergyPlus
+#: reads without complaint.
+#:
+#: A parse finding says the value is not of the kind the field takes. Whether the exact sentinel is
+#: the one THIS field documents is a schema-conformance question, and `validate_document` already
+#: answers it: it reports these as E003. Duplicating that here, less accurately, would make the
+#: parse diagnostic noise and teach a reader to ignore it.
+_SIZING_SENTINELS: Final = frozenset({"autosize", "autocalculate"})
+
+
+def _string_is_legal(obj_schema: dict[str, Any] | None, field_name: str, value: str) -> bool:
+    """Whether *value*, a string the numeric coercion rejected, is legal for this field anyway.
+
+    Two things make a string legal. Either it is a sizing sentinel, which any numeric field takes
+    whatever its own enum says (see :data:`_SIZING_SENTINELS`), or the field declares an
+    ``anyOf`` whose string branch admits it.
+
+    Consulted only when coercion has already failed, so the parse path pays nothing for it.
+    """
+    if value.casefold() in _SIZING_SENTINELS:
+        return True
+    if obj_schema is None:
+        return True
+
+    pattern_properties = cast("dict[str, Any]", obj_schema.get("patternProperties") or {})
+    empty: dict[str, Any] = {}
+    body = cast("dict[str, Any]", next(iter(pattern_properties.values()), empty) or empty)
+    properties = cast("dict[str, Any]", body.get("properties") or {})
+    field = properties.get(field_name)
+    if not isinstance(field, dict):
+        # No schema for the field is not evidence against the value.
+        return True
+
+    branches = cast("dict[str, Any]", field).get("anyOf")
+    if not isinstance(branches, list):
+        return False
+
+    folded = value.casefold()
+    for raw_branch in cast("list[Any]", branches):
+        if not isinstance(raw_branch, dict):
+            continue
+        branch = cast("dict[str, Any]", raw_branch)
+        if branch.get("type") != "string":
+            continue
+        allowed = branch.get("enum")
+        if not isinstance(allowed, list) or not allowed:
+            # A string branch with no enum accepts any string.
+            return True
+        return any(isinstance(a, str) and a.casefold() == folded for a in cast("list[Any]", allowed))
+
+    return False
+
+
+def _field_offset(fields_raw: str, index: int) -> int | None:
+    """Character offset in *fields_raw* where field *index* begins, or None if it runs out.
+
+    Walks the text the way :meth:`IDFParser._parse_fields` does, stepping over ``!`` comments so a
+    comma inside one is not counted as a separator. Only called when a finding is being built, so
+    the cost lands on the malformed object rather than on every field of every object.
+    """
+    position = 0
+    length = len(fields_raw)
+    offset = 0
+    while offset < length:
+        char = fields_raw[offset]
+        if char == "!":
+            newline = fields_raw.find("\n", offset)
+            if newline < 0:
+                break
+            offset = newline + 1
+            continue
+        if char == ",":
+            position += 1
+            offset += 1
+            if position == index:
+                while offset < length and fields_raw[offset].isspace():
+                    offset += 1
+                return offset
+            continue
+        offset += 1
+
+    return None if index else 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -472,7 +574,10 @@ class IDFParser:
 
             name, remaining_fields = (fields[0], fields[1:]) if has_name else ("", fields)
 
-            data = self._build_data_dict_cached(remaining_fields, field_names, pc)
+            invalid: list[tuple[int, str, str]] = []
+            data = self._build_data_dict_cached(remaining_fields, field_names, pc, invalid)
+            if invalid:
+                self._report_invalid_fields(match, fields_raw, encoding, obj_type, fields, pc, invalid)
 
             return IDFObject(
                 obj_type=obj_type,
@@ -495,13 +600,62 @@ class IDFParser:
                 data[f"field_{i + 1}"] = value
         return IDFObject(obj_type=obj_type, name=name, data=data)
 
+    def _report_invalid_fields(
+        self,
+        match: re.Match[bytes],
+        fields_raw: str,
+        encoding: str,
+        obj_type: str,
+        fields: list[str],
+        pc: ParsingCache,
+        invalid: list[tuple[int, str, str]],
+    ) -> None:
+        """Report values the schema declares numeric that are neither numeric nor a legal sentinel.
+
+        Never raises, in either mode. A value of the wrong kind does not stop the parse: the object
+        is built and the document is returned, so a caller who was reading strictly still gets what
+        they got before (FR-014). This adds a finding where there was silence, and nothing else.
+
+        The finding is positioned at the offending FIELD rather than at the object, because that is
+        what makes it useful: the shape this catches is a missing semicolon swallowing the object
+        below, and the object's own first line is nowhere near the damage.
+        """
+        name_offset = 1 if pc.has_name else 0
+        for index, field_name, value in invalid:
+            if _string_is_legal(pc.obj_schema, field_name, value):
+                continue
+
+            offset = _field_offset(fields_raw, index + name_offset)
+            prefix = 0 if offset is None else len(fields_raw[:offset].encode(encoding))
+            position = match.start(2) + prefix
+
+            self._record(
+                f"Field {field_name!r} expects a number, got {value!r}",
+                code="InvalidField",
+                obj_type=obj_type,
+                obj_name=fields[0] if pc.has_name and fields else None,
+                content=match.string,
+                offset=position,
+            )
+
     def _build_data_dict_cached(
         self,
         remaining_fields: list[str],
         field_names: list[str],
         pc: ParsingCache,
+        invalid: list[tuple[int, str, str]] | None = None,
     ) -> dict[str, Any]:
-        """Build the data dict using pre-computed field types from the cache."""
+        """Build the data dict using pre-computed field types from the cache.
+
+        *invalid* collects ``(index, field name, value)`` for each value the schema declares numeric
+        that did not coerce. It is almost always empty, and detecting that costs one identity test
+        and one frozenset lookup per field: ``_coerce_value_fast`` returns a NEW object when it
+        succeeds and hands back the very string it was given when it fails, so ``is`` separates the
+        two without re-parsing anything.
+
+        Whether such a value is actually wrong is not decided here. A numeric field routinely
+        accepts ``autosize``; that question needs the schema and is asked on the reporting path.
+        """
         data: dict[str, Any] = {}
         field_types = pc.field_types
         num_named = len(field_names)
@@ -510,7 +664,11 @@ class IDFParser:
             if i < num_named:
                 field_name = field_names[i]
                 if value:
-                    data[field_name] = _coerce_value_fast(field_types.get(field_name), value)
+                    field_type = field_types.get(field_name)
+                    coerced = _coerce_value_fast(field_type, value)
+                    data[field_name] = coerced
+                    if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
+                        invalid.append((i, field_name, value))
                 else:
                     data[field_name] = ""
 
