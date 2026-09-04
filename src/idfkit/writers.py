@@ -93,9 +93,26 @@ def write_idf(
             ``preserve_formatting=True``. When ``None`` (the default),
             automatically uses lossless output if a CST is available and
             *output_type* is ``"standard"``.
+        indent: Spaces before each field line. Defaults to the two this
+            writer has always used.
+        comment_column: Column the ``!-`` field comments are padded to.
+            Defaults to 30. A value longer than the column pushes its
+            comment right rather than being truncated.
+        ordering: ``"sorted"`` to write object types in alphabetical order,
+            which is the default and what the ``!-Option SortedOrder``
+            header declares, or ``"source"`` to keep the document's own
+            collection order, which writes ``!-Option OriginalOrderTop``
+            instead. An enumeration rather than a boolean because three
+            orderings exist across the two libraries and two formats.
 
     Returns:
         The IDF text.
+
+    Raises:
+        ValueError: If *preserve_formatting* is explicitly ``True`` on a
+            document that carries a CST while *indent*, *comment_column* or
+            *ordering* is away from its default. Reproducing the original
+            text and reformatting it are contradictory requests.
 
     Examples:
         Serialize the model to an IDF string for inspection:
@@ -124,8 +141,12 @@ def write_idf(
     # A control that is not at its default asks for output the original text does not have, so the
     # lossless path cannot honour it. Reproducing the file byte for byte and indenting to three
     # spaces are contradictory requests, and silently doing the first would be the wrong answer.
+    #
+    # The conflict is only real when the lossless path would actually be taken. `preserve_formatting=True`
+    # on a document that carries no CST has always fallen back to this writer, and asking for a control at
+    # the same time must not turn that quiet fallback into an error.
     formatting_requested = indent != DEFAULT_INDENT or comment_column != DEFAULT_COMMENT_COLUMN or ordering != "sorted"
-    if formatting_requested and use_preserve and preserve_formatting:
+    if formatting_requested and use_preserve and preserve_formatting and doc.cst is not None:
         msg = (
             "preserve_formatting reproduces the original text, so it cannot also apply indent, "
             "comment_column or ordering. Pass one or the other."
@@ -171,6 +192,12 @@ def save_idf(
         output_type: Output formatting mode, as for
             [write_idf][idfkit.writers.write_idf].
         preserve_formatting: Lossless output control, as for
+            [write_idf][idfkit.writers.write_idf].
+        indent: Field-line indent, as for
+            [write_idf][idfkit.writers.write_idf].
+        comment_column: Comment column, as for
+            [write_idf][idfkit.writers.write_idf].
+        ordering: Object ordering, as for
             [write_idf][idfkit.writers.write_idf].
 
     Examples:
@@ -392,19 +419,26 @@ class IDFWriter:
             from . import __version__
 
             lines.append(f"!-Generator idfkit v{__version__}")
-            lines.append("!-Option SortedOrder")
+            # The directive states the order the file is actually in. IDFEditor reads it, so writing
+            # `SortedOrder` over source-ordered objects would announce an order the file does not have.
+            # `sorted` is the default, so the default header does not move.
+            lines.append("!-Option SortedOrder" if self._ordering == "sorted" else "!-Option OriginalOrderTop")
             lines.append("")
 
         # Write Version first
         version_identifier = _resolve_version_identifier(self._doc)
+        pad = " " * self._indent
         if self._output_type == "compressed":
             lines.append(f"Version,{version_identifier};")
         else:
             lines.append("Version,")
             if self._output_type == "standard":
-                lines.append(f"  {version_identifier};                    !- Version Identifier")
+                # Written by hand rather than through the field loop, so its comment lands at column 27
+                # at the default indent rather than at `comment_column`. The literal run of spaces is kept
+                # so that default output is unchanged; only the indent moves when the caller moves it.
+                lines.append(f"{pad}{version_identifier};                    !- Version Identifier")
             else:
-                lines.append(f"  {version_identifier};")
+                lines.append(f"{pad}{version_identifier};")
             lines.append("")
 
         # Write objects grouped by type.

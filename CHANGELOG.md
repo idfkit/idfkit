@@ -44,7 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   `ordering` takes `"sorted"` or `"source"` rather than a boolean, because
   three orderings exist across the two libraries and two formats and a flag
-  cannot say which is wanted. `"sorted"` is this writer's default.
+  cannot say which is wanted. `"sorted"` is this writer's default. The
+  `!-Option` directive follows it: `SortedOrder` as before when sorted, and
+  `OriginalOrderTop` when `"source"`, because IDFEditor reads that line and it
+  must state the order the file is actually in.
+
+  The three land on `write_idf` and `save_idf` only. `write_epjson` and
+  `save_epjson` do not take them: all three describe IDF text, and
+  `write_epjson` already has an `indent` that means JSON indentation.
 
   Passing `preserve_formatting=True` together with any of the three raises:
   reproducing the original text and reformatting it are contradictory requests,
