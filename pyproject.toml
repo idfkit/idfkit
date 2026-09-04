@@ -76,6 +76,7 @@ dev = [
     "boto3>=1.26",
     "aiobotocore>=2.5",
     "plotly>=5.0",
+    "pyyaml>=6.0.3",
 ]
 benchmark = [
     "eppy>=0.5.63",
