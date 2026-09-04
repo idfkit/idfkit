@@ -24,17 +24,42 @@ jobs:
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
       ref: ${{ steps.build.outputs.ref }}
+      release_tag: ${{ steps.build.outputs.release_tag }}
     steps:
       - name: Build matrix and resolve ref
         id: build
+        env:
+          RUNS: ${{ inputs.runs || 5 }}
+          INPUT_REF: ${{ inputs.ref }}
+          TRIGGER_REF: ${{ github.ref }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          n=${{ inputs.runs || 5 }}
-          matrix=$(python3 -c "import json; print(json.dumps(list(range(1, $n + 1))))")
+          set -euo pipefail
+          matrix=$(python3 -c "import json, os; print(json.dumps(list(range(1, int(os.environ['RUNS']) + 1))))")
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-          ref="${{ inputs.ref }}"
-          if [ -z "$ref" ]; then ref="${{ github.ref }}"; fi
+
+          ref="$INPUT_REF"
+          if [ -z "$ref" ]; then ref="$TRIGGER_REF"; fi
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
-          echo "Will run $n parallel benchmark jobs against $ref"
+
+          # A tag ref means the charts belong on that release, whether the run came
+          # from the release event or from a manual dispatch against the same tag.
+          tag="$RELEASE_TAG"
+          if [ -z "$tag" ]; then
+            case "$ref" in
+              refs/tags/*) tag="${ref#refs/tags/}" ;;
+              v[0-9]*)     tag="$ref" ;;
+              *)           tag="" ;;
+            esac
+          fi
+          echo "release_tag=$tag" >> "$GITHUB_OUTPUT"
+
+          echo "Will run $RUNS parallel benchmark jobs against $ref"
+          if [ -n "$tag" ]; then
+            echo "Charts will be attached to release $tag if one is published"
+          else
+            echo "$ref is not a tag; charts stay an artifact only"
+          fi
 
   bench:
     name: bench (run ${{ matrix.run }})
@@ -92,8 +117,8 @@ jobs:
           echo "::group::Aggregated README perf claim"
           grep -nE "looking up a single object by name" README.md || true
           echo "::endgroup::"
-          echo "::group::Aggregated benchmarks.md table"
-          sed -n '40,55p' docs/benchmarks.md || true
+          echo "::group::Generated charts"
+          ls -l benchmarks/assets/
           echo "::endgroup::"
 
       - uses: actions/upload-artifact@v4
@@ -101,18 +126,22 @@ jobs:
           name: benchmark-results
           path: |
             benchmarks/results.json
-            docs/assets/benchmark*.svg
+            benchmarks/assets/benchmark*.svg
             README.md
-            docs/benchmarks.md
           if-no-files-found: error
 
       - name: Attach to release
-        if: github.event_name == 'release'
+        if: needs.setup.outputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.setup.outputs.release_tag }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          set -euo pipefail
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "No published release for tag $TAG; leaving the charts as an artifact."
+            exit 0
+          fi
+          gh release upload "$TAG" \
             benchmarks/results.json \
-            docs/assets/benchmark.svg \
-            docs/assets/benchmark_dark.svg \
+            benchmarks/assets/benchmark*.svg \
             --clobber

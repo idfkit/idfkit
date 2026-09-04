@@ -45,7 +45,7 @@ import bench  # reuse the COLORS / theme palette for visual consistency
 
 _HERE = Path(__file__).parent
 RESULTS_FILE = _HERE / "eso_results.json"
-ASSETS_DIR = _HERE.parent / "docs" / "assets"
+ASSETS_DIR = bench.ASSETS_DIR
 
 # A variable that exists in the generated reference-office file (and most models).
 _VARIABLE = "Zone Mean Air Temperature"
