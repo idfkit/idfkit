@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-09-04
+
 ### Added
 
 - `load_idf_with_diagnostics(path)` returns a `ParseResult` carrying the document
@@ -503,8 +505,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[unreleased]: https://github.com/idfkit/idfkit/compare/v0.13.0...HEAD
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/idfkit/idfkit/compare/v0.15.0...v1.0.0-rc.1
 [0.15.0]: https://github.com/idfkit/idfkit/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/idfkit/idfkit/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/idfkit/idfkit/compare/v0.12.2...v0.13.0
