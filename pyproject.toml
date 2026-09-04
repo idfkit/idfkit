@@ -76,6 +76,7 @@ dev = [
     "boto3>=1.26",
     "aiobotocore>=2.5",
     "plotly>=5.0",
+    "pyyaml>=6.0.3",
 ]
 benchmark = [
     "eppy>=0.5.63",
@@ -101,14 +102,14 @@ packages = ["src/idfkit"]
 # one value, so the declared level and the pinned tag cannot diverge. A gate that finds no level
 # declared here must refuse to run rather than fall back to a default.
 [tool.idfkit.conformance]
-level = "conformance-2026.7"
+level = "conformance-2026.8"
 
 # Governance artifact level this release is checked against, as an immutable tag in
 # idfkit-conformance. Read from this one value by both the CI gate and the release check, for the
 # same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
 # copy that declares no level.
 [tool.idfkit.governance]
-level = "governance-2026.9"
+level = "governance-2026.10"
 
 [tool.pyright]
 pythonVersion = "3.10"

@@ -29,6 +29,25 @@ if TYPE_CHECKING:
 
 OutputType = Literal["standard", "nocomment", "compressed"]
 
+#: How the writer orders objects.
+#:
+#: An enumeration rather than a boolean, because three behaviours exist today across the two
+#: languages and two formats and a flag cannot express three things: this library's IDF writer
+#: sorts by type name with Version pinned first, its epJSON writer keeps collection order with
+#: Version first, and the other language keeps insertion order in both formats. A `sorted`/`source`
+#: pair names what each of those is, and leaves room for the third to be named if it ever needs to
+#: be reached from here.
+#:
+#: `"sorted"` is the default for this library's IDF writer and does not move (FR-017).
+Ordering = Literal["sorted", "source"]
+
+#: The two-space indent this writer has always used. The other language uses four.
+DEFAULT_INDENT = 2
+
+#: The column field comments are padded to. The same 30 in both languages, and the one default of
+#: the six that already agrees.
+DEFAULT_COMMENT_COLUMN = 30
+
 
 def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
     """Read version_identifier from the Version object, falling back to doc.version."""
@@ -48,6 +67,10 @@ def write_idf(
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
+    indent: int = DEFAULT_INDENT,
+    comment_column: int = DEFAULT_COMMENT_COLUMN,
+    ordering: Ordering = "sorted",
+    version_first: bool = True,
 ) -> str:
     """
     Serialize a document to IDF text.
@@ -71,9 +94,26 @@ def write_idf(
             ``preserve_formatting=True``. When ``None`` (the default),
             automatically uses lossless output if a CST is available and
             *output_type* is ``"standard"``.
+        indent: Spaces before each field line. Defaults to the two this
+            writer has always used.
+        comment_column: Column the ``!-`` field comments are padded to.
+            Defaults to 30. A value longer than the column pushes its
+            comment right rather than being truncated.
+        ordering: ``"sorted"`` to write object types in alphabetical order,
+            which is the default and what the ``!-Option SortedOrder``
+            header declares, or ``"source"`` to keep the document's own
+            collection order, which writes ``!-Option OriginalOrderTop``
+            instead. An enumeration rather than a boolean because three
+            orderings exist across the two libraries and two formats.
 
     Returns:
         The IDF text.
+
+    Raises:
+        ValueError: If *preserve_formatting* is explicitly ``True`` on a
+            document that carries a CST while *indent*, *comment_column* or
+            *ordering* is away from its default. Reproducing the original
+            text and reformatting it are contradictory requests.
 
     Examples:
         Serialize the model to an IDF string for inspection:
@@ -99,10 +139,32 @@ def write_idf(
     else:
         use_preserve = doc.cst is not None
 
-    if use_preserve and doc.cst is not None:
+    # A control that is not at its default asks for output the original text does not have, so the
+    # lossless path cannot honour it. Reproducing the file byte for byte and indenting to three
+    # spaces are contradictory requests, and silently doing the first would be the wrong answer.
+    #
+    # The conflict is only real when the lossless path would actually be taken. `preserve_formatting=True`
+    # on a document that carries no CST has always fallen back to this writer, and asking for a control at
+    # the same time must not turn that quiet fallback into an error.
+    formatting_requested = indent != DEFAULT_INDENT or comment_column != DEFAULT_COMMENT_COLUMN or ordering != "sorted"
+    if formatting_requested and use_preserve and preserve_formatting and doc.cst is not None:
+        msg = (
+            "preserve_formatting reproduces the original text, so it cannot also apply indent, "
+            "comment_column or ordering. Pass one or the other."
+        )
+        raise ValueError(msg)
+
+    if use_preserve and doc.cst is not None and not formatting_requested:
         content = _write_idf_lossless(doc)
     else:
-        writer = IDFWriter(doc, output_type=output_type)
+        writer = IDFWriter(
+            doc,
+            output_type=output_type,
+            indent=indent,
+            comment_column=comment_column,
+            ordering=ordering,
+            version_first=version_first,
+        )
         content = writer.to_string()
 
     logger.debug("Serialized IDF (%d objects) to string", len(doc))
@@ -116,6 +178,10 @@ def save_idf(
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
+    indent: int = DEFAULT_INDENT,
+    comment_column: int = DEFAULT_COMMENT_COLUMN,
+    ordering: Ordering = "sorted",
+    version_first: bool = True,
 ) -> None:
     """
     Serialize a document to IDF text and write it to *path*.
@@ -129,6 +195,12 @@ def save_idf(
         output_type: Output formatting mode, as for
             [write_idf][idfkit.writers.write_idf].
         preserve_formatting: Lossless output control, as for
+            [write_idf][idfkit.writers.write_idf].
+        indent: Field-line indent, as for
+            [write_idf][idfkit.writers.write_idf].
+        comment_column: Comment column, as for
+            [write_idf][idfkit.writers.write_idf].
+        ordering: Object ordering, as for
             [write_idf][idfkit.writers.write_idf].
 
     Examples:
@@ -146,7 +218,15 @@ def save_idf(
             save_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
-    content = write_idf(doc, output_type, preserve_formatting=preserve_formatting)
+    content = write_idf(
+        doc,
+        output_type,
+        preserve_formatting=preserve_formatting,
+        indent=indent,
+        comment_column=comment_column,
+        ordering=ordering,
+        version_first=version_first,
+    )
     path = Path(path)
     with open(path, "w", encoding=encoding) as f:
         f.write(content)
@@ -319,37 +399,78 @@ class IDFWriter:
     - ``"compressed"`` — each object on a single line.
     """
 
-    def __init__(self, doc: IDFDocument, output_type: OutputType = "standard"):
+    def __init__(
+        self,
+        doc: IDFDocument,
+        output_type: OutputType = "standard",
+        *,
+        indent: int = DEFAULT_INDENT,
+        comment_column: int = DEFAULT_COMMENT_COLUMN,
+        ordering: Ordering = "sorted",
+        version_first: bool = True,
+    ):
         self._doc = doc
         self._output_type = output_type
+        self._indent = indent
+        self._comment_column = comment_column
+        self._ordering = ordering
+        self._version_first = version_first
+
+    def _header_lines(self) -> list[str]:
+        """The generator header, or nothing in compressed output.
+
+        The `!-Option` directive states the order the file is actually in. IDFEditor reads it, so
+        writing `SortedOrder` over source-ordered objects would announce an order the file does not
+        have. `sorted` is the default, so the default header does not move.
+        """
+        if self._output_type == "compressed":
+            return []
+
+        from . import __version__
+
+        directive = "SortedOrder" if self._ordering == "sorted" else "OriginalOrderTop"
+        return [f"!-Generator idfkit v{__version__}", f"!-Option {directive}", ""]
+
+    def _version_lines(self) -> list[str]:
+        """The Version object, written by hand rather than through the field loop."""
+        version_identifier = _resolve_version_identifier(self._doc)
+        pad = " " * self._indent
+
+        if self._output_type == "compressed":
+            return [f"Version,{version_identifier};"]
+        if self._output_type == "standard":
+            # Its comment lands at column 27 at the default indent rather than at `comment_column`.
+            # The literal run of spaces is kept so that default output is unchanged; only the indent
+            # moves when the caller moves it.
+            return ["Version,", f"{pad}{version_identifier};                    !- Version Identifier", ""]
+        return ["Version,", f"{pad}{version_identifier};", ""]
 
     def to_string(self) -> str:
         """Convert document to IDF string."""
-        lines: list[str] = []
+        lines: list[str] = self._header_lines()
 
-        if self._output_type != "compressed":
-            # Write header comment
-            from . import __version__
+        def write_version() -> None:
+            lines.extend(self._version_lines())
 
-            lines.append(f"!-Generator idfkit v{__version__}")
-            lines.append("!-Option SortedOrder")
-            lines.append("")
+        # Version ahead of everything else, which is what this writer has always done and what
+        # `version_first` defaults to, so the default does not move (FR-017). Turning it off leaves
+        # Version in whichever position the chosen ordering puts it, which is what a caller wants
+        # when the output is going to be diffed against a source file that did not lead with it.
+        if self._version_first:
+            write_version()
 
-        # Write Version first
-        version_identifier = _resolve_version_identifier(self._doc)
-        if self._output_type == "compressed":
-            lines.append(f"Version,{version_identifier};")
-        else:
-            lines.append("Version,")
-            if self._output_type == "standard":
-                lines.append(f"  {version_identifier};                    !- Version Identifier")
-            else:
-                lines.append(f"  {version_identifier};")
-            lines.append("")
-
-        # Write objects grouped by type
-        for obj_type in sorted(self._doc.collections.keys()):
+        # Write objects grouped by type.
+        #
+        # `sorted` is this writer's default and does not move. `source` keeps the document's own
+        # collection order, which is what the other language does and what a caller wants when the
+        # output is going to be diffed against an input rather than against another writer.
+        type_order = (
+            sorted(self._doc.collections.keys()) if self._ordering == "sorted" else list(self._doc.collections.keys())
+        )
+        for obj_type in type_order:
             if obj_type.upper() == "VERSION":
+                if not self._version_first:
+                    write_version()
                 continue
             collection = self._doc.collections[obj_type]
             if not collection:
@@ -441,13 +562,14 @@ class IDFWriter:
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
 
+            pad = " " * self._indent
             if self._output_type == "standard":
-                field_str = f"  {value}{terminator}"
-                field_str = field_str.ljust(30)
+                field_str = f"{pad}{value}{terminator}"
+                field_str = field_str.ljust(self._comment_column)
                 field_str += f"!- {comment}"
             else:
                 # nocomment
-                field_str = f"  {value}{terminator}"
+                field_str = f"{pad}{value}{terminator}"
 
             lines.append(field_str)
 

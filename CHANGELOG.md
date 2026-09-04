@@ -9,6 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `load_idf_with_diagnostics(path)` returns a `ParseResult` carrying the document
+  and the recoverable findings from the parse: a skipped unknown type, a
+  malformed object, a formatting tree that could not be linked. One call, with
+  nothing to configure first.
+
+  These findings were always produced. They went to the logging module and
+  nowhere else, so reaching them meant installing a handler before the parse,
+  and what arrived was a formatted sentence rather than a structured value.
+  **Every log record still fires, unchanged**: this is a second way to reach
+  the same findings, not a replacement, and code that installed a handler sees
+  exactly what it saw before.
+
+  There is no `strict_parsing` argument. A strict parse has no recoverable
+  findings by definition, since the first one stops it. Findings that stop a
+  parse still raise `IDFParseError`, which has always carried them on
+  `.diagnostics`, and that path is unchanged.
+
+  `ParseResult` is the same name, with the same two members in the same order,
+  as the JavaScript library's.
+
+- `ParseDiagnostic` gains a `code`, one of eight values shared with the
+  JavaScript library and derived from this library's own exception hierarchy by
+  dropping the `Error` suffix. It is the field to match on: the conformance
+  corpus compares findings on `(code, line, obj_type)` and never on message
+  text, so wording stays free to improve.
+
+  Added as the last field, so every existing positional construction of a
+  `ParseDiagnostic` keeps working.
+
+- `write_idf` and `save_idf` take three new keyword arguments: `indent`,
+  `comment_column`, and `ordering`. Every default is exactly what it was, so no
+  file this library has ever written changes shape.
+
+  `ordering` takes `"sorted"` or `"source"` rather than a boolean, because
+  three orderings exist across the two libraries and two formats and a flag
+  cannot say which is wanted. `"sorted"` is this writer's default. The
+  `!-Option` directive follows it: `SortedOrder` as before when sorted, and
+  `OriginalOrderTop` when `"source"`, because IDFEditor reads that line and it
+  must state the order the file is actually in.
+
+  The three land on `write_idf` and `save_idf` only. `write_epjson` and
+  `save_epjson` do not take them: all three describe IDF text, and
+  `write_epjson` already has an `indent` that means JSON indentation.
+
+  Passing `preserve_formatting=True` together with any of the three raises:
+  reproducing the original text and reformatting it are contradictory requests,
+  and silently doing the first would be the wrong answer.
+
 - `save_idf(doc, path, ...)` and `save_epjson(doc, path, ...)` write a serialized
   model to disk. They are the disk-writing half of the `write_*` split described
   under Changed.

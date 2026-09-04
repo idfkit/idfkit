@@ -349,3 +349,33 @@ class TestBundledSchemas:
         else:
             with pytest.raises(SchemaNotFoundError):
                 new_document()
+
+
+class TestExampleSweepCoversEveryBundledVersion:
+    """The CI sweep reads real files for every schema this package ships.
+
+    A version added to `ENERGYPLUS_VERSIONS` without being added to the sweep matrix ships a schema
+    that nothing has ever read a real file against, which is the state the sweep exists to end.
+    Held by a test rather than by a convention, because the two lists live in different files and
+    nothing else would notice them drifting apart.
+    """
+
+    @staticmethod
+    def _matrix_versions() -> list[str]:
+        import yaml
+
+        workflow = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "main.yml"
+        loaded = yaml.safe_load(workflow.read_text(encoding="utf-8"))
+        matrix = loaded["jobs"]["example-sweep"]["strategy"]["matrix"]["include"]
+        return [str(entry["version"]) for entry in matrix]
+
+    def test_every_bundled_version_is_swept(self) -> None:
+        bundled = {".".join(str(part) for part in version) for version in ENERGYPLUS_VERSIONS}
+
+        assert bundled - set(self._matrix_versions()) == set()
+
+    def test_the_sweep_names_no_version_that_is_not_bundled(self) -> None:
+        """A tag in the matrix with no schema behind it would download files nothing can read."""
+        bundled = {".".join(str(part) for part in version) for version in ENERGYPLUS_VERSIONS}
+
+        assert set(self._matrix_versions()) - bundled == set()
