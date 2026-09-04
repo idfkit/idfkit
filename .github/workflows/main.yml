@@ -86,24 +86,40 @@ jobs:
         # The seventeen versions idfkit bundles a schema for. A test holds this list to
         # `idfkit.versions.ENERGYPLUS_VERSIONS`, because a version added there and not here ships a
         # schema nothing has ever read a real file against.
-        version:
-          - "8.9.0"
-          - "9.0.1"
-          - "9.1.0"
-          - "9.2.0"
-          - "9.3.0"
-          - "9.4.0"
-          - "9.5.0"
-          - "9.6.0"
-          - "22.1.0"
-          - "22.2.0"
-          - "23.1.0"
-          - "23.2.0"
-          - "24.1.0"
-          - "24.2.0"
-          - "25.1.0"
-          - "25.2.0"
-          - "26.1.0"
+        #
+        # `findings` is that version's MEASURED count, not a round number, so a regression of one
+        # is caught. They are not all equal, and the differences are real rather than noise:
+        #
+        #   three everywhere        two parametric-preprocessor files holding `=$insDepth` where a
+        #                           number goes, which is not a number until that preprocessor runs
+        #   22.2.0, thirteen        plus eight uses of `Output:Table:ReportPeriod` and one of
+        #                           `Chiller:Electric:ASHRAE205` in files declaring a version whose
+        #                           schema has neither, and two fields misaligned by a stale stamp
+        #   25.2.0, eight           plus UnitarySystem_VSCoolingCoil_2.idf, which declares
+        #                           Version 24.2 while using a field added in 25.2
+        #   24.1.0, four            plus one of the same shape
+        #
+        # `errors` is three on every version: the same three files whose Version object is placed
+        # where the detector does not look. That is issue #185, and this holds the number until it
+        # is fixed rather than letting a fourth join them unnoticed.
+        include:
+          - { version: "8.9.0", findings: 3, errors: 3 }
+          - { version: "9.0.1", findings: 3, errors: 3 }
+          - { version: "9.1.0", findings: 3, errors: 3 }
+          - { version: "9.2.0", findings: 3, errors: 3 }
+          - { version: "9.3.0", findings: 3, errors: 3 }
+          - { version: "9.4.0", findings: 3, errors: 3 }
+          - { version: "9.5.0", findings: 3, errors: 3 }
+          - { version: "9.6.0", findings: 3, errors: 3 }
+          - { version: "22.1.0", findings: 3, errors: 3 }
+          - { version: "22.2.0", findings: 13, errors: 3 }
+          - { version: "23.1.0", findings: 3, errors: 3 }
+          - { version: "23.2.0", findings: 3, errors: 3 }
+          - { version: "24.1.0", findings: 4, errors: 3 }
+          - { version: "24.2.0", findings: 3, errors: 3 }
+          - { version: "25.1.0", findings: 3, errors: 3 }
+          - { version: "25.2.0", findings: 8, errors: 3 }
+          - { version: "26.1.0", findings: 3, errors: 3 }
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -147,4 +163,4 @@ jobs:
       - name: Read every file
         run: |
           uv run python scripts/sweep_example_files.py ep/testfiles \
-            --max-findings 10 --max-errors 5
+            --max-findings ${{ matrix.findings }} --max-errors ${{ matrix.errors }}

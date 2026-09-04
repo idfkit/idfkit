@@ -366,7 +366,8 @@ class TestExampleSweepCoversEveryBundledVersion:
 
         workflow = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "main.yml"
         loaded = yaml.safe_load(workflow.read_text(encoding="utf-8"))
-        return list(loaded["jobs"]["example-sweep"]["strategy"]["matrix"]["version"])
+        matrix = loaded["jobs"]["example-sweep"]["strategy"]["matrix"]["include"]
+        return [str(entry["version"]) for entry in matrix]
 
     def test_every_bundled_version_is_swept(self) -> None:
         bundled = {".".join(str(part) for part in version) for version in ENERGYPLUS_VERSIONS}
