@@ -39,6 +39,9 @@ NUM_MATERIALS = 100
 NUM_SURFACES = 1000
 ITERATIONS = 10  # Repeat each benchmark
 RESULTS_FILE = Path(__file__).parent / "results.json"
+# Charts are generated here and shipped as release assets; the documentation site
+# (idfkit/idfkit-developers) vendors them, so nothing is written outside this repo.
+ASSETS_DIR = Path(__file__).parent / "assets"
 
 # EnergyPlus version used for all benchmarks.  V9.3 is the newest version
 # natively supported by all four tools (eppy needs an external IDD, but
@@ -569,7 +572,7 @@ def generate_operation_charts(
     all_results: dict[str, dict[str, dict[str, float]]],
     output_dir: Path,
 ) -> None:
-    """Generate one chart per operation for the docs benchmarks page (light + dark)."""
+    """Generate one chart per operation for the benchmarks documentation page (light + dark)."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -608,11 +611,10 @@ def _format_time(seconds: float) -> str:
 
 
 # ---------------------------------------------------------------------------
-# README / docs auto-update from results.json
+# README auto-update from results.json
 # ---------------------------------------------------------------------------
 
 _README_PATH = Path(__file__).parent.parent / "README.md"
-_BENCHMARKS_DOC_PATH = Path(__file__).parent.parent / "docs" / "benchmarks.md"
 
 # Regex for the Performance paragraph in README.md.  Captures the two
 # dynamic values: total objects and speedup multiplier.
@@ -626,7 +628,7 @@ _PERF_RE = re.compile(
 
 
 def update_readme(results_path: Path = RESULTS_FILE) -> None:
-    """Patch README.md and docs/benchmarks.md with numbers from results.json."""
+    """Patch README.md with numbers from results.json."""
     with open(results_path) as f:
         data = json.load(f)
 
@@ -663,20 +665,6 @@ def update_readme(results_path: Path = RESULTS_FILE) -> None:
             print(f"README.md updated: {total_objects:,} objects, {speedup}x speedup")
         else:
             print("README.md already up to date")
-
-    # --- docs/benchmarks.md ---
-    if _BENCHMARKS_DOC_PATH.exists():
-        doc = _BENCHMARKS_DOC_PATH.read_text()
-        new_doc = re.sub(
-            r"\*\*[\d,]+-object IDF file\*\*",
-            f"**{total_objects:,}-object IDF file**",
-            doc,
-        )
-        if new_doc != doc:
-            _BENCHMARKS_DOC_PATH.write_text(new_doc)
-            print(f"docs/benchmarks.md updated: {total_objects:,} objects")
-        else:
-            print("docs/benchmarks.md already up to date")
 
 
 # ---------------------------------------------------------------------------
@@ -766,17 +754,17 @@ def main() -> None:
         print(f"\nResults saved to {RESULTS_FILE}")
 
         # Generate charts
-        assets_dir = Path(__file__).parent.parent / "docs" / "assets"
+        assets_dir = ASSETS_DIR
         assets_dir.mkdir(parents=True, exist_ok=True)
 
         # Hero chart for README (single operation)
         generate_hero_chart(all_results, assets_dir / "benchmark.svg")
 
-        # Per-operation charts for docs benchmarks page
+        # Per-operation charts for the benchmarks documentation page
         print("Per-operation charts:")
         generate_operation_charts(all_results, assets_dir)
 
-        # Update README / docs with numbers from results.json
+        # Update README with numbers from results.json
         update_readme()
 
     finally:

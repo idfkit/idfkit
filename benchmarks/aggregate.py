@@ -5,7 +5,7 @@ Each matrix job in the benchmark workflow uploads its own ``results.json``.
 This script walks an input directory, takes the *median of the per-run
 minimums* (and means) for every tool/operation pair, writes the consolidated
 file at ``benchmarks/results.json``, then reuses ``bench.py``'s chart and
-README-patch helpers so the docs reflect the aggregated numbers.
+README-patch helpers so both reflect the aggregated numbers.
 
 Usage:
     uv run --group benchmark python benchmarks/aggregate.py <input_dir>
@@ -99,7 +99,7 @@ def main() -> None:
         "--render",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Also regenerate SVGs and patch README/docs (default: yes)",
+        help="Also regenerate SVGs and patch the README (default: yes)",
     )
     args = parser.parse_args()
 
@@ -113,11 +113,12 @@ def main() -> None:
     if args.render:
         # Strip metadata for the chart generators (they expect tool->op->{min,mean}).
         all_results: dict[str, dict[str, dict[str, float]]] = {k: v for k, v in consolidated.items() if k != "metadata"}
-        assets_dir = _HERE.parent / "docs" / "assets"
+        assets_dir = bench.ASSETS_DIR
+        assets_dir.mkdir(parents=True, exist_ok=True)
         bench.generate_hero_chart(all_results, assets_dir / "benchmark.svg")
         print("Per-operation charts:")
         bench.generate_operation_charts(all_results, assets_dir)
-        # update_readme reads from the given path and patches README + docs/benchmarks.md.
+        # update_readme reads from the given path and patches README.md.
         bench.update_readme(results_path=args.out)
 
 
