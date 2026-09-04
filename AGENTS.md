@@ -32,8 +32,8 @@ The codebase has zero core runtime dependencies. Optional features (plotting, cl
 | `tests/` | Unit and integration tests (mirrors source structure) |
 | `tests/conftest.py` | Shared pytest fixtures |
 | `tests/fixtures/` | Test data files |
-| `docs/` | MkDocs Material documentation |
-| `docs/snippets/` | Code snippets used in docs (linted with ruff/pyright) |
+| `agent_references/templates/` | Prose for the wheel-bundled developing-with-idfkit skill |
+| `agent_references/snippets/` | Its runnable examples (linted with ruff, typed with pyright) |
 | `benchmarks/` | Performance benchmarks vs eppy/opyplus |
 | `scripts/` | Utility scripts (weather index rebuild) |
 
@@ -69,7 +69,7 @@ Default `pytest` runs doctests from `src/idfkit/` but excludes `simulation/`, `w
 ### Type Checking
 
 ```bash
-uv run pyright src/ docs/snippets
+uv run pyright src/ agent_references/snippets
 ```
 
 Pyright runs in **strict** mode. Fix typing issues properly rather than adding `# type: ignore` or `# pyright: ignore` comments.
@@ -126,10 +126,10 @@ agents by the [idfkit plugin](https://github.com/idfkit/idfkit-plugin) as the
 
 **These bundled files are GENERATED — never hand-edit them.** Sources:
 
-- **Prose**: `docs/agent-references/<topic>.md` — headings, tables, and
-  `--8<-- "docs/snippets/agent_references/<topic>.py:<section>"` includes
+- **Prose**: `agent_references/templates/<topic>.md` — headings, tables, and
+  `--8<-- "agent_references/snippets/<topic>.py:<section>"` includes
   for verified code. Intentionally-wrong "BAD" examples stay inline.
-- **Code**: `docs/snippets/agent_references/<topic>.py` — runnable examples,
+- **Code**: `agent_references/snippets/<topic>.py` — runnable examples,
   one file per topic, typed prelude + `# --8<-- [start:<section>]` regions.
 
 Regenerate after editing either source:
@@ -142,14 +142,14 @@ Whenever you change idfkit in a way an agent would notice — new or renamed
 public API, changed default behavior, a new sub-package, a new helper, a
 breaking change, a new workflow — update the matching template + snippet in
 the same change and re-bake. Add a new template + snippet (and an
-`mkdocs.yml` nav entry) for a genuinely new topic.
+for a genuinely new topic.
 
 Skip this for purely internal refactors, dependency bumps, CI tweaks, and
 formatting changes — same scope as the changelog rule above.
 
 Two gates, both in `make check` (and `make test`):
 
-- **pyright** type-checks `docs/snippets/agent_references/` under a strict
+- **pyright** type-checks `agent_references/snippets/` under a strict
   execution environment that keeps drift-catching rules ON
   (`reportAttributeAccessIssue`, `reportCallIssue`, `reportArgumentType`, …).
   A wrong kwarg, renamed attribute, or property-called-as-method fails here.

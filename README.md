@@ -71,9 +71,9 @@ looking up a single object by name is **over 3000x faster** than eppy and opyplu
 thanks to O(1) dict-based indexing:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/benchmark_dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/benchmark.svg">
-  <img alt="benchmark chart" src="docs/assets/benchmark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://developers.idfkit.com/assets/benchmark_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://developers.idfkit.com/assets/benchmark.svg">
+  <img alt="benchmark chart" src="https://developers.idfkit.com/assets/benchmark.svg">
 </picture>
 
 See [full benchmark results](https://developers.idfkit.com/benchmarks/)
@@ -179,7 +179,7 @@ print(results[0].station.display_name)
 - `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://developers.idfkit.com/simulation/migrating-versions/))
 - `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://developers.idfkit.com/cli/tmy/))
 
-![idfkit tmy search](docs/tape/idfkit_tmy_search.gif)
+![idfkit tmy search](https://developers.idfkit.com/tape/idfkit_tmy_search.gif)
 
 ## The JavaScript sibling
 
@@ -214,6 +214,13 @@ passes, readable as `idfkit.CONFORMANCE_LEVEL`.
 Full documentation is available at
 **[developers.idfkit.com](https://developers.idfkit.com/)**, which teaches both
 languages from one navigation. `py.idfkit.com` is retired and redirects there.
+
+The site's source is **not in this repository**. It lives at
+[idfkit/idfkit-developers](https://github.com/idfkit/idfkit-developers), which belongs to
+neither language: a page about loading a model is one page with two idioms on it, and the
+maintainers of both libraries hold the same standing over it. That repository pins this
+library to an exact version and generates the Python reference from it, so a documentation
+change goes there and a release here reaches it as a pull request.
 
 Key sections:
 
