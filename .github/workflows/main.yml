@@ -99,6 +99,10 @@ jobs:
         #                           Version 24.2 while using a field added in 25.2
         #   24.1.0, four            plus one of the same shape
         #
+        # These numbers are IDENTICAL to the TypeScript library's, version for version, and that is
+        # the point: the two sweep the same files and any number that moves on one side alone is a
+        # divergence.
+        #
         # `errors` is three on every version: the same three files whose Version object is placed
         # where the detector does not look. That is issue #185, and this holds the number until it
         # is fixed rather than letting a fourth join them unnoticed.
@@ -148,7 +152,13 @@ jobs:
           git clone --filter=blob:none --no-checkout --depth 1 \
             --branch "v${{ matrix.version }}" "$REPO" ep
           cd ep
-          git sparse-checkout set --no-cone 'testfiles/*.idf'
+          # `_1a-Long0.0.idf` is excluded. It carries an un-migrated `report variable dictionary;`
+          # at the four tags it exists in, which is a defect in that file rather than in either
+          # library, and the two libraries disagree about it: one reports an unknown type, the
+          # other's pattern discards it for having no comma. That disagreement is idfkit#193 and is
+          # tracked there. Carrying it here would mean holding four versions at a count that says
+          # nothing about this repository's own regressions, which is what this sweep is for.
+          git sparse-checkout set --no-cone 'testfiles/*.idf' '!testfiles/_1a-Long0.0.idf'
           git checkout
 
       - name: Fail if the example files were not found
