@@ -146,6 +146,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcairo2
 
+      - name: Copy the four weather-browser files out of the installed library
+        # They are part of the library's distribution and part of a page. They reached the page by
+        # symlink into src/ until 003-T018; now they are copied, because a symlink does not survive
+        # the repository boundary this site is about to cross. A missing one fails the build rather
+        # than publishing a page with a broken widget.
+        run: uv run python scripts/copy_shipped_assets.py
+
       - name: Build the site, warnings are failures
         env:
           # Where the ledger's repository is. The tag still comes from pyproject.toml and the read
@@ -217,12 +224,16 @@ jobs:
         run: uv export --frozen --no-hashes --no-emit-project --only-group dev -o "$RUNNER_TEMP/docs-toolchain.txt"
 
       - name: Copy the documentation tree to the scratch directory
-        # cp -RL materialises the tree: docs/ carries committed symlinks whose targets live outside
-        # it (the terminal recordings under tape/, and the weather browser's assets under src/), and
-        # those are page content that travels with the pages. Build wiring is a different animal and
-        # gets no such treatment: an `--8<--` include, a hooks: path or a custom_dir that leaves the
-        # documentation tree has nothing to resolve against here and fails the build below. The
-        # listing is printed so a new escaping symlink is at least visible in the log.
+        # docs/ carried five committed symlinks whose targets lived outside it, and `cp -RL`
+        # materialised them so the pages that used them still rendered here. 003-T018 and T019
+        # removed all five: the terminal recordings under tape/ are real content under docs/ now,
+        # and the weather browser's four files are copied out of the installed distribution by the
+        # step below. The listing must therefore print nothing, and -L is kept only so that a
+        # reintroduced symlink is visible in the log rather than silently broken.
+        #
+        # Build wiring gets no such treatment: an `--8<--` include, a hooks: path or a custom_dir
+        # that leaves the documentation tree has nothing to resolve against here and fails the
+        # build below.
         run: |
           mkdir -p "$SCRATCH"
           echo "Committed symlinks under docs/ whose target leaves the documentation tree:"
@@ -305,6 +316,15 @@ jobs:
           uv pip install --python "$SCRATCH/.venv/bin/python" \
             -r "$RUNNER_TEMP/docs-toolchain.txt" dist/idfkit-*.whl
           "$SCRATCH/.venv/bin/python" -c 'import idfkit; print("idfkit resolved from", idfkit.__file__)'
+
+      - name: Copy the four weather-browser files into the scratch tree
+        # From the wheel-installed idfkit in the scratch venv, not from this checkout: the whole
+        # point of this job is that the scratch tree is what idfkit-developers will hold, and that
+        # repository has no src/ to reach into. This is the step that replaces `cp -RL` for these
+        # four files.
+        run: |
+          "$SCRATCH/.venv/bin/python" scripts/copy_shipped_assets.py \
+            --destination "$SCRATCH/docs/weather/browse"
 
       - name: Build the site from the scratch directory, warnings are failures
         env:

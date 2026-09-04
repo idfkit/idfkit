@@ -179,7 +179,7 @@ print(results[0].station.display_name)
 - `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://developers.idfkit.com/simulation/migrating-versions/))
 - `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://developers.idfkit.com/cli/tmy/))
 
-![idfkit tmy search](tape/idfkit_tmy_search.gif)
+![idfkit tmy search](docs/tape/idfkit_tmy_search.gif)
 
 ## The JavaScript sibling
 

@@ -326,7 +326,10 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
 "benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905", "S112", "TRY003", "BLE001"]
-"scripts/*" = ["T201"]
+# The scripts print, and they raise with the long messages that are the whole point: a build that
+# stops because the installed library no longer ships a file the site publishes has to say which
+# file, why there is no fallback, and what fixes it. Same waiver, same reason, as docs/hooks below.
+"scripts/*" = ["T201", "TRY003"]
 # The documentation hooks print, and they raise with the long messages that are the whole point:
 # a build that stops because the pinned TypeDoc artifact is missing has to say which file, why
 # there is no fallback, and the command that fixes it. A three-word exception class in front of
