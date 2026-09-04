@@ -18,6 +18,7 @@ jobs:
         idfkit/idfkit-mcp
         idfkit/idfkit-lsp
         idfkit/idfkit-docs
+        idfkit/idfkit-developers
     steps:
       - name: Normalize version (strip v prefix)
         id: ver
