@@ -70,6 +70,7 @@ def write_idf(
     indent: int = DEFAULT_INDENT,
     comment_column: int = DEFAULT_COMMENT_COLUMN,
     ordering: Ordering = "sorted",
+    version_first: bool = True,
 ) -> str:
     """
     Serialize a document to IDF text.
@@ -162,6 +163,7 @@ def write_idf(
             indent=indent,
             comment_column=comment_column,
             ordering=ordering,
+            version_first=version_first,
         )
         content = writer.to_string()
 
@@ -179,6 +181,7 @@ def save_idf(
     indent: int = DEFAULT_INDENT,
     comment_column: int = DEFAULT_COMMENT_COLUMN,
     ordering: Ordering = "sorted",
+    version_first: bool = True,
 ) -> None:
     """
     Serialize a document to IDF text and write it to *path*.
@@ -222,6 +225,7 @@ def save_idf(
         indent=indent,
         comment_column=comment_column,
         ordering=ordering,
+        version_first=version_first,
     )
     path = Path(path)
     with open(path, "w", encoding=encoding) as f:
@@ -403,43 +407,57 @@ class IDFWriter:
         indent: int = DEFAULT_INDENT,
         comment_column: int = DEFAULT_COMMENT_COLUMN,
         ordering: Ordering = "sorted",
+        version_first: bool = True,
     ):
         self._doc = doc
         self._output_type = output_type
         self._indent = indent
         self._comment_column = comment_column
         self._ordering = ordering
+        self._version_first = version_first
+
+    def _header_lines(self) -> list[str]:
+        """The generator header, or nothing in compressed output.
+
+        The `!-Option` directive states the order the file is actually in. IDFEditor reads it, so
+        writing `SortedOrder` over source-ordered objects would announce an order the file does not
+        have. `sorted` is the default, so the default header does not move.
+        """
+        if self._output_type == "compressed":
+            return []
+
+        from . import __version__
+
+        directive = "SortedOrder" if self._ordering == "sorted" else "OriginalOrderTop"
+        return [f"!-Generator idfkit v{__version__}", f"!-Option {directive}", ""]
+
+    def _version_lines(self) -> list[str]:
+        """The Version object, written by hand rather than through the field loop."""
+        version_identifier = _resolve_version_identifier(self._doc)
+        pad = " " * self._indent
+
+        if self._output_type == "compressed":
+            return [f"Version,{version_identifier};"]
+        if self._output_type == "standard":
+            # Its comment lands at column 27 at the default indent rather than at `comment_column`.
+            # The literal run of spaces is kept so that default output is unchanged; only the indent
+            # moves when the caller moves it.
+            return ["Version,", f"{pad}{version_identifier};                    !- Version Identifier", ""]
+        return ["Version,", f"{pad}{version_identifier};", ""]
 
     def to_string(self) -> str:
         """Convert document to IDF string."""
-        lines: list[str] = []
+        lines: list[str] = self._header_lines()
 
-        if self._output_type != "compressed":
-            # Write header comment
-            from . import __version__
+        def write_version() -> None:
+            lines.extend(self._version_lines())
 
-            lines.append(f"!-Generator idfkit v{__version__}")
-            # The directive states the order the file is actually in. IDFEditor reads it, so writing
-            # `SortedOrder` over source-ordered objects would announce an order the file does not have.
-            # `sorted` is the default, so the default header does not move.
-            lines.append("!-Option SortedOrder" if self._ordering == "sorted" else "!-Option OriginalOrderTop")
-            lines.append("")
-
-        # Write Version first
-        version_identifier = _resolve_version_identifier(self._doc)
-        pad = " " * self._indent
-        if self._output_type == "compressed":
-            lines.append(f"Version,{version_identifier};")
-        else:
-            lines.append("Version,")
-            if self._output_type == "standard":
-                # Written by hand rather than through the field loop, so its comment lands at column 27
-                # at the default indent rather than at `comment_column`. The literal run of spaces is kept
-                # so that default output is unchanged; only the indent moves when the caller moves it.
-                lines.append(f"{pad}{version_identifier};                    !- Version Identifier")
-            else:
-                lines.append(f"{pad}{version_identifier};")
-            lines.append("")
+        # Version ahead of everything else, which is what this writer has always done and what
+        # `version_first` defaults to, so the default does not move (FR-017). Turning it off leaves
+        # Version in whichever position the chosen ordering puts it, which is what a caller wants
+        # when the output is going to be diffed against a source file that did not lead with it.
+        if self._version_first:
+            write_version()
 
         # Write objects grouped by type.
         #
@@ -451,6 +469,8 @@ class IDFWriter:
         )
         for obj_type in type_order:
             if obj_type.upper() == "VERSION":
+                if not self._version_first:
+                    write_version()
                 continue
             collection = self._doc.collections[obj_type]
             if not collection:

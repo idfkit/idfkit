@@ -852,3 +852,56 @@ class TestWriterDefaultsArePinned:
         # the first one a reader diffing two outputs would meet.
         assert text.startswith("!-Generator idfkit v")
         assert "!-Option SortedOrder" in text
+
+
+class TestVersionFirstControl:
+    """FR-016 and SC-007, the last two controls.
+
+    Feature 002 closed five controls and left two spelled on one side only: this writer pinned
+    Version first with no way to turn it off, and the other had no `ordering`. SC-007 asks for zero
+    one-sided controls and US4's second acceptance scenario names object ordering explicitly, so
+    both were added rather than argued away.
+    """
+
+    @staticmethod
+    def _model(tmp_path: Path) -> IDFDocument[bool]:
+        source = tmp_path / "version_first.idf"
+        source.write_text("Version,\n  26.1;\n\nTimestep,\n  4;\n\nBuilding,\n  Ctl;\n", encoding="latin-1")
+        return parse_idf(source)
+
+    @staticmethod
+    def _type_names(text: str) -> list[str]:
+        return [line.rstrip(",") for line in text.splitlines() if line and not line[0].isspace() and line.endswith(",")]
+
+    def test_version_first_is_the_default(self, tmp_path: Path) -> None:
+        """FR-017: the default does not move."""
+        text = write_idf(self._model(tmp_path))
+
+        assert self._type_names(text) == ["Version", "Building", "Timestep"]
+
+    def test_version_takes_its_sorted_position_when_unpinned(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path), version_first=False)
+
+        assert self._type_names(text) == ["Building", "Timestep", "Version"]
+
+    def test_version_takes_its_source_position_when_unpinned(self, tmp_path: Path) -> None:
+        """The two controls compose: ordering decides the sequence, version_first decides the pin."""
+        text = write_idf(self._model(tmp_path), version_first=False, ordering="source")
+
+        assert self._type_names(text) == ["Version", "Timestep", "Building"]
+
+    def test_the_control_changes_the_output(self, tmp_path: Path) -> None:
+        """A control that never changes anything would let a corpus case pass while checking nothing."""
+        model = self._model(tmp_path)
+
+        assert write_idf(model, version_first=False) != write_idf(model)
+
+    def test_the_document_survives_either_setting(self, tmp_path: Path) -> None:
+        """FR-019, over parsed values rather than text."""
+        model = self._model(tmp_path)
+
+        for pinned in (True, False):
+            reparsed_source = tmp_path / f"rt_{pinned}.idf"
+            reparsed_source.write_text(write_idf(model, version_first=pinned), encoding="latin-1")
+            reparsed = parse_idf(reparsed_source)
+            assert sorted(reparsed.collections) == sorted(model.collections)
