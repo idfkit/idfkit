@@ -759,3 +759,96 @@ Output:Variable,
         data = EpJSONWriter(doc).to_dict()
         assert list(data["Output:Variable"]) == ["Output:Variable 1", "Output:Variable 2"]
         assert list(data["GlobalGeometryRules"]) == ["GlobalGeometryRules 1"]
+
+
+class TestWriterDefaultsArePinned:
+    """FR-017: no writer default moves, in either language.
+
+    This is the requirement most easily broken by accident. Feature 002 adds three controls to
+    these four entry points, and the only thing that makes a slipped default loud rather than
+    discovered later is a test that fails.
+
+    Six defaults, pinned as the values they are TODAY, before any control existed. Every one of
+    them is also pinned on the other side, in `js/packages/core/tests/write.test.ts`, at the
+    values that writer uses. The two disagree on five of the six, both are published, and neither
+    is more correct. That disagreement is the point: it is documented on a page rather than
+    resolved, because resolving it would change output somebody depends on.
+    """
+
+    @staticmethod
+    def _model(tmp_path: Path) -> IDFDocument[bool]:
+        source = tmp_path / "defaults.idf"
+        source.write_text(
+            "Version,\n  26.1;\n\nBuilding,\n  Pinned,\n  30.0;\n\nTimestep,\n  4;\n",
+            encoding="latin-1",
+        )
+        return parse_idf(source)
+
+    def test_indent_is_two_spaces(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        field_lines = [ln for ln in text.splitlines() if ln.startswith(" ") and "!-" in ln]
+        assert field_lines
+        assert all(ln.startswith("  ") and not ln.startswith("   ") for ln in field_lines)
+
+    def test_comment_column_is_thirty(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        checked = 0
+        for line in text.splitlines():
+            marker = line.find("!-")
+            if marker <= 0 or "Version Identifier" in line:
+                continue
+            # Only lines the padding actually reached: a value longer than the column pushes the
+            # comment right, and that overflow behaviour is itself one of the seven differences.
+            if len(line[:marker].rstrip()) < 30:
+                assert marker == 30, line
+                checked += 1
+        assert checked > 0
+
+    def test_the_version_line_pads_to_twenty_seven_not_thirty(self, tmp_path: Path) -> None:
+        """The one line that does not go through `ljust(30)`.
+
+        `IDFWriter` writes the Version object by hand with a literal run of spaces rather than
+        through the field loop, so its comment lands at column 27. Pinned because it is a real
+        quirk of the current output and the comment-column control must not quietly regularise it:
+        that would change the first line of every file this writer has ever produced.
+        """
+        text = write_idf(self._model(tmp_path))
+
+        version_line = next(ln for ln in text.splitlines() if "Version Identifier" in ln)
+        assert version_line.find("!-") == 27
+
+    def test_objects_are_sorted_by_type_with_version_first(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        types = [ln.rstrip(",") for ln in text.splitlines() if ln and not ln[0].isspace() and ln.endswith(",")]
+        assert types[0] == "Version"
+        assert types[1:] == sorted(types[1:])
+
+    def test_floats_render_with_percent_g(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        # north_axis came in as 30.0 and goes out as 30: `%g` drops the trailing zero. The other
+        # language consults the schema and keeps 30.0 for a field the schema calls a number.
+        assert "  30," in text or "  30;" in text
+        assert "30.0" not in text
+
+    def test_field_comments_are_fully_title_cased(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        # Every word, including the minor ones. The other language lowercases minor words, so it
+        # writes "Number of Timesteps per Hour" where this writes "Number Of Timesteps Per Hour".
+        comments = [ln.split("!-", 1)[1].strip() for ln in text.splitlines() if "!-" in ln and not ln.startswith("!-")]
+        assert comments
+        for comment in comments:
+            words = [w for w in comment.split() if w.isalpha()]
+            assert all(w[0].isupper() for w in words), comment
+
+    def test_the_generator_header_is_written(self, tmp_path: Path) -> None:
+        text = write_idf(self._model(tmp_path))
+
+        # The other language writes no header at all, which is one of the seven differences and
+        # the first one a reader diffing two outputs would meet.
+        assert text.startswith("!-Generator idfkit v")
+        assert "!-Option SortedOrder" in text

@@ -29,6 +29,25 @@ if TYPE_CHECKING:
 
 OutputType = Literal["standard", "nocomment", "compressed"]
 
+#: How the writer orders objects.
+#:
+#: An enumeration rather than a boolean, because three behaviours exist today across the two
+#: languages and two formats and a flag cannot express three things: this library's IDF writer
+#: sorts by type name with Version pinned first, its epJSON writer keeps collection order with
+#: Version first, and the other language keeps insertion order in both formats. A `sorted`/`source`
+#: pair names what each of those is, and leaves room for the third to be named if it ever needs to
+#: be reached from here.
+#:
+#: `"sorted"` is the default for this library's IDF writer and does not move (FR-017).
+Ordering = Literal["sorted", "source"]
+
+#: The two-space indent this writer has always used. The other language uses four.
+DEFAULT_INDENT = 2
+
+#: The column field comments are padded to. The same 30 in both languages, and the one default of
+#: the six that already agrees.
+DEFAULT_COMMENT_COLUMN = 30
+
 
 def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
     """Read version_identifier from the Version object, falling back to doc.version."""
@@ -48,6 +67,9 @@ def write_idf(
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
+    indent: int = DEFAULT_INDENT,
+    comment_column: int = DEFAULT_COMMENT_COLUMN,
+    ordering: Ordering = "sorted",
 ) -> str:
     """
     Serialize a document to IDF text.
@@ -99,10 +121,27 @@ def write_idf(
     else:
         use_preserve = doc.cst is not None
 
-    if use_preserve and doc.cst is not None:
+    # A control that is not at its default asks for output the original text does not have, so the
+    # lossless path cannot honour it. Reproducing the file byte for byte and indenting to three
+    # spaces are contradictory requests, and silently doing the first would be the wrong answer.
+    formatting_requested = indent != DEFAULT_INDENT or comment_column != DEFAULT_COMMENT_COLUMN or ordering != "sorted"
+    if formatting_requested and use_preserve and preserve_formatting:
+        msg = (
+            "preserve_formatting reproduces the original text, so it cannot also apply indent, "
+            "comment_column or ordering. Pass one or the other."
+        )
+        raise ValueError(msg)
+
+    if use_preserve and doc.cst is not None and not formatting_requested:
         content = _write_idf_lossless(doc)
     else:
-        writer = IDFWriter(doc, output_type=output_type)
+        writer = IDFWriter(
+            doc,
+            output_type=output_type,
+            indent=indent,
+            comment_column=comment_column,
+            ordering=ordering,
+        )
         content = writer.to_string()
 
     logger.debug("Serialized IDF (%d objects) to string", len(doc))
@@ -116,6 +155,9 @@ def save_idf(
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
+    indent: int = DEFAULT_INDENT,
+    comment_column: int = DEFAULT_COMMENT_COLUMN,
+    ordering: Ordering = "sorted",
 ) -> None:
     """
     Serialize a document to IDF text and write it to *path*.
@@ -146,7 +188,14 @@ def save_idf(
             save_idf(model, "building_copy.idf")  # byte-identical
             ```
     """
-    content = write_idf(doc, output_type, preserve_formatting=preserve_formatting)
+    content = write_idf(
+        doc,
+        output_type,
+        preserve_formatting=preserve_formatting,
+        indent=indent,
+        comment_column=comment_column,
+        ordering=ordering,
+    )
     path = Path(path)
     with open(path, "w", encoding=encoding) as f:
         f.write(content)
@@ -319,9 +368,20 @@ class IDFWriter:
     - ``"compressed"`` — each object on a single line.
     """
 
-    def __init__(self, doc: IDFDocument, output_type: OutputType = "standard"):
+    def __init__(
+        self,
+        doc: IDFDocument,
+        output_type: OutputType = "standard",
+        *,
+        indent: int = DEFAULT_INDENT,
+        comment_column: int = DEFAULT_COMMENT_COLUMN,
+        ordering: Ordering = "sorted",
+    ):
         self._doc = doc
         self._output_type = output_type
+        self._indent = indent
+        self._comment_column = comment_column
+        self._ordering = ordering
 
     def to_string(self) -> str:
         """Convert document to IDF string."""
@@ -347,8 +407,15 @@ class IDFWriter:
                 lines.append(f"  {version_identifier};")
             lines.append("")
 
-        # Write objects grouped by type
-        for obj_type in sorted(self._doc.collections.keys()):
+        # Write objects grouped by type.
+        #
+        # `sorted` is this writer's default and does not move. `source` keeps the document's own
+        # collection order, which is what the other language does and what a caller wants when the
+        # output is going to be diffed against an input rather than against another writer.
+        type_order = (
+            sorted(self._doc.collections.keys()) if self._ordering == "sorted" else list(self._doc.collections.keys())
+        )
+        for obj_type in type_order:
             if obj_type.upper() == "VERSION":
                 continue
             collection = self._doc.collections[obj_type]
@@ -441,13 +508,14 @@ class IDFWriter:
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
 
+            pad = " " * self._indent
             if self._output_type == "standard":
-                field_str = f"  {value}{terminator}"
-                field_str = field_str.ljust(30)
+                field_str = f"{pad}{value}{terminator}"
+                field_str = field_str.ljust(self._comment_column)
                 field_str += f"!- {comment}"
             else:
                 # nocomment
-                field_str = f"  {value}{terminator}"
+                field_str = f"{pad}{value}{terminator}"
 
             lines.append(field_str)
 
