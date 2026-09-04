@@ -34,9 +34,37 @@ def _format_subprocess_failure(
     return msg
 
 
+#: The shared diagnostic vocabulary, derived from the exception hierarchy below by dropping the
+#: `Error` suffix. Both libraries use these exact spellings, because the conformance corpus compares
+#: a parse finding on `(code, line, obj_type)` and never on message text: wording is a presentation
+#: choice each library should stay free to improve, and pinning it would turn every improvement into
+#: a conformance failure.
+#:
+#: The table lives in `idfkit-conformance/runners/compare.md`. A code outside it is a difference,
+#: not a near match.
+ParseDiagnosticCode = Literal[
+    "UnknownObjectType",
+    "InvalidField",
+    "Range",
+    "DuplicateObject",
+    "ParseError",
+    "VersionMismatch",
+    "UnsupportedVersion",
+    "SchemaNotFound",
+]
+
+
 @dataclass(frozen=True, slots=True)
 class ParseDiagnostic:
-    """Structured parse diagnostic with best-effort source context."""
+    """One finding from a parse: what happened, and as much location as was available.
+
+    There is no severity, and there never has been. Whether a finding stopped the parse is told by
+    the path it arrives on, `IDFParseError.diagnostics` for the ones that did and
+    `ParseResult.diagnostics` for the ones that did not, rather than by a field on the finding.
+
+    `code` is added last so that every existing positional construction keeps working. It reads
+    better beside `message` and is not there, deliberately.
+    """
 
     message: str
     filepath: str | None = None
@@ -44,6 +72,7 @@ class ParseDiagnostic:
     obj_name: str | None = None
     line: int | None = None
     column: int | None = None
+    code: ParseDiagnosticCode = "ParseError"
 
 
 class IDFParseError(IdfKitError):

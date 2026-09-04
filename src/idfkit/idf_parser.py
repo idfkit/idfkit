@@ -16,12 +16,13 @@ import mmap
 import re
 import time
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .cst import CSTNode, DocumentCST
 from .document import IDFDocument
-from .exceptions import IDFParseError, ParseDiagnostic, VersionNotFoundError
+from .exceptions import IDFParseError, ParseDiagnostic, ParseDiagnosticCode, VersionNotFoundError
 from .objects import IDFObject
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,23 @@ def _coerce_value_fast(field_type: str | None, value: str) -> Any:
         except ValueError:
             return value
     return value
+
+
+@dataclass(frozen=True, slots=True)
+class ParseResult:
+    """A document, and the recoverable findings from the parse that produced it.
+
+    What `load_idf_with_diagnostics` hands back. The findings here are the ones that did NOT stop
+    the parse: a skipped unknown type, a malformed object, a formatting tree that could not be
+    linked. The ones that did stop it never reach this type, because there is no document to pair
+    them with; they arrive on `IDFParseError.diagnostics` instead.
+
+    Field names match the other language's `ParseResult` exactly, so a reader moving between the
+    two reads the same two names in the same order.
+    """
+
+    document: IDFDocument
+    diagnostics: tuple[ParseDiagnostic, ...]
 
 
 def parse_idf(
@@ -159,6 +177,37 @@ def parse_idf(
     return parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
 
 
+def parse_idf_with_diagnostics(
+    filepath: Path | str,
+    schema: EpJSONSchema | None = None,
+    version: tuple[int, int, int] | None = None,
+    encoding: str = "latin-1",
+    *,
+    strict: bool = True,
+    preserve_formatting: bool = False,
+) -> ParseResult:
+    """Parse an IDF file, keeping the findings that did not stop the parse.
+
+    The same work `parse_idf(..., strict_parsing=False)` does, handing back the recoverable
+    findings alongside the document instead of only announcing them through the logging module.
+
+    `strict_parsing` is not a parameter: a strict parse has no recoverable findings by definition,
+    so this function always parses non-strictly. Findings that stop a parse still raise, and still
+    arrive on `IDFParseError.diagnostics`.
+
+    Every logging announcement fires exactly as it does today. A caller with a handler installed
+    sees no change (FR-014); this is a second way to reach the same findings, not a replacement.
+    """
+    filepath = Path(filepath)
+
+    if not filepath.exists():
+        raise FileNotFoundError(f"IDF file not found: {filepath}")  # noqa: TRY003
+
+    parser = IDFParser(filepath, schema, encoding, strict_parsing=False)
+    document = parser.parse(version, strict=strict, preserve_formatting=preserve_formatting)
+    return ParseResult(document=document, diagnostics=parser.diagnostics)
+
+
 class IDFParser:
     """
     Streaming parser for IDF files.
@@ -166,13 +215,14 @@ class IDFParser:
     Uses memory mapping for large files and regex for tokenization.
     """
 
-    __slots__ = ("_content", "_encoding", "_filepath", "_schema", "_strict_parsing")
+    __slots__ = ("_content", "_diagnostics", "_encoding", "_filepath", "_schema", "_strict_parsing")
 
     _filepath: Path
     _schema: EpJSONSchema | None
     _encoding: str
     _content: bytes | None
     _strict_parsing: bool
+    _diagnostics: list[ParseDiagnostic]
 
     def __init__(
         self,
@@ -186,6 +236,51 @@ class IDFParser:
         self._encoding = encoding
         self._strict_parsing = strict_parsing
         self._content: bytes | None = None
+        # Recoverable findings from the last parse: the ones that did not stop it.
+        #
+        # These have always been produced; they went to the logging module and nowhere else, so a
+        # caller who wanted them had to install a handler before parsing. They are collected here
+        # too, so `load_idf_with_diagnostics` can hand them back in one call. Every logging
+        # announcement still fires exactly as it did (FR-014); this adds a second way to reach the
+        # same findings and removes none.
+        self._diagnostics = []
+
+    @property
+    def diagnostics(self) -> tuple[ParseDiagnostic, ...]:
+        """Recoverable findings from the most recent parse, in the order they were noticed."""
+        return tuple(self._diagnostics)
+
+    def _record(
+        self,
+        message: str,
+        *,
+        code: ParseDiagnosticCode,
+        obj_type: str | None = None,
+        obj_name: str | None = None,
+        content: bytes | None = None,
+        offset: int | None = None,
+    ) -> None:
+        """Note a recoverable finding, resolving its position while the offset is still in hand.
+
+        The position has to be captured here rather than recovered later. The aggregate site used
+        to reduce its findings to a set of type names before warning, which threw away every offset
+        it had, and a finding with no position is not the finding the other language returns.
+        """
+        line: int | None = None
+        column: int | None = None
+        if content is not None and offset is not None:
+            line, column = self._line_and_column(content, offset)
+        self._diagnostics.append(
+            ParseDiagnostic(
+                message=message,
+                filepath=str(self._filepath),
+                obj_type=obj_type,
+                obj_name=obj_name,
+                line=line,
+                column=column,
+                code=code,
+            )
+        )
 
     def parse(
         self,
@@ -206,6 +301,8 @@ class IDFParser:
             Parsed IDFDocument
         """
         t0 = time.perf_counter()
+        # A parser may be reused, and findings belong to one parse rather than to its whole life.
+        self._diagnostics = []
         logger.debug("Parsing IDF file %s", self._filepath)
 
         # Load content (with mmap for large files)
@@ -233,11 +330,16 @@ class IDFParser:
         if preserve_formatting:
             original_text = content.decode(self._encoding)
             cst = _build_idf_cst(original_text)
-            if _link_cst_to_objects(cst, doc):
+            if _link_cst_to_objects(cst, doc, self._diagnostics, str(self._filepath)):
                 doc._cst = cst  # pyright: ignore[reportAttributeAccessIssue]
                 doc._raw_text = original_text  # pyright: ignore[reportAttributeAccessIssue]
             else:
                 logger.warning("CST discarded due to linking failure — lossless round-trip disabled")
+                # No position: the failure is a property of the whole tree, not of one place in it.
+                self._record(
+                    "CST discarded due to linking failure, lossless round-trip disabled",
+                    code="ParseError",
+                )
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)
@@ -333,6 +435,14 @@ class IDFParser:
                         obj_name=obj_name,
                     )
                 logger.warning("Skipping malformed object %r: %s", obj_type or "<decode_error>", exc)
+                self._record(
+                    f"Skipping malformed object: {exc}",
+                    code="ParseError",
+                    obj_type=obj_type,
+                    obj_name=obj_name,
+                    content=content,
+                    offset=match_offset,
+                )
 
         if skipped_types:
             logger.warning(
@@ -515,6 +625,7 @@ class IDFParser:
         *,
         obj_type: str | None = None,
         obj_name: str | None = None,
+        code: ParseDiagnosticCode = "ParseError",
     ) -> None:
         """Raise a ParseError with contextual diagnostics."""
         line, column = self._line_and_column(content, offset)
@@ -525,6 +636,7 @@ class IDFParser:
             obj_name=obj_name,
             line=line,
             column=column,
+            code=code,
         )
         summary = "Failed to parse IDF"
         raise IDFParseError(summary, diagnostics=[diagnostic])
@@ -563,8 +675,34 @@ class IDFParser:
             return (pc, False, canonical)
 
         if self._strict_parsing:
+            # The same code the recoverable path below uses, and the same one the other language
+            # reports for this input. A finding must not change kind depending on which mode was
+            # asked for: it is the same finding, arriving on a different path.
             msg = f"Unknown object type '{obj_type}'"
-            self._raise_parse_error(content, match_offset, msg, obj_type=obj_type, obj_name=obj_name)
+            self._raise_parse_error(
+                content,
+                match_offset,
+                msg,
+                obj_type=obj_type,
+                obj_name=obj_name,
+                code="UnknownObjectType",
+            )
+
+        # One finding per skip, positioned, and recorded HERE rather than after the loop.
+        #
+        # `skipped_types` is a set and stays one, because the log line it feeds is a summary and
+        # changing it would change what an existing caller sees. But a set of type names is not
+        # what the other language returns: it collapses four skips of the same type into one and
+        # discards every offset. The offset is in hand at exactly this point and nowhere later,
+        # which is why the finding is built here.
+        self._record(
+            f"Unknown object type '{obj_type}'",
+            code="UnknownObjectType",
+            obj_type=obj_type,
+            obj_name=obj_name,
+            content=content,
+            offset=match_offset,
+        )
         skipped_types.add(obj_type)
         return (None, True, obj_type)
 
@@ -706,7 +844,12 @@ def _build_idf_cst(text: str) -> DocumentCST:
     return DocumentCST(nodes=nodes)
 
 
-def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
+def _link_cst_to_objects(
+    cst: DocumentCST,
+    doc: IDFDocument,
+    diagnostics: list[ParseDiagnostic] | None = None,
+    filepath: str | None = None,
+) -> bool:
     """Link object :class:`CSTNode` items to their parsed :class:`IDFObject`.
 
     The CST preserves file order while ``doc.all_objects`` groups objects by
@@ -754,6 +897,18 @@ def _link_cst_to_objects(cst: DocumentCST, doc: IDFDocument) -> bool:
                 "CST linking: no parsed object for CST node type=%r (strict=False may have skipped objects)",
                 type_name,
             )
+            # The type name is the whole location available here. The CST node knows its text but
+            # not its offset in the original content, so there is no line to give and none is
+            # invented; the other language reports the same finding with the same gap.
+            if diagnostics is not None:
+                diagnostics.append(
+                    ParseDiagnostic(
+                        message=f"CST linking: no parsed object for CST node type {type_name!r}",
+                        filepath=filepath,
+                        obj_type=type_name,
+                        code="ParseError",
+                    )
+                )
 
     total = sum(len(c) for c in doc.collections.values())
     logger.debug("CST linking: %d of %d parsed objects linked", linked, total)

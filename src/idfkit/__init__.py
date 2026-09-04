@@ -102,7 +102,7 @@ from .geometry_builders import (
 )
 
 # Parsing functions
-from .idf_parser import IDFParser, get_idf_version, parse_idf
+from .idf_parser import IDFParser, ParseResult, get_idf_version, parse_idf
 
 # Introspection
 from .introspection import FieldDescription, ObjectDescription
@@ -256,6 +256,73 @@ def load_idf(
         Path(path),
         version=version,
         strict_parsing=strict_parsing,
+        strict=strict,
+        preserve_formatting=preserve_formatting,
+    )
+
+
+def load_idf_with_diagnostics(
+    path: str,
+    version: tuple[int, int, int] | None = None,
+    *,
+    strict: bool = True,
+    preserve_formatting: bool = False,
+) -> ParseResult:
+    """
+    Load an IDF file, keeping the findings that did not stop the parse.
+
+    `load_idf` hands back the document and drops the recoverable findings; this hands back both.
+    The findings were always produced, but they went to the logging module and nowhere else, so
+    reaching them meant installing a handler before the parse. That is not one call, and it is not
+    the same findings the other language returns.
+
+    There is no `strict_parsing` parameter. A strict parse has no recoverable findings by
+    definition: the first one stops it. Findings that stop a parse still raise `IDFParseError`,
+    which carries them on `.diagnostics`, and that path is unchanged.
+
+    Every logging announcement still fires. A caller who installed a handler sees exactly what they
+    saw before.
+
+    Args:
+        path: Path to the IDF file
+        version: Optional version override (major, minor, patch)
+        strict: When ``True``, accessing or setting an unknown field name on any
+            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
+            of returning ``None``.
+        preserve_formatting: When ``True``, build a Concrete Syntax Tree (CST) so that
+            :func:`write_idf` and :func:`save_idf` reproduce the original formatting.
+
+    Returns:
+        A :class:`~idfkit.idf_parser.ParseResult`: the document, and the recoverable findings.
+
+    Examples:
+        Read a model that may be imperfect, and show what was wrong with it:
+
+            ```python
+            from idfkit import load_idf_with_diagnostics
+
+            result = load_idf_with_diagnostics("hand_edited.idf")
+            print(f"Loaded {len(result.document)} objects")
+            for finding in result.diagnostics:
+                print(f"{finding.code} at line {finding.line}: {finding.message}")
+            ```
+    """
+    from pathlib import Path
+
+    # Imported here rather than at module scope, deliberately. Binding it on the package would put
+    # `idfkit.parse_idf_with_diagnostics` in completion without an `__all__` entry to justify it,
+    # which the naming gate calls import leakage and refuses. The other language has no counterpart
+    # to register the name against: `parseIdf` already returns a result carrying diagnostics, so
+    # only the LOADER needed a second form there. It stays reachable at
+    # `idfkit.idf_parser.parse_idf_with_diagnostics`, the way `ParseDiagnostic` is reachable at
+    # `idfkit.exceptions.ParseDiagnostic`.
+    from .idf_parser import parse_idf_with_diagnostics
+
+    if version is not None:
+        _check_version(version)
+    return parse_idf_with_diagnostics(
+        Path(path),
+        version=version,
         strict=strict,
         preserve_formatting=preserve_formatting,
     )
@@ -429,6 +496,7 @@ __all__ = [
     "NoDesignDaysError",
     "ObjectDescription",
     "ParseError",
+    "ParseResult",
     "Polygon3D",
     "RangeError",
     "ReferenceGraph",
@@ -482,6 +550,7 @@ __all__ = [
     "link_horizontal_surfaces",
     "load_epjson",
     "load_idf",
+    "load_idf_with_diagnostics",
     "migrate",
     "new_document",
     "parse_epjson",

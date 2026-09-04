@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 import pytest
 
-from idfkit import load_epjson, load_idf
+from idfkit import LATEST_VERSION, get_schema, load_epjson, load_idf, load_idf_with_diagnostics
 from idfkit.epjson_parser import get_epjson_version, parse_epjson
 from idfkit.epjson_parser import load_epjson as raw_load_epjson
 from idfkit.exceptions import IDFParseError, VersionNotFoundError
@@ -493,3 +494,139 @@ class TestEpJSONParserBranchCoverage:
         filepath.write_text(json.dumps(data))
         with pytest.raises(VersionNotFoundError):
             get_epjson_version(filepath)
+
+
+# ---------------------------------------------------------------------------
+# Feature 002, US3: parse findings on both paths
+# ---------------------------------------------------------------------------
+
+
+class TestParseDiagnostics:
+    """What a parse reports, on the path that raises and the path that returns.
+
+    The parity record described this gap as one-sided, "Python raises and TypeScript returns".
+    Neither library ever did that: both default to strict and both raise. What actually differed
+    was that Python's recoverable findings went to the logging module and nowhere else, so reaching
+    them meant installing a handler before the parse, which is not one call.
+    """
+
+    @staticmethod
+    def _write(tmp_path: Path, body: str) -> Path:
+        path = tmp_path / "diagnostics.idf"
+        path.write_text(body, encoding="latin-1")
+        return path
+
+    RECOVERABLE = """Version,
+  26.1;
+
+NotARealObjectType,
+  Whatever;
+
+AlsoNotReal,
+  Thing;
+
+Building,
+  Tower;
+"""
+
+    def test_still_raises_by_default(self, tmp_path: Path) -> None:
+        """FR-014: the fatal path is untouched. This is what it did before feature 002."""
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        with pytest.raises(IDFParseError) as caught:
+            parse_idf(path)
+
+        assert caught.value.diagnostics
+        assert caught.value.diagnostics[0].obj_type == "NotARealObjectType"
+
+    def test_the_raise_carries_a_code(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        with pytest.raises(IDFParseError) as caught:
+            parse_idf(path)
+
+        # The corpus compares on (code, line, obj_type) and never on message text.
+        #
+        # `UnknownObjectType`, not `ParseError`: the same code the recoverable path reports for the
+        # same input, and the same one the other language reports. A finding must not change kind
+        # depending on which mode was asked for. It is the same finding on a different path.
+        assert caught.value.diagnostics[0].code == "UnknownObjectType"
+        assert caught.value.diagnostics[0].line == 4
+
+    def test_returning_path_hands_back_document_and_findings(self, tmp_path: Path) -> None:
+        """SC-006: one call, no prior configuration, and the findings arrive with the document."""
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert len(result.document) == 2
+        assert [d.code for d in result.diagnostics] == ["UnknownObjectType", "UnknownObjectType"]
+
+    def test_one_finding_per_skip_not_one_per_type(self, tmp_path: Path) -> None:
+        """The aggregate site reduced its findings to a set of type names before warning.
+
+        A set collapses four skips of the same type into one and discards every position with it.
+        The other language returns one finding per skip, positioned, so this does too.
+        """
+        body = "Version,\n  26.1;\n\nNotReal,\n  A;\n\nNotReal,\n  B;\n"
+        path = self._write(tmp_path, body)
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert len(result.diagnostics) == 2
+        assert [d.line for d in result.diagnostics] == [4, 7]
+
+    def test_every_returned_finding_carries_a_position(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert all(d.line is not None and d.column is not None for d in result.diagnostics)
+        assert [d.line for d in result.diagnostics] == [4, 7]
+
+    def test_returning_path_needs_no_prior_configuration(self, tmp_path: Path) -> None:
+        """SC-006, stated as the reader meets it: import, call, read the findings."""
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert result.document is not None
+        assert result.diagnostics
+
+    def test_logging_still_fires_for_a_caller_with_a_handler(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """FR-014, and the requirement most easily broken by accident.
+
+        The findings were reachable only through the logging module before feature 002. That path
+        is not replaced and not narrowed: a caller who installed a handler sees exactly what they
+        saw, whether or not anybody calls the returning path.
+        """
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            parse_idf(path, strict_parsing=False)
+
+        assert any("Skipped 2 unknown object type(s)" in r.getMessage() for r in caplog.records)
+
+    def test_logging_fires_on_the_returning_path_too(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        path = self._write(tmp_path, self.RECOVERABLE)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            result = load_idf_with_diagnostics(str(path))
+
+        assert result.diagnostics
+        assert any("unknown object type" in r.getMessage().lower() for r in caplog.records)
+
+    def test_a_reused_parser_does_not_accumulate_findings(self, tmp_path: Path) -> None:
+        """Findings belong to one parse, not to the parser's whole life."""
+        from idfkit.idf_parser import IDFParser
+
+        path = self._write(tmp_path, self.RECOVERABLE)
+        parser = IDFParser(path, get_schema(LATEST_VERSION), strict_parsing=False)
+
+        parser.parse()
+        first = len(parser.diagnostics)
+        parser.parse()
+
+        assert len(parser.diagnostics) == first
