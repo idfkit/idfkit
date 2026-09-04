@@ -323,10 +323,10 @@ def _prepare_run_dir(model: IDFDocument, *, weather: str | Path | None = None) -
     If *weather* is provided it is copied into the directory as ``in.epw``
     (the filename the EnergyPlus preprocessors expect).
     """
-    from ..writers import write_idf
+    from ..writers import save_idf
 
     run_dir = Path(tempfile.mkdtemp(prefix="idfkit_expand_"))
-    write_idf(model, run_dir / "in.idf")
+    save_idf(model, run_dir / "in.idf")
     if weather is not None:
         weather = Path(weather)
         if not weather.is_file():

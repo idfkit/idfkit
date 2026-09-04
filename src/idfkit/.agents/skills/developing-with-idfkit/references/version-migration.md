@@ -221,7 +221,7 @@ else:
     ```python
     report = migrate(doc, target_version=config.version)
     new_doc = report.migrated_model  # IDFDocument at the target version
-    write_idf(new_doc, "migrated.idf")
+    save_idf(new_doc, "migrated.idf")
     result = simulate(new_doc, "weather.epw")
     ```
 

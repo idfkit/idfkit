@@ -95,7 +95,11 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         """The reference graph for dependency tracking."""
 
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
-        """Get collection by type name (typed for dynamic string keys)."""
+        """Get collection by type name (typed for dynamic string keys).
+
+        Same lookup as ``model[obj_type]``, including the case-insensitive
+        match and the refusal to store anything on a miss.
+        """
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """Get collection by Python-style attribute name.
 
@@ -121,6 +125,11 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def __contains__(self, obj_type: str) -> bool:  # type: ignore[override]
         """Check if document has objects of a type.
 
+        Matched case-insensitively and resolved against the schema, the same
+        way [__getitem__][idfkit.document.IDFDocument.__getitem__] does, so
+        ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
+        An unrecognised type name answers False rather than raising.
+
         Examples:
             Check whether the model contains any zones or materials:
 
@@ -130,7 +139,11 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             Zone('Office')
             >>> "Zone" in model
             True
+            >>> "zone" in model
+            True
             >>> "Material" in model
+            False
+            >>> "Zoen" in model
             False
         """
     def __iter__(self) -> Iterator[str]:  # type: ignore[override]

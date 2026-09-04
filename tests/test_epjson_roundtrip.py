@@ -19,7 +19,7 @@ import pytest
 from idfkit.epjson_parser import parse_epjson
 from idfkit.idf_parser import parse_idf
 from idfkit.schema import get_schema
-from idfkit.writers import write_epjson, write_idf
+from idfkit.writers import save_epjson, save_idf, write_idf
 
 
 @pytest.fixture
@@ -109,7 +109,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
         """Timestep should have name='' after IDF -> epJSON -> parse_epjson."""
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         ts = doc2["Timestep"][0]
@@ -118,7 +118,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
     def test_timestep_data_preserved_after_roundtrip(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         ts = doc2["Timestep"][0]
@@ -127,7 +127,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
     def test_simulation_control_name_empty(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         sc = doc2["SimulationControl"][0]
@@ -137,7 +137,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
     def test_global_geometry_rules_name_empty(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         ggr = doc2["GlobalGeometryRules"][0]
@@ -148,7 +148,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
         """Output:Variable objects should have empty names after epJSON roundtrip."""
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         for obj in doc2["Output:Variable"]:
@@ -157,7 +157,7 @@ class TestNamelessObjectsEpjsonRoundtrip:
     def test_output_variable_count_preserved(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         assert len(doc2["Output:Variable"]) == 3
@@ -170,7 +170,7 @@ class TestExtensibleFieldsEpjsonRoundtrip:
         """Canonical wrapper survives IDF -> epJSON -> parse_epjson."""
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         wall = doc2["BuildingSurface:Detailed"][0]
@@ -185,10 +185,10 @@ class TestExtensibleFieldsEpjsonRoundtrip:
         """Vertex data survives IDF -> epJSON -> IDF in canonical shape."""
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
         idf_path = tmp_path / "roundtrip.idf"
-        write_idf(doc2, idf_path)
+        save_idf(doc2, idf_path)
         doc3 = parse_idf(idf_path)
 
         wall = doc3["BuildingSurface:Detailed"][0]
@@ -209,7 +209,7 @@ class TestNamedObjectsEpjsonRoundtrip:
     def test_zone_name_preserved(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         zone = doc2["Zone"][0]
@@ -218,7 +218,7 @@ class TestNamedObjectsEpjsonRoundtrip:
     def test_material_data_preserved(self, roundtrip_idf: Path, tmp_path: Path) -> None:
         doc1 = parse_idf(roundtrip_idf)
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         mat = doc2["Material"][0]
@@ -234,11 +234,11 @@ class TestFullEpjsonRoundtrip:
         doc1 = parse_idf(roundtrip_idf)
 
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         idf_path = tmp_path / "roundtrip.idf"
-        write_idf(doc2, idf_path)
+        save_idf(doc2, idf_path)
         doc3 = parse_idf(idf_path)
 
         for obj_type in doc1.collections:
@@ -250,11 +250,11 @@ class TestFullEpjsonRoundtrip:
         doc1 = parse_idf(roundtrip_idf)
 
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         idf_path = tmp_path / "roundtrip.idf"
-        write_idf(doc2, idf_path)
+        save_idf(doc2, idf_path)
         doc3 = parse_idf(idf_path)
 
         assert len(doc1) == len(doc3)
@@ -264,11 +264,10 @@ class TestFullEpjsonRoundtrip:
         doc1 = parse_idf(roundtrip_idf)
 
         epjson_path = tmp_path / "test.epJSON"
-        write_epjson(doc1, epjson_path)
+        save_epjson(doc1, epjson_path)
         doc2 = parse_epjson(epjson_path)
 
         idf_output = write_idf(doc2)
-        assert idf_output is not None
 
         # Timestep should not have the spurious key as a name field
         assert "Timestep 1" not in idf_output
@@ -356,7 +355,6 @@ class TestFullEpjsonRoundtrip:
 
         # Write to IDF and verify vertices appear
         idf_output = write_idf(doc)
-        assert idf_output is not None
         assert "3;" in idf_output or "3.0;" in idf_output or "3," in idf_output
 
 
@@ -402,7 +400,7 @@ class TestEpjsonRoundtripSimulation:
 
         tmp = tmp_path_factory.mktemp("epjson_roundtrip")
         epjson_path = tmp / "model.epJSON"
-        write_epjson(original, epjson_path)
+        save_epjson(original, epjson_path)
 
         doc_from_epjson = parse_epjson(epjson_path)
         return doc_from_epjson

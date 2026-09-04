@@ -7,7 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `save_idf(doc, path, ...)` and `save_epjson(doc, path, ...)` write a serialized
+  model to disk. They are the disk-writing half of the `write_*` split described
+  under Changed.
+
+- `idfkit.CONFORMANCE_LEVEL` names the cross-language conformance corpus level
+  this release is checked against. It is not a version number and is not
+  comparable to one: two installed libraries agree about the formats when they
+  report the same level, whatever their own versions say. The equivalent constant
+  is exported from `@idfkit/core` in JavaScript.
+
+- `HTMLResult` and `HTMLTable` are importable from `idfkit.simulation`, beside
+  `SQLResult`, `CSVResult`, and `ESOResult`. `result.html` returned a type you
+  could not import from the module the documentation sent you to; reaching into
+  `idfkit.simulation.parsers.html` is no longer necessary.
+
+- New **"Developing with idfkit"** landing page documenting the
+  `developing-with-idfkit` skill: what the bundled agent references are, why they
+  are version-matched to the installed idfkit, and how to install the skill for
+  Claude Code, Cursor, Copilot, Gemini CLI, and Codex.
+
+- New **"Build your first model"** tutorial — a verified walkthrough that builds
+  a complete two-storey office model from an empty document, then runs it through
+  EnergyPlus and reads a result back, introducing the document, objects, the
+  reference graph, validation, and the weather and simulation helpers along the
+  way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
+
+### Changed
+
+- **Breaking:** `write_idf()` and `write_epjson()` now only serialize to a string.
+  Their `filepath` parameter is gone, along with the three `@overload` stanzas per
+  function that existed solely to express "the return type depends on whether a
+  path was passed". Writing to disk is now `save_idf()` and `save_epjson()`, which
+  keep the `encoding`, `output_type`, `indent`, and `preserve_formatting`
+  parameters they had. Replace `write_idf(doc, path)` with `save_idf(doc, path)`
+  and `write_epjson(doc, path)` with `save_epjson(doc, path)`; a `write_*` call
+  that already omitted the path is unchanged and now has a plain `str` return type
+  instead of `str | None`. One operation, one verb: `write` serializes, `save`
+  puts the result on disk.
+
+- **Breaking:** the module surface of `idfkit` no longer leaks the names it
+  imports to assemble itself. `idfkit.overload`, `idfkit.Literal`,
+  `idfkit.TYPE_CHECKING`, `idfkit.logging`, `idfkit.annotations`, and
+  `idfkit.PackageNotFoundError` were never in `__all__` and were never part of the
+  API, but they were bound on the module and showed up in `dir(idfkit)` and in
+  editor completion on `idfkit.`. Import them from `typing`, `logging`, and
+  `importlib.metadata` instead.
+
+- Reorganised the documentation site around the [Diátaxis](https://diataxis.fr)
+  framework. The navigation is now grouped into Tutorials, How-to guides,
+  Reference, and Explanation (plus Troubleshooting and the agent-facing
+  "Developing with idfkit" bundle), each with a section landing page. Task-based
+  pages were retitled to "How to …", reference material (environment variables,
+  CLI) was regrouped under Reference, and design/architecture pages under
+  Explanation. Every page kept its URL except `/idfkit-dev-guide/`, noted under
+  Removed below. ([78035c5](https://github.com/idfkit/idfkit/commit/78035c5))
+
+### Removed
+
+- The `idfkit-dev-guide` page, which held a block of API notes to paste into a
+  project's `CLAUDE.md`. It was published but never linked from the navigation,
+  and had drifted from the library (it still advertised `doc.removeidfobject`
+  and pre-0.15 `intersect_match()` behaviour). Agent-facing guidance now lives in
+  the version-matched `developing-with-idfkit` skill that ships in the wheel, and
+  is documented under "Developing with idfkit". **Breaking:** the
+  `/idfkit-dev-guide/` URL now returns 404.
+
 ### Fixed
+
+- `BatchResult` is a real `Sequence[SimulationResult]`. `for result in batch`,
+  `enumerate(batch)`, `reversed(batch)`, `result in batch`, and slicing all worked
+  at runtime through the legacy sequence protocol and were rejected by every type
+  checker, so typed code had to write `batch.results` instead. The base class is
+  now declared and the natural call type-checks.
 
 - `validate_document()` no longer reports spurious range errors on EnergyPlus
   8.9.0 through 9.5.0. Those schemas are JSON Schema draft-04, where
@@ -48,39 +122,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   schedule-evaluator page, and gave the `simulate()` parameter pointer on
   "How to run a simulation" its own heading so it appears in the page's contents.
 
-### Added
+### Migration
 
-- New **"Developing with idfkit"** landing page documenting the
-  `developing-with-idfkit` skill: what the bundled agent references are, why they
-  are version-matched to the installed idfkit, and how to install the skill for
-  Claude Code, Cursor, Copilot, Gemini CLI, and Codex.
+The two breaking changes above are both mechanical, but the `write_*` split is
+worth knowing by its symptoms, because **neither failure names the cause**.
 
-- New **"Build your first model"** tutorial — a verified walkthrough that builds
-  a complete two-storey office model from an empty document, then runs it through
-  EnergyPlus and reads a result back, introducing the document, objects, the
-  reference graph, validation, and the weather and simulation helpers along the
-  way. ([79060da](https://github.com/idfkit/idfkit/commit/79060da))
+| Before                     | After                     |
+| -------------------------- | ------------------------- |
+| `write_idf(doc, path)`     | `save_idf(doc, path)`     |
+| `write_epjson(doc, path)`  | `save_epjson(doc, path)`  |
+| `write_idf(doc)`           | unchanged, now returns `str` rather than `str \| None` |
 
-### Changed
+`write_epjson(doc, path)` now passes your path as the `indent` argument, so it
+fails inside the serializer:
 
-- Reorganised the documentation site around the [Diátaxis](https://diataxis.fr)
-  framework. The navigation is now grouped into Tutorials, How-to guides,
-  Reference, and Explanation (plus Troubleshooting and the agent-facing
-  "Developing with idfkit" bundle), each with a section landing page. Task-based
-  pages were retitled to "How to …", reference material (environment variables,
-  CLI) was regrouped under Reference, and design/architecture pages under
-  Explanation. Every page kept its URL except `/idfkit-dev-guide/`, noted under
-  Removed below. ([78035c5](https://github.com/idfkit/idfkit/commit/78035c5))
+```
+TypeError: can't multiply sequence by non-int of type 'PosixPath'
+```
 
-### Removed
+`write_idf(doc, path)` passes it as `output_type`, which is worse, because it
+does not fail at all. It returns the serialized string, writes nothing, and
+leaves an empty file behind. The failure surfaces later and somewhere else, most
+often as:
 
-- The `idfkit-dev-guide` page, which held a block of API notes to paste into a
-  project's `CLAUDE.md`. It was published but never linked from the navigation,
-  and had drifted from the library (it still advertised `doc.removeidfobject`
-  and pre-0.15 `intersect_match()` behaviour). Agent-facing guidance now lives in
-  the version-matched `developing-with-idfkit` skill that ships in the wheel, and
-  is documented under "Developing with idfkit". **Breaking:** the
-  `/idfkit-dev-guide/` URL now returns 404.
+```
+VersionNotFoundError: Could not detect EnergyPlus version in file: ...
+```
+
+on a file that is empty because nothing was ever written to it. If you meet
+either of these after upgrading, search your code for `write_idf(` and
+`write_epjson(` called with two positional arguments.
+
+A type checker catches both immediately: `pyright` and `mypy` both reject
+`write_idf(doc, path)` against the new signature. If you run neither, the grep
+above is the check.
+
+**Checked against a real consumer.** `idfkit-mcp` upgraded across this release
+with **seven changed call sites**, every one of them this rename. Nothing else in
+the release reached it, and `pyright` was clean afterwards.
 
 ## [0.15.0] - 2026-07-07
 

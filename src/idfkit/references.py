@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Iterator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +63,16 @@ class ReferenceGraph:
     __slots__ = ("_object_lists", "_referenced_by", "_references")
 
     def __init__(self) -> None:
-        # name (uppercase) -> set of (object, field_name) tuples that reference it
-        self._referenced_by: dict[str, set[tuple[IDFObject, str]]] = defaultdict(set)
-        # object -> set of (name_uppercase, field_name) tuples it references
-        self._references: dict[IDFObject, set[tuple[str, str]]] = defaultdict(set)
+        # An edge carries a group index alongside the field name. ``None`` means an ordinary
+        # top-level field; an int is the 0-based repeat inside an extensible group, which is
+        # what keeps two groups of the same object pointing at the same name from collapsing
+        # into one edge. The public accessors drop the index again, so callers still see the
+        # (object, field) and (name, field) pairs they always have.
+        #
+        # name (uppercase) -> set of (object, field_name, group_index) edges that reference it
+        self._referenced_by: dict[str, set[tuple[IDFObject, str, int | None]]] = defaultdict(set)
+        # object -> set of (name_uppercase, field_name, group_index) edges it references
+        self._references: dict[IDFObject, set[tuple[str, str, int | None]]] = defaultdict(set)
         # object_list name -> set of object types that provide names for it
         self._object_lists: dict[str, set[str]] = defaultdict(set)
 
@@ -74,7 +80,7 @@ class ReferenceGraph:
         """Register that an object type provides names for an object-list."""
         self._object_lists[list_name].add(obj_type)
 
-    def register(self, obj: IDFObject, field_name: str, referenced_name: str) -> None:
+    def register(self, obj: IDFObject, field_name: str, referenced_name: str, group_index: int | None = None) -> None:
         """
         Register that an object references another name.
 
@@ -82,21 +88,66 @@ class ReferenceGraph:
             obj: The object that contains the reference
             field_name: The field that contains the reference
             referenced_name: The name being referenced
+            group_index: 0-based repeat index when *field_name* lives inside an
+                extensible group; ``None`` for an ordinary top-level field.
         """
         if not referenced_name:
             return
 
         name_upper = referenced_name.upper()
-        self._referenced_by[name_upper].add((obj, field_name))
-        self._references[obj].add((name_upper, field_name))
+        self._referenced_by[name_upper].add((obj, field_name, group_index))
+        self._references[obj].add((name_upper, field_name, group_index))
+
+    def reindex_extensible(self, obj: IDFObject, wrapper_key: str, ref_fields: frozenset[str]) -> None:
+        """Rebuild the edges for *obj*'s extensible reference fields.
+
+        Extensible data lives in ``obj.data[wrapper_key]`` as one dict per repeat group, and
+        the reference fields inside those groups carry ``object_list`` exactly as a top-level
+        field does. They are re-indexed wholesale rather than per field, because the groups are
+        mutated through the extensible view (which writes into the wrapper array directly)
+        rather than through the per-field setter that keeps top-level edges current.
+
+        Args:
+            obj: The object whose extensible groups should be re-indexed
+            wrapper_key: The data key holding the list of repeat groups
+            ref_fields: Inner field names inside a group that are reference fields
+        """
+        if not ref_fields:
+            return
+
+        self._drop_extensible_edges(obj)
+        groups = obj.data.get(wrapper_key)
+        if not isinstance(groups, list):
+            return
+        for group_index, group in enumerate(cast("list[Any]", groups)):
+            if not isinstance(group, dict):
+                continue
+            for field_name in ref_fields:
+                value = cast("dict[str, Any]", group).get(field_name)
+                if isinstance(value, str) and value.strip():
+                    self.register(obj, field_name, value, group_index)
+
+    def _drop_extensible_edges(self, obj: IDFObject) -> None:
+        """Remove every edge of *obj* that carries a group index."""
+        obj_refs = self._references.get(obj)
+        if not obj_refs:
+            return
+        for name_upper, field_name, group_index in [e for e in obj_refs if e[2] is not None]:
+            obj_refs.discard((name_upper, field_name, group_index))
+            referrers = self._referenced_by.get(name_upper)
+            if referrers is None:
+                continue
+            referrers.discard((obj, field_name, group_index))
+            if not referrers:
+                del self._referenced_by[name_upper]
 
     def unregister(self, obj: IDFObject) -> None:
         """Remove all reference tracking for an object."""
         if obj in self._references:
             # Remove from referenced_by
-            for name_upper, field_name in self._references[obj]:
+            for name_upper, field_name, group_index in self._references[obj]:
                 if name_upper in self._referenced_by:
-                    self._referenced_by[name_upper].discard((obj, field_name))
+                    self._referenced_by[name_upper].discard((obj, field_name, group_index))
                     if not self._referenced_by[name_upper]:
                         del self._referenced_by[name_upper]
             del self._references[obj]
@@ -134,7 +185,7 @@ class ReferenceGraph:
             1
         """
         refs = self._referenced_by.get(name.upper(), set())
-        return {obj for obj, _ in refs}
+        return {obj for obj, _, _ in refs}
 
     def get_referencing_with_fields(self, name: str) -> set[tuple[IDFObject, str]]:
         """
@@ -145,6 +196,15 @@ class ReferenceGraph:
 
         Returns:
             Set of (IDFObject, field_name) tuples
+        """
+        return {(obj, field_name) for obj, field_name, _ in self._referenced_by.get(name.upper(), set())}
+
+    def get_referencing_edges(self, name: str) -> set[tuple[IDFObject, str, int | None]]:
+        """Get all (object, field_name, group_index) edges that reference a given name.
+
+        Same as [get_referencing_with_fields][idfkit.references.ReferenceGraph.get_referencing_with_fields]
+        but keeps the extensible group index, so a caller that has to rewrite the underlying
+        value knows whether it lives at the top level or inside a repeat group.
         """
         return self._referenced_by.get(name.upper(), set()).copy()
 
@@ -159,7 +219,7 @@ class ReferenceGraph:
             Set of names (uppercase) that this object references
         """
         refs = self._references.get(obj, set())
-        return {name for name, _ in refs}
+        return {name for name, _, _ in refs}
 
     def get_references_with_fields(self, obj: IDFObject) -> set[tuple[str, str]]:
         """
@@ -171,7 +231,7 @@ class ReferenceGraph:
         Returns:
             Set of (name, field_name) tuples
         """
-        return self._references.get(obj, set()).copy()
+        return {(name, field_name) for name, field_name, _ in self._references.get(obj, set())}
 
     def is_referenced(self, name: str) -> bool:
         """Check if a name is referenced by any object.
@@ -210,7 +270,7 @@ class ReferenceGraph:
         valid_upper = {n.upper() for n in valid_names}
 
         for obj, refs in self._references.items():
-            for name_upper, field_name in refs:
+            for name_upper, field_name, _group_index in refs:
                 if name_upper not in valid_upper:
                     yield (obj, field_name, name_upper)
 
@@ -235,11 +295,11 @@ class ReferenceGraph:
             return
 
         # Update _references for each referring object
-        for obj, field_name in referrers:
+        for obj, field_name, group_index in referrers:
             obj_refs = self._references.get(obj)
             if obj_refs is not None:
-                obj_refs.discard((old_upper, field_name))
-                obj_refs.add((new_upper, field_name))
+                obj_refs.discard((old_upper, field_name, group_index))
+                obj_refs.add((new_upper, field_name, group_index))
 
         # Merge into new key (there may already be refs to new_name)
         if new_upper in self._referenced_by:
@@ -264,18 +324,18 @@ class ReferenceGraph:
             old_upper = old_value.upper()
             refs_set = self._referenced_by.get(old_upper)
             if refs_set is not None:
-                refs_set.discard((obj, field_name))
+                refs_set.discard((obj, field_name, None))
                 if not refs_set:
                     del self._referenced_by[old_upper]
             obj_refs = self._references.get(obj)
             if obj_refs is not None:
-                obj_refs.discard((old_upper, field_name))
+                obj_refs.discard((old_upper, field_name, None))
 
         # Add new
         if new_value and new_value.strip():
             new_upper = new_value.upper()
-            self._referenced_by[new_upper].add((obj, field_name))
-            self._references[obj].add((new_upper, field_name))
+            self._referenced_by[new_upper].add((obj, field_name, None))
+            self._references[obj].add((new_upper, field_name, None))
 
     def clear(self) -> None:
         """Clear all reference tracking."""

@@ -87,27 +87,47 @@ def version_dirname(version: tuple[int, int, int]) -> str:
 
 def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
     """
-    Find the closest supported version that is <= the given version.
+    Find the supported version to use for a version read from a file.
 
-    This is useful when a file specifies a patch version that doesn't
-    exactly match a supported version (e.g. 9.0.0 -> 9.0.1).
+    A release line is matched before a version number is. An IDF file writes its
+    version with two components, ``Version, 9.0;``, which arrives here as
+    ``(9, 0, 0)``, so an exact match fails on the patch component for any release
+    whose patch is not zero. Matching on major and minor first, and taking the
+    highest patch in that line, is what makes a two-component header resolve to
+    the release it names.
+
+    Crossing a minor boundary is not a fallback, it is a different EnergyPlus
+    release. Ten object types reorder their fields between 8.9.0 and 9.0.1 alone,
+    ``RunPeriod`` and ``GlazedDoor`` among them, and IDF is positional: reading a
+    9.0 file against the 8.9.0 schema does not fail, it loads ``begin_year`` into
+    ``end_month`` and succeeds against a corrupted model. Only a version newer
+    than every supported release degrades to the newest one, which is a forward
+    tolerance the compatibility checker relies on and which never silently
+    reinterprets a release that exists.
 
     Returns:
-        The closest supported version, or None if no suitable version exists.
+        The supported version to use, or None if no suitable version exists.
 
     Examples:
         >>> find_closest_version((24, 1, 5))
         (24, 1, 0)
         >>> find_closest_version((9, 0, 0))
-        (8, 9, 0)
+        (9, 0, 1)
         >>> find_closest_version((1, 0, 0)) is None
         True
+        >>> find_closest_version((10, 0, 0)) is None
+        True
     """
-    best: tuple[int, int, int] | None = None
-    for v in ENERGYPLUS_VERSIONS:
-        if v <= version:
-            best = v
-    return best
+    if version in ENERGYPLUS_VERSIONS:
+        return version
+
+    same_line = [v for v in ENERGYPLUS_VERSIONS if v[:2] == version[:2]]
+    if same_line:
+        return max(same_line)
+
+    if version > ENERGYPLUS_VERSIONS[-1]:
+        return ENERGYPLUS_VERSIONS[-1]
+    return None
 
 
 def github_release_tag(version: tuple[int, int, int]) -> str:

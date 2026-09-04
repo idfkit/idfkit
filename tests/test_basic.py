@@ -111,8 +111,7 @@ def test_write_idf() -> None:
     model = new_document(version=(24, 1, 0))
     model.add("Zone", "MyZone", {"x_origin": 0})
 
-    output = write_idf(model, None)
-    assert output is not None
+    output = write_idf(model)
     assert "Zone," in output
     assert "MyZone" in output
 

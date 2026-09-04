@@ -42,13 +42,9 @@ class _IDFObjectsView:
         self._doc = doc
 
     def __getitem__(self, key: str) -> IDFCollection[IDFObject]:
-        collections = self._doc.collections
-        if key in collections:
-            return collections[key]
-        key_upper = key.upper()
-        for obj_type, collection in collections.items():
-            if obj_type.upper() == key_upper:
-                return collection
+        # Document lookup is itself case-insensitive now, and resolves the type
+        # name against the schema, so this view no longer carries its own scan:
+        # one rule, in one place.
         return self._doc[key]
 
     def __contains__(self, key: object) -> bool:
@@ -106,6 +102,7 @@ class EppyDocumentMixin:
         @staticmethod
         def _compute_ref_fields(schema: EpJSONSchema, obj_type: str) -> frozenset[str]: ...
         def _index_object_references(self, obj: IDFObject) -> None: ...
+        def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]: ...
 
     # -- Object access -------------------------------------------------------
 
@@ -153,7 +150,10 @@ class EppyDocumentMixin:
             >>> model.getobject("Zone", "NonExistent") is None
             True
         """
-        collection = self._collections.get(obj_type)
+        # Through ``__getitem__`` so the type name is resolved the same way it
+        # is everywhere else: a raw dict hit would miss ``getobject("zone", ...)``
+        # on a document whose collections are keyed by the schema's spelling.
+        collection = self[obj_type]
         if collection:
             return collection.get(name)
         return None
@@ -223,7 +223,7 @@ class EppyDocumentMixin:
                 self._compute_ref_fields(self._schema, obj.obj_type),
             )
 
-        self[obj.obj_type].add(obj)
+        self._collection_for_write(obj.obj_type).add(obj)
         self._index_object_references(obj)
         return obj
 
@@ -423,8 +423,8 @@ class EppyDocumentMixin:
 
         !!! tip
             Also the recommended idfkit API.  For format conversion, use
-            [write_idf][idfkit.writers.write_idf] or
-            [write_epjson][idfkit.writers.write_epjson] directly.
+            [save_idf][idfkit.writers.save_idf] or
+            [save_epjson][idfkit.writers.save_epjson] directly.
 
         Args:
             filepath: Explicit path override.  If ``None``, uses
@@ -451,13 +451,13 @@ class EppyDocumentMixin:
                 model.save("5ZoneAirCooled_v2.idf")
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
         target = Path(filepath) if filepath else self.filepath
         if target is None:
             msg = "No filepath set - pass a path or use saveas()"
             raise ValueError(msg)
-        write_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
         self.filepath = target
 
     def saveas(
@@ -489,10 +489,10 @@ class EppyDocumentMixin:
                 model.save()   # now writes to HighInsulation_Variant.idf
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
         target = Path(filepath)
-        write_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, target, encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
         self.filepath = target
 
     def savecopy(
@@ -525,9 +525,9 @@ class EppyDocumentMixin:
                 model.save()   # still writes to Baseline.idf
                 ```
         """
-        from .writers import write_idf
+        from .writers import save_idf
 
-        write_idf(self, Path(filepath), encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
+        save_idf(self, Path(filepath), encoding=encoding, output_type=output_type)  # type: ignore[arg-type]
 
     # -- Simulation ----------------------------------------------------------
 

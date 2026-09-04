@@ -504,12 +504,10 @@ class TestBuildingTransform:
 class TestOutputFormattingModes:
     def test_nocomment_mode(self, simple_doc: IDFDocument) -> None:
         content = write_idf(simple_doc, output_type="nocomment")
-        assert content is not None
         assert "!-" not in content.split("\n")[3]  # No field comments
 
     def test_compressed_mode(self, simple_doc: IDFDocument) -> None:
         content = write_idf(simple_doc, output_type="compressed")
-        assert content is not None
         # Compressed: no "!-" comments, and objects on single lines
         for line in content.split("\n"):
             if line.strip() and not line.startswith("!"):
@@ -517,7 +515,6 @@ class TestOutputFormattingModes:
 
     def test_standard_mode_default(self, simple_doc: IDFDocument) -> None:
         content = write_idf(simple_doc)
-        assert content is not None
         assert "!-" in content
 
 

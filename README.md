@@ -7,6 +7,21 @@
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
+> [!IMPORTANT]
+> **The next release renames how you write a model to disk.** `write_idf(doc, path)`
+> becomes `save_idf(doc, path)`, and `write_epjson(doc, path)` becomes
+> `save_epjson(doc, path)`. `write_*` now only returns a string.
+>
+> Worth knowing before you upgrade, because neither failure names the cause:
+> `write_epjson(doc, path)` raises `TypeError: can't multiply sequence by
+> non-int of type 'PosixPath'`, and `write_idf(doc, path)` fails silently,
+> writing nothing and leaving an empty file that surfaces later as
+> `Could not detect EnergyPlus version in file`.
+>
+> Search for `write_idf(` and `write_epjson(` called with two positional
+> arguments, or run a type checker, which rejects both. Full notes in the
+> [changelog](CHANGELOG.md#migration).
+
 > [!NOTE]
 > idfkit is in **beta**. The API may change between minor versions. We're looking
 > for early adopters and testers — especially users of eppy who want
@@ -56,12 +71,12 @@ looking up a single object by name is **over 3000x faster** than eppy and opyplu
 thanks to O(1) dict-based indexing:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/benchmark_dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/benchmark.svg">
-  <img alt="benchmark chart" src="docs/assets/benchmark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://developers.idfkit.com/assets/benchmark_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://developers.idfkit.com/assets/benchmark.svg">
+  <img alt="benchmark chart" src="https://developers.idfkit.com/assets/benchmark.svg">
 </picture>
 
-See [full benchmark results](https://py.idfkit.com/benchmarks/)
+See [full benchmark results](https://developers.idfkit.com/benchmarks/)
 for all six operations (load, get by type, get by name, add, modify, write) across four tools.
 
 ## Installation
@@ -93,7 +108,7 @@ uv add idfkit
 ## Quick Example
 
 ```python
-from idfkit import load_idf, write_idf
+from idfkit import load_idf, save_idf
 
 # Load an existing IDF file
 doc = load_idf("in.idf")
@@ -110,7 +125,7 @@ for obj in doc.get_referencing("Office"):
     print(obj.obj_type, obj.name)
 
 # Write back to IDF (or epJSON)
-write_idf(doc, "out.idf")
+save_idf(doc, "out.idf")
 ```
 
 > **Note:** `load_idf()` defaults to strict parsing (`strict=True`) and raises
@@ -120,11 +135,11 @@ write_idf(doc, "out.idf")
 ### Creating a model from scratch
 
 ```python
-from idfkit import new_document, write_idf
+from idfkit import new_document, save_idf
 
 doc = new_document()
 doc.add("Zone", "Office", x_origin=0.0, y_origin=0.0)
-write_idf(doc, "new_building.idf")
+save_idf(doc, "new_building.idf")
 ```
 
 ## Simulation
@@ -143,7 +158,7 @@ print(f"Max temp: {max(ts.values):.1f}°C")
 ```
 
 > **Note:** `result.sql` requires EnergyPlus to produce SQLite output (the
-> default). See the [Simulation Guide](https://py.idfkit.com/simulation/)
+> default). See the [Simulation Guide](https://developers.idfkit.com/simulation/)
 > for details on output configuration.
 
 ## Weather
@@ -160,24 +175,60 @@ print(results[0].station.display_name)
 
 `pip install idfkit` ships an `idfkit` command with three subcommands:
 
-- `idfkit check` — static lint for cross-version EnergyPlus breakage ([docs](https://py.idfkit.com/concepts/version-compatibility/))
-- `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://py.idfkit.com/simulation/migrating-versions/))
-- `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://py.idfkit.com/cli/tmy/))
+- `idfkit check` — static lint for cross-version EnergyPlus breakage ([docs](https://developers.idfkit.com/concepts/version-compatibility/))
+- `idfkit migrate` — forward-migrate an IDF through `IDFVersionUpdater` ([docs](https://developers.idfkit.com/simulation/migrating-versions/))
+- `idfkit tmy` — search and download TMYx weather data from the shell ([docs](https://developers.idfkit.com/cli/tmy/))
 
-![idfkit tmy search](tape/idfkit_tmy_search.gif)
+![idfkit tmy search](https://developers.idfkit.com/tape/idfkit_tmy_search.gif)
+
+## The JavaScript sibling
+
+idfkit has a sibling library for JavaScript and TypeScript,
+[idfkit-js](https://github.com/idfkit/idfkit-js), published as `@idfkit/core`.
+The two share a vocabulary and are held to a
+[conformance corpus](https://developers.idfkit.com/explanation/conformance/)
+that proves they read and write the same files the same way.
+
+They are not equivalent, and this page will not imply that they are. All
+thirteen first-tier capabilities exist in both: parsing, the object model,
+references, writers, schema access, validation, introspection, documentation
+addresses, generated object types, parse diagnostics, the weather station index,
+weather file retrieval, and geocoding. Almost everything else on this page is
+Python-only today, including running EnergyPlus locally, reading simulation
+results, geometry authoring, zoning, schedules, thermal properties, and
+migration. Some of that is a port not yet done; some of it, such as driving a
+locally installed EnergyPlus, is permanent.
+
+[Capability parity](https://developers.idfkit.com/explanation/parity/) is the
+record. It lists every public capability, its state in each language, and
+whether an absence is temporary or permanent, and a check blocks any change that
+lands or removes a capability without updating it. Read it rather than inferring
+from the shared name.
+
+Matching version numbers between the two are never evidence of agreement: they
+release independently. What each release states is the conformance level it
+passes, readable as `idfkit.CONFORMANCE_LEVEL`.
 
 ## Documentation
 
 Full documentation is available at
-**[py.idfkit.com](https://py.idfkit.com/)**.
+**[developers.idfkit.com](https://developers.idfkit.com/)**, which teaches both
+languages from one navigation. `py.idfkit.com` is retired and redirects there.
+
+The site's source is **not in this repository**. It lives at
+[idfkit/idfkit-developers](https://github.com/idfkit/idfkit-developers), which belongs to
+neither language: a page about loading a model is one page with two idioms on it, and the
+maintainers of both libraries hold the same standing over it. That repository pins this
+library to an exact version and generates the Python reference from it, so a documentation
+change goes there and a release here reaches it as a pull request.
 
 Key sections:
 
-- [Getting Started](https://py.idfkit.com/getting-started/installation/) — Installation, quick start, interactive tutorial
-- [Simulation Guide](https://py.idfkit.com/simulation/) — Run EnergyPlus, parse results, batch processing
-- [Weather Guide](https://py.idfkit.com/weather/) — Station search, downloads, design days
-- [API Reference](https://py.idfkit.com/api/document/) — Complete API documentation
-- [Migrating from eppy](https://py.idfkit.com/migration/) — Side-by-side comparison
+- [Getting Started](https://developers.idfkit.com/getting-started/installation/) — Installation, quick start, interactive tutorial
+- [Simulation Guide](https://developers.idfkit.com/simulation/) — Run EnergyPlus, parse results, batch processing
+- [Weather Guide](https://developers.idfkit.com/weather/) — Station search, downloads, design days
+- [API Reference](https://developers.idfkit.com/api/document/) — Complete API documentation
+- [Migrating from eppy](https://developers.idfkit.com/migration/) — Side-by-side comparison
 
 ### For AI coding assistants
 

@@ -144,10 +144,10 @@ async def _run_chain_async(
 ) -> MigrationReport:
     """Drive every step in *chain* through an async migrator."""
     from ..idf_parser import parse_idf
-    from ..writers import write_idf
+    from ..writers import save_idf
 
     initial_idf = work_root / "step_0_input.idf"
-    await asyncio.to_thread(write_idf, model, initial_idf)
+    await asyncio.to_thread(save_idf, model, initial_idf)
     current_text = await asyncio.to_thread(initial_idf.read_text, "latin-1")
 
     steps: list[MigrationStep] = []

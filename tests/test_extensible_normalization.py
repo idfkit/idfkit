@@ -23,7 +23,7 @@ from typing import Any
 
 import pytest
 
-from idfkit import LATEST_VERSION, load_epjson, load_idf, new_document, write_epjson, write_idf
+from idfkit import LATEST_VERSION, load_epjson, load_idf, new_document, save_epjson, save_idf
 
 VERSION = LATEST_VERSION
 VERSION_ID = f"{VERSION[0]}.{VERSION[1]}"
@@ -296,7 +296,7 @@ def test_roundtrip_matrix(
 
     if output_format == "idf":
         out = tmp_path / "out.idf"
-        write_idf(doc, out)
+        save_idf(doc, out)
         text = out.read_text()
         assert "{" not in text, f"dict repr leaked into IDF: {text}"
         # Comment for the second group must be present.
@@ -314,7 +314,7 @@ def test_roundtrip_matrix(
                 assert got.get(k) == v
     else:
         out = tmp_path / "out.epjson"
-        write_epjson(doc, out)
+        save_epjson(doc, out)
         body = json.loads(out.read_text())[obj_type][name]
         # Wrapper present, list of dicts, no flat key leakage.
         assert wrapper_key in body and isinstance(body[wrapper_key], list)
@@ -352,7 +352,7 @@ def test_issue_135_repro_1_doc_add_with_vertices_array(tmp_path: Path) -> None:
         validate=False,
     )
     p = tmp_path / "out.idf"
-    write_idf(doc, p)
+    save_idf(doc, p)
     text = p.read_text()
     s = text.index("BuildingSurface:Detailed,")
     e = text.find(";", s) + 1
@@ -368,7 +368,7 @@ def test_issue_135_repro_2_load_epjson_canonical_then_write_idf(tmp_path: Path) 
     pj.write_text(json.dumps(epjson_data))
     doc = load_epjson(pj)
     pi = tmp_path / "out.idf"
-    write_idf(doc, pi)
+    save_idf(doc, pi)
     text = pi.read_text()
     s = text.index("BuildingSurface:Detailed,")
     e = text.find(";", s) + 1
@@ -460,7 +460,7 @@ def test_empty_array_drops_wrapper(tmp_path: Path) -> None:
     # Either the wrapper is absent or it's an empty list.
     assert obj.data.get("vertices", []) == []
     p = tmp_path / "out.epjson"
-    write_epjson(doc, p)
+    save_epjson(doc, p)
     body = json.loads(p.read_text())["BuildingSurface:Detailed"]["WallA"]
     assert "vertices" not in body or body["vertices"] == []
 
@@ -488,12 +488,12 @@ def test_branchlist_canonical_roundtrip(tmp_path: Path) -> None:
     assert [b["branch_name"] for b in branches] == ["B1", "B2", "B3"]
     # IDF round-trip works.
     pi = tmp_path / "out.idf"
-    write_idf(doc, pi)
+    save_idf(doc, pi)
     idf = pi.read_text()
     assert "B1" in idf and "B2" in idf and "B3" in idf
     assert "{" not in idf
     # epJSON round-trip emits canonical.
     pj2 = tmp_path / "out.epjson"
-    write_epjson(doc, pj2)
+    save_epjson(doc, pj2)
     body = json.loads(pj2.read_text())["BranchList"]["MyBranches"]
     assert body["branches"] == [{"branch_name": "B1"}, {"branch_name": "B2"}, {"branch_name": "B3"}]

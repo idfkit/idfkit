@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from idfkit import IDFDocument, new_document
 from idfkit.objects import IDFObject
 from idfkit.references import ReferenceGraph
 
@@ -231,3 +232,54 @@ class TestReferenceGraphUpdateReference:
         graph.register(obj, "zone_name", "Z1")
         graph.update_reference(obj, "zone_name", "Z1", "")
         assert not graph.is_referenced("Z1")
+
+
+class TestExtensibleReferences:
+    """Reference fields that live inside an extensible group are tracked like any other."""
+
+    @staticmethod
+    def _model() -> tuple[IDFDocument[bool], IDFObject]:
+        doc = new_document(version=(26, 1, 0))
+        doc.add("Zone", "Office")
+        doc.add(
+            "ElectricEquipment",
+            name="Office Equipment",
+            zone_or_zonelist_or_space_or_spacelist_name="Office",
+            schedule_name="Always On",
+            design_level_calculation_method="EquipmentLevel",
+            design_level=100.0,
+            validate=False,
+        )
+        manager = doc.add("DemandManager:ElectricEquipment", name="Mgr", limit_control="Fixed", selection_control="All")
+        manager.equipment.append({"electric_equipment_name": "Office Equipment"})
+        return doc, manager
+
+    def test_a_group_reference_is_indexed(self) -> None:
+        doc, manager = self._model()
+        assert doc.references.get_referencing("Office Equipment") == {manager}
+
+    def test_two_groups_naming_the_same_target_stay_two_edges(self) -> None:
+        """Collapsing them would under-report the dangling check by one finding per repeat."""
+        doc, manager = self._model()
+        manager.equipment.append({"electric_equipment_name": "Office Equipment"})
+
+        edges = doc.references.get_referencing_edges("Office Equipment")
+
+        assert len(edges) == 2
+        assert {index for _obj, _field, index in edges} == {0, 1}
+
+    def test_editing_a_group_moves_the_edge(self) -> None:
+        doc, manager = self._model()
+
+        manager.equipment[0].electric_equipment_name = "Other Equipment"
+
+        assert doc.references.get_referencing("Office Equipment") == set()
+        assert doc.references.get_referencing("Other Equipment") == {manager}
+
+    def test_renaming_a_target_rewrites_the_value_inside_the_group(self) -> None:
+        doc, manager = self._model()
+
+        doc.rename("ElectricEquipment", "Office Equipment", "Renamed Equipment")
+
+        assert manager.equipment[0].electric_equipment_name == "Renamed Equipment"
+        assert doc.references.get_referencing("Renamed Equipment") == {manager}

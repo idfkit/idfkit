@@ -40,14 +40,14 @@ uv run pytest tests/test_file.py::test_function -v
 ENERGYPLUS_DIR=/usr/local/EnergyPlus-24-2-0 uv run pytest -m integration -v
 
 # Type check
-uv run pyright src/ docs/snippets
+uv run pyright src/ agent_references/snippets
 
 # Lint and format
 uv run ruff check src/ tests/
 uv run ruff format src/ tests/
 
-# Serve documentation locally
-make docs
+# The documentation site is a separate repository: idfkit/idfkit-developers.
+# There is no `make docs` here any more.
 
 # Build wheel
 make build
@@ -57,12 +57,12 @@ make build
 
 ```
 src/idfkit/                  # Main package
-  __init__.py                # Public API: load_idf, load_epjson, new_document, write_*
+  __init__.py                # Public API: load_idf, load_epjson, new_document, write_*, save_*
   document.py                # IDFDocument - main container class for EnergyPlus models
   objects.py                 # IDFObject (thin dict wrapper) and IDFCollection (indexed by name)
   idf_parser.py              # IDF format tokenizer and parser
   epjson_parser.py           # epJSON format parser
-  writers.py                 # write_idf() and write_epjson()
+  writers.py                 # write_idf()/save_idf() and write_epjson()/save_epjson()
   schema.py                  # EpJSONSchema loading and SchemaManager (cached by version)
   validation.py              # Document and object validation against schema
   geometry.py                # Vector3D, Polygon3D, surface/zone calculations, WWR, intersect_match
@@ -98,8 +98,9 @@ tests/                       # Test suite (~45 test modules, mirrors source stru
   conftest.py                # Shared fixtures: schema, empty_doc, simple_doc, InMemoryFileSystem
   fixtures/                  # Test data files (IDF, epJSON, simulation outputs, weather)
 
-docs/                        # MkDocs Material documentation
-  snippets/                  # Code snippets (linted with ruff and pyright)
+agent_references/            # Source of the wheel-bundled developing-with-idfkit skill
+  templates/                 # Prose + snippet include directives, one per topic
+  snippets/                  # The runnable examples (linted with ruff, typed with pyright)
 
 benchmarks/                  # Performance benchmarks vs eppy/opyplus
 ```
@@ -157,10 +158,10 @@ Note: Doctest modules for `simulation/`, `weather/`, `schedules/`, `thermal/`, a
 This project uses **pyright** in strict mode. **ALWAYS** try to fix typing issues with a proper solution rather than adding an ignore statement.
 
 ```bash
-uv run pyright src/ docs/snippets
+uv run pyright src/ agent_references/snippets
 ```
 
-Ensure all new code is fully typed. The configuration is in `pyproject.toml`. Note the relaxed pyright rules for `docs/snippets/` (documentation code fragments).
+Ensure all new code is fully typed. The configuration is in `pyproject.toml`. Note the relaxed pyright rules for `agent_references/snippets/` (documentation code fragments).
 
 ## Before Committing
 
@@ -175,12 +176,12 @@ This runs: lock file validation, pre-commit hooks (ruff format + lint, JSON form
 ## Environment Variables
 
 The complete list of environment variables idfkit reads is documented in
-[`docs/concepts/environment-variables.md`](docs/concepts/environment-variables.md).
+[`concepts/environment-variables.md`](https://github.com/idfkit/idfkit-developers/blob/main/docs/concepts/environment-variables.md) in idfkit-developers.
 
 **IMPORTANT:** Whenever you add, rename, or remove a call to `os.environ`,
 `os.getenv`, or any other env-var lookup in `src/idfkit/` (or change a
 default, opt-out flag, or platform behaviour for one), you MUST update
-`docs/concepts/environment-variables.md` in the same change so the docs stay
+`docs/concepts/environment-variables.md` in idfkit-developers in the same change so the docs stay
 in sync with the code. This applies to user-facing variables (e.g.
 `ENERGYPLUS_DIR`, `IDFKIT_NO_WEATHER_UPDATE_CHECK`) and to standard platform
 variables that idfkit consults (e.g. `XDG_CACHE_HOME`, `LOCALAPPDATA`,
@@ -202,15 +203,19 @@ a `SKILL.md` dispatch document and one focused markdown file per major
 feature under `references/`. They are packaged in the wheel and surfaced to
 agents by the [idfkit plugin](https://github.com/idfkit/idfkit-plugin), which
 ships them as the `developing-with-idfkit` skill. The same content is
-published on the docs site under "Developing with idfkit".
+NOT published on the docs site. The skill loads the reference set baked into
+the idfkit version installed in the reader's project; a page could only ever
+show one version, so a published copy was the one artifact that could be wrong
+for a given reader. developers.idfkit.com carries a single explanation page
+about the skill instead.
 
 **These bundled files are GENERATED — never hand-edit them.** The sources are:
 
-- **Prose** in `docs/agent-references/<topic>.md` — headings, tables, and
-  `--8<-- "docs/snippets/agent_references/<topic>.py:<section>"` include
+- **Prose** in `agent_references/templates/<topic>.md` — headings, tables, and
+  `--8<-- "agent_references/snippets/<topic>.py:<section>"` include
   directives for verified code. Intentionally-wrong "BAD" examples stay as
   inline fenced blocks (they must not type-check).
-- **Code** in `docs/snippets/agent_references/<topic>.py` — the runnable
+- **Code** in `agent_references/snippets/<topic>.py` — the runnable
   examples, one file per topic with a typed prelude and named
   `# --8<-- [start:<section>]` / `[end:<section>]` regions.
 
@@ -225,17 +230,17 @@ new or renamed public API, changed default behavior, a new sub-package, a
 new helper, a breaking change, a workflow that previously didn't exist —
 update the matching source template + snippet in the same change, then
 re-bake. The reference table in `SKILL.md` maps tasks → files; edit the
-matching topic or add a new template + snippet (and a nav entry in
-`mkdocs.yml`) if the change introduces a genuinely new topic.
+matching topic or add a new template + snippet if the change introduces a
+genuinely new topic.
 
 Skip this for purely internal refactors, dependency bumps, CI tweaks, and
 formatting changes — same scope as the changelog rule below.
 
 Two gates enforce correctness, both part of `make check` (and `make test`):
 
-- **pyright** type-checks `docs/snippets/agent_references/` under a strict
+- **pyright** type-checks `agent_references/snippets/` under a strict
   execution environment (`[[tool.pyright.executionEnvironments]]` with
-  `root = "docs/snippets/agent_references"`) that keeps the drift-catching
+  `root = "agent_references/snippets"`) that keeps the drift-catching
   rules ON (`reportAttributeAccessIssue`, `reportCallIssue`,
   `reportArgumentType`, …) while silencing snippet-style noise. A wrong
   kwarg, a renamed attribute, or a property called as a method fails here.

@@ -66,10 +66,9 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.11.5",
-    "mkdocs>=1.4.2",
-    "mkdocs-jupyter>=0.24.0",
-    "mkdocs-material[imaging]>=8.5.10",
-    "mkdocstrings[python]>=0.26.1",
+    # No documentation toolchain. The site moved to idfkit/idfkit-developers, which declares its
+    # own mkdocs, Material, mkdocstrings and griffe, and pins this library as a dependency rather
+    # than containing it.
     "pandas-stubs>=2.0",
     "matplotlib-stubs>=0.2.0",
     "types-boto3[s3]>=1.0.0",
@@ -97,20 +96,42 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/idfkit"]
 
+# Conformance corpus level this release is tested against, as an immutable tag in
+# idfkit-conformance. The CI job that checks the corpus out and the release check both read this
+# one value, so the declared level and the pinned tag cannot diverge. A gate that finds no level
+# declared here must refuse to run rather than fall back to a default.
+[tool.idfkit.conformance]
+level = "conformance-2026.7"
+
+# Governance artifact level this release is checked against, as an immutable tag in
+# idfkit-conformance. Read from this one value by both the CI gate and the release check, for the
+# same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
+# copy that declares no level.
+[tool.idfkit.governance]
+level = "governance-2026.9"
+
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 exclude = [
     "benchmarks", "src/idfkit/schemas", "src/idfkit/weather/data",
     ".venv", "**/node_modules", "**/__pycache__",
-    # Snippets with async/return at module level (doc fragments, not full modules)
-    "docs/snippets/concepts/simulation-architecture/streaming.py",
-    "docs/snippets/simulation/async/early_termination.py",
-    "docs/snippets/simulation/sql-queries/error_handling.py",
     # Generated type stubs — used as stubs by pyright, not analyzed directly
     "src/idfkit/_generated_types.pyi",
     "src/idfkit/document.pyi",
 ]
+
+# The codegen modules are maintainer tools, not library code. They are never imported by an
+# installed package: they produce files that are committed, and `make check` regenerates and
+# diffs those files. So they may assume the interpreter a maintainer and CI actually run, 3.11,
+# which is what lets generate_conformance.py read pyproject.toml with the standard-library
+# tomllib rather than a dependency. The library itself is still analysed at 3.10 by the block
+# below, and still supports it. This MUST precede the broader src/idfkit block: pyright uses the
+# FIRST matching execution environment.
+[[tool.pyright.executionEnvironments]]
+root = "src/idfkit/codegen"
+pythonVersion = "3.11"
+reportTypedDictNotRequiredAccess = false
 
 # IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
 # All keys are total=False (the document is not a real TypedDict at runtime),
@@ -119,16 +140,19 @@ exclude = [
 root = "src/idfkit"
 reportTypedDictNotRequiredAccess = false
 
-# Agent reference snippets (docs/snippets/agent_references/) are the source of
-# truth for the examples in the bundled .agents reference docs. They get a
-# STRICTER environment than the rest of docs/snippets: the rules that catch API
-# drift — attribute access, call signatures, argument types — stay ON (that is
-# the whole point of routing the examples through pyright), while the
-# "unknown type" / "untyped" noise that snippet style provokes stays OFF.
-# Pyright uses the FIRST matching execution environment, so this MUST precede
-# the broader docs/snippets block below.
+# Three of the four execution environments that stood here described docs/snippets/, which moved to
+# idfkit/idfkit-developers with the rest of the site. They went with it: the rules that catch API
+# drift in a documented example belong wherever the examples are.
+#
+# This one stayed, because its subject did. agent_references/snippets/ is the verified code that
+# idfkit.codegen.bake_references inlines into the wheel-packaged developing-with-idfkit skill, so
+# it is library content that happens to be written as examples. The rules that catch API drift —
+# attribute access, call signatures, argument types — stay ON, which is the whole point of routing
+# the examples through pyright: an assistant that reads a renamed method out of the bundle invents
+# a call that does not exist. What stays OFF is the "unknown type" / "untyped" noise that snippet
+# style legitimately provokes.
 [[tool.pyright.executionEnvironments]]
-root = "docs/snippets/agent_references"
+root = "agent_references/snippets"
 reportTypedDictNotRequiredAccess = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
@@ -146,86 +170,21 @@ reportUnusedExpression = false
 reportUnusedFunction = false
 reportPossiblyUnboundVariable = false
 reportReturnType = false
-# Happy-path doc style: examples assume optional accessors are present
-# (e.g. result.sql.get_timeseries). Attribute TYPOS on the non-None type are
-# still caught by reportAttributeAccessIssue; only the "could be None" noise is
-# silenced. reportAssignmentType is off because placeholder reassignment
-# (declare doc: IDFDocument, then doc = load_idf(...)) provokes false positives.
+# Happy-path doc style: examples assume optional accessors are present (e.g.
+# result.sql.get_timeseries). Attribute TYPOS on the non-None type are still caught by
+# reportAttributeAccessIssue; only the "could be None" noise is silenced. reportAssignmentType is
+# off because placeholder reassignment (declare doc: IDFDocument, then doc = load_idf(...))
+# provokes false positives.
 reportOptionalMemberAccess = false
 reportAssignmentType = false
-# Reference sections legitimately show "here's the importable API" overview
-# blocks whose symbols aren't all exercised. Nonexistent import symbols are
-# still caught by reportAttributeAccessIssue ("unknown import symbol"), so
-# turning this off preserves the existence check.
+# Reference sections legitimately show "here's the importable API" overview blocks whose symbols
+# aren't all exercised. Nonexistent import symbols are still caught by reportAttributeAccessIssue
+# ("unknown import symbol"), so turning this off preserves the existence check.
 reportUnusedImport = false
 # Drift-catching rules deliberately left ON (strict default):
 #   reportAttributeAccessIssue, reportCallIssue, reportArgumentType,
 #   reportFunctionMemberAccess, reportIndexIssue, reportOptionalSubscript,
 #   reportOperatorIssue.
-
-# The tutorials are the first code a new user copies, so they get the same
-# drift-catching treatment as the agent references: a renamed builder or a
-# changed kwarg must fail `make check`, not ship broken. Same rule set as the
-# block above, and it MUST also precede the broader docs/snippets block.
-[[tool.pyright.executionEnvironments]]
-root = "docs/snippets/tutorials"
-reportTypedDictNotRequiredAccess = false
-reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownArgumentType = false
-reportUnknownParameterType = false
-reportUnknownLambdaType = false
-reportMissingParameterType = false
-reportMissingTypeStubs = false
-reportMissingTypeArgument = false
-reportMissingModuleSource = false
-reportUntypedFunctionDecorator = false
-reportUntypedBaseClass = false
-reportUnusedVariable = false
-reportUnusedExpression = false
-reportUnusedFunction = false
-reportPossiblyUnboundVariable = false
-reportReturnType = false
-reportOptionalMemberAccess = false
-reportAssignmentType = false
-reportUnusedImport = false
-# Drift-catching rules deliberately left ON, as above.
-
-[[tool.pyright.executionEnvironments]]
-root = "docs/snippets"
-reportTypedDictNotRequiredAccess = false
-reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownArgumentType = false
-reportUnknownParameterType = false
-reportOptionalMemberAccess = false
-reportMissingParameterType = false
-reportMissingImports = false
-reportMissingTypeStubs = false
-reportUntypedFunctionDecorator = false
-reportUntypedBaseClass = false
-reportMissingTypeArgument = false
-reportReturnType = false
-reportUnusedVariable = false
-reportUnusedExpression = false
-reportUnusedFunction = false
-reportAssignmentType = false
-reportAttributeAccessIssue = false
-reportOptionalIterable = false
-reportOptionalSubscript = false
-reportIncompatibleMethodOverride = false
-reportPossiblyUnboundVariable = false
-reportMatchNotExhaustive = false
-reportMissingModuleSource = false
-reportOperatorIssue = false
-reportArgumentType = false
-reportCallIssue = false
-reportGeneralTypeIssues = false  # deprecated but still needed for "not iterable" errors
-reportIndexIssue = false
-reportInvalidTypeForm = false
-reportUnnecessaryComparison = false
-reportFunctionMemberAccess = false
-reportUnknownLambdaType = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/idfkit"]
@@ -283,8 +242,13 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
 "benchmarks/*" = ["S603", "S607", "SIM115", "B007", "B905", "S112", "TRY003", "BLE001"]
-"scripts/*" = ["T201"]
-"docs/snippets/*" = ["E402", "F706", "F821", "F841", "F811", "I", "S", "B", "TRY", "UP008"]
+# The scripts print, and they raise with the long messages that are the whole point: a build that
+# stops because the installed library no longer ships a file the site publishes has to say which
+# file, why there is no fallback, and what fixes it.
+"scripts/*" = ["T201", "TRY003"]
+# The agent-reference snippets are documentation examples, written in doc style. They keep the
+# lint waivers they had under docs/snippets/, because moving them did not change how they read.
+"agent_references/snippets/*" = ["E402", "F706", "F821", "F841", "F811", "I", "S", "B", "TRY", "UP008"]
 "src/idfkit/__init__.py" = ["F403"]  # TYPE_CHECKING star import from _generated_types
 "src/idfkit/document.pyi" = ["F405"]  # star import from _generated_types
 "src/idfkit/_generated_types.pyi" = ["F401"]  # re-exports for document.pyi

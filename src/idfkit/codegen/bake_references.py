@@ -2,18 +2,31 @@
 
 The agent reference docs have two source-of-truth inputs:
 
-* ``docs/agent-references/<topic>.md`` — prose + ``pymdownx.snippets`` include
-  directives for verified code + inline fenced blocks for intentionally-wrong
-  "BAD" examples.
-* ``docs/snippets/agent_references/<topic>.py`` — the verified example code,
-  type-checked by pyright (``make check`` runs ``pyright … docs/snippets``).
+* ``agent_references/templates/<topic>.md`` — prose + ``pymdownx.snippets``
+  include directives for verified code + inline fenced blocks for
+  intentionally-wrong "BAD" examples.
+* ``agent_references/snippets/<topic>.py`` — the verified example code,
+  type-checked by pyright (``make check`` runs ``pyright … agent_references``).
 
 This module flattens the include directives — pulling the marked region out of
 each snippet and inlining it — to produce the bundled, wheel-packaged copies at
 ``src/idfkit/.agents/skills/developing-with-idfkit/references/<topic>.md``, which
-the idfkit plugin loads as the ``developing-with-idfkit`` skill. MkDocs renders
-the same source templates via ``pymdownx.snippets`` for the docs site, so the two
-stay in lock-step.
+the idfkit plugin loads as the ``developing-with-idfkit`` skill.
+
+WHY THESE ARE NOT UNDER docs/ ANY MORE, AND NOT ON THE SITE
+
+They used to live at ``docs/agent-references/`` and ``docs/snippets/agent_references/``,
+and MkDocs published the same 16 topics at ``/agent-references/<topic>/``. Feature 003
+moved the site to idfkit/idfkit-developers and the published copies were retired rather
+than following it, for the reason the section's own landing page gave: the skill resolves
+the idfkit INSTALLED in the reader's project and loads the reference set baked into that
+exact version, while a published page can only ever show one version, the one the site
+pins. The published copy was therefore the single artifact that could be wrong for a given
+reader, which is the drift the skill exists to prevent.
+
+So this is a library artifact end to end now. Nothing crosses a repository boundary, there
+is no copy step and no cross-repository comparison to keep honest, and the site is back to
+the four Diataxis kinds with no fifth-section exception.
 
 Run via ``python -m idfkit.codegen.bake_references``. A ``check-baker`` Makefile
 target regenerates and ``git diff --exit-code``s the output, mirroring
@@ -27,7 +40,7 @@ from pathlib import Path
 
 # src/idfkit/codegen/bake_references.py -> repo root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_SOURCE_DIR = _REPO_ROOT / "docs" / "agent-references"
+_SOURCE_DIR = _REPO_ROOT / "agent_references" / "templates"
 _SKILL_DIR = _REPO_ROOT / "src" / "idfkit" / ".agents" / "skills" / "developing-with-idfkit"
 _REFERENCES_OUT = _SKILL_DIR / "references"
 
@@ -87,10 +100,10 @@ def bake_all() -> list[Path]:
 
     _REFERENCES_OUT.mkdir(parents=True, exist_ok=True)
     for source in sorted(_SOURCE_DIR.glob("*.md")):
-        # SKILL.md is baked above, at the skill root. index.md is the docs-site
-        # landing page for this section: it explains what the skill is and how
-        # to install it, which is meaningless inside the bundle, where SKILL.md
-        # is already the entrypoint.
+        # SKILL.md is baked above, at the skill root. index.md never moved here: it is the
+        # site's landing page explaining what the skill is and how to install it, which is
+        # meaningless inside the bundle, where SKILL.md is already the entrypoint. It is
+        # still skipped so that dropping a copy in here does not silently ship one.
         if source.name in {"SKILL.md", "index.md"}:
             continue
         baked = bake_markdown(source.read_text(encoding="utf-8"))

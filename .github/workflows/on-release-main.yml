@@ -9,6 +9,13 @@ permissions:
   contents: write
   id-token: write
 
+# The deploy-docs job that stood here is gone. It built the site out of this repository and
+# published it to developers.idfkit.com on every release, which after feature 003 would be a second
+# place the site can be published from. 003-FR-005 allows exactly one, and it is
+# idfkit-developers. The ARCHIVE_ARTIFACT_NAME env this job read went with it; the interlock it
+# guarded still exists, in archive-retired-site.yml and deploy-py-redirects.yml, which are about
+# py.idfkit.com and stay here.
+
 
 jobs:
 
@@ -55,39 +62,3 @@ jobs:
 
       - name: Publish package
         run: uv publish
-
-
-  deploy-docs:
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Set up the environment
-        uses: ./.github/actions/setup-python-env
-
-      - name: Install Cairo
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libcairo2
-
-      - name: Build documentation
-        run: ./scripts/build_docs.sh
-
-      - name: Preserve PR previews from gh-pages
-        run: |
-          git fetch origin gh-pages:gh-pages || true
-          if git show gh-pages:pr-preview >/dev/null 2>&1; then
-            git worktree add --detach gh-pages-ref gh-pages
-            cp -r gh-pages-ref/pr-preview site/pr-preview
-            git worktree remove gh-pages-ref
-          fi
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
-          force_orphan: true
-          cname: py.idfkit.com

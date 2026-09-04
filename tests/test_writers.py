@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument, new_document, parse_idf, write_epjson, write_idf
+from idfkit import IDFDocument, new_document, parse_idf, save_epjson, save_idf, write_epjson, write_idf
 from idfkit.epjson_parser import parse_epjson  # pyright: ignore[reportPrivateUsage]
 from idfkit.writers import (
     EpJSONWriter,
@@ -21,55 +21,48 @@ from idfkit.writers import (
 )
 
 # ---------------------------------------------------------------------------
-# write_idf
+# write_idf / save_idf
 # ---------------------------------------------------------------------------
 
 
 class TestWriteIDF:
     def test_write_to_string(self, simple_doc: IDFDocument) -> None:
-        output = write_idf(simple_doc, None)
-        assert output is not None
+        output = write_idf(simple_doc)
         assert isinstance(output, str)
         assert "Zone," in output
         assert "TestZone" in output
 
-    def test_write_to_file(self, simple_doc: IDFDocument, tmp_path: Path) -> None:
+    def test_save_to_file(self, simple_doc: IDFDocument, tmp_path: Path) -> None:
         filepath = tmp_path / "output.idf"
-        result = write_idf(simple_doc, filepath)
-        assert result is None  # returns None when writing to file
+        save_idf(simple_doc, filepath)
         assert filepath.exists()
         content = filepath.read_text(encoding="latin-1")
         assert "Zone," in content
 
     def test_write_contains_version(self, simple_doc: IDFDocument) -> None:
-        output = write_idf(simple_doc, None)
-        assert output is not None
+        output = write_idf(simple_doc)
         assert "Version," in output
         assert "24.1" in output
 
     def test_write_contains_all_types(self, simple_doc: IDFDocument) -> None:
-        output = write_idf(simple_doc, None)
-        assert output is not None
+        output = write_idf(simple_doc)
         assert "Zone," in output
         assert "Material," in output
         assert "Construction," in output
         assert "BuildingSurface:Detailed," in output
 
     def test_write_empty_doc(self, empty_doc: IDFDocument) -> None:
-        output = write_idf(empty_doc, None)
-        assert output is not None
+        output = write_idf(empty_doc)
         assert "Version," in output
 
     def test_field_comments(self, simple_doc: IDFDocument) -> None:
-        output = write_idf(simple_doc, None)
-        assert output is not None
+        output = write_idf(simple_doc)
         # IDF format should include !- comments
         assert "!-" in output
 
     def test_version_not_duplicated_when_version_object_exists(self) -> None:
         doc = new_document(version=(24, 1, 0))
-        output = write_idf(doc, None)
-        assert output is not None
+        output = write_idf(doc)
         assert output.count("Version,") == 1
 
     def test_version_object_is_authoritative_for_idf_output(self) -> None:
@@ -77,8 +70,7 @@ class TestWriteIDF:
         version_obj = doc["Version"].first()
         assert version_obj is not None
         version_obj.version_identifier = "99.7"
-        output = write_idf(doc, None)
-        assert output is not None
+        output = write_idf(doc)
         assert "99.7" in output
 
     def test_programmatic_surface_extensibles_schema_style_are_preserved(self, tmp_path: Path) -> None:
@@ -111,7 +103,7 @@ class TestWriteIDF:
             )
 
         path = tmp_path / "surface_schema_style.idf"
-        write_idf(doc, path)
+        save_idf(doc, path)
 
         roundtrip = parse_idf(path)
         wall = roundtrip.getobject("BuildingSurface:Detailed", "W1")
@@ -149,7 +141,7 @@ class TestWriteIDF:
             )
 
         path = tmp_path / "surface_classic_style.idf"
-        write_idf(doc, path)
+        save_idf(doc, path)
 
         roundtrip = parse_idf(path)
         wall = roundtrip.getobject("BuildingSurface:Detailed", "W1")
@@ -175,7 +167,7 @@ class TestWriteIDF:
             )
 
         path = tmp_path / "schedule_compact.idf"
-        write_idf(doc, path)
+        save_idf(doc, path)
 
         roundtrip = parse_idf(path)
         schedule = roundtrip.getobject("Schedule:Compact", "AlwaysOn")
@@ -185,56 +177,49 @@ class TestWriteIDF:
 
 
 # ---------------------------------------------------------------------------
-# write_epjson
+# write_epjson / save_epjson
 # ---------------------------------------------------------------------------
 
 
 class TestWriteEpJSON:
     def test_write_to_string(self, simple_doc: IDFDocument) -> None:
-        output = write_epjson(simple_doc, None)
-        assert output is not None
+        output = write_epjson(simple_doc)
         data = json.loads(output)
         assert "Version" in data
         assert "Zone" in data
 
-    def test_write_to_file(self, simple_doc: IDFDocument, tmp_path: Path) -> None:
+    def test_save_to_file(self, simple_doc: IDFDocument, tmp_path: Path) -> None:
         filepath = tmp_path / "output.epJSON"
-        result = write_epjson(simple_doc, filepath)
-        assert result is None
+        save_epjson(simple_doc, filepath)
         assert filepath.exists()
         data = json.loads(filepath.read_text())
         assert "Zone" in data
 
     def test_write_contains_version(self, simple_doc: IDFDocument) -> None:
-        output = write_epjson(simple_doc, None)
-        assert output is not None
+        output = write_epjson(simple_doc)
         data = json.loads(output)
         assert "Version" in data
         assert "Version 1" in data["Version"]
         assert data["Version"]["Version 1"]["version_identifier"] == "24.1"
 
     def test_write_zone_data(self, simple_doc: IDFDocument) -> None:
-        output = write_epjson(simple_doc, None)
-        assert output is not None
+        output = write_epjson(simple_doc)
         data = json.loads(output)
         assert "TestZone" in data["Zone"]
 
     def test_write_empty_doc(self, empty_doc: IDFDocument) -> None:
-        output = write_epjson(empty_doc, None)
-        assert output is not None
+        output = write_epjson(empty_doc)
         data = json.loads(output)
         assert "Version" in data
 
     def test_write_custom_indent(self, empty_doc: IDFDocument) -> None:
-        output = write_epjson(empty_doc, None, indent=4)
-        assert output is not None
+        output = write_epjson(empty_doc, indent=4)
         # 4-space indent should have more spaces than 2-space
         assert "    " in output
 
     def test_version_not_duplicated_when_version_object_exists(self) -> None:
         doc = new_document(version=(24, 1, 0))
-        output = write_epjson(doc, None)
-        assert output is not None
+        output = write_epjson(doc)
         data = json.loads(output)
         assert "Version" in data
         assert len(data["Version"]) == 1
@@ -244,8 +229,7 @@ class TestWriteEpJSON:
         version_obj = doc["Version"].first()
         assert version_obj is not None
         version_obj.version_identifier = "88.4"
-        output = write_epjson(doc, None)
-        assert output is not None
+        output = write_epjson(doc)
         data = json.loads(output)
         assert data["Version"]["Version 1"]["version_identifier"] == "88.4"
 
@@ -259,24 +243,21 @@ class TestIDFValueFormatting:
     def test_none_field_written_as_empty(self) -> None:
         doc = new_document()
         doc.add("Zone", "Z1", {"x_origin": None})
-        output = write_idf(doc, None)
-        assert output is not None
+        output = write_idf(doc)
         # None values should be written as empty strings
         assert "Z1" in output
 
     def test_float_field_written(self) -> None:
         doc = new_document()
         doc.add("Zone", "Z1", {"x_origin": 3.14})
-        output = write_idf(doc, None)
-        assert output is not None
+        output = write_idf(doc)
         assert "3.14" in output
 
     def test_string_field_written(self) -> None:
         doc = new_document()
         # Using validate=False since we're only testing IDF output formatting
         doc.add("Material", "Mat1", {"roughness": "MediumSmooth"}, validate=False)
-        output = write_idf(doc, None)
-        assert output is not None
+        output = write_idf(doc)
         assert "MediumSmooth" in output
 
 
@@ -290,8 +271,7 @@ class TestEpJSONValueFormatting:
         doc = new_document()
         # Using validate=False since we're testing value normalization, not schema validity
         doc.add("Zone", "Z1", {"x_origin": "autosize"}, validate=False)
-        output = write_epjson(doc, None)
-        assert output is not None
+        output = write_epjson(doc)
         data = json.loads(output)
         zone_data = data["Zone"]["Z1"]
         assert zone_data["x_origin"] == "Autosize"
@@ -300,16 +280,14 @@ class TestEpJSONValueFormatting:
         doc = new_document()
         # Using validate=False since we're testing value normalization, not schema validity
         doc.add("Zone", "Z1", {"x_origin": "yes"}, validate=False)
-        output = write_epjson(doc, None)
-        assert output is not None
+        output = write_epjson(doc)
         data = json.loads(output)
         assert data["Zone"]["Z1"]["x_origin"] == "Yes"
 
     def test_numeric_passthrough(self) -> None:
         doc = new_document()
         doc.add("Zone", "Z1", {"x_origin": 42})
-        output = write_epjson(doc, None)
-        assert output is not None
+        output = write_epjson(doc)
         data = json.loads(output)
         assert data["Zone"]["Z1"]["x_origin"] == 42
 
@@ -382,7 +360,6 @@ class TestEpJSONWriterNamelessDuplicates:
         assert len(doc["Output:Variable"]) == 3
 
         epjson_str = write_epjson(doc)
-        assert epjson_str is not None
         data = json.loads(epjson_str)
         # All 3 Output:Variable objects must survive in epJSON
         assert len(data.get("Output:Variable", {})) == 3
@@ -395,7 +372,6 @@ class TestEpJSONWriterEmptyStrings:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": 0.0, "type": ""}, validate=False)
         epjson_str = write_epjson(doc)
-        assert epjson_str is not None
         data = json.loads(epjson_str)
         zone_data = data["Zone"]["Z1"]
         # Empty string values should not appear in epJSON output
@@ -456,14 +432,12 @@ class TestIDFValueFormattingEdgeCases:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": True}, validate=False)
         output = write_idf(doc)
-        assert output is not None
         assert "Yes" in output
 
     def test_bool_false_written_as_no(self) -> None:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": False}, validate=False)
         output = write_idf(doc)
-        assert output is not None
         assert "No" in output
 
     def test_float_scientific_notation_large(self) -> None:
@@ -471,7 +445,6 @@ class TestIDFValueFormattingEdgeCases:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": 1.5e12}, validate=False)
         output = write_idf(doc)
-        assert output is not None
         assert "e" in output.lower()
 
     def test_float_scientific_notation_small(self) -> None:
@@ -479,7 +452,6 @@ class TestIDFValueFormattingEdgeCases:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": 0.00001}, validate=False)
         output = write_idf(doc)
-        assert output is not None
         assert "e" in output.lower()
 
     def test_list_value_written_as_csv(self) -> None:
@@ -487,7 +459,6 @@ class TestIDFValueFormattingEdgeCases:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": [1, 2, 3]}, validate=False)
         output = write_idf(doc)
-        assert output is not None
         assert "1, 2, 3" in output
 
     def test_delimiter_in_string_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
@@ -506,7 +477,6 @@ class TestIDFWriterNocommentMode:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {"x_origin": 1.0})
         output = write_idf(doc, output_type="nocomment")
-        assert output is not None
         # nocomment mode omits per-field "!- Field Name" annotations
         assert "!- X Origin" not in output
         assert "Z1" in output
@@ -524,7 +494,6 @@ class TestIDFWriterNocommentMode:
         doc.addidfobject(obj)
 
         output = write_idf(doc)
-        assert output is not None
         assert "Z1" in output
 
     def test_no_schema_no_field_order_uses_data_keys(self) -> None:
@@ -537,7 +506,6 @@ class TestIDFWriterNocommentMode:
         doc.addidfobject(obj)
 
         output = write_idf(doc)
-        assert output is not None
         assert "Z1" in output
 
 
@@ -578,7 +546,6 @@ class TestIDFWriterEmptyCollection:
         # Access (and thus create) an empty Zone collection
         _ = doc["Zone"]
         output = write_idf(doc)
-        assert output is not None
         # Empty Zone collection should not appear in IDF output
         assert "Zone," not in output
 
@@ -595,7 +562,6 @@ class TestEpJSONWriterEmptyCollection:
         # Ensure there is a collection entry but with no objects
         _ = doc["Zone"]  # accessing creates an empty collection
         output = write_epjson(doc)
-        assert output is not None
         data = json.loads(output)
         # Empty Zone collection should not appear in epJSON
         assert "Zone" not in data
@@ -634,7 +600,6 @@ Zone,
         doc["Zone"].remove(zone_remove)  # pyright: ignore[reportArgumentType]
 
         output = write_idf(doc)
-        assert output is not None
         assert "ZoneKeep" in output
         assert "ZoneRemove" not in output
 
@@ -649,7 +614,6 @@ Zone,
         doc.add("Zone", "NewZone", {"x_origin": 5.0})
 
         output = write_idf(doc)
-        assert output is not None
         assert "ExistingZone" in output
         assert "NewZone" in output
 
@@ -661,7 +625,7 @@ _LOSSLESS_EPJSON = {
 
 
 class TestWriteEpJSONLossless:
-    """write_epjson lossless path: write to file (L190-194) and return string (L195-196)."""
+    """The epJSON lossless path, through save_epjson to a file and write_epjson to a string."""
 
     def test_lossless_to_file(self, tmp_path: Path) -> None:
         epjson_path = tmp_path / "source.epJSON"
@@ -669,8 +633,7 @@ class TestWriteEpJSONLossless:
 
         doc = parse_epjson(epjson_path, preserve_formatting=True)
         out_path = tmp_path / "lossless_out.epJSON"
-        result = write_epjson(doc, out_path)
-        assert result is None
+        save_epjson(doc, out_path)
         assert out_path.exists()
         assert "Zone" in json.loads(out_path.read_text())
 
@@ -680,7 +643,6 @@ class TestWriteEpJSONLossless:
 
         doc = parse_epjson(epjson_path, preserve_formatting=True)
         result = write_epjson(doc)
-        assert result is not None
         assert "Zone" in json.loads(result)
 
 
@@ -705,5 +667,95 @@ Zone,
         zone.x_origin = 99.0
 
         output = write_idf(doc)
-        assert output is not None
         assert "MutableZone" in output
+
+
+class TestEpJSONBlankNameIsNotAbsentName:
+    """A blank optional Name keeps the blank verbatim; only a type with no Name field is synthesised."""
+
+    _HEADER = """\
+Version, 26.1;
+
+Building, Conformance;
+
+GlobalGeometryRules,
+  UpperLeftCorner,
+  Counterclockwise,
+  World;
+"""
+
+    def test_blank_name_keyed_as_empty_string(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+WeatherProperty:SkyTemperature,
+  ,
+  ClarkAllen;
+
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 1,
+  Brunt;
+"""
+        )
+        idf_path = tmp_path / "blank_vs_absent.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        sky = data["WeatherProperty:SkyTemperature"]
+        assert sky == {
+            "": {"calculation_type": "ClarkAllen"},
+            "WeatherProperty:SkyTemperature 1": {"calculation_type": "Brunt"},
+        }
+
+    def test_synthetic_key_never_collides_with_a_real_name(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 1,
+  Brunt;
+
+WeatherProperty:SkyTemperature,
+  WeatherProperty:SkyTemperature 2,
+  Idso;
+
+WeatherProperty:SkyTemperature,
+  ,
+  ClarkAllen;
+"""
+        )
+        idf_path = tmp_path / "synthetic_collision.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        sky = data["WeatherProperty:SkyTemperature"]
+        assert sky == {
+            "": {"calculation_type": "ClarkAllen"},
+            "WeatherProperty:SkyTemperature 1": {"calculation_type": "Brunt"},
+            "WeatherProperty:SkyTemperature 2": {"calculation_type": "Idso"},
+        }
+
+    def test_type_without_a_name_field_still_gets_a_synthetic_key(self, tmp_path: Path) -> None:
+        content = (
+            self._HEADER
+            + """
+Output:Variable,
+  *,
+  Zone Mean Air Temperature,
+  Hourly;
+
+Output:Variable,
+  *,
+  Site Outdoor Air Drybulb Temperature,
+  Hourly;
+"""
+        )
+        idf_path = tmp_path / "nameless.idf"
+        idf_path.write_bytes(content.encode("latin-1"))
+        doc = parse_idf(idf_path)
+
+        data = EpJSONWriter(doc).to_dict()
+        assert list(data["Output:Variable"]) == ["Output:Variable 1", "Output:Variable 2"]
+        assert list(data["GlobalGeometryRules"]) == ["GlobalGeometryRules 1"]

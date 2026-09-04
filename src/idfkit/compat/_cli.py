@@ -533,18 +533,18 @@ def _write_migrate_output(
     explicit_output: str | None,
 ) -> Path | None:
     """Write the migrated IDF to disk and return the resulting path, if any."""
-    from ..writers import write_idf
+    from ..writers import save_idf
 
     if report.migrated_model is not None:
         output_path = Path(explicit_output) if explicit_output else _default_output_path(input_path, resolved_target)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        write_idf(report.migrated_model, output_path)
+        save_idf(report.migrated_model, output_path)
         return output_path
     if explicit_output is not None:
         # No-op migration: still honor an explicit --output by copying the input model.
         output_path = Path(explicit_output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        write_idf(fallback_model, output_path)
+        save_idf(fallback_model, output_path)
         return output_path
     return None
 

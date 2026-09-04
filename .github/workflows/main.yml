@@ -57,20 +57,3 @@ jobs:
         if: ${{ matrix.python-version == '3.13' }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-  check-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Set up the environment
-        uses: ./.github/actions/setup-python-env
-
-      - name: Install Cairo
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libcairo2
-
-      - name: Check if documentation can be built
-        run: ./scripts/build_docs.sh -s

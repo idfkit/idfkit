@@ -86,11 +86,11 @@ If the file references a version idfkit doesn't bundle, you'll get `VersionNotFo
 For workflows that mutate a handful of objects and want to preserve every byte of whitespace, comments, and formatting elsewhere in the file, pass `preserve_formatting=True`:
 
 ```python
-from idfkit import load_idf, write_idf
+from idfkit import load_idf, save_idf
 
 doc = load_idf("building.idf", preserve_formatting=True)
 doc["Zone"]["Office"].x_origin = 10.0
-write_idf(doc, "modified.idf")  # unmodified objects render byte-identical
+save_idf(doc, "modified.idf")  # unmodified objects render byte-identical
 ```
 
 Internally this builds a Concrete Syntax Tree (CST) at parse time and re-emits the original source for objects you didn't touch. Mutated objects are reformatted using the standard writer. See [writing-output.md](writing-output.md) for the writer side.
@@ -100,10 +100,10 @@ Internally this builds a Concrete Syntax Tree (CST) at parse time and re-emits t
 To convert between IDF and epJSON, load with one function and write with the other:
 
 ```python
-from idfkit import load_idf, write_epjson
+from idfkit import load_idf, save_epjson
 
 doc = load_idf("building.idf")
-write_epjson(doc, "building.epJSON")
+save_epjson(doc, "building.epJSON")
 ```
 
 Or use the explicit converters:
@@ -134,7 +134,7 @@ docs = [IDFParser(Path(p), schema=schema).parse() for p in input_paths]
     ```python
     doc = load_idf("building.idf", strict=False)
     zone.x_orign = 10.0                        # silently dropped on the floor
-    write_idf(doc, "out.idf")                  # x_origin unchanged
+    save_idf(doc, "out.idf")                   # x_origin unchanged
     ```
 
 !!! success "keep strict mode on for authoring"
@@ -153,27 +153,27 @@ docs = [IDFParser(Path(p), schema=schema).parse() for p in input_paths]
 !!! success "explicitly migrate before loading"
 
     ```python
-    from idfkit import migrate, load_idf, write_idf
+    from idfkit import migrate, load_idf, save_idf
 
     legacy = load_idf("legacy.idf")
     report = migrate(legacy, target_version=(25, 2, 0))
     if report.success and report.migrated_model is not None:
         doc = report.migrated_model
-        write_idf(doc, "legacy_v25.idf")
+        save_idf(doc, "legacy_v25.idf")
     ```
 
 !!! failure "forgetting `preserve_formatting` for the writer side"
 
     ```python
     doc = load_idf("building.idf")             # no CST → format-only writer
-    write_idf(doc, "out.idf")                  # not byte-identical, even with no edits
+    save_idf(doc, "out.idf")                   # not byte-identical, even with no edits
     ```
 
-!!! success "pair load + write"
+!!! success "pair load + save"
 
     ```python
     doc = load_idf("building.idf", preserve_formatting=True)
-    write_idf(doc, "out.idf")  # byte-identical
+    save_idf(doc, "out.idf")  # byte-identical
     ```
 
 ## Related

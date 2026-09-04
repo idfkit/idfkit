@@ -1,0 +1,129 @@
+name: deploy-py-redirects
+
+# Publish the redirect-only build to py.idfkit.com (T116, FR-056).
+#
+# py.idfkit.com is retired. Every address it published redirects permanently to
+# developers.idfkit.com, and every address it did not publish lands on a section landing page
+# rather than on an error. The pages come from redirects/path-map.json via
+# scripts/build_redirect_site.py; the same script builds js.idfkit.com from the same map in the
+# idfkit-js repository, so the two retired hosts cannot drift apart.
+#
+# WHY THIS PUBLISHES TO ANOTHER REPOSITORY
+#
+# A GitHub Pages site has exactly one custom domain. deploy-docs.yml now claims
+# developers.idfkit.com for this repository's gh-pages branch, so py.idfkit.com cannot also be
+# served from it. The redirect build therefore goes to the small Pages repository
+# idfkit/py.idfkit.com, whose only content is this output. DNS does not change: py.idfkit.com
+# already points at idfkit.github.io, which serves whichever repository in the organisation
+# claims the domain.
+#
+# PREREQUISITES, once, before the first run:
+#
+#   1. The repository idfkit/py.idfkit.com exists.
+#   2. An SSH keypair exists; the public half is a deploy key with write access on that
+#      repository, and the private half is the secret PY_IDFKIT_COM_DEPLOY_KEY here.
+#   3. deploy-docs.yml has published developers.idfkit.com, which releases the py.idfkit.com
+#      custom domain from this repository.
+#   4. GitHub Pages is enabled on idfkit/py.idfkit.com from gh-pages, custom domain
+#      py.idfkit.com. The CNAME file this build writes keeps it set.
+#
+# Nothing here deletes anything. The full procedure and the revert are in redirects/README.md.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - redirects/path-map.json
+      - scripts/build_redirect_site.py
+      - .github/workflows/deploy-py-redirects.yml
+
+permissions:
+  contents: read
+  actions: read
+
+# A half-published redirect site is worse than a stale one, so never cancel a run in flight.
+concurrency:
+  group: py-idfkit-com
+  cancel-in-progress: false
+
+env:
+  # ------------------------------------------------------------------------------------------
+  # THE CUTOVER LEVER for py.idfkit.com. This is the whole configuration change (FR-090).
+  #
+  #   redirect-only  the cutover state: this workflow publishes the redirect build.
+  #   off            pre-cutover, or reverted: this workflow publishes nothing.
+  #
+  # Reverting is setting this to "off" and restoring the archived build, per
+  # redirects/README.md. It is not a restore from a backup of anything in this repository:
+  # no source was deleted to get here.
+  # ------------------------------------------------------------------------------------------
+  PY_IDFKIT_COM_MODE: redirect-only
+
+  RETIRED_HOST: py.idfkit.com
+  ARCHIVE_ARTIFACT_NAME: py.idfkit.com-last-full-build
+  TARGET_REPOSITORY: idfkit/py.idfkit.com
+
+jobs:
+  # The lever is workflow-level env, which a job-level `if` cannot read, so one job reads it
+  # into an output and the publishing job is gated on that. A skipped publish job is the
+  # visible sign that this host is not in the redirect-only state.
+  cutover-lever:
+    name: Read the cutover lever
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.read.outputs.mode }}
+    steps:
+      - id: read
+        run: |
+          echo "mode=${PY_IDFKIT_COM_MODE}" >> "$GITHUB_OUTPUT"
+          echo "::notice::py.idfkit.com mode is '${PY_IDFKIT_COM_MODE}'."
+
+  publish-redirects:
+    name: Publish the redirect-only build
+    needs: cutover-lever
+    if: needs.cutover-lever.outputs.mode == 'redirect-only'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      # The interlock for FR-090: the cutover may not proceed until the last full build of this
+      # host is retained and still within its window. archive-retired-site.yml uploads it.
+      - name: Require the retained last full build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          live=$(gh api \
+            "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${ARCHIVE_ARTIFACT_NAME}&per_page=100" \
+            --jq '[.artifacts[] | select(.expired == false)] | length')
+          if [ "${live}" = "0" ]; then
+            echo "::error::No unexpired '${ARCHIVE_ARTIFACT_NAME}' artefact exists, so the last full"
+            echo "::error::build of ${RETIRED_HOST} is not retained and this cutover would not be"
+            echo "::error::revertible. Run the archive-retired-site workflow first."
+            exit 1
+          fi
+          echo "${live} unexpired copy or copies of ${ARCHIVE_ARTIFACT_NAME} are retained."
+
+      - name: Build the redirect-only site
+        run: |
+          python3 scripts/build_redirect_site.py \
+            --host "${RETIRED_HOST}" \
+            --map redirects/path-map.json \
+            --sitemap "old-sitemaps/${RETIRED_HOST}.sitemap.xml" \
+            --out site
+
+      - name: Deploy to py.idfkit.com
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # A deploy key rather than GITHUB_TOKEN: the destination is another repository.
+          deploy_key: ${{ secrets.PY_IDFKIT_COM_DEPLOY_KEY }}
+          external_repository: ${{ env.TARGET_REPOSITORY }}
+          publish_branch: gh-pages
+          publish_dir: ./site
+          # The branch is build output; its history is worth nothing and grows without bound.
+          force_orphan: true
+          # The build writes site/CNAME too, so the custom domain survives a deploy by any
+          # other route.
+          cname: py.idfkit.com

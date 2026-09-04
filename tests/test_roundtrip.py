@@ -7,7 +7,7 @@ from pathlib import Path
 
 from idfkit.cst import CSTNode
 from idfkit.idf_parser import _build_idf_cst, _cst_node_type_name, parse_idf
-from idfkit.writers import write_epjson, write_idf
+from idfkit.writers import save_idf, write_epjson, write_idf
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -274,7 +274,7 @@ class TestIdfRoundTrip:
 
         doc = parse_idf(idf_path, preserve_formatting=True)
         out_path = tmp_path / "output.idf"
-        write_idf(doc, out_path)
+        save_idf(doc, out_path)
 
         assert out_path.read_text(encoding="latin-1") == IDF_WITH_COMMENTS
 

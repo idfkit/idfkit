@@ -58,6 +58,7 @@ from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
 from .parsers.eso import ESOColumn, ESOEnvironment, ESOResult, ESOVariable
+from .parsers.html import HTMLResult, HTMLTable
 from .parsers.rdd import OutputMeter, OutputVariable
 from .parsers.sql import EnvironmentInfo, SQLResult, TabularRow, TimeSeriesResult, VariableInfo
 from .plotting import (
@@ -89,6 +90,8 @@ __all__ = [
     "ErrorMessage",
     "ErrorReport",
     "FileSystem",
+    "HTMLResult",
+    "HTMLTable",
     "LocalFileSystem",
     "OutputMeter",
     "OutputVariable",

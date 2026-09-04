@@ -15,6 +15,13 @@ check-stubs: ## Verify generated type stubs are up-to-date
 	@git diff --exit-code src/idfkit/_generated_types.pyi src/idfkit/document.pyi || \
 		(echo "❌ Generated stubs are out of date. Run: uv run python -m idfkit.codegen.generate_stubs" && exit 1)
 
+.PHONY: check-conformance-level
+check-conformance-level: ## Verify the exported CONFORMANCE_LEVEL matches the declared one
+	@echo "🚀 Checking the exported conformance level against the declaration"
+	@uv run python -m idfkit.codegen.generate_conformance
+	@git diff --exit-code src/idfkit/_conformance.py || \
+		(echo "❌ idfkit.CONFORMANCE_LEVEL is stale against [tool.idfkit.conformance] in pyproject.toml. Run: uv run python -m idfkit.codegen.generate_conformance" && exit 1)
+
 .PHONY: check-doc-locations
 check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit-docs build)
 	@if [ -d "../idfkit-docs/dist" ]; then \
@@ -33,14 +40,40 @@ check-baker: ## Verify bundled agent references match their source templates + s
 	@git diff --exit-code src/idfkit/.agents/skills/developing-with-idfkit || \
 		(echo "❌ Bundled agent references are out of date. Run: uv run python -m idfkit.codegen.bake_references" && exit 1)
 
+# Where the shared governance artefacts live. Both gates read naming.toml and parity.toml out of
+# this checkout at the tag pinned in pyproject.toml, never from its working tree.
+CONFORMANCE_REPO ?= ../idfkit-conformance
+
+.PHONY: check-naming
+check-naming: ## Check the public surface against the pinned naming register
+	@if [ -d "$(CONFORMANCE_REPO)/.git" ]; then \
+		echo "🚀 Checking the public surface against the pinned naming register"; \
+		uv run python scripts/check_naming_register.py --conformance-repo $(CONFORMANCE_REPO); \
+	else \
+		echo "⏭️  Skipping naming register check ($(CONFORMANCE_REPO) not found)"; \
+	fi
+
+.PHONY: check-parity
+check-parity: ## Check the parity ledger against the exported capability set
+	@if [ -d "$(CONFORMANCE_REPO)/.git" ]; then \
+		echo "🚀 Checking the parity ledger against the exported capability set"; \
+		uv run python scripts/check_parity_ledger.py --conformance-repo $(CONFORMANCE_REPO); \
+	else \
+		echo "⏭️  Skipping parity ledger check ($(CONFORMANCE_REPO) not found)"; \
+	fi
+
+# check-naming and check-parity come after check-stubs on purpose: the naming gate reads the
+# generated document.pyi and does not refresh it. The skip above is for a working copy with no
+# sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
+# jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-doc-locations check-baker ## Run code quality tools.
+check: check-stubs check-conformance-level check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running pyright"
-	@uv run pyright src/ docs/snippets
+	@uv run pyright src/ agent_references/snippets
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@uv run deptry src
 
@@ -64,21 +97,21 @@ clean-build: ## Clean build artifacts
 	@echo "🚀 Removing build artifacts"
 	@uv run python -c "import shutil; import os; shutil.rmtree('dist') if os.path.exists('dist') else None"
 
+.PHONY: release-check
+release-check: ## Assert the corpus passes at the level this release declares (FR-024)
+	@uv run python scripts/check_release_conformance.py --conformance-repo $(CONFORMANCE_REPO)
+
+# release-check is a prerequisite of publish, not an adjacent target, because FR-024 makes the
+# declared level a claim the release asserts rather than one a maintainer remembers to verify.
+# Unlike check-naming and check-parity above, it does NOT skip when the conformance checkout is
+# missing: skipping would publish the claim unexamined, which is the failure the requirement names.
 .PHONY: publish
-publish: ## Publish a release to PyPI.
+publish: release-check ## Publish a release to PyPI.
 	@echo "🚀 Publishing."
 	@uvx twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 .PHONY: build-and-publish
 build-and-publish: build publish ## Build and publish.
-
-.PHONY: docs-test
-docs-test: ## Test if documentation can be built without warnings or errors
-	@./scripts/build_docs.sh -s
-
-.PHONY: docs
-docs: ## Build and serve the documentation
-	@uv run mkdocs serve
 
 .PHONY: help
 help:
