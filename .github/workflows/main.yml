@@ -136,7 +136,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ep/testfiles
-          key: ep-testfiles-v${{ matrix.version }}
+          # The hash of the sparse file is in the key, so changing what is swept changes the key.
+          # Keying on the tag alone served a stale selection when the exclusion below was added.
+          key: ep-testfiles-v${{ matrix.version }}-${{ hashFiles('.github/ep-testfiles.sparse') }}
 
       - name: Fetch the example files for this release
         if: steps.cache-examples.outputs.cache-hit != 'true'
@@ -152,13 +154,10 @@ jobs:
           git clone --filter=blob:none --no-checkout --depth 1 \
             --branch "v${{ matrix.version }}" "$REPO" ep
           cd ep
-          # `_1a-Long0.0.idf` is excluded. It carries an un-migrated `report variable dictionary;`
-          # at the four tags it exists in, which is a defect in that file rather than in either
-          # library, and the two libraries disagree about it: one reports an unknown type, the
-          # other's pattern discards it for having no comma. That disagreement is idfkit#193 and is
-          # tracked there. Carrying it here would mean holding four versions at a count that says
-          # nothing about this repository's own regressions, which is what this sweep is for.
-          git sparse-checkout set --no-cone 'testfiles/*.idf' '!testfiles/_1a-Long0.0.idf'
+          # The selection lives in .github/ep-testfiles.sparse, which the cache key hashes, so the
+          # two cannot disagree about what should be present.
+          mapfile -t PATTERNS < <(grep -vE '^[[:space:]]*(#|$)' "$GITHUB_WORKSPACE/.github/ep-testfiles.sparse")
+          git sparse-checkout set --no-cone "${PATTERNS[@]}"
           git checkout
 
       - name: Fail if the example files were not found

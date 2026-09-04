@@ -1,0 +1,17 @@
+# Which EnergyPlus example files the multi-version sweep reads.
+#
+# This lives in a file, and the sweep's cache key is a hash OF this file, so that changing what is
+# swept necessarily changes the key. Keying on the release tag alone was wrong: the tag is
+# immutable but the SELECTION is not, so an exclusion added here was served a pre-exclusion cache
+# and never took effect.
+#
+# One pattern per line, passed to `git sparse-checkout set --no-cone`. A leading `!` excludes.
+
+testfiles/*.idf
+
+# Excluded: carries an un-migrated `report variable dictionary;` at the four tags it exists in
+# (8.9.0 through 9.2.0), gone from EnergyPlus by 26.1. A defect in that file rather than in either
+# library, and the two disagree about it: one reports an unknown object type, the other's pattern
+# discards it for having no comma. See idfkit#193, closed as not-an-issue. Sweeping it would hold
+# four versions at a count that says nothing about this repository's own regressions.
+!testfiles/_1a-Long0.0.idf
