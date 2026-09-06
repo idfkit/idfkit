@@ -417,17 +417,28 @@ Material,
         # Original comments should not be preserved
         assert "! File header comment" not in result
 
-    def test_explicit_preserve_ignores_output_type(self, tmp_path: Path) -> None:
-        """Explicit preserve_formatting=True should take precedence over output_type."""
+    def test_an_output_type_takes_precedence_over_explicit_preserve(self, tmp_path: Path) -> None:
+        """An output form wins over preservation, including over an explicit ``True``.
+
+        This assertion is the reverse of what it was until feature 006, and the reversal is
+        deliberate. The two languages disagreed here: Python granted preservation and dropped the
+        requested form in silence, TypeScript produced the form. Neither refused, so the caller got
+        a different file depending on which library they were holding.
+
+        The form wins, on the reason FR-013 gives: a different output form is a different artifact,
+        which the original text was never going to express, so producing it is honest. The
+        contradiction that IS refused is preservation together with a control that changes how an
+        object is laid out, which is a different question and is checked below.
+        """
         idf_path = tmp_path / "input.idf"
         idf_path.write_text(IDF_WITH_COMMENTS)
 
         doc = parse_idf(idf_path, preserve_formatting=True)
         result = write_idf(doc, output_type="compressed", preserve_formatting=True)
 
-        # Lossless mode should win
-        assert "! File header comment" in result
-        assert result == IDF_WITH_COMMENTS
+        assert "! File header comment" not in result
+        assert result != IDF_WITH_COMMENTS
+        assert "Zone,TestZone," in result
 
 
 # ---------------------------------------------------------------------------
@@ -607,6 +618,33 @@ class TestPreserveFormattingRefusals:
 
         with pytest.raises(ValueError, match="version_first"):
             write_idf(doc, preserve_formatting=True, version_first=False)
+
+    def test_the_same_set_of_controls_is_refused_as_in_the_other_language(self, tmp_path: Path) -> None:
+        """SC-006: the same SET in both, checked rather than assumed.
+
+        A set of controls, not of values. The two languages' defaults differ and stay differing,
+        two spaces against four and sorted order against source order, so "away from its default"
+        means away from each language's own. What has to agree is which controls are refused, and
+        that the message names the class rather than the one the caller happened to set.
+        """
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        refused: list[dict[str, object]] = [
+            {"indent": 4},
+            {"comment_column": 40},
+            {"ordering": "source"},
+            {"version_first": False},
+        ]
+        for control in refused:
+            with pytest.raises(ValueError, match="indent, comment_column, ordering or version_first"):
+                write_idf(doc, preserve_formatting=True, **control)  # pyright: ignore[reportArgumentType]
+
+        # The output FORMS are granted rather than refused, on both sides: a different form is a
+        # different artifact the source was never going to express.
+        assert write_idf(doc, "compressed", preserve_formatting=True) != IDF_WITH_COMMENTS
+        assert write_idf(doc, "nocomment", preserve_formatting=True) != IDF_WITH_COMMENTS
 
     def test_a_control_on_the_default_path_asks_for_formatting(self, tmp_path: Path) -> None:
         """A set control is a request to format, not a control to drop silently."""
