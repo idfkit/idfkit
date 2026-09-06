@@ -119,8 +119,9 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             >>> from idfkit import new_document
             >>> model = new_document()
             >>> zone = model.add("Zone", "Perimeter_ZN_1")
-            >>> len(list(model.changed_objects()))  # nothing was read, so everything is new
-            2
+            >>> nothing_was_read = list(model.changed_objects()) == list(model.all_objects)
+            >>> nothing_was_read  # so every object is one a write has to build
+            True
         """
 
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
