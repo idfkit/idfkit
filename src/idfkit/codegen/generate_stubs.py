@@ -631,7 +631,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
     lines.append("from ._generated_types import _ObjectTypeMap")
-    lines.append("from .cst import DocumentCST")
+    lines.append("from .cst import DocumentCST, SourceSpan")
     lines.append("from .introspection import ObjectDescription")
     lines.append("from .objects import IDFCollection, IDFObject")
     lines.append("from .references import ReferenceGraph")
@@ -698,6 +698,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     )
     emit("def references(self) -> ReferenceGraph", "IDFDocument.references", decorators=("@property",))
     emit("def changed_objects(self) -> Iterator[IDFObject]", "IDFDocument.changed_objects")
+    emit("def region_of(self, obj: IDFObject) -> SourceSpan | None", "IDFDocument.region_of")
     lines.append("")
 
     # Collection access

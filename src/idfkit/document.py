@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat import EppyDocumentMixin
-from .cst import DocumentCST
+from .cst import DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
@@ -128,6 +128,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_references",
         "_schedules_cache",
         "_schema",
+        "_spans",
         "_strict",
         "_version",
         "filepath",
@@ -140,6 +141,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
     _cst: DocumentCST | None
+    _spans: dict[int, SourceSpan] | None
     _raw_text: str | None
     """How many objects the document held when a preserving read finished.
 
@@ -179,6 +181,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
         self._cst: DocumentCST | None = None
+        # Built once on the first ask. The retained tree does not change after the read.
+        self._spans: dict[int, SourceSpan] | None = None
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
 
@@ -1137,6 +1141,49 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for obj in self.all_objects:
             if obj.source_text is None:
                 yield obj
+
+    def region_of(self, obj: IDFObject) -> SourceSpan | None:
+        """Where *obj*'s characters sit in :attr:`raw_text`, or ``None`` if they sit nowhere.
+
+        ``None`` for an object added since the read and for a document read without
+        ``preserve_formatting=True``.
+
+        This is what makes :meth:`changed_objects` usable. Turning an edit into the smallest
+        possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
+        each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
+        file and compare, which is the work :meth:`changed_objects` exists to avoid.
+
+        The range is where the object WAS, and stays answerable after it changes. That is the case
+        it is for: the objects worth locating are the ones being rewritten.
+
+        **Where the replacement text comes from is not settled here.** A preserving write hands the
+        formatter the object's own source, so text produced any other way differs from what
+        :func:`~idfkit.writers.write_idf` would have produced for the same object: the author's
+        units and notes come back as generated labels. A consumer that needs the two to agree takes
+        the whole file from ``write_idf``. That gap is open, and it is recorded rather than papered
+        over.
+
+        The end of the range excludes whatever separated this object from the next, because that is
+        what a preserving write leaves in place. It INCLUDES a comment on the terminator's own line,
+        which is the last field's comment and is rewritten with it.
+
+        Offsets rather than a line and column: a consumer wanting the rendering has the text to
+        compute it from, while going the other way costs a scan.
+        """
+        if self._cst is None:
+            return None
+        if self._spans is None:
+            spans: dict[int, SourceSpan] = {}
+            offset = 0
+            for node in self._cst.nodes:
+                length = len(node.text)
+                if node.obj is not None:
+                    # Minus the trailing newlines, which separate this object from the next and are
+                    # not part of what a rewrite replaces.
+                    spans[id(node.obj)] = SourceSpan(offset, offset + len(node.text.rstrip("\n")))
+                offset += length
+            self._spans = spans
+        return self._spans.get(id(obj))
 
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""

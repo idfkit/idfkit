@@ -40,6 +40,27 @@ class CSTNode:
     obj: IDFObject | None = field(default=None, repr=False)
 
 
+@dataclass(frozen=True, slots=True)
+class SourceSpan:
+    """A half-open range of :attr:`IDFDocument.raw_text`, ``end`` exclusive.
+
+    What :meth:`IDFDocument.region_of` answers with. A frozen record rather than a tuple so that a
+    reader cannot transpose the two offsets, and so that anything added beside them later is not a
+    breaking change.
+
+    Named a span rather than a region because in a building energy library "region" reads as a
+    piece of a surface. The TypeScript core calls the same thing ``Region``, where it has meant a
+    span of the syntax layer since that reader was written.
+
+    Attributes:
+        start: Offset of the first character, counting from zero.
+        end: Offset one past the last character.
+    """
+
+    start: int
+    end: int
+
+
 @dataclass(slots=True)
 class DocumentCST:
     """Ordered list of CST nodes representing an entire IDF source file.

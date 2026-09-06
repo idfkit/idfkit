@@ -13,7 +13,7 @@ from typing import Any, Generic, TypeVar
 from ._compat import EppyDocumentMixin
 from ._generated_types import *  # noqa: F403
 from ._generated_types import _ObjectTypeMap
-from .cst import DocumentCST
+from .cst import DocumentCST, SourceSpan
 from .introspection import ObjectDescription
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
@@ -122,6 +122,34 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             >>> nothing_was_read = list(model.changed_objects()) == list(model.all_objects)
             >>> nothing_was_read  # so every object is one a write has to build
             True
+        """
+    def region_of(self, obj: IDFObject) -> SourceSpan | None:
+        """Where *obj*'s characters sit in :attr:`raw_text`, or ``None`` if they sit nowhere.
+
+        ``None`` for an object added since the read and for a document read without
+        ``preserve_formatting=True``.
+
+        This is what makes :meth:`changed_objects` usable. Turning an edit into the smallest
+        possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
+        each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
+        file and compare, which is the work :meth:`changed_objects` exists to avoid.
+
+        The range is where the object WAS, and stays answerable after it changes. That is the case
+        it is for: the objects worth locating are the ones being rewritten.
+
+        **Where the replacement text comes from is not settled here.** A preserving write hands the
+        formatter the object's own source, so text produced any other way differs from what
+        :func:`~idfkit.writers.write_idf` would have produced for the same object: the author's
+        units and notes come back as generated labels. A consumer that needs the two to agree takes
+        the whole file from ``write_idf``. That gap is open, and it is recorded rather than papered
+        over.
+
+        The end of the range excludes whatever separated this object from the next, because that is
+        what a preserving write leaves in place. It INCLUDES a comment on the terminator's own line,
+        which is the last field's comment and is rewritten with it.
+
+        Offsets rather than a line and column: a consumer wanting the rendering has the text to
+        compute it from, while going the other way costs a scan.
         """
 
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:

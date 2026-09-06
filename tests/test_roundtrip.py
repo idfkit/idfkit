@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -935,3 +936,84 @@ class TestCommentColumn:
 
         assert markers
         assert set(markers) == {29}
+
+
+class TestRegionOf:
+    """Where an object's characters were.
+
+    :meth:`IDFDocument.changed_objects` says WHICH objects a write will rewrite. Without saying
+    where the old ones are, a consumer building the smallest possible change has to write the whole
+    file and compare, which is the work that method exists to avoid. Found by the language server
+    team reading the branch before it merged.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Building,\n"
+        "  My Building,   !- Name\n"
+        "  0.0;           !- North Axis {deg}\n"
+        "\n"
+        "Timestep, 4;\n"
+    )
+
+    def _doc(self, tmp_path: Path, *, preserve: bool = True):
+        idf_path = tmp_path / "region.idf"
+        idf_path.write_text(self.SOURCE)
+        return parse_idf(idf_path, preserve_formatting=preserve)
+
+    def test_it_locates_an_object_that_has_not_changed(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert doc.raw_text[span.start : span.end] == (
+            "Building,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}"
+        )
+
+    def test_it_still_locates_the_object_after_it_changes(self, tmp_path: Path) -> None:
+        """The case it is for: the objects worth locating are the ones being rewritten."""
+        doc = self._doc(tmp_path)
+        building = doc["Building"].first()
+        before = doc.region_of(building)
+        building.north_axis = 42
+
+        assert doc.region_of(building) == before
+        assert building in list(doc.changed_objects())
+
+    def test_it_reaches_past_the_semicolon_to_the_comment_the_writer_replaces(self, tmp_path: Path) -> None:
+        """A comment on the terminator's own line is the last field's comment and is rewritten with
+        it. A range stopping at the semicolon would leave it behind, describing a field that had
+        just moved."""
+        doc = self._doc(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert "!- North Axis {deg}" in doc.raw_text[span.start : span.end]
+
+    def test_it_stops_before_what_separates_one_object_from_the_next(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert not doc.raw_text[span.start : span.end].endswith("\n")
+
+    def test_it_answers_nothing_for_an_object_added_since_the_read(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+
+        assert doc.region_of(doc.add("Zone", "Late Arrival")) is None
+
+    def test_it_answers_nothing_without_preserve_formatting(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path, preserve=False)
+
+        assert doc.region_of(doc["Building"].first()) is None
+
+    def test_the_spans_do_not_overlap_and_run_in_source_order(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+        spans = [s for s in (doc.region_of(o) for o in doc.all_objects) if s is not None]
+
+        assert len(spans) == 3
+        assert all(b.start >= a.end for a, b in pairwise(spans))
