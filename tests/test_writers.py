@@ -814,17 +814,22 @@ class TestWriterDefaultsArePinned:
                 checked += 1
         assert checked > 0
 
-    def test_the_version_line_pads_to_twenty_seven_not_thirty(self, tmp_path: Path) -> None:
-        """The one line that does not go through `ljust(30)`.
+    def test_the_version_line_keeps_its_fixed_gap(self, tmp_path: Path) -> None:
+        """The one line that does not go through the field loop, and not a column at all.
 
-        `IDFWriter` writes the Version object by hand with a literal run of spaces rather than
-        through the field loop, so its comment lands at column 27. Pinned because it is a real
-        quirk of the current output and the comment-column control must not quietly regularise it:
-        that would change the first line of every file this writer has ever produced.
+        `IDFWriter` writes the Version object by hand with a literal run of twenty spaces, so its
+        marker drifts with the length of the version identifier: 26 after `9.0`, 27 after `26.1`,
+        28 after `9.0.1`. Pinned as the GAP rather than as a column, because calling it a column
+        was what made it look aligned when it never was.
+
+        Kept because regularising it would move the first line of every file this writer has
+        produced, and because a preserving write never reaches this path.
         """
         text = write_idf(self._model(tmp_path))
 
         version_line = next(ln for ln in text.splitlines() if "Version Identifier" in ln)
+        assert version_line[: version_line.find("!-")].endswith(" " * 20)
+        # And with this fixture's `26.1`, that gap lands at 27 rather than the configured 29.
         assert version_line.find("!-") == 27
 
     def test_objects_are_sorted_by_type_with_version_first(self, tmp_path: Path) -> None:

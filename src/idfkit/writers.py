@@ -370,6 +370,29 @@ def save_epjson(
     logger.info("Wrote epJSON (%d objects) to %s", len(doc), path)
 
 
+def render_cst_node(
+    doc: IDFDocument[bool],
+    node: CSTNode,
+    *,
+    field_comments: FieldComments = "preserve",
+) -> str:
+    """One anchored node's object, rendered the way a preserving write renders it.
+
+    The node's own text goes with it: the formatter reuses that object's field comments rather than
+    generating new ones, which is the whole reason a rewritten object keeps the author's units and
+    notes.
+
+    Shared with :meth:`IDFDocument.render_object` so a consumer splicing one object into the range
+    it came from gets the bytes a whole write would have put there. Two constructions of the
+    formatter would be two answers to that question, and `field_comments` already had to be threaded
+    through this path by hand once.
+
+    No trailing separator: what ran between this object and the next is the caller's to keep.
+    """
+    formatter = IDFWriter(doc, output_type="standard", field_comments=field_comments)
+    return formatter.format_object(node.obj, node.text) if node.obj is not None else node.text
+
+
 def _emit_cst_node(
     node: CSTNode,
     formatter: IDFWriter,
@@ -399,7 +422,7 @@ def _emit_cst_node(
         # the end of whatever separated it from the next object, so an object the author left one
         # newline after, which is any object at the end of a file, gained a blank line every time it
         # was reformatted.
-        parts.append(node.text[len(node.text.rstrip("\n")) :] or "\n\n")
+        parts.append(node.separator or "\n\n")
 
 
 @dataclass(frozen=True, slots=True)
@@ -572,9 +595,15 @@ class IDFWriter:
         if self._output_type == "compressed":
             return [f"Version,{version_identifier};"]
         if self._output_type == "standard":
-            # Its comment lands at column 27 at the default indent rather than at `comment_column`.
-            # The literal run of spaces is kept so that default output is unchanged; only the indent
-            # moves when the caller moves it.
+            # A fixed twenty-space GAP, not a column, which is the one line in a formatted file whose
+            # `!-` does not align with the rest. The distinction is not pedantic: the gap puts the
+            # marker at 26 after `9.0`, 27 after `26.1` and 28 after `9.0.1`, so it drifts with the
+            # length of the version string while every other line holds `comment_column`.
+            #
+            # Kept as a literal anyway, and deliberately. Aligning it would move the first line of
+            # every file this writer has ever produced, and this path is the FORMATTING one: a
+            # preserving write never reaches here, so the seam it leaves is in output nobody is
+            # comparing against a source. Only the indent moves when the caller moves it.
             return ["Version,", f"{pad}{version_identifier};                    !- Version Identifier", ""]
         return ["Version,", f"{pad}{version_identifier};", ""]
 
@@ -698,6 +727,12 @@ class IDFWriter:
         #
         # *keep_at_least* is non-zero only on the preserving path. A write with no author behind it
         # trims as it always has, because there is nothing there to be faithful to.
+        #
+        # Counted in VALUES, name included, because an annotation is produced for the name too. The
+        # TypeScript core states the same rule in a different index space, as an index into the
+        # fixed fields with the name subtracted out. Both are right against their own annotations
+        # and neither would notice if the other's convention moved, so a change to either belongs
+        # in both.
         while len(values) > max(1, keep_at_least) and values[-1] == "":
             values.pop()
             comments.pop()
@@ -749,18 +784,20 @@ class IDFWriter:
             open_line = ""
             open_comment = ""
 
+        if self._output_type != "standard":
+            # nocomment: one value per line, as this writer has always emitted it, and none of the
+            # annotations apply. Hoisted out of the field loop rather than tested per field, which
+            # also retires the subtlety that used to carry it: the type name is the line still open
+            # when the loop starts, so this path depended on the first `flush()` emitting it and on
+            # every later one being a no-op. That dependence cost a regression once already.
+            last = len(values) - 1
+            body = (f"{pad}{v}{';' if i == last else ','}" for i, v in enumerate(values))
+            return "\n".join([open_line, *body])
+
         for i, (value, comment) in enumerate(zip(values, comments, strict=False)):
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
             annotation = annotations[i] if i < len(annotations) else None
-
-            if self._output_type != "standard":
-                # nocomment: one value per line, as this writer has always emitted it. The flush is
-                # what puts the type name out, since it is the line still open at this point; after
-                # the first field it is a no-op.
-                flush()
-                lines.append(f"{pad}{value}{terminator}")
-                continue
 
             # No annotation means no author to be faithful to, so one value per line. Field 0 is
             # the one that decides whether the object opens on the type name's own line.

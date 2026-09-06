@@ -938,6 +938,25 @@ class TestCommentColumn:
         assert set(markers) == {29}
 
 
+COMPOSING = (
+    "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}\n\nTimestep, 4;\n"
+)
+"""The file the three composing accessors are exercised against.
+
+``changed_objects``, ``region_of`` and ``render_object`` are one capability in three names, and they
+are tested against one text so a change to it cannot leave two suites quietly asserting against
+different files while both pass. The author's unit on the terminator line is the load bearing part:
+it is what a rewrite used to destroy and what the span has to reach past.
+"""
+
+
+def composing(tmp_path: Path, *, preserve: bool = True):
+    """Read :data:`COMPOSING` from disk, with or without the retained source."""
+    idf_path = tmp_path / "composing.idf"
+    idf_path.write_text(COMPOSING)
+    return parse_idf(idf_path, preserve_formatting=preserve)
+
+
 class TestRegionOf:
     """Where an object's characters were.
 
@@ -947,23 +966,8 @@ class TestRegionOf:
     team reading the branch before it merged.
     """
 
-    SOURCE = (
-        "Version, 26.1.0;\n"
-        "\n"
-        "Building,\n"
-        "  My Building,   !- Name\n"
-        "  0.0;           !- North Axis {deg}\n"
-        "\n"
-        "Timestep, 4;\n"
-    )
-
-    def _doc(self, tmp_path: Path, *, preserve: bool = True):
-        idf_path = tmp_path / "region.idf"
-        idf_path.write_text(self.SOURCE)
-        return parse_idf(idf_path, preserve_formatting=preserve)
-
     def test_it_locates_an_object_that_has_not_changed(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         span = doc.region_of(doc["Building"].first())
 
         assert span is not None
@@ -974,7 +978,7 @@ class TestRegionOf:
 
     def test_it_still_locates_the_object_after_it_changes(self, tmp_path: Path) -> None:
         """The case it is for: the objects worth locating are the ones being rewritten."""
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         building = doc["Building"].first()
         before = doc.region_of(building)
         building.north_axis = 42
@@ -986,7 +990,7 @@ class TestRegionOf:
         """A comment on the terminator's own line is the last field's comment and is rewritten with
         it. A range stopping at the semicolon would leave it behind, describing a field that had
         just moved."""
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         span = doc.region_of(doc["Building"].first())
 
         assert span is not None
@@ -994,7 +998,7 @@ class TestRegionOf:
         assert "!- North Axis {deg}" in doc.raw_text[span.start : span.end]
 
     def test_it_stops_before_what_separates_one_object_from_the_next(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         span = doc.region_of(doc["Building"].first())
 
         assert span is not None
@@ -1002,17 +1006,17 @@ class TestRegionOf:
         assert not doc.raw_text[span.start : span.end].endswith("\n")
 
     def test_it_answers_nothing_for_an_object_added_since_the_read(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
 
         assert doc.region_of(doc.add("Zone", "Late Arrival")) is None
 
     def test_it_answers_nothing_without_preserve_formatting(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path, preserve=False)
+        doc = composing(tmp_path, preserve=False)
 
         assert doc.region_of(doc["Building"].first()) is None
 
     def test_the_spans_do_not_overlap_and_run_in_source_order(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         spans = [s for s in (doc.region_of(o) for o in doc.all_objects) if s is not None]
 
         assert len(spans) == 3
@@ -1027,25 +1031,10 @@ class TestRenderObject:
     keep the author's comments, and a caller who does not have that text gets generated labels.
     """
 
-    SOURCE = (
-        "Version, 26.1.0;\n"
-        "\n"
-        "Building,\n"
-        "  My Building,   !- Name\n"
-        "  0.0;           !- North Axis {deg}\n"
-        "\n"
-        "Timestep, 4;\n"
-    )
-
-    def _doc(self, tmp_path: Path, *, preserve: bool = True):
-        idf_path = tmp_path / "render.idf"
-        idf_path.write_text(self.SOURCE)
-        return parse_idf(idf_path, preserve_formatting=preserve)
-
     def test_it_keeps_the_unit_the_bare_formatter_drops(self, tmp_path: Path) -> None:
         from idfkit.writers import IDFWriter
 
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         building = doc["Building"].first()
         building.north_axis = 42
 
@@ -1061,7 +1050,7 @@ class TestRenderObject:
         If this ever fails, an editor built on them is silently writing a different file from the
         one ``write_idf`` writes.
         """
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
         doc["Building"].first().north_axis = 42
         doc["Timestep"].first().number_of_timesteps_per_hour = 6
 
@@ -1091,14 +1080,14 @@ class TestRenderObject:
         assert "!- Terrain" in (doc.render_object(building, field_comments="generate") or "")
 
     def test_it_ends_where_the_range_ends(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
 
         rendered = doc.render_object(doc["Building"].first())
         assert rendered is not None
         assert not rendered.endswith("\n")
 
     def test_it_answers_nothing_for_an_object_the_source_does_not_hold(self, tmp_path: Path) -> None:
-        doc = self._doc(tmp_path)
+        doc = composing(tmp_path)
 
         assert doc.render_object(doc.add("Zone", "Late Arrival")) is None
-        assert self._doc(tmp_path, preserve=False).render_object(doc["Building"].first()) is None
+        assert composing(tmp_path, preserve=False).render_object(doc["Building"].first()) is None

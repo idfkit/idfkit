@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat import EppyDocumentMixin
-from .cst import DocumentCST, SourceSpan
+from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
@@ -142,7 +142,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
     _cst: DocumentCST | None
-    _spans: dict[int, SourceSpan] | None
+    _spans: dict[int, tuple[SourceSpan, CSTNode]] | None
     _raw_text: str | None
     """How many objects the document held when a preserving read finished.
 
@@ -183,7 +183,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._strict = strict
         self._cst: DocumentCST | None = None
         # Built once on the first ask. The retained tree does not change after the read.
-        self._spans: dict[int, SourceSpan] | None = None
+        self._spans: dict[int, tuple[SourceSpan, CSTNode]] | None = None
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
 
@@ -1171,20 +1171,30 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Offsets rather than a line and column: a consumer wanting the rendering has the text to
         compute it from, while going the other way costs a scan.
         """
-        if self._cst is None:
-            return None
+        found = self._anchored().get(id(obj))
+        return None if found is None else found[0]
+
+    def _anchored(self) -> dict[int, tuple[SourceSpan, CSTNode]]:
+        """Every anchored object's span and its node, indexed by identity and built once.
+
+        One pass, because both accessors want the same walk: :meth:`region_of` wants the span and
+        :meth:`render_object` wants the node's text. Each doing its own scan made the loop both
+        their docstrings recommend, over every changed object, quadratic in the size of the file.
+
+        Safe to keep, because the tree does not change after the read. An object added since is
+        absent from it, which is the answer both accessors owe for one.
+        """
         if self._spans is None:
-            spans: dict[int, SourceSpan] = {}
+            spans: dict[int, tuple[SourceSpan, CSTNode]] = {}
             offset = 0
-            for node in self._cst.nodes:
-                length = len(node.text)
+            for node in self._cst.nodes if self._cst is not None else ():
                 if node.obj is not None:
-                    # Minus the trailing newlines, which separate this object from the next and are
-                    # not part of what a rewrite replaces.
-                    spans[id(node.obj)] = SourceSpan(offset, offset + len(node.text.rstrip("\n")))
-                offset += length
+                    # The body alone. What separates this object from the next is not part of what
+                    # a rewrite replaces, and `CSTNode` draws that line once for everyone.
+                    spans[id(node.obj)] = (SourceSpan(offset, offset + node.body_length), node)
+                offset += len(node.text)
             self._spans = spans
-        return self._spans.get(id(obj))
+        return self._spans
 
     def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
         """*obj*, rendered exactly as a preserving write would render it.
@@ -1211,17 +1221,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         that line, and what follows separates one object from the next, which a write leaves alone.
         """
         # Local, because writers imports this module.
-        from .writers import IDFWriter
+        from .writers import render_cst_node
 
-        if self._cst is None:
+        found = self._anchored().get(id(obj))
+        if found is None:
             return None
-        for node in self._cst.nodes:
-            if node.obj is obj:
-                # The same construction `_write_idf_lossless` uses, which is the only path that can
-                # reach this text.
-                formatter = IDFWriter(self, output_type="standard", field_comments=field_comments)
-                return formatter.format_object(obj, node.text)
-        return None
+        # The cast is the generated stub, not a doubt about the type. `document.pyi` shadows this
+        # module for a type checker, so the `IDFDocument` the writer is annotated with is the stub's
+        # class while `self` here is the runtime one, and the two are not assignable in either
+        # direction. Nothing outside this module hits it: every other caller reaches the writer
+        # holding the stub's type already, which is why this is the first call from here to there.
+        return render_cst_node(cast("Any", self), found[1], field_comments=field_comments)
 
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""
