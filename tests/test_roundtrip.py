@@ -803,3 +803,69 @@ class TestCommentsOnAReformattedObject:
         # The comment lands on the field its delimiter closed, and the two before it stay bare.
         assert "!- three fields, one comment" in written
         assert "!- and another" in written
+
+
+class TestLineGrouping:
+    """The line the author put a value on.
+
+    21.5% of the statements in the 693 EnergyPlus 22.1.0 example files write several values to a
+    line, and 690 of those files contain at least one. Writing one value per line regardless turns a
+    four-line surface into twelve, which is the most visible thing a reformat does to geometry.
+    """
+
+    def test_values_the_author_grouped_stay_grouped(self, tmp_path: Path) -> None:
+        source = (
+            "Version, 26.1.0;\n"
+            "\n"
+            "BuildingSurface:Detailed,\n"
+            "  S1, Wall, C1, Z1, , Outdoors, , SunExposed, WindExposed, , ,\n"
+            "  0, 0, 4.572,   !- X,Y,Z ==> Vertex 1 {m}\n"
+            "  0, 0, 0;       !- X,Y,Z ==> Vertex 2 {m}\n"
+        )
+        idf_path = tmp_path / "grouped.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["BuildingSurface:Detailed"]["S1"].sun_exposure = "NoSun"
+
+        written = write_idf(doc)
+
+        assert len(written.split("\n")) == len(source.split("\n"))
+        assert re.search(r"0, 0, 4\.572,\s+!- X,Y,Z ==> Vertex 1 \{m\}", written)
+
+    def test_an_object_written_on_one_line_stays_on_one_line(self, tmp_path: Path) -> None:
+        """11.3% of statements, and the case that surprises on a file with no geometry in it."""
+        source = "Version, 26.1.0;\n\nTimestep,4;\n"
+        idf_path = tmp_path / "oneline.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        written = write_idf(doc)
+
+        assert len(written.split("\n")) == len(source.split("\n"))
+        assert "Timestep, 6;" in written
+
+    def test_an_object_at_the_end_gains_no_blank_line(self, tmp_path: Path) -> None:
+        """A node's text runs to whatever separated it from the next object, which for the last
+        object is one newline. Appending a fixed two grew the file on every save."""
+        source = "Version, 26.1.0;\n\nTimestep,4;\n"
+        idf_path = tmp_path / "trailing.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        assert not write_idf(doc).endswith("\n\n")
+
+    def test_nocomment_output_still_reparses(self, tmp_path: Path) -> None:
+        """The type name is the line still open when the field loop starts, so a path that skips
+        the flush emits it last and produces a file that does not load."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        written = write_idf(doc, "nocomment")
+        out = tmp_path / "out.idf"
+        out.write_text(written)
+
+        assert written.startswith("!-Generator") or written.lstrip().startswith("Version")
+        assert len(parse_idf(out)) == len(doc)
