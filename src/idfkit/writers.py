@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -40,6 +41,17 @@ OutputType = Literal["standard", "nocomment", "compressed"]
 #:
 #: `"sorted"` is the default for this library's IDF writer and does not move (FR-017).
 Ordering = Literal["sorted", "source"]
+
+#: What to do about a field the author deliberately left without a comment.
+#:
+#: Only meaningful on the preserving path, which is the only path that knows what the author wrote.
+#: ``"preserve"`` leaves a bare field bare, because absence is as much a thing the author wrote as
+#: the words are. ``"generate"`` labels it, for a caller who wants the file annotated.
+#:
+#: Neither setting touches the author's own comment lines. A comment between two objects is carried
+#: by the text between them, and a comment on its own line inside an object is emitted with the
+#: field below it, so asking for labels adds them and never costs a line.
+FieldComments = Literal["preserve", "generate"]
 
 #: The two-space indent this writer has always used. The other language uses four.
 DEFAULT_INDENT = 2
@@ -71,6 +83,7 @@ def write_idf(
     comment_column: int = DEFAULT_COMMENT_COLUMN,
     ordering: Ordering = "sorted",
     version_first: bool = True,
+    field_comments: FieldComments = "preserve",
 ) -> str:
     """
     Serialize a document to IDF text.
@@ -94,9 +107,22 @@ def write_idf(
             ``preserve_formatting=True``. When ``None`` (the default),
             automatically uses lossless output if a CST is available and
             *output_type* is ``"standard"``.
+
+            Cheapest where it is used: a write that reproduces most of the
+            file copies text rather than building it. It CROSSES OVER once
+            most objects have changed, because this path renders each of
+            them AND walks the tiling, which is more work than formatting
+            alone. On a 13 MB model with every object edited it is roughly
+            four times slower than a formatting write. Nothing to guard
+            against, since an edit touches a handful of objects and a whole
+            model rewrite is what ``preserve_formatting=False`` is for, but
+            worth knowing before timing the wrong one.
         indent: Spaces before each field line. Defaults to the two this
             writer has always used.
-        comment_column: Column the ``!-`` field comments are padded to.
+        comment_column: Column the ``!-`` field comments are aligned to, counting
+            from 1 as an editor does. The default puts the marker where EnergyPlus
+            itself puts it, which is what keeps a rewritten object flush with the
+            untouched objects around it.
             Defaults to 30. A value longer than the column pushes its
             comment right rather than being truncated.
         ordering: ``"sorted"`` to write object types in alphabetical order,
@@ -175,7 +201,7 @@ def write_idf(
         raise ValueError(msg)
 
     if use_preserve and doc.cst is not None and not formatting_requested:
-        content = _write_idf_lossless(doc)
+        content = _write_idf_lossless(doc, field_comments)
     else:
         writer = IDFWriter(
             doc,
@@ -354,6 +380,29 @@ def save_epjson(
     logger.info("Wrote epJSON (%d objects) to %s", len(doc), path)
 
 
+def render_cst_node(
+    doc: IDFDocument[bool],
+    node: CSTNode,
+    *,
+    field_comments: FieldComments = "preserve",
+) -> str:
+    """One anchored node's object, rendered the way a preserving write renders it.
+
+    The node's own text goes with it: the formatter reuses that object's field comments rather than
+    generating new ones, which is the whole reason a rewritten object keeps the author's units and
+    notes.
+
+    Shared with :meth:`IDFDocument.render_object` so a consumer splicing one object into the range
+    it came from gets the bytes a whole write would have put there. Two constructions of the
+    formatter would be two answers to that question, and `field_comments` already had to be threaded
+    through this path by hand once.
+
+    No trailing separator: what ran between this object and the next is the caller's to keep.
+    """
+    formatter = IDFWriter(doc, output_type="standard", field_comments=field_comments)
+    return formatter.format_object(node.obj, node.text) if node.obj is not None else node.text
+
+
 def _emit_cst_node(
     node: CSTNode,
     formatter: IDFWriter,
@@ -375,11 +424,94 @@ def _emit_cst_node(
     if obj.source_text is not None:
         parts.append(obj.source_text)
     else:
-        parts.append(formatter.format_object(obj))
-        parts.append("\n\n")
+        # The node keeps the text this object was READ from even after the object was changed, which
+        # is what lets the reformatted output carry the author's own comments rather than rebuilt
+        # ones. Only the values are re-rendered.
+        parts.append(formatter.format_object(obj, node.text))
+        # And the object's own trailing blank lines, rather than a fixed two. A node's text runs to
+        # the end of whatever separated it from the next object, so an object the author left one
+        # newline after, which is any object at the end of a file, gained a blank line every time it
+        # was reformatted.
+        parts.append(node.separator or "\n\n")
 
 
-def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
+@dataclass(frozen=True, slots=True)
+class FieldAnnotation:
+    """What the author wrote around one field.
+
+    ``before`` are comment lines standing on their own above the field, in order, exactly as
+    written. They live INSIDE the object, so unlike a comment between two objects they are not
+    carried by the text around it and are lost the moment the object is reformatted unless they are
+    emitted with the field below them.
+
+    ``trailing`` is the comment after the field's delimiter on the same line, or ``None`` when the
+    author left the field bare. Bare is a thing the author wrote, and telling it apart from "this
+    field had no author" is the whole reason this carries ``None`` rather than a label.
+    """
+
+    before: tuple[str, ...]
+    trailing: str | None
+    starts_line: bool = True
+    """Whether the author began a new line with this field.
+
+    False for the second and third coordinate of a vertex written ``0,0,4.572,`` on one line.
+    Writing one value per line regardless turns a four-line surface into twelve, which is the most
+    visible thing a reformat does to a geometry file: 21.5 percent of the statements in the 693
+    EnergyPlus example files group values this way, and 690 of those files contain at least one.
+    """
+
+
+def _annotations(source_text: str) -> list[FieldAnnotation]:
+    """What the author wrote around each field of an object, positionally.
+
+    A scan rather than a walk over lines, because several fields may share one line: a surface's
+    vertices are routinely written three to a line, and a line-counting version attaches every
+    comment to the wrong field the moment a file does that.
+
+    Delimiters are what advance the position. The first closes the type name, the second closes
+    field 0, and the *d*-th closes field *d - 2*, which is the same positional order
+    :meth:`IDFWriter._get_field_values_and_comments` emits.
+    """
+    annotations: list[FieldAnnotation] = []
+    pending: list[str] = []
+    delimiters = 0
+    index = 0
+    line_start = 0
+    # Whether a line break has been passed since the previous field closed, which is what tells a
+    # value the author put on a line of its own from one they wrote beside the value before it.
+    broke_line = True
+    length = len(source_text)
+
+    while index < length:
+        char = source_text[index]
+        if char == "!":
+            stop = source_text.find("\n", index)
+            if stop < 0:
+                stop = length
+            comment = source_text[index:stop].rstrip()
+            if source_text[line_start:index].strip() == "":
+                # Nothing but whitespace before it, so the comment is a line of its own and belongs
+                # to the field below rather than to the one above.
+                pending.append(comment)
+            elif annotations:
+                last = annotations[-1]
+                annotations[-1] = FieldAnnotation(last.before, comment, last.starts_line)
+            index = stop
+            continue
+        if char == "\n":
+            line_start = index + 1
+            broke_line = True
+        elif char in ",;":
+            delimiters += 1
+            if delimiters >= 2:
+                annotations.append(FieldAnnotation(tuple(pending), None, broke_line))
+                pending = []
+            broke_line = False
+        index += 1
+    return annotations
+
+
+def _write_idf_lossless(doc: IDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
     """Produce IDF output that preserves original formatting via the CST.
 
     Unmodified objects are emitted verbatim.  Mutated or new objects use
@@ -391,7 +523,7 @@ def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
         raise ValueError(msg)
 
     parts: list[str] = []
-    formatter = IDFWriter(doc, output_type="standard")
+    formatter = IDFWriter(doc, output_type="standard", field_comments=field_comments)
     emitted: set[int] = set()
     live_ids = {id(o) for o in doc.all_objects}
 
@@ -440,8 +572,10 @@ class IDFWriter:
         comment_column: int = DEFAULT_COMMENT_COLUMN,
         ordering: Ordering = "sorted",
         version_first: bool = True,
+        field_comments: FieldComments = "preserve",
     ):
         self._doc = doc
+        self._field_comments = field_comments
         self._output_type = output_type
         self._indent = indent
         self._comment_column = comment_column
@@ -471,9 +605,15 @@ class IDFWriter:
         if self._output_type == "compressed":
             return [f"Version,{version_identifier};"]
         if self._output_type == "standard":
-            # Its comment lands at column 27 at the default indent rather than at `comment_column`.
-            # The literal run of spaces is kept so that default output is unchanged; only the indent
-            # moves when the caller moves it.
+            # A fixed twenty-space GAP, not a column, which is the one line in a formatted file whose
+            # `!-` does not align with the rest. The distinction is not pedantic: the gap puts the
+            # marker at 26 after `9.0`, 27 after `26.1` and 28 after `9.0.1`, so it drifts with the
+            # length of the version string while every other line holds `comment_column`.
+            #
+            # Kept as a literal anyway, and deliberately. Aligning it would move the first line of
+            # every file this writer has ever produced, and this path is the FORMATTING one: a
+            # preserving write never reaches here, so the seam it leaves is in output nobody is
+            # comparing against a source. Only the indent moves when the caller moves it.
             return ["Version,", f"{pad}{version_identifier};                    !- Version Identifier", ""]
         return ["Version,", f"{pad}{version_identifier};", ""]
 
@@ -516,7 +656,22 @@ class IDFWriter:
 
         return "\n".join(lines)
 
-    def _get_field_values_and_comments(self, obj: IDFObject) -> tuple[list[str], list[str]]:  # noqa: C901
+    def _comment_for(self, annotation: FieldAnnotation | None, label: str) -> str:
+        """The comment to write beside one field, or the empty string for none.
+
+        The author's where there is one. Where the author left the field bare, nothing, unless the
+        caller asked for a label: absence is as much a thing the author wrote as the words are.
+        Where there is no author at all, because the object gained this field, the label as always.
+        """
+        if annotation is None:
+            return f"!- {label}"
+        if annotation.trailing is not None:
+            return annotation.trailing
+        return f"!- {label}" if self._field_comments == "generate" else ""
+
+    def _get_field_values_and_comments(  # noqa: C901
+        self, obj: IDFObject, keep_at_least: int = 0
+    ) -> tuple[list[str], list[str]]:
         """Get the ordered field values and comment labels for *obj*.
 
         Storage is canonical: extensible groups live as a list of dicts under
@@ -573,37 +728,107 @@ class IDFWriter:
                         values.append(self._format_value(item.get(inner)))
                         comments.append(f"{inner.replace('_', ' ').title()}{suffix}")
 
-        # Trim trailing empty fields
-        while len(values) > 1 and values[-1] == "":
+        # Trim trailing empty fields, but never below what the author actually wrote.
+        #
+        # A field written out as a blank is as much a thing the author wrote as a field left bare of
+        # its comment, and dropping it takes the author's own ``!- Cooling Design Capacity Method``
+        # with it. A single-field edit shortened one Sizing:System from 38 lines to 22; across the
+        # 693 example files it is 20,571 lines, more than any other difference a rewrite makes.
+        #
+        # *keep_at_least* is non-zero only on the preserving path. A write with no author behind it
+        # trims as it always has, because there is nothing there to be faithful to.
+        #
+        # Counted in VALUES, name included, because an annotation is produced for the name too. The
+        # TypeScript core states the same rule in a different index space, as an index into the
+        # fixed fields with the name subtracted out. Both are right against their own annotations
+        # and neither would notice if the other's convention moved, so a change to either belongs
+        # in both.
+        while len(values) > max(1, keep_at_least) and values[-1] == "":
             values.pop()
             comments.pop()
 
         return values, comments
 
-    def format_object(self, obj: IDFObject) -> str:
-        """Convert a single object to IDF string."""
-        values, comments = self._get_field_values_and_comments(obj)
+    def format_object(self, obj: IDFObject, source_text: str | None = None) -> str:
+        """Convert a single object to IDF string.
+
+        *source_text* is the object as it was read, supplied by the preserving writer for an object
+        that has been changed. Its per-field comments are reused in place of generated ones: an edit
+        asks for the VALUES to be re-rendered and never for the comments, and rebuilding them
+        destroys whatever the schema cannot regenerate. That is the field's unit, which the
+        generated label does not carry, and any note the author wrote there.
+        """
+        annotations = _annotations(source_text) if source_text is not None else []
+        values, comments = self._get_field_values_and_comments(obj, keep_at_least=len(annotations))
         obj_type = obj.obj_type
 
         if self._output_type == "compressed":
             parts = ",".join(values)
             return f"{obj_type},{parts};"
 
-        lines: list[str] = [f"{obj_type},"]
+        lines: list[str] = []
+        pad = " " * self._indent
+
+        # A line under construction, so fields the author wrote together stay together. Flushed
+        # when the next field opens a line of its own, and once at the end.
+        #
+        # It starts as the TYPE NAME rather than the type name going straight out, so that an object
+        # the author wrote entirely on one line, ``Timestep,4;``, comes back on one line. That is
+        # 11.3 percent of the statements in the example files, and it is the case that surprises on
+        # a file with no geometry in it.
+        open_line = f"{obj_type},"
+        open_comment = ""
+
+        def flush() -> None:
+            nonlocal open_line, open_comment
+            if not open_line:
+                return
+            if open_comment:
+                # Minus one because the option is a COLUMN, counted from 1, while ljust takes a
+                # WIDTH. Passing the column as the width put every comment one place right of where
+                # the files this imitates put it. The max keeps a space after a long line.
+                width = max(self._comment_column - 1, len(open_line) + 1)
+                lines.append(open_line.ljust(width) + open_comment)
+            else:
+                lines.append(open_line)
+            open_line = ""
+            open_comment = ""
+
+        if self._output_type != "standard":
+            # nocomment: one value per line, as this writer has always emitted it, and none of the
+            # annotations apply. Hoisted out of the field loop rather than tested per field, which
+            # also retires the subtlety that used to carry it: the type name is the line still open
+            # when the loop starts, so this path depended on the first `flush()` emitting it and on
+            # every later one being a no-op. That dependence cost a regression once already.
+            last = len(values) - 1
+            body = (f"{pad}{v}{';' if i == last else ','}" for i, v in enumerate(values))
+            return "\n".join([open_line, *body])
+
         for i, (value, comment) in enumerate(zip(values, comments, strict=False)):
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
+            annotation = annotations[i] if i < len(annotations) else None
 
-            pad = " " * self._indent
-            if self._output_type == "standard":
-                field_str = f"{pad}{value}{terminator}"
-                field_str = field_str.ljust(self._comment_column)
-                field_str += f"!- {comment}"
+            # No annotation means no author to be faithful to, so one value per line. Field 0 is
+            # the one that decides whether the object opens on the type name's own line.
+            opens_line = annotation is None or annotation.starts_line
+            if opens_line:
+                flush()
+                # The author's own lines above the field, which live inside the object and are
+                # carried by nothing else.
+                if annotation is not None:
+                    lines.extend(f"{pad}{line}" for line in annotation.before)
+                open_line = f"{pad}{value}{terminator}"
             else:
-                # nocomment
-                field_str = f"{pad}{value}{terminator}"
+                open_line = f"{open_line} {value}{terminator}"
 
-            lines.append(field_str)
+            # On a line carrying several values only the last of them has a comment, which is what
+            # the author wrote and what the delimiter rule recovers.
+            chosen = self._comment_for(annotation, comment)
+            if chosen:
+                open_comment = chosen
+
+        flush()
 
         return "\n".join(lines)
 

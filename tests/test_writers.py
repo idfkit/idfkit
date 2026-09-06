@@ -792,6 +792,14 @@ class TestWriterDefaultsArePinned:
         assert all(ln.startswith("  ") and not ln.startswith("   ") for ln in field_lines)
 
     def test_comment_column_is_thirty(self, tmp_path: Path) -> None:
+        """Column 30, which is index 29, and which is where EnergyPlus itself writes it.
+
+        The default used to be applied as an INDEX, so the marker landed at 30 and every line this
+        writer produced sat one place right of the files it imitates. `1ZoneUncontrolled.idf` puts
+        `!-` at index 29 on 223 of its 231 commented lines. On a preserving write the difference is
+        the one that shows: a rewritten object's comments stood one column clear of every untouched
+        object around it, so each save left a visible seam.
+        """
         text = write_idf(self._model(tmp_path))
 
         checked = 0
@@ -801,22 +809,27 @@ class TestWriterDefaultsArePinned:
                 continue
             # Only lines the padding actually reached: a value longer than the column pushes the
             # comment right, and that overflow behaviour is itself one of the seven differences.
-            if len(line[:marker].rstrip()) < 30:
-                assert marker == 30, line
+            if len(line[:marker].rstrip()) < 29:
+                assert marker == 29, line
                 checked += 1
         assert checked > 0
 
-    def test_the_version_line_pads_to_twenty_seven_not_thirty(self, tmp_path: Path) -> None:
-        """The one line that does not go through `ljust(30)`.
+    def test_the_version_line_keeps_its_fixed_gap(self, tmp_path: Path) -> None:
+        """The one line that does not go through the field loop, and not a column at all.
 
-        `IDFWriter` writes the Version object by hand with a literal run of spaces rather than
-        through the field loop, so its comment lands at column 27. Pinned because it is a real
-        quirk of the current output and the comment-column control must not quietly regularise it:
-        that would change the first line of every file this writer has ever produced.
+        `IDFWriter` writes the Version object by hand with a literal run of twenty spaces, so its
+        marker drifts with the length of the version identifier: 26 after `9.0`, 27 after `26.1`,
+        28 after `9.0.1`. Pinned as the GAP rather than as a column, because calling it a column
+        was what made it look aligned when it never was.
+
+        Kept because regularising it would move the first line of every file this writer has
+        produced, and because a preserving write never reaches this path.
         """
         text = write_idf(self._model(tmp_path))
 
         version_line = next(ln for ln in text.splitlines() if "Version Identifier" in ln)
+        assert version_line[: version_line.find("!-")].endswith(" " * 20)
+        # And with this fixture's `26.1`, that gap lands at 27 rather than the configured 29.
         assert version_line.find("!-") == 27
 
     def test_objects_are_sorted_by_type_with_version_first(self, tmp_path: Path) -> None:

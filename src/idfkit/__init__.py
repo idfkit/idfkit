@@ -40,6 +40,7 @@ except PackageNotFoundError:
 # The conformance corpus level this release declares (FR-024), generated from
 # [tool.idfkit.conformance] in pyproject.toml so the claim and the pin stay one fact.
 from ._conformance import CONFORMANCE_LEVEL
+from .cst import SourceSpan
 
 # Core classes
 # Documentation URL builder
@@ -503,6 +504,7 @@ __all__ = [
     "SchemaManager",
     "SchemaNotFoundError",
     "SimulationError",
+    "SourceSpan",
     "UnknownObjectTypeError",
     "UnsupportedVersionError",
     "ValidationError",

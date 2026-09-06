@@ -13,12 +13,13 @@ from typing import Any, Generic, TypeVar
 from ._compat import EppyDocumentMixin
 from ._generated_types import *  # noqa: F403
 from ._generated_types import _ObjectTypeMap
-from .cst import DocumentCST
+from .cst import DocumentCST, SourceSpan
 from .introspection import ObjectDescription
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
 from .schema import EpJSONSchema
 from .simulation.config import EnergyPlusConfig
+from .writers import FieldComments
 
 Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
 
@@ -93,6 +94,88 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     @property
     def references(self) -> ReferenceGraph:
         """The reference graph for dependency tracking."""
+    def changed_objects(self) -> Iterator[IDFObject]:
+        """Every object a preserving write will write afresh rather than reproduce.
+
+        Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
+        object for a document read without it, because there is nothing to reproduce.
+
+        :attr:`raw_text` answers whether a write will preserve at all. This answers how many
+        objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
+        clears the record on every object that referred to the renamed one, so counting from your
+        own edit log reports one where the answer is nine.
+
+        **It is not "everything that will differ", and a removal is the case that separates the
+        two.** An object removed from the document is no longer in it to be yielded, so this can
+        return nothing for a write that changes the file. A consumer treating an empty result as
+        "the file is unchanged" would be wrong on every removal. To ask whether the file will
+        differ at all, compare the write with :attr:`raw_text`; ask this for how much of it is
+        being written afresh.
+
+        :attr:`IDFObject.source_text` is the same record read one object at a time, and it is the
+        retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
+        This asks the question directly.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Perimeter_ZN_1")
+            >>> nothing_was_read = list(model.changed_objects()) == list(model.all_objects)
+            >>> nothing_was_read  # so every object is one a write has to build
+            True
+        """
+    def region_of(self, obj: IDFObject) -> SourceSpan | None:
+        """Where *obj*'s characters sit in :attr:`raw_text`, or ``None`` if they sit nowhere.
+
+        ``None`` for an object added since the read and for a document read without
+        ``preserve_formatting=True``.
+
+        This is what makes :meth:`changed_objects` usable. Turning an edit into the smallest
+        possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
+        each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
+        file and compare, which is the work :meth:`changed_objects` exists to avoid.
+
+        The range is where the object WAS, and stays answerable after it changes. That is the case
+        it is for: the objects worth locating are the ones being rewritten.
+
+        **Where the replacement text comes from is not settled here.** A preserving write hands the
+        formatter the object's own source, so text produced any other way differs from what
+        :func:`~idfkit.writers.write_idf` would have produced for the same object: the author's
+        units and notes come back as generated labels. A consumer that needs the two to agree takes
+        the whole file from ``write_idf``. That gap is open, and it is recorded rather than papered
+        over.
+
+        The end of the range excludes whatever separated this object from the next, because that is
+        what a preserving write leaves in place. It INCLUDES a comment on the terminator's own line,
+        which is the last field's comment and is rewritten with it.
+
+        Offsets rather than a line and column: a consumer wanting the rendering has the text to
+        compute it from, while going the other way costs a scan.
+        """
+    def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
+        """*obj*, rendered exactly as a preserving write would render it.
+
+        The text that belongs in the range :meth:`region_of` returns, so the two compose into an
+        edit that leaves the file where :func:`~idfkit.writers.write_idf` would have left it.
+        ``None`` for an object the retained source does not hold, which is the same set
+        :meth:`region_of` declines.
+
+        :meth:`~idfkit.writers.IDFWriter.format_object` is not this, and that is the reason this
+        exists. A preserving write hands the formatter the object's own source text, so a caller
+        who does not have that text gets the author's units and notes back as generated labels:
+        ``!- North Axis {deg}`` becomes ``!- North Axis``. That is a unit lost from an engineering
+        model by an editor asked to save a file, and no docstring is a good enough guard against it.
+
+        *field_comments* is the only option, because it is the only one a preserving write honours.
+        ``indent``, ``comment_column``, ``ordering`` and ``version_first`` are refused by
+        ``write_idf`` alongside ``preserve_formatting``, and an ``output_type`` other than
+        ``"standard"`` takes precedence over preservation and sends the whole document down the
+        formatting path. Accepting any of them here would render one object on terms the surrounding
+        file was not written on, which is the divergence this method exists to prevent.
+
+        No trailing line break: the range this fills ends at the terminator, or at the comment on
+        that line, and what follows separates one object from the next, which a write leaves alone.
+        """
 
     def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]:
         """Get collection by type name (typed for dynamic string keys).

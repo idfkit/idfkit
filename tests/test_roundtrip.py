@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import re
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -656,3 +658,436 @@ class TestPreserveFormattingRefusals:
 
         assert written != IDF_WITH_COMMENTS
         assert "\n    TestZone," in written
+
+
+class TestChangedObjects:
+    """Which objects a preserving write will rewrite, asked directly.
+
+    A consumer cannot derive this from its own edit log. A rename clears the record on every object
+    that referred to the renamed one, so an editor counting its own edits reports one where the
+    answer is three here and nine on a real model.
+    """
+
+    REFERENCED = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Zone, ZONE ONE;\n"
+        "\n"
+        "BuildingSurface:Detailed,\n"
+        "  S1, Wall, C1, ZONE ONE, , Outdoors, , SunExposed, WindExposed, , ,\n"
+        "  0,0,0, 1,0,0;\n"
+        "\n"
+        "BuildingSurface:Detailed,\n"
+        "  S2, Wall, C1, ZONE ONE, , Outdoors, , SunExposed, WindExposed, , ,\n"
+        "  0,0,0, 1,0,0;\n"
+    )
+
+    def _read(self, tmp_path: Path, *, preserve: bool = True):
+        idf_path = tmp_path / "referenced.idf"
+        idf_path.write_text(self.REFERENCED)
+        return parse_idf(idf_path, preserve_formatting=preserve)
+
+    def test_nothing_is_changed_by_reading(self, tmp_path: Path) -> None:
+        assert list(self._read(tmp_path).changed_objects()) == []
+
+    def test_a_rename_changes_every_object_that_pointed_at_it(self, tmp_path: Path) -> None:
+        doc = self._read(tmp_path)
+        doc["Zone"]["ZONE ONE"].name = "RENAMED"
+
+        changed = sorted(obj.obj_type for obj in doc.changed_objects())
+
+        assert changed == ["BuildingSurface:Detailed", "BuildingSurface:Detailed", "Zone"]
+
+    def test_a_no_op_write_changes_nothing(self, tmp_path: Path) -> None:
+        doc = self._read(tmp_path)
+        zone = doc["Zone"]["ZONE ONE"]
+        zone.name = zone.name
+
+        assert list(doc.changed_objects()) == []
+
+    def test_every_object_is_changed_without_preservation(self, tmp_path: Path) -> None:
+        """There is nothing to reproduce, so a write rewrites the file entirely."""
+        doc = self._read(tmp_path, preserve=False)
+
+        assert len(list(doc.changed_objects())) == len(doc)
+
+    def test_it_agrees_with_what_the_writer_actually_reproduces(self, tmp_path: Path) -> None:
+        """The claim is only worth making if the writer honours it."""
+        doc = self._read(tmp_path)
+        doc["Zone"]["ZONE ONE"].name = "RENAMED"
+        written = write_idf(doc)
+
+        untouched = [obj for obj in doc.all_objects if obj not in list(doc.changed_objects())]
+        for obj in untouched:
+            assert obj.source_text is not None
+            assert obj.source_text in written
+
+
+class TestCommentsOnAReformattedObject:
+    """What survives when the writer rewrites an object, beyond its values.
+
+    An edit asks for the VALUES to be re-rendered. Everything else the author wrote is theirs, and
+    that includes the absence of a comment on a field they left bare.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "! a note between objects\n"
+        "Building,\n"
+        "  My Building,   !- Name\n"
+        "  ! this value came from the 2019 survey\n"
+        "  0,             !- North Axis {deg}\n"
+        "  Suburbs;\n"
+        "\n"
+        "Timestep, 6;\n"
+    )
+
+    def _edited(self, tmp_path: Path, **kwargs: object):
+        idf_path = tmp_path / "annotated.idf"
+        idf_path.write_text(self.SOURCE)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"]["My Building"].north_axis = 42
+        return write_idf(doc, **kwargs)  # pyright: ignore[reportArgumentType]
+
+    def test_a_units_annotation_survives(self, tmp_path: Path) -> None:
+        """`{deg}` is in the schema and the generated label drops it, so rebuilding loses it."""
+        assert "!- North Axis {deg}" in self._edited(tmp_path)
+
+    def test_a_comment_on_its_own_line_inside_the_object_survives(self, tmp_path: Path) -> None:
+        """The one comment nothing else carries: it is inside the object, not between two."""
+        assert "! this value came from the 2019 survey" in self._edited(tmp_path)
+
+    def test_a_comment_between_two_objects_survives(self, tmp_path: Path) -> None:
+        assert "! a note between objects" in self._edited(tmp_path)
+
+    def test_a_field_the_author_left_bare_stays_bare(self, tmp_path: Path) -> None:
+        """Absence is as much a thing the author wrote as the words are."""
+        written = self._edited(tmp_path)
+
+        assert re.search(r"Suburbs;\s*$", written, re.MULTILINE)
+        assert "!- Terrain" not in written
+
+    def test_generate_labels_a_bare_field_and_still_keeps_every_comment(self, tmp_path: Path) -> None:
+        """The escape hatch adds labels and never costs a line."""
+        written = self._edited(tmp_path, field_comments="generate")
+
+        assert "!- Terrain" in written
+        assert "! this value came from the 2019 survey" in written
+        assert "! a note between objects" in written
+        assert "!- North Axis {deg}" in written
+
+    def test_only_the_value_changed(self, tmp_path: Path) -> None:
+        written = self._edited(tmp_path)
+
+        assert "42," in written
+        assert "  0," not in written
+
+    def test_a_comment_is_attached_by_delimiter_and_not_by_line(self, tmp_path: Path) -> None:
+        """Several fields share a line in real files, and counting lines mis-attaches every comment.
+
+        The vertices of a surface are routinely written three to a line with one comment for the
+        triple. That comment follows the third delimiter, so it belongs to the third field.
+        """
+        idf_path = tmp_path / "packed.idf"
+        idf_path.write_text(
+            "Version, 26.1.0;\n"
+            "\n"
+            "Building,\n"
+            "  Packed, City, 0.04,   !- three fields, one comment\n"
+            "  0.4;                  !- and another\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"]["Packed"].terrain = "Suburbs"
+        written = write_idf(doc)
+
+        # The comment lands on the field its delimiter closed, and the two before it stay bare.
+        assert "!- three fields, one comment" in written
+        assert "!- and another" in written
+
+
+class TestLineGrouping:
+    """The line the author put a value on.
+
+    21.5% of the statements in the 693 EnergyPlus 22.1.0 example files write several values to a
+    line, and 690 of those files contain at least one. Writing one value per line regardless turns a
+    four-line surface into twelve, which is the most visible thing a reformat does to geometry.
+    """
+
+    def test_values_the_author_grouped_stay_grouped(self, tmp_path: Path) -> None:
+        source = (
+            "Version, 26.1.0;\n"
+            "\n"
+            "BuildingSurface:Detailed,\n"
+            "  S1, Wall, C1, Z1, , Outdoors, , SunExposed, WindExposed, , ,\n"
+            "  0, 0, 4.572,   !- X,Y,Z ==> Vertex 1 {m}\n"
+            "  0, 0, 0;       !- X,Y,Z ==> Vertex 2 {m}\n"
+        )
+        idf_path = tmp_path / "grouped.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["BuildingSurface:Detailed"]["S1"].sun_exposure = "NoSun"
+
+        written = write_idf(doc)
+
+        assert len(written.split("\n")) == len(source.split("\n"))
+        assert re.search(r"0, 0, 4\.572,\s+!- X,Y,Z ==> Vertex 1 \{m\}", written)
+
+    def test_an_object_written_on_one_line_stays_on_one_line(self, tmp_path: Path) -> None:
+        """11.3% of statements, and the case that surprises on a file with no geometry in it."""
+        source = "Version, 26.1.0;\n\nTimestep,4;\n"
+        idf_path = tmp_path / "oneline.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        written = write_idf(doc)
+
+        assert len(written.split("\n")) == len(source.split("\n"))
+        assert "Timestep, 6;" in written
+
+    def test_an_object_at_the_end_gains_no_blank_line(self, tmp_path: Path) -> None:
+        """A node's text runs to whatever separated it from the next object, which for the last
+        object is one newline. Appending a fixed two grew the file on every save."""
+        source = "Version, 26.1.0;\n\nTimestep,4;\n"
+        idf_path = tmp_path / "trailing.idf"
+        idf_path.write_text(source)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        assert not write_idf(doc).endswith("\n\n")
+
+    def test_nocomment_output_still_reparses(self, tmp_path: Path) -> None:
+        """The type name is the line still open when the field loop starts, so a path that skips
+        the flush emits it last and produces a file that does not load."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        written = write_idf(doc, "nocomment")
+        out = tmp_path / "out.idf"
+        out.write_text(written)
+
+        assert written.startswith("!-Generator") or written.lstrip().startswith("Version")
+        assert len(parse_idf(out)) == len(doc)
+
+
+class TestFieldsWrittenAsBlanks:
+    """A field the author wrote out as an explicit blank.
+
+    The writer stops at the last field that is SET, so a run of commas the author wrote is dropped
+    and their field-name comments go with them. A single-field edit took one Sizing:System from 38
+    lines to 22; across the 693 example files it is 20,571 lines, more than any other difference a
+    rewrite makes. A field written out as a blank is as much a thing the author wrote as a field
+    left bare of its comment, which is the rule this path already follows.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Building,\n"
+        "  My Building,             !- Name\n"
+        "  0.0,                     !- North Axis {deg}\n"
+        "  ,                        !- Terrain\n"
+        "  ,                        !- Loads Convergence Tolerance Value\n"
+        "  ;                        !- Solar Distribution\n"
+    )
+
+    def _edited(self, tmp_path: Path, *, preserve: bool):
+        idf_path = tmp_path / "blanks.idf"
+        idf_path.write_text(self.SOURCE)
+        doc = parse_idf(idf_path, preserve_formatting=preserve)
+        doc["Building"].first().north_axis = 42
+        return doc
+
+    def test_they_survive_an_edit_with_their_comments(self, tmp_path: Path) -> None:
+        written = write_idf(self._edited(tmp_path, preserve=True))
+
+        assert len(written.split("\n")) == len(self.SOURCE.split("\n"))
+        assert "!- Terrain" in written
+        assert "!- Solar Distribution" in written
+
+    def test_they_are_still_trimmed_where_there_is_no_author(self, tmp_path: Path) -> None:
+        """A document read without preservation has nothing to reproduce, so the ordinary writer's
+        habit applies and a run of bare commas stays out of the output."""
+        assert "!- Solar Distribution" not in write_idf(self._edited(tmp_path, preserve=False))
+
+
+class TestCommentColumn:
+    def test_the_marker_goes_where_energyplus_puts_it(self, tmp_path: Path) -> None:
+        """Column 30, which is index 29.
+
+        `1ZoneUncontrolled.idf` writes `!-` at index 29 on 223 of its 231 commented lines. The
+        option is a COLUMN, counted from 1, and was being applied as an index, so every line this
+        writer produced sat one place right of the files it imitates. On a preserving write that is
+        the difference that shows: a rewritten object's comments stood one column clear of every
+        untouched object around it, so each save left a visible seam.
+        """
+        idf_path = tmp_path / "column.idf"
+        # The author's own comments, since a field left bare stays bare on this path and a source
+        # without them would give the padding nothing to align.
+        idf_path.write_text(
+            "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"].first().north_axis = 42
+
+        markers = [line.find("!-") for line in write_idf(doc).split("\n") if line.find("!-") > 0]
+
+        assert markers
+        assert set(markers) == {29}
+
+
+COMPOSING = (
+    "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}\n\nTimestep, 4;\n"
+)
+"""The file the three composing accessors are exercised against.
+
+``changed_objects``, ``region_of`` and ``render_object`` are one capability in three names, and they
+are tested against one text so a change to it cannot leave two suites quietly asserting against
+different files while both pass. The author's unit on the terminator line is the load bearing part:
+it is what a rewrite used to destroy and what the span has to reach past.
+"""
+
+
+def composing(tmp_path: Path, *, preserve: bool = True):
+    """Read :data:`COMPOSING` from disk, with or without the retained source."""
+    idf_path = tmp_path / "composing.idf"
+    idf_path.write_text(COMPOSING)
+    return parse_idf(idf_path, preserve_formatting=preserve)
+
+
+class TestRegionOf:
+    """Where an object's characters were.
+
+    :meth:`IDFDocument.changed_objects` says WHICH objects a write will rewrite. Without saying
+    where the old ones are, a consumer building the smallest possible change has to write the whole
+    file and compare, which is the work that method exists to avoid. Found by the language server
+    team reading the branch before it merged.
+    """
+
+    def test_it_locates_an_object_that_has_not_changed(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert doc.raw_text[span.start : span.end] == (
+            "Building,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}"
+        )
+
+    def test_it_still_locates_the_object_after_it_changes(self, tmp_path: Path) -> None:
+        """The case it is for: the objects worth locating are the ones being rewritten."""
+        doc = composing(tmp_path)
+        building = doc["Building"].first()
+        before = doc.region_of(building)
+        building.north_axis = 42
+
+        assert doc.region_of(building) == before
+        assert building in list(doc.changed_objects())
+
+    def test_it_reaches_past_the_semicolon_to_the_comment_the_writer_replaces(self, tmp_path: Path) -> None:
+        """A comment on the terminator's own line is the last field's comment and is rewritten with
+        it. A range stopping at the semicolon would leave it behind, describing a field that had
+        just moved."""
+        doc = composing(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert "!- North Axis {deg}" in doc.raw_text[span.start : span.end]
+
+    def test_it_stops_before_what_separates_one_object_from_the_next(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+        span = doc.region_of(doc["Building"].first())
+
+        assert span is not None
+        assert doc.raw_text is not None
+        assert not doc.raw_text[span.start : span.end].endswith("\n")
+
+    def test_it_answers_nothing_for_an_object_added_since_the_read(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+
+        assert doc.region_of(doc.add("Zone", "Late Arrival")) is None
+
+    def test_it_answers_nothing_without_preserve_formatting(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path, preserve=False)
+
+        assert doc.region_of(doc["Building"].first()) is None
+
+    def test_the_spans_do_not_overlap_and_run_in_source_order(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+        spans = [s for s in (doc.region_of(o) for o in doc.all_objects) if s is not None]
+
+        assert len(spans) == 3
+        assert all(b.start >= a.end for a, b in pairwise(spans))
+
+
+class TestRenderObject:
+    """The text that belongs in the range :meth:`IDFDocument.region_of` returns.
+
+    Knowing WHICH objects change and WHERE the old text is buys a consumer nothing while producing
+    the new text for ONE object has no correct form. The formatter needs the object's own source to
+    keep the author's comments, and a caller who does not have that text gets generated labels.
+    """
+
+    def test_it_keeps_the_unit_the_bare_formatter_drops(self, tmp_path: Path) -> None:
+        from idfkit.writers import IDFWriter
+
+        doc = composing(tmp_path)
+        building = doc["Building"].first()
+        building.north_axis = 42
+
+        rendered = doc.render_object(building)
+        assert rendered is not None
+        assert "!- North Axis {deg}" in rendered
+        # What a consumer would have had to reach for, and what it costs.
+        assert "{deg}" not in IDFWriter(doc).format_object(building)
+
+    def test_it_splices_into_its_own_range_to_give_back_a_whole_write(self, tmp_path: Path) -> None:
+        """The claim the three names make together, pinned as one assertion.
+
+        If this ever fails, an editor built on them is silently writing a different file from the
+        one ``write_idf`` writes.
+        """
+        doc = composing(tmp_path)
+        doc["Building"].first().north_axis = 42
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        assert doc.raw_text is not None
+        spliced = doc.raw_text
+        changed = sorted(doc.changed_objects(), key=lambda o: doc.region_of(o).start, reverse=True)  # type: ignore[union-attr]
+        assert len(changed) == 2
+        for obj in changed:
+            span = doc.region_of(obj)
+            rendered = doc.render_object(obj)
+            assert span is not None
+            assert rendered is not None
+            spliced = spliced[: span.start] + rendered + spliced[span.end :]
+
+        assert spliced == write_idf(doc)
+
+    def test_it_takes_the_one_option_a_preserving_write_honours(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "bare.idf"
+        idf_path.write_text(
+            "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0,           !- North Axis {deg}\n  City;\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        building = doc["Building"].first()
+        building.north_axis = 42
+
+        assert "!- Terrain" not in (doc.render_object(building) or "")
+        assert "!- Terrain" in (doc.render_object(building, field_comments="generate") or "")
+
+    def test_it_ends_where_the_range_ends(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+
+        rendered = doc.render_object(doc["Building"].first())
+        assert rendered is not None
+        assert not rendered.endswith("\n")
+
+    def test_it_answers_nothing_for_an_object_the_source_does_not_hold(self, tmp_path: Path) -> None:
+        doc = composing(tmp_path)
+
+        assert doc.render_object(doc.add("Zone", "Late Arrival")) is None
+        assert composing(tmp_path, preserve=False).render_object(doc["Building"].first()) is None

@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._compat import EppyDocumentMixin
-from .cst import DocumentCST
+from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
@@ -37,6 +37,7 @@ else:
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
     from .simulation.config import EnergyPlusConfig
+    from .writers import FieldComments
 
 
 def _parse_version_identifier(version_str: str) -> tuple[int, int, int]:
@@ -128,6 +129,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_references",
         "_schedules_cache",
         "_schema",
+        "_spans",
         "_strict",
         "_version",
         "filepath",
@@ -140,6 +142,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
     _cst: DocumentCST | None
+    _spans: dict[int, tuple[SourceSpan, CSTNode]] | None
     _raw_text: str | None
     """How many objects the document held when a preserving read finished.
 
@@ -179,6 +182,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._schedules_cache: dict[str, IDFObject] | None = None
         self._strict = strict
         self._cst: DocumentCST | None = None
+        # Built once on the first ask. The retained tree does not change after the read.
+        self._spans: dict[int, tuple[SourceSpan, CSTNode]] | None = None
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
 
@@ -1103,6 +1108,130 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Iterate over all objects in the document."""
         for collection in self._collections.values():
             yield from collection
+
+    def changed_objects(self) -> Iterator[IDFObject]:
+        """Every object a preserving write will write afresh rather than reproduce.
+
+        Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
+        object for a document read without it, because there is nothing to reproduce.
+
+        :attr:`raw_text` answers whether a write will preserve at all. This answers how many
+        objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
+        clears the record on every object that referred to the renamed one, so counting from your
+        own edit log reports one where the answer is nine.
+
+        **It is not "everything that will differ", and a removal is the case that separates the
+        two.** An object removed from the document is no longer in it to be yielded, so this can
+        return nothing for a write that changes the file. A consumer treating an empty result as
+        "the file is unchanged" would be wrong on every removal. To ask whether the file will
+        differ at all, compare the write with :attr:`raw_text`; ask this for how much of it is
+        being written afresh.
+
+        :attr:`IDFObject.source_text` is the same record read one object at a time, and it is the
+        retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
+        This asks the question directly.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Perimeter_ZN_1")
+            >>> nothing_was_read = list(model.changed_objects()) == list(model.all_objects)
+            >>> nothing_was_read  # so every object is one a write has to build
+            True
+        """
+        for obj in self.all_objects:
+            if obj.source_text is None:
+                yield obj
+
+    def region_of(self, obj: IDFObject) -> SourceSpan | None:
+        """Where *obj*'s characters sit in :attr:`raw_text`, or ``None`` if they sit nowhere.
+
+        ``None`` for an object added since the read and for a document read without
+        ``preserve_formatting=True``.
+
+        This is what makes :meth:`changed_objects` usable. Turning an edit into the smallest
+        possible change to a file takes three things: WHICH objects will be rewritten, WHAT text
+        each becomes, and WHERE the old one was. Without the third a consumer has to write the whole
+        file and compare, which is the work :meth:`changed_objects` exists to avoid.
+
+        The range is where the object WAS, and stays answerable after it changes. That is the case
+        it is for: the objects worth locating are the ones being rewritten.
+
+        **Where the replacement text comes from is not settled here.** A preserving write hands the
+        formatter the object's own source, so text produced any other way differs from what
+        :func:`~idfkit.writers.write_idf` would have produced for the same object: the author's
+        units and notes come back as generated labels. A consumer that needs the two to agree takes
+        the whole file from ``write_idf``. That gap is open, and it is recorded rather than papered
+        over.
+
+        The end of the range excludes whatever separated this object from the next, because that is
+        what a preserving write leaves in place. It INCLUDES a comment on the terminator's own line,
+        which is the last field's comment and is rewritten with it.
+
+        Offsets rather than a line and column: a consumer wanting the rendering has the text to
+        compute it from, while going the other way costs a scan.
+        """
+        found = self._anchored().get(id(obj))
+        return None if found is None else found[0]
+
+    def _anchored(self) -> dict[int, tuple[SourceSpan, CSTNode]]:
+        """Every anchored object's span and its node, indexed by identity and built once.
+
+        One pass, because both accessors want the same walk: :meth:`region_of` wants the span and
+        :meth:`render_object` wants the node's text. Each doing its own scan made the loop both
+        their docstrings recommend, over every changed object, quadratic in the size of the file.
+
+        Safe to keep, because the tree does not change after the read. An object added since is
+        absent from it, which is the answer both accessors owe for one.
+        """
+        if self._spans is None:
+            spans: dict[int, tuple[SourceSpan, CSTNode]] = {}
+            offset = 0
+            for node in self._cst.nodes if self._cst is not None else ():
+                if node.obj is not None:
+                    # The body alone. What separates this object from the next is not part of what
+                    # a rewrite replaces, and `CSTNode` draws that line once for everyone.
+                    spans[id(node.obj)] = (SourceSpan(offset, offset + node.body_length), node)
+                offset += len(node.text)
+            self._spans = spans
+        return self._spans
+
+    def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
+        """*obj*, rendered exactly as a preserving write would render it.
+
+        The text that belongs in the range :meth:`region_of` returns, so the two compose into an
+        edit that leaves the file where :func:`~idfkit.writers.write_idf` would have left it.
+        ``None`` for an object the retained source does not hold, which is the same set
+        :meth:`region_of` declines.
+
+        :meth:`~idfkit.writers.IDFWriter.format_object` is not this, and that is the reason this
+        exists. A preserving write hands the formatter the object's own source text, so a caller
+        who does not have that text gets the author's units and notes back as generated labels:
+        ``!- North Axis {deg}`` becomes ``!- North Axis``. That is a unit lost from an engineering
+        model by an editor asked to save a file, and no docstring is a good enough guard against it.
+
+        *field_comments* is the only option, because it is the only one a preserving write honours.
+        ``indent``, ``comment_column``, ``ordering`` and ``version_first`` are refused by
+        ``write_idf`` alongside ``preserve_formatting``, and an ``output_type`` other than
+        ``"standard"`` takes precedence over preservation and sends the whole document down the
+        formatting path. Accepting any of them here would render one object on terms the surrounding
+        file was not written on, which is the divergence this method exists to prevent.
+
+        No trailing line break: the range this fills ends at the terminator, or at the comment on
+        that line, and what follows separates one object from the next, which a write leaves alone.
+        """
+        # Local, because writers imports this module.
+        from .writers import render_cst_node
+
+        found = self._anchored().get(id(obj))
+        if found is None:
+            return None
+        # The cast is the generated stub, not a doubt about the type. `document.pyi` shadows this
+        # module for a type checker, so the `IDFDocument` the writer is annotated with is the stub's
+        # class while `self` here is the runtime one, and the two are not assignable in either
+        # direction. Nothing outside this module hits it: every other caller reaches the writer
+        # holding the stub's type already, which is why this is the first call from here to there.
+        return render_cst_node(cast("Any", self), found[1], field_comments=field_comments)
 
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""
