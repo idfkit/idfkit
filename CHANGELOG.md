@@ -7,6 +7,124 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] - 2026-09-06
+
+This release moves to `conformance-2026.11` and `governance-2026.15`. The corpus
+level changes no case: 69 cases and 211 assertions, as `conformance-2026.10` had.
+What moved is its runners, which had been reporting a false failure on
+`preserve-edit-one-field`. `governance-2026.15` registers five names and renames
+nothing.
+
+`1.0.0-rc.2` shipped a writer that gave the file back and then rewrote more of an
+edited object than the edit asked for. This release is that gap closed, and three
+of the four items below were found by consumers reading the branch before it
+merged rather than by this repository's own tests.
+
+### Added
+
+- **`IDFDocument.changed_objects()`**, the objects a preserving write will write
+  afresh rather than reproduce. Empty for a document read with
+  `preserve_formatting=True` and not edited since; every object for one read
+  without it, because there is nothing to reproduce.
+
+  It is the part a consumer cannot derive: a rename clears the record on every
+  object that referred to the renamed one, so counting from your own edit log
+  reports one where the answer is nine.
+
+  **It is not "everything that will differ", and a removal is the case that
+  separates the two.** A removed object is no longer in the document to be
+  yielded, so this can return nothing for a write that changes the file. To ask
+  whether the file will differ at all, compare the write with `raw_text`.
+
+  `IDFObject.source_text` is the same record read one object at a time, and it is
+  the retained text rather than a flag; this asks the question directly.
+
+- **`IDFDocument.region_of(obj)`**, where an object's characters sit in
+  `raw_text`, as a frozen `SourceSpan`. `None` for an object added since the read
+  and for a document read without `preserve_formatting`.
+
+  The span is where the object **was**, and stays answerable after it changes,
+  which is the case it is for. Its end excludes whatever separated the object
+  from the next, which a preserving write leaves in place, and **includes** a
+  comment on the terminator's own line, which is the last field's comment and is
+  rewritten with the object.
+
+- **`IDFDocument.render_object(obj, field_comments=...)`**, one object rendered
+  exactly as a preserving write would render it. The text that belongs in the
+  span `region_of` returns, so the two compose into an edit that leaves the file
+  where `write_idf` would have left it.
+
+  The bare formatter is not this, which is why it exists. A preserving write
+  hands it the object's own source text, so a caller who does not have that text
+  gets the author's units and notes back as generated labels:
+  `!- North Axis {deg}` becomes `!- North Axis`.
+
+- **`SourceSpan`**, a frozen `start`/`end` pair of offsets into `raw_text`.
+  Named a span rather than a region because in a building energy library
+  "region" reads as a piece of a surface.
+
+- **`field_comments` on `write_idf`**, `"preserve"` by default or `"generate"`
+  to label every field. The escape hatch for a caller who wants the ordinary
+  writer's labels without losing what the author wrote around them.
+
+### Fixed
+
+- **Values the author grouped onto one line stay on one line.** A reformatted
+  object was written one value per line whatever the source said. Across the 693
+  EnergyPlus 22.1.0 example files that is 21.5% of statements, with 690 of the
+  693 containing at least one, and a full reformat would add 20.2% to the
+  corpus's line count. A four-line surface became twelve.
+
+  An object the author wrote entirely on one line comes back on one line, so
+  `Timestep,4;` stays as written. That is another 11.3% of statements and the
+  case that surprises on a file with no geometry in it.
+
+- **The author's per-field comments survive an edit.** Changing one field
+  rebuilt the comments on **every** field of the object, destroying anything the
+  schema cannot regenerate: the field's unit, and any note the author left
+  there. A field the author left bare stays bare, because absence is as much a
+  thing the author wrote as the words are.
+
+- **`!-` goes where EnergyPlus puts it.** `comment_column` is documented as a
+  column and was applied as a width, so every comment landed one place right of
+  the files it imitates. Measured across 1,504,802 comment lines whose content
+  came back byte-identical, 91% moved by exactly one. On a preserving write that
+  is the difference that shows: a rewritten object's comments stood one column
+  clear of every untouched object around it, so each save left a visible seam.
+
+  The `Version` line keeps its own fixed twenty-space gap, which is not a column
+  and drifts with the length of the identifier. Regularising it would move the
+  first line of every file this writer has produced, and a preserving write never
+  reaches that path.
+
+- **Trailing fields the author wrote out as blanks are kept.** The writer
+  stopped at the last field that is set, so a run of commas the author wrote was
+  dropped and their field-name comments went with them. One `Sizing:System` went
+  from 38 lines to 22 on a single-field edit; corpus-wide it is 20,571 lines.
+  Only on the preserving path: a write with nothing to reproduce trims as it
+  always has.
+
+- **An object at the end of a file no longer gains a blank line on every
+  reformat.** The writer appended a fixed two newlines where the node's own
+  trailing newlines, one for the last object, were the right thing to reuse.
+
+- **`nocomment` output parses again.** Restructuring the emitter left the type
+  name emitted last, which loads as nothing at all. The corpus caught it.
+
+### Changed
+
+- **`render_object` and `region_of` share one index over the syntax tree.** Each
+  walked it separately, so the loop both docstrings recommend, over every changed
+  object, was quadratic in the size of the file.
+
+- **The `preserve_formatting` documentation states where the path stops being the
+  cheap one.** A preserving write is cheapest where it is used and **crosses
+  over** once most objects have changed, because it renders each of them and
+  walks the tiling. On a 13 MB model with every object edited it is roughly four
+  times slower than a formatting write. An edit touches a handful of objects, so
+  this is a note for whoever benchmarks rather than a reason to choose
+  differently.
+
 ## [1.0.0-rc.2] - 2026-09-06
 
 ### Fixed
@@ -550,7 +668,9 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.1...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...HEAD
+[1.0.0-rc.3]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.2...v1.0.0-rc.3
+[1.0.0-rc.2]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/idfkit/idfkit/compare/v0.15.0...v1.0.0-rc.1
 [0.15.0]: https://github.com/idfkit/idfkit/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/idfkit/idfkit/compare/v0.13.0...v0.14.0
