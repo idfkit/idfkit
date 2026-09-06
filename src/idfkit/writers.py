@@ -375,8 +375,44 @@ def _emit_cst_node(
     if obj.source_text is not None:
         parts.append(obj.source_text)
     else:
-        parts.append(formatter.format_object(obj))
+        # The node keeps the text this object was READ from even after the object was changed, which
+        # is what lets the reformatted output carry the author's own comments rather than rebuilt
+        # ones. Only the values are re-rendered.
+        parts.append(formatter.format_object(obj, node.text))
         parts.append("\n\n")
+
+
+def _reuse_comments(source_text: str, generated: list[str]) -> list[str]:
+    """The author's comment for each field, positionally, falling back to the generated label.
+
+    A field's comment is the one after its delimiter on the same line, which is the convention every
+    writer of these files follows and the only case where which field a comment belongs to is not a
+    guess. A comment on its own line belongs to no field and is not touched here.
+
+    Positional against the fields the writer is about to emit. An object that gained a field runs
+    past the end of what the source had and generates the rest, which is right: the author never
+    wrote a comment for a field that was not there.
+    """
+    found: list[str | None] = []
+    for line in source_text.splitlines():
+        mark = line.find("!")
+        if mark < 0:
+            continue
+        before = line[:mark]
+        # The comment must follow this line's own delimiter, so a line carrying only a comment is
+        # somebody else's and a line whose value is still open has not closed a field yet.
+        if "," not in before and ";" not in before:
+            continue
+        found.append(line[mark:].rstrip())
+
+    # The first line of an object is `Type,` and carries no field, so a comment on it is the type's
+    # rather than a field's. `_get_field_values_and_comments` starts at the first field either way.
+    reused = list(generated)
+    for index, comment in enumerate(found):
+        if index >= len(reused) or comment is None:
+            break
+        reused[index] = comment
+    return reused
 
 
 def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
@@ -580,9 +616,18 @@ class IDFWriter:
 
         return values, comments
 
-    def format_object(self, obj: IDFObject) -> str:
-        """Convert a single object to IDF string."""
+    def format_object(self, obj: IDFObject, source_text: str | None = None) -> str:
+        """Convert a single object to IDF string.
+
+        *source_text* is the object as it was read, supplied by the preserving writer for an object
+        that has been changed. Its per-field comments are reused in place of generated ones: an edit
+        asks for the VALUES to be re-rendered and never for the comments, and rebuilding them
+        destroys whatever the schema cannot regenerate. That is the field's unit, which the
+        generated label does not carry, and any note the author wrote there.
+        """
         values, comments = self._get_field_values_and_comments(obj)
+        if source_text is not None:
+            comments = _reuse_comments(source_text, comments)
         obj_type = obj.obj_type
 
         if self._output_type == "compressed":
@@ -598,7 +643,8 @@ class IDFWriter:
             if self._output_type == "standard":
                 field_str = f"{pad}{value}{terminator}"
                 field_str = field_str.ljust(self._comment_column)
-                field_str += f"!- {comment}"
+                # A reused comment arrives whole, from its `!` onward; a generated one is a label.
+                field_str += comment if comment.startswith("!") else f"!- {comment}"
             else:
                 # nocomment
                 field_str = f"{pad}{value}{terminator}"
