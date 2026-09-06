@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -40,6 +41,17 @@ OutputType = Literal["standard", "nocomment", "compressed"]
 #:
 #: `"sorted"` is the default for this library's IDF writer and does not move (FR-017).
 Ordering = Literal["sorted", "source"]
+
+#: What to do about a field the author deliberately left without a comment.
+#:
+#: Only meaningful on the preserving path, which is the only path that knows what the author wrote.
+#: ``"preserve"`` leaves a bare field bare, because absence is as much a thing the author wrote as
+#: the words are. ``"generate"`` labels it, for a caller who wants the file annotated.
+#:
+#: Neither setting touches the author's own comment lines. A comment between two objects is carried
+#: by the text between them, and a comment on its own line inside an object is emitted with the
+#: field below it, so asking for labels adds them and never costs a line.
+FieldComments = Literal["preserve", "generate"]
 
 #: The two-space indent this writer has always used. The other language uses four.
 DEFAULT_INDENT = 2
@@ -71,6 +83,7 @@ def write_idf(
     comment_column: int = DEFAULT_COMMENT_COLUMN,
     ordering: Ordering = "sorted",
     version_first: bool = True,
+    field_comments: FieldComments = "preserve",
 ) -> str:
     """
     Serialize a document to IDF text.
@@ -175,7 +188,7 @@ def write_idf(
         raise ValueError(msg)
 
     if use_preserve and doc.cst is not None and not formatting_requested:
-        content = _write_idf_lossless(doc)
+        content = _write_idf_lossless(doc, field_comments)
     else:
         writer = IDFWriter(
             doc,
@@ -382,40 +395,70 @@ def _emit_cst_node(
         parts.append("\n\n")
 
 
-def _reuse_comments(source_text: str, generated: list[str]) -> list[str]:
-    """The author's comment for each field, positionally, falling back to the generated label.
+@dataclass(frozen=True, slots=True)
+class FieldAnnotation:
+    """What the author wrote around one field.
 
-    A field's comment is the one after its delimiter on the same line, which is the convention every
-    writer of these files follows and the only case where which field a comment belongs to is not a
-    guess. A comment on its own line belongs to no field and is not touched here.
+    ``before`` are comment lines standing on their own above the field, in order, exactly as
+    written. They live INSIDE the object, so unlike a comment between two objects they are not
+    carried by the text around it and are lost the moment the object is reformatted unless they are
+    emitted with the field below them.
 
-    Positional against the fields the writer is about to emit. An object that gained a field runs
-    past the end of what the source had and generates the rest, which is right: the author never
-    wrote a comment for a field that was not there.
+    ``trailing`` is the comment after the field's delimiter on the same line, or ``None`` when the
+    author left the field bare. Bare is a thing the author wrote, and telling it apart from "this
+    field had no author" is the whole reason this carries ``None`` rather than a label.
     """
-    found: list[str | None] = []
-    for line in source_text.splitlines():
-        mark = line.find("!")
-        if mark < 0:
+
+    before: tuple[str, ...]
+    trailing: str | None
+
+
+def _annotations(source_text: str) -> list[FieldAnnotation]:
+    """What the author wrote around each field of an object, positionally.
+
+    A scan rather than a walk over lines, because several fields may share one line: a surface's
+    vertices are routinely written three to a line, and a line-counting version attaches every
+    comment to the wrong field the moment a file does that.
+
+    Delimiters are what advance the position. The first closes the type name, the second closes
+    field 0, and the *d*-th closes field *d - 2*, which is the same positional order
+    :meth:`IDFWriter._get_field_values_and_comments` emits.
+    """
+    annotations: list[FieldAnnotation] = []
+    pending: list[str] = []
+    delimiters = 0
+    index = 0
+    line_start = 0
+    length = len(source_text)
+
+    while index < length:
+        char = source_text[index]
+        if char == "!":
+            stop = source_text.find("\n", index)
+            if stop < 0:
+                stop = length
+            comment = source_text[index:stop].rstrip()
+            if source_text[line_start:index].strip() == "":
+                # Nothing but whitespace before it, so the comment is a line of its own and belongs
+                # to the field below rather than to the one above.
+                pending.append(comment)
+            elif annotations:
+                last = annotations[-1]
+                annotations[-1] = FieldAnnotation(last.before, comment)
+            index = stop
             continue
-        before = line[:mark]
-        # The comment must follow this line's own delimiter, so a line carrying only a comment is
-        # somebody else's and a line whose value is still open has not closed a field yet.
-        if "," not in before and ";" not in before:
-            continue
-        found.append(line[mark:].rstrip())
-
-    # The first line of an object is `Type,` and carries no field, so a comment on it is the type's
-    # rather than a field's. `_get_field_values_and_comments` starts at the first field either way.
-    reused = list(generated)
-    for index, comment in enumerate(found):
-        if index >= len(reused) or comment is None:
-            break
-        reused[index] = comment
-    return reused
+        if char == "\n":
+            line_start = index + 1
+        elif char in ",;":
+            delimiters += 1
+            if delimiters >= 2:
+                annotations.append(FieldAnnotation(tuple(pending), None))
+                pending = []
+        index += 1
+    return annotations
 
 
-def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
+def _write_idf_lossless(doc: IDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
     """Produce IDF output that preserves original formatting via the CST.
 
     Unmodified objects are emitted verbatim.  Mutated or new objects use
@@ -427,7 +470,7 @@ def _write_idf_lossless(doc: IDFDocument[bool]) -> str:
         raise ValueError(msg)
 
     parts: list[str] = []
-    formatter = IDFWriter(doc, output_type="standard")
+    formatter = IDFWriter(doc, output_type="standard", field_comments=field_comments)
     emitted: set[int] = set()
     live_ids = {id(o) for o in doc.all_objects}
 
@@ -476,8 +519,10 @@ class IDFWriter:
         comment_column: int = DEFAULT_COMMENT_COLUMN,
         ordering: Ordering = "sorted",
         version_first: bool = True,
+        field_comments: FieldComments = "preserve",
     ):
         self._doc = doc
+        self._field_comments = field_comments
         self._output_type = output_type
         self._indent = indent
         self._comment_column = comment_column
@@ -626,8 +671,7 @@ class IDFWriter:
         generated label does not carry, and any note the author wrote there.
         """
         values, comments = self._get_field_values_and_comments(obj)
-        if source_text is not None:
-            comments = _reuse_comments(source_text, comments)
+        annotations = _annotations(source_text) if source_text is not None else []
         obj_type = obj.obj_type
 
         if self._output_type == "compressed":
@@ -638,13 +682,30 @@ class IDFWriter:
         for i, (value, comment) in enumerate(zip(values, comments, strict=False)):
             is_last = i == len(values) - 1
             terminator = ";" if is_last else ","
+            annotation = annotations[i] if i < len(annotations) else None
 
             pad = " " * self._indent
             if self._output_type == "standard":
+                # The author's own lines above the field, which live inside the object and are
+                # carried by nothing else.
+                if annotation is not None:
+                    lines.extend(f"{pad}{line}" for line in annotation.before)
+
+                # The author's comment where there is one. Where the author left the field bare,
+                # nothing, unless the caller asked for a label. Where there is no author at all,
+                # because the object gained this field, the label as always.
+                if annotation is None:
+                    written = f"!- {comment}"
+                elif annotation.trailing is not None:
+                    written = annotation.trailing
+                elif self._field_comments == "generate":
+                    written = f"!- {comment}"
+                else:
+                    written = ""
+
                 field_str = f"{pad}{value}{terminator}"
-                field_str = field_str.ljust(self._comment_column)
-                # A reused comment arrives whole, from its `!` onward; a generated one is a label.
-                field_str += comment if comment.startswith("!") else f"!- {comment}"
+                if written:
+                    field_str = field_str.ljust(self._comment_column) + written
             else:
                 # nocomment
                 field_str = f"{pad}{value}{terminator}"

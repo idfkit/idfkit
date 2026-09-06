@@ -1104,6 +1104,33 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for collection in self._collections.values():
             yield from collection
 
+    def changed_objects(self) -> Iterator[IDFObject]:
+        """Every object a preserving write will write afresh rather than reproduce.
+
+        Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
+        object for a document read without it, because there is nothing to reproduce.
+
+        :attr:`raw_text` answers whether a write will preserve at all. This answers how much of
+        the file it will change, which is what a save button has to put to a user out loud, and it
+        is the part a consumer cannot work out for itself: a rename clears the record on every
+        object that referred to the renamed one, so counting from your own edit log reports one
+        where the answer is nine.
+
+        :attr:`IDFObject.source_text` is the same record read one object at a time, and it is the
+        retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
+        This asks the question directly.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Perimeter_ZN_1")
+            >>> len(list(model.changed_objects()))  # nothing was read, so everything is new
+            2
+        """
+        for obj in self.all_objects:
+            if obj.source_text is None:
+                yield obj
+
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""
         for obj_type, collection in self._collections.items():

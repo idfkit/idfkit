@@ -697,6 +697,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
         decorators=("@property",),
     )
     emit("def references(self) -> ReferenceGraph", "IDFDocument.references", decorators=("@property",))
+    emit("def changed_objects(self) -> Iterator[IDFObject]", "IDFDocument.changed_objects")
     lines.append("")
 
     # Collection access

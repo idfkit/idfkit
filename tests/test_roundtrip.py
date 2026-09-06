@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -656,3 +657,149 @@ class TestPreserveFormattingRefusals:
 
         assert written != IDF_WITH_COMMENTS
         assert "\n    TestZone," in written
+
+
+class TestChangedObjects:
+    """Which objects a preserving write will rewrite, asked directly.
+
+    A consumer cannot derive this from its own edit log. A rename clears the record on every object
+    that referred to the renamed one, so an editor counting its own edits reports one where the
+    answer is three here and nine on a real model.
+    """
+
+    REFERENCED = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Zone, ZONE ONE;\n"
+        "\n"
+        "BuildingSurface:Detailed,\n"
+        "  S1, Wall, C1, ZONE ONE, , Outdoors, , SunExposed, WindExposed, , ,\n"
+        "  0,0,0, 1,0,0;\n"
+        "\n"
+        "BuildingSurface:Detailed,\n"
+        "  S2, Wall, C1, ZONE ONE, , Outdoors, , SunExposed, WindExposed, , ,\n"
+        "  0,0,0, 1,0,0;\n"
+    )
+
+    def _read(self, tmp_path: Path, *, preserve: bool = True):
+        idf_path = tmp_path / "referenced.idf"
+        idf_path.write_text(self.REFERENCED)
+        return parse_idf(idf_path, preserve_formatting=preserve)
+
+    def test_nothing_is_changed_by_reading(self, tmp_path: Path) -> None:
+        assert list(self._read(tmp_path).changed_objects()) == []
+
+    def test_a_rename_changes_every_object_that_pointed_at_it(self, tmp_path: Path) -> None:
+        doc = self._read(tmp_path)
+        doc["Zone"]["ZONE ONE"].name = "RENAMED"
+
+        changed = sorted(obj.obj_type for obj in doc.changed_objects())
+
+        assert changed == ["BuildingSurface:Detailed", "BuildingSurface:Detailed", "Zone"]
+
+    def test_a_no_op_write_changes_nothing(self, tmp_path: Path) -> None:
+        doc = self._read(tmp_path)
+        zone = doc["Zone"]["ZONE ONE"]
+        zone.name = zone.name
+
+        assert list(doc.changed_objects()) == []
+
+    def test_every_object_is_changed_without_preservation(self, tmp_path: Path) -> None:
+        """There is nothing to reproduce, so a write rewrites the file entirely."""
+        doc = self._read(tmp_path, preserve=False)
+
+        assert len(list(doc.changed_objects())) == len(doc)
+
+    def test_it_agrees_with_what_the_writer_actually_reproduces(self, tmp_path: Path) -> None:
+        """The claim is only worth making if the writer honours it."""
+        doc = self._read(tmp_path)
+        doc["Zone"]["ZONE ONE"].name = "RENAMED"
+        written = write_idf(doc)
+
+        untouched = [obj for obj in doc.all_objects if obj not in list(doc.changed_objects())]
+        for obj in untouched:
+            assert obj.source_text is not None
+            assert obj.source_text in written
+
+
+class TestCommentsOnAReformattedObject:
+    """What survives when the writer rewrites an object, beyond its values.
+
+    An edit asks for the VALUES to be re-rendered. Everything else the author wrote is theirs, and
+    that includes the absence of a comment on a field they left bare.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "! a note between objects\n"
+        "Building,\n"
+        "  My Building,   !- Name\n"
+        "  ! this value came from the 2019 survey\n"
+        "  0,             !- North Axis {deg}\n"
+        "  Suburbs;\n"
+        "\n"
+        "Timestep, 6;\n"
+    )
+
+    def _edited(self, tmp_path: Path, **kwargs: object):
+        idf_path = tmp_path / "annotated.idf"
+        idf_path.write_text(self.SOURCE)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"]["My Building"].north_axis = 42
+        return write_idf(doc, **kwargs)  # pyright: ignore[reportArgumentType]
+
+    def test_a_units_annotation_survives(self, tmp_path: Path) -> None:
+        """`{deg}` is in the schema and the generated label drops it, so rebuilding loses it."""
+        assert "!- North Axis {deg}" in self._edited(tmp_path)
+
+    def test_a_comment_on_its_own_line_inside_the_object_survives(self, tmp_path: Path) -> None:
+        """The one comment nothing else carries: it is inside the object, not between two."""
+        assert "! this value came from the 2019 survey" in self._edited(tmp_path)
+
+    def test_a_comment_between_two_objects_survives(self, tmp_path: Path) -> None:
+        assert "! a note between objects" in self._edited(tmp_path)
+
+    def test_a_field_the_author_left_bare_stays_bare(self, tmp_path: Path) -> None:
+        """Absence is as much a thing the author wrote as the words are."""
+        written = self._edited(tmp_path)
+
+        assert re.search(r"Suburbs;\s*$", written, re.MULTILINE)
+        assert "!- Terrain" not in written
+
+    def test_generate_labels_a_bare_field_and_still_keeps_every_comment(self, tmp_path: Path) -> None:
+        """The escape hatch adds labels and never costs a line."""
+        written = self._edited(tmp_path, field_comments="generate")
+
+        assert "!- Terrain" in written
+        assert "! this value came from the 2019 survey" in written
+        assert "! a note between objects" in written
+        assert "!- North Axis {deg}" in written
+
+    def test_only_the_value_changed(self, tmp_path: Path) -> None:
+        written = self._edited(tmp_path)
+
+        assert "42," in written
+        assert "  0," not in written
+
+    def test_a_comment_is_attached_by_delimiter_and_not_by_line(self, tmp_path: Path) -> None:
+        """Several fields share a line in real files, and counting lines mis-attaches every comment.
+
+        The vertices of a surface are routinely written three to a line with one comment for the
+        triple. That comment follows the third delimiter, so it belongs to the third field.
+        """
+        idf_path = tmp_path / "packed.idf"
+        idf_path.write_text(
+            "Version, 26.1.0;\n"
+            "\n"
+            "Building,\n"
+            "  Packed, City, 0.04,   !- three fields, one comment\n"
+            "  0.4;                  !- and another\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"]["Packed"].terrain = "Suburbs"
+        written = write_idf(doc)
+
+        # The comment lands on the field its delimiter closed, and the two before it stay bare.
+        assert "!- three fields, one comment" in written
+        assert "!- and another" in written
