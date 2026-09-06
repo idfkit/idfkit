@@ -1017,3 +1017,88 @@ class TestRegionOf:
 
         assert len(spans) == 3
         assert all(b.start >= a.end for a, b in pairwise(spans))
+
+
+class TestRenderObject:
+    """The text that belongs in the range :meth:`IDFDocument.region_of` returns.
+
+    Knowing WHICH objects change and WHERE the old text is buys a consumer nothing while producing
+    the new text for ONE object has no correct form. The formatter needs the object's own source to
+    keep the author's comments, and a caller who does not have that text gets generated labels.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Building,\n"
+        "  My Building,   !- Name\n"
+        "  0.0;           !- North Axis {deg}\n"
+        "\n"
+        "Timestep, 4;\n"
+    )
+
+    def _doc(self, tmp_path: Path, *, preserve: bool = True):
+        idf_path = tmp_path / "render.idf"
+        idf_path.write_text(self.SOURCE)
+        return parse_idf(idf_path, preserve_formatting=preserve)
+
+    def test_it_keeps_the_unit_the_bare_formatter_drops(self, tmp_path: Path) -> None:
+        from idfkit.writers import IDFWriter
+
+        doc = self._doc(tmp_path)
+        building = doc["Building"].first()
+        building.north_axis = 42
+
+        rendered = doc.render_object(building)
+        assert rendered is not None
+        assert "!- North Axis {deg}" in rendered
+        # What a consumer would have had to reach for, and what it costs.
+        assert "{deg}" not in IDFWriter(doc).format_object(building)
+
+    def test_it_splices_into_its_own_range_to_give_back_a_whole_write(self, tmp_path: Path) -> None:
+        """The claim the three names make together, pinned as one assertion.
+
+        If this ever fails, an editor built on them is silently writing a different file from the
+        one ``write_idf`` writes.
+        """
+        doc = self._doc(tmp_path)
+        doc["Building"].first().north_axis = 42
+        doc["Timestep"].first().number_of_timesteps_per_hour = 6
+
+        assert doc.raw_text is not None
+        spliced = doc.raw_text
+        changed = sorted(doc.changed_objects(), key=lambda o: doc.region_of(o).start, reverse=True)  # type: ignore[union-attr]
+        assert len(changed) == 2
+        for obj in changed:
+            span = doc.region_of(obj)
+            rendered = doc.render_object(obj)
+            assert span is not None
+            assert rendered is not None
+            spliced = spliced[: span.start] + rendered + spliced[span.end :]
+
+        assert spliced == write_idf(doc)
+
+    def test_it_takes_the_one_option_a_preserving_write_honours(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "bare.idf"
+        idf_path.write_text(
+            "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0,           !- North Axis {deg}\n  City;\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        building = doc["Building"].first()
+        building.north_axis = 42
+
+        assert "!- Terrain" not in (doc.render_object(building) or "")
+        assert "!- Terrain" in (doc.render_object(building, field_comments="generate") or "")
+
+    def test_it_ends_where_the_range_ends(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+
+        rendered = doc.render_object(doc["Building"].first())
+        assert rendered is not None
+        assert not rendered.endswith("\n")
+
+    def test_it_answers_nothing_for_an_object_the_source_does_not_hold(self, tmp_path: Path) -> None:
+        doc = self._doc(tmp_path)
+
+        assert doc.render_object(doc.add("Zone", "Late Arrival")) is None
+        assert self._doc(tmp_path, preserve=False).render_object(doc["Building"].first()) is None

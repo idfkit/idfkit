@@ -37,6 +37,7 @@ else:
 if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
     from .simulation.config import EnergyPlusConfig
+    from .writers import FieldComments
 
 
 def _parse_version_identifier(version_str: str) -> tuple[int, int, int]:
@@ -1184,6 +1185,43 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 offset += length
             self._spans = spans
         return self._spans.get(id(obj))
+
+    def render_object(self, obj: IDFObject, *, field_comments: FieldComments = "preserve") -> str | None:
+        """*obj*, rendered exactly as a preserving write would render it.
+
+        The text that belongs in the range :meth:`region_of` returns, so the two compose into an
+        edit that leaves the file where :func:`~idfkit.writers.write_idf` would have left it.
+        ``None`` for an object the retained source does not hold, which is the same set
+        :meth:`region_of` declines.
+
+        :meth:`~idfkit.writers.IDFWriter.format_object` is not this, and that is the reason this
+        exists. A preserving write hands the formatter the object's own source text, so a caller
+        who does not have that text gets the author's units and notes back as generated labels:
+        ``!- North Axis {deg}`` becomes ``!- North Axis``. That is a unit lost from an engineering
+        model by an editor asked to save a file, and no docstring is a good enough guard against it.
+
+        *field_comments* is the only option, because it is the only one a preserving write honours.
+        ``indent``, ``comment_column``, ``ordering`` and ``version_first`` are refused by
+        ``write_idf`` alongside ``preserve_formatting``, and an ``output_type`` other than
+        ``"standard"`` takes precedence over preservation and sends the whole document down the
+        formatting path. Accepting any of them here would render one object on terms the surrounding
+        file was not written on, which is the divergence this method exists to prevent.
+
+        No trailing line break: the range this fills ends at the terminator, or at the comment on
+        that line, and what follows separates one object from the next, which a write leaves alone.
+        """
+        # Local, because writers imports this module.
+        from .writers import IDFWriter
+
+        if self._cst is None:
+            return None
+        for node in self._cst.nodes:
+            if node.obj is obj:
+                # The same construction `_write_idf_lossless` uses, which is the only path that can
+                # reach this text.
+                formatter = IDFWriter(self, output_type="standard", field_comments=field_comments)
+                return formatter.format_object(obj, node.text)
+        return None
 
     def objects_by_type(self) -> Iterator[tuple[str, IDFCollection[IDFObject]]]:
         """Iterate over (type, collection) pairs."""
