@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-09-06
+
+### Fixed
+
+- Writing a field the value it already holds no longer reformats the object.
+  `_set_field` cleared the retained source text unconditionally, so assigning
+  `zone.direction_of_relative_north` its own value turned `3.000` into `3` on
+  the next `write_idf`. `_set_name` has compared before acting since it was
+  written; `_set_field` now does the same.
+
+- Removing an object from a document read from epJSON with
+  `preserve_formatting=True` no longer reproduces the original text with the
+  removed object still in it. The check asked the surviving objects whether
+  they were unmodified, and a removed object is not among them to ask, so the
+  output was a file that loads and misrepresents the model. The object count at
+  read is now compared as well, which is what makes a removal visible to a
+  check that can only see what is left.
+
+- `version_first` is refused alongside `preserve_formatting=True`, as `indent`,
+  `comment_column` and `ordering` already were. Asking to move the version
+  statement while reproducing the original text is the same contradiction, and
+  it was previously granted in silence.
+
+- With `version_first` in that set, setting it away from its default now reads
+  as a request to format on the default path too, rather than preserving the
+  file and dropping the request without a word.
+
+### Changed
+
+- **An `output_type` other than `"standard"` now takes precedence over
+  `preserve_formatting`, including over an explicit `True`.** It was the other
+  way round: `write_idf(doc, "compressed", preserve_formatting=True)` returned
+  the original text and dropped the requested form in silence.
+
+  The two libraries disagreed about this, so a caller got a different file
+  depending on which one they were holding. The form wins, because a different
+  output form is a different artifact that the original text was never going to
+  express, so producing it is honest. The contradiction that is refused, rather
+  than resolved, is preservation together with a control that changes how an
+  object is laid out: `indent`, `comment_column`, `ordering` and now
+  `version_first`.
+
+  A caller who wants the old behaviour asks for preservation without asking for
+  a form, which is `write_idf(doc, preserve_formatting=True)`.
+
 ## [1.0.0-rc.1] - 2026-09-04
 
 ### Added
