@@ -631,13 +631,16 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
     lines.append("from ._generated_types import _ObjectTypeMap")
+    # Alphabetical, because the formatter that runs after this sorts them and the stub gate then
+    # regenerates and diffs. An import emitted out of order is reordered on the way in and never
+    # matches on the way back, which fails the gate everywhere except the machine that committed it.
     lines.append("from .cst import DocumentCST, SourceSpan")
-    lines.append("from .writers import FieldComments")
     lines.append("from .introspection import ObjectDescription")
     lines.append("from .objects import IDFCollection, IDFObject")
     lines.append("from .references import ReferenceGraph")
     lines.append("from .schema import EpJSONSchema")
     lines.append("from .simulation.config import EnergyPlusConfig")
+    lines.append("from .writers import FieldComments")
     lines.append("")
     lines.append("Strict = TypeVar('Strict', bound=bool, default=bool, covariant=True)")
     lines.append("")
