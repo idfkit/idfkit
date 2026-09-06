@@ -111,9 +111,10 @@ def write_idf(
 
     Raises:
         ValueError: If *preserve_formatting* is explicitly ``True`` on a
-            document that carries a CST while *indent*, *comment_column* or
-            *ordering* is away from its default. Reproducing the original
-            text and reformatting it are contradictory requests.
+            document that carries a CST while *indent*, *comment_column*,
+            *ordering* or *version_first* is away from its default.
+            Reproducing the original text and reformatting it are
+            contradictory requests.
 
     Examples:
         Serialize the model to an IDF string for inspection:
@@ -143,14 +144,28 @@ def write_idf(
     # lossless path cannot honour it. Reproducing the file byte for byte and indenting to three
     # spaces are contradictory requests, and silently doing the first would be the wrong answer.
     #
+    # `version_first` belongs in this set and was missing from it, so asking to move the version
+    # statement while preserving was granted silently: the file came back with the statement where
+    # the author left it and no word about the request. It is a reformatting control like the other
+    # three, because moving a statement is a change to how the text is laid out.
+    #
+    # Away from its default is a REQUEST TO FORMAT on the default path too, which is what the
+    # `not formatting_requested` clause below says: a caller who names a control and does not name
+    # preservation gets the control, not a silent drop of it.
+    #
     # The conflict is only real when the lossless path would actually be taken. `preserve_formatting=True`
     # on a document that carries no CST has always fallen back to this writer, and asking for a control at
     # the same time must not turn that quiet fallback into an error.
-    formatting_requested = indent != DEFAULT_INDENT or comment_column != DEFAULT_COMMENT_COLUMN or ordering != "sorted"
+    formatting_requested = (
+        indent != DEFAULT_INDENT
+        or comment_column != DEFAULT_COMMENT_COLUMN
+        or ordering != "sorted"
+        or version_first is not True
+    )
     if formatting_requested and use_preserve and preserve_formatting and doc.cst is not None:
         msg = (
             "preserve_formatting reproduces the original text, so it cannot also apply indent, "
-            "comment_column or ordering. Pass one or the other."
+            "comment_column, ordering or version_first. Pass one or the other."
         )
         raise ValueError(msg)
 
@@ -272,11 +287,23 @@ def write_epjson(
     # granularity via CST nodes.
     use_preserve = preserve_formatting if preserve_formatting is not None else doc.raw_text is not None
 
-    # If preserve_formatting and we have raw text, check whether any object
-    # was mutated.  If not, emit the original text verbatim.
+    # If preserve_formatting and we have raw text, check whether the document is
+    # still the one that text describes: nothing touched, nothing added, nothing
+    # removed.
+    #
+    # The count is the half that asking the survivors cannot supply. Every object
+    # left after a removal is still pristine, so `all_clean` alone reproduced the
+    # original text with the removed object still in it: a file that loads and
+    # misrepresents the model. An addition is caught by the same comparison from
+    # the other side, since a new object carries no sentinel and fails
+    # `all_clean` anyway.
     if use_preserve and doc.raw_text is not None:
-        all_clean = all(obj.source_text is not None for obj in doc.all_objects)
-        if all_clean:
+        # `# pyright: ignore` for the same reason `epjson_parser` needs one when it sets this:
+        # the generated stub answers every name it does not declare with a collection, and it
+        # declares no internal attribute, so reading one types as `IDFCollection` here.
+        count_at_read = cast("int | None", doc._count_at_read)
+        unchanged = count_at_read == len(doc) and all(obj.source_text is not None for obj in doc.all_objects)
+        if unchanged:
             logger.debug("Serialized epJSON (%d objects, lossless) to string", len(doc))
             return doc.raw_text
 

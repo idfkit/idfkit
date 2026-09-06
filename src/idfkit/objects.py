@@ -818,14 +818,27 @@ class IDFObject(EppyObjectMixin):
         doc.references.reindex_extensible(self, wrapper_key, ext_ref_fields)
 
     def _set_field(self, python_key: str, value: Any) -> None:
-        """Centralized data-field write with reference graph notification."""
+        """Centralized data-field write with reference graph notification.
+
+        A write of the value already held is not a change and is not recorded as
+        one. ``_set_name`` has compared before acting since it was written; this
+        is the same guard on its sibling, and without it a preserving writer
+        reformats an object nobody edited: writing ``3.0`` over the ``3.0`` a file
+        already said turns ``3.000`` into ``3`` in the output (FR-004).
+
+        The comparison is on the value the field holds, not on the whole object,
+        so it costs one lookup on a path that was already reading the field for
+        the reference graph.
+        """
+        current = self._data.get(python_key)
+        if current == value and python_key in self._data:
+            return
+
         doc = self._document
         ref_fields = self._ref_fields
         if doc is not None and ref_fields is not None and python_key in ref_fields:
-            old = self._data.get(python_key)
             self._data[python_key] = value
-            if old != value:
-                doc.notify_reference_change(self, python_key, old, value)
+            doc.notify_reference_change(self, python_key, current, value)
         else:
             self._data[python_key] = value
 

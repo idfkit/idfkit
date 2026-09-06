@@ -122,6 +122,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
     __slots__ = (
         "_collections",
+        "_count_at_read",
         "_cst",
         "_raw_text",
         "_references",
@@ -140,6 +141,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _strict: bool
     _cst: DocumentCST | None
     _raw_text: str | None
+    """How many objects the document held when a preserving read finished.
+
+    ``None`` unless the document was parsed with ``preserve_formatting=True``.
+    Internal, and deliberately not a public name: a removal is invisible to a
+    check that can only ask the survivors, and this is what makes it visible to
+    the epJSON writer. Nothing outside this package needs to ask.
+    """
+    _count_at_read: int | None
 
     def __init__(
         self,
@@ -171,6 +180,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._strict = strict
         self._cst: DocumentCST | None = None
         self._raw_text: str | None = None
+        self._count_at_read: int | None = None
 
     @property
     def strict(self) -> bool:
