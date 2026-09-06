@@ -99,11 +99,17 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         Empty for a document read with ``preserve_formatting=True`` and not edited since. Every
         object for a document read without it, because there is nothing to reproduce.
 
-        :attr:`raw_text` answers whether a write will preserve at all. This answers how much of
-        the file it will change, which is what a save button has to put to a user out loud, and it
-        is the part a consumer cannot work out for itself: a rename clears the record on every
-        object that referred to the renamed one, so counting from your own edit log reports one
-        where the answer is nine.
+        :attr:`raw_text` answers whether a write will preserve at all. This answers how many
+        objects it will REWRITE, and it is the part a consumer cannot work out for itself: a rename
+        clears the record on every object that referred to the renamed one, so counting from your
+        own edit log reports one where the answer is nine.
+
+        **It is not "everything that will differ", and a removal is the case that separates the
+        two.** An object removed from the document is no longer in it to be yielded, so this can
+        return nothing for a write that changes the file. A consumer treating an empty result as
+        "the file is unchanged" would be wrong on every removal. To ask whether the file will
+        differ at all, compare the write with :attr:`raw_text`; ask this for how much of it is
+        being written afresh.
 
         :attr:`IDFObject.source_text` is the same record read one object at a time, and it is the
         retained TEXT rather than a flag: a reader has to know that HAVING text means unchanged.
