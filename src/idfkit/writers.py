@@ -107,6 +107,16 @@ def write_idf(
             ``preserve_formatting=True``. When ``None`` (the default),
             automatically uses lossless output if a CST is available and
             *output_type* is ``"standard"``.
+
+            Cheapest where it is used: a write that reproduces most of the
+            file copies text rather than building it. It CROSSES OVER once
+            most objects have changed, because this path renders each of
+            them AND walks the tiling, which is more work than formatting
+            alone. On a 13 MB model with every object edited it is roughly
+            four times slower than a formatting write. Nothing to guard
+            against, since an edit touches a handful of objects and a whole
+            model rewrite is what ``preserve_formatting=False`` is for, but
+            worth knowing before timing the wrong one.
         indent: Spaces before each field line. Defaults to the two this
             writer has always used.
         comment_column: Column the ``!-`` field comments are aligned to, counting
