@@ -83,10 +83,10 @@ def write_idf(
         output_type: Output formatting mode, ``"standard"`` (with
             comments), ``"nocomment"`` (no comments), or
             ``"compressed"`` (single-line objects). Mirrors eppy's
-            ``idf.outputtype``. Ignored when *preserve_formatting* is
-            explicitly ``True``. When *preserve_formatting* is ``None``
-            and *output_type* is not ``"standard"``, the explicit output
-            type takes precedence and lossless mode is disabled.
+            ``idf.outputtype``. An output type other than ``"standard"``
+            takes precedence over *preserve_formatting*, including over an
+            explicit ``True``: a different output form is a different
+            artifact, which the original text was never going to express.
         preserve_formatting: If ``True``, reproduce the original source
             text for unmodified objects and apply standard formatting only
             to objects that were mutated or added after parsing. Requires
@@ -133,10 +133,15 @@ def write_idf(
         >>> "\\n" not in compressed.split("Zone")[1].split(";")[0]
         True
     """
-    if preserve_formatting is not None:
-        use_preserve = preserve_formatting
-    elif output_type != "standard":
+    # An explicitly requested output FORM wins over preservation, including over an explicit
+    # `preserve_formatting=True`. A form is a different artifact, which the original text was never
+    # going to express, so producing it is honest; granting preservation instead drops the request
+    # in silence, which is what this did until the other language's decision table was written down
+    # beside it and the two were compared.
+    if output_type != "standard":
         use_preserve = False
+    elif preserve_formatting is not None:
+        use_preserve = preserve_formatting
     else:
         use_preserve = doc.cst is not None
 
