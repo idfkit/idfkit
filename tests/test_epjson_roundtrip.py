@@ -464,3 +464,58 @@ class TestEpjsonRoundtripSimulation:
             orig_count = len(original[obj_type])
             rt_count = len(roundtrip_model[obj_type])
             assert orig_count == rt_count, f"{obj_type}: {orig_count} != {rt_count}"
+
+
+# ---------------------------------------------------------------------------
+# Preservation in the object notation is all-or-nothing, removals included
+# ---------------------------------------------------------------------------
+
+
+class TestEpJsonPreservationCountsRemovals:
+    """FR-014, research R7: a removed object must not survive in the output.
+
+    The preserving epJSON write asked only the survivors whether they were
+    clean, and a removed object is not among the survivors to ask. So removing
+    one reproduced the original text with the removed object still in it: a
+    file that loads and misrepresents the model. The count at read is what
+    makes a removal visible to a check that can only see what is left.
+    """
+
+    def test_removing_an_object_falls_back_to_the_ordinary_writer(self, tmp_path: Path) -> None:
+        from idfkit import new_document
+        from idfkit.epjson_parser import parse_epjson
+        from idfkit.writers import write_epjson
+
+        doc = new_document()
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+
+        epjson_path = tmp_path / "model.epJSON"
+        epjson_path.write_text(write_epjson(doc))
+
+        reread = parse_epjson(epjson_path, preserve_formatting=True)
+        reread.removeidfobject(reread["Zone"]["B"])
+
+        out = write_epjson(reread)
+
+        assert "B" not in reread["Zone"]
+        assert '"B"' not in out
+        assert '"A"' in out
+
+    def test_an_untouched_document_still_reproduces_its_text(self, tmp_path: Path) -> None:
+        """The fix must not cost the preservation it is protecting."""
+        from idfkit import new_document
+        from idfkit.epjson_parser import parse_epjson
+        from idfkit.writers import write_epjson
+
+        doc = new_document()
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+
+        text = write_epjson(doc)
+        epjson_path = tmp_path / "model.epJSON"
+        epjson_path.write_text(text)
+
+        reread = parse_epjson(epjson_path, preserve_formatting=True)
+
+        assert write_epjson(reread) == text

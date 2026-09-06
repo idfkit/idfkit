@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from idfkit.cst import CSTNode
 from idfkit.idf_parser import _build_idf_cst, _cst_node_type_name, parse_idf
 from idfkit.writers import save_idf, write_epjson, write_idf
@@ -545,3 +547,74 @@ class TestPreserveFormattingPerformance:
         assert doc.raw_text is None
         for obj in doc.all_objects:
             assert obj.source_text is None
+
+
+# ---------------------------------------------------------------------------
+# Regressions confirmed by running the code, not by reading it (feature 006)
+# ---------------------------------------------------------------------------
+
+
+class TestNoOpFieldWriteKeepsSourceText:
+    """FR-004: writing a field the value it already holds must change nothing.
+
+    Confirmed as a defect by running it (research R4). ``_set_field`` cleared
+    ``_source_text`` unconditionally, so writing ``3.000`` over the ``3.0`` it
+    had already parsed reformatted the object and lost the author's notation.
+    ``_set_name`` has compared before acting since it was written; this is that
+    guard, on its sibling.
+    """
+
+    NO_OP_SOURCE = (
+        "Version, 26.1;\n\nZone,\n  MyZone,          !- Name\n  3.000;           !- Direction of Relative North\n"
+    )
+
+    def test_writing_the_value_already_held_reproduces_the_object(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "no-op.idf"
+        idf_path.write_text(self.NO_OP_SOURCE)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        zone = doc["Zone"]["MyZone"]
+        zone.direction_of_relative_north = zone.direction_of_relative_north
+
+        assert write_idf(doc) == self.NO_OP_SOURCE
+
+    def test_writing_a_different_value_still_reformats(self, tmp_path: Path) -> None:
+        """The guard must not be a blanket refusal to notice a change."""
+        idf_path = tmp_path / "real-edit.idf"
+        idf_path.write_text(self.NO_OP_SOURCE)
+
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        zone = doc["Zone"]["MyZone"]
+        zone.direction_of_relative_north = 4.5
+
+        assert zone.source_text is None
+        assert "4.5" in write_idf(doc)
+
+
+class TestPreserveFormattingRefusals:
+    """FR-012 and research R8, R9: the two gaps in the refusal guard.
+
+    ``version_first`` was missing from it, so asking to move the version
+    statement while preserving was granted silently. And the guard fired only
+    when ``preserve_formatting`` was explicitly ``True``, so a control set on
+    the default path preserved the file and dropped the control without a word.
+    """
+
+    def test_version_first_conflicts_with_preservation(self, tmp_path: Path) -> None:
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        with pytest.raises(ValueError, match="version_first"):
+            write_idf(doc, preserve_formatting=True, version_first=False)
+
+    def test_a_control_on_the_default_path_asks_for_formatting(self, tmp_path: Path) -> None:
+        """A set control is a request to format, not a control to drop silently."""
+        idf_path = tmp_path / "input.idf"
+        idf_path.write_text(IDF_WITH_COMMENTS)
+        doc = parse_idf(idf_path, preserve_formatting=True)
+
+        written = write_idf(doc, indent=4)
+
+        assert written != IDF_WITH_COMMENTS
+        assert "\n    TestZone," in written
