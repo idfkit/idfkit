@@ -109,7 +109,10 @@ def write_idf(
             *output_type* is ``"standard"``.
         indent: Spaces before each field line. Defaults to the two this
             writer has always used.
-        comment_column: Column the ``!-`` field comments are padded to.
+        comment_column: Column the ``!-`` field comments are aligned to, counting
+            from 1 as an editor does. The default puts the marker where EnergyPlus
+            itself puts it, which is what keeps a rewritten object flush with the
+            untouched objects around it.
             Defaults to 30. A value longer than the column pushes its
             comment right rather than being truncated.
         ordering: ``"sorted"`` to write object types in alphabetical order,
@@ -627,7 +630,9 @@ class IDFWriter:
             return annotation.trailing
         return f"!- {label}" if self._field_comments == "generate" else ""
 
-    def _get_field_values_and_comments(self, obj: IDFObject) -> tuple[list[str], list[str]]:  # noqa: C901
+    def _get_field_values_and_comments(  # noqa: C901
+        self, obj: IDFObject, keep_at_least: int = 0
+    ) -> tuple[list[str], list[str]]:
         """Get the ordered field values and comment labels for *obj*.
 
         Storage is canonical: extensible groups live as a list of dicts under
@@ -684,8 +689,16 @@ class IDFWriter:
                         values.append(self._format_value(item.get(inner)))
                         comments.append(f"{inner.replace('_', ' ').title()}{suffix}")
 
-        # Trim trailing empty fields
-        while len(values) > 1 and values[-1] == "":
+        # Trim trailing empty fields, but never below what the author actually wrote.
+        #
+        # A field written out as a blank is as much a thing the author wrote as a field left bare of
+        # its comment, and dropping it takes the author's own ``!- Cooling Design Capacity Method``
+        # with it. A single-field edit shortened one Sizing:System from 38 lines to 22; across the
+        # 693 example files it is 20,571 lines, more than any other difference a rewrite makes.
+        #
+        # *keep_at_least* is non-zero only on the preserving path. A write with no author behind it
+        # trims as it always has, because there is nothing there to be faithful to.
+        while len(values) > max(1, keep_at_least) and values[-1] == "":
             values.pop()
             comments.pop()
 
@@ -700,8 +713,8 @@ class IDFWriter:
         destroys whatever the schema cannot regenerate. That is the field's unit, which the
         generated label does not carry, and any note the author wrote there.
         """
-        values, comments = self._get_field_values_and_comments(obj)
         annotations = _annotations(source_text) if source_text is not None else []
+        values, comments = self._get_field_values_and_comments(obj, keep_at_least=len(annotations))
         obj_type = obj.obj_type
 
         if self._output_type == "compressed":
@@ -725,7 +738,14 @@ class IDFWriter:
             nonlocal open_line, open_comment
             if not open_line:
                 return
-            lines.append(open_line.ljust(self._comment_column) + open_comment if open_comment else open_line)
+            if open_comment:
+                # Minus one because the option is a COLUMN, counted from 1, while ljust takes a
+                # WIDTH. Passing the column as the width put every comment one place right of where
+                # the files this imitates put it. The max keeps a space after a long line.
+                width = max(self._comment_column - 1, len(open_line) + 1)
+                lines.append(open_line.ljust(width) + open_comment)
+            else:
+                lines.append(open_line)
             open_line = ""
             open_comment = ""
 

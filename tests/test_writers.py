@@ -792,6 +792,14 @@ class TestWriterDefaultsArePinned:
         assert all(ln.startswith("  ") and not ln.startswith("   ") for ln in field_lines)
 
     def test_comment_column_is_thirty(self, tmp_path: Path) -> None:
+        """Column 30, which is index 29, and which is where EnergyPlus itself writes it.
+
+        The default used to be applied as an INDEX, so the marker landed at 30 and every line this
+        writer produced sat one place right of the files it imitates. `1ZoneUncontrolled.idf` puts
+        `!-` at index 29 on 223 of its 231 commented lines. On a preserving write the difference is
+        the one that shows: a rewritten object's comments stood one column clear of every untouched
+        object around it, so each save left a visible seam.
+        """
         text = write_idf(self._model(tmp_path))
 
         checked = 0
@@ -801,8 +809,8 @@ class TestWriterDefaultsArePinned:
                 continue
             # Only lines the padding actually reached: a value longer than the column pushes the
             # comment right, and that overflow behaviour is itself one of the seven differences.
-            if len(line[:marker].rstrip()) < 30:
-                assert marker == 30, line
+            if len(line[:marker].rstrip()) < 29:
+                assert marker == 29, line
                 checked += 1
         assert checked > 0
 

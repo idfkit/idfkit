@@ -869,3 +869,69 @@ class TestLineGrouping:
 
         assert written.startswith("!-Generator") or written.lstrip().startswith("Version")
         assert len(parse_idf(out)) == len(doc)
+
+
+class TestFieldsWrittenAsBlanks:
+    """A field the author wrote out as an explicit blank.
+
+    The writer stops at the last field that is SET, so a run of commas the author wrote is dropped
+    and their field-name comments go with them. A single-field edit took one Sizing:System from 38
+    lines to 22; across the 693 example files it is 20,571 lines, more than any other difference a
+    rewrite makes. A field written out as a blank is as much a thing the author wrote as a field
+    left bare of its comment, which is the rule this path already follows.
+    """
+
+    SOURCE = (
+        "Version, 26.1.0;\n"
+        "\n"
+        "Building,\n"
+        "  My Building,             !- Name\n"
+        "  0.0,                     !- North Axis {deg}\n"
+        "  ,                        !- Terrain\n"
+        "  ,                        !- Loads Convergence Tolerance Value\n"
+        "  ;                        !- Solar Distribution\n"
+    )
+
+    def _edited(self, tmp_path: Path, *, preserve: bool):
+        idf_path = tmp_path / "blanks.idf"
+        idf_path.write_text(self.SOURCE)
+        doc = parse_idf(idf_path, preserve_formatting=preserve)
+        doc["Building"].first().north_axis = 42
+        return doc
+
+    def test_they_survive_an_edit_with_their_comments(self, tmp_path: Path) -> None:
+        written = write_idf(self._edited(tmp_path, preserve=True))
+
+        assert len(written.split("\n")) == len(self.SOURCE.split("\n"))
+        assert "!- Terrain" in written
+        assert "!- Solar Distribution" in written
+
+    def test_they_are_still_trimmed_where_there_is_no_author(self, tmp_path: Path) -> None:
+        """A document read without preservation has nothing to reproduce, so the ordinary writer's
+        habit applies and a run of bare commas stays out of the output."""
+        assert "!- Solar Distribution" not in write_idf(self._edited(tmp_path, preserve=False))
+
+
+class TestCommentColumn:
+    def test_the_marker_goes_where_energyplus_puts_it(self, tmp_path: Path) -> None:
+        """Column 30, which is index 29.
+
+        `1ZoneUncontrolled.idf` writes `!-` at index 29 on 223 of its 231 commented lines. The
+        option is a COLUMN, counted from 1, and was being applied as an index, so every line this
+        writer produced sat one place right of the files it imitates. On a preserving write that is
+        the difference that shows: a rewritten object's comments stood one column clear of every
+        untouched object around it, so each save left a visible seam.
+        """
+        idf_path = tmp_path / "column.idf"
+        # The author's own comments, since a field left bare stays bare on this path and a source
+        # without them would give the padding nothing to align.
+        idf_path.write_text(
+            "Version, 26.1.0;\n\nBuilding,\n  My Building,   !- Name\n  0.0;           !- North Axis {deg}\n"
+        )
+        doc = parse_idf(idf_path, preserve_formatting=True)
+        doc["Building"].first().north_axis = 42
+
+        markers = [line.find("!-") for line in write_idf(doc).split("\n") if line.find("!-") > 0]
+
+        assert markers
+        assert set(markers) == {29}
