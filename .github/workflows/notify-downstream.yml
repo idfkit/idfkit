@@ -1,19 +1,43 @@
 name: Notify downstream idfkit users
+
+# Tell every repository that pins this library that a new version exists.
+#
+# NOT TRIGGERED BY `release: published`, and that is the whole point. It used to be, alongside
+# on-release-main.yml, which meant the two started together and raced: the dispatch reached the
+# downstream repositories, they ran `uv lock` against a pin whose version PyPI had not yet been
+# given, and every one of them failed with "no version of idfkit==X". It failed silently on three
+# consecutive releases, because a failure here is a red run in a repository nobody was watching,
+# and the documentation site sat four versions behind while its pages described an API that had
+# moved.
+#
+# It is now called by on-release-main.yml with `needs: [publish]`, so it cannot start until the
+# publish step has returned. `workflow_dispatch` stays for re-running one by hand.
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       idfkit_version:
         required: true
         type: string
+    secrets:
+      APP_ID:
+        required: true
+      APP_PRIVATE_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      idfkit_version:
+        description: The released idfkit version to announce, with or without a leading v.
+        required: true
+        type: string
+
 permissions:
   contents: read
+
 jobs:
   dispatch:
     runs-on: ubuntu-latest
     env:
-      RAW_VERSION: ${{ inputs.idfkit_version || github.event.release.tag_name }}
+      RAW_VERSION: ${{ inputs.idfkit_version }}
       DOWNSTREAM_REPOS: |
         idfkit/idfkit-mcp
         idfkit/idfkit-lsp
@@ -27,6 +51,46 @@ jobs:
           version="${RAW_VERSION#v}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Normalized version: $version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.9'
+
+      - name: Wait until the index actually serves the version
+        env:
+          IDFKIT_VERSION: ${{ steps.ver.outputs.version }}
+        # `needs: [publish]` fixes the ORDER; this fixes the LAG. `uv publish` returning means the
+        # file was accepted, not that the index is serving it, and the downstream repositories
+        # resolve against the index rather than against the upload.
+        #
+        # The probe is the downstream operation itself: a throwaway project pinning the same
+        # version, resolved with the same tool. Anything cheaper would be testing something other
+        # than what is about to be asked of four repositories.
+        run: |
+          set -euo pipefail
+          probe="$(mktemp -d)"
+          cat > "$probe/pyproject.toml" <<EOF
+          [project]
+          name = "downstream-probe"
+          version = "0.0.0"
+          requires-python = ">=3.10"
+          dependencies = ["idfkit==$IDFKIT_VERSION"]
+          EOF
+
+          for attempt in $(seq 1 30); do
+            if (cd "$probe" && uv lock --quiet >/dev/null 2>&1); then
+              echo "Index serves idfkit==$IDFKIT_VERSION (attempt $attempt)."
+              exit 0
+            fi
+            echo "Attempt $attempt: not resolvable yet, waiting 10s."
+            sleep 10
+          done
+
+          echo "::error::idfkit==$IDFKIT_VERSION is still not resolvable after five minutes." \
+               "Downstream bumps would fail, so this stops rather than dispatching them."
+          exit 1
+
       - name: Mint app token
         id: app-token
         uses: actions/create-github-app-token@v1
@@ -34,6 +98,7 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
+
       - name: Trigger downstream bump workflows
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}

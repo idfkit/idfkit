@@ -62,3 +62,15 @@ jobs:
 
       - name: Publish package
         run: uv publish
+
+  # Only after `publish` has returned. These two used to be separate workflows on the same
+  # `release: published` trigger, which meant they started together: the downstream repositories
+  # were told to pin a version PyPI had not been given yet, and all four failed to resolve it.
+  # Silently, on three consecutive releases, because the failure lands in repositories nobody
+  # watches on a release day. A job dependency is the only thing that orders them.
+  notify-downstream:
+    needs: [publish]
+    uses: ./.github/workflows/notify-downstream.yml
+    with:
+      idfkit_version: ${{ github.event.release.tag_name }}
+    secrets: inherit
