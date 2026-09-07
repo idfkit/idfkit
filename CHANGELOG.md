@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Two climate zone keys on `StationIndex.filter()`.** `climate_zone` selects
+  stations by ASHRAE zone code, matched against the code parsed out of
+  `WeatherStation.ashrae_climate_zone` rather than against that label's text.
+  The label is not a code: 2,162 of the 69,638 shipped records read
+  `7A - ASHRAE Climate Zone could not be determined` or `8A - ...`, and neither
+  7A nor 8A is an ASHRAE zone, since zones 7 and 8 carry no suffix. Keying on
+  the label's first token would invent two zones holding 3.1% of the index, so
+  those records match no zone.
+
+  `climate_zone_determined` is what keeps them reachable. `False` returns
+  exactly those 2,162 records and `True` returns the rest, so every station is
+  reachable through one of the two. It is a separate parameter rather than a
+  reserved `climate_zone` value, because that parameter's domain is already
+  strings and a magic one could not be told from a real code.
+
+### Fixed
+
+- **The station browser's zone dropdown offered 7A and 8A as ASHRAE zones.** It
+  parsed the zone as the label's first token, so it listed twenty-one zones
+  where there are nineteen, and the two extras were the 2,162 records whose zone
+  upstream could not determine, split into two buckets by a prefix that means
+  nothing. It now lists the nineteen real zones plus one entry reading
+  `Zone could not be determined`, which returns all 2,162. This is the same
+  defect the new filter keys exist to prevent, in the page that reads the same
+  field.
+
 ## [1.0.0-rc.3] - 2026-09-06
 
 This release moves to `conformance-2026.11` and `governance-2026.15`. The corpus

@@ -61,9 +61,32 @@
     return Number.isFinite(n) ? n : null;
   };
 
-  // ASHRAE labels look like "4A - Mixed - Humid". The first whitespace-
-  // separated token is the canonical zone code we sort and group by.
-  const zoneCode = (label) => (label || '').split(/\s+/)[0] || '';
+  // The nineteen zones ASHRAE 169 defines. Mirrors `_ASHRAE_ZONES` in
+  // `idfkit/weather/index.py`; the two must agree or this page and the library it
+  // browses answer the same question differently.
+  const ASHRAE_ZONES = [
+    '0A', '0B', '1A', '1B', '2A', '2B', '3A', '3B', '3C', '4A',
+    '4B', '4C', '5A', '5B', '5C', '6A', '6B', '7', '8',
+  ];
+
+  // The value the zone select carries for "upstream could not determine one". Not a
+  // zone code, and deliberately not expressible as one, so it cannot collide.
+  const UNDETERMINED = '\u0000undetermined';
+
+  // Anchored on the subject, so a label reporting that something ELSE about the
+  // station was undetermined keeps its zone.
+  const zoneIsUndetermined = (label) => /climate zone could not be determined/i.test(label || '');
+
+  // ASHRAE labels look like "4A - Mixed - Humid", and the code is what precedes the
+  // first dash. NOT simply the first token: 2,162 records read "7A - ASHRAE Climate
+  // Zone could not be determined", and neither 7A nor 8A is an ASHRAE zone, since
+  // zones 7 and 8 carry no suffix. Taking the token verbatim invented two zones here
+  // and offered twenty-one where there are nineteen.
+  const zoneCode = (label) => {
+    if (zoneIsUndetermined(label)) return '';
+    const code = ((label || '').split('-')[0] || '').trim().toUpperCase();
+    return ASHRAE_ZONES.indexOf(code) === -1 ? '' : code;
+  };
 
   const toast = (msg, variant = '') => {
     const el = $('toast');
@@ -198,7 +221,11 @@
     for (const g of allGroups) {
       if (country && g.country.toUpperCase() !== country) continue;
       if (state && g.state.toUpperCase() !== state) continue;
-      if (zone && zoneCode(g.ashrae_climate_zone) !== zone) continue;
+      if (zone === UNDETERMINED) {
+        if (!zoneIsUndetermined(g.ashrae_climate_zone)) continue;
+      } else if (zone && zoneCode(g.ashrae_climate_zone) !== zone) {
+        continue;
+      }
       if (elevMin != null && g.elevation < elevMin) continue;
       if (elevMax != null && g.elevation > elevMax) continue;
       if (heatMin != null && g.heating_design_db_c < heatMin) continue;
@@ -553,7 +580,12 @@
   function populateClimateZoneOptions(groups) {
     const select = $('climate-zone');
     const seen = new Map(); // code -> full label
+    let undetermined = 0;
     for (const g of groups) {
+      if (zoneIsUndetermined(g.ashrae_climate_zone)) {
+        undetermined += 1;
+        continue;
+      }
       const code = zoneCode(g.ashrae_climate_zone);
       if (!code) continue;
       if (!seen.has(code)) seen.set(code, g.ashrae_climate_zone);
@@ -566,6 +598,14 @@
       const opt = document.createElement('option');
       opt.value = c;
       opt.textContent = seen.get(c);
+      frag.appendChild(opt);
+    }
+    // One entry for every station whose zone upstream could not determine, rather than
+    // two options reading 7A and 8A that look like zones and are not.
+    if (undetermined) {
+      const opt = document.createElement('option');
+      opt.value = UNDETERMINED;
+      opt.textContent = 'Zone could not be determined';
       frag.appendChild(opt);
     }
     select.appendChild(frag);

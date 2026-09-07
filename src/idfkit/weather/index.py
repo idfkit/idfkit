@@ -15,7 +15,7 @@ import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -549,6 +549,67 @@ def _maybe_check_for_updates(index: StationIndex, cache_dir: Path) -> None:
         )
 
 
+# The nineteen zones ASHRAE 169 defines. A parsed code outside this set is neither a
+# zone nor undetermined: upstream failing to determine a zone and this library failing
+# to recognise one upstream did determine are different facts about a station, and
+# filing the second under the first reports something upstream never said.
+#
+# The set is not defensive. ``tests/weather/test_index_climate_zone.py`` asserts the
+# shipped index carries exactly these nineteen, so a twentieth arriving upstream fails a
+# build rather than quietly changing what a filter returns.
+_ASHRAE_ZONES: Final[frozenset[str]] = frozenset({
+    "0A",
+    "0B",
+    "1A",
+    "1B",
+    "2A",
+    "2B",
+    "3A",
+    "3B",
+    "3C",
+    "4A",
+    "4B",
+    "4C",
+    "5A",
+    "5B",
+    "5C",
+    "6A",
+    "6B",
+    "7",
+    "8",
+})
+
+# Anchored on the subject, not on the bare phrase. Upstream writes exactly "ASHRAE
+# Climate Zone could not be determined", and matching only "could not be determined"
+# would also swallow a label reporting that something ELSE about the station was
+# undetermined, filing a station whose zone upstream did state under the one bucket that
+# means upstream did not state it. The "ASHRAE " prefix is deliberately not required, so
+# a label that drops it still reads as undetermined rather than yielding a zone.
+_UNDETERMINED = re.compile(r"climate zone could not be determined", re.IGNORECASE)
+
+
+def _zone_is_undetermined(label: str) -> bool:
+    """Whether the label reports that upstream could not determine the zone."""
+    return _UNDETERMINED.search(label) is not None
+
+
+def _zone_code_of(label: str) -> str | None:
+    """The ASHRAE zone code in a label, or ``None`` when there is none to have.
+
+    ``None`` covers two different situations on purpose, and callers that need to tell
+    them apart use :func:`_zone_is_undetermined`: upstream could not determine the zone,
+    or it determined one this library does not recognise.
+
+    **The suffix is ``[ABC]``, not ``[AB]``.** Dropping C loses 3C, 4C and 5C, which is
+    1,653 marine-zone stations, leaves sixteen zones where there are nineteen, and
+    raises nothing.
+    """
+    if _zone_is_undetermined(label):
+        return None
+    code = label.split("-")[0].strip().upper()
+    return code if code in _ASHRAE_ZONES else None
+
+
 class StationIndex:
     """Searchable index of weather stations from climate.onebuilding.org.
 
@@ -867,11 +928,38 @@ class StationIndex:
         country: str | None = None,
         state: str | None = None,
         wmo_region: int | None = None,
+        climate_zone: str | None = None,
+        climate_zone_determined: bool | None = None,
     ) -> list[WeatherStation]:
         """Filter stations by metadata criteria.
 
         All specified criteria must match (logical AND).
+
+        Args:
+            country: ISO 3166 country code. Case-insensitive.
+            state: State or province abbreviation. Case-insensitive.
+            wmo_region: WMO region number, inferred from the download URL.
+            climate_zone: ASHRAE climate zone code, e.g. ``"5A"``. Case-insensitive,
+                and matched against the code parsed out of
+                :attr:`WeatherStation.ashrae_climate_zone` rather than against that
+                label's text. The label is not a code: 2,162 records in the shipped
+                index read ``7A - ASHRAE Climate Zone could not be determined`` or
+                ``8A - ...``, and neither 7A nor 8A is an ASHRAE zone, since zones 7
+                and 8 carry no suffix. Matching the first token would invent two zones
+                holding 3.1% of the index, so those records match no zone. Ask for them
+                with ``climate_zone_determined=False``. An empty string is no
+                constraint, matching ``country`` and ``state``.
+            climate_zone_determined: Whether the station's zone was determined
+                upstream. ``False`` selects the records whose label reports that it
+                could not be, which no ``climate_zone`` value returns. A separate
+                parameter rather than a reserved ``climate_zone`` value, because that
+                parameter's domain is already strings and a magic one could not be told
+                from a real code.
         """
+        # ``climate_zone=""`` means no constraint, as ``country=""`` and ``state=""``
+        # already do below. A UI binding an empty select to this would otherwise get zero
+        # stations from one key and every station from the next two.
+        wanted_zone = climate_zone.upper() if climate_zone else None
         result: list[WeatherStation] = []
         for s in self._stations:
             if country and s.country.upper() != country.upper():
@@ -883,6 +971,23 @@ class StationIndex:
                 url_lower = s.url.lower()
                 if f"wmo_region_{wmo_region}" not in url_lower:
                     continue
+            if wanted_zone is not None or climate_zone_determined is not None:
+                # Parsed once per station: both keys ask about the same label, and the
+                # shipped index is 69,638 records.
+                zone_code = _zone_code_of(s.ashrae_climate_zone)
+                if wanted_zone is not None and zone_code != wanted_zone:
+                    continue
+                if climate_zone_determined is not None:
+                    # Deliberately not ``zone_code is None``: that is also true of an
+                    # unrecognised code, which is not the same thing as upstream
+                    # reporting it could not determine one.
+                    matched = (
+                        zone_code is not None
+                        if climate_zone_determined
+                        else _zone_is_undetermined(s.ashrae_climate_zone)
+                    )
+                    if not matched:
+                        continue
             result.append(s)
         return result
 
