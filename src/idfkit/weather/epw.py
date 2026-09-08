@@ -43,6 +43,7 @@ through this module; they are not a second set of registered concepts.
 from __future__ import annotations
 
 import math
+import re
 from array import array
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -340,24 +341,58 @@ def _remainder(line: str) -> str:
     return rest if separator else ""
 
 
+#: The grammar of a number in this format, shared with the JavaScript reader verbatim.
+#:
+#: Neither language's built-in conversion is used on its own, because the two disagree about what
+#: text is a number and the disagreement is silent. ``float`` accepts ``nan``, ``inf`` and
+#: ``1_0``; ``Number`` rejects all three and accepts ``0x10`` as sixteen. A file carrying ``nan``
+#: in dry bulb would read as one absent hour here and raise there, and no fixture in the corpus
+#: carries one to catch it. Both readers therefore match this grammar first and convert second.
+_NUMBER: Final = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
+
+#: The same, for a field that counts rather than measures. ``1.5`` records per hour is a corrupt
+#: declaration, not a rounding problem, and this reader refuses what it cannot represent.
+_INTEGER: Final = re.compile(r"[+-]?\d+")
+
+
+def _to_number(raw: str) -> float | None:
+    """The number ``raw`` spells, or ``None`` when it spells none."""
+    text = raw.strip()
+    return float(text) if _NUMBER.fullmatch(text) else None
+
+
+def _to_integer(raw: str) -> int | None:
+    """The whole number ``raw`` spells, or ``None`` when it spells none."""
+    text = raw.strip()
+    return int(text) if _INTEGER.fullmatch(text) else None
+
+
 def _number_at(parts: Sequence[str], index: int, what: str) -> float:
     if index >= len(parts) or parts[index] == "":
         msg = f"EPW header: {what} is missing from the {parts[0] if parts else 'header'} record"
         raise ValueError(msg)
-    try:
-        return float(parts[index])
-    except ValueError:
+    value = _to_number(parts[index])
+    if value is None:
         msg = f'EPW header: {what} is "{parts[index]}", which is not a number'
-        raise ValueError(msg) from None
+        raise ValueError(msg)
+    return value
+
+
+def _integer_at(parts: Sequence[str], index: int, what: str) -> int:
+    if index >= len(parts) or parts[index] == "":
+        msg = f"EPW header: {what} is missing from the {parts[0] if parts else 'header'} record"
+        raise ValueError(msg)
+    value = _to_integer(parts[index])
+    if value is None:
+        msg = f'EPW header: {what} is "{parts[index]}", which is not a whole number'
+        raise ValueError(msg)
+    return value
 
 
 def _optional_number_at(parts: Sequence[str], index: int) -> float | None:
     if index >= len(parts) or parts[index] == "":
         return None
-    try:
-        return float(parts[index])
-    except ValueError:
-        return None
+    return _to_number(parts[index])
 
 
 def _parse_location(line: str) -> EpwLocation:
@@ -445,7 +480,7 @@ def _parse_data_period(line: str) -> EpwDataPeriod:
     if len(parts) < 7:
         msg = f"EPW header: the DATA PERIODS record has {len(parts) - 1} fields, expected at least 6"
         raise ValueError(msg)
-    period_count = int(_number_at(parts, 1, "the number of data periods"))
+    period_count = _integer_at(parts, 1, "the number of data periods")
     if period_count != 1:
         msg = (
             f"EPW header: DATA PERIODS declares {period_count} periods. This reader reads a "
@@ -454,7 +489,7 @@ def _parse_data_period(line: str) -> EpwDataPeriod:
         raise ValueError(msg)
     return EpwDataPeriod(
         period_count=period_count,
-        records_per_hour=int(_number_at(parts, 2, "records per hour")),
+        records_per_hour=_integer_at(parts, 2, "records per hour"),
         name=parts[3],
         start_day_of_week=parts[4],
         start_date=parts[5],
@@ -472,11 +507,11 @@ _DAYS_IN_MONTH: Final = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 def _parse_month_day(text: str, what: str) -> tuple[int, int]:
     """``1/ 1``, `` 1/1``, ``1/1/2016``. A written year is ignored: the calendar comes from the flag."""
     parts = [part.strip() for part in text.split("/")]
-    try:
-        month, day = int(parts[0]), int(parts[1])
-    except (IndexError, ValueError):
+    month = _to_integer(parts[0]) if len(parts) > 0 else None
+    day = _to_integer(parts[1]) if len(parts) > 1 else None
+    if month is None or day is None:
         msg = f'EPW header: the data period\'s {what} is "{text}", which is not a month/day date'
-        raise ValueError(msg) from None
+        raise ValueError(msg)
     if not 1 <= month <= 12 or day < 1:
         msg = f'EPW header: the data period\'s {what} is "{text}", which is not a month/day date'
         raise ValueError(msg)
@@ -600,15 +635,14 @@ def _read_table(lines: Sequence[str], offset: int, row_count: int) -> HourlyTabl
             if position in TEXT_POSITIONS:
                 text[position][row] = raw
                 continue
-            try:
-                value = float(raw)
-            except ValueError:
+            value = _to_number(raw)
+            if value is None:
                 msg = (
                     f"EPW: line {offset + row + 1}, which is row {row + 1} of the hourly table, "
                     f'holds "{raw}" at field {position + 1} ({COLUMN_NAMES[position]}), '
                     f"which is not a number"
                 )
-                raise ValueError(msg) from None
+                raise ValueError(msg)
             # A value the field reserves for "not measured" becomes absent here, and absence is
             # nan: out of the domain the field can take, distinguishable from a real zero, and
             # loud rather than quiet in later arithmetic.
@@ -690,11 +724,15 @@ def monthly_means(file: WeatherFile, field: str) -> list[MonthlyMean]:
         value = values[row]
         if math.isnan(value):
             continue
-        month = int(months[row])
-        if not 1 <= month <= 12:
+        # Skipped rather than truncated when it is not a whole month, so a row carrying 1.5 falls
+        # out of every bucket here as it does in the JavaScript reader, instead of landing in
+        # January in one language and nowhere in the other.
+        month = months[row]
+        if not month.is_integer() or not 1 <= month <= 12:
             continue
-        sums[month - 1] += value
-        counts[month - 1] += 1
+        index = int(month)
+        sums[index - 1] += value
+        counts[index - 1] += 1
 
     # A month with no present hour is absent, not zero, and the count says which.
     return [
