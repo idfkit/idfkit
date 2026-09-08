@@ -22,6 +22,13 @@ check-conformance-level: ## Verify the exported CONFORMANCE_LEVEL matches the de
 	@git diff --exit-code src/idfkit/_conformance.py || \
 		(echo "❌ idfkit.CONFORMANCE_LEVEL is stale against [tool.idfkit.conformance] in pyproject.toml. Run: uv run python -m idfkit.codegen.generate_conformance" && exit 1)
 
+.PHONY: check-epw-sentinels
+check-epw-sentinels: ## Verify the generated EPW reserved-value table matches the corpus at the pinned level
+	@echo "🚀 Checking the generated EPW reserved-value table against the corpus"
+	@uv run python -m idfkit.codegen.generate_epw_sentinels
+	@git diff --exit-code src/idfkit/weather/_epw_sentinels.py || \
+		(echo "❌ src/idfkit/weather/_epw_sentinels.py is stale against checks/weather-monthly/sentinels.toml. Run: uv run python -m idfkit.codegen.generate_epw_sentinels" && exit 1)
+
 .PHONY: check-doc-locations
 check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit-docs build)
 	@if [ -d "../idfkit-docs/dist" ]; then \
@@ -67,7 +74,7 @@ check-parity: ## Check the parity ledger against the exported capability set
 # sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
 # jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-conformance-level check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
+check: check-stubs check-conformance-level check-epw-sentinels check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"

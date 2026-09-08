@@ -91,6 +91,24 @@ jobs:
         # without moving the working directory off the corpus.
         run: uv run --frozen --project "$GITHUB_WORKSPACE" python runners/run.py --library "$GITHUB_WORKSPACE"
 
+      - name: Check the generated reserved-value table against the corpus
+        # src/idfkit/weather/_epw_sentinels.py is generated from the corpus's sentinels.toml at
+        # this same pinned level. An edit to the generated file, or a corpus that moved under the
+        # pin, changes what the reader calls a missing measurement and nothing else here notices:
+        # the module imports, every unit test passes, and the monthly means quietly move.
+        run: |
+          uv run --frozen python -m idfkit.codegen.generate_epw_sentinels --corpus conformance
+          git diff --exit-code src/idfkit/weather/_epw_sentinels.py \
+            || (echo "::error::_epw_sentinels.py is stale; run python -m idfkit.codegen.generate_epw_sentinels" && exit 1)
+
+      - name: Run the weather check against this library
+        # checks/weather-monthly, which has its own entry point rather than a flag on run.py: it
+        # has no input document and no epJSON expectation, so it is not a case. Its oracle is the
+        # EnergyPlus Weather Converter's own summary of the same archive, committed beside the
+        # fixture it describes.
+        working-directory: conformance
+        run: uv run --frozen --project "$GITHUB_WORKSPACE" python runners/weather_check.py --library "$GITHUB_WORKSPACE"
+
   naming:
     name: naming register
     needs: levels

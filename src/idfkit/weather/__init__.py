@@ -97,6 +97,7 @@ from __future__ import annotations
 from ..exceptions import NoDesignDaysError
 from .designday import DesignDayManager, DesignDayType, apply_ashrae_sizing
 from .download import PartialWeatherFiles, WeatherDownloader, WeatherFiles
+from .epw import WeatherFile, load_epw, monthly_means, parse_epw
 from .geocode import GeocodingError, detect_location, geocode
 from .index import StationIndex
 from .station import SearchResult, SpatialResult, WeatherStation
@@ -111,9 +112,13 @@ __all__ = [
     "SpatialResult",
     "StationIndex",
     "WeatherDownloader",
+    "WeatherFile",
     "WeatherFiles",
     "WeatherStation",
     "apply_ashrae_sizing",
     "detect_location",
     "geocode",
+    "load_epw",
+    "monthly_means",
+    "parse_epw",
 ]
