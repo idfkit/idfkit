@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reserved `climate_zone` value, because that parameter's domain is already
   strings and a magic one could not be told from a real code.
 
+  ([#203](https://github.com/idfkit/idfkit/pull/203))
+
 ### Fixed
 
 - **The station browser's zone dropdown offered 7A and 8A as ASHRAE zones.** It
@@ -33,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   nothing. It now lists the nineteen real zones plus one entry reading
   `Zone could not be determined`, which returns all 2,162. This is the same
   defect the new filter keys exist to prevent, in the page that reads the same
-  field.
+  field. ([#203](https://github.com/idfkit/idfkit/pull/203))
 
 ## [1.0.0-rc.3] - 2026-09-06
 
