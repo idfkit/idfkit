@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A reader for the EPW text this library already downloads.** `parse_epw(text)`
+  returns the header records and the hourly table as named columns; `load_epw(path)`
+  reads one off disk.
+
+  A measurement the file says was not taken reads as `nan` rather than as the value
+  the format reserves for it, per field and per value: ceiling height's 77777 is an
+  unlimited ceiling and stays a number where its 99999 does not.
+
+  `monthly_means(file, field)` returns twelve means that exclude absent hours from
+  the sum and from the divisor alike, each carrying the count of hours it used.
+
+  ([#204](https://github.com/idfkit/idfkit/pull/204))
+
 - **Two climate zone keys on `StationIndex.filter()`.** `climate_zone` selects
   stations by ASHRAE zone code, matched against the code parsed out of
   `WeatherStation.ashrae_climate_zone` rather than against that label's text.
