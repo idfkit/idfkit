@@ -1,5 +1,8 @@
 [project]
 name = "idfkit"
+# Bumped in the release commit, to the version about to be tagged, and the two must agree.
+# `on-release-main.yml` also patches this from the tag, but `make publish` does not: it builds
+# from whatever is written here. See the Releases section of CLAUDE.md.
 version = "1.0.0rc4"
 description = "A fast, modern EnergyPlus IDF/epJSON parser with O(1) lookups and reference tracking"
 authors = [{ name = "Samuel Letellier-Duchesne", email = "developers@idfkit.com" }]

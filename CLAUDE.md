@@ -284,8 +284,22 @@ definitions at the bottom of the file.
 Releases are GitHub-Release-driven: creating a published Release on `main`
 triggers `.github/workflows/on-release-main.yml`, which patches
 `pyproject.toml` to match the tag and publishes the wheel to PyPI plus the
-docs to GitHub Pages. `pyproject.toml`'s `version` field is therefore not
-the source of truth — the git tag is. Do not bump it in a separate commit.
+docs to GitHub Pages.
+
+**Bump `version` in `pyproject.toml` in the release commit, to the version
+you are about to tag.** The two must agree. This paragraph said the opposite
+for several releases — that the tag was the source of truth and the field
+should not be bumped — while every release commit bumped it, which is how
+the rule kept being got wrong: whoever read this file and whoever read
+`git log` reached opposite conclusions.
+
+Two things make the bump the right answer. There are two publish paths, and
+only one of them patches: `on-release-main.yml` rewrites the field from the
+tag, while `make publish` runs `twine upload dist/*` and builds from
+whatever the field currently says, so an unbumped field publishes the
+previous version's number from a maintainer's machine. And a repository
+whose manifest disagrees with its own latest tag is lying about what it is,
+to a reader and to anything that resolves it from source.
 
 **Tag format: `vX.Y.Z` with the `v` prefix.** A run of tags from `0.6.5`
 through `0.10.1` was cut without the prefix; that was a mistake. All new
