@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.4] - 2026-09-08
+
+This release moves to `conformance-2026.12` and `governance-2026.17`. The corpus
+level changes no case: 69 cases and 211 assertions, as `conformance-2026.11` had.
+What it adds is the first member of `checks/`, a directory the corpus contract has
+reserved since the corpus landed: `weather-monthly` holds each library's monthly
+figures against the summary the EnergyPlus Weather Converter produced from the same
+archive. `governance-2026.17` adds one capability row and renames nothing.
+
+The reader below is the first capability in the unification whose cross-language
+claim had no `ConvertInputFormat` expectation available. It ships in both languages
+on one date, so the parity ledger records it complete on both sides and never passes
+through a state where one has it and the other does not.
+
 ### Added
 
 - **A reader for the EPW text this library already downloads.** `parse_epw(text)`
@@ -711,7 +725,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...HEAD
+[1.0.0-rc.4]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/idfkit/idfkit/compare/v0.15.0...v1.0.0-rc.1
