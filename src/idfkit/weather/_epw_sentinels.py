@@ -3,7 +3,7 @@
 DO NOT EDIT — regenerate with:
     python -m idfkit.codegen.generate_epw_sentinels
 
-Emitted from checks/weather-monthly/sentinels.toml in idfkit-conformance at conformance-2026.12.
+Emitted from checks/weather-monthly/sentinels.toml in idfkit-conformance at conformance-2026.13.
 
 Source document: EnergyPlus Weather File (EPW) Data Dictionary, Auxiliary Programs
 Versions checked: 23.2, 24.2
@@ -82,4 +82,4 @@ MISSING_VALUES: Final[tuple[tuple[int, tuple[float, ...]], ...]] = (
 )
 
 #: The conformance level this table was generated from.
-SENTINEL_LEVEL: Final[str] = "conformance-2026.12"
+SENTINEL_LEVEL: Final[str] = "conformance-2026.13"
