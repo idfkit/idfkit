@@ -41,7 +41,7 @@ save_idf(doc, "out.idf")
 | `doc.schema` | `EpJSONSchema` for the document's version. |
 | `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. |
 | `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys. It delegates to `doc[obj_type]`; there is no behavioural difference. |
-| `doc.<attr>` | Python-name accessors for common types: `doc.zones`, `doc.buildings`, `doc.materials`, `doc.constructions`, `doc.hvac_templates`, etc. |
+| `doc.<attr>` | Attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs`), singular (`doc.air_loop_hvac`), or raw name (`doc.AirLoopHVAC`). A hand-written shorthand wins where one exists (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name=None, **fields)` | Create and insert an object. Returns the new `IDFObject`. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
 | `doc.removeidfobject(obj)` | Delete an object. |
@@ -88,6 +88,23 @@ for material in doc.materials:
 ```
 
 Collections support `.first()` (when you know there's a singleton), `.values()`, name-keyed `[name]` access, and `in` membership tests.
+
+Any object type in the schema is also reachable as an attribute — its `snake_case` plural, its singular, or the raw type name. English pluralisation of these names is ambiguous (`Lights` is already plural, `InternalMass` is not), so all three forms resolve and only the canonical spelling shown in errors is fixed. A misspelling raises `AttributeError` naming the closest matches:
+
+```python
+# Any type in the schema is reachable as an attribute — not just common ones.
+loops = doc.air_loop_hvacs  # AirLoopHVAC
+coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
+same_loops = doc.air_loop_hvac  # singular resolves too
+also_loops = doc["AirLoopHVAC"]  # equivalent
+
+# A typo names the closest matches and their object types:
+#   >>> doc.zonez
+#   AttributeError: 'IDFDocument' object has no attribute 'zonez'.
+#   Did you mean:
+#     zones       (Zone)
+#     zone_lists  (ZoneList)
+```
 
 ## Modifying objects
 

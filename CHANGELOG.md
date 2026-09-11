@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Every object type in a document's schema is now reachable as an attribute on
+  `IDFDocument`, not just the ~40 hand-written shorthands. `doc.air_loop_hvacs`,
+  `doc.coil_cooling_dx_single_speeds`, and `doc.zone_hvac_equipment_connections`
+  all resolve, as does the singular (`doc.air_loop_hvac`) and the raw type name
+  (`doc.AirLoopHVAC`). Names are derived from the schema by rule, with no
+  hardcoded acronym list, so a new EnergyPlus release needs no change. A failed
+  lookup now names the closest matches and their object types instead of a bare
+  `AttributeError`. The hand-written shorthands in `_PYTHON_TO_IDF` are unchanged
+  and still take precedence
+  ([b6be03c](https://github.com/idfkit/idfkit/commit/b6be03c)).
+
 ## [1.0.0-rc.4] - 2026-09-08
 
 This release moves to `conformance-2026.12` and `governance-2026.17`. The corpus

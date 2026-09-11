@@ -18,6 +18,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
+from ._accessors import accessor_resolver
 from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
@@ -386,12 +387,19 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         Get collection by Python-style attribute name.
 
-        Convenient shorthand names are mapped to their IDF equivalents
-        (e.g. ``zones`` -> ``Zone``, ``building_surfaces`` ->
-        ``BuildingSurface:Detailed``).
+        Every object type in the document's schema is reachable this way, as its
+        ``snake_case`` plural (``model.air_loop_hvacs``), its singular
+        (``model.air_loop_hvac``), or the raw type name normalised
+        (``model.AirLoopHVAC``).  A hand-written shorthand in ``_PYTHON_TO_IDF``
+        (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
+        ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) takes precedence
+        where one exists.
+
+        Without a schema loaded, only the hand-written shorthands and a
+        case-insensitive match against existing collections are available.
 
         Examples:
-            Use shorthand attribute names for common object types:
+            Use attribute names for object types:
 
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -403,22 +411,30 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             'Perimeter_ZN_1'
 
         Raises:
-            AttributeError: If the attribute is not a known collection mapping.
+            AttributeError: If the name resolves to no object type.  When the
+                schema has a close match the message names it.
         """
         if name.startswith("_"):
             raise AttributeError(name)
 
-        # Check the mapping
+        # A hand-written shorthand wins where one exists.
         obj_type = _PYTHON_TO_IDF.get(name)
         if obj_type:
             return self[obj_type]
 
-        # Try as-is with different cases
+        # Schema-driven resolution: any object type, as plural/singular/raw name.
+        if self._schema is not None:
+            resolver = accessor_resolver(self._schema)
+            resolved = resolver.resolve(name)
+            if resolved is not None:
+                return self[resolved]
+            raise resolver.attribute_error(type(self).__name__, name)
+
+        # No schema: fall back to a case-insensitive match on existing collections.
         for key in self._collections:
             if key.lower().replace(":", "_").replace(" ", "_") == name.lower():
                 return self._collections[key]
 
-        # Raise AttributeError for unknown attributes
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")  # noqa: TRY003
 
     def __contains__(self, obj_type: str) -> bool:

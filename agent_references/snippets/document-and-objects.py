@@ -63,6 +63,22 @@ for material in doc.materials:
 # --8<-- [end:lookup]
 
 
+# --8<-- [start:accessors]
+# Any type in the schema is reachable as an attribute — not just common ones.
+loops = doc.air_loop_hvacs  # AirLoopHVAC
+coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
+same_loops = doc.air_loop_hvac  # singular resolves too
+also_loops = doc["AirLoopHVAC"]  # equivalent
+
+# A typo names the closest matches and their object types:
+#   >>> doc.zonez
+#   AttributeError: 'IDFDocument' object has no attribute 'zonez'.
+#   Did you mean:
+#     zones       (Zone)
+#     zone_lists  (ZoneList)
+# --8<-- [end:accessors]
+
+
 # --8<-- [start:modify]
 zone = doc["Zone"]["Office"]
 zone.ceiling_height = 3.5  # plain field

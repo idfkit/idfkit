@@ -186,12 +186,19 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """Get collection by Python-style attribute name.
 
-        Convenient shorthand names are mapped to their IDF equivalents
-        (e.g. ``zones`` -> ``Zone``, ``building_surfaces`` ->
-        ``BuildingSurface:Detailed``).
+        Every object type in the document's schema is reachable this way, as its
+        ``snake_case`` plural (``model.air_loop_hvacs``), its singular
+        (``model.air_loop_hvac``), or the raw type name normalised
+        (``model.AirLoopHVAC``).  A hand-written shorthand in ``_PYTHON_TO_IDF``
+        (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
+        ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) takes precedence
+        where one exists.
+
+        Without a schema loaded, only the hand-written shorthands and a
+        case-insensitive match against existing collections are available.
 
         Examples:
-            Use shorthand attribute names for common object types:
+            Use attribute names for object types:
 
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -203,7 +210,8 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             'Perimeter_ZN_1'
 
         Raises:
-            AttributeError: If the attribute is not a known collection mapping.
+            AttributeError: If the name resolves to no object type.  When the
+                schema has a close match the message names it.
         """
     def __contains__(self, obj_type: str) -> bool:  # type: ignore[override]
         """Check if document has objects of a type.
