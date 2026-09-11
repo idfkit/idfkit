@@ -1,0 +1,77 @@
+name: Rehearse a candidate against every consumer
+
+# Ask what an unpublished build of idfkit does to every project that consumes it, in one action,
+# before it is published (feature 004, User Story 2, T049).
+#
+# It dispatches `rehearse-candidate.yml` in each consumer the register lists with a python rehearsal
+# of its own, each of which builds the candidate from this repository at `candidate_ref`, installs it
+# over its synced environment without touching pyproject.toml or uv.lock, and runs its type check and
+# then its tests. Consumers whose rehearsal is `through-provider` are skipped: they hold no code that
+# calls idfkit, and a candidate reaches them only inside a provider's release.
+#
+# The results are in each consumer's own run, linked from this run's summary. A failure there is a
+# finding against this library, and because rehearsals are dispatched on demand and never run on a
+# consumer's pull requests, it cannot block any consumer's unrelated work (FR-013).
+#
+# A dispatch that does not land fails this run. A rehearsal that reached nobody is not a rehearsal.
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: The commit, branch or tag of idfkit to rehearse. Defaults to the commit this runs on.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rehearse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out this repository for its governance pin
+        uses: actions/checkout@v4
+        with:
+          path: library
+          sparse-checkout: pyproject.toml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Read the pinned governance level
+        id: pin
+        run: |
+          set -euo pipefail
+          level=$(python3 -c 'import tomllib;print(tomllib.load(open("library/pyproject.toml","rb"))["tool"]["idfkit"]["governance"]["level"])')
+          echo "level=$level" >> "$GITHUB_OUTPUT"
+
+      - name: Read the consumer register at that tag
+        uses: actions/checkout@v4
+        with:
+          repository: idfkit/idfkit-conformance
+          ref: refs/tags/${{ steps.pin.outputs.level }}
+          path: conformance
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Mint app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Dispatch every rehearsal
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          CANDIDATE_REF: ${{ inputs.candidate_ref || github.sha }}
+        run: >-
+          python conformance/tools/dispatch_waves.py
+          --register conformance/governance/consumers.toml
+          --library python
+          --rehearse-ref "$CANDIDATE_REF"
+          --report rehearsal-dispatch.json
