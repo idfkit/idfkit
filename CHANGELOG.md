@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.5] - 2026-09-18
+
+This release moves to `conformance-2026.14` and `governance-2026.18`. The corpus
+level changes no case: 69 cases and 211 assertions, as `conformance-2026.12` had.
+What it changes is the accepted-divergence register, which loses four entries. All
+four were the same refusal, recorded against `versions-late-version-object` on
+`parse-outcome`, `epjson`, `round-trip` and `preserved-text`: the read raised, so
+the three downstream assertions had no document to compare and recorded that absence
+rather than a difference of their own. The fix below makes all four pass at once.
+
+That case was written before the bug was found here, and it is worth saying why it
+existed: the corpus had already reduced three real example files to their smallest
+failing form, and its own reasoning named the fix. "Nothing in the IDF format bounds
+where the Version object may appear, so no window is large enough, and the fix is to
+search the whole file rather than to widen the window."
+
 ### Fixed
 
 - **A model that states its version late is no longer refused.** Both version
@@ -747,6 +763,7 @@ Initial public release.
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
 [Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...HEAD
+[1.0.0-rc.5]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.1...v1.0.0-rc.2
