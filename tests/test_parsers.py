@@ -120,6 +120,39 @@ class TestGetIDFVersion:
             get_idf_version(filepath)
 
 
+class TestVersionStatedLate:
+    """A model may state its version anywhere; nothing in IDF puts it near the top.
+
+    Three of the example files shipped with EnergyPlus 26.1.0 carry their
+    ``Version`` object past the first 10 KB, at bytes 16,545, 12,988 and 10,507.
+    Both detection paths used to read only that much and refused all three with
+    ``VersionNotFoundError``, which names the file rather than the reader.
+    """
+
+    @staticmethod
+    def _late_version_idf(path: Path, offset: int) -> Path:
+        padding = "! padding comment to push the version object down\n" * 500
+        assert len(padding) > offset
+        path.write_text(f"{padding[:offset]}\nVersion, 24.1;\nZone, MyZone;\n")
+        return path
+
+    @pytest.mark.parametrize("offset", [10_507, 12_988, 16_545])
+    def test_get_idf_version_reads_past_the_scan_window(self, tmp_path: Path, offset: int) -> None:
+        filepath = self._late_version_idf(tmp_path / f"late_{offset}.idf", offset)
+        assert get_idf_version(filepath) == (24, 1, 0)
+
+    def test_get_idf_version_finds_a_version_split_by_the_window(self, tmp_path: Path) -> None:
+        """The object may straddle the boundary, so the fallback re-searches from the start."""
+        filepath = self._late_version_idf(tmp_path / "split.idf", 10_235)
+        assert get_idf_version(filepath) == (24, 1, 0)
+
+    def test_parse_idf_loads_a_model_stating_its_version_late(self, tmp_path: Path) -> None:
+        filepath = self._late_version_idf(tmp_path / "late_parse.idf", 12_000)
+        doc = parse_idf(filepath)
+        assert doc.version == (24, 1, 0)
+        assert doc["Zone"]["MyZone"] is not None
+
+
 class TestIterIDFObjects:
     def test_basic(self, idf_file: Path) -> None:
         objects = list(iter_idf_objects(idf_file))

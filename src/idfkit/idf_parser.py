@@ -57,6 +57,11 @@ _FIELD_SPLIT_PATTERN = re.compile(rb"\s*,\s*")
 # Memory map threshold (10 MB)
 _MMAP_THRESHOLD = 10 * 1024 * 1024
 
+# How much of a file ``get_idf_version`` reads before falling back to the whole
+# of it. A first guess, not a limit: a file stating its version later is read
+# in full rather than refused.
+_VERSION_SCAN_BYTES = 10240
+
 # ---------------------------------------------------------------------------
 # CST regex patterns
 # ---------------------------------------------------------------------------
@@ -472,10 +477,11 @@ class IDFParser:
 
     def _detect_version(self, content: bytes) -> tuple[int, int, int]:
         """Detect EnergyPlus version from file content."""
-        # Only search first 10KB for version
-        header = content[:10240]
-
-        match = _VERSION_PATTERN.search(header)
+        # Search the whole file. ``content`` is already in memory, so a window
+        # saves nothing here and costs correctness: nothing in the format puts
+        # the Version object near the top, and three of the example files
+        # shipped with EnergyPlus 26.1.0 carry it past the first 10 KB.
+        match = _VERSION_PATTERN.search(content)
         if match:
             major = int(match.group(1))
             minor = int(match.group(2))
@@ -937,8 +943,12 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
     """
     Quick version detection without full parsing.
 
-    Only reads the first 10 KB of the file, making it very fast
-    even for large models.
+    Reads the first 10 KB of the file, which holds the ``Version`` object in
+    almost every model, and falls back to reading the rest only when it does
+    not. The common case costs one small read; no valid file is refused for
+    stating its version late. Nothing in the IDF format requires ``Version``
+    to appear near the top, and three of the example files shipped with
+    EnergyPlus 26.1.0 carry it past 10 KB.
 
     Args:
         filepath: Path to IDF file
@@ -947,11 +957,11 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
         Version tuple (major, minor, patch)
 
     Raises:
-        VersionNotFoundError: If version cannot be detected
+        VersionNotFoundError: If the file holds no Version object
 
     Examples:
         Check which EnergyPlus version a model was created for
-        (reads only the first 10 KB for speed):
+        (usually reads only the first 10 KB):
 
             ```python
             from idfkit import get_idf_version
@@ -963,9 +973,13 @@ def get_idf_version(filepath: Path | str) -> tuple[int, int, int]:
     filepath = Path(filepath)
 
     with open(filepath, "rb") as f:
-        header = f.read(10240)
+        head = f.read(_VERSION_SCAN_BYTES)
+        match = _VERSION_PATTERN.search(head)
+        if match is None:
+            # The scan window may have split the Version object, so re-search
+            # the whole file rather than only the remainder.
+            match = _VERSION_PATTERN.search(head + f.read())
 
-    match = _VERSION_PATTERN.search(header)
     if match:
         major = int(match.group(1))
         minor = int(match.group(2))

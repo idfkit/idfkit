@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A model that states its version late is no longer refused.** Both version
+  detection paths read only the first 10 KB of a file and searched that for the
+  `Version` object. Nothing in the IDF format requires it to appear near the top,
+  and three of the 760 example files shipped with EnergyPlus 26.1.0 carry it past
+  that window, at bytes 16,545, 12,988 and 10,507. All three failed to load with
+  `VersionNotFoundError: Could not detect EnergyPlus version in file`, which names
+  the file rather than the reader:
+  `1ZoneWith14ControlledHeat-CoolPanels.idf`,
+  `EMSCurveOverride_PackagedTerminalHeatPump.idf` and
+  `RefBldgPrimarySchoolNew2004_Chicago.idf`.
+
+  `IDFParser._detect_version` now searches the whole file. It receives content that
+  has already been read in full, so the window discarded data that was in memory
+  and cost nothing to search.
+
+  `get_idf_version` keeps its documented 10 KB fast path and falls back to reading
+  the rest only on a miss, including when the object straddles the boundary. The
+  common case still costs one small read; no valid file is refused.
+
 ## [1.0.0-rc.4] - 2026-09-08
 
 This release moves to `conformance-2026.12` and `governance-2026.17`. The corpus
