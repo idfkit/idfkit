@@ -197,11 +197,18 @@ class UnresolvedObject:
 
     The reason is an enumeration rather than a message, so that a consumer can group on it and a
     reworded string does not change behaviour.
+
+    ``missing_reference`` names what the object pointed at and the model does not hold, for the two
+    reasons that are a dangling reference. The reason says how to group the failure; it does not say
+    which wall to go and find, and a reader fixing the model needs the name rather than a second
+    search through the document. Absent when nothing was referenced, as for an object whose vertex
+    list is too short.
     """
 
     object_type: str
     name: str
     reason: Reason
+    missing_reference: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -420,7 +427,7 @@ def _resolve_one(
         parent_surface = str(surface.data.get("building_surface_name") or "")
         parent = surfaces_by_name.get(parent_surface.upper())
         if parent is None:
-            return UnresolvedObject(object_type, name, "parent-surface-not-found")
+            return UnresolvedObject(object_type, name, "parent-surface-not-found", parent_surface)
         # Fenestration is stated in its parent's frame, so it resolves against the parent's zone.
         zone_name = _zone_of(parent)
     elif object_type == "Shading:Zone:Detailed":
@@ -435,7 +442,7 @@ def _resolve_one(
 
     zone = zones.get(zone_name.upper()) if zone_name else None
     if zone_name and zone is None and not is_shading:
-        return UnresolvedObject(object_type, name, "zone-not-found")
+        return UnresolvedObject(object_type, name, "zone-not-found", zone_name)
 
     placed = _wind(_place(polygon, zone, rules), rules)
 

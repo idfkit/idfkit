@@ -244,6 +244,32 @@ class TestNothingIsDroppedSilently:
         assert len(scene.unresolved) == 1
         assert scene.unresolved[0].name == "Orphan"
         assert scene.unresolved[0].reason == "parent-surface-not-found"
+        # FR-014 asks for the missing parent by name. The reason says how to group the failure; the
+        # name says which wall to go and find, without a second search through the document.
+        assert scene.unresolved[0].missing_reference == "NoSuchWall"
+
+    def test_a_surface_whose_zone_is_absent_names_the_zone_it_wanted(self) -> None:
+        """The same defect class, and the same obligation: say what was pointed at."""
+        model = _one_wall()
+        model["BuildingSurface:Detailed"].first()["zone_name"] = "NoSuchZone"
+        scene = get_scene(model)
+        assert scene.surfaces == ()
+        assert len(scene.unresolved) == 1
+        assert scene.unresolved[0].reason == "zone-not-found"
+        assert scene.unresolved[0].missing_reference == "NoSuchZone"
+
+    def test_an_object_with_no_reference_to_miss_names_nothing(self) -> None:
+        """``missing_reference`` is absent rather than empty when nothing was referenced."""
+        model = _one_wall()
+        wall = model["BuildingSurface:Detailed"].first()
+        wall["vertices"] = [
+            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+            {"vertex_x_coordinate": 4, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ]
+        scene = get_scene(model)
+        assert len(scene.unresolved) == 1
+        assert scene.unresolved[0].reason == "too-few-vertices"
+        assert scene.unresolved[0].missing_reference is None
 
 
 class TestTheDocumentIsUnchanged:
@@ -302,6 +328,31 @@ class TestAgainstTheEngine:
             assert surface.parent_surface.upper() == base.upper()
         if fixture == "world-nonzero-zone-origin":
             assert len(windows) == 24
+
+    @pytest.mark.parametrize("fixture", _FIXTURES)
+    def test_a_parent_is_carried_exactly_on_fenestration(self, fixture: str, tmp_path: Path) -> None:
+        """FR-013 says exactly, and the engine's report is the reason that word has to be tested.
+
+        The engine names a base surface for zone-attached shading too: 21 of the 99 rows in
+        ``world-nonzero-zone-origin`` carry one. The scene deliberately does not, because
+        ``parent_surface`` means the surface a fenestration sits on and nothing else. Without this
+        assertion a reader comparing the two reports would have no way to tell the choice from an
+        oversight, and a consumer grouping windows by that field would silently collect shading.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text(fixture), encoding="latin-1")
+        scene = get_scene(load_idf(source))
+
+        for surface in scene.surfaces:
+            carried = surface.parent_surface is not None
+            assert carried == (surface.object_type == "FenestrationSurface:Detailed"), (
+                f"{fixture}: {surface.object_type} {surface.name} carries parent_surface={surface.parent_surface!r}"
+            )
+
+        if fixture == "world-nonzero-zone-origin":
+            shading = [s for s in scene.surfaces if s.is_shading]
+            assert len(shading) == 21
+            assert all(s.parent_surface is None for s in shading)
 
     def test_the_unread_model_resolves_nothing_and_says_what_it_saw(self, tmp_path: Path) -> None:
         source = tmp_path / "model.idf"
