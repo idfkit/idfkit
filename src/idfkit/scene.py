@@ -92,10 +92,21 @@ _SHADING: Final = (
 )
 _READ: Final = (_HEAT_TRANSFER, _FENESTRATION, *_SHADING)
 
-#: Geometry types this slice does not read, reported rather than skipped. The simplified family
-#: states a surface as an origin, a width, a height and a tilt, which is a second rule set and a
-#: second oracle, deferred rather than forgotten.
+#: Geometry types this slice does not read, reported rather than skipped. Two families, deferred for
+#: different reasons and reported the same way, because FR-018 is unconditional: every geometry type
+#: the model states and this slice does not read is named with its count.
+#:
+#: The simplified family states a surface as an origin, a width, a height and a tilt, which is a
+#: second rule set and a second oracle.
+#:
+#: The three per-class detailed forms state explicit vertices and would resolve by the rule already
+#: written here. They are listed rather than read because no model in the check set holds one, so
+#: reading them would be an unproven claim. They are the first candidates for promotion once a
+#: fixture carries them.
 _UNREAD: Final = (
+    "Wall:Detailed",
+    "Floor:Detailed",
+    "RoofCeiling:Detailed",
     "Wall:Exterior",
     "Wall:Adiabatic",
     "Wall:Interzone",
@@ -367,22 +378,41 @@ def _wind(polygon: Polygon3D, rules: AppliedRules) -> Polygon3D:
 # ---------------------------------------------------------------------------
 
 
-def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...]) -> list[IDFObject]:
-    """Every object of the given types, in the order the document states them.
+def _type_rank(doc: IDFDocument) -> dict[str, int]:
+    """Each object type's position in the document, by where the file first states it.
 
-    ``region_of`` gives the byte offset of an object that was parsed from text, which is document
-    order exactly. A document built programmatically has no text and no offsets, so those objects
-    fall back to the order their collections hold them in, after everything that does have an
-    offset. Both are deterministic, which is what the stable-order guarantee actually needs; the
-    first is also literally the file's order, which is what makes a diff readable.
+    A document's collections are keyed by type in the order the parse first met each type, so this
+    is the file's own order at type granularity and it is available for every document, however it
+    was read.
     """
+    return {object_type: at for at, object_type in enumerate(doc.collections)}
+
+
+def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...]) -> list[IDFObject]:
+    """Every object of the given types, as close to the order the document states them as is known.
+
+    Two sources, and the difference between them is worth stating because the better one is not
+    always there. ``region_of`` gives an object's byte offset, which is document order exactly, but
+    only for a document read with ``preserve_formatting=True``: for every other document, a plain
+    read included, it answers ``None`` for everything. So the fallback is not the rare case, it is
+    the common one, and it had better be the file's order too as far as it goes.
+
+    The fallback ranks an object by where the file first states its TYPE, then by its position
+    within that type. That groups the types rather than interleaving them, which per-object offsets
+    would not, and it is the most the document can answer without its source text. What it is not is
+    the order of a hardcoded list of types, which is what this used to fall back to: that order is
+    this module's, owes nothing to the model, and made the emitted order a property of the reader
+    rather than of the file being read.
+    """
+    rank = _type_rank(doc)
     placed: list[tuple[int, int, IDFObject]] = []
     unplaced: list[tuple[int, int, IDFObject]] = []
-    for type_index, object_type in enumerate(object_types):
+    for object_type in object_types:
+        type_rank = rank.get(object_type, len(rank))
         for position, obj in enumerate(_objects(doc, object_type)):
             span = doc.region_of(obj)
             if span is None:
-                unplaced.append((type_index, position, obj))
+                unplaced.append((type_rank, position, obj))
             else:
                 placed.append((span.start, 0, obj))
     placed.sort(key=lambda row: row[0])
@@ -490,15 +520,22 @@ def _unattempted(doc: IDFDocument) -> tuple[UnattemptedType, ...]:
     This is what makes a model of simplified surfaces distinguishable from a model with no geometry
     at all (FR-019). Without it, both look like an empty scene and a reader is told nothing.
     """
-    found: list[tuple[int, str, int]] = []
+    rank = _type_rank(doc)
+    found: list[tuple[int, int, str, int]] = []
     for object_type in _UNREAD:
         objects = _objects(doc, object_type)
         if not objects:
             continue
         offsets = [span.start for span in (doc.region_of(obj) for obj in objects) if span is not None]
-        found.append((min(offsets) if offsets else 1 << 62, object_type, len(objects)))
-    found.sort(key=lambda row: (row[0], row[1]))
-    return tuple(UnattemptedType(object_type, count) for _, object_type, count in found)
+        # Sorted by byte offset when the document carries its source, and by where the file first
+        # states the type otherwise. Never by the order of ``_UNREAD``, which is this module's.
+        found.append(
+            (0, min(offsets), object_type, len(objects))
+            if offsets
+            else (1, rank.get(object_type, len(rank)), object_type, len(objects))
+        )
+    found.sort(key=lambda row: (row[0], row[1], row[2]))
+    return tuple(UnattemptedType(object_type, count) for _, _, object_type, count in found)
 
 
 def get_scene(doc: IDFDocument) -> Scene:

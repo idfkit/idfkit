@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 from idfkit import get_scene, load_idf, new_document, write_idf
-from idfkit.scene import Scene
+from idfkit.scene import _READ, _UNREAD, Scene
 
 _REPO = Path(__file__).resolve().parents[1]
 
@@ -272,6 +272,119 @@ class TestNothingIsDroppedSilently:
         assert scene.unresolved[0].missing_reference is None
 
 
+class TestEveryGeometryObjectIsAccountedFor:
+    """SC-008 on a bare checkout: nothing in the model may vanish from the scene without a word."""
+
+    #: The members of the schema's surfaces group that are not geometry objects, listed so that the
+    #: sweep below can be exhaustive over the rest. A type is here because it states no surface: a
+    #: zone or space is a container, a property object modifies a surface stated elsewhere,
+    #: InternalMass states an area and a construction and no vertices, GlobalGeometryRules states
+    #: the rules themselves, and GeometryTransform scales what is stated elsewhere.
+    _NOT_GEOMETRY = frozenset({
+        "GeometryTransform",
+        "GlobalGeometryRules",
+        "InternalMass",
+        "ShadingProperty:Reflectance",
+        "Space",
+        "SpaceList",
+        "WindowProperty:AirflowControl",
+        "WindowProperty:FrameAndDivider",
+        "WindowProperty:StormWindow",
+        "WindowShadingControl",
+        "Zone",
+        "ZoneGroup",
+        "ZoneList",
+    })
+
+    def test_every_surface_type_the_schema_knows_is_read_or_declared_unread(self) -> None:
+        """The guard that catches a geometry type belonging to neither list.
+
+        Counting the model against the two lists cannot catch a type absent from both: such a type
+        is invisible to the count as it is to the scene, and the model reports as empty, which
+        FR-019 exists to forbid. So the question is asked of the schema instead, which knows every
+        surface type EnergyPlus has, rather than of the lists being checked.
+
+        This is not hypothetical. It is how ``Wall:Detailed``, ``Floor:Detailed`` and
+        ``RoofCeiling:Detailed`` were found: three detailed forms carrying explicit vertices, in
+        neither list, and in no fixture, so nothing else would have said a word.
+        """
+        schema = new_document().schema
+        assert schema is not None
+        group = schema.get_group("BuildingSurface:Detailed")
+        surfaces = {
+            name for name in schema.object_types if schema.get_group(name) == group and name not in self._NOT_GEOMETRY
+        }
+        unaccounted = sorted(surfaces - set(_READ) - set(_UNREAD))
+        assert not unaccounted, f"geometry types in neither list: {unaccounted}"
+
+    def test_the_counts_add_up(self) -> None:
+        """Resolved plus unresolved plus unattempted equals what the model holds."""
+        model = _one_wall()
+        model.add("Wall:Exterior", "Simple", construction_name="", zone_name="Z1", validate=False)
+        model.add(
+            "FenestrationSurface:Detailed",
+            "Orphan",
+            surface_type="Window",
+            construction_name="",
+            building_surface_name="NoSuchWall",
+            number_of_vertices=3,
+            vertex_1_x_coordinate=1,
+            vertex_1_y_coordinate=0,
+            vertex_1_z_coordinate=2,
+            vertex_2_x_coordinate=1,
+            vertex_2_y_coordinate=0,
+            vertex_2_z_coordinate=1,
+            vertex_3_x_coordinate=2,
+            vertex_3_y_coordinate=0,
+            vertex_3_z_coordinate=1,
+            validate=False,
+        )
+        scene = get_scene(model)
+        held = sum(len(model[object_type]) for object_type in (*_READ, *_UNREAD) if object_type in model)
+        reported = len(scene.surfaces) + len(scene.unresolved) + sum(e.count for e in scene.unattempted)
+        assert reported == held == 3
+
+
+class TestBothListsComeBackInDocumentOrder:
+    """FR-017a. The corpus compares both as sets, so only a direct assertion can catch a drift."""
+
+    def test_unresolved_follows_the_file_and_not_the_type_order(self, tmp_path: Path) -> None:
+        """The fenestration is stated first and must be reported first.
+
+        Grouping by type would put the ``BuildingSurface:Detailed`` first, since it leads ``_READ``.
+        The file says otherwise, and the file is what a reader is holding.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(
+            "Version, 26.1;\n"
+            "GlobalGeometryRules, UpperLeftCorner, Counterclockwise, Relative;\n"
+            "FenestrationSurface:Detailed, FirstStated, Window, , NoSuchWall, , , , , 3,\n"
+            "  1,0,2, 1,0,1, 2,0,1;\n"
+            "BuildingSurface:Detailed, SecondStated, Wall, , NoSuchZone, , Outdoors, , , , , 3,\n"
+            "  0,0,3, 0,0,0, 4,0,0;\n",
+            encoding="latin-1",
+        )
+        scene = get_scene(load_idf(source))
+        assert [u.name for u in scene.unresolved] == ["FirstStated", "SecondStated"]
+
+    def test_unattempted_follows_first_occurrence_and_not_the_list_order(self, tmp_path: Path) -> None:
+        """``Window`` is stated before ``Wall:Exterior`` and must be named first.
+
+        ``_UNREAD`` lists the walls before the windows, so a producer iterating that constant would
+        report them the other way round and no corpus comparison would notice.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(
+            "Version, 26.1;\n"
+            "Window, StatedFirst, , SomeWall, , 1, 0, 1, 1.5, 1.2;\n"
+            "Wall:Exterior, StatedSecond, , Z1, , 180, 90, 0, 0, 0, 4, 3;\n",
+            encoding="latin-1",
+        )
+        scene = get_scene(load_idf(source))
+        assert [e.object_type for e in scene.unattempted] == ["Window", "Wall:Exterior"]
+        assert [e.count for e in scene.unattempted] == [1, 1]
+
+
 class TestTheDocumentIsUnchanged:
     def test_extraction_does_not_touch_a_constructed_model(self) -> None:
         model = _one_wall()
@@ -353,6 +466,54 @@ class TestAgainstTheEngine:
             shading = [s for s in scene.surfaces if s.is_shading]
             assert len(shading) == 21
             assert all(s.parent_surface is None for s in shading)
+
+    @pytest.mark.parametrize("fixture", (*_FIXTURES, "clockwise-entry", "lower-left-start", "simplified-only-unread"))
+    def test_nothing_in_the_model_is_missing_from_the_scene(self, fixture: str, tmp_path: Path) -> None:
+        """SC-008 over all seven fixtures: every geometry object is resolved, refused, or counted.
+
+        The constructed version of this runs on a bare checkout. This one runs it over real models,
+        where the counts are large enough that a surface dropped in one branch of the resolution
+        would not stand out in a total anyone eyeballed.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text(fixture), encoding="latin-1")
+        doc = load_idf(source)
+        scene = get_scene(doc)
+
+        held = sum(len(doc[object_type]) for object_type in (*_READ, *_UNREAD) if object_type in doc)
+        reported = len(scene.surfaces) + len(scene.unresolved) + sum(e.count for e in scene.unattempted)
+        assert reported == held, (
+            f"{fixture}: model holds {held} geometry objects, scene accounts for {reported} "
+            f"({len(scene.surfaces)} resolved, {len(scene.unresolved)} unresolved, "
+            f"{sum(e.count for e in scene.unattempted)} unattempted)"
+        )
+
+    def test_detailed_shading_resolves_and_is_marked_as_shading(self, tmp_path: Path) -> None:
+        """FR-015. The 21 in ``world-nonzero-zone-origin`` are the only shading in the check set.
+
+        Marked, not merely present: a consumer draws shading differently from a wall, and a shading
+        surface that arrived looking like a heat transfer surface would be drawn as part of the
+        building. It carries no zone, and its ``surface_type`` is its own object type, because the
+        schema gives a shading surface no surface-type field to read one from.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text("world-nonzero-zone-origin"), encoding="latin-1")
+        scene = get_scene(load_idf(source))
+        expected = _expected("world-nonzero-zone-origin")
+
+        shading = [s for s in scene.surfaces if s.is_shading]
+        assert len(shading) == 21
+        for surface in shading:
+            assert surface.object_type in {
+                "Shading:Site:Detailed",
+                "Shading:Building:Detailed",
+                "Shading:Zone:Detailed",
+            }
+            assert surface.surface_type == surface.object_type
+            assert surface.zone == ""
+            assert expected[surface.name.upper()][1], f"{surface.name} is not in the engine's report"
+
+        assert all(not s.is_shading for s in scene.surfaces if s.object_type == "BuildingSurface:Detailed")
 
     def test_the_unread_model_resolves_nothing_and_says_what_it_saw(self, tmp_path: Path) -> None:
         source = tmp_path / "model.idf"
