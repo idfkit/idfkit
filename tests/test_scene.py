@@ -166,6 +166,11 @@ def _two_walls(**rules: str):
     One wall lies in a plane, so its extent is flat in y and a defect in that coordinate cannot
     show. Two walls give the extent a non-zero size on all three axes. They share their x and z, so
     each of the six faces of the extent is touched by a vertex.
+
+    W2 is wound the opposite way round from W1, so that the two outward normals point away from
+    each other as the outward normals of the two long walls of a building do. The extent does not
+    depend on this, but a model whose far wall faces inward while declaring ``Outdoors`` is a trap
+    for anyone who reuses this helper for an assertion about normals.
     """
     model = _one_wall(**rules)
     model.add(
@@ -177,10 +182,10 @@ def _two_walls(**rules: str):
         outside_boundary_condition="Outdoors",
         number_of_vertices=4,
         vertices=[
-            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 3},
-            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
-            {"vertex_x_coordinate": 4, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
             {"vertex_x_coordinate": 4, "vertex_y_coordinate": 6, "vertex_z_coordinate": 3},
+            {"vertex_x_coordinate": 4, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
+            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
+            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 3},
         ],
         validate=False,
     )
@@ -348,6 +353,7 @@ class TestTheSceneCarriesItsExtent:
         scene = get_scene(model)
         assert [entry.name for entry in scene.unresolved] == ["Orphan"]
         assert scene.bounds is not None
+        assert scene.bounds.min.as_tuple() == (0.0, 0.0, 0.0)
         assert scene.bounds.max.as_tuple() == (4.0, 6.0, 3.0)
 
     def test_a_model_whose_geometry_all_failed_has_no_extent_rather_than_a_point(self) -> None:
@@ -722,8 +728,14 @@ class TestAgainstTheEngine:
             f"{sum(e.count for e in scene.unattempted)} unattempted)"
         )
 
-    def test_detailed_shading_resolves_and_is_marked_as_shading(self, tmp_path: Path) -> None:
-        """FR-015. The 21 in ``world-nonzero-zone-origin`` are the only shading in the check set.
+    @pytest.mark.parametrize(("fixture", "count"), (("world-nonzero-zone-origin", 21), ("relative-zone-origin", 3)))
+    def test_detailed_shading_resolves_and_is_marked_as_shading(self, fixture: str, count: int, tmp_path: Path) -> None:
+        """FR-015 over both fixtures that carry shading: 21 surfaces in one and 3 in the other.
+
+        All 24 are ``Shading:Zone:Detailed``, the zone-attached form, which is the one FR-015 names
+        because it resolves against its zone's frame rather than against the building's. The other
+        two detailed forms are read by the same branch and are not in the check set, so the type
+        assertion below is the only thing standing behind them here.
 
         Marked, not merely present: a consumer draws shading differently from a wall, and a shading
         surface that arrived looking like a heat transfer surface would be drawn as part of the
@@ -731,12 +743,12 @@ class TestAgainstTheEngine:
         schema gives a shading surface no surface-type field to read one from.
         """
         source = tmp_path / "model.idf"
-        source.write_text(_model_text("world-nonzero-zone-origin"), encoding="latin-1")
+        source.write_text(_model_text(fixture), encoding="latin-1")
         scene = get_scene(load_idf(source))
-        expected = _expected("world-nonzero-zone-origin")
+        expected = _expected(fixture)
 
         shading = [s for s in scene.surfaces if s.is_shading]
-        assert len(shading) == 21
+        assert len(shading) == count
         for surface in shading:
             assert surface.object_type in {
                 "Shading:Site:Detailed",
@@ -749,13 +761,22 @@ class TestAgainstTheEngine:
 
         assert all(not s.is_shading for s in scene.surfaces if s.object_type == "BuildingSurface:Detailed")
 
-    @pytest.mark.parametrize("fixture", _FIXTURES)
+    # ``lower-left-start`` joins the five here. It is excluded from ``_FIXTURES`` because it is
+    # about the starting-vertex comparison rather than about a rule, and an extent is a per-axis
+    # minimum and maximum over a ring, which is insensitive to where that ring starts. So its 41
+    # surfaces are an oracle this claim can have for nothing.
+    @pytest.mark.parametrize("fixture", (*_FIXTURES, "lower-left-start"))
     def test_the_extent_is_the_extent_of_the_vertices_the_engine_reports(self, fixture: str, tmp_path: Path) -> None:
         """FR-020 against the oracle rather than against this library's own vertices.
 
         The constructed assertions above take the extent over what this library resolved, so an
         extent and a resolution that are wrong in the same way agree with each other. Here the six
-        extremes are computed from the engine's report for the surfaces the scene resolved.
+        extremes are computed from the engine's report.
+
+        The oracle is restricted to the surfaces the scene resolved, so a surface dropped from the
+        scene altogether is dropped from both sides of this comparison and passes. That case is
+        ``test_nothing_in_the_model_is_missing_from_the_scene``; what this catches is an extent
+        computed over anything other than the geometry that was resolved.
         """
         source = tmp_path / "model.idf"
         source.write_text(_model_text(fixture), encoding="latin-1")
@@ -763,19 +784,14 @@ class TestAgainstTheEngine:
         expected = _expected(fixture)
         assert scene.bounds is not None
 
+        absent = [surface.name for surface in scene.surfaces if surface.name.upper() not in expected]
+        assert not absent, f"{fixture}: {absent} are not in the engine's report"
+
         reported = [vertex for surface in scene.surfaces for vertex in expected[surface.name.upper()][1]]
         for axis, at in (("x", 0), ("y", 1), ("z", 2)):
             low, high = min(v[at] for v in reported), max(v[at] for v in reported)
-            assert abs(getattr(scene.bounds.min, axis) - low) < TOLERANCE_M, f"{fixture}: min {axis}"
-            assert abs(getattr(scene.bounds.max, axis) - high) < TOLERANCE_M, f"{fixture}: max {axis}"
-
-        for surface in scene.surfaces:
-            for vertex in surface.polygon.vertices:
-                for axis in ("x", "y", "z"):
-                    at_vertex = getattr(vertex, axis)
-                    assert getattr(scene.bounds.min, axis) <= at_vertex <= getattr(scene.bounds.max, axis), (
-                        f"{fixture}: {surface.name} lies outside the extent in {axis}"
-                    )
+            assert abs(getattr(scene.bounds.min, axis) - low) <= TOLERANCE_M, f"{fixture}: min {axis}"
+            assert abs(getattr(scene.bounds.max, axis) - high) <= TOLERANCE_M, f"{fixture}: max {axis}"
 
     def test_the_unread_model_resolves_nothing_and_says_what_it_saw(self, tmp_path: Path) -> None:
         source = tmp_path / "model.idf"
