@@ -64,7 +64,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final, Literal, cast
 
-from .geometry import Polygon3D, Vector3D, get_surface_coords
+# ``_get_vertices`` rather than ``get_surface_coords``: the reason an object could not be placed
+# depends on how many vertices it states, and the public function answers only whether there were
+# enough. Reaching for the private name keeps one reading of the vertex list rather than two.
+from .geometry import Polygon3D, Vector3D, _get_vertices  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -446,11 +449,15 @@ def _resolve_one(
     is_shading = object_type in _SHADING
     is_fenestration = object_type == _FENESTRATION
 
-    polygon = get_surface_coords(surface)
-    if polygon is None:
-        vertices = surface.data.get("vertices")
-        reason: Reason = "no-vertices" if not vertices else "too-few-vertices"
+    stated = _get_vertices(surface)
+    if len(stated) < 3:
+        # Counted from the vertices the object states, not from whether it carries the extensible
+        # wrapper. The wrapper is how the detailed surface stores them and not how fenestration
+        # does, so asking for it called a window stating two vertices ``no-vertices``, which is a
+        # reason a reader cannot act on: it names the wrong defect in the file they are holding.
+        reason: Reason = "no-vertices" if not stated else "too-few-vertices"
         return UnresolvedObject(object_type, name, reason)
+    polygon = Polygon3D(stated)
 
     parent_surface: str | None = None
     if is_fenestration:

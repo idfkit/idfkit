@@ -444,6 +444,41 @@ class TestNothingIsDroppedSilently:
         assert scene.unresolved[0].reason == "zone-not-found"
         assert scene.unresolved[0].missing_reference == "NoSuchZone"
 
+    def test_the_reason_counts_the_vertices_the_object_states(self) -> None:
+        """The two reasons about an object's own vertex list, told apart by the count.
+
+        A window stating two vertices is short of vertices, not without them. Reading the
+        extensible wrapper to decide instead called it ``no-vertices``, because fenestration states
+        its vertices in flat fields and carries no wrapper at all, and the second language found
+        the difference by not making the same mistake.
+        """
+        model = _one_wall()
+        model.add(
+            "FenestrationSurface:Detailed",
+            "TwoVertices",
+            surface_type="Window",
+            construction_name="",
+            building_surface_name="W1",
+            number_of_vertices=2,
+            vertex_1_x_coordinate=1,
+            vertex_1_y_coordinate=0,
+            vertex_1_z_coordinate=2,
+            vertex_2_x_coordinate=1,
+            vertex_2_y_coordinate=0,
+            vertex_2_z_coordinate=1,
+            validate=False,
+        )
+        scene = get_scene(model)
+        assert [entry.reason for entry in scene.unresolved] == ["too-few-vertices"]
+
+    def test_an_object_stating_nothing_is_told_from_one_stating_too_little(self) -> None:
+        """``no-vertices`` is the model saying nothing, and is the reason with no test until now."""
+        model = _one_wall()
+        model["BuildingSurface:Detailed"].first()["vertices"] = []
+        scene = get_scene(model)
+        assert [entry.reason for entry in scene.unresolved] == ["no-vertices"]
+        assert scene.unresolved[0].missing_reference is None
+
     def test_an_object_with_no_reference_to_miss_names_nothing(self) -> None:
         """``missing_reference`` is absent rather than empty when nothing was referenced."""
         model = _one_wall()
