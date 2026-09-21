@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import get_scene, load_idf, new_document, write_idf
+from idfkit import Polygon3D, Vector3D, get_scene, load_idf, new_document, write_idf
 from idfkit.scene import _READ, _UNREAD, Scene
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -34,14 +34,19 @@ _REPO = Path(__file__).resolve().parents[1]
 #: coordinate and not a distance between points.
 TOLERANCE_M = 0.005
 
-#: The four fixtures whose resolution this file asserts. The other three are the corpus's business:
+#: The five fixtures whose resolution this file asserts. The other two are the corpus's business:
 #: ``lower-left-start`` is about the comparison rather than the rule, and ``simplified-only-unread``
-#: and ``clockwise-entry`` have their own tests below and in later phases.
+#: resolves nothing and is asserted on its own terms below.
+#:
+#: ``clockwise-entry`` is the only one of the seven that declares clockwise entry, which is one
+#: fewer than SC-004 states the set holds. The counterfactual below measures the clause on the model
+#: that is actually committed rather than on the two the criterion assumes.
 _FIXTURES = (
     "relative-zone-origin",
     "relative-zone-rotation",
     "north-axis-multizone",
     "world-nonzero-zone-origin",
+    "clockwise-entry",
 )
 
 
@@ -142,6 +147,19 @@ def _one_wall(**rules: str):
     return model
 
 
+def _the_other_way(model):
+    """The same wall, its ring traversed the other way from the same corner.
+
+    The head is held and the tail reversed, which is what an author winding the other way writes.
+    Reversing the whole list would move the starting vertex too, and the model would then differ in
+    two respects rather than one.
+    """
+    wall = model["BuildingSurface:Detailed"].first()
+    head, *tail = list(wall["vertices"])
+    wall["vertices"] = [head, *reversed(tail)]
+    return model
+
+
 class TestTheClausesAreConditional:
     def test_the_zone_origin_applies_under_relative(self) -> None:
         scene = get_scene(_one_wall(coordinate_system="Relative"))
@@ -184,6 +202,59 @@ class TestTheClausesAreConditional:
         assert "coordinate_system" in scene.applied.defaulted
         assert "north_axis" in scene.applied.defaulted
         assert scene.applied.coordinate_system == "Relative"
+
+
+class TestASurfaceFacesTheWayTheModelSaysItFaces:
+    """User story 4. The normal's sign comes from the declaration, not from the file's order.
+
+    The corpus settles the clause against the engine on ``clockwise-entry``, which is the only
+    committed model that declares it. What the corpus cannot settle is the invariance: that needs
+    two models differing in exactly one declared field, and no example file ships with a twin. So
+    the pair is constructed here, and it runs on a bare checkout.
+    """
+
+    def test_the_same_building_wound_either_way_carries_the_same_normal(self) -> None:
+        """Acceptance scenario 3. Two models, one building, one answer.
+
+        An author who winds the other way and says so has described no different wall. A consumer
+        colouring by the sign of the normal, or culling back faces with it, must not be shown two
+        buildings because two authors typed their vertices in different orders.
+        """
+        counter = _one_wall(vertex_entry_direction="Counterclockwise")
+        clock = _the_other_way(_one_wall(vertex_entry_direction="Clockwise"))
+
+        stated_counter = [dict(vertex) for vertex in counter["BuildingSurface:Detailed"].first()["vertices"]]
+        stated_clock = [dict(vertex) for vertex in clock["BuildingSurface:Detailed"].first()["vertices"]]
+        assert stated_counter != stated_clock, "the two models state the same vertices, so this proves nothing"
+
+        one = get_scene(counter).surfaces[0]
+        other = get_scene(clock).surfaces[0]
+        assert one.normal == other.normal
+        assert [v.as_tuple() for v in one.polygon.vertices] == [v.as_tuple() for v in other.polygon.vertices]
+        assert one.normal == Vector3D(0.0, -1.0, 0.0)
+
+    def test_the_declaration_alone_decides_the_sign(self) -> None:
+        """The complement, and the reason the clause cannot be replaced by a winding heuristic.
+
+        Same vertices, opposite declarations, opposite normals. A library that inferred the
+        orientation from the geometry rather than reading the declaration would return one answer
+        for both, and would be right about whichever model it happened to be shown.
+        """
+        one = get_scene(_one_wall(vertex_entry_direction="Counterclockwise")).surfaces[0]
+        other = get_scene(_one_wall(vertex_entry_direction="Clockwise")).surfaces[0]
+        assert one.normal == Vector3D(0.0, -1.0, 0.0)
+        assert other.normal == Vector3D(0.0, 1.0, 0.0)
+
+    def test_a_normal_is_a_unit_vector_in_every_reading(self) -> None:
+        """FR-010 says outward normal, and a consumer lighting a face divides by nothing.
+
+        ``Polygon3D.normal`` answers ``(0, 0, 1)`` for a degenerate ring, which is the one way a
+        resolved surface could carry a direction that means nothing. A resolved surface cannot be
+        degenerate, because a polygon of fewer than three vertices is unresolved with a reason.
+        """
+        for direction in ("Counterclockwise", "Clockwise"):
+            normal = get_scene(_one_wall(vertex_entry_direction=direction)).surfaces[0].normal
+            assert abs(normal.length() - 1.0) < 1e-12
 
 
 class TestNothingIsDroppedSilently:
@@ -427,6 +498,60 @@ class TestAgainstTheEngine:
             assert row is not None, f"{fixture}: {surface.name} is not in the engine's report"
             error = _ring_error(surface.polygon.vertices, row[1])
             assert error <= TOLERANCE_M, f"{fixture}: {surface.name} is {error:.4f} m out"
+
+    @pytest.mark.parametrize("fixture", _FIXTURES)
+    def test_every_normal_points_where_the_engine_s_ring_points(self, fixture: str, tmp_path: Path) -> None:
+        """FR-010 against the oracle rather than against this library's own arithmetic.
+
+        The engine reports vertices and not normals, so the direction compared against is the one
+        its own reported ring computes. That is not circular: the ring comparison is insensitive to
+        where a ring starts, and a surface could agree with the engine as a set of corners while
+        being traversed the other way. This is the assertion that says it is not.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text(fixture), encoding="latin-1")
+        scene = get_scene(load_idf(source))
+        expected = _expected(fixture)
+
+        for surface in scene.surfaces:
+            reported = Polygon3D([Vector3D(*vertex) for vertex in expected[surface.name.upper()][1]])
+            agreement = surface.normal.dot(reported.normal)
+            assert agreement > 0.999, f"{fixture}: {surface.name} faces {agreement:.4f} of the way the engine faces"
+
+    def test_the_clockwise_model_needs_the_clause_it_declares(self, tmp_path: Path) -> None:
+        """SC-004's measurement, taken rather than assumed.
+
+        That ``clockwise-entry`` passes says the clause does no harm. What says the clause is
+        load-bearing is what happens without it, and the way to ask without keeping a second
+        implementation around is to undo it on the output: reverse each ring back, holding its head,
+        which is exactly what a library that never wrote the clause would have returned.
+
+        Every one of the eight surfaces then disagrees with the engine, and the worst is 4.0 m out.
+        Three of the 726 geometry-bearing example models declare clockwise entry, so a library
+        without the clause passes on 723 of them and is wrong about every surface of the other
+        three: an error that reads as a modelling mistake rather than a library one, which is why
+        SC-004 asks for the measurement.
+
+        The criterion says two such models are in the set and one is, which is recorded beside
+        ``_FIXTURES`` above rather than worked around here.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text("clockwise-entry"), encoding="latin-1")
+        scene = get_scene(load_idf(source))
+        expected = _expected("clockwise-entry")
+
+        assert scene.applied.is_clockwise, "the fixture no longer declares clockwise entry"
+        assert len(scene.surfaces) == 8
+
+        worst = 0.0
+        for surface in scene.surfaces:
+            reported = expected[surface.name.upper()][1]
+            vertices = list(surface.polygon.vertices)
+            without_the_clause = [vertices[0], *reversed(vertices[1:])]
+            error = _ring_error(without_the_clause, reported)
+            assert error > TOLERANCE_M, f"{surface.name} agrees with the engine either way round"
+            worst = max(worst, error)
+        assert worst >= 4.0, f"the clause is worth {worst:.4f} m, and SC-004 claims at least 4.0 m"
 
     @pytest.mark.parametrize("fixture", _FIXTURES)
     def test_every_fenestration_names_the_parent_the_engine_names(self, fixture: str, tmp_path: Path) -> None:
