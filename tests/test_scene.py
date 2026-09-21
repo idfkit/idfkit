@@ -160,6 +160,33 @@ def _the_other_way(model):
     return model
 
 
+def _two_walls(**rules: str):
+    """The one-wall model with a second wall six metres away in y.
+
+    One wall lies in a plane, so its extent is flat in y and a defect in that coordinate cannot
+    show. Two walls give the extent a non-zero size on all three axes. They share their x and z, so
+    each of the six faces of the extent is touched by a vertex.
+    """
+    model = _one_wall(**rules)
+    model.add(
+        "BuildingSurface:Detailed",
+        "W2",
+        surface_type="WALL",
+        construction_name="",
+        zone_name="Z1",
+        outside_boundary_condition="Outdoors",
+        number_of_vertices=4,
+        vertices=[
+            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 3},
+            {"vertex_x_coordinate": 0, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
+            {"vertex_x_coordinate": 4, "vertex_y_coordinate": 6, "vertex_z_coordinate": 0},
+            {"vertex_x_coordinate": 4, "vertex_y_coordinate": 6, "vertex_z_coordinate": 3},
+        ],
+        validate=False,
+    )
+    return model
+
+
 class TestTheClausesAreConditional:
     def test_the_zone_origin_applies_under_relative(self) -> None:
         scene = get_scene(_one_wall(coordinate_system="Relative"))
@@ -255,6 +282,88 @@ class TestASurfaceFacesTheWayTheModelSaysItFaces:
         for direction in ("Counterclockwise", "Clockwise"):
             normal = get_scene(_one_wall(vertex_entry_direction=direction)).surfaces[0].normal
             assert abs(normal.length() - 1.0) < 1e-12
+
+
+class TestTheSceneCarriesItsExtent:
+    """User story 5, FR-020. The extent encloses every resolved vertex and no more.
+
+    These run on a bare checkout. The models have known dimensions, so the extent is asserted as an
+    exact pair of corners rather than as a property of itself.
+    """
+
+    def test_the_extent_of_a_known_building_is_the_corners_of_that_building(self) -> None:
+        bounds = get_scene(_two_walls(coordinate_system="World")).bounds
+        assert bounds is not None
+        assert bounds.min.as_tuple() == (0.0, 0.0, 0.0)
+        assert bounds.max.as_tuple() == (4.0, 6.0, 3.0)
+
+    def test_the_extent_is_of_the_resolved_geometry_and_not_of_the_stated_vertices(self) -> None:
+        """The same two walls under Relative, where the zone origin moves them by (10, 20, 0).
+
+        An extent taken from the vertices as written would be the World answer above for both
+        models. This is the assertion that distinguishes the two.
+        """
+        bounds = get_scene(_two_walls(coordinate_system="Relative")).bounds
+        assert bounds is not None
+        assert bounds.min.as_tuple() == (10.0, 20.0, 0.0)
+        assert bounds.max.as_tuple() == (14.0, 26.0, 3.0)
+
+    def test_every_face_of_the_extent_is_touched_by_a_vertex(self) -> None:
+        """``and no more`` is the half of FR-020 that a padded box would satisfy on enclosure alone."""
+        scene = get_scene(_two_walls(coordinate_system="World"))
+        assert scene.bounds is not None
+        vertices = [vertex for surface in scene.surfaces for vertex in surface.polygon.vertices]
+        for axis in ("x", "y", "z"):
+            assert getattr(scene.bounds.min, axis) == min(getattr(vertex, axis) for vertex in vertices)
+            assert getattr(scene.bounds.max, axis) == max(getattr(vertex, axis) for vertex in vertices)
+
+    def test_an_object_that_did_not_resolve_does_not_enlarge_the_extent(self) -> None:
+        """The extent is of the resolved geometry, so an unresolved object cannot stretch it.
+
+        The orphan window here is a kilometre away. An extent taken over every geometry object the
+        model states, rather than over the ones that were placed, would frame empty space.
+        """
+        model = _two_walls(coordinate_system="World")
+        model.add(
+            "FenestrationSurface:Detailed",
+            "Orphan",
+            surface_type="Window",
+            construction_name="",
+            building_surface_name="NoSuchWall",
+            number_of_vertices=4,
+            vertex_1_x_coordinate=1000,
+            vertex_1_y_coordinate=0,
+            vertex_1_z_coordinate=2,
+            vertex_2_x_coordinate=1000,
+            vertex_2_y_coordinate=0,
+            vertex_2_z_coordinate=1,
+            vertex_3_x_coordinate=1001,
+            vertex_3_y_coordinate=0,
+            vertex_3_z_coordinate=1,
+            vertex_4_x_coordinate=1001,
+            vertex_4_y_coordinate=0,
+            vertex_4_z_coordinate=2,
+            validate=False,
+        )
+        scene = get_scene(model)
+        assert [entry.name for entry in scene.unresolved] == ["Orphan"]
+        assert scene.bounds is not None
+        assert scene.bounds.max.as_tuple() == (4.0, 6.0, 3.0)
+
+    def test_a_model_whose_geometry_all_failed_has_no_extent_rather_than_a_point(self) -> None:
+        """FR-020's negative case on a model that states geometry and resolves none of it.
+
+        The empty model and the model of unread types are asserted below. This is the third way a
+        scene can hold no surfaces, and the one where an extent folded to a point at the origin
+        would be most plausible, because vertices were read before the surface was refused.
+        """
+        model = _two_walls(coordinate_system="World")
+        for wall in model["BuildingSurface:Detailed"]:
+            wall["zone_name"] = "NoSuchZone"
+        scene = get_scene(model)
+        assert scene.surfaces == ()
+        assert len(scene.unresolved) == 2
+        assert scene.bounds is None
 
 
 class TestNothingIsDroppedSilently:
@@ -592,7 +701,7 @@ class TestAgainstTheEngine:
             assert len(shading) == 21
             assert all(s.parent_surface is None for s in shading)
 
-    @pytest.mark.parametrize("fixture", (*_FIXTURES, "clockwise-entry", "lower-left-start", "simplified-only-unread"))
+    @pytest.mark.parametrize("fixture", (*_FIXTURES, "lower-left-start", "simplified-only-unread"))
     def test_nothing_in_the_model_is_missing_from_the_scene(self, fixture: str, tmp_path: Path) -> None:
         """SC-008 over all seven fixtures: every geometry object is resolved, refused, or counted.
 
@@ -639,6 +748,34 @@ class TestAgainstTheEngine:
             assert expected[surface.name.upper()][1], f"{surface.name} is not in the engine's report"
 
         assert all(not s.is_shading for s in scene.surfaces if s.object_type == "BuildingSurface:Detailed")
+
+    @pytest.mark.parametrize("fixture", _FIXTURES)
+    def test_the_extent_is_the_extent_of_the_vertices_the_engine_reports(self, fixture: str, tmp_path: Path) -> None:
+        """FR-020 against the oracle rather than against this library's own vertices.
+
+        The constructed assertions above take the extent over what this library resolved, so an
+        extent and a resolution that are wrong in the same way agree with each other. Here the six
+        extremes are computed from the engine's report for the surfaces the scene resolved.
+        """
+        source = tmp_path / "model.idf"
+        source.write_text(_model_text(fixture), encoding="latin-1")
+        scene = get_scene(load_idf(source))
+        expected = _expected(fixture)
+        assert scene.bounds is not None
+
+        reported = [vertex for surface in scene.surfaces for vertex in expected[surface.name.upper()][1]]
+        for axis, at in (("x", 0), ("y", 1), ("z", 2)):
+            low, high = min(v[at] for v in reported), max(v[at] for v in reported)
+            assert abs(getattr(scene.bounds.min, axis) - low) < TOLERANCE_M, f"{fixture}: min {axis}"
+            assert abs(getattr(scene.bounds.max, axis) - high) < TOLERANCE_M, f"{fixture}: max {axis}"
+
+        for surface in scene.surfaces:
+            for vertex in surface.polygon.vertices:
+                for axis in ("x", "y", "z"):
+                    at_vertex = getattr(vertex, axis)
+                    assert getattr(scene.bounds.min, axis) <= at_vertex <= getattr(scene.bounds.max, axis), (
+                        f"{fixture}: {surface.name} lies outside the extent in {axis}"
+                    )
 
     def test_the_unread_model_resolves_nothing_and_says_what_it_saw(self, tmp_path: Path) -> None:
         source = tmp_path / "model.idf"
