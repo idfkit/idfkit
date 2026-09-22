@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The library held three answers about where a surface is, and two of them were wrong.**
+  `idfkit.geometry.translate_to_world` and the 3D renderer's own private resolution each applied a
+  rule that disagrees with EnergyPlus. Measured against the engine's own `Output:Surfaces:List`
+  vertex report over seventeen of the shipped example models and five hundred and thirty-two
+  surfaces, each of those rules agreed with the engine on five of the seventeen models, worst case
+  201.98 m of displacement. Both now resolve through `get_scene`, which agrees on seventeen of
+  seventeen, worst case 0.0045 m against a report that prints two decimals. Three defects account
+  for the difference: the building's north axis was turned per surface inside its own zone frame
+  rather than turning the resolved building as one body about the world origin, and in the opposite
+  sense; the zone origin was applied without being turned by that axis first; and a zone's surfaces
+  were collected by reference, which no window matches, because a window names its parent wall.
+- **`translate_to_world` no longer returns untouched from a model declaring `World`.** The building
+  north axis applies to such a model too. Only the zone origin and the zone's relative north are
+  conditional on the relative system, which is the clause that makes the example models declaring
+  `World` with a non-zero zone origin come out right. A model declaring clockwise vertex entry now
+  has its rings reversed, the first vertex held in place, with `GlobalGeometryRules` restated as
+  counter-clockwise, so the right-hand rule gives the outward normal in the result. The zone fields
+  are cleared only when they were applied, because under the world system they were not and they
+  still govern the simplified surface family and the daylighting reference points.
+
+### Changed
+
+- **`view_model`, `view_floor_plan`, `view_exploded` and `view_normals` draw 218 of the 699 shipped
+  example models differently, and in every case the new drawing is the correct one.** No model
+  changes how many surfaces it draws. 206 move because the north axis was turned per surface, worst
+  case 361.19 m; 10 because a zone origin was applied to a model declaring `World`, worst case
+  201.98 m; one for both, at 87.44 m; and one changes only its ring order, being a model declaring
+  clockwise entry whose surface normals therefore used to point inward. A surface naming a zone the
+  model does not hold is no longer drawn at its authored coordinates: it is reported in the scene's
+  `unresolved` list with the name of the zone that is missing. A shading surface's reported type is
+  now its object type, such as `Shading:Site:Detailed`, rather than the word `Shading`.
+
 ## [1.0.0-rc.5] - 2026-09-18
 
 This release moves to `conformance-2026.14` and `governance-2026.18`. The corpus

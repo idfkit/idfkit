@@ -15,15 +15,15 @@ Example:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from ..geometry import Polygon3D, Vector3D, get_surface_coords, get_zone_origin, get_zone_rotation
+from ..geometry import Polygon3D, Vector3D
+from ..scene import ResolvedSurface, get_scene
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
-    from ..objects import IDFObject
 
 
 class ColorBy(Enum):
@@ -113,26 +113,6 @@ _SHADING_COLOR = "#b0b0b0"
 
 
 # ---------------------------------------------------------------------------
-# Internal data structures
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class _ResolvedSurface:
-    """Surface with world-coordinate polygon and metadata."""
-
-    name: str
-    zone: str
-    surface_type: str
-    boundary: str
-    construction: str
-    polygon: Polygon3D
-    area: float
-    is_fenestration: bool
-    is_shading: bool = False
-
-
-# ---------------------------------------------------------------------------
 # Lazy plotly import
 # ---------------------------------------------------------------------------
 
@@ -151,131 +131,35 @@ def _get_go() -> Any:
 # Surface resolution
 # ---------------------------------------------------------------------------
 
-
-def _to_world_coords(polygon: Polygon3D, zone: IDFObject) -> Polygon3D:
-    """Transform polygon from zone-relative to world coordinates."""
-    origin = get_zone_origin(zone)
-    rotation = get_zone_rotation(zone)
-
-    result = polygon
-    if rotation != 0:
-        result = result.rotate_z(rotation, anchor=Vector3D.origin())
-    if origin.x != 0 or origin.y != 0 or origin.z != 0:
-        result = result.translate(origin)
-    return result
+#: The one geometry type that names a parent surface rather than a zone. The renderer draws it
+#: differently, and the scene records the parent it resolved against rather than a flag.
+_FENESTRATION = "FenestrationSurface:Detailed"
 
 
-def _resolve_surfaces(  # noqa: C901
-    doc: IDFDocument,
-    zones: list[str] | None = None,
-) -> list[_ResolvedSurface]:
-    """Extract all surfaces with world coordinates.
+def _is_fenestration(surface: ResolvedSurface) -> bool:
+    """Whether the scene placed this surface in its parent's frame."""
+    return surface.object_type == _FENESTRATION
 
-    Does NOT mutate ``doc``. Transforms are computed on-the-fly.
+
+def _surfaces(doc: IDFDocument, zones: list[str] | None = None) -> list[ResolvedSurface]:
+    """Every surface the public extraction resolved, optionally narrowed to some zones.
+
+    THE RENDERER NO LONGER RESOLVES ANYTHING.
+
+    It used to carry its own rule, which agreed with EnergyPlus on five of seventeen example models
+    and was wrong by up to 201.98 m on the rest. The rule now lives in one place,
+    [get_scene][idfkit.scene.get_scene], proven against the engine's own vertex report, and this is
+    the whole of what is left here: a call and a filter.
+
+    The filter is the renderer's and not the extraction's. ``get_scene`` takes one argument and
+    returns one scene, because narrowing a list is something every caller can already do, and
+    shading belongs to no zone and is kept whatever is asked for.
     """
-    resolved: list[_ResolvedSurface] = []
-
-    # Build zone lookup
-    zone_objects: dict[str, IDFObject] = {}
-    for z in doc["Zone"]:
-        zone_objects[z.name.upper()] = z
-
-    # Determine which zones to include
-    include = {z.upper() for z in zones} if zones is not None else set(zone_objects.keys())
-
-    # Process BuildingSurface:Detailed
-    for surface in doc["BuildingSurface:Detailed"]:
-        zone_name = getattr(surface, "zone_name", "") or ""
-        if zone_name.upper() not in include:
-            continue
-
-        coords = get_surface_coords(surface)
-        if coords is None:
-            continue
-
-        zone_obj = zone_objects.get(zone_name.upper())
-        if zone_obj is not None:
-            coords = _to_world_coords(coords, zone_obj)
-
-        resolved.append(
-            _ResolvedSurface(
-                name=surface.name,
-                zone=zone_name,
-                surface_type=getattr(surface, "surface_type", "") or "",
-                boundary=getattr(surface, "outside_boundary_condition", "") or "",
-                construction=getattr(surface, "construction_name", "") or "",
-                polygon=coords,
-                area=coords.area,
-                is_fenestration=False,
-            )
-        )
-
-    # Process FenestrationSurface:Detailed
-    for surface in doc["FenestrationSurface:Detailed"]:
-        parent_name = getattr(surface, "building_surface_name", "") or ""
-        # Find parent to get zone
-        parent_zone = ""
-        parent_coll = doc["BuildingSurface:Detailed"]
-        parent_obj = parent_coll.get(parent_name) if parent_name else None
-        if parent_obj is not None:
-            parent_zone = getattr(parent_obj, "zone_name", "") or ""
-
-        if parent_zone.upper() not in include:
-            continue
-
-        coords = get_surface_coords(surface)
-        if coords is None:
-            continue
-
-        zone_obj = zone_objects.get(parent_zone.upper())
-        if zone_obj is not None:
-            coords = _to_world_coords(coords, zone_obj)
-
-        resolved.append(
-            _ResolvedSurface(
-                name=surface.name,
-                zone=parent_zone,
-                surface_type=getattr(surface, "surface_type", "") or "",
-                boundary=getattr(surface, "outside_boundary_condition", "") or "",
-                construction=getattr(surface, "construction_name", "") or "",
-                polygon=coords,
-                area=coords.area,
-                is_fenestration=True,
-            )
-        )
-
-    # Process shading surfaces
-    for shading_type in ("Shading:Site:Detailed", "Shading:Building:Detailed", "Shading:Zone:Detailed"):
-        for surface in doc[shading_type]:
-            coords = get_surface_coords(surface)
-            if coords is None:
-                continue
-
-            # Zone shading surfaces may have a zone reference
-            zone_name = getattr(surface, "base_surface_name", "") or ""
-            if shading_type == "Shading:Zone:Detailed" and zone_name:
-                parent_obj = doc["BuildingSurface:Detailed"].get(zone_name)
-                if parent_obj is not None:
-                    z_name = getattr(parent_obj, "zone_name", "") or ""
-                    zone_obj = zone_objects.get(z_name.upper())
-                    if zone_obj is not None:
-                        coords = _to_world_coords(coords, zone_obj)
-
-            resolved.append(
-                _ResolvedSurface(
-                    name=surface.name,
-                    zone="",
-                    surface_type="Shading",
-                    boundary="",
-                    construction="",
-                    polygon=coords,
-                    area=coords.area,
-                    is_fenestration=False,
-                    is_shading=True,
-                )
-            )
-
-    return resolved
+    scene = get_scene(doc)
+    if zones is None:
+        return list(scene.surfaces)
+    wanted = {zone.upper() for zone in zones}
+    return [s for s in scene.surfaces if s.is_shading or s.zone.upper() in wanted]
 
 
 # ---------------------------------------------------------------------------
@@ -318,9 +202,9 @@ def _polygon_edges(polygon: Polygon3D) -> tuple[list[float | None], list[float |
 # ---------------------------------------------------------------------------
 
 
-def _get_color(surface: _ResolvedSurface, config: ModelViewConfig, zone_colors: dict[str, str]) -> str:
+def _get_color(surface: ResolvedSurface, config: ModelViewConfig, zone_colors: dict[str, str]) -> str:
     """Get the color for a surface based on the coloring strategy."""
-    if surface.is_fenestration:
+    if _is_fenestration(surface):
         return _FENESTRATION_COLOR
     if surface.is_shading:
         return _SHADING_COLOR
@@ -335,10 +219,10 @@ def _get_color(surface: _ResolvedSurface, config: ModelViewConfig, zone_colors: 
     return zone_colors.get(surface.construction.upper(), _ZONE_PALETTE[0])
 
 
-def _assign_zone_colors(surfaces: list[_ResolvedSurface], config: ModelViewConfig) -> dict[str, str]:
+def _assign_zone_colors(surfaces: list[ResolvedSurface], config: ModelViewConfig) -> dict[str, str]:
     """Build a mapping of zone/construction names to palette colors."""
     if config.color_by == ColorBy.CONSTRUCTION:
-        keys = sorted({s.construction.upper() for s in surfaces if not s.is_fenestration and not s.is_shading})
+        keys = sorted({s.construction.upper() for s in surfaces if not _is_fenestration(s) and not s.is_shading})
     else:
         keys = sorted({s.zone.upper() for s in surfaces if s.zone})
     return {key: _ZONE_PALETTE[i % len(_ZONE_PALETTE)] for i, key in enumerate(keys)}
@@ -349,7 +233,7 @@ def _assign_zone_colors(surfaces: list[_ResolvedSurface], config: ModelViewConfi
 # ---------------------------------------------------------------------------
 
 
-def _build_hover_text(surface: _ResolvedSurface) -> str:
+def _build_hover_text(surface: ResolvedSurface) -> str:
     """Build an HTML hover tooltip for a surface."""
     lines = [f"<b>{surface.name}</b>"]
     if surface.zone:
@@ -380,7 +264,7 @@ def _offset_fenestration(polygon: Polygon3D, normal: Vector3D) -> Polygon3D:
 
 
 def _build_mesh_traces(
-    surfaces: list[_ResolvedSurface],
+    surfaces: list[ResolvedSurface],
     config: ModelViewConfig,
     zone_colors: dict[str, str],
 ) -> list[Any]:
@@ -388,9 +272,9 @@ def _build_mesh_traces(
     go = _get_go()
 
     # Group surfaces by (color, legend_label)
-    groups: dict[tuple[str, str], list[_ResolvedSurface]] = {}
+    groups: dict[tuple[str, str], list[ResolvedSurface]] = {}
     for s in surfaces:
-        if s.is_fenestration and not config.show_fenestration:
+        if _is_fenestration(s) and not config.show_fenestration:
             continue
         color = _get_color(s, config, zone_colors)
         label = _legend_label(s, config)
@@ -409,7 +293,7 @@ def _build_mesh_traces(
 
         for s in group:
             poly = s.polygon
-            if s.is_fenestration:
+            if _is_fenestration(s):
                 poly = _offset_fenestration(poly, poly.normal)
 
             offset = len(all_x)
@@ -426,7 +310,7 @@ def _build_mesh_traces(
             hover = _build_hover_text(s)
             all_hover.extend([hover] * poly.num_vertices)
 
-        is_fen = group[0].is_fenestration
+        is_fen = _is_fenestration(group[0])
         opacity = config.fenestration_opacity if is_fen else config.opacity
 
         traces.append(
@@ -450,9 +334,9 @@ def _build_mesh_traces(
     return traces
 
 
-def _legend_label(surface: _ResolvedSurface, config: ModelViewConfig) -> str:
+def _legend_label(surface: ResolvedSurface, config: ModelViewConfig) -> str:
     """Determine legend label for a surface based on coloring mode."""
-    if surface.is_fenestration:
+    if _is_fenestration(surface):
         return "Fenestration"
     if surface.is_shading:
         return "Shading"
@@ -465,7 +349,7 @@ def _legend_label(surface: _ResolvedSurface, config: ModelViewConfig) -> str:
     return surface.construction or "Unknown"
 
 
-def _build_edge_traces(surfaces: list[_ResolvedSurface], config: ModelViewConfig) -> list[Any]:
+def _build_edge_traces(surfaces: list[ResolvedSurface], config: ModelViewConfig) -> list[Any]:
     """Build Scatter3d wireframe traces."""
     go = _get_go()
 
@@ -474,10 +358,10 @@ def _build_edge_traces(surfaces: list[_ResolvedSurface], config: ModelViewConfig
     all_z: list[float | None] = []
 
     for s in surfaces:
-        if s.is_fenestration and not config.show_fenestration:
+        if _is_fenestration(s) and not config.show_fenestration:
             continue
         poly = s.polygon
-        if s.is_fenestration:
+        if _is_fenestration(s):
             poly = _offset_fenestration(poly, poly.normal)
         ex, ey, ez = _polygon_edges(poly)
         all_x.extend(ex)
@@ -497,14 +381,14 @@ def _build_edge_traces(surfaces: list[_ResolvedSurface], config: ModelViewConfig
     ]
 
 
-def _build_label_traces(surfaces: list[_ResolvedSurface]) -> list[Any]:
+def _build_label_traces(surfaces: list[ResolvedSurface]) -> list[Any]:
     """Build Scatter3d traces for zone labels at zone centroids."""
     go = _get_go()
 
     # Compute zone centroids
     zone_points: dict[str, list[Vector3D]] = {}
     for s in surfaces:
-        if not s.zone or s.is_fenestration or s.is_shading:
+        if not s.zone or _is_fenestration(s) or s.is_shading:
             continue
         zone_points.setdefault(s.zone, []).append(s.polygon.centroid)
 
@@ -589,7 +473,7 @@ def view_model(
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
-    surfaces = _resolve_surfaces(doc, zones)
+    surfaces = _surfaces(doc, zones)
     zone_colors = _assign_zone_colors(surfaces, cfg)
 
     traces: list[Any] = _build_mesh_traces(surfaces, cfg, zone_colors)
@@ -630,14 +514,14 @@ def view_floor_plan(
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
-    surfaces = _resolve_surfaces(doc, zones)
+    surfaces = _surfaces(doc, zones)
     zone_colors = _assign_zone_colors(surfaces, cfg)
 
     fig = go.Figure()
     seen_labels: set[str] = set()
 
     for s in surfaces:
-        if s.is_fenestration or s.is_shading:
+        if _is_fenestration(s) or s.is_shading:
             continue
 
         stype = s.surface_type.lower()
@@ -690,7 +574,7 @@ def view_floor_plan(
 
 
 def _compute_zone_offsets(
-    surfaces: list[_ResolvedSurface],
+    surfaces: list[ResolvedSurface],
     separation: float,
 ) -> dict[str, Vector3D]:
     """Compute per-zone translation offsets for exploded views."""
@@ -732,30 +616,17 @@ def _compute_zone_offsets(
 
 
 def _apply_zone_offsets(
-    surfaces: list[_ResolvedSurface],
+    surfaces: list[ResolvedSurface],
     zone_offsets: dict[str, Vector3D],
-) -> list[_ResolvedSurface]:
+) -> list[ResolvedSurface]:
     """Apply per-zone translation offsets to surfaces."""
-    exploded: list[_ResolvedSurface] = []
+    exploded: list[ResolvedSurface] = []
     for s in surfaces:
-        if s.zone:
-            offset = zone_offsets.get(s.zone.upper(), Vector3D.origin())
-            new_poly = s.polygon.translate(offset)
-        else:
-            new_poly = s.polygon
-        exploded.append(
-            _ResolvedSurface(
-                name=s.name,
-                zone=s.zone,
-                surface_type=s.surface_type,
-                boundary=s.boundary,
-                construction=s.construction,
-                polygon=new_poly,
-                area=s.area,
-                is_fenestration=s.is_fenestration,
-                is_shading=s.is_shading,
-            )
-        )
+        if not s.zone:
+            exploded.append(s)
+            continue
+        offset = zone_offsets.get(s.zone.upper(), Vector3D.origin())
+        exploded.append(replace(s, polygon=s.polygon.translate(offset)))
     return exploded
 
 
@@ -787,7 +658,7 @@ def view_exploded(
     """
     go = _get_go()
     cfg = config or ModelViewConfig()
-    surfaces = _resolve_surfaces(doc, zones)
+    surfaces = _surfaces(doc, zones)
     zone_colors = _assign_zone_colors(surfaces, cfg)
 
     zone_offsets = _compute_zone_offsets(surfaces, separation)
@@ -847,7 +718,7 @@ def view_normals(
         edge_width=cfg.edge_width,
     )
 
-    surfaces = _resolve_surfaces(doc, zones)
+    surfaces = _surfaces(doc, zones)
     zone_colors = _assign_zone_colors(surfaces, reduced_cfg)
 
     traces: list[Any] = _build_mesh_traces(surfaces, reduced_cfg, zone_colors)
@@ -864,7 +735,7 @@ def view_normals(
     cone_hover: list[str] = []
 
     for s in surfaces:
-        if s.is_fenestration or s.is_shading:
+        if _is_fenestration(s) or s.is_shading:
             continue
         centroid = s.polygon.centroid
         normal = s.polygon.normal
