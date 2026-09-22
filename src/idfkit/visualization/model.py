@@ -20,7 +20,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any
 
 from ..geometry import Polygon3D, Vector3D
-from ..scene import ResolvedSurface, get_scene
+from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
@@ -131,13 +131,14 @@ def _get_go() -> Any:
 # Surface resolution
 # ---------------------------------------------------------------------------
 
-#: The one geometry type that names a parent surface rather than a zone. The renderer draws it
-#: differently, and the scene records the parent it resolved against rather than a flag.
-_FENESTRATION = "FenestrationSurface:Detailed"
-
 
 def _is_fenestration(surface: ResolvedSurface) -> bool:
-    """Whether the scene placed this surface in its parent's frame."""
+    """Whether the scene placed this surface in its parent's frame.
+
+    The type name is the extraction's own constant rather than a second spelling of it here. The
+    renderer draws fenestration differently, and the scene records the parent it resolved against
+    rather than a flag, so this is the one place the renderer asks.
+    """
     return surface.object_type == _FENESTRATION
 
 

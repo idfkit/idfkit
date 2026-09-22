@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`get_scene(doc)` resolves a model's geometry into one frame without changing the model.** It
+  returns a `Scene` holding every detailed surface it could place in world coordinates, the extent
+  of those vertices as `SceneBounds`, the declarations it read as `AppliedRules`, every object it
+  could not place as an `UnresolvedObject` with a reason, and every geometry type it does not read
+  as an `UnattemptedType` with a count. Every geometry object in the model appears exactly once
+  across the three lists, so a model of surfaces this slice cannot read is distinguishable from a
+  model with no geometry at all. The rule it applies was measured against the engine's own
+  `Output:Surfaces:List` vertex report rather than reasoned, and `idfkit-conformance`'s
+  `checks/geometry-vertices` runs both languages against the same committed expectations. Seven
+  names are exported: `get_scene`, `Scene`, `SceneBounds`, `ResolvedSurface`, `AppliedRules`,
+  `UnresolvedObject` and `UnattemptedType`.
+
 ### Fixed
 
 - **The library held three answers about where a surface is, and two of them were wrong.**
@@ -28,6 +42,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counter-clockwise, so the right-hand rule gives the outward normal in the result. The zone fields
   are cleared only when they were applied, because under the world system they were not and they
   still govern the simplified surface family and the daylighting reference points.
+- **`Shading:Site:Detailed` is no longer turned by `Building.north_axis`.** Site shading is fixed in
+  space and does not move with the building, which is the whole difference between that object and
+  `Shading:Building:Detailed`: EnergyPlus's own schema separates the two on exactly that sentence,
+  and the two carry identical fields otherwise. A model carrying site shading and a non-zero north
+  axis had every such surface rotated about the world origin by the building's angle. The rule was
+  measured and not merely read: one square from (50, 0) to (60, 0) entered twice, once under each
+  type, into a model declaring a north axis of 158.434 degrees, and EnergyPlus 26.1.0 reports the
+  site form where it was authored and the building form at (-46.50, -18.38) to (-55.80, -22.05).
+  No fixture in `checks/geometry-vertices` holds a detached shading surface of either form, and no
+  shipped example model carries one together with a north axis, so the corpus did not and could not
+  report this; `checks/geometry-vertices/check.md` now records the gap and the measurement.
+- **A shading surface can no longer answer a parent lookup.** The schema declares the `SurfaceNames`
+  reference list, which `building_surface_name` and `base_surface_name` point at, on the heat
+  transfer surfaces and on nothing else, so a shading surface is never anyone's parent. Extraction
+  looked names up across both families, so a `Shading:Site:Detailed` sharing a name with a wall
+  shadowed it, and a window naming that wall resolved against the shading object and came back
+  `zone-not-found` naming a surface where a zone was expected.
+- **A `Building` that states no north axis is recorded as defaulted.** The field was recorded as
+  assumed only when the object was absent entirely, so a model with a blank axis field was resolved
+  under an assumed zero while `AppliedRules.defaulted` reported nothing assumed. A stated zero is
+  still a declaration and is still not recorded.
+- **`translate_to_world` reports the objects it could not rewrite.** An object the scene could not
+  place keeps the vertices the author wrote while the declarations they were written against are
+  restated underneath it, so it is afterwards read in a frame it was never stated in. Each one is
+  now logged at warning level and named with its reason. `get_scene` reports the same objects in
+  `Scene.unresolved` and edits nothing.
 
 ### Changed
 

@@ -676,6 +676,11 @@ def translate_to_world(doc: IDFDocument) -> None:
     make consistent; [get_scene][idfkit.scene.get_scene] reports the types it did not attempt
     instead of editing the document, and is the better tool there.
 
+    An object the scene could not place is not rewritten either, for the same reason and with the
+    same consequence: its vertices stay as the author wrote them while the declarations they were
+    written against are restated underneath it. Each one is logged at warning level, and
+    [get_scene][idfkit.scene.get_scene] names them with a reason in ``Scene.unresolved``.
+
     Args:
         doc: the document to rewrite. Every surface the scene resolved has its vertices replaced,
             and the declarations those vertices were resolved against are restated so that reading
@@ -722,6 +727,19 @@ def translate_to_world(doc: IDFDocument) -> None:
         obj = objects.get((resolved.object_type, resolved.name.upper()))
         if obj is not None:
             set_surface_coords(obj, resolved.polygon)
+
+    # An object the scene could not place keeps the vertices the author wrote, while the
+    # declarations those vertices were written against are restated underneath it. It is therefore
+    # read afterwards in a frame it was never stated in. This function cannot resolve what the scene
+    # could not, but the rewritten document records nothing about the omission, so the omission is
+    # reported here. ``get_scene`` reports the same objects with a reason and edits nothing.
+    if scene.unresolved:
+        logger.warning(
+            "translate_to_world left %d object(s) in the frame they were authored in, because the "
+            "scene could not place them: %s",
+            len(scene.unresolved),
+            ", ".join(f"{item.object_type} {item.name} ({item.reason})" for item in scene.unresolved),
+        )
 
     _restate_resolved_declarations(
         doc, was_relative=scene.applied.is_relative, was_clockwise=scene.applied.is_clockwise

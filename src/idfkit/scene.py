@@ -24,7 +24,10 @@ surfaces:
    counter-clockwise rotation. Applying it per surface inside its own zone frame instead leaves the
    zone layout unrotated, which is what ``translate_to_world`` does today: every surface correctly
    oriented and every zone in the wrong place, a drawing that passes an eyeball test at up to
-   201.98 m of error.
+   201.98 m of error. ``Shading:Site:Detailed`` is the one exception, and it is the engine's: site
+   shading is fixed in space and does not turn with the building, measured by entering one square
+   under both detached shading types in a model declaring a north axis of 158.434 and reading back
+   which of the two moved.
 3. **Reverse the vertex order** when the model declares clockwise entry, so that the right-hand
    rule gives the outward normal in every model.
 
@@ -61,7 +64,7 @@ does not repeat those surfaces either.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal, cast
 
 # ``_get_vertices`` rather than ``get_surface_coords``: the reason an object could not be placed
@@ -88,12 +91,35 @@ __all__ = [
 #: are the types this slice reads, and every one of them states its geometry as explicit vertices.
 _HEAT_TRANSFER: Final = "BuildingSurface:Detailed"
 _FENESTRATION: Final = "FenestrationSurface:Detailed"
+#: Detached shading fixed to the site, and the one place clause two is conditional: the engine turns
+#: every surface by the building's north axis except this one.
+#:
+#: MEASURED, not read. EnergyPlus's schema says of this type that these items "are fixed in space and
+#: would not move with relative geometry", against the building form's "are relative to the current
+#: building and would move with relative geometry", and the two carry identical fields. That is a
+#: memo rather than an oracle, so it was put to the engine: one square at (50, 0) to (60, 0) entered
+#: twice, once under each type, in a model declaring a north axis of 158.434. EnergyPlus 26.1.0
+#: reports the site form at (50, 0) to (60, 0), where it was authored, and the building form at
+#: (-46.50, -18.38) to (-55.80, -22.05), turned. It also labels them differently in its own report,
+#: as ``Detached Shading:Fixed`` and ``Detached Shading:Building``.
+#:
+#: NO FIXTURE CAN CARRY THIS YET. Each fixture in ``checks/geometry-vertices`` is a byte-for-byte
+#: copy of a shipped example model, and of the twenty such models holding detached shading not one
+#: declares a north axis, which is why the corpus reported this rule green while it was wrong. The
+#: check's coverage note records the gap.
+_SITE_SHADING: Final = "Shading:Site:Detailed"
 _SHADING: Final = (
-    "Shading:Site:Detailed",
+    _SITE_SHADING,
     "Shading:Building:Detailed",
     "Shading:Zone:Detailed",
 )
 _READ: Final = (_HEAT_TRANSFER, _FENESTRATION, *_SHADING)
+
+#: The types a ``building_surface_name`` or a ``base_surface_name`` may name. The schema declares the
+#: ``SurfaceNames`` reference list on the heat transfer surfaces and on nothing else, so a shading
+#: surface is never anyone's parent. Keeping it out of the lookup is what stops a name shared across
+#: the two families from answering a parent lookup with a shading object.
+_PARENTS: Final = (_HEAT_TRANSFER,)
 
 #: Geometry types this slice does not read, reported rather than skipped. Two families, deferred for
 #: different reasons and reported the same way, because FR-018 is unconditional: every geometry type
@@ -165,6 +191,16 @@ class AppliedRules:
     def is_clockwise(self) -> bool:
         """Whether the author entered vertices clockwise, which clause three reverses."""
         return self.vertex_entry_direction.casefold().startswith("clockwise")
+
+
+#: What a model that declares nothing is read under, which is :data:`_DEFAULT_RULES` as a value. It
+#: is the default a :class:`Scene` carries when it was not built from a document.
+_ASSUMED_RULES: Final = AppliedRules(
+    coordinate_system=_DEFAULT_RULES["coordinate_system"],
+    vertex_entry_direction=_DEFAULT_RULES["vertex_entry_direction"],
+    starting_vertex_position=_DEFAULT_RULES["starting_vertex_position"],
+    north_axis=0.0,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -246,9 +282,9 @@ class Scene:
 
     surfaces: tuple[ResolvedSurface, ...] = ()
     bounds: SceneBounds | None = None
-    applied: AppliedRules = field(
-        default_factory=lambda: AppliedRules("Relative", "Counterclockwise", "UpperLeftCorner", 0.0)
-    )
+    #: One shared instance rather than a factory: ``AppliedRules`` is frozen, so every default scene
+    #: can hold the same object and none of them can change it.
+    applied: AppliedRules = _ASSUMED_RULES
     unresolved: tuple[UnresolvedObject, ...] = ()
     unattempted: tuple[UnattemptedType, ...] = ()
 
@@ -319,7 +355,9 @@ def _read_rules(doc: IDFDocument) -> AppliedRules:
             value = fallback
             defaulted.append(name)
         declared[name] = value
-    if building is None:
+    # A ``Building`` that states no axis is assumed to be unrotated exactly as an absent one is, so
+    # both are recorded. A stated zero is a declaration and is not.
+    if building is None or building.data.get("north_axis") in (None, ""):
         defaulted.append("north_axis")
 
     return AppliedRules(
@@ -336,12 +374,20 @@ def _read_rules(doc: IDFDocument) -> AppliedRules:
 # ---------------------------------------------------------------------------
 
 
-def _place(polygon: Polygon3D, zone: IDFObject | None, rules: AppliedRules) -> Polygon3D:
+def _place(
+    polygon: Polygon3D, zone: IDFObject | None, rules: AppliedRules, *, fixed_to_site: bool = False
+) -> Polygon3D:
     """Apply clause one and clause two to one polygon.
 
     Clause one is conditional on the declared coordinate system, which is the whole reason the
-    twelve world models with a non-zero zone origin come out right. Clause two is unconditional and
-    is applied about the world origin, so that the building turns as one body.
+    twelve world models with a non-zero zone origin come out right. Clause two is applied about the
+    world origin, so that the building turns as one body.
+
+    ``fixed_to_site`` is clause two's one exception, and it is the engine's own. Site shading is
+    fixed in space and does not turn with the building, which is the whole difference between
+    ``Shading:Site:Detailed`` and ``Shading:Building:Detailed``: the two carry identical fields, and
+    at a north axis of 158.434 the engine reports the same square where it was authored under the
+    first type and turned by 158.434 degrees under the second. Every other surface turns.
 
     The north axis is negated because EnergyPlus measures it clockwise from true north, while
     ``rotate_z`` turns counter-clockwise.
@@ -354,7 +400,7 @@ def _place(polygon: Polygon3D, zone: IDFObject | None, rules: AppliedRules) -> P
         origin = Vector3D(_number(zone, "x_origin"), _number(zone, "y_origin"), _number(zone, "z_origin"))
         if origin != Vector3D.origin():
             placed = placed.translate(origin)
-    if rules.north_axis:
+    if rules.north_axis and not fixed_to_site:
         placed = placed.rotate_z(-rules.north_axis, anchor=Vector3D.origin())
     return placed
 
@@ -391,7 +437,7 @@ def _type_rank(doc: IDFDocument) -> dict[str, int]:
     return {object_type: at for at, object_type in enumerate(doc.collections)}
 
 
-def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...]) -> list[IDFObject]:
+def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...], rank: dict[str, int]) -> list[IDFObject]:
     """Every object of the given types, as close to the order the document states them as is known.
 
     Two sources, and the difference between them is worth stating because the better one is not
@@ -407,7 +453,6 @@ def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...]) -> list[
     this module's, owes nothing to the model, and made the emitted order a property of the reader
     rather than of the file being read.
     """
-    rank = _type_rank(doc)
     placed: list[tuple[int, int, IDFObject]] = []
     unplaced: list[tuple[int, int, IDFObject]] = []
     for object_type in object_types:
@@ -424,8 +469,13 @@ def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...]) -> list[
 
 
 def _zone_of(surface: IDFObject) -> str:
-    """The zone a surface names, under whichever of the two field names its type uses."""
-    for name in ("zone_name", "zone_or_zonelist_name", "base_surface_name"):
+    """The zone a surface names, under whichever of the two field names its type uses.
+
+    Only fields that name a ZONE. ``base_surface_name`` names a surface, and reading it here handed
+    a surface's name back to a caller that looks it up among the zones: a miss at best, and a
+    ``zone-not-found`` naming a wall at worst.
+    """
+    for name in ("zone_name", "zone_or_zonelist_name"):
         value = surface.data.get(name)
         if value:
             return str(value)
@@ -481,7 +531,7 @@ def _resolve_one(
     if zone_name and zone is None and not is_shading:
         return UnresolvedObject(object_type, name, "zone-not-found", zone_name)
 
-    placed = _wind(_place(polygon, zone, rules), rules)
+    placed = _wind(_place(polygon, zone, rules, fixed_to_site=object_type == _SITE_SHADING), rules)
 
     if is_shading:
         # The schema gives a shading surface no surface-type field, so the canonical object type
@@ -521,13 +571,12 @@ def _bounds(surfaces: tuple[ResolvedSurface, ...]) -> SceneBounds | None:
     )
 
 
-def _unattempted(doc: IDFDocument) -> tuple[UnattemptedType, ...]:
+def _unattempted(doc: IDFDocument, rank: dict[str, int]) -> tuple[UnattemptedType, ...]:
     """Geometry types the model states that this slice does not read, in first-occurrence order.
 
     This is what makes a model of simplified surfaces distinguishable from a model with no geometry
     at all (FR-019). Without it, both look like an empty scene and a reader is told nothing.
     """
-    rank = _type_rank(doc)
     found: list[tuple[int, int, str, int]] = []
     for object_type in _UNREAD:
         objects = _objects(doc, object_type)
@@ -574,16 +623,19 @@ def get_scene(doc: IDFDocument) -> Scene:
     """
     rules = _read_rules(doc)
     schema = doc.schema
+    # Read once. Both walks below order by it, and it is a property of the document rather than of
+    # either walk.
+    rank = _type_rank(doc)
 
     zones: dict[str, IDFObject] = {obj.name.upper(): obj for obj in _objects(doc, "Zone")}
     surfaces_by_name: dict[str, IDFObject] = {}
-    for object_type in (_HEAT_TRANSFER, *_SHADING):
+    for object_type in _PARENTS:
         for obj in _objects(doc, object_type):
             surfaces_by_name[obj.name.upper()] = obj
 
     resolved: list[ResolvedSurface] = []
     unresolved: list[UnresolvedObject] = []
-    for surface in _in_document_order(doc, _READ):
+    for surface in _in_document_order(doc, _READ, rank):
         outcome = _resolve_one(surface, zones, rules, schema, surfaces_by_name)
         if isinstance(outcome, ResolvedSurface):
             resolved.append(outcome)
@@ -596,5 +648,5 @@ def get_scene(doc: IDFDocument) -> Scene:
         bounds=_bounds(surfaces),
         applied=rules,
         unresolved=tuple(unresolved),
-        unattempted=_unattempted(doc),
+        unattempted=_unattempted(doc, rank),
     )

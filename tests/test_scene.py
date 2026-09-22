@@ -222,6 +222,35 @@ class TestTheClausesAreConditional:
         """``WALL`` is authored, ``Wall`` is reported: the schema defines the value, not the file."""
         assert get_scene(_one_wall()).surfaces[0].surface_type == "Wall"
 
+    def test_site_shading_is_fixed_in_space_and_building_shading_turns(self) -> None:
+        """Clause two's one exception, which no fixture in the corpus carries.
+
+        The schema separates the two detached shading forms on exactly this sentence: site shading
+        items "are fixed in space and would not move with relative geometry", building shading items
+        "are relative to the current building and would move with relative geometry". They carry
+        identical fields, so the object type is the whole of the difference, and a rule that turned
+        both would make the two objects one object.
+        """
+        model = _one_wall()
+        model["Building"].first()["north_axis"] = 90.0
+        for object_type in ("Shading:Site:Detailed", "Shading:Building:Detailed"):
+            model.add(
+                object_type,
+                f"S-{object_type}",
+                number_of_vertices=3,
+                vertices=[
+                    {"vertex_x_coordinate": 2, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+                    {"vertex_x_coordinate": 2, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+                    {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+                ],
+                validate=False,
+            )
+        placed = {surface.object_type: surface.polygon.vertices[0] for surface in get_scene(model).surfaces}
+        assert placed["Shading:Site:Detailed"].as_tuple() == (2.0, 0.0, 3.0)
+        # Ninety degrees clockwise seen from above sends +x to -y.
+        turned = placed["Shading:Building:Detailed"]
+        assert (round(turned.x, 9), round(turned.y, 9), turned.z) == (0.0, -2.0, 3.0)
+
     def test_an_absent_rules_object_is_recorded_as_defaulted(self, tmp_path: Path) -> None:
         """A model stating neither object is read under the engine's assumptions, and says so.
 
