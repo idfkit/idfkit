@@ -19,32 +19,20 @@ permissions:
 
 jobs:
 
-  set-version:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Export tag
-        id: vars
-        run: echo tag=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
-        if: ${{ github.event_name == 'release' }}
-
-      - name: Update project version
-        run: |
-          sed -i "s/^version = \".*\"/version = \"$RELEASE_VERSION\"/" pyproject.toml
-        env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-        if: ${{ github.event_name == 'release' }}
-
-      - name: Upload updated pyproject.toml
-        uses: actions/upload-artifact@v4
-        with:
-          name: pyproject-toml
-          path: pyproject.toml
-
+  # THE VERSION IS READ FROM THE MANIFEST, NOT WRITTEN INTO IT.
+  #
+  # A `set-version` job stood here and patched pyproject.toml from the tag, with
+  # `sed -i "s/^version = \".*\"/version = \"$RELEASE_VERSION\"/"`. Tags carry the `v` prefix, so it
+  # wrote `version = "v1.0.0-rc.5"`. Hatchling normalised the wheel filename and left the raw string
+  # in the metadata, which made `idfkit.__version__` equal to `"v1.0.0-rc.5"` and put
+  # `!-Generator idfkit vv1.0.0-rc.5` at the top of every file the writer generated (idfkit#212).
+  #
+  # The patch was redundant as well as wrong. CLAUDE.md requires the field to be bumped in the
+  # release commit and to agree with the tag, and `make publish` never patched anything: it builds
+  # from the field. Two publish paths produced different metadata from one commit. Now neither
+  # patches, and the check below fails the release if the two disagree rather than writing over one.
   publish:
     runs-on: ubuntu-latest
-    needs: [set-version]
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -52,10 +40,10 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
 
-      - name: Download updated pyproject.toml
-        uses: actions/download-artifact@v4
-        with:
-          name: pyproject-toml
+      - name: The tag and the declared version must agree
+        run: uv run --with packaging python scripts/check_release_version.py --tag "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
 
       - name: Build package
         run: uv build

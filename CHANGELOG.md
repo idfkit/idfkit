@@ -68,6 +68,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   restated underneath it, so it is afterwards read in a frame it was never stated in. Each one is
   now logged at warning level and named with its reason. `get_scene` reports the same objects in
   `Scene.unresolved` and edits nothing.
+- The generator header written into every IDF file no longer repeats the `v`
+  prefix. Files written by idfkit 1.0.0-rc.5 open with
+  `!-Generator idfkit vv1.0.0-rc.5`; they will open with
+  `!-Generator idfkit v1.0.0rc6` from the next release. `idfkit.__version__` was
+  the malformed half of it, reported as `"v1.0.0-rc.5"` rather than the PEP 440
+  form, so anything parsing it saw the same fault (#212).
+
 
 ### Changed
 
@@ -80,6 +87,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model does not hold is no longer drawn at its authored coordinates: it is reported in the scene's
   `unresolved` list with the name of the zone that is missing. A shading surface's reported type is
   now its object type, such as `Shading:Site:Detailed`, rather than the word `Shading`.
+- The release workflow reads the version from `pyproject.toml` instead of
+  writing the tag into it. The two publish paths now produce identical metadata
+  from the same commit, and a release whose manifest and tag disagree fails
+  rather than being silently patched. `scripts/check_release_version.py` decides
+  agreement by PEP 440 equality, so the `v` prefix and the tag's punctuation are
+  not differences, and it can be run before tagging.
+
 
 ## [1.0.0-rc.5] - 2026-09-18
 
