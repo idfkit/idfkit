@@ -282,8 +282,8 @@ definitions at the bottom of the file.
 ## Releases
 
 Releases are GitHub-Release-driven: creating a published Release on `main`
-triggers `.github/workflows/on-release-main.yml`, which patches
-`pyproject.toml` to match the tag and publishes the wheel to PyPI plus the
+triggers `.github/workflows/on-release-main.yml`, which checks that
+`pyproject.toml` agrees with the tag and publishes the wheel to PyPI plus the
 docs to GitHub Pages.
 
 **Bump `version` in `pyproject.toml` in the release commit, to the version
@@ -293,13 +293,25 @@ should not be bumped — while every release commit bumped it, which is how
 the rule kept being got wrong: whoever read this file and whoever read
 `git log` reached opposite conclusions.
 
-Two things make the bump the right answer. There are two publish paths, and
-only one of them patches: `on-release-main.yml` rewrites the field from the
-tag, while `make publish` runs `twine upload dist/*` and builds from
-whatever the field currently says, so an unbumped field publishes the
-previous version's number from a maintainer's machine. And a repository
-whose manifest disagrees with its own latest tag is lying about what it is,
-to a reader and to anything that resolves it from source.
+Two things make the bump the right answer. Both publish paths build from
+the field: `on-release-main.yml` and `make publish`, which runs
+`twine upload dist/*`, so an unbumped field publishes the previous version's
+number whichever way the release is cut. And a repository whose manifest
+disagrees with its own latest tag is lying about what it is, to a reader and
+to anything that resolves it from source.
+
+`on-release-main.yml` used to rewrite the field from the tag instead of
+reading it, and because tags carry the `v` prefix it wrote
+`version = "v1.0.0-rc.5"`. That reached the wheel's metadata, so
+`idfkit.__version__` was `"v1.0.0-rc.5"` and every generated file carried
+`!-Generator idfkit vv1.0.0-rc.5` (#212). The patch is gone. The release now
+fails if the field and the tag disagree, which
+`scripts/check_release_version.py` decides by PEP 440 equality, so the `v`
+prefix and the tag's punctuation are not differences. Run it before tagging:
+
+```bash
+uv run --with packaging python scripts/check_release_version.py --tag vX.Y.Z
+```
 
 **Tag format: `vX.Y.Z` with the `v` prefix.** A run of tags from `0.6.5`
 through `0.10.1` was cut without the prefix; that was a mistake. All new
