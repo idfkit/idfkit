@@ -109,6 +109,18 @@ jobs:
         working-directory: conformance
         run: uv run --frozen --project "$GITHUB_WORKSPACE" python runners/weather_check.py --library "$GITHUB_WORKSPACE"
 
+      - name: Run the geometry check against this library
+        # checks/geometry-vertices, which like the weather check has its own entry point rather
+        # than a flag on run.py, so runners/run.py above does not reach it. Its oracle is
+        # EnergyPlus's own Output:Surfaces:List vertex report, committed beside each fixture.
+        # --via names which resolution is measured: get-scene is the one this library added, and
+        # translate-to-world is the older path, which now resolves through the same rule and is
+        # checked so that it cannot drift back.
+        working-directory: conformance
+        run: |
+          uv run --frozen --project "$GITHUB_WORKSPACE" python runners/geometry_check.py --library "$GITHUB_WORKSPACE" --via get-scene
+          uv run --frozen --project "$GITHUB_WORKSPACE" python runners/geometry_check.py --library "$GITHUB_WORKSPACE" --via translate-to-world
+
   naming:
     name: naming register
     needs: levels

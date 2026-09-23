@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .document import IDFDocument
-    from .objects import IDFObject
+    from .objects import IDFCollection, IDFObject
 
 # Surface types that carry vertex geometry.  Used by translate_building,
 # rotate_building, scale_building, and related functions.
@@ -624,71 +624,152 @@ def get_zone_rotation(zone: IDFObject) -> float:
     return float(angle) if angle else 0.0
 
 
-def translate_to_world(doc: IDFDocument) -> None:  # noqa: C901
+def translate_to_world(doc: IDFDocument) -> None:
+    """Rewrite every detailed surface's vertices into the frame the engine computes, in place.
+
+    This is the mutating counterpart of [get_scene][idfkit.scene.get_scene], and it is that function
+    that does the work: the polygons written back here are the ones the scene resolved, so the two
+    cannot drift apart. The document, and not a copy, is what changes, which is what this function
+    is for.
+
+    BEHAVIOUR CHANGE, WITH THE MEASUREMENT THAT PROMPTED IT
+
+    Until idfkit 1.0.0-rc.6 this function resolved coordinates by a rule that disagreed with
+    EnergyPlus. Against the engine's own ``Output:Surfaces:List`` vertex report over seventeen of the
+    shipped example models and five hundred and thirty-two surfaces, the old rule agreed with the
+    engine on **five of the seventeen models**, worst case **201.98 m** of displacement. The rule it
+    now applies agrees on **seventeen of seventeen**, worst case **0.0045 m**, against a report that
+    prints two decimals. Three defects account for the difference:
+
+    1. It rotated each surface by ``Building.north_axis`` inside its own zone frame, about the
+       polygon's centroid. The engine turns the resolved building as one body about the world
+       origin, and in the opposite sense: the north axis is measured clockwise from true north. Each
+       surface therefore came out correctly oriented with its zone in the wrong place, a drawing that
+       passes an eyeball test at up to 201.98 m of error.
+    2. It translated by the zone origin without rotating that origin by the building axis first, so
+       the two clauses composed in the wrong order.
+    3. It collected a zone's surfaces with ``get_referencing(zone_name)``, which fenestration never
+       matches: a window names its parent wall and not the zone, so no window was ever moved.
+
+    The same defects measured on the corpus's own fixture set, which is what
+    ``checks/geometry-vertices`` in ``idfkit-conformance`` now runs this function against: the old
+    rule failed **60 of the 234 surfaces** over four of the seven fixtures, worst case **40.00 m**,
+    and left a fifth unreadable by declaring the world system while leaving clockwise entry in
+    place. The corrected rule fails none of them.
+
+    Two further differences follow from the corrected rule rather than from a defect. A model
+    declaring ``World`` is no longer returned from untouched: the building north axis applies to such
+    a model too, and only the zone origin and the zone's relative north are conditional on the
+    relative system. And a model declaring clockwise vertex entry has its rings reversed, the first
+    vertex held in place, with ``GlobalGeometryRules`` restated as counter-clockwise, so that the
+    right-hand rule gives the outward normal in the result.
+
+    WHAT IT DOES NOT TOUCH, WHICH MATTERS FOR A MIXED MODEL
+
+    Only the five detailed vertex types are read: ``BuildingSurface:Detailed``,
+    ``FenestrationSurface:Detailed`` and the three detailed shading forms. The simplified surface
+    family (``Wall:Exterior``, ``Window``, ``Roof`` and their siblings) and
+    ``Daylighting:ReferencePoint`` state their geometry against the zone origin under their own
+    coordinate-system fields, which this function does not read and cannot transform. Zeroing
+    ``Building.north_axis`` at the end therefore leaves such objects unrotated in a document that no
+    longer declares the rotation. A model holding both families is outside what this function can
+    make consistent; [get_scene][idfkit.scene.get_scene] reports the types it did not attempt
+    instead of editing the document, and is the better tool there.
+
+    An object the scene could not place is not rewritten either, for the same reason and with the
+    same consequence: its vertices stay as the author wrote them while the declarations they were
+    written against are restated underneath it. Each one is logged at warning level, and
+    [get_scene][idfkit.scene.get_scene] names them with a reason in ``Scene.unresolved``.
+
+    Args:
+        doc: the document to rewrite. Every surface the scene resolved has its vertices replaced,
+            and the declarations those vertices were resolved against are restated so that reading
+            the result back applies nothing a second time.
+
+    Examples:
+        A zone at (10, 20, 0) with one wall authored at the zone's own origin:
+
+        >>> from idfkit import new_document
+        >>> model = new_document(version=(24, 1, 0))
+        >>> rules = model["GlobalGeometryRules"].first()
+        >>> rules.coordinate_system = "Relative"
+        >>> zone = model.add("Zone", "Office", x_origin=10.0, y_origin=20.0, z_origin=0.0)
+        >>> wall = model.add("BuildingSurface:Detailed", "OfficeWall",
+        ...     surface_type="Wall", zone_name="Office",
+        ...     outside_boundary_condition="Outdoors", number_of_vertices=3,
+        ...     vertices=[
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 3},
+        ...         {"vertex_x_coordinate": 0, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...         {"vertex_x_coordinate": 5, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0},
+        ...     ],
+        ...     validate=False)
+        >>> translate_to_world(model)
+        >>> get_surface_coords(wall).vertices[0]
+        Vector3D(x=10.0, y=20.0, z=3.0)
+        >>> rules.coordinate_system
+        'World'
     """
-    Translate model from relative to world coordinates.
+    from .scene import get_scene
 
-    Applies zone origins and rotations to surface coordinates.
+    scene = get_scene(doc)
+
+    # Address a surface by its type and name together. A name is unique within a type and not
+    # across them, and the scene reports both, so this is the pairing that finds the object the
+    # scene resolved rather than one that happens to share its name.
+    objects: dict[tuple[str, str], IDFObject] = {}
+    for object_type in VERTEX_SURFACE_TYPES:
+        if object_type not in doc:
+            continue
+        for obj in cast("IDFCollection[IDFObject]", doc[object_type]):
+            objects[(object_type, obj.name.upper())] = obj
+
+    for resolved in scene.surfaces:
+        obj = objects.get((resolved.object_type, resolved.name.upper()))
+        if obj is not None:
+            set_surface_coords(obj, resolved.polygon)
+
+    # An object the scene could not place keeps the vertices the author wrote, while the
+    # declarations those vertices were written against are restated underneath it. It is therefore
+    # read afterwards in a frame it was never stated in. This function cannot resolve what the scene
+    # could not, but the rewritten document records nothing about the omission, so the omission is
+    # reported here. ``get_scene`` reports the same objects with a reason and edits nothing.
+    if scene.unresolved:
+        logger.warning(
+            "translate_to_world left %d object(s) in the frame they were authored in, because the "
+            "scene could not place them: %s",
+            len(scene.unresolved),
+            ", ".join(f"{item.object_type} {item.name} ({item.reason})" for item in scene.unresolved),
+        )
+
+    _restate_resolved_declarations(
+        doc, was_relative=scene.applied.is_relative, was_clockwise=scene.applied.is_clockwise
+    )
+
+
+def _restate_resolved_declarations(doc: IDFDocument, *, was_relative: bool, was_clockwise: bool) -> None:
+    """Rewrite what the vertices were resolved against, so that a reread applies nothing again.
+
+    The zone fields are cleared only when they were applied. Under the world system they were not,
+    and they still govern the simplified surface family and the daylighting reference points, which
+    read the zone origin under their own coordinate-system fields.
     """
-    # Check coordinate system
-    geo_rules = doc["GlobalGeometryRules"]
-    if geo_rules:
-        rules = geo_rules.first()
-        coord_system = getattr(rules, "coordinate_system", "World")
-        if coord_system and coord_system.lower() == "world":
-            return  # Already in world coordinates
+    if was_relative:
+        for zone in doc["Zone"]:
+            zone.x_origin = 0.0
+            zone.y_origin = 0.0
+            zone.z_origin = 0.0
+            zone.direction_of_relative_north = 0.0
 
-    # Get building north axis
-    building = doc["Building"]
-    north_axis = 0.0
-    if building:
-        b = building.first()
-        north_axis = float(getattr(b, "north_axis", 0) or 0)
+    building = doc["Building"].first()
+    if building is not None:
+        building.north_axis = 0.0
 
-    # Process each zone
-    for zone in doc["Zone"]:
-        zone_origin = get_zone_origin(zone)
-        zone_rotation = get_zone_rotation(zone)
-        total_rotation = north_axis + zone_rotation
-
-        # Get surfaces in this zone
-        zone_name = zone.name
-        surfaces = list(doc.get_referencing(zone_name))
-
-        for surface in surfaces:
-            # Only process surfaces with coordinates
-            coords = get_surface_coords(surface)
-            if coords is None:
-                continue
-
-            # Apply rotation
-            if total_rotation != 0:
-                coords = coords.rotate_z(total_rotation)
-
-            # Apply translation
-            coords = coords.translate(zone_origin)
-
-            # Update surface
-            set_surface_coords(surface, coords)
-
-    # Update zone origins to zero
-    for zone in doc["Zone"]:
-        zone.x_origin = 0.0
-        zone.y_origin = 0.0
-        zone.z_origin = 0.0
-        zone.direction_of_relative_north = 0.0
-
-    # Update building north axis
-    if building:
-        b = building.first()
-        if b is not None:
-            b.north_axis = 0.0
-
-    # Update coordinate system to World
-    if geo_rules:
-        rules = geo_rules.first()
-        if rules is not None:
-            rules.coordinate_system = "World"
+    rules = doc["GlobalGeometryRules"].first()
+    if rules is None:
+        return
+    rules.coordinate_system = "World"
+    if was_clockwise:
+        rules.vertex_entry_direction = "Counterclockwise"
 
 
 def calculate_surface_area(surface: IDFObject) -> float:

@@ -115,6 +115,17 @@ from .objects import IDFCollection, IDFObject
 # Reference graph
 from .references import ReferenceGraph
 
+# Geometry extraction: the read-only half, which resolves rather than authors
+from .scene import (
+    AppliedRules,
+    ResolvedSurface,
+    Scene,
+    SceneBounds,
+    UnattemptedType,
+    UnresolvedObject,
+    get_scene,
+)
+
 # Schedule builders
 from .schedules.builder import (
     create_compact_schedule_from_values,
@@ -476,6 +487,7 @@ __all__ = [
     "ENERGYPLUS_VERSIONS",
     "LATEST_VERSION",
     "MINIMUM_VERSION",
+    "AppliedRules",
     "DocsUrl",
     "DuplicateObjectError",
     "EnergyPlusNotFoundError",
@@ -501,11 +513,16 @@ __all__ = [
     "Polygon3D",
     "RangeError",
     "ReferenceGraph",
+    "ResolvedSurface",
+    "Scene",
+    "SceneBounds",
     "SchemaManager",
     "SchemaNotFoundError",
     "SimulationError",
     "SourceSpan",
+    "UnattemptedType",
     "UnknownObjectTypeError",
+    "UnresolvedObject",
     "UnsupportedVersionError",
     "ValidationError",
     "ValidationFailedError",
@@ -542,6 +559,7 @@ __all__ = [
     "footprint_t_shape",
     "footprint_u_shape",
     "get_idf_version",
+    "get_scene",
     "get_schema",
     "get_schema_manager",
     "intersect_and_match",

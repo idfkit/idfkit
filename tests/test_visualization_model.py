@@ -6,6 +6,7 @@ import pytest
 
 from idfkit import IDFDocument, new_document
 from idfkit.geometry import Polygon3D, Vector3D
+from idfkit.scene import ResolvedSurface, get_scene
 from idfkit.visualization.model import (
     ColorBy,
     ModelViewConfig,
@@ -18,15 +19,58 @@ from idfkit.visualization.model import (
     _compute_zone_offsets,  # pyright: ignore[reportPrivateUsage]
     _get_color,  # pyright: ignore[reportPrivateUsage]
     _get_go,  # pyright: ignore[reportPrivateUsage]
+    _is_fenestration,  # pyright: ignore[reportPrivateUsage]
     _legend_label,  # pyright: ignore[reportPrivateUsage]
     _make_3d_layout,  # pyright: ignore[reportPrivateUsage]
     _offset_fenestration,  # pyright: ignore[reportPrivateUsage]
     _polygon_edges,  # pyright: ignore[reportPrivateUsage]
-    _resolve_surfaces,  # pyright: ignore[reportPrivateUsage]
-    _ResolvedSurface,  # pyright: ignore[reportPrivateUsage]
-    _to_world_coords,  # pyright: ignore[reportPrivateUsage]
+    _surfaces,  # pyright: ignore[reportPrivateUsage]
     _triangulate_polygon,  # pyright: ignore[reportPrivateUsage]
 )
+
+_TRIANGLE_POLY = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(0.5, 1, 0)])
+#: A 5 m square, so its area is 25 m². The public surface derives the area from the polygon
+#: rather than storing it, so a case asserting on an area states the polygon that has it.
+_QUAD_POLY = Polygon3D([Vector3D(0, 0, 0), Vector3D(5, 0, 0), Vector3D(5, 5, 0), Vector3D(0, 5, 0)])
+
+
+def _resolved(
+    name: str,
+    zone: str,
+    surface_type: str,
+    boundary: str,
+    construction: str,
+    polygon: Polygon3D,
+    *,
+    fenestration: bool = False,
+    shading: bool = False,
+) -> ResolvedSurface:
+    """One surface in the shape the renderer's helpers now take.
+
+    The renderer no longer defines a surface type of its own: it reads the public
+    [ResolvedSurface][idfkit.scene.ResolvedSurface]. Two of the fields the old private class carried
+    are derived there rather than stored. ``area`` is the polygon's own area, so it is no longer
+    passed in, and whether a surface is fenestration is read from its object type rather than from a
+    flag, which is what ``_is_fenestration`` asks.
+    """
+    if fenestration:
+        object_type = "FenestrationSurface:Detailed"
+    elif shading:
+        object_type = "Shading:Building:Detailed"
+    else:
+        object_type = "BuildingSurface:Detailed"
+    return ResolvedSurface(
+        object_type=object_type,
+        name=name,
+        polygon=polygon,
+        zone=zone,
+        surface_type=surface_type,
+        boundary=boundary,
+        construction=construction,
+        parent_surface="Parent" if fenestration else None,
+        is_shading=shading,
+    )
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -249,10 +293,10 @@ class TestPolygonEdges:
 
 
 class TestResolveSurfaces:
-    """Tests for _resolve_surfaces."""
+    """Tests for _surfaces, the renderer's call into the public extraction."""
 
     def test_basic_resolution(self, multi_zone_doc):
-        surfaces = _resolve_surfaces(multi_zone_doc)
+        surfaces = _surfaces(multi_zone_doc)
         assert len(surfaces) == 4  # 2 walls + 2 floors
         names = {s.name for s in surfaces}
         assert "WallA1" in names
@@ -261,13 +305,13 @@ class TestResolveSurfaces:
         assert "FloorB" in names
 
     def test_zone_filter(self, multi_zone_doc):
-        surfaces = _resolve_surfaces(multi_zone_doc, zones=["ZoneA"])
+        surfaces = _surfaces(multi_zone_doc, zones=["ZoneA"])
         assert len(surfaces) == 2
         assert all(s.zone == "ZoneA" for s in surfaces)
 
     def test_world_coords_with_origin(self, multi_zone_doc):
         """ZoneB has x_origin=10, so its surfaces should be shifted."""
-        surfaces = _resolve_surfaces(multi_zone_doc, zones=["ZoneB"])
+        surfaces = _surfaces(multi_zone_doc, zones=["ZoneB"])
         wall = next(s for s in surfaces if s.name == "WallB1")
         # Original vertex_1_x=0, shifted by x_origin=10 -> 10.0
         xs = [v.x for v in wall.polygon.vertices]
@@ -275,13 +319,13 @@ class TestResolveSurfaces:
         assert max(xs) == pytest.approx(15.0)
 
     def test_fenestration_included(self, fenestration_doc):
-        surfaces = _resolve_surfaces(fenestration_doc)
-        fen = [s for s in surfaces if s.is_fenestration]
+        surfaces = _surfaces(fenestration_doc)
+        fen = [s for s in surfaces if _is_fenestration(s)]
         assert len(fen) == 1
         assert fen[0].name == "WindowA1"
 
     def test_fenestration_zone_inherited(self, fenestration_doc):
-        surfaces = _resolve_surfaces(fenestration_doc)
+        surfaces = _surfaces(fenestration_doc)
         window = next(s for s in surfaces if s.name == "WindowA1")
         assert window.zone == "ZoneA"
 
@@ -312,11 +356,15 @@ class TestResolveSurfaces:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         wall = surfaces[0]
-        # After 90 degree rotation, x-axis becomes y-axis
+        # The x axis becomes the y axis, and it goes to NEGATIVE y. A zone's relative north is
+        # measured clockwise from true north, as the building axis is, so the rotation that applies
+        # it is the negation of a counter-clockwise one. The renderer's own rule turned it the other
+        # way, which is one of the three defects the public extraction was measured to fix.
         ys = [v.y for v in wall.polygon.vertices]
-        assert max(ys) == pytest.approx(5.0, abs=0.01)
+        assert min(ys) == pytest.approx(-5.0, abs=0.01)
+        assert max(ys) == pytest.approx(0.0, abs=0.01)
 
     def test_schema_vertex_naming(self):
         """Surfaces with schema naming (vertex_x_coordinate, _2, _3) are resolved."""
@@ -345,7 +393,7 @@ class TestResolveSurfaces:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         assert len(surfaces) == 1
         assert surfaces[0].polygon.num_vertices == 4
 
@@ -354,8 +402,8 @@ class TestColorAssignment:
     """Tests for color assignment."""
 
     def test_distinct_zone_colors(self):
-        s1 = _ResolvedSurface("A", "Zone1", "Wall", "Outdoors", "C1", Polygon3D([]), 0.0, False)
-        s2 = _ResolvedSurface("B", "Zone2", "Wall", "Outdoors", "C1", Polygon3D([]), 0.0, False)
+        s1 = _resolved("A", "Zone1", "Wall", "Outdoors", "C1", Polygon3D([]))
+        s2 = _resolved("B", "Zone2", "Wall", "Outdoors", "C1", Polygon3D([]))
         colors = _assign_zone_colors([s1, s2], ModelViewConfig())
         assert colors["ZONE1"] != colors["ZONE2"]
 
@@ -363,14 +411,12 @@ class TestColorAssignment:
         from idfkit.visualization.model import _SURFACE_TYPE_COLORS, _get_color
 
         cfg = ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)
-        s = _ResolvedSurface("W", "Z1", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z1", "Wall", "Outdoors", "C", Polygon3D([]))
         color = _get_color(s, cfg, {})
         assert color == _SURFACE_TYPE_COLORS["wall"]
 
     def test_cycling_beyond_palette(self):
-        surfaces = [
-            _ResolvedSurface(f"S{i}", f"Zone{i}", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False) for i in range(25)
-        ]
+        surfaces = [_resolved(f"S{i}", f"Zone{i}", "Wall", "Outdoors", "C", Polygon3D([])) for i in range(25)]
         colors = _assign_zone_colors(surfaces, ModelViewConfig())
         assert len(colors) == 25
         # Should cycle -- zone 0 and zone 20 should share a color
@@ -382,27 +428,27 @@ class TestHoverText:
     """Tests for _build_hover_text."""
 
     def test_contains_name(self):
-        s = _ResolvedSurface("TestSurf", "Zone1", "Wall", "Outdoors", "WallConst", Polygon3D([]), 12.5, False)
+        s = _resolved("TestSurf", "Zone1", "Wall", "Outdoors", "WallConst", Polygon3D([]))
         text = _build_hover_text(s)
         assert "TestSurf" in text
 
     def test_contains_zone(self):
-        s = _ResolvedSurface("S", "MyZone", "Wall", "Outdoors", "C", Polygon3D([]), 10.0, False)
+        s = _resolved("S", "MyZone", "Wall", "Outdoors", "C", Polygon3D([]))
         text = _build_hover_text(s)
         assert "MyZone" in text
 
     def test_contains_area(self):
-        s = _ResolvedSurface("S", "Z", "Wall", "Outdoors", "C", Polygon3D([]), 25.5, False)
+        s = _resolved("S", "Z", "Wall", "Outdoors", "C", _QUAD_POLY)
         text = _build_hover_text(s)
-        assert "25.50" in text
+        assert "25.00" in text
 
     def test_contains_construction(self):
-        s = _ResolvedSurface("S", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]), 10.0, False)
+        s = _resolved("S", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]))
         text = _build_hover_text(s)
         assert "BrickWall" in text
 
     def test_contains_boundary(self):
-        s = _ResolvedSurface("S", "Z", "Wall", "Ground", "C", Polygon3D([]), 10.0, False)
+        s = _resolved("S", "Z", "Wall", "Ground", "C", Polygon3D([]))
         text = _build_hover_text(s)
         assert "Ground" in text
 
@@ -553,31 +599,8 @@ class TestGetGoSuccess:
         assert result is go
 
 
-class TestToWorldCoords:
-    """Tests for _to_world_coords with zone transforms."""
-
-    def test_no_transform(self) -> None:
-        """Zone at origin with no rotation should not change polygon."""
-        doc = new_document(version=(24, 1, 0))
-        zone = doc.add("Zone", "Z", {"x_origin": 0.0, "y_origin": 0.0, "z_origin": 0.0})
-        poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0)])
-        result = _to_world_coords(poly, zone)
-        assert result.vertices[0].x == pytest.approx(0.0)
-        assert result.vertices[1].x == pytest.approx(1.0)
-
-    def test_translation_only(self) -> None:
-        """Zone with origin offset but no rotation."""
-        doc = new_document(version=(24, 1, 0))
-        zone = doc.add("Zone", "Z", {"x_origin": 10.0, "y_origin": 5.0, "z_origin": 3.0})
-        poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0)])
-        result = _to_world_coords(poly, zone)
-        assert result.vertices[0].x == pytest.approx(10.0)
-        assert result.vertices[0].y == pytest.approx(5.0)
-        assert result.vertices[0].z == pytest.approx(3.0)
-
-
 class TestResolveSurfacesShading:
-    """Tests for _resolve_surfaces with shading surfaces."""
+    """Tests for _surfaces with shading surfaces."""
 
     def test_shading_site_detailed(self) -> None:
         """Shading:Site:Detailed surfaces should be resolved."""
@@ -595,10 +618,12 @@ class TestResolveSurfacesShading:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         assert len(surfaces) == 1
         assert surfaces[0].is_shading is True
-        assert surfaces[0].surface_type == "Shading"
+        # The schema gives a shading surface no surface-type field, so the public extraction puts
+        # the object type in that position rather than the invented word the renderer used to use.
+        assert surfaces[0].surface_type == "Shading:Site:Detailed"
         assert surfaces[0].zone == ""
 
     def test_shading_building_detailed(self) -> None:
@@ -617,7 +642,7 @@ class TestResolveSurfacesShading:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         assert len(surfaces) == 1
         assert surfaces[0].is_shading is True
 
@@ -650,7 +675,7 @@ class TestResolveSurfacesShading:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         shading = [s for s in surfaces if s.is_shading]
         assert len(shading) == 1
         # The shading surface should be translated by zone origin (x=5)
@@ -659,7 +684,7 @@ class TestResolveSurfacesShading:
 
 
 class TestResolveSurfacesNoneCoords:
-    """Test _resolve_surfaces when get_surface_coords returns None."""
+    """Test _surfaces when a surface states no vertices."""
 
     def test_building_surface_no_vertices(self) -> None:
         """BuildingSurface:Detailed with no vertex data should be skipped."""
@@ -676,7 +701,7 @@ class TestResolveSurfacesNoneCoords:
                 "outside_boundary_condition": "Outdoors",
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         assert len(surfaces) == 0
 
     def test_fenestration_no_vertices(self) -> None:
@@ -705,8 +730,8 @@ class TestResolveSurfacesNoneCoords:
             },
             validate=False,
         )
-        surfaces = _resolve_surfaces(doc)
-        fen = [s for s in surfaces if s.is_fenestration]
+        surfaces = _surfaces(doc)
+        fen = [s for s in surfaces if _is_fenestration(s)]
         assert len(fen) == 0
 
     def test_shading_no_vertices(self) -> None:
@@ -714,12 +739,12 @@ class TestResolveSurfacesNoneCoords:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Z1", {})
         doc.add("Shading:Site:Detailed", "NoVertShade", {})
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         shading = [s for s in surfaces if s.is_shading]
         assert len(shading) == 0
 
     def test_building_surface_zone_not_found(self) -> None:
-        """BuildingSurface with zone_name not matching any Zone object skips world transform."""
+        """A surface naming a zone the model does not hold is reported, not drawn unplaced."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "ExistingZone", {"x_origin": 10.0, "y_origin": 0.0, "z_origin": 0.0})
         _add_material_and_construction(doc)
@@ -736,14 +761,16 @@ class TestResolveSurfacesNoneCoords:
             validate=False,
         )
         # Include the non-existent zone name in the filter
-        surfaces = _resolve_surfaces(doc, zones=["NonExistentZone"])
-        assert len(surfaces) == 1
-        # Coords should NOT be transformed (zone_obj is None)
-        xs = [v.x for v in surfaces[0].polygon.vertices]
-        assert min(xs) == pytest.approx(0.0)
+        assert _surfaces(doc, zones=["NonExistentZone"]) == []
+        # The renderer used to draw it at its authored coordinates, which puts a wall somewhere no
+        # zone is and says nothing about why. The public extraction accounts for it instead.
+        unresolved = get_scene(doc).unresolved
+        assert [(u.name, u.reason, u.missing_reference) for u in unresolved] == [
+            ("Wall1", "zone-not-found", "NonExistentZone")
+        ]
 
     def test_fenestration_zone_obj_not_found(self) -> None:
-        """Fenestration where parent zone doesn't match any Zone object skips world transform."""
+        """A window whose parent names a zone the model does not hold is reported with it."""
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "ExistingZone", {"x_origin": 10.0, "y_origin": 0.0, "z_origin": 0.0})
         _add_material_and_construction(doc)
@@ -781,12 +808,14 @@ class TestResolveSurfacesNoneCoords:
                 "vertex_4_z_coordinate": 2.5,
             },
         )
-        surfaces = _resolve_surfaces(doc, zones=["GhostZone"])
-        fen = [s for s in surfaces if s.is_fenestration]
-        assert len(fen) == 1
-        # Coords should NOT be transformed
-        xs = [v.x for v in fen[0].polygon.vertices]
-        assert min(xs) == pytest.approx(1.0)
+        assert _surfaces(doc, zones=["GhostZone"]) == []
+        # Both the wall and its window, each named with the zone nothing declares. The window
+        # resolves against its parent's zone, so the parent's missing zone is its reason too.
+        unresolved = get_scene(doc).unresolved
+        assert [(u.name, u.reason, u.missing_reference) for u in unresolved] == [
+            ("Wall1", "zone-not-found", "GhostZone"),
+            ("Win1", "zone-not-found", "GhostZone"),
+        ]
 
     def test_shading_zone_with_nonexistent_zone_obj(self) -> None:
         """Shading:Zone:Detailed with base surface whose zone has no Zone object."""
@@ -818,7 +847,7 @@ class TestResolveSurfacesNoneCoords:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc, zones=["GhostZone"])
+        surfaces = _surfaces(doc, zones=["GhostZone"])
         shading = [s for s in surfaces if s.is_shading]
         assert len(shading) == 1
         # No transform applied since zone_obj is None
@@ -842,7 +871,7 @@ class TestResolveSurfacesNoneCoords:
                 ],
             },
         )
-        surfaces = _resolve_surfaces(doc)
+        surfaces = _surfaces(doc)
         shading = [s for s in surfaces if s.is_shading]
         assert len(shading) == 1
         # No transform - parent_obj is None
@@ -851,7 +880,7 @@ class TestResolveSurfacesNoneCoords:
 
 
 class TestResolveSurfacesFenestrationEdgeCases:
-    """Additional fenestration edge cases for _resolve_surfaces."""
+    """Additional fenestration edge cases for _surfaces."""
 
     def test_fenestration_no_parent(self) -> None:
         """Fenestration with non-existent parent should be excluded (zone not in include)."""
@@ -880,15 +909,15 @@ class TestResolveSurfacesFenestrationEdgeCases:
                 "vertex_4_z_coordinate": 2.5,
             },
         )
-        surfaces = _resolve_surfaces(doc)
-        fen = [s for s in surfaces if s.is_fenestration]
+        surfaces = _surfaces(doc)
+        fen = [s for s in surfaces if _is_fenestration(s)]
         assert len(fen) == 0
 
     def test_fenestration_with_zone_transform(self, fenestration_doc) -> None:  # type: ignore[no-untyped-def]
         """Fenestration should inherit zone transforms from parent surface."""
-        surfaces = _resolve_surfaces(fenestration_doc)
+        surfaces = _surfaces(fenestration_doc)
         window = next(s for s in surfaces if s.name == "WindowA1")
-        assert window.is_fenestration is True
+        assert _is_fenestration(window) is True
         assert window.polygon.num_vertices == 4
 
 
@@ -898,49 +927,49 @@ class TestGetColorBranches:
     def test_fenestration_color(self) -> None:
         from idfkit.visualization.model import _FENESTRATION_COLOR  # pyright: ignore[reportPrivateUsage]
 
-        s = _ResolvedSurface("W", "Z", "Window", "Outdoors", "C", Polygon3D([]), 0.0, True)
+        s = _resolved("W", "Z", "Window", "Outdoors", "C", Polygon3D([]), fenestration=True)
         color = _get_color(s, ModelViewConfig(), {})
         assert color == _FENESTRATION_COLOR
 
     def test_shading_color(self) -> None:
         from idfkit.visualization.model import _SHADING_COLOR  # pyright: ignore[reportPrivateUsage]
 
-        s = _ResolvedSurface("S", "", "Shading", "", "", Polygon3D([]), 0.0, False, is_shading=True)
+        s = _resolved("S", "", "Shading", "", "", Polygon3D([]), shading=True)
         color = _get_color(s, ModelViewConfig(), {})
         assert color == _SHADING_COLOR
 
     def test_zone_color(self) -> None:
-        s = _ResolvedSurface("W", "Zone1", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Zone1", "Wall", "Outdoors", "C", Polygon3D([]))
         zone_colors = {"ZONE1": "#abcdef"}
         color = _get_color(s, ModelViewConfig(color_by=ColorBy.ZONE), zone_colors)
         assert color == "#abcdef"
 
     def test_surface_type_color(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Floor", "Ground", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Floor", "Ground", "C", Polygon3D([]))
         cfg = ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)
         color = _get_color(s, cfg, {})
         assert color == "#59a14f"
 
     def test_surface_type_unknown(self) -> None:
-        s = _ResolvedSurface("W", "Z", "UnknownType", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "UnknownType", "Outdoors", "C", Polygon3D([]))
         cfg = ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)
         color = _get_color(s, cfg, {})
         assert color == "#999999"
 
     def test_boundary_condition_color(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Ground", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Ground", "C", Polygon3D([]))
         cfg = ModelViewConfig(color_by=ColorBy.BOUNDARY_CONDITION)
         color = _get_color(s, cfg, {})
         assert color == "#59a14f"
 
     def test_boundary_condition_unknown(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Unknown", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Unknown", "C", Polygon3D([]))
         cfg = ModelViewConfig(color_by=ColorBy.BOUNDARY_CONDITION)
         color = _get_color(s, cfg, {})
         assert color == "#999999"
 
     def test_construction_color(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]))
         cfg = ModelViewConfig(color_by=ColorBy.CONSTRUCTION)
         zone_colors = {"BRICKWALL": "#ff0000"}
         color = _get_color(s, cfg, zone_colors)
@@ -951,10 +980,10 @@ class TestAssignZoneColorsConstruction:
     """Test _assign_zone_colors with construction-based coloring."""
 
     def test_construction_keys(self) -> None:
-        s1 = _ResolvedSurface("A", "Z1", "Wall", "Outdoors", "Brick", Polygon3D([]), 0.0, False)
-        s2 = _ResolvedSurface("B", "Z1", "Wall", "Outdoors", "Glass", Polygon3D([]), 0.0, False)
-        s3 = _ResolvedSurface("C", "Z1", "Window", "Outdoors", "WinConst", Polygon3D([]), 0.0, True)
-        s4 = _ResolvedSurface("D", "", "Shading", "", "", Polygon3D([]), 0.0, False, is_shading=True)
+        s1 = _resolved("A", "Z1", "Wall", "Outdoors", "Brick", Polygon3D([]))
+        s2 = _resolved("B", "Z1", "Wall", "Outdoors", "Glass", Polygon3D([]))
+        s3 = _resolved("C", "Z1", "Window", "Outdoors", "WinConst", Polygon3D([]), fenestration=True)
+        s4 = _resolved("D", "", "Shading", "", "", Polygon3D([]), shading=True)
         cfg = ModelViewConfig(color_by=ColorBy.CONSTRUCTION)
         colors = _assign_zone_colors([s1, s2, s3, s4], cfg)
         assert "BRICK" in colors
@@ -966,22 +995,22 @@ class TestBuildHoverTextEdgeCases:
     """Test _build_hover_text with empty fields."""
 
     def test_no_zone(self) -> None:
-        s = _ResolvedSurface("S", "", "Shading", "", "", Polygon3D([]), 10.0, False, is_shading=True)
+        s = _resolved("S", "", "Shading", "", "", Polygon3D([]), shading=True)
         text = _build_hover_text(s)
         assert "Zone:" not in text
 
     def test_no_construction(self) -> None:
-        s = _ResolvedSurface("S", "Z", "Wall", "Outdoors", "", Polygon3D([]), 10.0, False)
+        s = _resolved("S", "Z", "Wall", "Outdoors", "", Polygon3D([]))
         text = _build_hover_text(s)
         assert "Construction:" not in text
 
     def test_no_boundary(self) -> None:
-        s = _ResolvedSurface("S", "Z", "Wall", "", "C", Polygon3D([]), 10.0, False)
+        s = _resolved("S", "Z", "Wall", "", "C", Polygon3D([]))
         text = _build_hover_text(s)
         assert "Boundary:" not in text
 
     def test_all_fields_present(self) -> None:
-        s = _ResolvedSurface("TestSurf", "MyZone", "Wall", "Outdoors", "BrickWall", Polygon3D([]), 25.0, False)
+        s = _resolved("TestSurf", "MyZone", "Wall", "Outdoors", "BrickWall", _QUAD_POLY)
         text = _build_hover_text(s)
         assert "<b>TestSurf</b>" in text
         assert "Zone: MyZone" in text
@@ -1006,43 +1035,43 @@ class TestLegendLabel:
     """Tests for _legend_label covering all branches."""
 
     def test_fenestration(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Window", "", "C", Polygon3D([]), 0.0, True)
+        s = _resolved("W", "Z", "Window", "", "C", Polygon3D([]), fenestration=True)
         assert _legend_label(s, ModelViewConfig()) == "Fenestration"
 
     def test_shading(self) -> None:
-        s = _ResolvedSurface("S", "", "Shading", "", "", Polygon3D([]), 0.0, False, is_shading=True)
+        s = _resolved("S", "", "Shading", "", "", Polygon3D([]), shading=True)
         assert _legend_label(s, ModelViewConfig()) == "Shading"
 
     def test_zone(self) -> None:
-        s = _ResolvedSurface("W", "MyZone", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "MyZone", "Wall", "Outdoors", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.ZONE)) == "MyZone"
 
     def test_zone_empty(self) -> None:
-        s = _ResolvedSurface("W", "", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "", "Wall", "Outdoors", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.ZONE)) == "Unknown"
 
     def test_surface_type(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Outdoors", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)) == "Wall"
 
     def test_surface_type_empty(self) -> None:
-        s = _ResolvedSurface("W", "Z", "", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "", "Outdoors", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.SURFACE_TYPE)) == "Unknown"
 
     def test_boundary(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Outdoors", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Outdoors", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.BOUNDARY_CONDITION)) == "Outdoors"
 
     def test_boundary_empty(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "", "C", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "", "C", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.BOUNDARY_CONDITION)) == "Unknown"
 
     def test_construction(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Outdoors", "BrickWall", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.CONSTRUCTION)) == "BrickWall"
 
     def test_construction_empty(self) -> None:
-        s = _ResolvedSurface("W", "Z", "Wall", "Outdoors", "", Polygon3D([]), 0.0, False)
+        s = _resolved("W", "Z", "Wall", "Outdoors", "", Polygon3D([]))
         assert _legend_label(s, ModelViewConfig(color_by=ColorBy.CONSTRUCTION)) == "Unknown"
 
 
@@ -1050,16 +1079,13 @@ class TestLegendLabel:
 # Plotly-dependent trace building tests
 # ---------------------------------------------------------------------------
 
-_TRIANGLE_POLY = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(0.5, 1, 0)])
-_QUAD_POLY = Polygon3D([Vector3D(0, 0, 0), Vector3D(5, 0, 0), Vector3D(5, 5, 0), Vector3D(0, 5, 0)])
-
 
 class TestBuildMeshTraces:
     """Tests for _build_mesh_traces."""
 
     def test_basic_mesh(self) -> None:
         pytest.importorskip("plotly.graph_objects")
-        surfaces = [_ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False)]
+        surfaces = [_resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY)]
         cfg = ModelViewConfig()
         zone_colors = {"Z1": "#4e79a7"}
         traces = _build_mesh_traces(surfaces, cfg, zone_colors)
@@ -1068,8 +1094,8 @@ class TestBuildMeshTraces:
     def test_fenestration_skipped_when_disabled(self) -> None:
         pytest.importorskip("plotly.graph_objects")
         surfaces = [
-            _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False),
-            _ResolvedSurface("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True),
+            _resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY),
+            _resolved("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True),
         ]
         cfg = ModelViewConfig(show_fenestration=False)
         zone_colors = {"Z1": "#4e79a7"}
@@ -1080,8 +1106,8 @@ class TestBuildMeshTraces:
     def test_fenestration_included_when_enabled(self) -> None:
         pytest.importorskip("plotly.graph_objects")
         surfaces = [
-            _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False),
-            _ResolvedSurface("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True),
+            _resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY),
+            _resolved("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True),
         ]
         cfg = ModelViewConfig(show_fenestration=True)
         zone_colors = {"Z1": "#4e79a7"}
@@ -1092,8 +1118,8 @@ class TestBuildMeshTraces:
     def test_opacity_settings(self) -> None:
         go = pytest.importorskip("plotly.graph_objects")
         surfaces = [
-            _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False),
-            _ResolvedSurface("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True),
+            _resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY),
+            _resolved("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True),
         ]
         cfg = ModelViewConfig(opacity=0.9, fenestration_opacity=0.3)
         zone_colors = {"Z1": "#4e79a7"}
@@ -1108,7 +1134,7 @@ class TestBuildEdgeTraces:
 
     def test_basic_edges(self) -> None:
         go = pytest.importorskip("plotly.graph_objects")
-        surfaces = [_ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False)]
+        surfaces = [_resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY)]
         cfg = ModelViewConfig()
         traces = _build_edge_traces(surfaces, cfg)
         assert len(traces) == 1
@@ -1117,14 +1143,14 @@ class TestBuildEdgeTraces:
 
     def test_fenestration_edges_skipped_when_disabled(self) -> None:
         pytest.importorskip("plotly.graph_objects")
-        fen = _ResolvedSurface("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True)
+        fen = _resolved("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True)
         cfg = ModelViewConfig(show_fenestration=False)
         traces = _build_edge_traces([fen], cfg)
         assert len(traces[0].x) == 0
 
     def test_fenestration_edges_included_and_offset(self) -> None:
         pytest.importorskip("plotly.graph_objects")
-        fen = _ResolvedSurface("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True)
+        fen = _resolved("Win1", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True)
         cfg = ModelViewConfig(show_fenestration=True)
         traces = _build_edge_traces([fen], cfg)
         assert len(traces[0].x) == 9
@@ -1136,8 +1162,8 @@ class TestBuildLabelTraces:
     def test_basic_labels(self) -> None:
         go = pytest.importorskip("plotly.graph_objects")
         surfaces = [
-            _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY, 25.0, False),
-            _ResolvedSurface("W2", "Z2", "Wall", "Outdoors", "C", _TRIANGLE_POLY, 1.0, False),
+            _resolved("W1", "Z1", "Wall", "Outdoors", "C", _QUAD_POLY),
+            _resolved("W2", "Z2", "Wall", "Outdoors", "C", _TRIANGLE_POLY),
         ]
         traces = _build_label_traces(surfaces)
         assert len(traces) == 1
@@ -1153,8 +1179,8 @@ class TestBuildLabelTraces:
     def test_fenestration_and_shading_excluded(self) -> None:
         pytest.importorskip("plotly.graph_objects")
         surfaces = [
-            _ResolvedSurface("Win", "Z1", "Window", "", "C", _TRIANGLE_POLY, 1.0, True),
-            _ResolvedSurface("Shade", "", "Shading", "", "", _TRIANGLE_POLY, 1.0, False, is_shading=True),
+            _resolved("Win", "Z1", "Window", "", "C", _TRIANGLE_POLY, fenestration=True),
+            _resolved("Shade", "", "Shading", "", "", _TRIANGLE_POLY, shading=True),
         ]
         traces = _build_label_traces(surfaces)
         assert traces == []
@@ -1164,8 +1190,8 @@ class TestBuildLabelTraces:
         poly1 = Polygon3D([Vector3D(0, 0, 0), Vector3D(2, 0, 0), Vector3D(2, 2, 0), Vector3D(0, 2, 0)])
         poly2 = Polygon3D([Vector3D(4, 0, 0), Vector3D(6, 0, 0), Vector3D(6, 2, 0), Vector3D(4, 2, 0)])
         surfaces = [
-            _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", poly1, 4.0, False),
-            _ResolvedSurface("W2", "Z1", "Wall", "Outdoors", "C", poly2, 4.0, False),
+            _resolved("W1", "Z1", "Wall", "Outdoors", "C", poly1),
+            _resolved("W2", "Z1", "Wall", "Outdoors", "C", poly2),
         ]
         traces = _build_label_traces(surfaces)
         assert len(traces) == 1
@@ -1197,8 +1223,8 @@ class TestComputeZoneOffsets:
         poly1 = Polygon3D([Vector3D(0, 0, 0), Vector3D(5, 0, 0), Vector3D(5, 5, 0), Vector3D(0, 5, 0)])
         poly2 = Polygon3D([Vector3D(10, 0, 0), Vector3D(15, 0, 0), Vector3D(15, 5, 0), Vector3D(10, 5, 0)])
         surfaces = [
-            _ResolvedSurface("W1", "ZoneA", "Wall", "Outdoors", "C", poly1, 25.0, False),
-            _ResolvedSurface("W2", "ZoneB", "Wall", "Outdoors", "C", poly2, 25.0, False),
+            _resolved("W1", "ZoneA", "Wall", "Outdoors", "C", poly1),
+            _resolved("W2", "ZoneB", "Wall", "Outdoors", "C", poly2),
         ]
         offsets = _compute_zone_offsets(surfaces, 5.0)
         assert "ZONEA" in offsets
@@ -1207,14 +1233,14 @@ class TestComputeZoneOffsets:
     def test_single_zone_at_centroid(self) -> None:
         """When zone centroid equals building centroid, offset should default."""
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0), Vector3D(0, 1, 0)])
-        surfaces = [_ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "C", poly, 1.0, False)]
+        surfaces = [_resolved("W1", "Z1", "Wall", "Outdoors", "C", poly)]
         offsets = _compute_zone_offsets(surfaces, 5.0)
         assert offsets["Z1"].x == pytest.approx(5.0)
         assert offsets["Z1"].y == pytest.approx(0.0)
 
     def test_shading_excluded(self) -> None:
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(5, 0, 0), Vector3D(5, 5, 0), Vector3D(0, 5, 0)])
-        surfaces = [_ResolvedSurface("S1", "", "Shading", "", "", poly, 25.0, False, is_shading=True)]
+        surfaces = [_resolved("S1", "", "Shading", "", "", poly, shading=True)]
         offsets = _compute_zone_offsets(surfaces, 5.0)
         assert len(offsets) == 0
 
@@ -1228,7 +1254,7 @@ class TestApplyZoneOffsets:
 
     def test_offsets_applied(self) -> None:
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0)])
-        surfaces = [_ResolvedSurface("W1", "ZoneA", "Wall", "Outdoors", "C", poly, 1.0, False)]
+        surfaces = [_resolved("W1", "ZoneA", "Wall", "Outdoors", "C", poly)]
         zone_offsets = {"ZONEA": Vector3D(10, 0, 0)}
         result = _apply_zone_offsets(surfaces, zone_offsets)
         assert len(result) == 1
@@ -1237,14 +1263,14 @@ class TestApplyZoneOffsets:
 
     def test_no_zone_no_offset(self) -> None:
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0)])
-        surfaces = [_ResolvedSurface("S1", "", "Shading", "", "", poly, 1.0, False, is_shading=True)]
+        surfaces = [_resolved("S1", "", "Shading", "", "", poly, shading=True)]
         zone_offsets = {"ZONEA": Vector3D(10, 0, 0)}
         result = _apply_zone_offsets(surfaces, zone_offsets)
         assert result[0].polygon.vertices[0].x == pytest.approx(0.0)
 
     def test_preserves_all_fields(self) -> None:
         poly = Polygon3D([Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(1, 1, 0)])
-        s = _ResolvedSurface("W1", "Z1", "Wall", "Outdoors", "Brick", poly, 5.0, True, is_shading=False)
+        s = _resolved("W1", "Z1", "Wall", "Outdoors", "Brick", poly, fenestration=True)
         result = _apply_zone_offsets([s], {"Z1": Vector3D(1, 0, 0)})
         r = result[0]
         assert r.name == "W1"
@@ -1252,8 +1278,8 @@ class TestApplyZoneOffsets:
         assert r.surface_type == "Wall"
         assert r.boundary == "Outdoors"
         assert r.construction == "Brick"
-        assert r.area == 5.0
-        assert r.is_fenestration is True
+        assert r.area == pytest.approx(s.area)
+        assert _is_fenestration(r) is True
         assert r.is_shading is False
 
 
