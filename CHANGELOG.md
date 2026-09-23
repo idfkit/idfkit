@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] - 2026-09-23
+
+This release moves to `conformance-2026.15` and `governance-2026.22`. The corpus
+level changes no case: 69 cases, as `conformance-2026.14` had, and it leaves the
+accepted-divergence register alone. What it adds is `checks/geometry-vertices`,
+seven fixtures compared as rings within 0.005 m over 234 surfaces, whose oracle is
+EnergyPlus's own `Output:Surfaces:List` vertex report. The governance level
+registers the scene description in both languages and moves `geometry-extraction`
+to `partial` on the TypeScript side.
+
+Pinning the corpus level is not enough to run the new check. It has its own entry
+point, as `checks/weather-monthly` does, and `runners/run.py` reaches neither, so
+`conformance.yml` gained a step that invokes it. It runs both resolutions, so the
+older path cannot drift back.
+
 ### Added
 
 - **`get_scene(doc)` resolves a model's geometry into one frame without changing the model.** It
@@ -851,6 +866,7 @@ Initial public release.
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
 [Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...HEAD
+[1.0.0-rc.6]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.5...v1.0.0-rc.6
 [1.0.0-rc.5]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.2...v1.0.0-rc.3
