@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The generator header written into every IDF file no longer repeats the `v`
+  prefix. Files written by idfkit 1.0.0-rc.5 open with
+  `!-Generator idfkit vv1.0.0-rc.5`; they will open with
+  `!-Generator idfkit v1.0.0rc6` from the next release. `idfkit.__version__` was
+  the malformed half of it, reported as `"v1.0.0-rc.5"` rather than the PEP 440
+  form, so anything parsing it saw the same fault (#212).
+
+### Changed
+
+- The release workflow reads the version from `pyproject.toml` instead of
+  writing the tag into it. The two publish paths now produce identical metadata
+  from the same commit, and a release whose manifest and tag disagree fails
+  rather than being silently patched. `scripts/check_release_version.py` decides
+  agreement by PEP 440 equality, so the `v` prefix and the tag's punctuation are
+  not differences, and it can be run before tagging.
+
 ## [1.0.0-rc.5] - 2026-09-18
 
 This release moves to `conformance-2026.14` and `governance-2026.18`. The corpus
