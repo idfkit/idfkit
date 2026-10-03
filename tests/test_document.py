@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import copy
 import pickle
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -1002,6 +1004,14 @@ class TestNotifyNameChangeStaledReferenceSkipped:
         # Should not crash
 
 
+class _SlottedDocument(IDFDocument[bool]):
+    """A subclass that adds a slot of its own, for the copy tests."""
+
+    __slots__ = ("extra",)
+
+    extra: str
+
+
 class TestIDFDocumentPickleAndDeepcopy:
     """Regression tests for #217: documents and objects must survive pickle and deepcopy."""
 
@@ -1073,6 +1083,32 @@ class TestIDFDocumentPickleAndDeepcopy:
         copied = self._roundtrip(doc) if copier == "pickle" else copy.deepcopy(doc)
         assert copied.cst is not None
         copied_obj = copied[obj.obj_type][obj.name] if obj.name else next(iter(copied.all_objects))
-        # The span index is keyed by id(); a copied index would miss every lookup.
+        # The index was built before the copy; keyed by the object, it comes back keyed by the copies.
         assert copied.region_of(copied_obj) == original_span
         assert copied.render_object(copied_obj) == doc.render_object(obj)
+
+    @pytest.mark.parametrize("copier", ["pickle", "deepcopy"])
+    def test_subclass_with_its_own_slots(self, simple_doc: IDFDocument, copier: str) -> None:
+        # ``__slots__`` on an instance names only the most-derived declaration; a copy that
+        # enumerated it would drop every base slot and come back without its collections.
+        sub = _SlottedDocument(version=simple_doc.version, schema=simple_doc.schema)
+        sub.extra = "kept"
+        sub.add("Zone", "Z")
+        copied = self._roundtrip(sub) if copier == "pickle" else copy.deepcopy(sub)
+        assert isinstance(copied, _SlottedDocument)
+        assert copied.extra == "kept"
+        assert len(copied["Zone"]) == 1
+        assert copied["Zone"]["Z"]._document is copied  # pyright: ignore[reportPrivateUsage]
+
+    def test_unpickles_in_a_fresh_process(self, simple_doc: IDFDocument) -> None:
+        # The case the feature exists for: a worker that has never loaded a schema resolves the
+        # pickled version through its own schema manager.
+        script = (
+            "import pickle, sys\n"
+            "doc = pickle.load(sys.stdin.buffer)\n"
+            "print(len(doc), doc.schema.version, doc['Zone']['TestZone']._document is doc)\n"
+        )
+        result = subprocess.run(  # noqa: S603
+            [sys.executable, "-c", script], input=pickle.dumps(simple_doc), capture_output=True, check=True
+        )
+        assert result.stdout.decode().strip() == f"{len(simple_doc)} {simple_doc.version} True"

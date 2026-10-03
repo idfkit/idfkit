@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import gzip
 import json
 from pathlib import Path
@@ -252,6 +253,20 @@ class TestSchemaManager:
         # Should still work after clearing
         schema = manager.get_schema((24, 1, 0))
         assert schema is not None
+
+    def test_owns(self) -> None:
+        manager = SchemaManager()
+        schema = manager.get_schema((24, 1, 0))
+        assert manager.owns(schema)
+        assert not manager.owns(EpJSONSchema((24, 1, 0), schema._raw))  # pyright: ignore[reportPrivateUsage]
+        manager.clear_cache()
+        assert not manager.owns(schema)
+
+    def test_deepcopy_is_the_same_schema(self) -> None:
+        schema = get_schema((24, 1, 0))
+        assert copy.deepcopy(schema) is schema
+        custom = EpJSONSchema((24, 1, 0), schema._raw)  # pyright: ignore[reportPrivateUsage]
+        assert copy.deepcopy(custom) is custom
 
     def test_available_versions_sorted(self) -> None:
         manager = SchemaManager()

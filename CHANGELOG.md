@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `IDFDocument` and `IDFObject` can be pickled and `copy.deepcopy`'d. Both failed with `TypeError: cannot pickle 'mappingproxy' object` because the schema's parsing cache holds `MappingProxyType` entries. The schema now pickles by version and is re-resolved through the schema manager on load, so a pickled document is ~15 KB rather than ~4 MB and the copy shares the process-wide schema instead of carrying a private one. A deep copy keeps the preserved source formatting of a `preserve_formatting=True` read, and the span index behind `region_of()` is rebuilt rather than copied, as its `id()` keys are stale on the copy. ([#217](https://github.com/idfkit/idfkit/issues/217))
+- `IDFDocument` and `IDFObject` can be pickled and `copy.deepcopy`'d. Both failed with `TypeError: cannot pickle 'mappingproxy' object` because the schema's parsing cache holds `MappingProxyType` entries. The schema now pickles by version and is re-resolved through the schema manager on load, so a pickled document is ~15 KB rather than ~4 MB and the copy shares the process-wide schema instead of carrying a private one. A deep copy keeps the preserved source formatting of a `preserve_formatting=True` read, and the span index behind `region_of()` is keyed by the object rather than by `id()`, so it stays valid on the copy. ([#217](https://github.com/idfkit/idfkit/issues/217))
 
 ## [1.0.0-rc.6] - 2026-09-23
 

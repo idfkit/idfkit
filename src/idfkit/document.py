@@ -11,7 +11,6 @@ Provides:
 from __future__ import annotations
 
 import contextlib
-import copy
 import logging
 import sys
 import warnings
@@ -143,7 +142,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     _schedules_cache: dict[str, IDFObject] | None
     _strict: bool
     _cst: DocumentCST | None
-    _spans: dict[int, tuple[SourceSpan, CSTNode]] | None
+    _spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None
     _raw_text: str | None
     """How many objects the document held when a preserving read finished.
 
@@ -184,7 +183,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._strict = strict
         self._cst: DocumentCST | None = None
         # Built once on the first ask. The retained tree does not change after the read.
-        self._spans: dict[int, tuple[SourceSpan, CSTNode]] | None = None
+        self._spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None = None
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
 
@@ -1172,11 +1171,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Offsets rather than a line and column: a consumer wanting the rendering has the text to
         compute it from, while going the other way costs a scan.
         """
-        found = self._anchored().get(id(obj))
+        found = self._anchored().get(obj)
         return None if found is None else found[0]
 
-    def _anchored(self) -> dict[int, tuple[SourceSpan, CSTNode]]:
-        """Every anchored object's span and its node, indexed by identity and built once.
+    def _anchored(self) -> dict[IDFObject, tuple[SourceSpan, CSTNode]]:
+        """Every anchored object's span and its node, keyed by the object and built once.
 
         One pass, because both accessors want the same walk: :meth:`region_of` wants the span and
         :meth:`render_object` wants the node's text. Each doing its own scan made the loop both
@@ -1184,15 +1183,21 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Safe to keep, because the tree does not change after the read. An object added since is
         absent from it, which is the answer both accessors owe for one.
+
+        Keyed by the object rather than by its ``id()``. The two mean the same lookup, because an
+        :class:`IDFObject` hashes by identity, but they differ under a copy: ``pickle`` and
+        ``copy.deepcopy`` rebuild a dict by re-inserting its keys, so this index comes back keyed by
+        the copied objects and keeps answering, where one keyed by the originals' ``id()`` would come
+        back populated and miss on every lookup (#217).
         """
         if self._spans is None:
-            spans: dict[int, tuple[SourceSpan, CSTNode]] = {}
+            spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] = {}
             offset = 0
             for node in self._cst.nodes if self._cst is not None else ():
                 if node.obj is not None:
                     # The body alone. What separates this object from the next is not part of what
                     # a rewrite replaces, and `CSTNode` draws that line once for everyone.
-                    spans[id(node.obj)] = (SourceSpan(offset, offset + node.body_length), node)
+                    spans[node.obj] = (SourceSpan(offset, offset + node.body_length), node)
                 offset += len(node.text)
             self._spans = spans
         return self._spans
@@ -1224,7 +1229,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # Local, because writers imports this module.
         from .writers import render_cst_node
 
-        found = self._anchored().get(id(obj))
+        found = self._anchored().get(obj)
         if found is None:
             return None
         # The cast is the generated stub, not a doubt about the type. `document.pyi` shadows this
@@ -1303,7 +1308,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Create a deep copy of the document.
 
         The copy is independent -- modifying the copy does not affect
-        the original.  Strict mode is preserved.
+        the original.  Strict mode is preserved.  The model is rebuilt
+        object by object, so the preserved source formatting of a
+        ``preserve_formatting=True`` read is not carried over; ``copy.deepcopy``
+        and ``pickle`` keep it, and need no hooks here: every slot of a document
+        copies correctly on its own, and the schema travels by version (see
+        :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
 
         Examples:
             Create a copy for parametric comparison (e.g., testing
@@ -1332,42 +1342,6 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             new_obj = obj.copy()
             new_doc.addidfobject(new_obj)
 
-        return new_doc
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Pickle support.
-
-        ``_spans`` is keyed by ``id()`` of the objects it was built from; every
-        object gets a new identity on the other side of a pickle, so a copied
-        map would be populated and miss on every lookup.  It is dropped here and
-        rebuilt lazily by :meth:`_span_index`.  The schema pickles by version
-        (see :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`),
-        so a document does not carry its schema's content.
-        """
-        state = {slot: getattr(self, slot) for slot in self.__slots__}
-        state["_spans"] = None
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        for slot, value in state.items():
-            setattr(self, slot, value)
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> IDFDocument[bool]:
-        """``copy.deepcopy`` support.
-
-        Unlike :meth:`copy`, this keeps the preserved source formatting (the
-        CST) of a document read with ``preserve_formatting=True``.  The schema
-        is shared with the original rather than duplicated, as one schema per
-        version is the invariant the rest of the package relies on.
-        """
-        cls = type(self)
-        new_doc = cls.__new__(cls)
-        memo[id(self)] = new_doc
-        if self._schema is not None:
-            memo[id(self._schema)] = self._schema
-        for slot in self.__slots__:
-            setattr(new_doc, slot, copy.deepcopy(getattr(self, slot), memo))
-        new_doc._spans = None
         return new_doc
 
     # -------------------------------------------------------------------------

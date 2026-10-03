@@ -527,7 +527,12 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         """Create a deep copy of the document.
 
         The copy is independent -- modifying the copy does not affect
-        the original.  Strict mode is preserved.
+        the original.  Strict mode is preserved.  The model is rebuilt
+        object by object, so the preserved source formatting of a
+        ``preserve_formatting=True`` read is not carried over; ``copy.deepcopy``
+        and ``pickle`` keep it, and need no hooks here: every slot of a document
+        copies correctly on its own, and the schema travels by version (see
+        :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
 
         Examples:
             Create a copy for parametric comparison (e.g., testing

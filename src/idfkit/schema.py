@@ -159,10 +159,27 @@ class EpJSONSchema:
         the one part of the object pickle cannot handle (#217).
         """
         manager = _schema_manager
-        if manager is not None and manager._cache.get(self.version) is self:  # pyright: ignore[reportPrivateUsage]
+        if manager is not None and manager.owns(self):
             return (get_schema, (self.version,))
-        state = {slot: getattr(self, slot) for slot in self.__slots__ if slot != "_parsing_cache"}
-        return (_rebuild_schema, (state,))
+        # Every slot across the MRO, as ``object.__reduce_ex__`` collects them: ``type(self).__slots__``
+        # alone is the most-derived declaration and would hide the base slots under a subclass.
+        state = {
+            name: getattr(self, name)
+            for klass in reversed(type(self).__mro__)
+            for name in klass.__dict__.get("__slots__", ())
+            if name != "_parsing_cache"
+        }
+        state["_parsing_cache"] = {}
+        return (_rebuild_schema, (type(self), state))
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> EpJSONSchema:
+        """A deep copy of a schema is the schema itself.
+
+        One schema per version is the invariant the package relies on, and a schema is read-only
+        once built, so an object graph that holds one -- a document, its objects, a parser -- keeps
+        sharing it under ``copy.deepcopy`` instead of each copy dragging a private clone along.
+        """
+        return self
 
     def _build_reference_indexes(self) -> None:
         """Build indexes for reference and object lists."""
@@ -846,6 +863,15 @@ class SchemaManager:
             return (major, minor, patch)
         return None
 
+    def owns(self, schema: EpJSONSchema) -> bool:
+        """Whether *schema* is the instance this manager currently hands out for its version.
+
+        Pickling asks this: a schema the manager owns travels by version and is re-resolved through
+        the manager on load, while any other instance travels by content (see
+        :meth:`EpJSONSchema.__reduce__`).
+        """
+        return self._cache.get(schema.version) is schema
+
     def clear_cache(self) -> None:
         """Clear the schema cache."""
         self._cache.clear()
@@ -872,12 +898,11 @@ def get_schema_manager() -> SchemaManager:
     return _schema_manager
 
 
-def _rebuild_schema(state: dict[str, Any]) -> EpJSONSchema:
+def _rebuild_schema(cls: type[EpJSONSchema], state: dict[str, Any]) -> EpJSONSchema:
     """Unpickle a schema the manager does not own (see :meth:`EpJSONSchema.__reduce__`)."""
-    schema = EpJSONSchema.__new__(EpJSONSchema)
-    for slot, value in state.items():
-        setattr(schema, slot, value)
-    schema._parsing_cache = {}  # pyright: ignore[reportPrivateUsage]
+    schema = cls.__new__(cls)
+    for name, value in state.items():
+        setattr(schema, name, value)
     return schema
 
 
