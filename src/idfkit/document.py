@@ -11,6 +11,7 @@ Provides:
 from __future__ import annotations
 
 import contextlib
+import copy
 import logging
 import sys
 import warnings
@@ -1331,6 +1332,42 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             new_obj = obj.copy()
             new_doc.addidfobject(new_obj)
 
+        return new_doc
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Pickle support.
+
+        ``_spans`` is keyed by ``id()`` of the objects it was built from; every
+        object gets a new identity on the other side of a pickle, so a copied
+        map would be populated and miss on every lookup.  It is dropped here and
+        rebuilt lazily by :meth:`_span_index`.  The schema pickles by version
+        (see :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`),
+        so a document does not carry its schema's content.
+        """
+        state = {slot: getattr(self, slot) for slot in self.__slots__}
+        state["_spans"] = None
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        for slot, value in state.items():
+            setattr(self, slot, value)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> IDFDocument[bool]:
+        """``copy.deepcopy`` support.
+
+        Unlike :meth:`copy`, this keeps the preserved source formatting (the
+        CST) of a document read with ``preserve_formatting=True``.  The schema
+        is shared with the original rather than duplicated, as one schema per
+        version is the invariant the rest of the package relies on.
+        """
+        cls = type(self)
+        new_doc = cls.__new__(cls)
+        memo[id(self)] = new_doc
+        if self._schema is not None:
+            memo[id(self._schema)] = self._schema
+        for slot in self.__slots__:
+            setattr(new_doc, slot, copy.deepcopy(getattr(self, slot), memo))
+        new_doc._spans = None
         return new_doc
 
     # -------------------------------------------------------------------------

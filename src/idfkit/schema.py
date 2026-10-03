@@ -142,6 +142,28 @@ class EpJSONSchema:
         self._parsing_cache: dict[str, ParsingCache] = {}
         self._build_reference_indexes()
 
+    def __reduce__(self) -> tuple[Any, ...]:
+        """Pickle by version, not by content, when this is the shared schema.
+
+        A document carries its schema, so pickling a document (multiprocessing,
+        joblib, ``copy.deepcopy``) would otherwise carry the full ~4 MB schema
+        with it and come back as a private copy, breaking the one-schema-per-
+        version invariant that :class:`SchemaManager` maintains.  The schema the
+        manager handed out for this version is reconstructed by asking the
+        manager again, which is a cache hit in the same process and a bundled
+        load in a worker.
+
+        A schema the manager does not know about -- built directly from custom
+        schema data -- is pickled by content instead, minus ``_parsing_cache``:
+        that is a rebuildable cache, and its ``MappingProxyType`` entries are
+        the one part of the object pickle cannot handle (#217).
+        """
+        manager = _schema_manager
+        if manager is not None and manager._cache.get(self.version) is self:  # pyright: ignore[reportPrivateUsage]
+            return (get_schema, (self.version,))
+        state = {slot: getattr(self, slot) for slot in self.__slots__ if slot != "_parsing_cache"}
+        return (_rebuild_schema, (state,))
+
     def _build_reference_indexes(self) -> None:
         """Build indexes for reference and object lists."""
         for obj_type, obj_schema in self._properties.items():
@@ -848,6 +870,15 @@ def get_schema_manager() -> SchemaManager:
     if _schema_manager is None:
         _schema_manager = SchemaManager()
     return _schema_manager
+
+
+def _rebuild_schema(state: dict[str, Any]) -> EpJSONSchema:
+    """Unpickle a schema the manager does not own (see :meth:`EpJSONSchema.__reduce__`)."""
+    schema = EpJSONSchema.__new__(EpJSONSchema)
+    for slot, value in state.items():
+        setattr(schema, slot, value)
+    schema._parsing_cache = {}  # pyright: ignore[reportPrivateUsage]
+    return schema
 
 
 def get_schema(version: tuple[int, int, int]) -> EpJSONSchema:
