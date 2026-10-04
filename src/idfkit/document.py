@@ -1308,12 +1308,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """Create a deep copy of the document.
 
         The copy is independent -- modifying the copy does not affect
-        the original.  Strict mode is preserved.  The model is rebuilt
-        object by object, so the preserved source formatting of a
-        ``preserve_formatting=True`` read is not carried over; ``copy.deepcopy``
-        and ``pickle`` keep it, and need no hooks here: every slot of a document
+        the original.  Strict mode is preserved, and so is the source
+        formatting of a ``preserve_formatting=True`` read: the copy writes
+        the same bytes the original would, and :meth:`region_of` and
+        :meth:`render_object` answer for its objects.
+
+        ``copy.deepcopy`` and ``pickle`` give the same result through the
+        default machinery, which needs no hooks here: every slot of a document
         copies correctly on its own, and the schema travels by version (see
         :meth:`EpJSONSchema.__reduce__ <idfkit.schema.EpJSONSchema.__reduce__>`).
+        This method is the faster of the two, as it rebuilds the model
+        object by object instead of walking every field through the memo.
 
         Examples:
             Create a copy for parametric comparison (e.g., testing
@@ -1338,9 +1343,33 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             strict=self._strict,
         )
 
+        # Keyed by the object: IDFObject hashes by identity, and the tree below needs
+        # to find each original's twin.
+        twins: dict[IDFObject, IDFObject] = {}
+        carry_source = self._cst is not None
         for obj in self.all_objects:
             new_obj = obj.copy()
+            if carry_source:
+                # `IDFObject.copy` clears this because a copy is normally a new object. A twin in a
+                # copied document is the object as read, and this is the writer's clean/dirty flag:
+                # `None` would make a preserving write reformat every object the copy holds.
+                object.__setattr__(new_obj, "_source_text", obj.source_text)
             new_doc.addidfobject(new_obj)
+            twins[obj] = new_obj
+
+        # The tree ties to the original only through `node.obj`. Re-pointing each anchor at
+        # its twin is the whole of carrying the formatting over; the text is shared, not
+        # copied, as the tree does not change after the read. A node whose object was
+        # removed keeps its `None` anchor and empty text.
+        if self._cst is not None:
+            new_doc._cst = DocumentCST(
+                nodes=[
+                    CSTNode(node.text, None if node.obj is None else twins.get(node.obj)) for node in self._cst.nodes
+                ],
+                encoding=self._cst.encoding,
+            )
+            new_doc._raw_text = self._raw_text
+            new_doc._count_at_read = self._count_at_read
 
         return new_doc
 

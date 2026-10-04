@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument, load_idf, new_document
+from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
 from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
@@ -1072,7 +1072,7 @@ class TestIDFDocumentPickleAndDeepcopy:
         assert "Zone" in restored
         assert restored.get_parsing_cache("Zone") is not None
 
-    @pytest.mark.parametrize("copier", ["pickle", "deepcopy"])
+    @pytest.mark.parametrize("copier", ["pickle", "deepcopy", "copy"])
     def test_preserved_formatting_survives(self, idf_file: Path, copier: str) -> None:
         doc = load_idf(str(idf_file), preserve_formatting=True)
         obj = next(iter(doc.all_objects))
@@ -1080,12 +1080,36 @@ class TestIDFDocumentPickleAndDeepcopy:
         assert original_span is not None
         assert doc.cst is not None
 
-        copied = self._roundtrip(doc) if copier == "pickle" else copy.deepcopy(doc)
+        copiers = {"pickle": self._roundtrip, "deepcopy": copy.deepcopy, "copy": IDFDocument.copy}
+        copied = copiers[copier](doc)
         assert copied.cst is not None
+        assert copied.cst is not doc.cst
+        assert copied.raw_text == doc.raw_text
         copied_obj = copied[obj.obj_type][obj.name] if obj.name else next(iter(copied.all_objects))
-        # The index was built before the copy; keyed by the object, it comes back keyed by the copies.
+        assert copied_obj is not obj
+        # The index was built before the copy. Pickle and deepcopy bring it back keyed by the copies;
+        # copy() re-anchors the tree at the twins, so the copy builds its own.
         assert copied.region_of(copied_obj) == original_span
         assert copied.render_object(copied_obj) == doc.render_object(obj)
+        # A copy writes the same bytes the original would.
+        assert write_idf(copied) == write_idf(doc)
+
+    def test_copy_of_preserving_document_is_independent(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        before = write_idf(doc)
+        copied = doc.copy()
+        zone = copied["Zone"]["TestZone"]
+        zone.multiplier = 2
+        copied.add("Zone", "Added")
+        # The original is untouched, bytes included.
+        assert write_idf(doc) == before
+        # The copy reformats only what changed and appends what is new; the untouched object keeps
+        # its verbatim text.
+        out = write_idf(copied)
+        assert out != before
+        assert "Added" in out
+        material = copied["Material"]["TestMaterial"]
+        assert copied.render_object(material) == doc.render_object(doc["Material"]["TestMaterial"])
 
     @pytest.mark.parametrize("copier", ["pickle", "deepcopy"])
     def test_subclass_with_its_own_slots(self, simple_doc: IDFDocument, copier: str) -> None:

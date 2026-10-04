@@ -45,8 +45,8 @@ save_idf(doc, "out.idf")
 | `doc.add(obj_type, name=None, **fields)` | Create and insert an object. Returns the new `IDFObject`. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
 | `doc.removeidfobject(obj)` | Delete an object. |
-| `doc.copy()` | Deep copy that shares the schema. Rebuilds the model object-by-object, so a document read with `preserve_formatting=True` loses its preserved formatting. |
-| `copy.deepcopy(doc)`, `pickle.dumps(doc)` | Also supported, and the copy keeps preserved formatting. The schema travels by version, not by content, so a pickled document is small and the unpickled one shares the process-wide schema; this is what multiprocessing and joblib need. |
+| `doc.copy()` | Independent deep copy that shares the schema and keeps the preserved formatting of a `preserve_formatting=True` read. The fast way to make an in-process variant. |
+| `copy.deepcopy(doc)`, `pickle.dumps(doc)` | Also supported, same result as `doc.copy()` but slower. The schema travels by version, not by content, so a pickled document is small and the unpickled one shares the process-wide schema; this is what hands a document to worker processes (`ProcessPoolExecutor`, joblib). `simulate_batch` uses threads and needs none of this. |
 | `doc.all_objects` | Iterator over every object in the model (a property, not a method). |
 | `len(doc)` | Total object count. |
 | `obj_type in doc` | Is this type present (and non-empty)? |

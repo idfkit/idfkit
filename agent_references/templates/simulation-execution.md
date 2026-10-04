@@ -80,7 +80,7 @@ For UI loops or asyncio-based batch tooling:
 --8<-- "agent_references/snippets/simulation-execution.py:batch"
 ```
 
-`async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs in parallel processes (use `max_workers` to cap parallelism).
+`async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
 
 ## Caching
 
