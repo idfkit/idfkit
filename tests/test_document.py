@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import copy
+import pickle
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument, load_idf, new_document
+from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
 from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
@@ -998,3 +1002,137 @@ class TestNotifyNameChangeStaledReferenceSkipped:
         # so isinstance(None, str) is False -> line 690->688 branch
         empty_doc.notify_name_change(zone, "Zone1", "Zone2")
         # Should not crash
+
+
+class _SlottedDocument(IDFDocument[bool]):
+    """A subclass that adds a slot of its own, for the copy tests."""
+
+    __slots__ = ("extra",)
+
+    extra: str
+
+
+class TestIDFDocumentPickleAndDeepcopy:
+    """Regression tests for #217: documents and objects must survive pickle and deepcopy."""
+
+    @staticmethod
+    def _roundtrip(doc: IDFDocument) -> IDFDocument:
+        return pickle.loads(pickle.dumps(doc))  # noqa: S301
+
+    def test_pickle_roundtrip(self, simple_doc: IDFDocument) -> None:
+        restored = self._roundtrip(simple_doc)
+        assert restored is not simple_doc
+        assert len(restored) == len(simple_doc)
+        assert restored.version == simple_doc.version
+        assert restored.strict == simple_doc.strict
+        zone = restored["Zone"]["TestZone"]
+        assert zone._document is restored  # pyright: ignore[reportPrivateUsage]
+        assert restored.references.get_referencing("TestMaterial")
+
+    def test_pickle_shares_schema_and_stays_small(self, simple_doc: IDFDocument) -> None:
+        payload = pickle.dumps(simple_doc)
+        # The schema travels by version, not by content (~4 MB).
+        assert len(payload) < 200_000
+        restored = pickle.loads(payload)  # noqa: S301
+        assert restored.schema is simple_doc.schema
+
+    def test_pickle_object(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc["Zone"]["TestZone"]
+        restored = pickle.loads(pickle.dumps(zone))  # noqa: S301
+        assert restored.name == "TestZone"
+        assert restored.obj_type == "Zone"
+        assert restored._document is not None  # pyright: ignore[reportPrivateUsage]
+        assert restored._document.schema is simple_doc.schema  # pyright: ignore[reportPrivateUsage]
+
+    def test_deepcopy_roundtrip(self, simple_doc: IDFDocument) -> None:
+        copied = copy.deepcopy(simple_doc)
+        assert copied is not simple_doc
+        assert len(copied) == len(simple_doc)
+        assert copied.schema is simple_doc.schema
+        copied.add("Zone", "NewZone")
+        assert len(copied["Zone"]) == 2
+        assert len(simple_doc["Zone"]) == 1
+        assert copied["Zone"]["NewZone"]._document is copied  # pyright: ignore[reportPrivateUsage]
+
+    def test_deepcopy_object(self, simple_doc: IDFDocument) -> None:
+        zone = simple_doc["Zone"]["TestZone"]
+        copied = copy.deepcopy(zone)
+        assert copied is not zone
+        assert copied.name == zone.name
+
+    def test_unmanaged_schema_pickles_by_content(self) -> None:
+        from idfkit.schema import EpJSONSchema, get_schema
+
+        managed = get_schema((24, 1, 0))
+        custom = EpJSONSchema((24, 1, 0), managed._raw)  # pyright: ignore[reportPrivateUsage]
+        custom.get_parsing_cache("Zone")  # populate the MappingProxyType-bearing cache
+        restored = pickle.loads(pickle.dumps(custom))  # noqa: S301
+        assert restored is not managed
+        assert restored.version == (24, 1, 0)
+        assert "Zone" in restored
+        assert restored.get_parsing_cache("Zone") is not None
+
+    @pytest.mark.parametrize("copier", ["pickle", "deepcopy", "copy"])
+    def test_preserved_formatting_survives(self, idf_file: Path, copier: str) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        obj = next(iter(doc.all_objects))
+        original_span = doc.region_of(obj)
+        assert original_span is not None
+        assert doc.cst is not None
+
+        copiers = {"pickle": self._roundtrip, "deepcopy": copy.deepcopy, "copy": IDFDocument.copy}
+        copied = copiers[copier](doc)
+        assert copied.cst is not None
+        assert copied.cst is not doc.cst
+        assert copied.raw_text == doc.raw_text
+        copied_obj = copied[obj.obj_type][obj.name] if obj.name else next(iter(copied.all_objects))
+        assert copied_obj is not obj
+        # The index was built before the copy. Pickle and deepcopy bring it back keyed by the copies;
+        # copy() re-anchors the tree at the twins, so the copy builds its own.
+        assert copied.region_of(copied_obj) == original_span
+        assert copied.render_object(copied_obj) == doc.render_object(obj)
+        # A copy writes the same bytes the original would.
+        assert write_idf(copied) == write_idf(doc)
+
+    def test_copy_of_preserving_document_is_independent(self, idf_file: Path) -> None:
+        doc = load_idf(str(idf_file), preserve_formatting=True)
+        before = write_idf(doc)
+        copied = doc.copy()
+        zone = copied["Zone"]["TestZone"]
+        zone.multiplier = 2
+        copied.add("Zone", "Added")
+        # The original is untouched, bytes included.
+        assert write_idf(doc) == before
+        # The copy reformats only what changed and appends what is new; the untouched object keeps
+        # its verbatim text.
+        out = write_idf(copied)
+        assert out != before
+        assert "Added" in out
+        material = copied["Material"]["TestMaterial"]
+        assert copied.render_object(material) == doc.render_object(doc["Material"]["TestMaterial"])
+
+    @pytest.mark.parametrize("copier", ["pickle", "deepcopy"])
+    def test_subclass_with_its_own_slots(self, simple_doc: IDFDocument, copier: str) -> None:
+        # ``__slots__`` on an instance names only the most-derived declaration; a copy that
+        # enumerated it would drop every base slot and come back without its collections.
+        sub = _SlottedDocument(version=simple_doc.version, schema=simple_doc.schema)
+        sub.extra = "kept"
+        sub.add("Zone", "Z")
+        copied = self._roundtrip(sub) if copier == "pickle" else copy.deepcopy(sub)
+        assert isinstance(copied, _SlottedDocument)
+        assert copied.extra == "kept"
+        assert len(copied["Zone"]) == 1
+        assert copied["Zone"]["Z"]._document is copied  # pyright: ignore[reportPrivateUsage]
+
+    def test_unpickles_in_a_fresh_process(self, simple_doc: IDFDocument) -> None:
+        # The case the feature exists for: a worker that has never loaded a schema resolves the
+        # pickled version through its own schema manager.
+        script = (
+            "import pickle, sys\n"
+            "doc = pickle.load(sys.stdin.buffer)\n"
+            "print(len(doc), doc.schema.version, doc['Zone']['TestZone']._document is doc)\n"
+        )
+        result = subprocess.run(  # noqa: S603
+            [sys.executable, "-c", script], input=pickle.dumps(simple_doc), capture_output=True, check=True
+        )
+        assert result.stdout.decode().strip() == f"{len(simple_doc)} {simple_doc.version} True"
