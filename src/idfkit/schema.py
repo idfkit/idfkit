@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from .exceptions import SchemaNotFoundError
 from .versions import (
@@ -26,6 +26,11 @@ from .versions import (
     find_closest_version,
     version_dirname,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from ._accessors import AccessorResolver
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +116,8 @@ class EpJSONSchema:
     """
 
     __slots__ = (
+        "__weakref__",
+        "_accessor_resolver",
         "_object_lists",
         "_parsing_cache",
         "_properties",
@@ -127,6 +134,7 @@ class EpJSONSchema:
     _object_lists: dict[str, set[str]]
     _parsing_cache: dict[str, ParsingCache]
     _upper_to_canonical: dict[str, str]
+    _accessor_resolver: AccessorResolver | None
 
     def __init__(self, version: tuple[int, int, int], schema_data: dict[str, Any]) -> None:
         self.version = version
@@ -135,6 +143,9 @@ class EpJSONSchema:
 
         # Case-insensitive lookup: UPPER → canonical type name
         self._upper_to_canonical: dict[str, str] = {k.upper(): k for k in self._properties}
+
+        # Built on first attribute-style access; see accessor_resolver()
+        self._accessor_resolver = None
 
         # Build reference indexes
         self._reference_lists: dict[str, list[str]] = {}
@@ -546,6 +557,17 @@ class EpJSONSchema:
             True
         """
         return list(self._properties.keys())
+
+    def accessor_resolver(self, build: Callable[[EpJSONSchema], AccessorResolver]) -> AccessorResolver:
+        """Return this schema's attribute resolver, building it on first use.
+
+        The resolver lives on the schema so it is released with it: dropping a
+        schema from the manager's cache frees its resolver too. ``build`` is
+        passed in so this module needs no runtime import of the accessor code.
+        """
+        if self._accessor_resolver is None:
+            self._accessor_resolver = build(self)
+        return self._accessor_resolver
 
     def __contains__(self, obj_type: str) -> bool:
         """Check if an object type exists in the schema."""

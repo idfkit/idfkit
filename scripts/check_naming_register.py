@@ -13,7 +13,7 @@ Inputs, exactly the ones the contract names:
   (FR-008).
 * ``src/idfkit/document.pyi``, the IDFDocument stub that ``make check-stubs`` regenerates and diffs.
   The generated per-object-type accessors are recognised through the same machinery that emits them,
-  ``idfkit.document._PYTHON_TO_IDF`` minus ``generate_stubs._RESERVED_ATTRS``, rather than being
+  ``idfkit.document._PYTHON_TO_IDF`` minus ``idfkit.document._RESERVED``, rather than being
   re-derived here. Run ``make check-stubs`` first: this gate reads the stub, it does not refresh it.
 
 What it enforces:
@@ -446,8 +446,7 @@ def collect_surface(repo: Path) -> Surface:
     sys.path.insert(0, str(repo / "src"))
     try:
         import idfkit
-        from idfkit.codegen.generate_stubs import _RESERVED_ATTRS
-        from idfkit.document import _PYTHON_TO_IDF
+        from idfkit.document import _PYTHON_TO_IDF, _RESERVED
     except ImportError as exc:
         fail_to_run(f"Could not import idfkit from {repo / 'src'}: {exc}")
 
@@ -486,7 +485,7 @@ def collect_surface(repo: Path) -> Surface:
 
     # The per-object-type accessors are the Python half of "generated object types". They are
     # recognised through the machinery that emits them rather than re-derived here.
-    generated = {name for name in _PYTHON_TO_IDF if name not in _RESERVED_ATTRS}
+    generated = {name for name in _PYTHON_TO_IDF if name not in _RESERVED}
     document_members = tuple(
         PublicName(
             symbol=name,

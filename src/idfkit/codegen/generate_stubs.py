@@ -483,20 +483,6 @@ def _generate_object_type_map(
     return lines
 
 
-_RESERVED_ATTRS = frozenset({
-    "version",
-    "filepath",
-    "strict",
-    "schema",
-    "collections",
-    "references",
-    "copy",
-    "keys",
-    "values",
-    "items",
-})
-
-
 def _generate_attr_properties(
     python_to_idf: dict[str, str],
     schema: EpJSONSchema,
@@ -505,14 +491,18 @@ def _generate_attr_properties(
     """Generate typed ``@property`` accessors for IDFDocument.
 
     These correspond to the ``_PYTHON_TO_IDF`` mapping in document.py.
-    Skips names that conflict with real instance attributes or methods.
+    Skips every name that is a real member of ``IDFDocument``. That is the same
+    set the attribute resolver treats as reserved, so the stub and the runtime
+    cannot disagree about which of the two a name reaches.
 
     Each property gets a docstring derived from the EnergyPlus schema memo for
     the underlying object type, so IDEs surface a description on hover.
     """
+    from idfkit.document import _RESERVED  # pyright: ignore[reportPrivateUsage]
+
     lines: list[str] = []
     for py_name, idf_type in python_to_idf.items():
-        if py_name in _RESERVED_ATTRS:
+        if py_name in _RESERVED:
             continue
         cls_name = _to_class_name(idf_type)
         memo = schema.get_object_memo(idf_type)
@@ -646,6 +636,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
     lines.append("_PYTHON_TO_IDF: dict[str, str]")
     lines.append("_IDF_TO_PYTHON: dict[str, str]")
+    lines.append("_RESERVED: frozenset[str]")
     lines.append("")
 
     # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
