@@ -68,10 +68,10 @@ src/idfkit/                  # Main package
   geometry.py                # Vector3D, Polygon3D, surface/zone calculations, WWR, intersect_match
   references.py              # ReferenceGraph - live cross-object reference tracking
   introspection.py           # ObjectDescription, FieldDescription for schema introspection
-  versions.py                # Version registry (8.9.0 through 25.2.0), compatibility helpers
+  versions.py                # Version registry (8.9.0 through 26.1.0), compatibility helpers
   exceptions.py              # Custom exception hierarchy (all inherit IdfKitError)
   _compat.py                 # eppy compatibility layer (drop-in migration support)
-  schemas/                   # Bundled epJSON schemas for 16 EnergyPlus versions
+  schemas/                   # Bundled epJSON schemas for 17 EnergyPlus versions
   simulation/                # EnergyPlus simulation execution
     runner.py                # Subprocess-based simulation runner
     async_runner.py          # async_simulate()
