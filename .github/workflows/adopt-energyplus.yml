@@ -29,10 +29,10 @@ permissions:
 
 jobs:
   adopt:
-    uses: idfkit/idfkit-conformance/.github/workflows/adopt-energyplus.yml@governance-2026.25
+    uses: idfkit/idfkit-conformance/.github/workflows/adopt-energyplus.yml@governance-2026.27
     with:
       project: idfkit
-      governance_level: governance-2026.25
+      governance_level: governance-2026.27
       release: ${{ inputs.release }}
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
