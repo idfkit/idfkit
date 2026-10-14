@@ -1,7 +1,7 @@
-"""Auto-generated type stubs for EnergyPlus 26.1.0 object types.
+"""Auto-generated type stubs for EnergyPlus 26.2.0 object types.
 
 DO NOT EDIT — regenerate with:
-    python -m idfkit.codegen.generate_stubs 26.1.0
+    python -m idfkit.codegen.generate_stubs 26.2.0
 """
 
 from __future__ import annotations
@@ -79,6 +79,8 @@ class Building(IDFObject):
     """EnergyPlus will only use as many warmup days as needed to reach convergence tolerance. This field's value should NOT ...; Default: 25; Range: > 0"""
     minimum_number_of_warmup_days: int | None
     """The minimum number of warmup days that produce enough temperature and flux history to start EnergyPlus simulation for...; Default: 1; Range: > 0"""
+    construction_assignment_set_name: str | None
+    """Optional. Provides inherited construction assignments for surfaces and sub-surfaces in the building. Assignments refe...; Since: 26.2.0"""
 
 class ShadowCalculationShadingZoneGroupsGroup(ExtensibleGroup):
     """One shading_zone_groups group inside :class:`ShadowCalculation`."""
@@ -1009,6 +1011,53 @@ class ScheduleConstant(IDFObject):
     hourly_value: float | None
     """Default: 0.0"""
 
+class ScheduleYearRules(IDFObject):
+    """A Schedule:Year:Rules defines a yearly schedule using a default day profile and a prioritized list of override rules ...; Since: 26.2.0"""
+
+    schedule_type_limits_name: str | None
+    default_day_schedule_name: str | None
+    summer_design_day_schedule_name: str | None
+    """If blank, the Default Day Schedule is used for Summer Design Days."""
+    winter_design_day_schedule_name: str | None
+    """If blank, the Default Day Schedule is used for Winter Design Days."""
+    holiday_schedule_name: str | None
+    """If blank, the Default Day Schedule is used for Holidays."""
+    custom_day_1_schedule_name: str | None
+    """If blank, the Default Day Schedule is used for Custom Day 1."""
+    custom_day_2_schedule_name: str | None
+    """If blank, the Default Day Schedule is used for Custom Day 2."""
+
+class ScheduleWeekRuleDateRangesGroup(ExtensibleGroup):
+    """One date_ranges group inside :class:`ScheduleWeekRule`."""
+
+    start_month: int | None
+    start_day: int | None
+    end_month: int | None
+    end_day: int | None
+
+class ScheduleWeekRule(IDFObject):
+    """A Schedule:Week:Rule defines one override rule for a Schedule:Year:Rules. Rules are evaluated in ascending Rule Prior...; Since: 26.2.0"""
+
+    schedule_year_rules_name: str | None
+    rule_priority_order: int | None
+    """Lower values have higher priority. Must be unique within a Schedule:Year:Rules.; Range: >= 0"""
+    day_schedule_name: str | None
+    apply_sunday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_monday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_tuesday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_wednesday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_thursday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_friday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    apply_saturday: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    date_ranges: ExtensibleList[ScheduleWeekRuleDateRangesGroup]
+
 class ScheduleFileShading(IDFObject):
     """A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the ..."""
 
@@ -1050,6 +1099,12 @@ class Material(IDFObject):
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
     visible_absorptance: float | None
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
+    thermal_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Thermal Absorptance field above. When entered, the Thermal Absorptance field a...; Range: > 0.0, <= 0.99999; Since: 26.2.0"""
+    solar_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Solar Absorptance field above. When entered, the Solar Absorptance field appli...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
+    visible_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
 class MaterialNoMass(IDFObject):
     """Regular materials properties described whose principal description is R (Thermal Resistance)"""
@@ -1063,6 +1118,12 @@ class MaterialNoMass(IDFObject):
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
     visible_absorptance: float | None
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
+    thermal_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Thermal Absorptance field above. When entered, the Thermal Absorptance field a...; Range: > 0.0, <= 0.99999; Since: 26.2.0"""
+    solar_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Solar Absorptance field above. When entered, the Solar Absorptance field appli...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
+    visible_absorptance_inside_face: float | None
+    """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
 class MaterialInfraredTransparent(IDFObject):
     """Special infrared transparent material. Similar to a Material:Nomass with low thermal resistance. High absorptance in ..."""
@@ -1716,7 +1777,7 @@ class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     high_temperature_difference_of_melting_curve: float | None
     """The total melting range of the material is the sum of low and high temperature difference of melting curve.; [deltaC]; Range: > 0.0"""
     peak_melting_temperature: float | None
-    """The temperature at which the melting curve peaks; [C]; Range: > 0.0"""
+    """The temperature at which the melting curve peaks; [C]"""
     low_temperature_difference_of_melting_curve: float | None
     """The total melting range of the material is the sum of low and high temperature difference of melting curve.; [deltaC]; Range: > 0.0"""
     solid_state_thermal_conductivity: float | None
@@ -1728,7 +1789,7 @@ class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     high_temperature_difference_of_freezing_curve: float | None
     """The total freezing range of the material is the sum of low and high temperature difference of freezing curve.; [deltaC]; Range: > 0.0"""
     peak_freezing_temperature: float | None
-    """The temperature at which the freezing curve peaks; [C]; Range: > 0.0"""
+    """The temperature at which the freezing curve peaks; [C]"""
     low_temperature_difference_of_freezing_curve: float | None
     """The total freezing range of the material is the sum of low and high temperature difference of freezing curve.; [deltaC]; Range: > 0.0"""
 
@@ -1752,15 +1813,27 @@ class MaterialPropertyVariableAbsorptance(IDFObject):
         Literal["", "Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"]
         | None
     )
-    """the variable that drives the change in thermal/solar absorptance; Default: SurfaceTemperature"""
+    """the variable that drives the change in outside-face thermal/solar absorptance; Default: SurfaceTemperature"""
     thermal_absorptance_function_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the control signal value and the surface thermal a..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the control signal value and the outside-face surf..."""
     thermal_absorptance_schedule_name: str | None
-    """only used when Control Signal = 'Scheduled'"""
+    """only used for the outside face when Control Signal = 'Scheduled'"""
     solar_absorptance_function_name: str | None
-    """A Curve:* or Table:Lookup object encoding the relationship between the control signal value and the surface solar abs..."""
+    """A Curve:* or Table:Lookup object encoding the relationship between the control signal value and the outside-face surf..."""
     solar_absorptance_schedule_name: str | None
-    """only used when Control Signal = 'Scheduled'"""
+    """only used for the outside face when Control Signal = 'Scheduled'"""
+    control_signal_inside_face: (
+        Literal["Scheduled", "SpaceHeatingCoolingMode", "SurfaceReceivedSolarRadiation", "SurfaceTemperature"] | None
+    )
+    """the variable that drives the change in thermal/solar absorptance when this field is blank the inside-face absorptance...; Since: 26.2.0"""
+    thermal_absorptance_function_name_inside_face: str | None
+    """A Curve:* or Table:Lookup object encoding the relationship between the control signal inside face value and the surfa...; Since: 26.2.0"""
+    thermal_absorptance_schedule_name_inside_face: str | None
+    """only used when Control Signal Inside Face = 'Scheduled'; Since: 26.2.0"""
+    solar_absorptance_function_name_inside_face: str | None
+    """A Curve:* or Table:Lookup object encoding the relationship between the control signal inside face value and the surfa...; Since: 26.2.0"""
+    solar_absorptance_schedule_name_inside_face: str | None
+    """only used when Control Signal Inside Face = 'Scheduled'; Since: 26.2.0"""
 
 class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Additional material properties f..."""
@@ -2501,6 +2574,43 @@ class ConstructionWindowDataFile(IDFObject):
     file_name: str | None
     """default file name is 'Window5DataFile.dat' limit on this field is 100 characters."""
 
+class ConstructionAssignmentSet(IDFObject):
+    """Defines a set of construction assignments for surfaces and sub-surfaces based on their type and outside boundary cond...; Since: 26.2.0"""
+
+    exterior_surface_construction_assignments_name: str | None
+    """Constructions for exterior walls, floors, and roofs (Outside Boundary Condition = Outdoors)."""
+    interior_surface_construction_assignments_name: str | None
+    """Constructions for interior surfaces (Outside Boundary Condition = Surface, Zone, or Space)."""
+    ground_contact_surface_construction_assignments_name: str | None
+    """Constructions for ground-contact surfaces (Outside Boundary Condition = Ground*, Foundation)."""
+    exterior_subsurface_construction_assignments_name: str | None
+    """Constructions for sub-surfaces on exterior base surfaces."""
+    interior_subsurface_construction_assignments_name: str | None
+    """Constructions for sub-surfaces on interior base surfaces."""
+    interior_partition_construction_name: str | None
+    """Construction for InternalMass objects in spaces referencing this set."""
+    adiabatic_surface_construction_name: str | None
+    """Construction for surfaces with Outside Boundary Condition = Adiabatic."""
+
+class SurfaceConstructionAssignments(IDFObject):
+    """Defines construction assignments for the three opaque surface types (Floor, Wall, Roof/Ceiling) for a single boundary...; Since: 26.2.0"""
+
+    floor_construction_name: str | None
+    wall_construction_name: str | None
+    roof_ceiling_construction_name: str | None
+
+class SubSurfaceConstructionAssignments(IDFObject):
+    """Defines construction assignments for each sub-surface type for a single boundary-condition category (exterior or inte...; Since: 26.2.0"""
+
+    fixed_window_construction_name: str | None
+    operable_window_construction_name: str | None
+    door_construction_name: str | None
+    glass_door_construction_name: str | None
+    overhead_door_construction_name: str | None
+    skylight_construction_name: str | None
+    tubular_daylight_dome_construction_name: str | None
+    tubular_daylight_diffuser_construction_name: str | None
+
 class GlobalGeometryRules(IDFObject):
     """Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
 
@@ -2537,6 +2647,8 @@ class Space(IDFObject):
     """If this field is 0.0, negative or autocalculate, then the floor area of the space is automatically calculated and use...; [m2]; Default: Autocalculate"""
     space_type: str | None
     """Space type is used to tag spaces by activity type, such as office, classroom, storage, etc.; Default: General"""
+    construction_assignment_set_name: str | None
+    """Optional. Overrides the Building-level Construction Assignment Set for surfaces in this Space.; Since: 26.2.0"""
     tags: ExtensibleList[SpaceTagsGroup]
 
 class SpaceListSpacesGroup(ExtensibleGroup):
@@ -2611,7 +2723,7 @@ class BuildingSurfaceDetailed(IDFObject):
 
     surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"] | None
     construction_name: str | None
-    """To be matched with a construction in this input file"""
+    """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     zone_name: str | None
     """Zone the surface is a part of."""
     space_name: str | None
@@ -3047,9 +3159,23 @@ class FloorInterzone(IDFObject):
 class FenestrationSurfaceDetailed(IDFObject):
     """Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
 
-    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    surface_type: (
+        Literal[
+            "Door",
+            "FixedWindow",
+            "GlassDoor",
+            "OperableWindow",
+            "OverheadDoor",
+            "Skylight",
+            "TubularDaylightDiffuser",
+            "TubularDaylightDome",
+            "Window",
+        ]
+        | None
+    )
+    """Window is kept for backward compatibility and is treated as FixedWindow. Prefer FixedWindow, OperableWindow, or Skyli..."""
     construction_name: str | None
-    """To be matched with a construction in this input file"""
+    """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     building_surface_name: str | None
     outside_boundary_condition_object: str | None
     """Non-blank only if base surface field Outside Boundary Condition is Surface or OtherSideCoefficients If Base Surface's..."""
@@ -3292,7 +3418,7 @@ class WindowPropertyFrameAndDivider(IDFObject):
     frame_inside_projection: float | None
     """Amount that frame projects inward from the inside face of the glazing; [m]; Default: 0.0; Range: >= 0.0, <= 0.5"""
     frame_conductance: float | None
-    """Effective conductance of frame Excludes air films Obtained from WINDOW 5 or other 2-D calculation; [W/m2-K]; Range: >= 0.0"""
+    """Effective conductance of frame Excludes air films Obtained from WINDOW 5 or other 2-D calculation; [W/m2-K]; Default: 0.0; Range: >= 0.0"""
     ratio_of_frame_edge_glass_conductance_to_center_of_glass_conductance: float | None
     """Excludes air films; applies only to multipane windows Obtained from WINDOW 5 or other 2-D calculation; Default: 1.0; Range: > 0.0, <= 4.0"""
     frame_solar_absorptance: float | None
@@ -3305,10 +3431,10 @@ class WindowPropertyFrameAndDivider(IDFObject):
     """Default: DividedLite"""
     divider_width: float | None
     """Width of dividers in plane of window Width assumed the same for all dividers; [m]; Default: 0.0; Range: >= 0.0, <= 0.5"""
-    number_of_horizontal_dividers: float | None
-    """'Horizontal' means parallel to local window X-axis; Default: 0.0; Range: >= 0.0"""
-    number_of_vertical_dividers: float | None
-    """'Vertical' means parallel to local window Y-axis; Default: 0.0; Range: >= 0.0"""
+    number_of_horizontal_dividers: int | None
+    """'Horizontal' means parallel to local window X-axis; Default: 0; Range: >= 0"""
+    number_of_vertical_dividers: int | None
+    """'Vertical' means parallel to local window Y-axis; Default: 0; Range: >= 0"""
     divider_outside_projection: float | None
     """Amount that divider projects outward from the outside face of the glazing Outside projection assumed the same for all...; [m]; Default: 0.0; Range: >= 0.0, <= 0.5"""
     divider_inside_projection: float | None
@@ -3401,7 +3527,7 @@ class InternalMass(IDFObject):
     """Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
 
     construction_name: str | None
-    """To be matched with a construction in this input file"""
+    """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     zone_or_zonelist_name: str | None
     """Zone(s) the surface is a part of. This field is ignored when a Space or SpaceList Name is specified.; Since: 9.2.0"""
     space_or_spacelist_name: str | None
@@ -4786,12 +4912,12 @@ class SurfacePropertySurroundingSurfacesSurfacesGroup(ExtensibleGroup):
 class SurfacePropertySurroundingSurfaces(IDFObject):
     """This object defines a list of surrounding surfaces for an exterior surface."""
 
-    sky_view_factor: float | None
-    """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
+    sky_view_factor: float | Literal["", "Autocalculate"] | None
+    """optional; Default: Autocalculate"""
     sky_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
-    ground_view_factor: float | None
-    """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
+    ground_view_factor: float | Literal["", "Autocalculate"] | None
+    """optional; Default: Autocalculate"""
     ground_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
     surfaces: ExtensibleList[SurfacePropertySurroundingSurfacesSurfacesGroup]
@@ -4836,6 +4962,17 @@ class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
     """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
 
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
+
+class ZoneMRTCalculationPeopleNamesGroup(ExtensibleGroup):
+    """One people_names group inside :class:`ZoneMRTCalculation`."""
+
+    people_name: str | None
+    mrt_weighting_factor: float | None
+
+class ZoneMRTCalculation(IDFObject):
+    """Blends MRT values calculated for People instances into one Zone MRT. The weighting factors must sum to a value from 0...; Since: 26.2.0"""
+
+    people_names: ExtensibleList[ZoneMRTCalculationPeopleNamesGroup]
 
 class GroundHeatTransferControl(IDFObject):
     """Object determines if the Slab and Basement preprocessors are going to be executed."""
@@ -5627,6 +5764,95 @@ class People(IDFObject):
     heat_stress_temperature_threshold: float | None
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0; Since: 22.2.0"""
 
+class PeopleInstance(IDFObject):
+    """Sets internal gains and contaminant rates for occupants in the zone. The physical characteristics are given by the re...; Since: 26.2.0"""
+
+    people_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    number_of_people_schedule_name: str | None
+    """units in schedule should be fraction applied to number of people (0.0 - 1.0)"""
+    activity_level_schedule_name: str | None
+    """Note that W has to be converted to mets in TC routine units in schedule are W/person"""
+    surface_name_angle_factor_list_name: str | None
+    """optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)"""
+    work_efficiency_schedule_name: str | None
+    """units in schedule are 0.0 to 1.0 optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, Coo..."""
+    clothing_insulation_calculation_method: (
+        Literal["", "CalculationMethodSchedule", "ClothingInsulationSchedule", "DynamicClothingModelASHRAE55"] | None
+    )
+    """Default: ClothingInsulationSchedule"""
+    clothing_insulation_calculation_method_schedule_name: str | None
+    """a schedule value of 1 for the Scheduled method, and 2 for the DynamicClothingModelASHRAE55 method"""
+    clothing_insulation_schedule_name: str | None
+    """use 'Clo' from ASHRAE or Thermal Comfort guides optional (only required for runs of thermal comfort models: Fanger, P..."""
+    air_velocity_schedule_name: str | None
+    """units in the schedule are m/s optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, Coolin..."""
+    multiplier: float | None
+    """Multiplies the number of people from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    ankle_level_air_velocity_schedule_name: str | None
+    """units in the schedule are m/s this is the schedule of the air speed at the 0.1 m above the floor optional (only requi..."""
+    cold_stress_temperature_threshold: float | None
+    """this is the indoor safe temperature threshold for cold stress; [C]; Default: 15.56"""
+    heat_stress_temperature_threshold: float | None
+    """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0"""
+
+class PeopleDefinition(IDFObject):
+    """Defines the physical characteristics (number of people, heat gain fractions, CO2 generation rate and thermal comfort ...; Since: 26.2.0"""
+
+    number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None
+    """The entered calculation method is used to create the maximum number of people for this set of attributes (i.e. sensib...; Default: People"""
+    number_of_people: float | None
+    """Range: >= 0.0"""
+    people_per_floor_area: float | None
+    """[person/m2]; Range: >= 0.0"""
+    floor_area_per_person: float | None
+    """[m2/person]; Range: >= 0.0"""
+    fraction_radiant: float | None
+    """This is radiant fraction of the sensible heat released by people in a zone. This value will be multiplied by the tota...; Default: 0.3; Range: >= 0.0, <= 1.0"""
+    sensible_heat_fraction: float | Literal["", "Autocalculate"] | None
+    """if input, overrides program calculated sensible/latent split; Default: Autocalculate"""
+    carbon_dioxide_generation_rate: float | None
+    """CO2 generation rate per unit of activity level. The default value is obtained from ASHRAE Std 62.1 at 0.0084 cfm/met/...; [m3/s-W]; Default: 3.82e-08; Range: >= 0.0, <= 3.82e-07"""
+    enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "EnclosureAveraged", "SurfaceWeighted"] | None
+    """optional (only required for thermal comfort runs); Default: EnclosureAveraged"""
+    thermal_comfort_model_1_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (only needed for people thermal comfort results reporting)"""
+    thermal_comfort_model_2_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (second type of thermal comfort model and results reporting)"""
+    thermal_comfort_model_3_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (third thermal comfort model and report type)"""
+    thermal_comfort_model_4_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (fourth thermal comfort model and report type)"""
+    thermal_comfort_model_5_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (fifth thermal comfort model and report type)"""
+    thermal_comfort_model_6_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (sixth thermal comfort model and report type)"""
+    thermal_comfort_model_7_type: (
+        Literal["AdaptiveASH55", "AdaptiveCEN15251", "AnkleDraftASH55", "CoolingEffectASH55", "Fanger", "KSU", "Pierce"]
+        | None
+    )
+    """optional (seventh thermal comfort model and report type)"""
+
 class ComfortViewFactorAnglesAnglesGroup(ExtensibleGroup):
     """One angles group inside :class:`ComfortViewFactorAngles`."""
 
@@ -5674,6 +5900,48 @@ class Lights(IDFObject):
     exhaust_air_heat_gain_node_name: str | None
     """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both...; Since: 9.6.0"""
 
+class LightsInstance(IDFObject):
+    """Sets internal gains for lights in the zone. The physical characteristics are given by the referenced Lights:Definitio...; Since: 26.2.0"""
+
+    lights_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in schedule should be fraction applied to design level of lights, generally (0.0 - 1.0)"""
+    fraction_replaceable: float | None
+    """For Daylighting:Controls must be 0 or 1: 0 = no dimming control, 1 = full dimming control; Default: 1.0; Range: >= 0.0, <= 1.0"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    return_air_heat_gain_node_name: str | None
+    """Name of the return air node for this heat gain. If left blank, defaults to the first return air node for the zone. Le..."""
+    exhaust_air_heat_gain_node_name: str | None
+    """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both..."""
+
+class LightsDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for lights. Referenced by one or more Lig...; Since: 26.2.0"""
+
+    design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"] | None
+    """The entered calculation method is used to create the maximum amount of lights for this set of attributes Choices: Lig...; Default: LightingLevel"""
+    lighting_level: float | None
+    """[W] (W); Range: >= 0.0"""
+    watts_per_floor_area: float | None
+    """[W/m2] (W/ft2); Range: >= 0.0"""
+    watts_per_person: float | None
+    """[W/person] (W/person); Range: >= 0.0"""
+    return_air_fraction: float | None
+    """Used only for sizing calculation if return-air-fraction coefficients are specified.; Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_visible: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    return_air_fraction_calculated_from_plenum_temperature: Literal["", "No", "Yes"] | None
+    """Default: No"""
+    return_air_fraction_function_of_plenum_temperature_coefficient_1: float | None
+    """Used only if Return Air Fraction Is Calculated from Plenum Temperature = Yes Equation is Return Air Fraction = Coeffi...; Default: 0.0; Range: >= 0.0"""
+    return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None
+    """Used only if Return Air Fraction Is Calculated from Plenum Temperature = Yes Equation is Return Air Fraction = Coeffi...; [1/K]; Default: 0.0; Range: >= 0.0"""
+
 class ElectricEquipment(IDFObject):
     """Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
 
@@ -5697,6 +5965,36 @@ class ElectricEquipment(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class ElectricEquipmentInstance(IDFObject):
+    """Sets internal gains for electric equipment in the zone. The physical characteristics are given by the referenced Elec...; Since: 26.2.0"""
+
+    electric_equipment_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in schedule should be fraction applied to design level of electric equipment, generally (0.0 - 1.0)"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class ElectricEquipmentDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for electric equipment. Referenced by one...; Since: 26.2.0"""
+
+    design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"] | None
+    """The entered calculation method is used to create the maximum amount of electric equipment for this set of attributes ...; Default: EquipmentLevel"""
+    design_level: float | None
+    """[W] (W); Range: >= 0.0"""
+    watts_per_floor_area: float | None
+    """[W/m2] (W/ft2); Range: >= 0.0"""
+    watts_per_person: float | None
+    """[W/person] (W/person); Range: >= 0.0"""
+    fraction_latent: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_lost: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
 
 class GasEquipment(IDFObject):
     """Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
@@ -5726,6 +6024,40 @@ class GasEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+class GasEquipmentInstance(IDFObject):
+    """Sets internal gains and contaminant rates for gas equipment in the zone. The physical characteristics are given by th...; Since: 26.2.0"""
+
+    gas_equipment_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in Schedule should be fraction applied to design level of gas equipment, generally (0.0 - 1.0)"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class GasEquipmentDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for gas equipment. Referenced by one or m...; Since: 26.2.0"""
+
+    design_level_calculation_method: (
+        Literal["", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"] | None
+    )
+    """The entered calculation method is used to create the maximum amount of gas equipment for this set of attributes Choic...; Default: EquipmentLevel"""
+    design_level: float | None
+    """[W] (Btu/h); Range: >= 0.0"""
+    power_per_floor_area: float | None
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    power_per_person: float | None
+    """[W/person] (Btu/h-person); Range: >= 0.0"""
+    fraction_latent: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_lost: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    carbon_dioxide_generation_rate: float | None
+    """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented. For unvented equ...; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
+
 class HotWaterEquipment(IDFObject):
     """Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
 
@@ -5752,6 +6084,38 @@ class HotWaterEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+class HotWaterEquipmentInstance(IDFObject):
+    """Sets internal gains for hot water equipment in the zone. The physical characteristics are given by the referenced Hot...; Since: 26.2.0"""
+
+    hot_water_equipment_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in Schedule should be fraction applied to design level of hot water equipment, generally (0.0 - 1.0)"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class HotWaterEquipmentDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for hot water equipment. Referenced by on...; Since: 26.2.0"""
+
+    design_level_calculation_method: (
+        Literal["", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"] | None
+    )
+    """The entered calculation method is used to create the maximum amount of hot water equipment for this set of attributes...; Default: EquipmentLevel"""
+    design_level: float | None
+    """[W] (Btu/h); Range: >= 0.0"""
+    power_per_floor_area: float | None
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    power_per_person: float | None
+    """[W/person] (Btu/h-person); Range: >= 0.0"""
+    fraction_latent: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_lost: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+
 class SteamEquipment(IDFObject):
     """Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
 
@@ -5777,6 +6141,38 @@ class SteamEquipment(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class SteamEquipmentInstance(IDFObject):
+    """Sets internal gains for steam equipment in the zone. The physical characteristics are given by the referenced SteamEq...; Since: 26.2.0"""
+
+    steam_equipment_definition_name: str | None
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in Schedule should be fraction applied to design level of steam equipment, generally (0.0 - 1.0)"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class SteamEquipmentDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for steam equipment. Referenced by one or...; Since: 26.2.0"""
+
+    design_level_calculation_method: (
+        Literal["", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"] | None
+    )
+    """The entered calculation method is used to create the maximum amount of steam equipment for this set of attributes Cho...; Default: EquipmentLevel"""
+    design_level: float | None
+    """[W] (Btu/h); Range: >= 0.0"""
+    power_per_floor_area: float | None
+    """[W/m2] (Btu/h-ft2); Range: >= 0.0"""
+    power_per_person: float | None
+    """[W/person] (Btu/h-person); Range: >= 0.0"""
+    fraction_latent: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_lost: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
 
 class OtherEquipment(IDFObject):
     """Sets internal gains or losses for 'other' equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of mor..."""
@@ -5826,6 +6222,61 @@ class OtherEquipment(IDFObject):
     """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented.; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class OtherEquipmentInstance(IDFObject):
+    """Sets internal gains or losses for 'other' equipment in the zone. The physical characteristics are given by the refere...; Since: 26.2.0"""
+
+    other_equipment_definition_name: str | None
+    fuel_type: (
+        Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "DistrictHeatingSteam",
+            "DistrictHeatingWater",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+    """Default: None"""
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    schedule_name: str | None
+    """units in Schedule should be fraction applied to design level of other equipment, generally (0.0 - 1.0)"""
+    multiplier: float | None
+    """Multiplies the design level from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+class OtherEquipmentDefinition(IDFObject):
+    """Defines the physical characteristics (design level and heat gain fractions) for 'other' equipment. Referenced by one ...; Since: 26.2.0"""
+
+    design_level_calculation_method: (
+        Literal["", "EquipmentLevel", "Power/Area", "Power/Person", "Watts/Area", "Watts/Person"] | None
+    )
+    """The entered calculation method is used to create the maximum amount of other equipment. to set a loss, use a negative...; Default: EquipmentLevel"""
+    design_level: float | None
+    """[W] (Btu/h)"""
+    power_per_floor_area: float | None
+    """[W/m2] (Btu/h-ft2)"""
+    power_per_person: float | None
+    """[W/person] (Btu/h-person)"""
+    fraction_latent: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_radiant: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    fraction_lost: float | None
+    """Default: 0.0; Range: >= 0.0, <= 1.0"""
+    carbon_dioxide_generation_rate: float | None
+    """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented.; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
 
 class IndoorLivingWall(IDFObject):
     """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
@@ -5919,6 +6370,77 @@ class ElectricEquipmentITEAirCooled(IDFObject):
     return_temperature_difference_schedule: str | None
     """The difference schedule of the actual AHU return air temperature to the IT equipment outlet temperature. Either Retur..."""
 
+class ElectricEquipmentITEAirCooledInstance(IDFObject):
+    """This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption...; Since: 26.2.0"""
+
+    electricequipment_ite_aircooled_definition_name: str | None
+    zone_or_space_name: str | None
+    """ZoneList and SpaceList names are not allowed."""
+    multiplier: float | None
+    """Multiplies the design power input from the referenced definition.; Default: 1.0; Range: >= 0.0"""
+    design_power_input_schedule_name: str | None
+    """Operating schedule for this equipment, fraction applied to the design power input, generally (0.0 - 1.0) If this fiel..."""
+    cpu_loading_schedule_name: str | None
+    """CPU loading schedule for this equipment as a fraction from 0.0 (idle) to 1.0 (full load). If this field is blank, the..."""
+    air_inlet_room_air_model_node_name: str | None
+    """Name of a RoomAir:Node object which is connected to the ITE air inlet."""
+    air_outlet_room_air_model_node_name: str | None
+    """Name of a RoomAir:Node object which is connected to the ITE air outlet."""
+    supply_air_node_name: str | None
+    """Name of the supply air inlet node serving this ITE. Required if the Air Node Connection Type = AdjustedSupply (set in..."""
+    cpu_end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: ITE-CPU"""
+    fan_end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: ITE-Fans"""
+    electric_power_supply_end_use_subcategory: str | None
+    """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: ITE-UPS"""
+
+class ElectricEquipmentITEAirCooledDefinition(IDFObject):
+    """Performance characteristics for ElectricEquipment:ITE:AirCooled:Instance. Defines power, airflow, and efficiency as f...; Since: 26.2.0"""
+
+    air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
+    """The specified method is used to calculate the IT inlet temperature and zone return air temperature. If FlowFromSystem...; Default: FlowFromSystem"""
+    design_power_input_calculation_method: Literal["", "EquipmentLevel", "Watts/Area"] | None
+    """The entered calculation method is used to specify the design power input Choices: EquipmentLevel => Equipment Level -...; Default: EquipmentLevel"""
+    watts_per_unit: float | None
+    """[W] (W); Range: >= 0.0"""
+    watts_per_floor_area: float | None
+    """[W/m2] (W/ft2); Range: >= 0.0"""
+    cpu_power_input_function_of_loading_and_air_temperature_curve_name: str | None
+    """The name of a two-variable curve or table lookup object which modifies the CPU power input as a function of CPU loadi..."""
+    design_fan_power_input_fraction: float | None
+    """The fraction of the total power input at design conditions which is for the cooling fan(s); Default: 0.0; Range: >= 0.0, <= 1.0"""
+    design_fan_air_flow_rate_per_power_input: float | None
+    """The cooling fan air flow rate per total electric power input at design conditions; [m3/s-W]; Range: >= 0.0"""
+    air_flow_function_of_loading_and_air_temperature_curve_name: str | None
+    """The name of a two-variable curve or table lookup object which modifies the cooling air flow rate as a function of CPU..."""
+    fan_power_input_function_of_flow_curve_name: str | None
+    """The name of a single-variable curve or table lookup object which modifies the cooling fan power as a function of flow..."""
+    design_entering_air_temperature: float | None
+    """The entering air temperature at design conditions.; [C]; Default: 15.0"""
+    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
+    """Specifies the allowable operating conditions for the air inlet conditions. Used for reporting time outside allowable ...; Default: None"""
+    air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None
+    """Specifies the type of connection between the zone and the ITE air inlet node. AdjustedSupply = ITE inlet temperature ...; Default: AdjustedSupply"""
+    design_recirculation_fraction: float | None
+    """The recirculation fraction for this equipment at design conditions. This field is used only if the Air Node Connectio...; Default: 0.0; Range: >= 0.0, <= 0.5"""
+    recirculation_function_of_loading_and_supply_temperature_curve_name: str | None
+    """The name of a two-variable curve or table lookup object which modifies the recirculation fraction as a function of CP..."""
+    design_electric_power_supply_efficiency: float | None
+    """The efficiency of the power supply system serving this ITE; Default: 1.0; Range: > 0.0, <= 1.0"""
+    electric_power_supply_efficiency_function_of_part_load_ratio_curve_name: str | None
+    """The name of a single-variable curve or table lookup object which modifies the electric power supply efficiency as a f..."""
+    fraction_of_electric_power_supply_losses_to_zone: float | None
+    """Fraction of the electric power supply losses which are a heat gain to the zone If this field is <1.0, the remainder o...; Default: 1.0; Range: >= 0.0, <= 1.0"""
+    supply_temperature_difference: float | None
+    """The difference of the IT inlet temperature from the AHU supply air temperature. Either Supply Temperature Difference ...; [deltaC]"""
+    supply_temperature_difference_schedule: str | None
+    """The difference schedule of the IT inlet temperature from the AHU supply air temperature. Either Supply Temperature Di..."""
+    return_temperature_difference: float | None
+    """The difference of the actual AHU return air temperature to the IT equipment outlet temperature. Either Return Tempera...; [deltaC]"""
+    return_temperature_difference_schedule: str | None
+    """The difference schedule of the actual AHU return air temperature to the IT equipment outlet temperature. Either Retur..."""
+
 class ZoneBaseboardOutdoorTemperatureControlled(IDFObject):
     """Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
 
@@ -5926,18 +6448,20 @@ class ZoneBaseboardOutdoorTemperatureControlled(IDFObject):
     """Since: 9.6.0"""
     schedule_name: str | None
     """units in Schedule should be fraction applied to capacity of the baseboard heat equipment, generally (0.0 - 1.0)"""
-    capacity_at_low_temperature: float | None
-    """[W]; Range: > 0.0"""
-    low_temperature: float | None
-    """[C]"""
-    capacity_at_high_temperature: float | None
-    """[W]; Range: >= 0.0"""
-    high_temperature: float | None
-    """[C]"""
+    capacity_at_low_temperature: float | Literal["", "Autosize"] | None
+    """[W]; Default: Autosize"""
+    low_temperature: float | Literal["", "Autosize"] | None
+    """[C]; Default: Autosize"""
+    capacity_at_high_temperature: float | Literal["", "Autosize"] | None
+    """[W]; Default: Autosize"""
+    high_temperature: float | Literal["", "Autosize"] | None
+    """[C]; Default: Autosize"""
     fraction_radiant: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+    design_zone_heating_setpoint: float | None
+    """[C]; Default: 20.0; Since: 26.2.0"""
 
 class SwimmingPoolIndoor(IDFObject):
     """Specifies an indoor swimming pools linked to a floor surface. The pool is assumed to cover the entire floor to which ..."""
@@ -10572,10 +11096,12 @@ class ZoneControlHumidistat(IDFObject):
     """Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
 
     zone_name: str | None
-    humidifying_relative_humidity_setpoint_schedule_name: str | None
-    """hourly schedule values should be in Relative Humidity (percent)"""
-    dehumidifying_relative_humidity_setpoint_schedule_name: str | None
-    """hourly schedule values should be in Relative Humidity (percent)"""
+    humidifying_setpoint_schedule_name: str | None
+    """Hourly schedule values should be in relative humidity (percent) or dew-point temperatures (deg. C).; Since: 26.2.0"""
+    dehumidifying_setpoint_schedule_name: str | None
+    """Hourly schedule values should be in relative humidity (percent) or dew-point temperatures (deg. C).; Since: 26.2.0"""
+    control_variable: Literal["", "Dewpoint", "RelativeHumidity"] | None
+    """When using RelativeHumidity, the schedule values should be in percentages.; Default: RelativeHumidity; Since: 26.2.0"""
 
 class ZoneControlThermostat(IDFObject):
     """Define the Thermostat settings for a zone or list of zones. If you use a ZoneList in the Zone or ZoneList name field ..."""
@@ -10814,7 +11340,7 @@ class ZoneControlContaminantController(IDFObject):
     carbon_dioxide_control_availability_schedule_name: str | None
     """Availability schedule name for CO2 controller. Schedule value > 0 means the CO2 controller is enabled. If this field ..."""
     carbon_dioxide_setpoint_schedule_name: str | None
-    """Schedule values should be carbon dioxide concentration in parts per million (ppm)"""
+    """Schedule values should be carbon dioxide concentration in parts per million (ppm) This field is required whenever thi..."""
     minimum_carbon_dioxide_concentration_schedule_name: str | None
     """Schedule values should be carbon dioxide concentration in parts per million (ppm) This field is used when the field S..."""
     maximum_carbon_dioxide_concentration_schedule_name: str | None
@@ -12707,7 +13233,7 @@ class AirTerminalSingleDuctSeriesPIUReheat(IDFObject):
     minimum_fan_turn_down_ratio: float | None
     """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     heating_control_type: Literal["Modulated", "Staged"] | None
-    """Since: 24.2.0"""
+    """Only used if Fan Control Type is VariableSpeed; Since: 24.2.0"""
     design_heating_discharge_air_temperature: float | None
     """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1; Since: 24.2.0"""
     high_limit_heating_discharge_air_temperature: float | None
@@ -12747,7 +13273,7 @@ class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     minimum_fan_turn_down_ratio: float | None
     """flow through terminal at minimum fan speed is this ratio multiplied by Maximum Air Flow Rate; [dimensionless]; Default: 0.3; Range: >= 0.0, <= 1.0; Since: 24.2.0"""
     heating_control_type: Literal["Modulated", "Staged"] | None
-    """Since: 24.2.0"""
+    """Only used if Fan Control Type is VariableSpeed; Since: 24.2.0"""
     design_heating_discharge_air_temperature: float | None
     """Only used if Heating Control Type is Modulated Used to control second stage heating, typically zone heat setpoint plu...; [C]; Default: 32.1; Since: 24.2.0"""
     high_limit_heating_discharge_air_temperature: float | None
@@ -13628,6 +14154,8 @@ class CoilCoolingDXCurveFitOperatingMode(IDFObject):
     """Time constant for the cooling coil's latent capacity to reach steady state after startup. Suggested value is 45; zero...; [s]; Default: 0.0; Range: >= 0.0, <= 500.0"""
     nominal_time_for_condensate_removal_to_begin: float | None
     """The nominal time for condensate to begin leaving the coil's condensate drain line at the coil's rated air flow rate a...; [s]; Default: 0.0; Range: >= 0.0, <= 3000.0"""
+    apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None
+    """Default: No; Since: 26.2.0"""
     apply_latent_degradation_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None
     """Default: No"""
     condenser_type: Literal["", "AirCooled", "EvaporativelyCooled"] | None
@@ -19438,7 +19966,7 @@ class ChillerElectric(IDFObject):
     design_chilled_water_flow_rate: float | Literal["Autosize"] | None
     """For variable volume this is the maximum flow & for constant flow this is the flow.; [m3/s] (gal/min)"""
     design_condenser_fluid_flow_rate: float | Literal["Autosize"] | None
-    """This field is only used for Condenser Type = AirCooled or EvaporativelyCooled when Heat Recovery is specified; [m3/s] (gal/min)"""
+    """For Condenser Type = AirCooled or EvaporativelyCooled, this flow rate is used to calculate the condenser outlet node ...; [m3/s] (gal/min)"""
     coefficient_1_of_capacity_ratio_curve: float | None
     coefficient_2_of_capacity_ratio_curve: float | None
     coefficient_3_of_capacity_ratio_curve: float | None
@@ -20247,7 +20775,7 @@ class HeatPumpAirToWater(IDFObject):
     rated_air_flow_rate_in_cooling_mode: float | Literal["", "Autosize"] | None
     """air flow rate corresponding to rated heat pump performance (capacity, COP).; [m3/s]; Default: Autosize"""
     rated_leaving_water_temperature_in_cooling_mode: float | None
-    """inlet water temperature corresponding to rated performance (heating capacity, COP).; [C]; Default: 8.0"""
+    """outlet water temperature corresponding to rated heat pump performance (cooling capacity, COP).; [C]; Default: 8.0"""
     rated_water_flow_rate_in_cooling_mode: float | Literal["", "Autosize"] | None
     """Condenser water flow rate corresponding to rated heat pump performance (capacity, COP).; [m3/s] (gal/min); Default: Autosize"""
     minimum_outdoor_air_temperature_in_cooling_mode: float | None
@@ -20604,8 +21132,6 @@ class PlantComponentTemperatureSource(IDFObject):
 class CentralHeatPumpSystem(IDFObject):
     """This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
 
-    control_method: Literal["", "SmartMixing"] | None
-    """Default: SmartMixing"""
     cooling_loop_inlet_node_name: str | None
     cooling_loop_outlet_node_name: str | None
     source_loop_inlet_node_name: str | None
@@ -20752,8 +21278,6 @@ class ChillerHeaterPerformanceElectricEIR(IDFObject):
     """[m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     compressor_motor_efficiency: float | None
     """Fraction of compressor electrical energy that must be rejected by the condenser. Enter 1.0 or leave this field blank ...; Default: 1.0; Range: >= 0.0, <= 1.0"""
-    condenser_type: Literal["", "AirCooled", "WaterCooled"] | None
-    """Default: WaterCooled"""
     cooling_mode_temperature_curve_condenser_water_independent_variable: (
         Literal["", "EnteringCondenser", "LeavingCondenser"] | None
     )
@@ -20817,7 +21341,7 @@ class CoolingTowerSingleSpeed(IDFObject):
     design_inlet_air_dry_bulb_temperature: float | None
     """Enter the tower's design inlet air dry-bulb temperature; [C]; Default: 35.0; Range: >= 20.0"""
     design_inlet_air_wet_bulb_temperature: float | None
-    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 20.0"""
+    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 10.0"""
     design_approach_temperature: float | Literal["", "Autosize"] | None
     """Enter the approach temperature corresponding to the design inlet air wet-bulb temperature and design range temperatur...; [deltaC]; Default: Autosize"""
     design_range_temperature: float | Literal["", "Autosize"] | None
@@ -20910,7 +21434,7 @@ class CoolingTowerTwoSpeed(IDFObject):
     design_inlet_air_dry_bulb_temperature: float | None
     """Enter the tower's design inlet air dry-bulb temperature; [C]; Default: 35.0; Range: >= 20.0"""
     design_inlet_air_wet_bulb_temperature: float | None
-    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 20.0"""
+    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 10.0"""
     design_approach_temperature: float | Literal["", "Autosize"] | None
     """Enter the approach temperature corresponding to the design inlet air wet-bulb temperature and design range temperatur...; [deltaC]; Default: Autosize"""
     design_range_temperature: float | Literal["", "Autosize"] | None
@@ -21001,7 +21525,7 @@ class CoolingTowerVariableSpeedMerkel(IDFObject):
     design_inlet_air_dry_bulb_temperature: float | None
     """Enter the tower's design inlet air dry-bulb temperature; [C]; Default: 35.0; Range: >= 20.0"""
     design_inlet_air_wet_bulb_temperature: float | None
-    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 20.0"""
+    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 10.0"""
     design_approach_temperature: float | Literal["", "Autosize"] | None
     """Enter the approach temperature corresponding to the design inlet air wet-bulb temperature and design range temperatur...; [deltaC]; Default: Autosize"""
     design_range_temperature: float | Literal["", "Autosize"] | None
@@ -21052,7 +21576,7 @@ class CoolingTowerVariableSpeed(IDFObject):
     model_coefficient_name: str | None
     """Name of the tower model coefficient object. Used only when tower Model Type is either CoolToolsUserDefined or YorkCal..."""
     design_inlet_air_wet_bulb_temperature: float | None
-    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 20.0"""
+    """Enter the tower's design inlet air wet-bulb temperature; [C]; Default: 25.6; Range: >= 10.0"""
     design_approach_temperature: float | None
     """Enter the approach temperature corresponding to the design inlet air wet-bulb temperature and design range temperatur...; [deltaC]; Default: 3.9; Range: > 0.0"""
     design_range_temperature: float | None
@@ -30713,6 +31237,7 @@ class MeterCustomDecrement(IDFObject):
     )
     """Since: 9.4.0"""
     source_meter_name: str | None
+    """Cannot reference another Meter:CustomDecrement."""
     variable_details: ExtensibleList[MeterCustomDecrementVariableDetailsGroup]
 
 class OutputControlFiles(IDFObject):
@@ -31133,6 +31658,8 @@ _ObjectTypeMap = TypedDict(
         "Schedule:Year": IDFCollection[ScheduleYear],
         "Schedule:Compact": IDFCollection[ScheduleCompact],
         "Schedule:Constant": IDFCollection[ScheduleConstant],
+        "Schedule:Year:Rules": IDFCollection[ScheduleYearRules],
+        "Schedule:Week:Rule": IDFCollection[ScheduleWeekRule],
         "Schedule:File:Shading": IDFCollection[ScheduleFileShading],
         "Schedule:File": IDFCollection[ScheduleFile],
         "Material": IDFCollection[Material],
@@ -31197,6 +31724,9 @@ _ObjectTypeMap = TypedDict(
         "Construction:ComplexFenestrationState": IDFCollection[ConstructionComplexFenestrationState],
         "Construction:WindowEquivalentLayer": IDFCollection[ConstructionWindowEquivalentLayer],
         "Construction:WindowDataFile": IDFCollection[ConstructionWindowDataFile],
+        "ConstructionAssignmentSet": IDFCollection[ConstructionAssignmentSet],
+        "SurfaceConstructionAssignments": IDFCollection[SurfaceConstructionAssignments],
+        "SubSurfaceConstructionAssignments": IDFCollection[SubSurfaceConstructionAssignments],
         "GlobalGeometryRules": IDFCollection[GlobalGeometryRules],
         "GeometryTransform": IDFCollection[GeometryTransform],
         "Space": IDFCollection[Space],
@@ -31282,6 +31812,7 @@ _ObjectTypeMap = TypedDict(
             ComplexFenestrationPropertySolarAbsorbedLayers
         ],
         "ZoneProperty:UserViewFactors:BySurfaceName": IDFCollection[ZonePropertyUserViewFactorsBySurfaceName],
+        "ZoneMRTCalculation": IDFCollection[ZoneMRTCalculation],
         "GroundHeatTransfer:Control": IDFCollection[GroundHeatTransferControl],
         "GroundHeatTransfer:Slab:Materials": IDFCollection[GroundHeatTransferSlabMaterials],
         "GroundHeatTransfer:Slab:MatlProps": IDFCollection[GroundHeatTransferSlabMatlProps],
@@ -31332,15 +31863,31 @@ _ObjectTypeMap = TypedDict(
         "RoomAir:Node:AirflowNetwork:HVACEquipment": IDFCollection[RoomAirNodeAirflowNetworkHVACEquipment],
         "RoomAirSettings:AirflowNetwork": IDFCollection[RoomAirSettingsAirflowNetwork],
         "People": IDFCollection[People],
+        "People:Instance": IDFCollection[PeopleInstance],
+        "People:Definition": IDFCollection[PeopleDefinition],
         "ComfortViewFactorAngles": IDFCollection[ComfortViewFactorAngles],
         "Lights": IDFCollection[Lights],
+        "Lights:Instance": IDFCollection[LightsInstance],
+        "Lights:Definition": IDFCollection[LightsDefinition],
         "ElectricEquipment": IDFCollection[ElectricEquipment],
+        "ElectricEquipment:Instance": IDFCollection[ElectricEquipmentInstance],
+        "ElectricEquipment:Definition": IDFCollection[ElectricEquipmentDefinition],
         "GasEquipment": IDFCollection[GasEquipment],
+        "GasEquipment:Instance": IDFCollection[GasEquipmentInstance],
+        "GasEquipment:Definition": IDFCollection[GasEquipmentDefinition],
         "HotWaterEquipment": IDFCollection[HotWaterEquipment],
+        "HotWaterEquipment:Instance": IDFCollection[HotWaterEquipmentInstance],
+        "HotWaterEquipment:Definition": IDFCollection[HotWaterEquipmentDefinition],
         "SteamEquipment": IDFCollection[SteamEquipment],
+        "SteamEquipment:Instance": IDFCollection[SteamEquipmentInstance],
+        "SteamEquipment:Definition": IDFCollection[SteamEquipmentDefinition],
         "OtherEquipment": IDFCollection[OtherEquipment],
+        "OtherEquipment:Instance": IDFCollection[OtherEquipmentInstance],
+        "OtherEquipment:Definition": IDFCollection[OtherEquipmentDefinition],
         "IndoorLivingWall": IDFCollection[IndoorLivingWall],
         "ElectricEquipment:ITE:AirCooled": IDFCollection[ElectricEquipmentITEAirCooled],
+        "ElectricEquipment:ITE:AirCooled:Instance": IDFCollection[ElectricEquipmentITEAirCooledInstance],
+        "ElectricEquipment:ITE:AirCooled:Definition": IDFCollection[ElectricEquipmentITEAirCooledDefinition],
         "ZoneBaseboard:OutdoorTemperatureControlled": IDFCollection[ZoneBaseboardOutdoorTemperatureControlled],
         "SwimmingPool:Indoor": IDFCollection[SwimmingPoolIndoor],
         "ZoneContaminantSourceAndSink:CarbonDioxide": IDFCollection[ZoneContaminantSourceAndSinkCarbonDioxide],

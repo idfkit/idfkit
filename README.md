@@ -62,7 +62,7 @@ formats.
 - **Thermal properties** — Gas mixture and material thermal calculations for
   glazing and construction analysis.
 - **Broad version support** — Bundled schemas for every EnergyPlus release
-  from v8.9 through v26.1.
+  from v8.9 through v26.2.
 
 ## Performance
 

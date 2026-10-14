@@ -27,7 +27,7 @@ When templates aren't enough (custom topology, unusual controls, retrofits) drop
 
 Zone objects reference Systems by name; Systems reference Plants by name. Every Zone object references a Thermostat.
 
-## Complete enumeration (EnergyPlus 26.1)
+## Complete enumeration (EnergyPlus 26.2)
 
 ```
 HVACTemplate:Thermostat

@@ -28,7 +28,7 @@ The codebase has zero core runtime dependencies. Optional features (plotting, cl
 | `src/idfkit/schedules/` | Schedule evaluation engine (all 8 schedule types) |
 | `src/idfkit/thermal/` | R/U-value, SHGC, gas mixture calculations |
 | `src/idfkit/visualization/` | 3D geometry rendering to SVG |
-| `src/idfkit/schemas/` | Bundled epJSON schemas (17 EnergyPlus versions) |
+| `src/idfkit/schemas/` | Bundled epJSON schemas (18 EnergyPlus versions) |
 | `tests/` | Unit and integration tests (mirrors source structure) |
 | `tests/conftest.py` | Shared pytest fixtures |
 | `tests/fixtures/` | Test data files |
@@ -197,7 +197,7 @@ Defined in `tests/conftest.py`:
 
 ## Installing EnergyPlus
 
-EnergyPlus is required to run integration tests (`pytest -m integration`) and to verify simulation tutorials. The project supports EnergyPlus versions 8.9.0 through 26.1.0.
+EnergyPlus is required to run integration tests (`pytest -m integration`) and to verify simulation tutorials. The project supports EnergyPlus versions 8.9.0 through 26.2.0.
 
 ### Download
 
@@ -273,7 +273,7 @@ The `src/idfkit/versions.py` file lists all supported versions. Each version has
 | Version Range | Notes |
 |---|---|
 | 24.1.0 - 24.2.0 | Used in most tutorials and examples |
-| 25.1.0 - 26.1.0 | Latest supported |
+| 25.1.0 - 26.2.0 | Latest supported |
 | 8.9.0 - 9.6.0 | Legacy versions |
 
 ### Bundled Files

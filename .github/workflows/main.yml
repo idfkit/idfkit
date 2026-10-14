@@ -62,7 +62,7 @@ jobs:
     # Read every EnergyPlus example file, for every version idfkit bundles a schema for.
     #
     # The other jobs read hand-written fixtures. That catches a parser wrong everywhere and misses
-    # one wrong on a schema nobody tested against, which is most of them: idfkit ships seventeen,
+    # one wrong on a schema nobody tested against, which is most of them: idfkit ships eighteen,
     # and field lists, extensible groups and sentinel spellings all moved between releases.
     #
     # Two classes of defect are only reachable this way, and running it by hand found both. A
@@ -74,7 +74,7 @@ jobs:
     # NO ENERGYPLUS INSTALL. It does not need one: idfkit parses against its own bundled schemas,
     # so the only thing wanted from a release is its example files. A blobless, shallow, sparse
     # clone of testfiles/*.idf is about 210 MB against roughly a gigabyte for a full install, and
-    # it is cached on the release tag, which is immutable, so a hit is permanent. Seventeen
+    # it is cached on the release tag, which is immutable, so a hit is permanent. Eighteen
     # downloads happen once, not on every pull request.
     name: "E+ ${{ matrix.version }}"
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
       # would have told you whether the problem is that release or the change under test.
       fail-fast: false
       matrix:
-        # The seventeen versions idfkit bundles a schema for. A test holds this list to
+        # The eighteen versions idfkit bundles a schema for. A test holds this list to
         # `idfkit.versions.ENERGYPLUS_VERSIONS`, because a version added there and not here ships a
         # schema nothing has ever read a real file against.
         #
@@ -125,6 +125,7 @@ jobs:
           - { version: "25.1.0", findings: 3, errors: 0 }
           - { version: "25.2.0", findings: 8, errors: 0 }
           - { version: "26.1.0", findings: 3, errors: 0 }
+          - { version: "26.2.0", findings: 3, errors: 0 }
     steps:
       - name: Check out
         uses: actions/checkout@v4

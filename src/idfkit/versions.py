@@ -29,6 +29,7 @@ ENERGYPLUS_VERSIONS: Final[tuple[tuple[int, int, int], ...]] = (
     (25, 1, 0),
     (25, 2, 0),
     (26, 1, 0),
+    (26, 2, 0),
 )
 
 #: The latest supported EnergyPlus version.

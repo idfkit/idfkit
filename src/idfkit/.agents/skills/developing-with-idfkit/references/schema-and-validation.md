@@ -1,6 +1,6 @@
 # Schema and validation
 
-idfkit bundles the official EnergyPlus epJSON schema for every supported version (8.9 → 26.1). The schema drives field metadata (types, ranges, defaults, references) and on-demand validation. Use it for introspection ("what fields does `Zone` have?") and for catching errors before you hand a model to EnergyPlus.
+idfkit bundles the official EnergyPlus epJSON schema for every supported version (8.9 → 26.2). The schema drives field metadata (types, ranges, defaults, references) and on-demand validation. Use it for introspection ("what fields does `Zone` have?") and for catching errors before you hand a model to EnergyPlus.
 
 ## When to use
 

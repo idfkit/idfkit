@@ -40,7 +40,7 @@ result = simulate(doc, "weather.epw", expand_objects=True)
 
 Zone objects reference Systems by name; Systems reference Plants by name. Every Zone object references a Thermostat.
 
-## Complete enumeration (EnergyPlus 26.1)
+## Complete enumeration (EnergyPlus 26.2)
 
 ```
 HVACTemplate:Thermostat

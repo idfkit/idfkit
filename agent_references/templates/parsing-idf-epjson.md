@@ -50,7 +50,7 @@ Drop to `strict=False` only as a tolerant fallback for legacy or noisy files:
 
 ## Version handling
 
-Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.1 — see `idfkit.ENERGYPLUS_VERSIONS`).
+Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.2 — see `idfkit.ENERGYPLUS_VERSIONS`).
 
 ```python
 --8<-- "agent_references/snippets/parsing-idf-epjson.py:version"
