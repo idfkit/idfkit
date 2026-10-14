@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-14
+
+### Added
+
+- Bundled schema for EnergyPlus 26.2.0. idfkit now reads, writes and validates models for 18 EnergyPlus versions, 8.9.0 through 26.2.0, and the generated type stubs describe the 26.2.0 object set. ([#223](https://github.com/idfkit/idfkit/pull/223))
+
+### Changed
+
+- `LATEST_VERSION` is now `(26, 2, 0)`. `new_document()` and `IDFDocument()` called without a version therefore create a 26.2.0 model, which EnergyPlus 26.1.0 and earlier will reject. Pass `version=(26, 1, 0)` to keep the previous default. ([#223](https://github.com/idfkit/idfkit/pull/223))
+
 ### Fixed
 
 - `IDFDocument.copy()` keeps the preserved source formatting of a `preserve_formatting=True` read. It rebuilt the model object by object and left the syntax tree behind, so a copy wrote a reformatted file where the original wrote its own bytes back; `region_of()` and `render_object()` now answer for the copy's objects too. ([#218](https://github.com/idfkit/idfkit/pull/218))
@@ -870,7 +880,8 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.6...v1.0.0
 [1.0.0-rc.6]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.5...v1.0.0-rc.6
 [1.0.0-rc.5]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.3...v1.0.0-rc.4
