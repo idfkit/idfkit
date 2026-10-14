@@ -6,10 +6,13 @@ import gzip
 import io
 import json
 import tarfile
+from email.message import Message
+from http.client import IncompleteRead
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 from urllib.error import HTTPError, URLError
+from urllib.request import HTTPRedirectHandler, Request
 
 import pytest
 
@@ -20,6 +23,7 @@ from idfkit.download import (
     _extract_schema_from_tarball,
     _find_linux_tarball_url,
     _get_release_assets,
+    _request,
     download_all_schemas,
     download_schema,
 )
@@ -390,3 +394,213 @@ class TestCommandLine:
             download_main(["26.2"])
 
         assert stopped.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# Authentication of the request to api.github.com
+# ---------------------------------------------------------------------------
+
+_API_ASSETS = [
+    {
+        "name": "EnergyPlus-24.1.0-Linux-Ubuntu-22.04-x86_64.tar.gz",
+        "browser_download_url": "https://github.com/NatLabRockies/EnergyPlus/releases/download/v24.1.0/linux.tar.gz",
+    }
+]
+
+
+@pytest.fixture
+def no_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Remove both variables, which a developer's shell and a workflow runner both set."""
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+
+def _requests_of_one_download(tmp_path: Path) -> list[Request]:
+    """Run one successful download with the network replaced, and return the requests it issued."""
+    responses = [
+        _mock_urlopen_response(json.dumps({"assets": _API_ASSETS}).encode()),
+        _mock_urlopen_response(_make_tarball_bytes(b"{}")),
+    ]
+    with patch("idfkit.download.urlopen", side_effect=responses) as opened:
+        download_schema((24, 1, 0), target_dir=tmp_path)
+    return [call.args[0] for call in opened.call_args_list]
+
+
+@pytest.mark.usefixtures("no_token")
+class TestAuthentication:
+    """The token goes to api.github.com, and nowhere else."""
+
+    def test_the_token_is_sent_to_the_api_when_set(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GITHUB_TOKEN", "secret")
+
+        api, asset = _requests_of_one_download(tmp_path)
+
+        assert api.host == "api.github.com"
+        assert api.get_header("Authorization") == "Bearer secret"
+        assert api.get_header("Accept") == "application/vnd.github.v3+json"
+        assert asset.host == "github.com"
+
+    def test_gh_token_is_preferred_to_github_token(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GITHUB_TOKEN", "second")
+        monkeypatch.setenv("GH_TOKEN", "first")
+
+        assert _request(f"{_GITHUB_API_BASE}/v24.1.0").get_header("Authorization") == "Bearer first"
+
+    def test_an_empty_gh_token_yields_to_github_token(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GH_TOKEN", "")
+        monkeypatch.setenv("GITHUB_TOKEN", "second")
+
+        assert _request(f"{_GITHUB_API_BASE}/v24.1.0").get_header("Authorization") == "Bearer second"
+
+    def test_no_header_is_sent_when_neither_variable_is_set(self, tmp_path: Path) -> None:
+        api, asset = _requests_of_one_download(tmp_path)
+
+        assert not api.has_header("Authorization")
+        assert not asset.has_header("Authorization")
+        assert api.header_items() == [("Accept", "application/vnd.github.v3+json")]
+        assert asset.header_items() == []
+
+    def test_the_token_is_not_sent_to_the_asset_host(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GH_TOKEN", "secret")
+
+        _, asset = _requests_of_one_download(tmp_path)
+
+        assert not asset.has_header("Authorization")
+        assert "secret" not in str(asset.header_items())
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://github.com/NatLabRockies/EnergyPlus/releases/download/v24.1.0/linux.tar.gz",
+            "https://objects.githubusercontent.com/asset",
+            "https://api.github.com.example.org/repos",
+            "https://example.org/api.github.com",
+            "http://api.github.com/repos/NatLabRockies/EnergyPlus/releases/tags/v24.1.0",
+        ],
+    )
+    def test_the_token_is_never_sent_to_another_host(self, url: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GH_TOKEN", "secret")
+
+        assert not _request(url).has_header("Authorization")
+
+    @pytest.mark.parametrize("target", ["https://example.org/elsewhere", "https://api.github.com/repositories/1"])
+    def test_the_token_does_not_follow_a_redirect(self, target: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("GH_TOKEN", "secret")
+        original = _request(f"{_GITHUB_API_BASE}/v24.1.0", headers={"Accept": "application/vnd.github.v3+json"})
+        assert original.has_header("Authorization")
+
+        followed = HTTPRedirectHandler().redirect_request(original, io.BytesIO(), 301, "Moved", Message(), target)
+
+        assert followed is not None
+        assert followed.get_header("Accept") == "application/vnd.github.v3+json"
+        assert not followed.has_header("Authorization")
+
+
+# ---------------------------------------------------------------------------
+# A failed download leaves nothing behind
+# ---------------------------------------------------------------------------
+
+
+def _truncated_tarball() -> bytes:
+    """An archive cut off part of the way through, as an interrupted download leaves it."""
+    whole = _make_tarball_bytes(bytes(range(256)) * 400)
+    return whole[: len(whole) // 2]
+
+
+def _incomplete_read() -> MagicMock:
+    response = _mock_urlopen_response(b"")
+    response.read.side_effect = IncompleteRead(b"partial", 1000)
+    return response
+
+
+_FAILING_DOWNLOADS = {
+    "truncated archive": (lambda: _mock_urlopen_response(_truncated_tarball()), "Failed to read release tarball"),
+    "not an archive": (lambda: _mock_urlopen_response(b"<html>rate limited</html>"), "Failed to read release tarball"),
+    "body cut short": (_incomplete_read, "Failed to download tarball"),
+    "schema absent": (lambda: _mock_urlopen_response(_make_tarball_bytes(b"x", "other.txt")), "Could not find"),
+}
+
+
+@pytest.mark.usefixtures("no_token")
+class TestFailedDownload:
+    """A failure removes the version directory the call created, and is reported on one line."""
+
+    @pytest.mark.parametrize("case", sorted(_FAILING_DOWNLOADS))
+    def test_a_directory_the_call_created_is_removed(self, case: str, tmp_path: Path) -> None:
+        response, message = _FAILING_DOWNLOADS[case]
+        responses = [_mock_urlopen_response(json.dumps({"assets": _API_ASSETS}).encode()), response()]
+
+        with patch("idfkit.download.urlopen", side_effect=responses), pytest.raises(RuntimeError, match=message):
+            download_schema((24, 1, 0), target_dir=tmp_path)
+
+        assert not (tmp_path / "V24-1-0").exists()
+        assert tmp_path.is_dir()
+
+    def test_a_directory_is_removed_when_the_release_cannot_be_read(self, tmp_path: Path) -> None:
+        with (
+            patch("idfkit.download.urlopen", side_effect=ConnectionResetError("reset by peer")),
+            pytest.raises(RuntimeError, match="Failed to fetch release info"),
+        ):
+            download_schema((24, 1, 0), target_dir=tmp_path)
+
+        assert not (tmp_path / "V24-1-0").exists()
+
+    @pytest.mark.parametrize("case", sorted(_FAILING_DOWNLOADS))
+    def test_a_directory_that_existed_before_the_call_is_kept(self, case: str, tmp_path: Path) -> None:
+        response, _ = _FAILING_DOWNLOADS[case]
+        existing = tmp_path / "V24-1-0"
+        existing.mkdir()
+        (existing / "note.txt").write_text("kept")
+        responses = [_mock_urlopen_response(json.dumps({"assets": _API_ASSETS}).encode()), response()]
+
+        with patch("idfkit.download.urlopen", side_effect=responses), pytest.raises(RuntimeError):
+            download_schema((24, 1, 0), target_dir=tmp_path)
+
+        assert [entry.name for entry in existing.iterdir()] == ["note.txt"]
+
+    def test_a_failed_write_leaves_no_temporary_file(self, tmp_path: Path) -> None:
+        existing = tmp_path / "V24-1-0"
+        existing.mkdir()
+        responses = [
+            _mock_urlopen_response(json.dumps({"assets": _API_ASSETS}).encode()),
+            _mock_urlopen_response(_make_tarball_bytes(b"{}")),
+        ]
+
+        with (
+            patch("idfkit.download.urlopen", side_effect=responses),
+            patch("idfkit.download.shutil.move", side_effect=OSError(28, "No space left on device")),
+            pytest.raises(OSError, match="No space left"),
+        ):
+            download_schema((24, 1, 0), target_dir=tmp_path)
+
+        assert list(existing.iterdir()) == []
+
+    @pytest.mark.parametrize("case", sorted(_FAILING_DOWNLOADS))
+    def test_the_command_reports_the_cause_on_one_line_and_exits_1(
+        self, case: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        response, message = _FAILING_DOWNLOADS[case]
+        responses = [_mock_urlopen_response(json.dumps({"assets": _API_ASSETS}).encode()), response()]
+
+        with patch("idfkit.download.urlopen", side_effect=responses):
+            code = download_main(["24.1.0", "--target-dir", str(tmp_path)])
+
+        captured = capsys.readouterr()
+        assert code == 1
+        assert captured.out == ""
+        assert captured.err.startswith("error: ")
+        assert message in captured.err
+        assert captured.err.count("\n") == 1
+        assert not (tmp_path / "V24-1-0").exists()
+
+    def test_the_command_reports_an_unwritable_target_and_exits_1(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        blocker = tmp_path / "file"
+        blocker.write_text("not a directory")
+
+        with patch("idfkit.download.urlopen", side_effect=AssertionError("the network was used")):
+            code = download_main(["24.1.0", "--target-dir", str(blocker)])
+
+        assert code == 1
+        assert capsys.readouterr().err.startswith("error: ")
