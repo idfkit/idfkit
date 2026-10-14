@@ -103,27 +103,28 @@ jobs:
         # the point: the two sweep the same files and any number that moves on one side alone is a
         # divergence.
         #
-        # `errors` is three on every version: the same three files whose Version object is placed
-        # where the detector does not look. That is issue #185, and this holds the number until it
-        # is fixed rather than letting a fourth join them unnoticed.
+        # `errors` is that version's MEASURED count of files that fail to read at all, and it is
+        # zero on every version. It was three until issue #185 was fixed: the same three files whose
+        # Version object is placed where the detector did not look. Zero is held so that the first
+        # unreadable file fails the job.
         include:
-          - { version: "8.9.0", findings: 3, errors: 3 }
-          - { version: "9.0.1", findings: 3, errors: 3 }
-          - { version: "9.1.0", findings: 3, errors: 3 }
-          - { version: "9.2.0", findings: 3, errors: 3 }
-          - { version: "9.3.0", findings: 3, errors: 3 }
-          - { version: "9.4.0", findings: 3, errors: 3 }
-          - { version: "9.5.0", findings: 3, errors: 3 }
-          - { version: "9.6.0", findings: 3, errors: 3 }
-          - { version: "22.1.0", findings: 3, errors: 3 }
-          - { version: "22.2.0", findings: 13, errors: 3 }
-          - { version: "23.1.0", findings: 3, errors: 3 }
-          - { version: "23.2.0", findings: 3, errors: 3 }
-          - { version: "24.1.0", findings: 4, errors: 3 }
-          - { version: "24.2.0", findings: 3, errors: 3 }
-          - { version: "25.1.0", findings: 3, errors: 3 }
-          - { version: "25.2.0", findings: 8, errors: 3 }
-          - { version: "26.1.0", findings: 3, errors: 3 }
+          - { version: "8.9.0", findings: 3, errors: 0 }
+          - { version: "9.0.1", findings: 3, errors: 0 }
+          - { version: "9.1.0", findings: 3, errors: 0 }
+          - { version: "9.2.0", findings: 3, errors: 0 }
+          - { version: "9.3.0", findings: 3, errors: 0 }
+          - { version: "9.4.0", findings: 3, errors: 0 }
+          - { version: "9.5.0", findings: 3, errors: 0 }
+          - { version: "9.6.0", findings: 3, errors: 0 }
+          - { version: "22.1.0", findings: 3, errors: 0 }
+          - { version: "22.2.0", findings: 13, errors: 0 }
+          - { version: "23.1.0", findings: 3, errors: 0 }
+          - { version: "23.2.0", findings: 3, errors: 0 }
+          - { version: "24.1.0", findings: 4, errors: 0 }
+          - { version: "24.2.0", findings: 3, errors: 0 }
+          - { version: "25.1.0", findings: 3, errors: 0 }
+          - { version: "25.2.0", findings: 8, errors: 0 }
+          - { version: "26.1.0", findings: 3, errors: 0 }
     steps:
       - name: Check out
         uses: actions/checkout@v4
