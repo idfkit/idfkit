@@ -24,7 +24,7 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 | `doc.schema` | `EpJSONSchema` for the document's version. |
 | `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. |
 | `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys. It delegates to `doc[obj_type]`; there is no behavioural difference. |
-| `doc.<attr>` | Python-name accessors for common types: `doc.zones`, `doc.buildings`, `doc.materials`, `doc.constructions`, `doc.hvac_templates`, etc. |
+| `doc.<attr>` | Attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs`), singular (`doc.air_loop_hvac`), or raw name (`doc.AirLoopHVAC`, case-insensitive). Hand-written shorthands also resolve (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`), but a name derived from the schema always wins over a shorthand. A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name=None, **fields)` | Create and insert an object. Returns the new `IDFObject`. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
 | `doc.removeidfobject(obj)` | Delete an object. |
@@ -50,6 +50,16 @@ Singletons (objects EnergyPlus requires exactly one of, like `Building` or `Simu
 ```
 
 Collections support `.first()` (when you know there's a singleton), `.values()`, name-keyed `[name]` access, and `in` membership tests.
+
+Any object type in the schema is also reachable as an attribute — its `snake_case` plural, its singular, or the raw type name. English pluralisation of these names is ambiguous (`Lights` is already plural, `InternalMass` is not), so all three forms resolve and only the canonical spelling shown in errors is fixed. A misspelling raises `AttributeError` naming the closest matches:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:accessors"
+```
+
+Names are derived from the schema by rule, so object types added in a new EnergyPlus release are reachable with no change to idfkit. Three types the rule cannot split are named explicitly (`Output:SQLite` is `doc.output_sqlite`), and singular nouns ending in `s` get a real plural (`doc.window_material_gases`). The canonical plural of every type, plus the shorthands, appears in `dir(doc)` and in IPython, Jupyter, and editor tab completion. Static type checkers type these accessors as `IDFCollection[IDFObject]`.
+
+Resolution is strict about separators: `doc.z_o_n_e`, `doc.zone_`, and `doc.airloophvacs` all raise rather than guess. Case is loose only for the raw type name, matching `doc["ZONE"]`, and the raw name may use `_` in place of `:` (`doc.Site_Location`). A name owned by a real member wins over any accessor: `doc.version` is the version tuple, and the `Version` objects are `doc.versions`.
 
 ## Modifying objects
 
@@ -110,6 +120,21 @@ Some object types have repeated field groups — vertices on a surface, branches
 
     ```python
     --8<-- "agent_references/snippets/document-and-objects.py:mistake-rename-good"
+    ```
+
+!!! failure "expecting `shading_building` to mean the detailed type"
+
+    ```python
+    # Earlier idfkit releases returned Shading:Building:Detailed for this shorthand.
+    # It now returns Shading:Building, matching doc.shading_buildings.
+    for shade in doc.shading_building:
+        print(shade.vertices)  # wrong type: Shading:Building has no vertices
+    ```
+
+!!! success "name the detailed type explicitly"
+
+    ```python
+    --8<-- "agent_references/snippets/document-and-objects.py:mistake-shading-good"
     ```
 
 ## Related

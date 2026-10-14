@@ -18,6 +18,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
+from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
@@ -65,7 +66,6 @@ _PYTHON_TO_IDF = {
     "fenestration_surfaces": "FenestrationSurface:Detailed",
     "internal_mass": "InternalMass",
     "shading_surfaces": "Shading:Site:Detailed",
-    "shading_building": "Shading:Building:Detailed",
     "shading_zone": "Shading:Zone:Detailed",
     "schedules_compact": "Schedule:Compact",
     "schedules_constant": "Schedule:Constant",
@@ -107,6 +107,11 @@ _PYTHON_TO_IDF = {
 
 # Inverse mapping
 _IDF_TO_PYTHON = {v.upper(): k for k, v in _PYTHON_TO_IDF.items()}
+
+
+def _build_resolver(schema: EpJSONSchema) -> AccessorResolver:
+    """Build the attribute resolver for *schema*; cached on the schema itself."""
+    return AccessorResolver(schema.object_types, shorthands=_PYTHON_TO_IDF, reserved=_RESERVED)
 
 
 class IDFDocument(EppyDocumentMixin, Generic[Strict]):
@@ -386,12 +391,19 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         Get collection by Python-style attribute name.
 
-        Convenient shorthand names are mapped to their IDF equivalents
-        (e.g. ``zones`` -> ``Zone``, ``building_surfaces`` ->
-        ``BuildingSurface:Detailed``).
+        Every object type in the document's schema is reachable this way, as its
+        ``snake_case`` plural (``model.air_loop_hvacs``), its singular
+        (``model.air_loop_hvac``), or the raw type name (``model.AirLoopHVAC``).
+        Hand-written shorthands in ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces``
+        -> ``BuildingSurface:Detailed``, ``ideal_loads`` ->
+        ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, but where one would clash
+        with a name derived from the schema, the derived name wins.
+
+        Without a schema loaded, only the hand-written shorthands and a
+        case-insensitive match against existing collections are available.
 
         Examples:
-            Use shorthand attribute names for common object types:
+            Use attribute names for object types:
 
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -403,23 +415,58 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             'Perimeter_ZN_1'
 
         Raises:
-            AttributeError: If the attribute is not a known collection mapping.
+            AttributeError: If the name resolves to no object type.  When the
+                schema has a close match the message names it.
         """
+        # Fail fast on private and dunder names
         if name.startswith("_"):
             raise AttributeError(name)
 
-        # Check the mapping
-        obj_type = _PYTHON_TO_IDF.get(name)
-        if obj_type:
-            return self[obj_type]
+        # Schema-driven resolution
+        resolver = self._accessor_resolver_or_none()
+        if resolver is not None:
+            resolved = resolver.resolve(name)
+            if resolved is not None:
+                return self[resolved]
+            raise AccessorAttributeError(type(self).__name__, name, resolver)
 
-        # Try as-is with different cases
+        # A real member whose getter raised AttributeError lands here too. Never answer for
+        # it with a collection: that would hide the failure (the schema path does the same).
+        if name in _RESERVED:
+            raise AccessorAttributeError(type(self).__name__, name)
+
+        # No schema: shorthands, then a case-insensitive match on existing collections.
+        obj_type = _PYTHON_TO_IDF.get(name)
+        if obj_type is not None:
+            return self[obj_type]
         for key in self._collections:
             if key.lower().replace(":", "_").replace(" ", "_") == name.lower():
                 return self._collections[key]
 
-        # Raise AttributeError for unknown attributes
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")  # noqa: TRY003
+        raise AccessorAttributeError(type(self).__name__, name)
+
+    def _accessor_resolver_or_none(self) -> AccessorResolver | None:
+        """Return the schema's attribute resolver, or ``None`` without a schema."""
+        schema = self._schema
+        if schema is None:
+            return None
+        return schema.accessor_resolver(_build_resolver)
+
+    def __dir__(self) -> list[str]:
+        """Return attributes for tab completion, including every object-type accessor.
+
+        Lists one canonical name per object type plus the shorthands, so completion
+        shows ``air_loop_hvacs`` once rather than every spelling that resolves.
+        Without a schema only the shorthands are listed, as only they resolve there.
+        ``dir()`` sorts what this returns, so it is not sorted here.
+        """
+        names = set(super().__dir__())
+        resolver = self._accessor_resolver_or_none()
+        if resolver is not None:
+            names.update(resolver.names())
+        else:
+            names.update(_PYTHON_TO_IDF.keys() - _RESERVED)
+        return list(names)
 
     def __contains__(self, obj_type: str) -> bool:
         """Check if document has objects of a type.
@@ -1347,3 +1394,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if collection:
                 lines.append(f"  {obj_type}: {len(collection)} objects")
         return "\n".join(lines)
+
+
+# Real members, which an attribute accessor can never reach because __getattr__ does not
+# fire for them. Computed after the class body so dir() sees every one, and from the
+# class rather than an instance, so it never runs an instance __dir__.
+_RESERVED: frozenset[str] = frozenset(dir(IDFDocument))

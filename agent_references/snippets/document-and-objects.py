@@ -63,6 +63,24 @@ for material in doc.materials:
 # --8<-- [end:lookup]
 
 
+# --8<-- [start:accessors]
+# Any type in the schema is reachable as an attribute — not just common ones.
+loops = doc.air_loop_hvacs  # AirLoopHVAC
+coils = doc.coil_cooling_dx_single_speeds  # Coil:Cooling:DX:SingleSpeed
+same_loops = doc.air_loop_hvac  # singular resolves too
+also_loops = doc["AirLoopHVAC"]  # equivalent
+shades = doc.shading_building_detaileds  # Shading:Building:Detailed
+
+# A typo names the closest matches and their object types:
+#   >>> doc.shading_bulding
+#   AttributeError: 'IDFDocument' object has no attribute 'shading_bulding'.
+#   Did you mean:
+#     shading_buildings           (Shading:Building)
+#     shading_fins                (Shading:Fin)
+#     shading_building_detaileds  (Shading:Building:Detailed)
+# --8<-- [end:accessors]
+
+
 # --8<-- [start:modify]
 zone = doc["Zone"]["Office"]
 zone.ceiling_height = 3.5  # plain field
@@ -112,3 +130,9 @@ surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex
 # --8<-- [start:mistake-rename-good]
 doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
 # --8<-- [end:mistake-rename-good]
+
+
+# --8<-- [start:mistake-shading-good]
+for shade in doc.shading_building_detaileds:  # or doc["Shading:Building:Detailed"]
+    print(shade.name)
+# --8<-- [end:mistake-shading-good]

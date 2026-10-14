@@ -25,6 +25,7 @@ Strict = TypeVar("Strict", bound=bool, default=bool, covariant=True)
 
 _PYTHON_TO_IDF: dict[str, str]
 _IDF_TO_PYTHON: dict[str, str]
+_RESERVED: frozenset[str]
 
 class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: ignore[misc]
     """Main container for an EnergyPlus model.
@@ -186,12 +187,19 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
         """Get collection by Python-style attribute name.
 
-        Convenient shorthand names are mapped to their IDF equivalents
-        (e.g. ``zones`` -> ``Zone``, ``building_surfaces`` ->
-        ``BuildingSurface:Detailed``).
+        Every object type in the document's schema is reachable this way, as its
+        ``snake_case`` plural (``model.air_loop_hvacs``), its singular
+        (``model.air_loop_hvac``), or the raw type name (``model.AirLoopHVAC``).
+        Hand-written shorthands in ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces``
+        -> ``BuildingSurface:Detailed``, ``ideal_loads`` ->
+        ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, but where one would clash
+        with a name derived from the schema, the derived name wins.
+
+        Without a schema loaded, only the hand-written shorthands and a
+        case-insensitive match against existing collections are available.
 
         Examples:
-            Use shorthand attribute names for common object types:
+            Use attribute names for object types:
 
             >>> from idfkit import new_document
             >>> model = new_document()
@@ -203,7 +211,8 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             'Perimeter_ZN_1'
 
         Raises:
-            AttributeError: If the attribute is not a known collection mapping.
+            AttributeError: If the name resolves to no object type.  When the
+                schema has a close match the message names it.
         """
     def __contains__(self, obj_type: str) -> bool:  # type: ignore[override]
         """Check if document has objects of a type.
@@ -573,9 +582,6 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
     @property
     def shading_surfaces(self) -> IDFCollection[ShadingSiteDetailed]:
         """All ``Shading:Site:Detailed`` objects in the document. used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
-    @property
-    def shading_building(self) -> IDFCollection[ShadingBuildingDetailed]:
-        """All ``Shading:Building:Detailed`` objects in the document. used for shading elements such as trees, other buildings, parts of this building not being modeled these items are relative to the current building and would move with relative geometry"""
     @property
     def shading_zone(self) -> IDFCollection[ShadingZoneDetailed]:
         """All ``Shading:Zone:Detailed`` objects in the document. used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat transfer calculations"""

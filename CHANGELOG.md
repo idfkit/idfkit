@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Every object type in a document's schema is now reachable as an attribute on
+  `IDFDocument`, not only the ~40 hand-written shorthands.** `doc.air_loop_hvacs`,
+  `doc.coil_cooling_dx_single_speeds`, and `doc.zone_hvac_equipment_connections`
+  all resolve, as do the singular (`doc.air_loop_hvac`) and the raw type name
+  (`doc.AirLoopHVAC`, case-insensitive), as well as the spellings that resolved
+  before, such as `doc.Site_Location` and `doc.Output_Variable`. Names are derived
+  from the schema by rule, so a new EnergyPlus release needs no change. The rule
+  splits three of the 870 object types badly, so those are named in a short
+  override table (`Output:SQLite` is `doc.output_sqlite`, not `doc.output_sq_lite`),
+  and a test fails if a release adds a fourth. Singular nouns that end in `s` get a
+  real plural: `doc.window_material_gases`, `doc.humidifier_steam_gases`. The
+  names appear in `dir()` and in interactive tab completion. A failed lookup names
+  the closest matches and their object types, and that message is built only when
+  read, so `hasattr()` and `getattr(doc, name, default)` stay fast
+  ([#202](https://github.com/idfkit/idfkit/pull/202)).
+
+### Changed
+
+- **Breaking:** `doc.shading_building` now returns the `Shading:Building`
+  collection, matching `doc.shading_buildings`. It previously returned
+  `Shading:Building:Detailed`, which is now reached as
+  `doc.shading_building_detaileds` or `doc["Shading:Building:Detailed"]`. Where a
+  hand-written shorthand clashes with a name derived from the schema, the derived
+  name now wins; across all 17 bundled schemas this is the only such clash
+  ([#202](https://github.com/idfkit/idfkit/pull/202)).
+
 ## [1.0.0-rc.6] - 2026-09-23
 
 This release moves to `conformance-2026.15` and `governance-2026.22`. The corpus
