@@ -3,13 +3,23 @@ Schema download utilities.
 
 Downloads EnergyPlus epJSON schema files from GitHub releases
 and caches them locally for use by idfkit.
+
+Command line, used when a new EnergyPlus release is bundled into the source tree::
+
+    python -m idfkit.download 26.2.0 --target-dir src/idfkit/schemas
+
+The version must already be listed in ``idfkit.versions.ENERGYPLUS_VERSIONS``. The command writes
+``<target-dir>/VX-Y-Z/Energy+.schema.epJSON.gz``, prints the path, and does nothing when the file
+is already present.
 """
 
 from __future__ import annotations
 
+import argparse
 import gzip
 import json
 import shutil
+import sys
 import tarfile
 import tempfile
 from io import BytesIO
@@ -42,12 +52,22 @@ def _get_release_assets(version: tuple[int, int, int]) -> list[dict[str, Any]]:
 
 
 def _find_linux_tarball_url(assets: list[dict[str, Any]]) -> str | None:
-    """Find a Linux tar.gz asset URL from release assets."""
+    """Find a Linux tar.gz asset URL from release assets.
+
+    The Ubuntu x86_64 tarball is preferred when a release carries several Linux tarballs, so that
+    the asset read is the same one on every run. Releases since 26.1.0 list an AlmaLinux tarball
+    ahead of it. Any other Linux tarball is used when no Ubuntu x86_64 tarball exists.
+    """
+    fallback: str | None = None
     for asset in assets:
         name: str = asset.get("name", "")
-        if "Linux" in name and name.endswith(".tar.gz"):
+        if "Linux" not in name or not name.endswith(".tar.gz"):
+            continue
+        if "Ubuntu" in name and "x86_64" in name:
             return asset.get("browser_download_url")
-    return None
+        if fallback is None:
+            fallback = asset.get("browser_download_url")
+    return fallback
 
 
 def _extract_schema_from_tarball(tarball_bytes: bytes) -> bytes | None:
@@ -170,3 +190,48 @@ def download_all_schemas(
             results[version] = e
 
     return results
+
+
+def _parse_version(text: str) -> tuple[int, int, int]:
+    """Parse ``X.Y.Z``, with or without a leading ``v``, into a version tuple."""
+    parts = text.removeprefix("v").split(".")
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        msg = f"{text!r} is not an EnergyPlus version of the form X.Y.Z"
+        raise argparse.ArgumentTypeError(msg)
+    return int(parts[0]), int(parts[1]), int(parts[2])
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Download one schema from the command line.
+
+    Exit codes: 0 the schema is present at the printed path, 1 the version is not supported or the
+    download failed, 2 the arguments could not be read.
+    """
+    parser = argparse.ArgumentParser(
+        prog="python -m idfkit.download",
+        description="Download the epJSON schema of one supported EnergyPlus version.",
+    )
+    parser.add_argument("version", type=_parse_version, help="the EnergyPlus version, as X.Y.Z")
+    parser.add_argument(
+        "--target-dir",
+        type=Path,
+        default=None,
+        help="directory that receives VX-Y-Z/ (default: ~/.idfkit/schemas)",
+    )
+    parser.add_argument("--no-compress", action="store_true", help="store the schema uncompressed")
+    args = parser.parse_args(argv)
+
+    # `download_schema` appends the version directory to an explicit target and to nothing else,
+    # so the default is stated here in the same form.
+    target_dir: Path = args.target_dir if args.target_dir is not None else Path.home() / ".idfkit" / "schemas"
+    try:
+        path = download_schema(args.version, target_dir=target_dir, compress=not args.no_compress)
+    except (ValueError, RuntimeError) as error:
+        sys.stderr.write(f"error: {error}\n")
+        return 1
+    sys.stdout.write(f"{path}\n")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

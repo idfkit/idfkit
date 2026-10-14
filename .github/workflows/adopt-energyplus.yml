@@ -1,0 +1,39 @@
+name: adopt-energyplus
+
+# Adopt one EnergyPlus release in this project, as a draft pull request on `energyplus/X.Y.Z`.
+#
+# This file holds no logic. The steps, their order, the command each one runs and the gate are
+# declared for the project `idfkit` in `governance/energyplus.toml` of idfkit-conformance, and the
+# reusable workflow called below executes exactly those commands and no others. It never merges,
+# publishes or releases: the caller grants `contents: write` and `pull-requests: write` only.
+#
+# THE TAG IS STATED TWICE, on `uses:` and as `governance_level`, because a called workflow cannot
+# see its own ref. The reusable workflow refuses the run unless the two are the same string, so
+# both are changed together or not at all.
+#
+# It is dispatched by the watch in idfkit-conformance when the upstream release assets exist, and
+# may be dispatched by hand. A second run for a release that is already carried changes nothing.
+run-name: Adopt EnergyPlus ${{ inputs.release }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: The EnergyPlus release to adopt, as X.Y.Z.
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  adopt:
+    uses: idfkit/idfkit-conformance/.github/workflows/adopt-energyplus.yml@governance-2026.24
+    with:
+      project: idfkit
+      governance_level: governance-2026.24
+      release: ${{ inputs.release }}
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}

@@ -23,6 +23,7 @@ from idfkit.download import (
     download_all_schemas,
     download_schema,
 )
+from idfkit.download import main as download_main
 from idfkit.versions import ENERGYPLUS_VERSIONS
 
 
@@ -321,3 +322,71 @@ def test_download_all_schemas_default_target_dir(mock_download: MagicMock, tmp_p
         else:
             target_dir = None
         assert target_dir == expected_target_dir
+
+
+def test_find_linux_tarball_url_prefers_ubuntu_x86_64() -> None:
+    """Releases since 26.1.0 list an AlmaLinux tarball and an arm64 tarball ahead of it."""
+    assets: list[dict[str, Any]] = [
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Linux-AlmaLinux9.6-x86_64.tar.gz", "browser_download_url": "alma"},
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Linux-Ubuntu24.04-arm64.tar.gz", "browser_download_url": "arm"},
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Linux-Ubuntu24.04-x86_64.sh", "browser_download_url": "installer"},
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Linux-Ubuntu24.04-x86_64.tar.gz", "browser_download_url": "ubuntu"},
+    ]
+    assert _find_linux_tarball_url(assets) == "ubuntu"
+
+
+def test_find_linux_tarball_url_falls_back_to_another_linux_tarball() -> None:
+    assets: list[dict[str, Any]] = [
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Linux-AlmaLinux9.6-x86_64.tar.gz", "browser_download_url": "alma"},
+        {"name": "EnergyPlus-26.2.0-4bd7a1f26f-Windows-x86_64.zip", "browser_download_url": "windows"},
+    ]
+    assert _find_linux_tarball_url(assets) == "alma"
+
+
+# ---------------------------------------------------------------------------
+# python -m idfkit.download
+# ---------------------------------------------------------------------------
+
+
+class TestCommandLine:
+    """The entry point the EnergyPlus adoption roster calls to bundle a schema."""
+
+    def test_the_schema_is_written_under_the_target_and_its_path_printed(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        content = b'{"epJSON_schema_version": "24.1.0"}'
+        responses = [
+            _mock_urlopen_response(json.dumps({"assets": _make_assets()}).encode()),
+            _mock_urlopen_response(_make_tarball_bytes(content)),
+        ]
+        with patch("idfkit.download.urlopen", side_effect=responses):
+            code = download_main(["24.1.0", "--target-dir", str(tmp_path)])
+
+        target = tmp_path / "V24-1-0" / _SCHEMA_FILENAME_GZ
+        assert code == 0
+        assert gzip.decompress(target.read_bytes()) == content
+        assert capsys.readouterr().out.strip() == str(target)
+
+    def test_a_present_schema_is_not_downloaded_again(self, tmp_path: Path) -> None:
+        target = tmp_path / "V24-1-0" / _SCHEMA_FILENAME_GZ
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"present")
+
+        with patch("idfkit.download.urlopen", side_effect=AssertionError("the network was used")):
+            code = download_main(["v24.1.0", "--target-dir", str(tmp_path)])
+
+        assert code == 0
+        assert target.read_bytes() == b"present"
+
+    def test_an_unregistered_version_is_refused(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        code = download_main(["99.9.9", "--target-dir", str(tmp_path)])
+
+        assert code == 1
+        assert "not a supported EnergyPlus version" in capsys.readouterr().err
+        assert not (tmp_path / "V99-9-9").exists()
+
+    def test_a_malformed_version_is_refused(self) -> None:
+        with pytest.raises(SystemExit) as stopped:
+            download_main(["26.2"])
+
+        assert stopped.value.code == 2
