@@ -132,6 +132,13 @@ class TestSweepRow:
 
         assert (measured.files, measured.findings, measured.errors) == (1, 0, 0)
 
+    def test_a_release_without_a_bundled_schema_is_not_measured(self, tmp_path: Path) -> None:
+        with pytest.raises(adopt.AdoptionError, match="no bundled schema"):
+            adopt.require_bundled_schema(_NEXT, tmp_path)
+
+    def test_a_bundled_release_may_be_measured(self) -> None:
+        adopt.require_bundled_schema(adopt.Release(24, 1, 0), _REPO_ROOT / "src" / "idfkit" / "schemas")
+
 
 class TestCommandLine:
     def test_a_malformed_release_is_refused(self) -> None:

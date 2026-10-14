@@ -221,11 +221,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-compress", action="store_true", help="store the schema uncompressed")
     args = parser.parse_args(argv)
 
-    # `download_schema` appends the version directory to an explicit target and to nothing else,
-    # so the default is stated here in the same form.
-    target_dir: Path = args.target_dir if args.target_dir is not None else Path.home() / ".idfkit" / "schemas"
     try:
-        path = download_schema(args.version, target_dir=target_dir, compress=not args.no_compress)
+        path = download_schema(args.version, target_dir=args.target_dir, compress=not args.no_compress)
     except (ValueError, RuntimeError) as error:
         sys.stderr.write(f"error: {error}\n")
         return 1

@@ -148,6 +148,29 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
+      # The adoption of an EnergyPlus release waits on a published idfkit: every project that
+      # resolves the library opens only once a version carrying the release is on the index. The
+      # watch in idfkit-conformance evaluates that on a daily schedule, and this asks it to
+      # evaluate now, so that the adoption advances within minutes of the release it was waiting
+      # for.
+      #
+      # A DISPATCH THAT DOES NOT LAND IS A WARNING HERE, unlike the waves below. The daily schedule
+      # is the fallback and reaches the same result, so a failure costs a delay and nothing else,
+      # and it must not turn a release whose consumers were all reached into a failed run.
+      #
+      # IT PRECEDES THE WAVES. The version is on the index by this point, and that publication is
+      # the event the watch is waiting for, whatever becomes of the bumps. The waves can wait up to
+      # an hour each: after them the installation token, valid for one hour, may have expired, and
+      # a job stopped by its timeout would not reach a later step at all.
+      - name: Ask the EnergyPlus adoption watch to evaluate again
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IDFKIT_VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          gh workflow run energyplus-watch.yml --repo idfkit/idfkit-conformance \
+            -f reason="idfkit $IDFKIT_VERSION released" \
+            || echo "::warning title=Watch not dispatched::energyplus-watch.yml in idfkit/idfkit-conformance was not dispatched. Its daily schedule evaluates the same state."
+
       - name: Dispatch in waves
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -158,28 +181,6 @@ jobs:
           --library python
           --level "$IDFKIT_VERSION"
           --report adoption-report.json
-
-      # The adoption of an EnergyPlus release waits on a published idfkit: every project that
-      # resolves the library opens only once a version carrying the release is on the index. The
-      # watch in idfkit-conformance evaluates that on a daily schedule, and this asks it to
-      # evaluate now, so that the adoption advances within minutes of the release it was waiting
-      # for.
-      #
-      # A DISPATCH THAT DOES NOT LAND IS A WARNING HERE, unlike the wave above. The daily schedule
-      # is the fallback and reaches the same result, so a failure costs a delay and nothing else,
-      # and it must not turn a release whose consumers were all reached into a failed run.
-      #
-      # It runs when a wave above failed as well. The version is on the index by then whatever
-      # became of the bumps, and that publication is the event the watch is waiting for.
-      - name: Ask the EnergyPlus adoption watch to evaluate again
-        if: ${{ !cancelled() && steps.app-token.outcome == 'success' }}
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          IDFKIT_VERSION: ${{ steps.ver.outputs.version }}
-        run: |
-          gh workflow run energyplus-watch.yml --repo idfkit/idfkit-conformance \
-            -f reason="idfkit $IDFKIT_VERSION released" \
-            || echo "::warning title=Watch not dispatched::energyplus-watch.yml in idfkit/idfkit-conformance was not dispatched. Its daily schedule evaluates the same state."
 
       - name: Keep the adoption report
         if: always()

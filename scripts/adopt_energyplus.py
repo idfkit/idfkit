@@ -43,6 +43,7 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VERSIONS = _REPO_ROOT / "src" / "idfkit" / "versions.py"
 _WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "main.yml"
 _SPARSE = _REPO_ROOT / ".github" / "ep-testfiles.sparse"
+_SCHEMAS = _REPO_ROOT / "src" / "idfkit" / "schemas"
 
 # The canonical name of the upstream repository, as in the workflow's own fetch step.
 _UPSTREAM = "https://github.com/NatLabRockies/EnergyPlus"
@@ -88,6 +89,10 @@ class Release:
         return f"v{self.full}"
 
     @property
+    def directory(self) -> str:
+        return f"V{self.major}-{self.minor}-{self.patch}"
+
+    @property
     def tuple_literal(self) -> str:
         return f"({self.major}, {self.minor}, {self.patch})"
 
@@ -107,7 +112,6 @@ class Measurement:
     files: int
     findings: int
     errors: int
-    by_code: tuple[tuple[str, int], ...]
 
 
 # ── register ───────────────────────────────────────────────────────────────────────────────────────
@@ -121,8 +125,7 @@ def register(text: str, release: Release) -> Edit:
     listed = [Release(int(a), int(b), int(c)) for a, b, c in _REGISTRY_ROW.findall(match["rows"])]
     if release in listed:
         return Edit(text, changed=False)
-    indent = re.match(r"[ \t]*", match["rows"])
-    prefix = indent.group(0) if indent else "    "
+    prefix = match["rows"][: len(match["rows"]) - len(match["rows"].lstrip(" \t"))]
     rows = "".join(f"{prefix}{entry.tuple_literal},\n" for entry in sorted([*listed, release]))
     return Edit(text[: match.start("rows")] + rows + text[match.end("rows") :], changed=True)
 
@@ -192,12 +195,7 @@ def measure(directory: Path) -> Measurement:
     warnings.filterwarnings("ignore")
     result = sweep_example_files.sweep(files)
     sweep_example_files.report(result)
-    return Measurement(
-        files=result.files,
-        findings=len(result.findings),
-        errors=len(result.errors),
-        by_code=tuple(sorted(result.by_code.items())),
-    )
+    return Measurement(files=result.files, findings=len(result.findings), errors=len(result.errors))
 
 
 # ── Command line ───────────────────────────────────────────────────────────────────────────────────
@@ -215,11 +213,27 @@ def _register(release: Release) -> int:
     return 0
 
 
+def require_bundled_schema(release: Release, schemas: Path) -> None:
+    """Refuse to measure a release whose schema is not bundled.
+
+    Without it the counts written as this release's ceilings would not be this release's. A release
+    that is not registered is read against the newest schema the library has, and a release that is
+    registered without a schema makes every file unreadable, which the row would record as its
+    permitted number of errors.
+    """
+    if not any((schemas / release.directory).glob("Energy+.schema.epJSON*")):
+        raise AdoptionError(
+            f"no bundled schema under {schemas / release.directory}; bundle it first with "
+            f"`python -m idfkit.download {release.full} --target-dir src/idfkit/schemas`"
+        )
+
+
 def _sweep_row(release: Release, examples: Path | None) -> int:
     text = _WORKFLOW.read_text(encoding="utf-8")
     if has_row(text, release):
         print(f"{release.full} already has a row in the sweep matrix; nothing was measured")
         return 0
+    require_bundled_schema(release, _SCHEMAS)
     with tempfile.TemporaryDirectory() as scratch:
         directory = examples if examples is not None else fetch_examples(release, Path(scratch))
         measured = measure(directory)
