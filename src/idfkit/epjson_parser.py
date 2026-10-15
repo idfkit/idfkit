@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .document import IDFDocument
 from .exceptions import VersionNotFoundError
-from .objects import IDFObject
+from .objects import IDFObject, drop_blank_group_slots
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> d
     under the schema's wrapper key. If the wrapper is already present
     (and is a list), the flat keys are merged into it.
     """
-    from .objects import parse_extensible_index
+    from .objects import is_blank_slot, parse_extensible_index
 
     ext_set = frozenset(pc.ext_field_names)
     wrapper_key = pc.ext_wrapper_key
@@ -95,7 +95,8 @@ def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> d
             continue
         base, idx = parse_extensible_index(key, ext_set)
         if base is not None:
-            flat_groups.setdefault(idx, {})[base] = fields_dict[key]
+            if not is_blank_slot(fields_dict[key]):
+                flat_groups.setdefault(idx, {})[base] = fields_dict[key]
             flat_keys.append(key)
 
     if not flat_keys:
@@ -261,7 +262,7 @@ class EpJSONParser:
                 # the canonical wrapper-array shape so downstream consumers see
                 # uniform storage.
                 if pc and pc.extensible and pc.ext_wrapper_key and pc.ext_field_names:
-                    fields_dict = _bucket_flat_extensibles(fields_dict, pc)
+                    fields_dict = drop_blank_group_slots(_bucket_flat_extensibles(fields_dict, pc), pc.ext_wrapper_key)
 
                 field_order = list(base_field_names) if base_field_names is not None else None
 

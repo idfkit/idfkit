@@ -24,6 +24,7 @@ from .cst import CSTNode, DocumentCST
 from .document import IDFDocument
 from .exceptions import IDFParseError, ParseDiagnostic, ParseDiagnosticCode, VersionNotFoundError
 from .objects import IDFObject
+from .schema import SIZING_SENTINELS
 
 logger = logging.getLogger(__name__)
 
@@ -95,9 +96,11 @@ def _coerce_value_fast(field_type: str | None, value: str) -> Any:
             return value
     if field_type == "integer":
         try:
-            return int(float(value))
+            number = float(value)
         except ValueError:
             return value
+        # A fractional value is kept as written rather than truncated, so validation can report it.
+        return int(number) if number.is_integer() else number
     return value
 
 
@@ -126,7 +129,7 @@ _NUMERIC_FIELD_TYPES: Final = frozenset({"number", "integer"})
 #: the one THIS field documents is a schema-conformance question, and `validate_document` already
 #: answers it: it reports these as E003. Duplicating that here, less accurately, would make the
 #: parse diagnostic noise and teach a reader to ignore it.
-_SIZING_SENTINELS: Final = frozenset({"autosize", "autocalculate"})
+_SIZING_SENTINELS: Final = SIZING_SENTINELS
 
 
 def _string_is_legal(obj_schema: dict[str, Any] | None, field_name: str, value: str) -> bool:
@@ -734,20 +737,15 @@ class IDFParser:
         items: list[dict[str, Any]] = []
         for group_start in range(0, len(extra), ext_size):
             group = extra[group_start : group_start + ext_size]
-            item: dict[str, Any] = {}
-            has_any = False
-            for j, value in enumerate(group):
-                if j >= num_ext:
-                    continue
-                inner = ext_names[j]
-                if value:
-                    item[inner] = _coerce_value_fast(ext_types[j], value)
-                    has_any = True
-                else:
-                    item[inner] = ""
-            # Drop trailing all-empty groups (e.g. an extra "," at the end of
-            # the extensible block). Keeping them would emit phantom vertices.
-            if has_any:
+            # A blank slot is absent rather than "", as in epJSON; the IDF writer restores it (idfkit#182).
+            item: dict[str, Any] = {
+                ext_names[j]: _coerce_value_fast(ext_types[j], value)
+                for j, value in enumerate(group[:num_ext])
+                if value
+            }
+            # Drop all-empty groups (e.g. an extra "," at the end of the extensible block).
+            # Keeping them would emit phantom vertices.
+            if item:
                 items.append(item)
 
         if items and wrapper_key is not None:

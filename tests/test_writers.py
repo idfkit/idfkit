@@ -6,6 +6,7 @@ import json
 import logging
 import warnings
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -173,7 +174,8 @@ class TestWriteIDF:
         schedule = roundtrip.getobject("Schedule:Compact", "AlwaysOn")
         assert schedule is not None
         assert schedule.data["data"][0]["field"] == "Through: 12/31"
-        assert schedule.data["data"][3]["field"] == "1.0"
+        # A numeric schedule value is a number, as ConvertInputFormat writes it (idfkit#179).
+        assert schedule.data["data"][3]["field"] == 1.0
 
 
 # ---------------------------------------------------------------------------
@@ -290,6 +292,195 @@ class TestEpJSONValueFormatting:
         output = write_epjson(doc)
         data = json.loads(output)
         assert data["Zone"]["Z1"]["x_origin"] == 42
+
+
+_CHOICE_AND_SENTINEL_IDF = """\
+Version, 26.2;
+GlobalGeometryRules, UpperLeftCorner, CounterClockWise, relative;
+Output:Variable, *, Zone Air Temperature, hourly;
+ZoneHVAC:EquipmentList, Z1 Eq, sequentialload,
+    zonehvac:idealloadsairsystem, Z1 Ideal, 1, 1, , ;
+AirTerminal:SingleDuct:VAV:Reheat, Reheat Terminal, , Damper Out, Damper In, autosize, CONSTANT, 0.3, , ,
+    Coil:Heating:Electric, Reheat Coil, , , , , NORMAL, , AUTOCALCULATE;
+PlantLoop, CW Loop, WATER, , CW Op, CW Setpoint, 98, 1, autosize, 0, AUTOSIZE;
+"""
+
+
+class TestEpJSONChoiceSpelling:
+    """idfkit#180 and idfkit#181: epJSON carries the schema's spelling; IDF keeps the author's."""
+
+    @pytest.fixture()
+    def idf_path(self, tmp_path: Path) -> Path:
+        path = tmp_path / "in.idf"
+        path.write_text(_CHOICE_AND_SENTINEL_IDF, encoding="latin-1")
+        return path
+
+    @pytest.fixture()
+    def epjson(self, idf_path: Path) -> dict[str, Any]:
+        return json.loads(write_epjson(parse_idf(idf_path), preserve_formatting=False))
+
+    def test_choice_values_take_the_schema_casing(self, epjson: dict[str, Any]) -> None:
+        rules = next(iter(epjson["GlobalGeometryRules"].values()))
+        assert rules["vertex_entry_direction"] == "Counterclockwise"
+        assert rules["coordinate_system"] == "Relative"
+        assert next(iter(epjson["Output:Variable"].values()))["reporting_frequency"] == "Hourly"
+        reheat = epjson["AirTerminal:SingleDuct:VAV:Reheat"]["Reheat Terminal"]
+        assert reheat["damper_heating_action"] == "Normal"
+        assert reheat["zone_minimum_air_flow_input_method"] == "Constant"
+        assert epjson["PlantLoop"]["CW Loop"]["fluid_type"] == "Water"
+
+    def test_extensible_choice_values_take_the_schema_casing(self, epjson: dict[str, Any]) -> None:
+        equipment_list = epjson["ZoneHVAC:EquipmentList"]["Z1 Eq"]
+        assert equipment_list["load_distribution_scheme"] == "SequentialLoad"
+        assert equipment_list["equipment"][0]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"
+
+    def test_sentinel_is_remapped_to_the_one_the_field_declares(self, epjson: dict[str, Any]) -> None:
+        reheat = epjson["AirTerminal:SingleDuct:VAV:Reheat"]["Reheat Terminal"]
+        # The field's enum is ["", "Autosize"]; EnergyPlus's epJSON reader refuses "Autocalculate".
+        assert reheat["maximum_flow_fraction_during_reheat"] == "Autosize"
+        assert reheat["maximum_air_flow_rate"] == "Autosize"
+        plant = epjson["PlantLoop"]["CW Loop"]
+        # The field's enum is ["", "Autocalculate"]; EnergyPlus's epJSON reader refuses "Autosize".
+        assert plant["plant_loop_volume"] == "Autocalculate"
+        assert plant["maximum_loop_flow_rate"] == "Autosize"
+
+    def test_idf_output_keeps_the_authors_spelling(self, idf_path: Path) -> None:
+        text = write_idf(parse_idf(idf_path), preserve_formatting=False)
+        assert "CounterClockWise" in text
+        assert "hourly" in text
+        assert "NORMAL" in text
+        assert "AUTOCALCULATE" in text
+
+    def test_value_outside_the_choice_list_is_left_as_written(self) -> None:
+        doc = new_document()
+        doc.add(
+            "Output:Variable",
+            "",
+            {"key_value": "*", "variable_name": "X", "reporting_frequency": "fortnightly"},
+            validate=False,
+        )
+        data = json.loads(write_epjson(doc))
+        assert next(iter(data["Output:Variable"].values()))["reporting_frequency"] == "fortnightly"
+
+    def test_extensible_integer_fields_are_written_as_integers(self, epjson: dict[str, Any]) -> None:
+        # EnergyPlus's epJSON reader refuses 1.0 where the schema declares an integer.
+        equipment = epjson["ZoneHVAC:EquipmentList"]["Z1 Eq"]["equipment"][0]
+        assert equipment["zone_equipment_cooling_sequence"] == 1
+        assert isinstance(equipment["zone_equipment_cooling_sequence"], int)
+        assert isinstance(equipment["zone_equipment_heating_or_no_load_sequence"], int)
+
+    def test_blank_group_slots_are_omitted(self, epjson: dict[str, Any]) -> None:
+        # idfkit#182: the oracle omits an unset slot inside a repeating group rather than writing "".
+        equipment = epjson["ZoneHVAC:EquipmentList"]["Z1 Eq"]["equipment"][0]
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in equipment
+        assert "zone_equipment_sequential_heating_fraction_schedule_name" not in equipment
+
+    def test_blank_group_slot_set_through_the_api_is_omitted(self, idf_path: Path) -> None:
+        doc = parse_idf(idf_path)
+        equipment_list = doc.getobject("ZoneHVAC:EquipmentList", "Z1 Eq")
+        assert equipment_list is not None
+        equipment_list.equipment[0].zone_equipment_sequential_cooling_fraction_schedule_name = ""
+        data = json.loads(write_epjson(doc, preserve_formatting=False))
+        assert (
+            "zone_equipment_sequential_cooling_fraction_schedule_name"
+            not in (data["ZoneHVAC:EquipmentList"]["Z1 Eq"]["equipment"][0])
+        )
+
+    def test_blank_written_through_the_group_api_is_not_stored(self, idf_path: Path) -> None:
+        doc = parse_idf(idf_path)
+        equipment_list = doc.getobject("ZoneHVAC:EquipmentList", "Z1 Eq")
+        assert equipment_list is not None
+        group = equipment_list.equipment[0]
+        group.zone_equipment_sequential_cooling_fraction_schedule_name = "Sched"
+        group.zone_equipment_sequential_cooling_fraction_schedule_name = ""
+        group.update(zone_equipment_sequential_heating_fraction_schedule_name=None)
+        equipment_list.equipment.append(
+            zone_equipment_object_type="ZoneHVAC:IdealLoadsAirSystem",
+            zone_equipment_name="Second",
+            zone_equipment_sequential_cooling_fraction_schedule_name="",
+        )
+        stored = equipment_list.data["equipment"]
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in stored[0]
+        assert "zone_equipment_sequential_heating_fraction_schedule_name" not in stored[0]
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in stored[1]
+
+    def test_extensible_integer_field_type_is_reported(self) -> None:
+        from idfkit import LATEST_VERSION, get_schema
+
+        schema = get_schema(LATEST_VERSION)
+        assert schema.get_field_type("ZoneHVAC:EquipmentList", "zone_equipment_cooling_sequence") == "integer"
+
+    def test_blank_slots_ending_any_group_survive_a_write_alike(self, tmp_path: Path) -> None:
+        # idfkit#182: blanks closing the last group were lost on write while those closing an
+        # earlier group were kept, so the re-read groups differed.
+        path = tmp_path / "groups.idf"
+        path.write_text(
+            "Version, 26.2;\n"
+            "ZoneHVAC:EquipmentList, Eq, SequentialLoad,\n"
+            "    ZoneHVAC:AirDistributionUnit, ATU, 1, 2, , ,\n"
+            "    ZoneHVAC:Baseboard:Convective:Electric, Baseboard, 2, 1, , ;\n",
+            encoding="latin-1",
+        )
+        original = parse_idf(path)
+        written = tmp_path / "written.idf"
+        save_idf(original, written)
+        reread = parse_idf(written)
+        before = original.getobject("ZoneHVAC:EquipmentList", "Eq")
+        after = reread.getobject("ZoneHVAC:EquipmentList", "Eq")
+        assert before is not None and after is not None
+        assert after.data["equipment"] == before.data["equipment"]
+
+    def test_values_set_through_the_api_are_spelled_too(self) -> None:
+        doc = new_document()
+        doc.add("Output:Variable", "", {"key_value": "*", "variable_name": "X", "reporting_frequency": "HOURLY"})
+        data = json.loads(write_epjson(doc))
+        assert next(iter(data["Output:Variable"].values()))["reporting_frequency"] == "Hourly"
+
+    def test_blank_slots_of_a_wrapper_passed_as_a_list_are_omitted(self) -> None:
+        doc = new_document()
+        obj = doc.add(
+            "ZoneHVAC:EquipmentList",
+            "Eq",
+            {
+                "load_distribution_scheme": "SequentialLoad",
+                "equipment": [
+                    {
+                        "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem",
+                        "zone_equipment_name": "Ideal",
+                        "zone_equipment_cooling_sequence": 1.0,
+                        "zone_equipment_heating_or_no_load_sequence": 1,
+                        "zone_equipment_sequential_cooling_fraction_schedule_name": "",
+                    }
+                ],
+            },
+            validate=False,
+        )
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in obj.data["equipment"][0]
+        equipment = json.loads(write_epjson(doc))["ZoneHVAC:EquipmentList"]["Eq"]["equipment"][0]
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in equipment
+        # A whole-number float set through the API is written as the integer the field declares.
+        assert isinstance(equipment["zone_equipment_cooling_sequence"], int)
+
+    def test_legacy_flat_assignment_of_a_blank_clears_the_slot(self, idf_path: Path) -> None:
+        doc = parse_idf(idf_path)
+        equipment_list = doc.getobject("ZoneHVAC:EquipmentList", "Z1 Eq")
+        assert equipment_list is not None
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            equipment_list.zone_equipment_name_1 = ""
+        assert "zone_equipment_name" not in equipment_list.data["equipment"][0]
+
+    def test_schedule_values_keep_their_precision_in_idf(self, tmp_path: Path) -> None:
+        path = tmp_path / "schedule.idf"
+        path.write_text(
+            "Version, 26.2;\n"
+            "Schedule:Compact, S, Any Number, Through: 12/31, For: AllDays,\n"
+            "    Until: 12:00, 0.123456789, Until: 24:00, 1234567.25;\n",
+            encoding="latin-1",
+        )
+        text = write_idf(parse_idf(path), preserve_formatting=False)
+        assert "0.123456789" in text
+        assert "1234567.25" in text
 
 
 # ---------------------------------------------------------------------------

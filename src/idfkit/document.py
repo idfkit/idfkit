@@ -572,10 +572,13 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         already passed as a list passes through untouched. Mixing both
         styles in one call raises ``ValueError``.
         """
-        from .objects import parse_extensible_index
+        from .objects import drop_blank_group_slots, is_blank_slot, parse_extensible_index
 
         if not pc.ext_wrapper_key or not pc.ext_field_names:
             return field_data
+
+        # A wrapper passed as a list keeps its groups, less their blank slots (idfkit#182).
+        field_data = drop_blank_group_slots(field_data, pc.ext_wrapper_key)
 
         ext_set = frozenset(pc.ext_field_names)
         wrapper_key = pc.ext_wrapper_key
@@ -589,7 +592,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 continue
             base, idx = parse_extensible_index(key, ext_set)
             if base is not None:
-                flat_groups.setdefault(idx, {})[base] = value
+                if not is_blank_slot(value):
+                    flat_groups.setdefault(idx, {})[base] = value
                 flat_keys.append(key)
 
         if not flat_keys:

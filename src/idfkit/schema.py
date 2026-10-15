@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Final, cast
 
 from .exceptions import SchemaNotFoundError
 from .versions import (
@@ -28,6 +28,61 @@ from .versions import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+#: The two sizing sentinels, folded. A numeric field's schema names at most one of them.
+SIZING_SENTINELS: Final = frozenset({"autosize", "autocalculate"})
+
+#: ``{folded value: the spelling the schema declares}`` for one field.
+ChoiceSpellings = Mapping[str, str]
+
+_NO_SPELLINGS: Final[Mapping[str, ChoiceSpellings]] = MappingProxyType({})
+
+
+def _string_members(enum: Any) -> list[str]:
+    """The non-empty string members of an ``enum`` value, or none when it is not a list."""
+    if not isinstance(enum, list):
+        return []
+    return [m for m in cast("list[Any]", enum) if isinstance(m, str) and m]
+
+
+def _choice_spellings(field_schema: dict[str, Any]) -> dict[str, str]:
+    """Map each folded choice of a field to the spelling its schema declares; empty when it has none.
+
+    A numeric field whose string branch names one sizing sentinel also maps the other sentinel to it,
+    as ``ConvertInputFormat`` does (idfkit#181).
+    """
+    members = _string_members(field_schema.get("enum"))
+    has_numeric_branch = False
+    raw_branches = field_schema.get("anyOf")
+    branches = cast("list[Any]", raw_branches) if isinstance(raw_branches, list) else []
+    for raw in branches:
+        if not isinstance(raw, dict):
+            continue
+        branch = cast("dict[str, Any]", raw)
+        if branch.get("type") in ("number", "integer"):
+            has_numeric_branch = True
+        elif branch.get("type") == "string":
+            members.extend(_string_members(branch.get("enum")))
+
+    table: dict[str, str] = {}
+    for member in members:
+        table.setdefault(member.casefold(), member)
+    declared = [m for m in members if m.casefold() in SIZING_SENTINELS]
+    if has_numeric_branch and len(declared) == 1:
+        for word in SIZING_SENTINELS:
+            table.setdefault(word, declared[0])
+    return table
+
+
+def _spelling_tables(properties: Mapping[str, Any]) -> Mapping[str, ChoiceSpellings]:
+    """The non-empty spelling tables of a set of field schemas, keyed by field name."""
+    tables = {
+        name: table
+        for name, field_schema in properties.items()
+        if isinstance(field_schema, dict) and (table := _choice_spellings(cast("dict[str, Any]", field_schema)))
+    }
+    return MappingProxyType(tables) if tables else _NO_SPELLINGS
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +104,9 @@ class ParsingCache:
     ext_field_names: tuple[str, ...]
     ext_wrapper_key: str | None
     ext_inner_props: Mapping[str, dict[str, Any]]
+    #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
+    choice_spellings: Mapping[str, ChoiceSpellings] = _NO_SPELLINGS
+    ext_choice_spellings: Mapping[str, ChoiceSpellings] = _NO_SPELLINGS
 
 
 def _resolve_field_type(
@@ -306,6 +364,10 @@ class EpJSONSchema:
         """
         field_schema = self.get_field_schema(obj_type, field_name)
         if not field_schema:
+            # An extensible field is declared in its wrapper's item schema (idfkit#179)
+            pc = self.get_parsing_cache(obj_type)
+            field_schema = pc.ext_inner_props.get(field_name) if pc is not None else None
+        if not field_schema:
             # Fall back to legacy_idd field_info for extensible fields
             obj_schema = self.get_object_schema(obj_type)
             if obj_schema:
@@ -418,10 +480,8 @@ class EpJSONSchema:
         ext_size = int(obj_schema.get("extensible_size", 0))
         ext_field_names_list: list[str] = legacy.get("extensibles", [])
 
-        # Pre-compute field types and reference fields for extensible base names
+        # Pre-compute reference fields for extensible base names
         for ext_fname in ext_field_names_list:
-            if ext_fname not in field_types:
-                field_types[ext_fname] = _resolve_field_type(ext_fname, props, field_info)
             ext_field_schema = ext_props.get(ext_fname)
             if ext_field_schema is not None and "object_list" in ext_field_schema:
                 ref_fields_set.add(ext_fname)
@@ -454,6 +514,13 @@ class EpJSONSchema:
                     ext_inner_props = {k: cast("dict[str, Any]", v) for k, v in inner.items()}
                     break
 
+        # Type extensible fields from the wrapper's item schema, which declares them; the top level
+        # does not, and the legacy IDD fallback has no integer type (idfkit#179).
+        for ext_fname in ext_field_names_list:
+            if ext_fname not in field_types:
+                type_source = ext_inner_props if ext_fname in ext_inner_props else props
+                field_types[ext_fname] = _resolve_field_type(ext_fname, type_source, field_info)
+
         return ParsingCache(
             obj_schema=obj_schema,
             has_name=has_name,
@@ -466,6 +533,8 @@ class EpJSONSchema:
             ext_field_names=tuple(ext_field_names_list),
             ext_wrapper_key=ext_wrapper_key,
             ext_inner_props=MappingProxyType(ext_inner_props),
+            choice_spellings=_spelling_tables(props),
+            ext_choice_spellings=_spelling_tables(ext_inner_props),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:

@@ -271,7 +271,7 @@ ZoneHVAC:IdealLoadsAirSystem,
         return filepath
 
     def test_empty_schedule_fields_stored(self, hvac_equipment_idf: Path) -> None:
-        """Empty schedule fields should be stored as empty strings (canonical wrapper)."""
+        """Empty schedule fields are absent from their group, as in epJSON (idfkit#182)."""
         doc = parse_idf(hvac_equipment_idf)
         eq_list = doc["ZoneHVAC:EquipmentList"][0]
 
@@ -279,11 +279,13 @@ ZoneHVAC:IdealLoadsAirSystem,
         eq = eq_list.data["equipment"]
         assert eq[0]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"
         assert eq[0]["zone_equipment_name"] == "Main Zone Ideal Loads"
-        assert eq[0]["zone_equipment_cooling_sequence"] == 1.0
-        assert eq[0]["zone_equipment_heating_or_no_load_sequence"] == 1.0
-        # Empty schedule fields must round-trip as "" inside the same dict.
-        assert eq[0]["zone_equipment_sequential_cooling_fraction_schedule_name"] == ""
-        assert eq[0]["zone_equipment_sequential_heating_fraction_schedule_name"] == ""
+        assert eq[0]["zone_equipment_cooling_sequence"] == 1
+        assert eq[0]["zone_equipment_heating_or_no_load_sequence"] == 1
+        # A blank slot is not stored: an empty string in a reference field would read as a
+        # reference to a schedule named "". Field access reads the absent slot as None.
+        assert "zone_equipment_sequential_cooling_fraction_schedule_name" not in eq[0]
+        assert "zone_equipment_sequential_heating_fraction_schedule_name" not in eq[0]
+        assert eq_list.equipment[0].zone_equipment_sequential_cooling_fraction_schedule_name is None
 
         # Equipment 2 — stored as the second dict.
         assert eq[1]["zone_equipment_object_type"] == "ZoneHVAC:IdealLoadsAirSystem"

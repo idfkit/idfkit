@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
@@ -66,6 +66,45 @@ def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tupl
     return None, 0
 
 
+def is_blank_slot(value: Any) -> bool:
+    """Whether *value* leaves an extensible slot unset: ``None`` or the empty string (idfkit#182)."""
+    return value is None or value == ""
+
+
+def assign_slot(slot: dict[str, Any], name: str, value: Any) -> None:
+    """Set *name* in an extensible group's *slot*, or clear it when *value* is blank (idfkit#182)."""
+    if is_blank_slot(value):
+        slot.pop(name, None)
+    else:
+        slot[name] = value
+
+
+def without_blank_slots(group: Mapping[str, Any]) -> dict[str, Any]:
+    """A copy of *group* without its unset slots, which are stored as absent (idfkit#182)."""
+    return {name: value for name, value in group.items() if not is_blank_slot(value)}
+
+
+def drop_blank_group_slots(fields: dict[str, Any], wrapper_key: str) -> dict[str, Any]:
+    """*fields* without the unset slots of its extensible groups, nor any group left empty (idfkit#182).
+
+    Returns *fields* itself when there is nothing to drop, and a shallow copy otherwise.
+    """
+    groups = fields.get(wrapper_key)
+    if not isinstance(groups, list):
+        return fields
+    items = cast("list[Any]", groups)
+
+    def needs_cleaning(group: Any) -> bool:
+        return isinstance(group, dict) and (
+            not group or any(map(is_blank_slot, cast("dict[str, Any]", group).values()))
+        )
+
+    if not any(map(needs_cleaning, items)):
+        return fields
+    cleaned = [without_blank_slots(cast("dict[str, Any]", g)) if isinstance(g, dict) else g for g in items]
+    return {**fields, wrapper_key: [g for g in cleaned if g != {}]}
+
+
 class ExtensibleGroup:
     """One row of an extensible array (e.g. a single vertex inside ``vertices``).
 
@@ -120,7 +159,7 @@ class ExtensibleGroup:
             raise AttributeError(  # noqa: TRY003
                 f"{name!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
             )
-        self._slot()[name] = value
+        assign_slot(self._slot(), name, value)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __getitem__(self, key: str) -> Any:
@@ -173,7 +212,8 @@ class ExtensibleGroup:
                     f"{k!r} is not an extensible field of {self._owner.obj_type}.{self._wrapper_key}"
                 )
         slot = self._slot()
-        slot.update(merged)
+        for name, value in merged.items():
+            assign_slot(slot, name, value)
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
 
     def __eq__(self, other: object) -> bool:
@@ -267,11 +307,11 @@ class ExtensibleList(Generic[GroupT_co]):
         if item is not None and kwargs:
             raise TypeError("pass either a dict/group OR keyword arguments, not both")  # noqa: TRY003
         if isinstance(item, ExtensibleGroup):
-            return item.as_dict()
+            return without_blank_slots(item.as_dict())
         if isinstance(item, dict):
-            return dict(cast("dict[str, Any]", item))
+            return without_blank_slots(cast("dict[str, Any]", item))
         if item is None:
-            return dict(kwargs)
+            return without_blank_slots(kwargs)
         raise TypeError(f"expected dict, ExtensibleGroup, or kwargs; got {type(item).__name__}")  # noqa: TRY003
 
     def _validate_inner(self, item: dict[str, Any]) -> None:
@@ -690,7 +730,7 @@ class IDFObject(EppyObjectMixin):
                 items = self._data.setdefault(self._wrapper_key, [])
                 while len(items) < group_idx:
                     items.append({})
-                cast("list[dict[str, Any]]", items)[group_idx - 1][base] = value
+                assign_slot(cast("list[dict[str, Any]]", items)[group_idx - 1], base, value)
                 self._bump_version()
                 return
 

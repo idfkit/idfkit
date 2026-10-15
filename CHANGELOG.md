@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `write_epjson` writes a choice value in the spelling the schema declares, whatever case it was written or set in: `hourly` becomes `Hourly` and `CounterClockWise` becomes `Counterclockwise`, in repeating groups as well as in ordinary fields. EnergyPlus's epJSON reader matches choices exactly and refused the previous output. `write_idf` still keeps the author's spelling, which EnergyPlus's IDF reader accepts in any case. The rule is ConvertInputFormat's, as in idfkit-js. ([#180](https://github.com/idfkit/idfkit/issues/180))
+- `write_epjson` writes a sizing keyword as the one the field declares. A numeric field that accepts only `Autosize` receives `Autosize` when the model holds `Autocalculate`, and the reverse. EnergyPlus 22.2 through 26.1 accept either keyword from IDF with identical sizing results, and refuse the undeclared one from epJSON. ([#181](https://github.com/idfkit/idfkit/issues/181))
+- An integer field inside a repeating group, such as the sequence numbers of `ZoneHVAC:EquipmentList`, is parsed and written as an integer. It was typed from the legacy IDD, which has no integer type, and written as `1.0`, which EnergyPlus's epJSON reader refuses. The same correction types the values of a `Schedule:Compact` per value, so a numeric schedule value is now a JSON number rather than a string, and `EpJSONSchema.get_field_type` reports `integer` for such a field. `write_idf` writes in full a number that six significant digits would round, such as a schedule value of `0.123456789`, and an integer field holding a fractional value such as `1.5` is parsed as that value rather than truncated to `1`. ([#179](https://github.com/idfkit/idfkit/issues/179))
+
+- A blank field inside a repeating group is omitted, from the model and from `write_epjson`, as ConvertInputFormat omits it. This holds whether the group was read from IDF or epJSON or set through the API, where assigning `""` or `None` to a group field clears it. It was stored and written as `""`, which EnergyPlus's epJSON reader refuses in a numeric field and which a reference field reads as a reference to an object named `""`. `write_idf` still writes each blank in its position, and a blank that ends the last group now survives a write and a re-read like one that ends an earlier group. ([#182](https://github.com/idfkit/idfkit/issues/182))
+
+Together, these change the share of EnergyPlus 26.1.0 example files whose epJSON, written by idfkit from the IDF, EnergyPlus accepts from 0 of 760 to 727 of 760. Each of the remaining 33 holds objects that need an EnergyPlus preprocessor (HVACTemplate, GroundHeatTransfer or Parametric) in either format.
+
+### Changed
+
+- **Breaking:** A numeric value in a `Schedule:Compact` repeating group is now stored as a number. Code that compared it to a string, such as `field == "1.0"`, must compare to the number. ([#179](https://github.com/idfkit/idfkit/issues/179))
+- **Breaking:** A blank field inside a repeating group is absent from the group's dictionary rather than present as `""`. Field access, such as `obj.equipment[0].zone_equipment_sequential_cooling_fraction_schedule_name`, reads it as `None`; code that indexed the dictionary directly must use `.get()`. ([#182](https://github.com/idfkit/idfkit/issues/182))
+
 ## [1.0.0] - 2026-10-14
 
 ### Added

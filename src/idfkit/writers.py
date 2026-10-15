@@ -19,14 +19,19 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Final, Literal, cast
+
+from .objects import is_blank_slot
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from .cst import CSTNode
     from .document import IDFDocument
     from .objects import IDFObject
+    from .schema import ChoiceSpellings, ParsingCache
 
 OutputType = Literal["standard", "nocomment", "compressed"]
 
@@ -842,9 +847,9 @@ class IDFWriter:
             if value == 0.0:
                 return "0"
             abs_val = abs(value)
-            if abs_val >= 1e10 or abs_val < 0.0001:
-                return f"{value:.6e}"
-            return f"{value:g}"
+            text = f"{value:.6e}" if abs_val >= 1e10 or abs_val < 0.0001 else f"{value:g}"
+            # The short form keeps six significant digits; a value it would round is written in full.
+            return text if float(text) == value else repr(value)
         if isinstance(value, list):
             # Handle vertex lists etc.
             items = cast(list[Any], value)
@@ -863,6 +868,10 @@ class IDFWriter:
         content = self.to_string()
         with open(filepath, "w", encoding=encoding) as f:
             f.write(content)
+
+
+#: Keyword spellings applied to a field that has no choice table of its own.
+_FALLBACK_SPELLINGS: Final = {"autocalculate": "Autocalculate", "autosize": "Autosize", "yes": "Yes", "no": "No"}
 
 
 class EpJSONWriter:
@@ -889,6 +898,7 @@ class EpJSONWriter:
 
     def __init__(self, doc: IDFDocument):
         self._doc = doc
+        self._group_needs_format: dict[str, bool] = {}
 
     def to_dict(self) -> dict[str, Any]:
         """Convert document to epJSON dict."""
@@ -911,9 +921,11 @@ class EpJSONWriter:
             # blank Name as "<Type> N" manufactures a name into a namespace the writer does not own,
             # and any object the user genuinely named "<Type> N" is then silently overwritten.
             type_has_name = self._type_has_name(obj_type, collection.first())
+            schema = self._doc.schema
+            pc = schema.get_parsing_cache(obj_type) if schema is not None else None
             nameless_counter = 0
             for obj in collection:
-                obj_data = self._object_to_dict(obj)
+                obj_data = self._object_to_dict(obj, pc)
                 if type_has_name:
                     key = obj.name
                 else:
@@ -939,35 +951,86 @@ class EpJSONWriter:
             return "name" in sample.schema_dict
         return True
 
-    def _object_to_dict(self, obj: IDFObject) -> dict[str, Any]:
+    def _object_to_dict(self, obj: IDFObject, pc: ParsingCache | None) -> dict[str, Any]:
         """Convert object to epJSON dict (excluding name).
 
-        Storage is canonical, so this is a pass-through that drops empty
-        scalars and routes each value through ``_format_value`` for normal
-        type handling. The wrapper-key list (if any) is emitted verbatim —
-        each item is already a dict matching the schema's items.properties.
+        Drops blank values, writes each choice in the spelling its schema declares and each sizing
+        sentinel as the one its field declares (idfkit#180, idfkit#181). This happens here rather
+        than at parse because only the epJSON reader is strict about it: the IDF writer keeps the
+        author's text, which EnergyPlus reads either way, as in idfkit-js#60.
         """
+        wrapper_key = pc.ext_wrapper_key if pc is not None else None
+        choice_spellings: Mapping[str, ChoiceSpellings] = pc.choice_spellings if pc is not None else {}
+        field_types: Mapping[str, str | None] = pc.field_types if pc is not None else {}
 
         result: dict[str, Any] = {}
         for field_name, value in obj.data.items():
-            if value is not None and value != "":
-                result[field_name] = self._format_value(value)
+            if value is None or value == "":
+                continue
+            if isinstance(value, str):
+                result[field_name] = self._format_value(value, choice_spellings.get(field_name))
+            elif isinstance(value, float):
+                integral = value.is_integer() and field_types.get(field_name) == "integer"
+                result[field_name] = int(value) if integral else value
+            elif field_name == wrapper_key and isinstance(value, list):
+                groups = cast("list[Any]", value)
+                result[field_name] = (
+                    [self._format_group(g, pc) for g in groups]
+                    if self._groups_need_format(obj.obj_type, pc)
+                    else groups
+                )
+            else:
+                result[field_name] = value
         return result
 
-    def _format_value(self, value: Any) -> Any:
-        """Format a field value for epJSON output."""
+    def _groups_need_format(self, obj_type: str, pc: ParsingCache | None) -> bool:
+        """Whether any group field of *obj_type* can need formatting: a choice, an integer or a string.
+
+        Groups hold no blank slot (idfkit#182), so a type whose group fields are all plain numbers,
+        such as ``Matrix:TwoDimension`` with tens of thousands of groups, is emitted as stored.
+        """
+        needed = self._group_needs_format.get(obj_type)
+        if needed is None:
+            needed = (
+                pc is None
+                or bool(pc.ext_choice_spellings)
+                or any(pc.field_types.get(name) != "number" for name in pc.ext_field_names)
+            )
+            self._group_needs_format[obj_type] = needed
+        return needed
+
+    def _format_group(self, group: Any, pc: ParsingCache | None) -> Any:
+        """Format one extensible group, omitting its blank slots (idfkit#182).
+
+        A group set wholesale, as ``doc.add(..., equipment=[...])`` or through ``obj.data``, can still
+        hold a blank, which EnergyPlus's epJSON reader refuses.
+        """
+        if not isinstance(group, dict):
+            return group
+        return {
+            name: self._format_value(
+                value,
+                pc.ext_choice_spellings.get(name) if pc is not None else None,
+                pc.field_types.get(name) if pc is not None else None,
+            )
+            for name, value in cast("dict[str, Any]", group).items()
+            if not is_blank_slot(value)
+        }
+
+    def _format_value(self, value: Any, spellings: ChoiceSpellings | None = None, field_type: str | None = None) -> Any:
+        """Format a field value for epJSON output.
+
+        A float holding a whole number in an ``integer`` field is written as an integer, whatever
+        produced it, since EnergyPlus's epJSON reader refuses ``1.0`` there (idfkit#179).
+        """
         # epJSON uses native JSON types
         if isinstance(value, str):
-            # Check for special values
-            lower = value.lower()
-            if lower == "autocalculate":
-                return "Autocalculate"
-            if lower == "autosize":
-                return "Autosize"
-            if lower == "yes":
-                return "Yes"
-            if lower == "no":
-                return "No"
+            folded = value.casefold()
+            if spellings and folded in spellings:
+                return spellings[folded]
+            return _FALLBACK_SPELLINGS.get(folded, value)
+        if field_type == "integer" and isinstance(value, float) and value.is_integer():
+            return int(value)
         return value
 
     def write_to_file(self, filepath: Path | str, indent: int = 2) -> None:
