@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+This release moves to `conformance-2026.16`. The corpus level changes no case and no check; it removes the five Python entries from the accepted-divergence register that #179, #180, #181 and #182 close. An idfkit release that predates these fixes reports those five cases as unexpected failures at this level.
+
 ### Fixed
 
 - `write_epjson` writes a choice value in the spelling the schema declares, whatever case it was written or set in: `hourly` becomes `Hourly` and `CounterClockWise` becomes `Counterclockwise`, in repeating groups as well as in ordinary fields. EnergyPlus's epJSON reader matches choices exactly and refused the previous output. `write_idf` still keeps the author's spelling, which EnergyPlus's IDF reader accepts in any case. The rule is ConvertInputFormat's, as in idfkit-js. ([#180](https://github.com/idfkit/idfkit/issues/180))
