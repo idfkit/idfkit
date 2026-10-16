@@ -374,6 +374,17 @@ class TestNeedsGroundHeatPreprocessing:
         doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "Test", {"zone_name": "Office"}, validate=False)
         assert needs_ground_heat_preprocessing(doc) is False
 
+    def test_false_after_every_object_is_removed(self) -> None:
+        """Removing the last object leaves an empty collection, which needs no preprocessing."""
+        doc = new_document(version=(24, 1, 0))
+        slab = doc.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        basement = doc.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+        doc.removeidfobject(slab)
+        doc.removeidfobject(basement)
+        assert needs_ground_heat_preprocessing(doc) is False
+        assert _has_slab_objects(doc) is False
+        assert _has_basement_objects(doc) is False
+
 
 # ---------------------------------------------------------------------------
 # Fatal preprocessor message detection tests
@@ -1175,3 +1186,26 @@ class TestConfigProperties:
         assert config.slab_idd is None
         assert config.basement_exe is None
         assert config.basement_idd is None
+
+
+class TestEnabledGroundHeatObjectTypes:
+    """enabled_ground_heat_object_types honours GroundHeatTransfer:Control."""
+
+    @pytest.mark.parametrize(
+        ("slab", "basement", "expected"),
+        [
+            ("Yes", "Yes", ["GroundHeatTransfer:Basement:SimParameters", "GroundHeatTransfer:Slab:Materials"]),
+            ("yes", "No", ["GroundHeatTransfer:Slab:Materials"]),
+            ("No", "Yes", ["GroundHeatTransfer:Basement:SimParameters"]),
+            ("No", "No", []),
+            ("", "", []),
+            (None, None, []),
+        ],
+        ids=["both", "slab-lowercase", "basement", "neither", "blank", "control-absent"],
+    )
+    def test_enabled_types(self, slab: str | None, basement: str | None, expected: list[str]) -> None:
+        from conftest import ground_heat_model
+
+        from idfkit.simulation.expand import enabled_ground_heat_object_types
+
+        assert enabled_ground_heat_object_types(ground_heat_model(slab=slab, basement=basement)) == expected

@@ -67,7 +67,7 @@ class SimulationCache:
     def compute_key(
         self,
         model: IDFDocument,
-        weather: str | Path,
+        weather: str | Path | None,
         *,
         expand_objects: bool = True,
         annual: bool = False,
@@ -84,7 +84,9 @@ class SimulationCache:
 
         Args:
             model: The EnergyPlus model.
-            weather: Path to the weather file.
+            weather: Path to the weather file, or ``None`` for a run without
+                one. A key computed with ``None`` never equals a key computed
+                with a weather file.
             expand_objects: Whether ExpandObjects will run.
             annual: Whether annual simulation is used.
             design_day: Whether design-day-only simulation is used.
@@ -102,20 +104,22 @@ class SimulationCache:
             normalised.add("Output:SQLite", "", option_type="SimpleAndTabular")
         idf_text: str = write_idf(normalised)
 
-        weather_path = Path(weather).resolve()
-        weather_bytes = weather_path.read_bytes()
+        flag_values: dict[str, object] = {
+            "expand_objects": expand_objects,
+            "annual": annual,
+            "design_day": design_day,
+            "output_suffix": output_suffix,
+            "readvars": readvars,
+            "extra_args": list(extra_args) if extra_args else [],
+        }
+        if weather is None:
+            # The extra member separates these keys from every key with a weather file.
+            weather_bytes = b""
+            flag_values["weather"] = None
+        else:
+            weather_bytes = Path(weather).resolve().read_bytes()
 
-        flags = json.dumps(
-            {
-                "expand_objects": expand_objects,
-                "annual": annual,
-                "design_day": design_day,
-                "output_suffix": output_suffix,
-                "readvars": readvars,
-                "extra_args": list(extra_args) if extra_args else [],
-            },
-            sort_keys=True,
-        )
+        flags = json.dumps(flag_values, sort_keys=True)
 
         h = hashlib.sha256()
         h.update(idf_text.encode("utf-8"))

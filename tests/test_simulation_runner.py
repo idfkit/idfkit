@@ -2,17 +2,30 @@
 
 from __future__ import annotations
 
+import logging
+import re
 import subprocess
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from conftest import InMemoryFileSystem
+from conftest import (
+    REFUSAL_R1,
+    REFUSAL_R2,
+    InMemoryFileSystem,
+    ground_heat_model,
+    refusal_r3,
+    refusal_r4,
+)
 
 from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import ExpandObjectsError, SimulationError
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import _build_command, _ensure_sql_output, _prepare_run_directory, simulate
+
+if TYPE_CHECKING:
+    pass
 
 
 @pytest.fixture
@@ -155,6 +168,29 @@ class TestBuildCommand:
         assert "--custom" in cmd
         assert "value" in cmd
 
+    def test_without_weather_omits_w(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        """A command without a weather path drops ``-w <path>`` and keeps every other element in order."""
+        common: dict[str, Any] = {
+            "config": mock_config,
+            "idf_path": tmp_path / "in.idf",
+            "output_dir": tmp_path,
+            "output_prefix": "eplus",
+            "output_suffix": "C",
+            "expand_objects": True,
+            "annual": False,
+            "design_day": True,
+            "readvars": False,
+            "extra_args": None,
+        }
+        weather = tmp_path / "w.epw"
+        with_weather = _build_command(weather_path=weather, **common)
+        without_weather = _build_command(weather_path=None, **common)
+
+        assert "-D" in without_weather
+        assert "-w" not in without_weather
+        assert not any(arg.endswith(".epw") for arg in without_weather)
+        assert without_weather == [arg for arg in with_weather if arg not in ("-w", str(weather))]
+
 
 # ---------------------------------------------------------------------------
 # _ensure_sql_output
@@ -204,6 +240,11 @@ class TestPrepareRunDirectory:
         dest.write_text("existing content")
         _prepare_run_directory(out, weather_file)
         assert dest.read_text() == "existing content"
+
+    def test_without_weather_copies_nothing(self, tmp_path: Path) -> None:
+        run_dir = _prepare_run_directory(tmp_path / "run", None)
+        assert run_dir.is_dir()
+        assert list(run_dir.glob("*.epw")) == []
 
 
 # ---------------------------------------------------------------------------
@@ -453,3 +494,186 @@ class TestResolveConfig:
 
         mock_find.assert_not_called()
         assert result is mock_config
+
+
+# ---------------------------------------------------------------------------
+# simulate() without a weather file
+# ---------------------------------------------------------------------------
+
+
+class TestSimulateWithoutWeather:
+    """Tests for simulate() with weather=None on a design-day-only run."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_command_has_no_weather(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        result = simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        cmd = mock_run.call_args[0][0]
+        assert "-D" in cmd
+        assert "-w" not in cmd
+        assert result.success
+        assert list(result.run_dir.glob("*.epw")) == []
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_positional_none(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        result = simulate(new_document(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        cmd = mock_run.call_args[0][0]
+        assert "-D" in cmd
+        assert "-w" not in cmd
+        assert list(result.run_dir.glob("*.epw")) == []
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_log_states_no_weather(
+        self,
+        mock_run: MagicMock,
+        mock_config: EnergyPlusConfig,
+        tmp_path: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        with caplog.at_level(logging.DEBUG, logger="idfkit.simulation"):
+            simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        messages = [record.getMessage() for record in caplog.records]
+        assert "Starting simulation without a weather file" in messages
+        assert not any("in.epw" in m for m in messages)
+        assert not any(str(Path.cwd()) in m for m in messages if "weather" in m.casefold())
+
+
+class TestWeatherAdmission:
+    """Refusals REFUSAL_R1 to R4 and the unchanged missing-file message, raised before any subprocess."""
+
+    def _assert_refused(self, message: str, **kwargs: Any) -> None:
+        # Not ``or``: an IDFDocument with no objects is falsy.
+        model = kwargs.pop("model", None)
+        if model is None:
+            model = new_document()
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
+            pytest.raises(SimulationError, match=re.escape(message)),
+        ):
+            simulate(model, **kwargs)
+        mock_run.assert_not_called()
+        mock_preprocess.assert_not_called()
+
+    def test_r1_empty_string(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(REFUSAL_R1, weather="", design_day=True, energyplus=mock_config)
+
+    def test_missing_file_unchanged(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        missing = tmp_path / "absent.epw"
+        self._assert_refused(
+            f"Weather file not found: {missing.resolve()}", weather=missing, design_day=True, energyplus=mock_config
+        )
+
+    def test_r2_not_design_day(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(REFUSAL_R2, weather=None, design_day=False, energyplus=mock_config)
+
+    def test_r2_design_day_and_annual(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(REFUSAL_R2, weather=None, design_day=True, annual=True, energyplus=mock_config)
+
+    def test_r3_ground_heat_transfer(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(
+            refusal_r3("GroundHeatTransfer:Basement:SimParameters, GroundHeatTransfer:Slab:Materials"),
+            model=ground_heat_model(),
+            weather=None,
+            design_day=True,
+            energyplus=mock_config,
+        )
+
+    def test_r3_lists_only_enabled_types(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(
+            refusal_r3("GroundHeatTransfer:Slab:Materials"),
+            model=ground_heat_model(slab="Yes", basement="No"),
+            weather=None,
+            design_day=True,
+            energyplus=mock_config,
+        )
+
+    @pytest.mark.parametrize(
+        ("slab", "basement"),
+        [("No", "No"), ("", ""), (None, None)],
+        ids=["control-no", "control-blank", "control-absent"],
+    )
+    def test_r3_not_raised_when_control_disables_preprocessors(
+        self, mock_config: EnergyPlusConfig, tmp_path: Path, slab: str | None, basement: str | None
+    ) -> None:
+        """Without an enabled Slab or Basement solver, only ExpandObjects runs, and it reads no weather file."""
+        model = ground_heat_model(slab=slab, basement=basement)
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.expand.run_preprocessing", side_effect=lambda m, **_: m.copy()) as mock_pre,
+        ):
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(model, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        mock_pre.assert_called_once()
+        assert mock_pre.call_args.kwargs["weather"] is None
+        assert result.success
+
+    def test_weather_refused_before_energyplus_discovery(self) -> None:
+        """An invalid weather argument is reported even on a machine without EnergyPlus."""
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(SimulationError, match=re.escape(REFUSAL_R2)),
+        ):
+            simulate(new_document(), annual=True)  # pyright: ignore[reportCallIssue]
+        mock_find.assert_not_called()
+
+    def test_r3_not_raised_without_expand_objects(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
+        ):
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(
+                ground_heat_model(),
+                design_day=True,
+                expand_objects=False,
+                energyplus=mock_config,
+                output_dir=tmp_path / "run",
+            )
+        mock_run.assert_called_once()
+        mock_preprocess.assert_not_called()
+        assert result.success
+
+    def test_r2_takes_precedence_over_r3(self, mock_config: EnergyPlusConfig) -> None:
+        self._assert_refused(
+            REFUSAL_R2, model=ground_heat_model(), weather=None, design_day=False, energyplus=mock_config
+        )
+
+    def test_r4_default_weather_in_run_dir(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        (tmp_path / "in.epw").write_text("LOCATION,Elsewhere\n")
+        self._assert_refused(
+            refusal_r4(tmp_path.resolve()), weather=None, design_day=True, energyplus=mock_config, output_dir=tmp_path
+        )
+
+    def test_r4_refused_before_cache_lookup(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        (run_dir / "in.epw").write_text("LOCATION,Elsewhere\n")
+        cache = MagicMock()
+        self._assert_refused(
+            refusal_r4(run_dir.resolve()),
+            weather=None,
+            design_day=True,
+            energyplus=mock_config,
+            output_dir=run_dir,
+            cache=cache,
+        )
+        cache.compute_key.assert_not_called()
+        cache.get.assert_not_called()
+
+    def test_r3_not_raised_for_emptied_collection(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        """A type whose every object was removed leaves an empty collection, which needs no weather file."""
+        model = new_document(version=LATEST_VERSION)
+        slab = model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+        model.removeidfobject(slab)
+        with (
+            patch("idfkit.simulation.runner.subprocess.run") as mock_run,
+            patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
+        ):
+            mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+            result = simulate(model, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        mock_run.assert_called_once()
+        mock_preprocess.assert_not_called()
+        assert result.success

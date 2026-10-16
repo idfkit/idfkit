@@ -37,7 +37,12 @@ class SimulationJob:
 
     Attributes:
         model: The EnergyPlus model to simulate.
-        weather: Path to the weather file.
+        weather: Path to the weather file, or ``None`` to run without one.
+            ``None`` is accepted only for a design-day-only job
+            (``design_day=True`` and ``annual=False``); see
+            [simulate][idfkit.simulation.runner.simulate] for the models that
+            still require a weather file. A refused job is reported as a
+            failed result whose ``stderr`` carries the reason.
         label: Human-readable label for progress reporting.
         output_dir: Directory for output files (default: auto temp dir).
         expand_objects: Run ExpandObjects before simulation.
@@ -57,7 +62,7 @@ class SimulationJob:
     """
 
     model: object  # IDFDocument — use object to avoid import at class level
-    weather: str | Path
+    weather: str | Path | None = None
     label: str = ""
     output_dir: str | Path | None = None
     expand_objects: bool = True

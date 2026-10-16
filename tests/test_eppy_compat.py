@@ -1230,3 +1230,24 @@ class TestIntersectMatch:
         assert south is not None and north is not None
         assert south.outside_boundary_condition == "Outdoors"
         assert north.outside_boundary_condition == "Outdoors"
+
+
+class TestRun:
+    """doc.run() forwards to idfkit.simulation.simulate."""
+
+    def test_design_day_without_weather(self) -> None:
+        from unittest.mock import patch
+
+        doc = new_document()
+        with patch("idfkit.simulation.simulate") as mock_simulate:
+            doc.run(design_day=True)
+        mock_simulate.assert_called_once_with(doc, None, design_day=True)
+
+    def test_weather_forwarded(self, tmp_path: Path) -> None:
+        from unittest.mock import patch
+
+        doc = new_document()
+        epw = tmp_path / "w.epw"
+        with patch("idfkit.simulation.simulate") as mock_simulate:
+            doc.run(epw, annual=True)
+        mock_simulate.assert_called_once_with(doc, epw, annual=True)

@@ -13,6 +13,57 @@ from idfkit.objects import IDFObject
 from idfkit.references import ReferenceGraph
 from idfkit.schema import EpJSONSchema, get_schema
 
+# ---------------------------------------------------------------------------
+# Weather admission refusals
+# ---------------------------------------------------------------------------
+#
+# The refusal messages are pinned here as literals, not imported from
+# ``idfkit.simulation._common``, so that a change to their wording fails the
+# tests that assert them.
+
+REFUSAL_R1 = (
+    "weather is an empty string, which does not identify a weather file. "
+    "Pass weather=None to run design days without a weather file."
+)
+REFUSAL_R2 = (
+    "A weather file is required unless the run is design-day-only (design_day=True, annual=False). "
+    "Pass the path of an EPW file as weather."
+)
+
+
+def refusal_r3(types: str) -> str:
+    """Return the R3 refusal message for the comma-separated ground heat-transfer *types*."""
+    return (
+        f"The model contains {types} objects, and GroundHeatTransfer:Control enables their preprocessor. "
+        "The Slab and Basement preprocessors derive ground temperatures from the weather file, so this "
+        "model cannot be simulated without one. Pass the path of an EPW file as weather."
+    )
+
+
+def refusal_r4(run_dir: Path) -> str:
+    """Return the R4 refusal message for a run directory that already contains ``in.epw``."""
+    return (
+        f"The run directory {run_dir} contains in.epw, which EnergyPlus reads when no weather file is given. "
+        "Remove it, choose another output_dir, or pass it explicitly as weather."
+    )
+
+
+def ground_heat_model(*, slab: str | None = "Yes", basement: str | None = "Yes") -> IDFDocument:
+    """Return a model with one Slab and one Basement object.
+
+    *slab* and *basement* set the ``GroundHeatTransfer:Control`` fields;
+    when both are ``None`` the control object is omitted.
+    """
+    from idfkit.versions import LATEST_VERSION
+
+    model = new_document(version=LATEST_VERSION)
+    model.add("GroundHeatTransfer:Slab:Materials", "", {}, validate=False)
+    model.add("GroundHeatTransfer:Basement:SimParameters", "", {}, validate=False)
+    if slab is not None or basement is not None:
+        fields = {"run_slab_preprocessor": slab or "", "run_basement_preprocessor": basement or ""}
+        model.add("GroundHeatTransfer:Control", "", fields, validate=False)
+    return model
+
 
 class InMemoryFileSystem:
     """Dict-backed file system for testing.

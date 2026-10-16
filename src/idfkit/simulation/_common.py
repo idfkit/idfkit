@@ -152,6 +152,125 @@ async def async_resolve_version_mismatch(
     return migrated, report
 
 
+WEATHER_EMPTY_STRING_MESSAGE = (
+    "weather is an empty string, which does not identify a weather file. "
+    "Pass weather=None to run design days without a weather file."
+)
+WEATHER_REQUIRED_MESSAGE = (
+    "A weather file is required unless the run is design-day-only (design_day=True, annual=False). "
+    "Pass the path of an EPW file as weather."
+)
+WEATHER_GROUND_HEAT_MESSAGE = (
+    "The model contains {types} objects, and GroundHeatTransfer:Control enables their preprocessor. "
+    "The Slab and Basement preprocessors derive ground temperatures from the weather file, so this "
+    "model cannot be simulated without one. Pass the path of an EPW file as weather."
+)
+WEATHER_DEFAULT_FILE_MESSAGE = (
+    "The run directory {run_dir} contains in.epw, which EnergyPlus reads when no weather file is given. "
+    "Remove it, choose another output_dir, or pass it explicitly as weather."
+)
+
+
+def admit_weather(
+    weather: str | Path | None,
+    *,
+    model: IDFDocument,
+    design_day: bool,
+    annual: bool,
+    expand_objects: bool,
+    run_dir: str | Path | None = None,
+) -> Path | None:
+    """Decide whether a simulation request may proceed with the given weather argument.
+
+    The rules are evaluated in order, and the first that applies decides:
+
+    1. An empty string is refused, because it would resolve to the working
+       directory.
+    2. A path that does not resolve to a file is refused with the
+       ``Weather file not found`` message.
+    3. A path that resolves to a file is returned, resolved.
+    4. ``None`` is refused unless the run is design-day-only
+       (``design_day=True`` and ``annual=False``).
+    5. ``None`` is refused when *expand_objects* is true and *model* contains
+       ``GroundHeatTransfer:Slab:*`` objects with ``run_slab_preprocessor``
+       set to ``Yes``, or ``GroundHeatTransfer:Basement:*`` objects with
+       ``run_basement_preprocessor`` set to ``Yes``, in
+       ``GroundHeatTransfer:Control``. Those preprocessors read the weather
+       file; a preprocessor that the control object leaves at ``No``, or a
+       model without the control object, runs no solver.
+    6. ``None`` is refused when *run_dir* is given and already contains
+       ``in.epw``, as decided by
+       [refuse_default_weather][idfkit.simulation._common.refuse_default_weather].
+    7. Otherwise ``None`` is returned, and the run proceeds without a
+       weather file.
+
+    Rule 6 is applied here, before version migration and the cache lookup,
+    so that no subprocess runs for a request that will be refused.
+    [prepare_run_directory][idfkit.simulation._common.prepare_run_directory]
+    applies it again to the directory it prepares.
+
+    Args:
+        weather: The caller's weather argument.
+        model: The model to be simulated, before version migration.
+        design_day: Whether the run is design-day-only (``-D``).
+        annual: Whether the run is annual (``-a``).
+        expand_objects: Whether idfkit runs the preprocessors.
+        run_dir: The local run directory requested by the caller, or
+            ``None`` when the run will use a fresh temporary directory.
+
+    Returns:
+        The resolved weather file path, or ``None`` for a run without a
+        weather file.
+
+    Raises:
+        SimulationError: If any of rules 1, 2, 4, 5 or 6 refuses the request.
+    """
+    from ..exceptions import SimulationError
+
+    if isinstance(weather, str) and weather == "":
+        raise SimulationError(WEATHER_EMPTY_STRING_MESSAGE)
+
+    if weather is not None:
+        weather_path = Path(weather).resolve()
+        if not weather_path.is_file():
+            msg = f"Weather file not found: {weather_path}"
+            raise SimulationError(msg)
+        return weather_path
+
+    if not (design_day and not annual):
+        raise SimulationError(WEATHER_REQUIRED_MESSAGE)
+
+    if expand_objects:
+        from .expand import enabled_ground_heat_object_types
+
+        types = enabled_ground_heat_object_types(model)
+        if types:
+            raise SimulationError(WEATHER_GROUND_HEAT_MESSAGE.format(types=", ".join(types)))
+
+    if run_dir is not None:
+        refuse_default_weather(Path(run_dir).resolve())
+
+    return None
+
+
+def refuse_default_weather(run_dir: Path) -> None:
+    """Refuse a run without a weather file whose run directory already holds ``in.epw``.
+
+    EnergyPlus reads ``in.epw`` from its working directory when no weather
+    file is given, so such a run would silently use that file.
+
+    Args:
+        run_dir: The prepared run directory.
+
+    Raises:
+        SimulationError: If ``run_dir / "in.epw"`` exists.
+    """
+    from ..exceptions import SimulationError
+
+    if (run_dir / "in.epw").exists():
+        raise SimulationError(WEATHER_DEFAULT_FILE_MESSAGE.format(run_dir=run_dir))
+
+
 def resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:
     """Resolve EnergyPlus config, auto-discovering if needed.
 
@@ -203,7 +322,7 @@ def maybe_preprocess(
     original: IDFDocument,
     sim_model: IDFDocument,
     config: EnergyPlusConfig,
-    weather_path: Path,
+    weather_path: Path | None,
     expand_objects: bool,
     preprocessor_timeout: float | None = None,
 ) -> tuple[IDFDocument, bool]:
@@ -219,7 +338,11 @@ def maybe_preprocess(
         original: The original (unmutated) model, used for GHT detection.
         sim_model: The working copy of the model.
         config: EnergyPlus configuration.
-        weather_path: Resolved path to the weather file.
+        weather_path: Resolved path to the weather file, or ``None`` when
+            the run has no weather file. Weather admission guarantees that
+            ``None`` reaches this function only for a model whose Slab and
+            Basement preprocessors ``GroundHeatTransfer:Control`` leaves
+            disabled, so that only ExpandObjects runs.
         expand_objects: Whether the caller requested expansion.
         preprocessor_timeout: Per-subprocess timeout (seconds) applied to
             ExpandObjects, Slab, and Basement individually. ``None`` defers
@@ -287,21 +410,32 @@ async def async_upload_results(local_dir: Path, remote_dir: Path, fs: AsyncFileS
         await asyncio.gather(*tasks)
 
 
-def prepare_run_directory(output_dir: str | Path | None, weather_path: Path) -> Path:
+def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | None) -> Path:
     """Create and populate the simulation run directory.
 
     Args:
         output_dir: Explicit output directory, or None for a temp dir.
-        weather_path: Path to the weather file to copy.
+        weather_path: Path to the weather file to copy, or ``None`` when the
+            run has no weather file, in which case nothing is copied and the
+            directory is checked by
+            [refuse_default_weather][idfkit.simulation._common.refuse_default_weather].
 
     Returns:
         Path to the run directory.
+
+    Raises:
+        SimulationError: If *weather_path* is ``None`` and the run directory
+            already contains ``in.epw``.
     """
     if output_dir is not None:
         run_dir = Path(output_dir).resolve()
         run_dir.mkdir(parents=True, exist_ok=True)
     else:
         run_dir = Path(tempfile.mkdtemp(prefix="idfkit_sim_"))
+
+    if weather_path is None:
+        refuse_default_weather(run_dir)
+        return run_dir
 
     # Copy weather file into run dir
     dest = run_dir / weather_path.name
@@ -315,7 +449,7 @@ def build_command(
     *,
     config: EnergyPlusConfig,
     idf_path: Path,
-    weather_path: Path,
+    weather_path: Path | None,
     output_dir: Path,
     output_prefix: str,
     output_suffix: Literal["C", "L", "D"],
@@ -330,7 +464,8 @@ def build_command(
     Args:
         config: EnergyPlus configuration.
         idf_path: Path to the IDF file.
-        weather_path: Path to the weather file in the run dir.
+        weather_path: Path to the weather file in the run dir, or ``None``
+            to omit the ``-w`` argument.
         output_dir: Output directory path.
         output_prefix: Output file prefix.
         output_suffix: Output file naming suffix ("C", "L", or "D").
@@ -343,10 +478,10 @@ def build_command(
     Returns:
         Command as a list of strings.
     """
-    cmd: list[str] = [
-        str(config.executable),
-        "-w",
-        str(weather_path),
+    cmd: list[str] = [str(config.executable)]
+    if weather_path is not None:
+        cmd.extend(["-w", str(weather_path)])
+    cmd += [
         "-d",
         str(output_dir),
         "-p",

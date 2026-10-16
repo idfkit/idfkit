@@ -42,7 +42,7 @@ from idfkit.simulation import (
 | Argument | Default | Purpose |
 |---|---|---|
 | `model` | required | `IDFDocument` to simulate. Not mutated. |
-| `weather` | required | Path to an `.epw` file. |
+| `weather` | `None` | Path to an `.epw` file. `None` is accepted only for a design-day-only run (`design_day=True`, `annual=False`); it is refused for a model with `GroundHeatTransfer:Slab:*` or `GroundHeatTransfer:Basement:*` objects while `expand_objects=True` and `GroundHeatTransfer:Control` sets the matching `run_*_preprocessor` field to `Yes`, and for a run directory that already holds `in.epw`. |
 | `output_dir` | temp dir | Where outputs are written. |
 | `energyplus` | auto-discover | Pre-built `EnergyPlusConfig` (skip discovery). |
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |
@@ -93,6 +93,9 @@ Backward migration (installed EP older than the model) is never attempted — it
 ```python
 # Quick smoke-test with the heating/cooling design days only — seconds
 result = simulate(doc, "weather.epw", design_day=True)
+
+# Design days only, without a weather file (weather defaults to None)
+result = simulate(doc, design_day=True)
 
 # Full annual run — minutes
 result = simulate(doc, "weather.epw", annual=True)

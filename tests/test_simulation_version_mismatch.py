@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from idfkit import new_document
-from idfkit.exceptions import VersionMismatchError
+from idfkit.exceptions import SimulationError, VersionMismatchError
 from idfkit.simulation._common import resolve_version_mismatch
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.runner import simulate
@@ -78,3 +78,57 @@ class TestSimulateRaisesOnMismatch:
 
         with pytest.raises(VersionMismatchError):
             simulate(model, weather, energyplus=ep_config)
+
+
+class TestSimulateMigrationWithoutWeather:
+    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.migration.runner.migrate")
+    def test_migration_without_weather(
+        self,
+        mock_migrate: MagicMock,
+        mock_run: MagicMock,
+        ep_config: EnergyPlusConfig,
+        tmp_path: Path,
+    ) -> None:
+        mock_migrate.return_value = MagicMock(migrated_model=new_document(version=(24, 2, 0)))
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        model = new_document(version=(24, 1, 0))
+
+        result = simulate(
+            model,
+            design_day=True,
+            auto_migrate=True,
+            energyplus=ep_config,
+            output_dir=tmp_path / "run",
+        )
+
+        mock_migrate.assert_called_once()
+        cmd = mock_run.call_args[0][0]
+        assert "-D" in cmd
+        assert "-w" not in cmd
+        assert result.migration_report is mock_migrate.return_value
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    @patch("idfkit.migration.runner.migrate")
+    def test_default_weather_refused_before_migration(
+        self,
+        mock_migrate: MagicMock,
+        mock_run: MagicMock,
+        ep_config: EnergyPlusConfig,
+        tmp_path: Path,
+    ) -> None:
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        (run_dir / "in.epw").write_text("LOCATION,Elsewhere\n")
+
+        with pytest.raises(SimulationError, match=r"contains in\.epw"):
+            simulate(
+                new_document(version=(24, 1, 0)),
+                design_day=True,
+                auto_migrate=True,
+                energyplus=ep_config,
+                output_dir=run_dir,
+            )
+
+        mock_migrate.assert_not_called()
+        mock_run.assert_not_called()

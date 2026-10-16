@@ -111,6 +111,18 @@ class TestComputeKey:
         k2 = cache.compute_key(model, w2)
         assert k1 != k2
 
+    def test_without_weather_deterministic(self, cache: SimulationCache) -> None:
+        model = new_document()
+        k1 = cache.compute_key(model, None, design_day=True)
+        k2 = cache.compute_key(model, None, design_day=True)
+        assert k1 == k2
+
+    def test_without_weather_differs_from_with_weather(self, cache: SimulationCache, weather_file: Path) -> None:
+        model = new_document()
+        k1 = cache.compute_key(model, None, design_day=True)
+        k2 = cache.compute_key(model, weather_file, design_day=True)
+        assert k1 != k2
+
     def test_different_flags(self, cache: SimulationCache, weather_file: Path) -> None:
         model = new_document()
         k1 = cache.compute_key(model, weather_file, annual=False)

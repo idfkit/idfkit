@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from conftest import InMemoryFileSystem
+from conftest import REFUSAL_R2, InMemoryFileSystem
 
 from idfkit import LATEST_VERSION, new_document
 from idfkit.simulation.batch import BatchResult, SimulationJob, simulate_batch
@@ -83,6 +83,13 @@ class TestSimulationJob:
         assert job.label == "test-job"
         assert job.annual is True
         assert job.extra_args == ("--custom",)
+
+    def test_weather_defaults_to_none(self) -> None:
+        assert SimulationJob(model=new_document()).weather is None
+
+    def test_positional_weather(self) -> None:
+        job = SimulationJob(new_document(), "w.epw")
+        assert job.weather == "w.epw"
 
 
 # ---------------------------------------------------------------------------
@@ -290,3 +297,36 @@ class TestSimulateBatch:
             simulate_batch(jobs, energyplus=mock_config)
 
         assert cleanup_called
+
+
+class TestSimulateBatchWithoutWeather:
+    """Batches that mix jobs with and without a weather file."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_mixed_batch(self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+        ]
+        result = simulate_batch(jobs, energyplus=mock_config, max_workers=1)
+        assert result.all_succeeded
+        commands = [c[0][0] for c in mock_run.call_args_list]
+        assert sorted("-w" in cmd for cmd in commands) == [False, True]
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_annual_job_without_weather_fails_alone(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        jobs = [
+            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+            SimulationJob(model=new_document(), annual=True, label="annual"),
+        ]
+        result = simulate_batch(jobs, energyplus=mock_config)
+        assert result[0].success
+        assert result[1].success
+        assert not result[2].success
+        assert REFUSAL_R2 in result[2].stderr
+        assert mock_run.call_count == 2

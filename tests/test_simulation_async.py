@@ -3,11 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+import re
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from conftest import InMemoryAsyncFileSystem, InMemoryFileSystem
+from conftest import (
+    REFUSAL_R1,
+    REFUSAL_R2,
+    InMemoryAsyncFileSystem,
+    InMemoryFileSystem,
+    ground_heat_model,
+    refusal_r3,
+    refusal_r4,
+)
 
 from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import SimulationError
@@ -16,6 +27,9 @@ from idfkit.simulation.async_runner import async_simulate
 from idfkit.simulation.batch import SimulationJob
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
+
+if TYPE_CHECKING:
+    pass
 
 
 @pytest.fixture
@@ -971,3 +985,230 @@ class TestAsyncBatchProgressCallback:
         assert all(e.job_label == "sync-0" for e in job0_events)
         assert len(job1_events) > 0
         assert all(e.job_label == "sync-1" for e in job1_events)
+
+
+# ---------------------------------------------------------------------------
+# async_simulate without a weather file
+# ---------------------------------------------------------------------------
+
+
+class TestAsyncSimulateWithoutWeather:
+    """Tests for async_simulate() with weather=None on a design-day-only run."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_command_has_no_weather(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        result = await async_simulate(
+            new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+        )
+        cmd = mock_exec.call_args[0]
+        assert "-D" in cmd
+        assert "-w" not in cmd
+        assert result.success
+        assert list(result.run_dir.glob("*.epw")) == []
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_positional_none(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        mock_exec.return_value = _make_mock_process()
+        result = await async_simulate(
+            new_document(), None, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run"
+        )
+        cmd = mock_exec.call_args[0]
+        assert "-D" in cmd
+        assert "-w" not in cmd
+        assert list(result.run_dir.glob("*.epw")) == []
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_log_states_no_weather(
+        self,
+        mock_exec: AsyncMock,
+        mock_config: EnergyPlusConfig,
+        tmp_path: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        with caplog.at_level(logging.DEBUG, logger="idfkit.simulation"):
+            await async_simulate(new_document(), design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        messages = [record.getMessage() for record in caplog.records]
+        assert "Starting async simulation without a weather file" in messages
+        assert not any("in.epw" in m for m in messages)
+        assert not any(str(Path.cwd()) in m for m in messages if "weather" in m.casefold())
+
+
+class TestAsyncBatchWithoutWeather:
+    """Async batches that mix jobs with and without a weather file."""
+
+    @staticmethod
+    def _jobs(weather_file: Path) -> list[SimulationJob]:
+        return [
+            SimulationJob(model=new_document(), weather=weather_file, label="with-weather"),
+            SimulationJob(model=new_document(), design_day=True, label="design-day"),
+        ]
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_mixed_batch(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path) -> None:
+        mock_exec.return_value = _make_mock_process()
+        result = await async_simulate_batch(self._jobs(weather_file), energyplus=mock_config)
+        assert result.all_succeeded
+        commands = [c[0] for c in mock_exec.call_args_list]
+        assert sorted("-w" in cmd for cmd in commands) == [False, True]
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_mixed_batch_stream(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        events = [e async for e in async_simulate_batch_stream(self._jobs(weather_file), energyplus=mock_config)]
+        assert len(events) == 2
+        assert all(e.result.success for e in events)
+        commands = [c[0] for c in mock_exec.call_args_list]
+        assert sorted("-w" in cmd for cmd in commands) == [False, True]
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_annual_job_without_weather_fails_alone(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        jobs = [*self._jobs(weather_file), SimulationJob(model=new_document(), annual=True, label="annual")]
+        result = await async_simulate_batch(jobs, energyplus=mock_config)
+        assert result[0].success
+        assert result[1].success
+        assert not result[2].success
+        assert REFUSAL_R2 in result[2].stderr
+        assert mock_exec.call_count == 2
+
+
+class TestAsyncFileSystemWithoutWeather:
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_async_fs_without_weather(self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig) -> None:
+        mock_exec.return_value = _make_mock_process()
+        fs = InMemoryAsyncFileSystem()
+        result = await async_simulate(
+            new_document(),
+            design_day=True,
+            energyplus=mock_config,
+            output_dir="remote/output",
+            fs=fs,
+        )
+        assert result.success
+        uploaded = [k for k in fs._files if k.startswith("remote/output/")]
+        assert len(uploaded) > 0
+        assert not any(k.endswith(".epw") for k in uploaded)
+
+
+class TestAsyncWeatherAdmission:
+    """Refusals REFUSAL_R1 to R4 and the unchanged missing-file message, raised before any subprocess."""
+
+    async def _assert_refused(self, message: str, **kwargs: Any) -> None:
+        # Not ``or``: an IDFDocument with no objects is falsy.
+        model = kwargs.pop("model", None)
+        if model is None:
+            model = new_document()
+        with (
+            patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec") as mock_exec,
+            patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
+            pytest.raises(SimulationError, match=re.escape(message)),
+        ):
+            await async_simulate(model, **kwargs)
+        mock_exec.assert_not_called()
+        mock_preprocess.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_r1_empty_string(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(REFUSAL_R1, weather="", design_day=True, energyplus=mock_config)
+
+    @pytest.mark.asyncio
+    async def test_missing_file_unchanged(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        missing = tmp_path / "absent.epw"
+        await self._assert_refused(
+            f"Weather file not found: {missing.resolve()}", weather=missing, design_day=True, energyplus=mock_config
+        )
+
+    @pytest.mark.asyncio
+    async def test_r2_not_design_day(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(REFUSAL_R2, weather=None, design_day=False, energyplus=mock_config)
+
+    @pytest.mark.asyncio
+    async def test_r2_design_day_and_annual(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(REFUSAL_R2, weather=None, design_day=True, annual=True, energyplus=mock_config)
+
+    @pytest.mark.asyncio
+    async def test_r3_ground_heat_transfer(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(
+            refusal_r3("GroundHeatTransfer:Basement:SimParameters, GroundHeatTransfer:Slab:Materials"),
+            model=ground_heat_model(),
+            weather=None,
+            design_day=True,
+            energyplus=mock_config,
+        )
+
+    @pytest.mark.asyncio
+    async def test_r3_lists_only_enabled_types(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(
+            refusal_r3("GroundHeatTransfer:Basement:SimParameters"),
+            model=ground_heat_model(slab="No", basement="Yes"),
+            weather=None,
+            design_day=True,
+            energyplus=mock_config,
+        )
+
+    @pytest.mark.asyncio
+    async def test_r3_not_raised_when_control_absent(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        model = ground_heat_model(slab=None, basement=None)
+        with (
+            patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec") as mock_exec,
+            patch("idfkit.simulation.expand.run_preprocessing", side_effect=lambda m, **_: m.copy()) as mock_pre,
+        ):
+            mock_exec.return_value = _make_mock_process()
+            result = await async_simulate(model, design_day=True, energyplus=mock_config, output_dir=tmp_path / "run")
+        mock_pre.assert_called_once()
+        assert result.success
+
+    @pytest.mark.asyncio
+    async def test_weather_refused_before_energyplus_discovery(self) -> None:
+        with (
+            patch("idfkit.simulation._common.find_energyplus") as mock_find,
+            pytest.raises(SimulationError, match=re.escape(REFUSAL_R2)),
+        ):
+            await async_simulate(new_document(), annual=True)  # pyright: ignore[reportCallIssue]
+        mock_find.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_r3_not_raised_without_expand_objects(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        with (
+            patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec") as mock_exec,
+            patch("idfkit.simulation.expand.run_preprocessing") as mock_preprocess,
+        ):
+            mock_exec.return_value = _make_mock_process()
+            result = await async_simulate(
+                ground_heat_model(),
+                design_day=True,
+                expand_objects=False,
+                energyplus=mock_config,
+                output_dir=tmp_path / "run",
+            )
+        mock_exec.assert_called_once()
+        mock_preprocess.assert_not_called()
+        assert result.success
+
+    @pytest.mark.asyncio
+    async def test_r2_takes_precedence_over_r3(self, mock_config: EnergyPlusConfig) -> None:
+        await self._assert_refused(
+            REFUSAL_R2, model=ground_heat_model(), weather=None, design_day=False, energyplus=mock_config
+        )
+
+    @pytest.mark.asyncio
+    async def test_r4_default_weather_in_run_dir(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
+        (tmp_path / "in.epw").write_text("LOCATION,Elsewhere\n")
+        await self._assert_refused(
+            refusal_r4(tmp_path.resolve()), weather=None, design_day=True, energyplus=mock_config, output_dir=tmp_path
+        )

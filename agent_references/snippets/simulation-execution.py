@@ -68,6 +68,9 @@ print(result.migration_report.summary())  # what was changed
 # Quick smoke-test with the heating/cooling design days only — seconds
 result = simulate(doc, "weather.epw", design_day=True)
 
+# Design days only, without a weather file (weather defaults to None)
+result = simulate(doc, design_day=True)
+
 # Full annual run — minutes
 result = simulate(doc, "weather.epw", annual=True)
 

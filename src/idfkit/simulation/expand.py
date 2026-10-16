@@ -145,20 +145,63 @@ def _needs_expansion(model: IDFDocument) -> bool:
     return _has_objects_in_group(model, _HVAC_TEMPLATE_GROUP, _HVAC_TEMPLATE_PREFIX)
 
 
+def ground_heat_object_types(
+    model: IDFDocument,
+    prefixes: tuple[str, ...] = (_SLAB_PREFIX, _BASEMENT_PREFIX),
+) -> list[str]:
+    """Return the sorted ground heat-transfer types in *model* that hold at least one object.
+
+    *prefixes* selects the Slab types, the Basement types, or both (the
+    default). Only non-empty collections count: removing every object of a
+    type leaves an empty collection in the document, and such a type needs
+    no preprocessing.
+    """
+    schema = model.schema
+    present = [t for t in model if t.startswith(prefixes) and len(model.get_collection(t)) > 0]
+    if schema is not None:
+        present = [t for t in present if schema.get_group(t) == _GHT_GROUP]
+    return sorted(present)
+
+
+def _control_enables(model: IDFDocument, field: str) -> bool:
+    """Return ``True`` if a ``GroundHeatTransfer:Control`` object sets *field* to ``Yes``.
+
+    Both control fields default to ``No``, and ExpandObjects writes no
+    preprocessor input when the control object is absent, so only an
+    explicit ``Yes`` enables a preprocessor.
+    """
+    return any(
+        str(getattr(obj, field, None) or "").casefold() == "yes"
+        for obj in model.get_collection("GroundHeatTransfer:Control")
+    )
+
+
+def enabled_ground_heat_object_types(model: IDFDocument) -> list[str]:
+    """Return the sorted ground heat-transfer types in *model* whose preprocessor is enabled.
+
+    A Slab type counts only when ``GroundHeatTransfer:Control`` sets
+    ``run_slab_preprocessor`` to ``Yes``, and a Basement type only when it
+    sets ``run_basement_preprocessor`` to ``Yes``. These are the types for
+    which the Slab or Basement solver runs and reads the weather file.
+    """
+    prefixes: list[str] = []
+    if _control_enables(model, "run_slab_preprocessor"):
+        prefixes.append(_SLAB_PREFIX)
+    if _control_enables(model, "run_basement_preprocessor"):
+        prefixes.append(_BASEMENT_PREFIX)
+    if not prefixes:
+        return []
+    return ground_heat_object_types(model, tuple(prefixes))
+
+
 def _has_slab_objects(model: IDFDocument) -> bool:
     """Return ``True`` if *model* contains ``GroundHeatTransfer:Slab:*`` objects."""
-    schema = model.schema
-    if schema is not None:
-        return any(schema.get_group(t) == _GHT_GROUP and t.startswith(_SLAB_PREFIX) for t in model)
-    return any(t.startswith(_SLAB_PREFIX) for t in model)
+    return bool(ground_heat_object_types(model, (_SLAB_PREFIX,)))
 
 
 def _has_basement_objects(model: IDFDocument) -> bool:
     """Return ``True`` if *model* contains ``GroundHeatTransfer:Basement:*`` objects."""
-    schema = model.schema
-    if schema is not None:
-        return any(schema.get_group(t) == _GHT_GROUP and t.startswith(_BASEMENT_PREFIX) for t in model)
-    return any(t.startswith(_BASEMENT_PREFIX) for t in model)
+    return bool(ground_heat_object_types(model, (_BASEMENT_PREFIX,)))
 
 
 # ---------------------------------------------------------------------------
@@ -431,7 +474,7 @@ def needs_ground_heat_preprocessing(model: IDFDocument) -> bool:
     This is used by [simulate][idfkit.simulation.runner.simulate] to decide
     whether to auto-run the preprocessing pipeline.
     """
-    return _has_slab_objects(model) or _has_basement_objects(model)
+    return bool(ground_heat_object_types(model))
 
 
 def run_preprocessing(

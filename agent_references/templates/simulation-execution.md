@@ -26,7 +26,7 @@
 | Argument | Default | Purpose |
 |---|---|---|
 | `model` | required | `IDFDocument` to simulate. Not mutated. |
-| `weather` | required | Path to an `.epw` file. |
+| `weather` | `None` | Path to an `.epw` file. `None` is accepted only for a design-day-only run (`design_day=True`, `annual=False`); it is refused for a model with `GroundHeatTransfer:Slab:*` or `GroundHeatTransfer:Basement:*` objects while `expand_objects=True` and `GroundHeatTransfer:Control` sets the matching `run_*_preprocessor` field to `Yes`, and for a run directory that already holds `in.epw`. |
 | `output_dir` | temp dir | Where outputs are written. |
 | `energyplus` | auto-discover | Pre-built `EnergyPlusConfig` (skip discovery). |
 | `expand_objects` | `True` | Run `ExpandObjects` + ground-heat preprocessors as needed. |

@@ -533,7 +533,7 @@ class EppyDocumentMixin:
 
     def run(
         self,
-        weather: str | Path,
+        weather: str | Path | None = None,
         **kwargs: Any,
     ) -> SimulationResult:
         """Run an EnergyPlus simulation (eppy-compatible convenience method).
@@ -553,7 +553,10 @@ class EppyDocumentMixin:
             separate from document manipulation.
 
         Args:
-            weather: Path to the EPW weather file.
+            weather: Path to the EPW weather file, or ``None`` for a
+                design-day-only run without one (``design_day=True``). See
+                [simulate][idfkit.simulation.simulate] for the models that
+                still require a weather file.
             **kwargs: Forwarded to [simulate][idfkit.simulation.simulate]
                 (e.g. ``output_dir``, ``annual``, ``design_day``,
                 ``timeout``, ``energyplus``).

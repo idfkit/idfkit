@@ -16,11 +16,12 @@ Skip integration tests with::
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
 
-from idfkit import load_idf
+from idfkit import IDFDocument, load_idf
 from idfkit.exceptions import EnergyPlusNotFoundError
 from idfkit.simulation import SimulationResult, find_energyplus
 from idfkit.simulation.config import EnergyPlusConfig
@@ -263,3 +264,110 @@ class TestAnnualSimulation:
         count = index.add_all_to_model(model, frequency="Hourly")
         assert count > 0
         assert len(model["Output:Variable"]) + len(model["Output:Meter"]) == count
+
+
+# ---------------------------------------------------------------------------
+# Tests: Design days without a weather file
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def five_zone_idf(energyplus: EnergyPlusConfig) -> Path:
+    return energyplus.install_dir / "ExampleFiles" / "5ZoneAirCooled.idf"
+
+
+def _assert_design_day_without_weather(result: SimulationResult) -> None:
+    assert result.success is True
+    assert result.errors.severe_count == 0
+    assert list(result.run_dir.glob("*.epw")) == []
+
+
+class TestDesignDayWithoutWeather:
+    """A design-day-only run completes without a weather file through every entry point."""
+
+    def test_simulate(self, five_zone_idf: Path, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        from idfkit.simulation import simulate
+
+        result = simulate(load_idf(str(five_zone_idf)), design_day=True, energyplus=energyplus, output_dir=tmp_path)
+        _assert_design_day_without_weather(result)
+
+    def test_async_simulate(self, five_zone_idf: Path, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        from idfkit.simulation import async_simulate
+
+        result = asyncio.run(
+            async_simulate(load_idf(str(five_zone_idf)), design_day=True, energyplus=energyplus, output_dir=tmp_path)
+        )
+        _assert_design_day_without_weather(result)
+
+    def test_simulate_batch(self, five_zone_idf: Path, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        from idfkit.simulation import SimulationJob, simulate_batch
+
+        job = SimulationJob(model=load_idf(str(five_zone_idf)), design_day=True, output_dir=tmp_path)
+        batch = simulate_batch([job], energyplus=energyplus)
+        _assert_design_day_without_weather(batch[0])
+
+    def test_async_simulate_batch(self, five_zone_idf: Path, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        from idfkit.simulation import SimulationJob, async_simulate_batch
+
+        job = SimulationJob(model=load_idf(str(five_zone_idf)), design_day=True, output_dir=tmp_path)
+        batch = asyncio.run(async_simulate_batch([job], energyplus=energyplus))
+        _assert_design_day_without_weather(batch[0])
+
+
+class TestWeatherDependentSizingWithoutWeather:
+    """A weather-file sizing period fails in EnergyPlus, and the result reports why (FR-006)."""
+
+    def test_weather_file_days(self, five_zone_idf: Path, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        from idfkit.simulation import simulate
+
+        model = load_idf(str(five_zone_idf))
+        model.add(
+            "SizingPeriod:WeatherFileDays",
+            "July Week",
+            {
+                "begin_month": 7,
+                "begin_day_of_month": 1,
+                "end_month": 7,
+                "end_day_of_month": 7,
+                "day_of_week_for_start_day": "Monday",
+                "use_weather_file_daylight_saving_period": "Yes",
+                "use_weather_file_rain_and_snow_indicators": "Yes",
+            },
+        )
+        result = simulate(model, design_day=True, energyplus=energyplus, output_dir=tmp_path)
+
+        assert result.success is False
+        messages = [m.message for m in (*result.errors.fatal, *result.errors.severe)]
+        assert any("no weather file specified" in m for m in messages)
+
+
+class TestGroundHeatTransferControlWithoutWeather:
+    """R3 follows GroundHeatTransfer:Control in the shipped slab example."""
+
+    @pytest.fixture
+    def slab_model(self, energyplus: EnergyPlusConfig) -> IDFDocument:
+        return load_idf(str(energyplus.install_dir / "ExampleFiles" / "5ZoneAirCooledWithSlab.idf"))
+
+    def test_enabled_slab_refused(self, slab_model: IDFDocument, energyplus: EnergyPlusConfig, tmp_path: Path) -> None:
+        """The example sets run_slab_preprocessor to lowercase ``yes``, which enables the solver."""
+        from idfkit.exceptions import SimulationError
+        from idfkit.simulation import simulate
+
+        with pytest.raises(SimulationError, match="GroundHeatTransfer:Control enables their preprocessor"):
+            simulate(slab_model, design_day=True, energyplus=energyplus, output_dir=tmp_path)
+
+    def test_disabled_slab_admitted(
+        self, slab_model: IDFDocument, energyplus: EnergyPlusConfig, tmp_path: Path
+    ) -> None:
+        """With both solvers off the run is admitted; ExpandObjects then reports the unresolved ground surfaces."""
+        from idfkit.simulation import simulate
+
+        for control in slab_model.get_collection("GroundHeatTransfer:Control"):
+            control.run_slab_preprocessor = "No"
+            control.run_basement_preprocessor = "No"
+        result = simulate(slab_model, design_day=True, energyplus=energyplus, output_dir=tmp_path, auto_migrate=True)
+
+        assert result.success is False
+        assert list(result.run_dir.glob("*.epw")) == []
+        messages = [" ".join((e.message, *e.details)) for e in result.errors.severe]
+        assert any("the Slab preprocessor was not run" in m for m in messages)
