@@ -22,8 +22,12 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
+      # The maintainer tools make check runs read TOML with tomllib (Python 3.11+). Pyright
+      # still checks the library against Python 3.10 (pythonVersion in pyproject.toml).
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.12"
 
       - name: Run checks
         run: make check

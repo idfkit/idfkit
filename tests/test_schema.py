@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import gzip
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ import pytest
 from idfkit.exceptions import SchemaNotFoundError
 from idfkit.schema import (  # pyright: ignore[reportPrivateUsage]
     EpJSONSchema,
+    ParsingCache,
     SchemaManager,
     _resolve_field_type,
     get_schema,
@@ -574,6 +576,30 @@ class TestGetFieldTypeEdgeCases:
 
 class TestParsingCacheEdgeCases:
     """Test _build_parsing_cache edge cases."""
+
+    def test_spelling_defaults_use_a_factory(self) -> None:
+        """An unhashable class default breaks the import on Python 3.11 (MappingProxyType is hashable only from 3.12)."""
+        spelling_fields = {f.name: f for f in dataclasses.fields(ParsingCache)}
+        for name in ("choice_spellings", "ext_choice_spellings"):
+            assert spelling_fields[name].default is dataclasses.MISSING
+            assert spelling_fields[name].default_factory is not dataclasses.MISSING
+
+    def test_spelling_defaults_are_empty(self) -> None:
+        pc = ParsingCache(
+            obj_schema={},
+            has_name=False,
+            field_names=(),
+            all_field_names=(),
+            field_types={},
+            ref_fields=frozenset(),
+            extensible=False,
+            ext_size=0,
+            ext_field_names=(),
+            ext_wrapper_key=None,
+            ext_inner_props={},
+        )
+        assert dict(pc.choice_spellings) == {}
+        assert dict(pc.ext_choice_spellings) == {}
 
     def test_array_without_items_builds_cache(self) -> None:
         schema = EpJSONSchema(

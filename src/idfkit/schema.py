@@ -14,7 +14,7 @@ import logging
 import os
 import time
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
@@ -37,6 +37,15 @@ SIZING_SENTINELS: Final = frozenset({"autosize", "autocalculate"})
 ChoiceSpellings = Mapping[str, str]
 
 _NO_SPELLINGS: Final[Mapping[str, ChoiceSpellings]] = MappingProxyType({})
+
+
+def _no_spellings() -> Mapping[str, ChoiceSpellings]:
+    """Return the shared empty spelling table.
+
+    A ``default_factory``, because Python 3.11 refuses an unhashable dataclass default, and
+    ``MappingProxyType`` is hashable only from Python 3.12.
+    """
+    return _NO_SPELLINGS
 
 
 def _string_members(enum: Any) -> list[str]:
@@ -105,8 +114,8 @@ class ParsingCache:
     ext_wrapper_key: str | None
     ext_inner_props: Mapping[str, dict[str, Any]]
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
-    choice_spellings: Mapping[str, ChoiceSpellings] = _NO_SPELLINGS
-    ext_choice_spellings: Mapping[str, ChoiceSpellings] = _NO_SPELLINGS
+    choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
+    ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
 
 
 def _resolve_field_type(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -34,12 +35,17 @@ def reset_rate_limiter() -> None:
     _ipapi_limiter.reset()
 
 
+# The submodule, not the ``geocode`` function that ``idfkit.weather`` re-exports under the same
+# name: on Python 3.10, ``patch.object(_geocode_module, "time")`` resolves to that function.
+_geocode_module = importlib.import_module("idfkit.weather.geocode")
+
+
 class TestRateLimiter:
     """Tests for the RateLimiter class."""
 
     def test_first_call_no_wait(self) -> None:
         limiter = RateLimiter(min_interval=1.0)
-        with patch("idfkit.weather.geocode.time") as mock_time:
+        with patch.object(_geocode_module, "time") as mock_time:
             mock_time.monotonic.return_value = 100.0
             mock_time.sleep = MagicMock()
             limiter.wait()
@@ -47,7 +53,7 @@ class TestRateLimiter:
 
     def test_subsequent_call_waits(self) -> None:
         limiter = RateLimiter(min_interval=1.0)
-        with patch("idfkit.weather.geocode.time") as mock_time:
+        with patch.object(_geocode_module, "time") as mock_time:
             # First call at t=100.0
             mock_time.monotonic.return_value = 100.0
             mock_time.sleep = MagicMock()
@@ -63,7 +69,7 @@ class TestRateLimiter:
 
     def test_no_wait_after_interval(self) -> None:
         limiter = RateLimiter(min_interval=1.0)
-        with patch("idfkit.weather.geocode.time") as mock_time:
+        with patch.object(_geocode_module, "time") as mock_time:
             # First call at t=100.0
             mock_time.monotonic.return_value = 100.0
             mock_time.sleep = MagicMock()
@@ -76,7 +82,7 @@ class TestRateLimiter:
 
     def test_reset(self) -> None:
         limiter = RateLimiter(min_interval=1.0)
-        with patch("idfkit.weather.geocode.time") as mock_time:
+        with patch.object(_geocode_module, "time") as mock_time:
             mock_time.monotonic.return_value = 100.0
             mock_time.sleep = MagicMock()
             limiter.wait()

@@ -74,7 +74,10 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.ref }}
 
+      # Pinned to the interpreter earlier benchmark runs measured on, so results stay comparable.
       - uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.12"
 
       - name: Install benchmark deps
         run: uv sync --frozen --group benchmark
@@ -99,7 +102,10 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.ref }}
 
+      # Pinned to the interpreter earlier benchmark runs measured on, so results stay comparable.
       - uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.12"
 
       - name: Install benchmark deps
         run: uv sync --frozen --group benchmark
