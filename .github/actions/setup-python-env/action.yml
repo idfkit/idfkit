@@ -26,6 +26,12 @@ runs:
         cache-suffix: ${{ inputs.python-version }}
         prune-cache: false
 
+    # Later steps call `uv run` without --python, and uv would otherwise pick the runner's system
+    # interpreter (3.12 on ubuntu-latest), so every job would test 3.12 whatever its matrix entry.
+    - name: Pin uv to the requested interpreter for later steps
+      run: echo "UV_PYTHON=${{ inputs.python-version }}" >> "$GITHUB_ENV"
+      shell: bash
+
     - name: Install Python dependencies
       run: uv sync --frozen --python ${{ inputs.python-version }}
       shell: bash
