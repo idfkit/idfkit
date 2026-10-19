@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-19
+
 ### Fixed
 
-- `import idfkit` raised `ValueError: mutable default <class 'mappingproxy'> for field choice_spellings is not allowed` on Python 3.11. The two spelling tables of `ParsingCache` that #226 added used a `MappingProxyType` as their dataclass default, which Python 3.11 refuses because that type is hashable only from Python 3.12. They now use a `default_factory`. The test matrix did not catch it because every job ran its tests on the runner's system Python 3.12; each job now runs on the version it names.
+- `import idfkit` raised `ValueError: mutable default <class 'mappingproxy'> for field choice_spellings is not allowed` on Python 3.11. The two spelling tables of `ParsingCache` that #226 added used a `MappingProxyType` as their dataclass default, which Python 3.11 refuses because that type is hashable only from Python 3.12. They now use a `default_factory`. The test matrix did not catch it because every job ran its tests on the runner's system Python 3.12; each job now runs on the version it names. ([#232](https://github.com/idfkit/idfkit/pull/232))
 
 ## [1.1.0] - 2026-10-16
 
