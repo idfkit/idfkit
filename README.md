@@ -7,27 +7,26 @@
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 
-> [!IMPORTANT]
-> **The next release renames how you write a model to disk.** `write_idf(doc, path)`
-> becomes `save_idf(doc, path)`, and `write_epjson(doc, path)` becomes
-> `save_epjson(doc, path)`. `write_*` now only returns a string.
+> [!NOTE]
+> **Upgrading from 0.x.** Since 1.0.0, writing a model to disk uses
+> `save_idf(doc, path)` and `save_epjson(doc, path)`. `write_idf` and
+> `write_epjson` only return a string.
 >
-> Worth knowing before you upgrade, because neither failure names the cause:
+> Code that still calls `write_*` with a path fails without naming the cause:
 > `write_epjson(doc, path)` raises `TypeError: can't multiply sequence by
-> non-int of type 'PosixPath'`, and `write_idf(doc, path)` fails silently,
-> writing nothing and leaving an empty file that surfaces later as
+> non-int of type 'PosixPath'`, and `write_idf(doc, path)` writes nothing,
+> leaving an empty file that surfaces later as
 > `Could not detect EnergyPlus version in file`.
 >
 > Search for `write_idf(` and `write_epjson(` called with two positional
-> arguments, or run a type checker, which rejects both. Full notes in the
+> arguments, or run a type checker, which rejects both. Full notes are in the
 > [changelog](CHANGELOG.md#migration).
 
 > [!NOTE]
-> idfkit is in **beta**. The API may change between minor versions. We're looking
-> for early adopters and testers — especially users of eppy who want
-> better performance and a modern API. If you try it out, please
-> [open an issue](https://github.com/idfkit/idfkit/issues) with feedback,
-> bug reports, or feature requests.
+> idfkit follows [semantic versioning](https://semver.org/): breaking API
+> changes occur only in major releases and are recorded in the
+> [changelog](CHANGELOG.md). Feedback, bug reports, and feature requests are
+> welcome as [GitHub issues](https://github.com/idfkit/idfkit/issues).
 
 idfkit lets you load, create, query, and modify EnergyPlus models with an
 intuitive Python API. It is designed as a drop-in replacement for
