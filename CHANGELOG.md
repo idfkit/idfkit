@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release moves to `conformance-2026.18`. The corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the ten Python divergence entries for those cases that `IDFObject.update` closes. An idfkit release without `IDFObject.update` fails the five update cases at this level.
+This release moves to `conformance-2026.19`, the level the TypeScript library also declares. The corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). An idfkit release without `IDFObject.update` fails the five update cases at this level.
 
 ### Added
 
