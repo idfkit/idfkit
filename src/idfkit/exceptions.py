@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
-    from .objects import IDFObject, RefusedEntry
+    from .objects import IDFObject
 
 
 class IdfKitError(Exception):
@@ -161,6 +161,21 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
             if s_url:
                 msg += f"\n  Search docs: {s_url.url}"
         super().__init__(msg)
+
+
+@dataclass(frozen=True, slots=True)
+class RefusedEntry:
+    """One entry of an ``IDFObject.update`` group that will not be applied.
+
+    ``reason`` is ``"unknown"`` (not a field of the type), ``"name"`` (renaming has its own
+    operation), ``"legacy-flat"`` (an eppy-style flat extensible name) or ``"wrapper-value"``
+    (the extensible wrapper key given a value single assignment rejects: not a list, or a list
+    with an item that is not a dict or group, or a group with an unknown field).
+    """
+
+    name: str
+    reason: Literal["unknown", "name", "legacy-flat", "wrapper-value"]
+    detail: str
 
 
 def format_refused(obj_type: str, refused: Sequence[RefusedEntry]) -> str:

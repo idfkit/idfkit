@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from idfkit import IDFDocument, IDFObject, new_document
-from idfkit.exceptions import InvalidFieldError
+from idfkit.exceptions import InvalidFieldError, RefusedEntry
 
 _VERTEX = {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0}
 
@@ -72,6 +72,15 @@ class TestApplied:
         with pytest.raises(InvalidFieldError):
             heater.update(values=1.0)
 
+    @pytest.mark.parametrize(
+        "mapping",
+        [{"X Origin": 2.0}, {"x_origin": 1.0, "X Origin": 2.0}, {"X Origin": 2.0, "x_origin": 1.0}],
+    )
+    def test_keyword_wins_over_any_spelling_in_the_mapping(self, mapping: dict[str, float]) -> None:
+        zone = new_document().add("Zone", "Office")
+        zone.update(mapping, x_origin=3.0)
+        assert zone.x_origin == 3.0
+
     def test_field_names_normalized_as_single_assignment(self) -> None:
         heater = _heater(new_document())
         heater.update({"Heater Thermal Efficiency": 0.7})
@@ -127,6 +136,30 @@ class TestRefused:
             surface.update(surface_type="Roof", vertices=dict(_VERTEX))
         assert _snapshot(surface) == before
 
+    @pytest.mark.parametrize(
+        "vertices",
+        [
+            [dict(_VERTEX), dict(_VERTEX), {"bogus": 1}],
+            [dict(_VERTEX), dict(_VERTEX), "vertex"],
+            [dict(_VERTEX), dict(_VERTEX), 5.0],
+        ],
+        ids=["unknown-inner-field", "string-item", "number-item"],
+    )
+    def test_wrapper_list_whose_contents_single_assignment_rejects(self, vertices: list[Any]) -> None:
+        surface = _surface(new_document())
+        before = _snapshot(surface)
+        with pytest.raises(TypeError, match="  - vertices: wrapper-value"):
+            surface.update(surface_type="Roof", vertices=vertices)
+        assert _snapshot(surface) == before
+
+    @pytest.mark.parametrize("key", ["Name ", " NAME", "name_"])
+    def test_names_that_resolve_to_name(self, key: str) -> None:
+        heater = _heater(new_document())
+        before = _snapshot(heater)
+        with pytest.raises(InvalidFieldError, match=f"  - {key}: name"):
+            heater.update({key: "Other"})
+        assert _snapshot(heater) == before
+
     def test_private_attribute_name(self) -> None:
         heater = _heater(new_document())
         before = _snapshot(heater)
@@ -151,6 +184,16 @@ class TestRefused:
         assert positions == sorted(positions)
         assert "surface_type" not in message.split("Available fields")[0]
         assert _snapshot(surface) == before
+
+    def test_field_name_is_the_first_entry_refused_for_its_name(self) -> None:
+        surface = _surface(new_document())
+        with pytest.raises(InvalidFieldError) as excinfo:
+            surface.update(vertices="not a list", bogus=1)
+        assert excinfo.value.field_name == "bogus"
+        assert excinfo.value.refused == (
+            RefusedEntry("vertices", "wrapper-value", "expected a list, got str"),
+            RefusedEntry("bogus", "unknown", "not a field of BuildingSurface:Detailed"),
+        )
 
     def test_unknown_name_refused_in_a_non_strict_document(self) -> None:
         doc = new_document(strict=False)

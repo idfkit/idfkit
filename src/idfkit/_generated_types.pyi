@@ -6,6 +6,7 @@ DO NOT EDIT — regenerate with:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Literal, TypedDict
 
 from typing_extensions import Unpack
@@ -35,7 +36,7 @@ class SimulationControl(IDFObject):
     maximum_number_of_hvac_sizing_simulation_passes: int | None
     """the entire set of SizingPeriod:* objects may be repeated to fine tune size results this input sets a limit on the num...; Default: 1; Range: >= 1"""
 
-    def update(self, values: _SimulationControlFields = ..., /, **kwargs: Unpack[_SimulationControlFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SimulationControlFields]) -> None: ...  # type: ignore[override]
 
 class _SimulationControlFields(TypedDict, total=False):
     do_system_sizing_calculation: Literal["", "No", "Yes"] | None
@@ -65,10 +66,7 @@ class PerformancePrecisionTradeoffs(IDFObject):
     """Automatically group surfaces with similar characteristics and perform relevant calculations only once for each group.; Default: No; Since: 9.6.0"""
 
     def update(
-        self,
-        values: _PerformancePrecisionTradeoffsFields = ...,
-        /,
-        **kwargs: Unpack[_PerformancePrecisionTradeoffsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PerformancePrecisionTradeoffsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PerformancePrecisionTradeoffsFields(TypedDict, total=False):
@@ -113,7 +111,7 @@ class Building(IDFObject):
     construction_assignment_set_name: str | None
     """Optional. Provides inherited construction assignments for surfaces and sub-surfaces in the building. Assignments refe...; Since: 26.2.0"""
 
-    def update(self, values: _BuildingFields = ..., /, **kwargs: Unpack[_BuildingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingFields]) -> None: ...  # type: ignore[override]
 
 class _BuildingFields(TypedDict, total=False):
     north_axis: float | None
@@ -165,7 +163,7 @@ class ShadowCalculation(IDFObject):
     """If Yes, self-shading will be disabled from all exterior surfaces in a given Shading Zone Group to all other zones in ...; Default: No"""
     shading_zone_groups: ExtensibleList[ShadowCalculationShadingZoneGroupsGroup]
 
-    def update(self, values: _ShadowCalculationFields = ..., /, **kwargs: Unpack[_ShadowCalculationFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculationFields]) -> None: ...  # type: ignore[override]
 
 class _ShadowCalculationFields(TypedDict, total=False):
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
@@ -198,7 +196,7 @@ class HeatBalanceAlgorithm(IDFObject):
     """[W/m2-K]; Default: 1000.0; Range: >= 1.0"""
 
     def update(
-        self, values: _HeatBalanceAlgorithmFields = ..., /, **kwargs: Unpack[_HeatBalanceAlgorithmFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatBalanceAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatBalanceAlgorithmFields(TypedDict, total=False):
@@ -218,7 +216,7 @@ class HeatBalanceSettingsConductionFiniteDifference(IDFObject):
 
     def update(
         self,
-        values: _HeatBalanceSettingsConductionFiniteDifferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HeatBalanceSettingsConductionFiniteDifferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -237,7 +235,7 @@ class ZoneAirHeatBalanceAlgorithm(IDFObject):
     """If yes, space heat balance will be calculated and reported during simulation.; Default: No; Since: 23.1.0"""
 
     def update(
-        self, values: _ZoneAirHeatBalanceAlgorithmFields = ..., /, **kwargs: Unpack[_ZoneAirHeatBalanceAlgorithmFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirHeatBalanceAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirHeatBalanceAlgorithmFields(TypedDict, total=False):
@@ -255,7 +253,7 @@ class ZoneAirContaminantBalance(IDFObject):
     """Schedule values should be generic contaminant concentration in parts per million (ppm)"""
 
     def update(
-        self, values: _ZoneAirContaminantBalanceFields = ..., /, **kwargs: Unpack[_ZoneAirContaminantBalanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirContaminantBalanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirContaminantBalanceFields(TypedDict, total=False):
@@ -272,7 +270,7 @@ class ZoneAirMassFlowConservation(IDFObject):
     """This input field allows user to choose which zones are included in infiltration balancing. MixingSourceZonesOnly allo...; Default: MixingSourceZonesOnly"""
 
     def update(
-        self, values: _ZoneAirMassFlowConservationFields = ..., /, **kwargs: Unpack[_ZoneAirMassFlowConservationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirMassFlowConservationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirMassFlowConservationFields(TypedDict, total=False):
@@ -295,7 +293,7 @@ class ZoneCapacitanceMultiplierResearchSpecial(IDFObject):
 
     def update(
         self,
-        values: _ZoneCapacitanceMultiplierResearchSpecialFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneCapacitanceMultiplierResearchSpecialFields],
     ) -> None: ...  # type: ignore[override]
@@ -320,7 +318,7 @@ class ConvergenceLimits(IDFObject):
     maximum_plant_iterations: int | None
     """Controls the maximum number of plant system solver iterations within a single HVAC iteration Smaller values might dec...; Default: 8; Range: >= 2"""
 
-    def update(self, values: _ConvergenceLimitsFields = ..., /, **kwargs: Unpack[_ConvergenceLimitsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConvergenceLimitsFields]) -> None: ...  # type: ignore[override]
 
 class _ConvergenceLimitsFields(TypedDict, total=False):
     maximum_hvac_iterations: int | None
@@ -334,10 +332,7 @@ class HVACSystemRootFindingAlgorithm(IDFObject):
     """This field is used when RegulaFalsiThenBisection or BisectionThenRegulaFalsi is entered. When iteration number is gre...; Default: 5"""
 
     def update(
-        self,
-        values: _HVACSystemRootFindingAlgorithmFields = ...,
-        /,
-        **kwargs: Unpack[_HVACSystemRootFindingAlgorithmFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACSystemRootFindingAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACSystemRootFindingAlgorithmFields(TypedDict, total=False):
@@ -360,7 +355,7 @@ class SiteLocation(IDFObject):
     keep_site_location_information: Literal["", "No", "Yes"] | None
     """Default: No; Since: 24.2.0"""
 
-    def update(self, values: _SiteLocationFields = ..., /, **kwargs: Unpack[_SiteLocationFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteLocationFields]) -> None: ...  # type: ignore[override]
 
 class _SiteLocationFields(TypedDict, total=False):
     latitude: float | None
@@ -380,7 +375,7 @@ class SiteVariableLocation(IDFObject):
     """The name of a schedule that defines the orientation of the building at any time. This orientation is based on a chang..."""
 
     def update(
-        self, values: _SiteVariableLocationFields = ..., /, **kwargs: Unpack[_SiteVariableLocationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteVariableLocationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteVariableLocationFields(TypedDict, total=False):
@@ -479,7 +474,7 @@ class SizingPeriodDesignDay(IDFObject):
     """If used this can control if you want the thermal history to be reset at the beginning of the design day. When using a...; Default: FullResetAtBeginEnvironment; Since: 9.3.0"""
 
     def update(
-        self, values: _SizingPeriodDesignDayFields = ..., /, **kwargs: Unpack[_SizingPeriodDesignDayFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDayFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SizingPeriodDesignDayFields(TypedDict, total=False):
@@ -578,7 +573,7 @@ class SizingPeriodWeatherFileDays(IDFObject):
     """Default: Yes"""
 
     def update(
-        self, values: _SizingPeriodWeatherFileDaysFields = ..., /, **kwargs: Unpack[_SizingPeriodWeatherFileDaysFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodWeatherFileDaysFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SizingPeriodWeatherFileDaysFields(TypedDict, total=False):
@@ -655,10 +650,7 @@ class SizingPeriodWeatherFileConditionType(IDFObject):
     """Default: Yes"""
 
     def update(
-        self,
-        values: _SizingPeriodWeatherFileConditionTypeFields = ...,
-        /,
-        **kwargs: Unpack[_SizingPeriodWeatherFileConditionTypeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodWeatherFileConditionTypeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SizingPeriodWeatherFileConditionTypeFields(TypedDict, total=False):
@@ -737,7 +729,7 @@ class RunPeriod(IDFObject):
     first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None
     """When the weather data timestep is longer than the simulation timestep, weather data is interpolated. For the first ho...; Default: Hour24; Since: 9.6.0"""
 
-    def update(self, values: _RunPeriodFields = ..., /, **kwargs: Unpack[_RunPeriodFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodFields]) -> None: ...  # type: ignore[override]
 
 class _RunPeriodFields(TypedDict, total=False):
     begin_month: int | None
@@ -768,7 +760,7 @@ class RunPeriodControlSpecialDays(IDFObject):
     """Special Day Type selects the schedules appropriate for each day so labeled; Default: Holiday"""
 
     def update(
-        self, values: _RunPeriodControlSpecialDaysFields = ..., /, **kwargs: Unpack[_RunPeriodControlSpecialDaysFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodControlSpecialDaysFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RunPeriodControlSpecialDaysFields(TypedDict, total=False):
@@ -783,10 +775,7 @@ class RunPeriodControlDaylightSavingTime(IDFObject):
     """Dates can be several formats: <number>/<number> (month/day) <number> <Month> <Month> <number> <Nth> <Weekday> in <Mon..."""
 
     def update(
-        self,
-        values: _RunPeriodControlDaylightSavingTimeFields = ...,
-        /,
-        **kwargs: Unpack[_RunPeriodControlDaylightSavingTimeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RunPeriodControlDaylightSavingTimeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RunPeriodControlDaylightSavingTimeFields(TypedDict, total=False):
@@ -815,10 +804,7 @@ class WeatherPropertySkyTemperature(IDFObject):
     """If yes or blank, use Horizontal IR values from weather file when present, otherwise use the specified sky model. If n...; Default: Yes; Since: 9.3.0"""
 
     def update(
-        self,
-        values: _WeatherPropertySkyTemperatureFields = ...,
-        /,
-        **kwargs: Unpack[_WeatherPropertySkyTemperatureFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WeatherPropertySkyTemperatureFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WeatherPropertySkyTemperatureFields(TypedDict, total=False):
@@ -849,7 +835,7 @@ class SiteWeatherStation(IDFObject):
     """[m]; Default: 1.5; Range: >= 0.0"""
 
     def update(
-        self, values: _SiteWeatherStationFields = ..., /, **kwargs: Unpack[_SiteWeatherStationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWeatherStationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWeatherStationFields(TypedDict, total=False):
@@ -866,7 +852,7 @@ class SiteHeightVariation(IDFObject):
     """Set to zero for no air temperature dependence on height.; [K/m]; Default: 0.0065; Range: >= 0.0"""
 
     def update(
-        self, values: _SiteHeightVariationFields = ..., /, **kwargs: Unpack[_SiteHeightVariationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteHeightVariationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteHeightVariationFields(TypedDict, total=False):
@@ -900,10 +886,7 @@ class SiteGroundTemperatureBuildingSurface(IDFObject):
     """[C]; Default: 18.0"""
 
     def update(
-        self,
-        values: _SiteGroundTemperatureBuildingSurfaceFields = ...,
-        /,
-        **kwargs: Unpack[_SiteGroundTemperatureBuildingSurfaceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureBuildingSurfaceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
@@ -946,10 +929,7 @@ class SiteGroundTemperatureFCfactorMethod(IDFObject):
     """[C]; Default: 13.0"""
 
     def update(
-        self,
-        values: _SiteGroundTemperatureFCfactorMethodFields = ...,
-        /,
-        **kwargs: Unpack[_SiteGroundTemperatureFCfactorMethodFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureFCfactorMethodFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
@@ -992,10 +972,7 @@ class SiteGroundTemperatureShallow(IDFObject):
     """[C]; Default: 13.0"""
 
     def update(
-        self,
-        values: _SiteGroundTemperatureShallowFields = ...,
-        /,
-        **kwargs: Unpack[_SiteGroundTemperatureShallowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureShallowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
@@ -1038,7 +1015,7 @@ class SiteGroundTemperatureDeep(IDFObject):
     """[C]; Default: 16.0"""
 
     def update(
-        self, values: _SiteGroundTemperatureDeepFields = ..., /, **kwargs: Unpack[_SiteGroundTemperatureDeepFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureDeepFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureDeepFields(TypedDict, total=False):
@@ -1072,7 +1049,7 @@ class SiteGroundTemperatureUndisturbedFiniteDifference(IDFObject):
 
     def update(
         self,
-        values: _SiteGroundTemperatureUndisturbedFiniteDifferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SiteGroundTemperatureUndisturbedFiniteDifferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -1103,7 +1080,7 @@ class SiteGroundTemperatureUndisturbedKusudaAchenbach(IDFObject):
 
     def update(
         self,
-        values: _SiteGroundTemperatureUndisturbedKusudaAchenbachFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SiteGroundTemperatureUndisturbedKusudaAchenbachFields],
     ) -> None: ...  # type: ignore[override]
@@ -1137,10 +1114,7 @@ class SiteGroundTemperatureUndisturbedXing(IDFObject):
     """[days]; Range: < 365.0"""
 
     def update(
-        self,
-        values: _SiteGroundTemperatureUndisturbedXingFields = ...,
-        /,
-        **kwargs: Unpack[_SiteGroundTemperatureUndisturbedXingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundTemperatureUndisturbedXingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureUndisturbedXingFields(TypedDict, total=False):
@@ -1210,7 +1184,7 @@ class SiteGroundDomainSlab(IDFObject):
     """Default: 6; Range: >= 4"""
 
     def update(
-        self, values: _SiteGroundDomainSlabFields = ..., /, **kwargs: Unpack[_SiteGroundDomainSlabFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainSlabFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundDomainSlabFields(TypedDict, total=False):
@@ -1298,7 +1272,7 @@ class SiteGroundDomainBasement(IDFObject):
     """Default: 4; Range: >= 2"""
 
     def update(
-        self, values: _SiteGroundDomainBasementFields = ..., /, **kwargs: Unpack[_SiteGroundDomainBasementFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundDomainBasementFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundDomainBasementFields(TypedDict, total=False):
@@ -1360,7 +1334,7 @@ class SiteGroundReflectance(IDFObject):
     """[dimensionless]; Default: 0.2; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _SiteGroundReflectanceFields = ..., /, **kwargs: Unpack[_SiteGroundReflectanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundReflectanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceFields(TypedDict, total=False):
@@ -1383,10 +1357,7 @@ class SiteGroundReflectanceSnowModifier(IDFObject):
     """Value for modifying the 'normal' daylighting ground reflectance when Snow is on ground when calculating the 'Ground R...; Default: 1.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _SiteGroundReflectanceSnowModifierFields = ...,
-        /,
-        **kwargs: Unpack[_SiteGroundReflectanceSnowModifierFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteGroundReflectanceSnowModifierFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceSnowModifierFields(TypedDict, total=False):
@@ -1406,7 +1377,7 @@ class SiteWaterMainsTemperature(IDFObject):
     """If calculation method is Schedule, this input field is ignored.; [deltaC]; Default: 0.0; Since: 25.2.0"""
 
     def update(
-        self, values: _SiteWaterMainsTemperatureFields = ..., /, **kwargs: Unpack[_SiteWaterMainsTemperatureFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWaterMainsTemperatureFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWaterMainsTemperatureFields(TypedDict, total=False):
@@ -1426,7 +1397,7 @@ class SitePrecipitation(IDFObject):
     average_total_annual_precipitation: float | None
     """meters of water per year from average weather statistics; [m/yr]; Range: >= 0.0"""
 
-    def update(self, values: _SitePrecipitationFields = ..., /, **kwargs: Unpack[_SitePrecipitationFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SitePrecipitationFields]) -> None: ...  # type: ignore[override]
 
 class _SitePrecipitationFields(TypedDict, total=False):
     design_level_for_total_annual_precipitation: float | None
@@ -1441,7 +1412,7 @@ class RoofIrrigation(IDFObject):
     irrigation_maximum_saturation_threshold: float | None
     """Used with SmartSchedule to set the saturation level at which no irrigation is allowed.; [percent]; Default: 40.0; Range: >= 0.0, <= 100.0"""
 
-    def update(self, values: _RoofIrrigationFields = ..., /, **kwargs: Unpack[_RoofIrrigationFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofIrrigationFields]) -> None: ...  # type: ignore[override]
 
 class _RoofIrrigationFields(TypedDict, total=False):
     irrigation_rate_schedule_name: str | None
@@ -1456,7 +1427,7 @@ class SiteSolarAndVisibleSpectrum(IDFObject):
     visible_spectrum_data_object_name: str | None
 
     def update(
-        self, values: _SiteSolarAndVisibleSpectrumFields = ..., /, **kwargs: Unpack[_SiteSolarAndVisibleSpectrumFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteSolarAndVisibleSpectrumFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SiteSolarAndVisibleSpectrumFields(TypedDict, total=False):
@@ -1482,7 +1453,7 @@ class SiteSpectrumData(IDFObject):
     spectrum_2: float | None
     extensions: ExtensibleList[SiteSpectrumDataExtensionsGroup]
 
-    def update(self, values: _SiteSpectrumDataFields = ..., /, **kwargs: Unpack[_SiteSpectrumDataFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteSpectrumDataFields]) -> None: ...  # type: ignore[override]
 
 class _SiteSpectrumDataFields(TypedDict, total=False):
     spectrum_data_type: Literal["Solar", "Visible"] | None
@@ -1524,7 +1495,7 @@ class ScheduleTypeLimits(IDFObject):
     """Temperature (C or F) DeltaTemperature (C or F) PrecipitationRate (m/hr or ft/hr) Angle (degrees) Convection Coefficie...; Default: Dimensionless"""
 
     def update(
-        self, values: _ScheduleTypeLimitsFields = ..., /, **kwargs: Unpack[_ScheduleTypeLimitsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleTypeLimitsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ScheduleTypeLimitsFields(TypedDict, total=False):
@@ -1605,7 +1576,7 @@ class ScheduleDayHourly(IDFObject):
     hour_24: float | None
     """Default: 0.0"""
 
-    def update(self, values: _ScheduleDayHourlyFields = ..., /, **kwargs: Unpack[_ScheduleDayHourlyFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayHourlyFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleDayHourlyFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1649,7 +1620,7 @@ class ScheduleDayInterval(IDFObject):
     data: ExtensibleList[ScheduleDayIntervalDataGroup]
 
     def update(
-        self, values: _ScheduleDayIntervalFields = ..., /, **kwargs: Unpack[_ScheduleDayIntervalFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayIntervalFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ScheduleDayIntervalFields(TypedDict, total=False):
@@ -1672,7 +1643,7 @@ class ScheduleDayList(IDFObject):
     """Must be evenly divisible into 60; Range: >= 1, <= 60"""
     extensions: ExtensibleList[ScheduleDayListExtensionsGroup]
 
-    def update(self, values: _ScheduleDayListFields = ..., /, **kwargs: Unpack[_ScheduleDayListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayListFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleDayListFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1696,7 +1667,7 @@ class ScheduleWeekDaily(IDFObject):
     customday1_schedule_day_name: str | None
     customday2_schedule_day_name: str | None
 
-    def update(self, values: _ScheduleWeekDailyFields = ..., /, **kwargs: Unpack[_ScheduleWeekDailyFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekDailyFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleWeekDailyFields(TypedDict, total=False):
     sunday_schedule_day_name: str | None
@@ -1724,7 +1695,7 @@ class ScheduleWeekCompact(IDFObject):
     data: ExtensibleList[ScheduleWeekCompactDataGroup]
 
     def update(
-        self, values: _ScheduleWeekCompactFields = ..., /, **kwargs: Unpack[_ScheduleWeekCompactFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekCompactFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ScheduleWeekCompactFields(TypedDict, total=False):
@@ -1745,7 +1716,7 @@ class ScheduleYear(IDFObject):
     schedule_type_limits_name: str | None
     schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup]
 
-    def update(self, values: _ScheduleYearFields = ..., /, **kwargs: Unpack[_ScheduleYearFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYearFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleYearFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1762,7 +1733,7 @@ class ScheduleCompact(IDFObject):
     schedule_type_limits_name: str | None
     data: ExtensibleList[ScheduleCompactDataGroup]
 
-    def update(self, values: _ScheduleCompactFields = ..., /, **kwargs: Unpack[_ScheduleCompactFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleCompactFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleCompactFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1775,7 +1746,7 @@ class ScheduleConstant(IDFObject):
     hourly_value: float | None
     """Default: 0.0"""
 
-    def update(self, values: _ScheduleConstantFields = ..., /, **kwargs: Unpack[_ScheduleConstantFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleConstantFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleConstantFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1797,7 +1768,7 @@ class ScheduleYearRules(IDFObject):
     custom_day_2_schedule_name: str | None
     """If blank, the Default Day Schedule is used for Custom Day 2."""
 
-    def update(self, values: _ScheduleYearRulesFields = ..., /, **kwargs: Unpack[_ScheduleYearRulesFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYearRulesFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleYearRulesFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1839,7 +1810,7 @@ class ScheduleWeekRule(IDFObject):
     """Default: No"""
     date_ranges: ExtensibleList[ScheduleWeekRuleDateRangesGroup]
 
-    def update(self, values: _ScheduleWeekRuleFields = ..., /, **kwargs: Unpack[_ScheduleWeekRuleFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleWeekRuleFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleWeekRuleFields(TypedDict, total=False):
     schedule_year_rules_name: str | None
@@ -1877,7 +1848,7 @@ class ScheduleFile(IDFObject):
     adjust_schedule_for_daylight_savings: Literal["", "No", "Yes"] | None
     """'No' means do not include Daylight Savings Time in the schedule, instead, use the schedule directly from the Schedule...; Default: Yes; Since: 22.1.0"""
 
-    def update(self, values: _ScheduleFileFields = ..., /, **kwargs: Unpack[_ScheduleFileFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFileFields]) -> None: ...  # type: ignore[override]
 
 class _ScheduleFileFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1915,7 +1886,7 @@ class Material(IDFObject):
     visible_absorptance_inside_face: float | None
     """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
-    def update(self, values: _MaterialFields = ..., /, **kwargs: Unpack[_MaterialFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialFields]) -> None: ...  # type: ignore[override]
 
 class _MaterialFields(TypedDict, total=False):
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"] | None
@@ -1949,7 +1920,7 @@ class MaterialNoMass(IDFObject):
     visible_absorptance_inside_face: float | None
     """When blank, this value is equal to the Visible Absorptance field above. When entered, the Visible Absorptance field a...; Range: >= 0.0, <= 1.0; Since: 26.2.0"""
 
-    def update(self, values: _MaterialNoMassFields = ..., /, **kwargs: Unpack[_MaterialNoMassFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialNoMassFields]) -> None: ...  # type: ignore[override]
 
 class _MaterialNoMassFields(TypedDict, total=False):
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"] | None
@@ -1970,7 +1941,7 @@ class MaterialAirGap(IDFObject):
     thermal_resistance: float | None
     """[m2-K/W]; Range: > 0.0"""
 
-    def update(self, values: _MaterialAirGapFields = ..., /, **kwargs: Unpack[_MaterialAirGapFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialAirGapFields]) -> None: ...  # type: ignore[override]
 
 class _MaterialAirGapFields(TypedDict, total=False):
     thermal_resistance: float | None
@@ -2016,7 +1987,7 @@ class MaterialRoofVegetation(IDFObject):
     """Advanced calculation requires increased number of timesteps (recommended >20).; Default: Advanced"""
 
     def update(
-        self, values: _MaterialRoofVegetationFields = ..., /, **kwargs: Unpack[_MaterialRoofVegetationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialRoofVegetationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialRoofVegetationFields(TypedDict, total=False):
@@ -2050,10 +2021,7 @@ class WindowMaterialSimpleGlazingSystem(IDFObject):
     """VT at Normal Incidence optional; Range: > 0.0, < 1.0"""
 
     def update(
-        self,
-        values: _WindowMaterialSimpleGlazingSystemFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialSimpleGlazingSystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialSimpleGlazingSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialSimpleGlazingSystemFields(TypedDict, total=False):
@@ -2105,7 +2073,7 @@ class WindowMaterialGlazing(IDFObject):
     """Used only when Optical Data Type = SpectralAndAngle"""
 
     def update(
-        self, values: _WindowMaterialGlazingFields = ..., /, **kwargs: Unpack[_WindowMaterialGlazingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGlazingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGlazingFields(TypedDict, total=False):
@@ -2143,7 +2111,7 @@ class WindowMaterialGlazingGroupThermochromic(IDFObject):
 
     def update(
         self,
-        values: _WindowMaterialGlazingGroupThermochromicFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_WindowMaterialGlazingGroupThermochromicFields],
     ) -> None: ...  # type: ignore[override]
@@ -2177,7 +2145,7 @@ class WindowMaterialGlazingRefractionExtinctionMethod(IDFObject):
 
     def update(
         self,
-        values: _WindowMaterialGlazingRefractionExtinctionMethodFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_WindowMaterialGlazingRefractionExtinctionMethodFields],
     ) -> None: ...  # type: ignore[override]
@@ -2223,7 +2191,7 @@ class WindowMaterialGas(IDFObject):
     specific_heat_ratio: float | None
     """Used only if Gas Type = Custom; Range: > 1.0"""
 
-    def update(self, values: _WindowMaterialGasFields = ..., /, **kwargs: Unpack[_WindowMaterialGasFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGasFields]) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGasFields(TypedDict, total=False):
     gas_type: Literal["Air", "Argon", "Custom", "Krypton", "Xenon"] | None
@@ -2249,7 +2217,7 @@ class WindowGapSupportPillar(IDFObject):
     """[m]; Default: 0.0004; Range: > 0.0"""
 
     def update(
-        self, values: _WindowGapSupportPillarFields = ..., /, **kwargs: Unpack[_WindowGapSupportPillarFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowGapSupportPillarFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowGapSupportPillarFields(TypedDict, total=False):
@@ -2267,7 +2235,7 @@ class WindowGapDeflectionState(IDFObject):
     """[Pa]; Default: 101325.0; Range: >= 0.0"""
 
     def update(
-        self, values: _WindowGapDeflectionStateFields = ..., /, **kwargs: Unpack[_WindowGapDeflectionStateFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowGapDeflectionStateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowGapDeflectionStateFields(TypedDict, total=False):
@@ -2296,7 +2264,7 @@ class WindowMaterialGasMixture(IDFObject):
     """Range: > 0.0, <= 1.0"""
 
     def update(
-        self, values: _WindowMaterialGasMixtureFields = ..., /, **kwargs: Unpack[_WindowMaterialGasMixtureFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGasMixtureFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGasMixtureFields(TypedDict, total=False):
@@ -2325,7 +2293,7 @@ class WindowMaterialGap(IDFObject):
     support_pillar: str | None
     """If left blank, it will be considered that gap does not have support pillars"""
 
-    def update(self, values: _WindowMaterialGapFields = ..., /, **kwargs: Unpack[_WindowMaterialGapFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapFields]) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGapFields(TypedDict, total=False):
     thickness: float | None
@@ -2367,7 +2335,7 @@ class WindowMaterialShade(IDFObject):
     """[dimensionless]; Default: 0.0; Range: >= 0.0, <= 0.8"""
 
     def update(
-        self, values: _WindowMaterialShadeFields = ..., /, **kwargs: Unpack[_WindowMaterialShadeFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialShadeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialShadeFields(TypedDict, total=False):
@@ -2427,7 +2395,7 @@ class WindowMaterialComplexShade(IDFObject):
     """this value represents curvature radius of the slat. if the slat is flat use zero. if this value is not zero, then it ...; [m]; Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self, values: _WindowMaterialComplexShadeFields = ..., /, **kwargs: Unpack[_WindowMaterialComplexShadeFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialComplexShadeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialComplexShadeFields(TypedDict, total=False):
@@ -2512,7 +2480,7 @@ class WindowMaterialBlind(IDFObject):
     """Used only if WindowShadingControl referencing the window that incorporates this blind varies the slat angle (i.e., Wi...; [deg]; Default: 180.0; Range: >= 0.0, <= 180.0"""
 
     def update(
-        self, values: _WindowMaterialBlindFields = ..., /, **kwargs: Unpack[_WindowMaterialBlindFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialBlindFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialBlindFields(TypedDict, total=False):
@@ -2578,7 +2546,7 @@ class WindowMaterialScreen(IDFObject):
     """Select the resolution of azimuth and altitude angles for the screen transmittance map. A value of 0 means no transmit...; [deg]; Default: 0.0"""
 
     def update(
-        self, values: _WindowMaterialScreenFields = ..., /, **kwargs: Unpack[_WindowMaterialScreenFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialScreenFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialScreenFields(TypedDict, total=False):
@@ -2625,10 +2593,7 @@ class WindowMaterialShadeEquivalentLayer(IDFObject):
     """The back side long-wave emissivity of the shade material at zero shade openness. Openness fraction is used to calcula...; [dimensionless]; Default: 0.91; Range: > 0.0, < 1.0"""
 
     def update(
-        self,
-        values: _WindowMaterialShadeEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialShadeEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialShadeEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialShadeEquivalentLayerFields(TypedDict, total=False):
@@ -2675,10 +2640,7 @@ class WindowMaterialDrapeEquivalentLayer(IDFObject):
     """Length of the pleated section of the draped fabric. If the drape fabric is unpleated or is flat, then the pleated sec...; [m] (in); Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _WindowMaterialDrapeEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialDrapeEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialDrapeEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialDrapeEquivalentLayerFields(TypedDict, total=False):
@@ -2747,10 +2709,7 @@ class WindowMaterialBlindEquivalentLayer(IDFObject):
     """Used only if slat angle control is desired to either maximize solar gain (MaximizeSolar), maximize visibility while e...; Default: FixedSlatAngle"""
 
     def update(
-        self,
-        values: _WindowMaterialBlindEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialBlindEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialBlindEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialBlindEquivalentLayerFields(TypedDict, total=False):
@@ -2803,10 +2762,7 @@ class WindowMaterialScreenEquivalentLayer(IDFObject):
     """Diameter assumed to be the same in both directions.; [m] (in); Default: 0.005; Range: > 0.0"""
 
     def update(
-        self,
-        values: _WindowMaterialScreenEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialScreenEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialScreenEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialScreenEquivalentLayerFields(TypedDict, total=False):
@@ -2882,10 +2838,7 @@ class WindowMaterialGlazingEquivalentLayer(IDFObject):
     """This is the R-Value in SI for the glass. The default value is an approximation for a single layer of glass at 1/4' in...; [m2-K/W]; Default: 0.158; Range: > 0.0; Since: 9.2.0"""
 
     def update(
-        self,
-        values: _WindowMaterialGlazingEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGlazingEquivalentLayerFields(TypedDict, total=False):
@@ -2950,10 +2903,7 @@ class WindowMaterialGapEquivalentLayer(IDFObject):
     """Used only if Gas Type = Custom; Range: > 1.0"""
 
     def update(
-        self,
-        values: _WindowMaterialGapEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowMaterialGapEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowMaterialGapEquivalentLayerFields(TypedDict, total=False):
@@ -2996,7 +2946,7 @@ class MaterialPropertyMoisturePenetrationDepthSettings(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyMoisturePenetrationDepthSettingsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyMoisturePenetrationDepthSettingsFields],
     ) -> None: ...  # type: ignore[override]
@@ -3026,7 +2976,7 @@ class MaterialPropertyPhaseChange(IDFObject):
     values: ExtensibleList[MaterialPropertyPhaseChangeValuesGroup]
 
     def update(
-        self, values: _MaterialPropertyPhaseChangeFields = ..., /, **kwargs: Unpack[_MaterialPropertyPhaseChangeFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyPhaseChangeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyPhaseChangeFields(TypedDict, total=False):
@@ -3064,10 +3014,7 @@ class MaterialPropertyPhaseChangeHysteresis(IDFObject):
     """The total freezing range of the material is the sum of low and high temperature difference of freezing curve.; [deltaC]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _MaterialPropertyPhaseChangeHysteresisFields = ...,
-        /,
-        **kwargs: Unpack[_MaterialPropertyPhaseChangeHysteresisFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyPhaseChangeHysteresisFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyPhaseChangeHysteresisFields(TypedDict, total=False):
@@ -3098,7 +3045,7 @@ class MaterialPropertyVariableThermalConductivity(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyVariableThermalConductivityFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyVariableThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
@@ -3138,10 +3085,7 @@ class MaterialPropertyVariableAbsorptance(IDFObject):
     """only used when Control Signal Inside Face = 'Scheduled'; Since: 26.2.0"""
 
     def update(
-        self,
-        values: _MaterialPropertyVariableAbsorptanceFields = ...,
-        /,
-        **kwargs: Unpack[_MaterialPropertyVariableAbsorptanceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyVariableAbsorptanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyVariableAbsorptanceFields(TypedDict, total=False):
@@ -3172,7 +3116,7 @@ class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferSettingsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSettingsFields],
     ) -> None: ...  # type: ignore[override]
@@ -3289,7 +3233,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields],
     ) -> None: ...  # type: ignore[override]
@@ -3455,7 +3399,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferSuctionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSuctionFields],
     ) -> None: ...  # type: ignore[override]
@@ -3621,7 +3565,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferRedistributionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferRedistributionFields],
     ) -> None: ...  # type: ignore[override]
@@ -3787,7 +3731,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferDiffusionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferDiffusionFields],
     ) -> None: ...  # type: ignore[override]
@@ -3953,7 +3897,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity(IDFObject):
 
     def update(
         self,
-        values: _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferThermalConductivityFields],
     ) -> None: ...  # type: ignore[override]
@@ -4045,10 +3989,7 @@ class MaterialPropertyGlazingSpectralData(IDFObject):
     extensions: ExtensibleList[MaterialPropertyGlazingSpectralDataExtensionsGroup]
 
     def update(
-        self,
-        values: _MaterialPropertyGlazingSpectralDataFields = ...,
-        /,
-        **kwargs: Unpack[_MaterialPropertyGlazingSpectralDataFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyGlazingSpectralDataFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyGlazingSpectralDataFields(TypedDict, total=False):
@@ -4084,7 +4025,7 @@ class Construction(IDFObject):
     layer_9: str | None
     layer_10: str | None
 
-    def update(self, values: _ConstructionFields = ..., /, **kwargs: Unpack[_ConstructionFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionFields]) -> None: ...  # type: ignore[override]
 
 class _ConstructionFields(TypedDict, total=False):
     outside_layer: str | None
@@ -4107,10 +4048,7 @@ class ConstructionCfactorUndergroundWall(IDFObject):
     """Enter height of the underground wall; [m]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ConstructionCfactorUndergroundWallFields = ...,
-        /,
-        **kwargs: Unpack[_ConstructionCfactorUndergroundWallFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionCfactorUndergroundWallFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionCfactorUndergroundWallFields(TypedDict, total=False):
@@ -4128,10 +4066,7 @@ class ConstructionFfactorGroundFloor(IDFObject):
     """Enter exposed perimeter of the floor; [m]; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _ConstructionFfactorGroundFloorFields = ...,
-        /,
-        **kwargs: Unpack[_ConstructionFfactorGroundFloorFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionFfactorGroundFloorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionFfactorGroundFloorFields(TypedDict, total=False):
@@ -4155,10 +4090,7 @@ class ConstructionPropertyInternalHeatSource(IDFObject):
     """used in conjunction with field Temperature Calculation Requested After Layer Number this field is the location perpen...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ConstructionPropertyInternalHeatSourceFields = ...,
-        /,
-        **kwargs: Unpack[_ConstructionPropertyInternalHeatSourceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionPropertyInternalHeatSourceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionPropertyInternalHeatSourceFields(TypedDict, total=False):
@@ -4180,7 +4112,7 @@ class ConstructionAirBoundary(IDFObject):
     """If the Air Exchange Method is SimpleMixing then this field specifies the air exchange schedule. If this field is blan..."""
 
     def update(
-        self, values: _ConstructionAirBoundaryFields = ..., /, **kwargs: Unpack[_ConstructionAirBoundaryFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAirBoundaryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionAirBoundaryFields(TypedDict, total=False):
@@ -4216,7 +4148,7 @@ class WindowThermalModelParams(IDFObject):
     """This is pressure in time of window fabrication; [Pa]; Default: 101325.0; Range: > 0.0"""
 
     def update(
-        self, values: _WindowThermalModelParamsFields = ..., /, **kwargs: Unpack[_WindowThermalModelParamsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowThermalModelParamsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowThermalModelParamsFields(TypedDict, total=False):
@@ -4301,10 +4233,7 @@ class ConstructionComplexFenestrationState(IDFObject):
     """Since: 23.2.0"""
 
     def update(
-        self,
-        values: _ConstructionComplexFenestrationStateFields = ...,
-        /,
-        **kwargs: Unpack[_ConstructionComplexFenestrationStateFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionComplexFenestrationStateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionComplexFenestrationStateFields(TypedDict, total=False):
@@ -4360,10 +4289,7 @@ class ConstructionWindowEquivalentLayer(IDFObject):
     layer_11: str | None
 
     def update(
-        self,
-        values: _ConstructionWindowEquivalentLayerFields = ...,
-        /,
-        **kwargs: Unpack[_ConstructionWindowEquivalentLayerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionWindowEquivalentLayerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionWindowEquivalentLayerFields(TypedDict, total=False):
@@ -4386,7 +4312,7 @@ class ConstructionWindowDataFile(IDFObject):
     """default file name is 'Window5DataFile.dat' limit on this field is 100 characters."""
 
     def update(
-        self, values: _ConstructionWindowDataFileFields = ..., /, **kwargs: Unpack[_ConstructionWindowDataFileFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionWindowDataFileFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionWindowDataFileFields(TypedDict, total=False):
@@ -4411,7 +4337,7 @@ class ConstructionAssignmentSet(IDFObject):
     """Construction for surfaces with Outside Boundary Condition = Adiabatic."""
 
     def update(
-        self, values: _ConstructionAssignmentSetFields = ..., /, **kwargs: Unpack[_ConstructionAssignmentSetFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConstructionAssignmentSetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ConstructionAssignmentSetFields(TypedDict, total=False):
@@ -4431,10 +4357,7 @@ class SurfaceConstructionAssignments(IDFObject):
     roof_ceiling_construction_name: str | None
 
     def update(
-        self,
-        values: _SurfaceConstructionAssignmentsFields = ...,
-        /,
-        **kwargs: Unpack[_SurfaceConstructionAssignmentsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConstructionAssignmentsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfaceConstructionAssignmentsFields(TypedDict, total=False):
@@ -4455,10 +4378,7 @@ class SubSurfaceConstructionAssignments(IDFObject):
     tubular_daylight_diffuser_construction_name: str | None
 
     def update(
-        self,
-        values: _SubSurfaceConstructionAssignmentsFields = ...,
-        /,
-        **kwargs: Unpack[_SubSurfaceConstructionAssignmentsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SubSurfaceConstructionAssignmentsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SubSurfaceConstructionAssignmentsFields(TypedDict, total=False):
@@ -4483,7 +4403,7 @@ class GlobalGeometryRules(IDFObject):
     """Relative -- Starting corner is entered relative to zone origin World -- Starting corner is entered in 'absolute'; Default: Relative"""
 
     def update(
-        self, values: _GlobalGeometryRulesFields = ..., /, **kwargs: Unpack[_GlobalGeometryRulesFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlobalGeometryRulesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GlobalGeometryRulesFields(TypedDict, total=False):
@@ -4500,7 +4420,7 @@ class GeometryTransform(IDFObject):
     new_aspect_ratio: float | None
     """Aspect ratio to transform to during run; Range: > 0.0"""
 
-    def update(self, values: _GeometryTransformFields = ..., /, **kwargs: Unpack[_GeometryTransformFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeometryTransformFields]) -> None: ...  # type: ignore[override]
 
 class _GeometryTransformFields(TypedDict, total=False):
     current_aspect_ratio: float | None
@@ -4527,7 +4447,7 @@ class Space(IDFObject):
     """Optional. Overrides the Building-level Construction Assignment Set for surfaces in this Space.; Since: 26.2.0"""
     tags: ExtensibleList[SpaceTagsGroup]
 
-    def update(self, values: _SpaceFields = ..., /, **kwargs: Unpack[_SpaceFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceFields]) -> None: ...  # type: ignore[override]
 
 class _SpaceFields(TypedDict, total=False):
     zone_name: str | None
@@ -4548,7 +4468,7 @@ class SpaceList(IDFObject):
 
     spaces: ExtensibleList[SpaceListSpacesGroup]
 
-    def update(self, values: _SpaceListFields = ..., /, **kwargs: Unpack[_SpaceListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceListFields]) -> None: ...  # type: ignore[override]
 
 class _SpaceListFields(TypedDict, total=False):
     spaces: list[Any]
@@ -4586,7 +4506,7 @@ class Zone(IDFObject):
     part_of_total_floor_area: Literal["", "No", "Yes"] | None
     """Default: Yes"""
 
-    def update(self, values: _ZoneFields = ..., /, **kwargs: Unpack[_ZoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneFields(TypedDict, total=False):
     direction_of_relative_north: float | None
@@ -4617,7 +4537,7 @@ class ZoneList(IDFObject):
 
     zones: ExtensibleList[ZoneListZonesGroup]
 
-    def update(self, values: _ZoneListFields = ..., /, **kwargs: Unpack[_ZoneListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneListFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneListFields(TypedDict, total=False):
     zones: list[Any]
@@ -4629,7 +4549,7 @@ class ZoneGroup(IDFObject):
     zone_list_multiplier: int | None
     """Default: 1; Range: >= 1"""
 
-    def update(self, values: _ZoneGroupFields = ..., /, **kwargs: Unpack[_ZoneGroupFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneGroupFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneGroupFields(TypedDict, total=False):
     zone_list_name: str | None
@@ -4687,7 +4607,7 @@ class BuildingSurfaceDetailed(IDFObject):
     vertices: ExtensibleList[BuildingSurfaceDetailedVerticesGroup]
 
     def update(
-        self, values: _BuildingSurfaceDetailedFields = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _BuildingSurfaceDetailedFields(TypedDict, total=False):
@@ -4774,7 +4694,7 @@ class WallDetailed(IDFObject):
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
     vertices: ExtensibleList[WallDetailedVerticesGroup]
 
-    def update(self, values: _WallDetailedFields = ..., /, **kwargs: Unpack[_WallDetailedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailedFields]) -> None: ...  # type: ignore[override]
 
 class _WallDetailedFields(TypedDict, total=False):
     construction_name: str | None
@@ -4858,7 +4778,7 @@ class RoofCeilingDetailed(IDFObject):
     vertices: ExtensibleList[RoofCeilingDetailedVerticesGroup]
 
     def update(
-        self, values: _RoofCeilingDetailedFields = ..., /, **kwargs: Unpack[_RoofCeilingDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoofCeilingDetailedFields(TypedDict, total=False):
@@ -4942,7 +4862,7 @@ class FloorDetailed(IDFObject):
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
     vertices: ExtensibleList[FloorDetailedVerticesGroup]
 
-    def update(self, values: _FloorDetailedFields = ..., /, **kwargs: Unpack[_FloorDetailedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailedFields]) -> None: ...  # type: ignore[override]
 
 class _FloorDetailedFields(TypedDict, total=False):
     construction_name: str | None
@@ -5001,7 +4921,7 @@ class WallExterior(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WallExteriorFields = ..., /, **kwargs: Unpack[_WallExteriorFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallExteriorFields]) -> None: ...  # type: ignore[override]
 
 class _WallExteriorFields(TypedDict, total=False):
     construction_name: str | None
@@ -5039,7 +4959,7 @@ class WallAdiabatic(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WallAdiabaticFields = ..., /, **kwargs: Unpack[_WallAdiabaticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallAdiabaticFields]) -> None: ...  # type: ignore[override]
 
 class _WallAdiabaticFields(TypedDict, total=False):
     construction_name: str | None
@@ -5077,7 +4997,7 @@ class WallUnderground(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WallUndergroundFields = ..., /, **kwargs: Unpack[_WallUndergroundFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallUndergroundFields]) -> None: ...  # type: ignore[override]
 
 class _WallUndergroundFields(TypedDict, total=False):
     construction_name: str | None
@@ -5117,7 +5037,7 @@ class WallInterzone(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WallInterzoneFields = ..., /, **kwargs: Unpack[_WallInterzoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallInterzoneFields]) -> None: ...  # type: ignore[override]
 
 class _WallInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -5156,7 +5076,7 @@ class Roof(IDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
-    def update(self, values: _RoofFields = ..., /, **kwargs: Unpack[_RoofFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofFields]) -> None: ...  # type: ignore[override]
 
 class _RoofFields(TypedDict, total=False):
     construction_name: str | None
@@ -5194,7 +5114,7 @@ class CeilingAdiabatic(IDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
-    def update(self, values: _CeilingAdiabaticFields = ..., /, **kwargs: Unpack[_CeilingAdiabaticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingAdiabaticFields]) -> None: ...  # type: ignore[override]
 
 class _CeilingAdiabaticFields(TypedDict, total=False):
     construction_name: str | None
@@ -5234,7 +5154,7 @@ class CeilingInterzone(IDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
-    def update(self, values: _CeilingInterzoneFields = ..., /, **kwargs: Unpack[_CeilingInterzoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CeilingInterzoneFields]) -> None: ...  # type: ignore[override]
 
 class _CeilingInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -5274,7 +5194,7 @@ class FloorGroundContact(IDFObject):
     """Along Y Axis; [m]"""
 
     def update(
-        self, values: _FloorGroundContactFields = ..., /, **kwargs: Unpack[_FloorGroundContactFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorGroundContactFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FloorGroundContactFields(TypedDict, total=False):
@@ -5313,7 +5233,7 @@ class FloorAdiabatic(IDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
-    def update(self, values: _FloorAdiabaticFields = ..., /, **kwargs: Unpack[_FloorAdiabaticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorAdiabaticFields]) -> None: ...  # type: ignore[override]
 
 class _FloorAdiabaticFields(TypedDict, total=False):
     construction_name: str | None
@@ -5353,7 +5273,7 @@ class FloorInterzone(IDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
-    def update(self, values: _FloorInterzoneFields = ..., /, **kwargs: Unpack[_FloorInterzoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorInterzoneFields]) -> None: ...  # type: ignore[override]
 
 class _FloorInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -5425,7 +5345,7 @@ class FenestrationSurfaceDetailed(IDFObject):
     """Not used for triangles; [m]"""
 
     def update(
-        self, values: _FenestrationSurfaceDetailedFields = ..., /, **kwargs: Unpack[_FenestrationSurfaceDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FenestrationSurfaceDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FenestrationSurfaceDetailedFields(TypedDict, total=False):
@@ -5483,7 +5403,7 @@ class Window(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WindowFields = ..., /, **kwargs: Unpack[_WindowFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowFields]) -> None: ...  # type: ignore[override]
 
 class _WindowFields(TypedDict, total=False):
     construction_name: str | None
@@ -5513,7 +5433,7 @@ class Door(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _DoorFields = ..., /, **kwargs: Unpack[_DoorFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DoorFields]) -> None: ...  # type: ignore[override]
 
 class _DoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -5544,7 +5464,7 @@ class GlazedDoor(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _GlazedDoorFields = ..., /, **kwargs: Unpack[_GlazedDoorFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoorFields]) -> None: ...  # type: ignore[override]
 
 class _GlazedDoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -5576,7 +5496,7 @@ class WindowInterzone(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _WindowInterzoneFields = ..., /, **kwargs: Unpack[_WindowInterzoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowInterzoneFields]) -> None: ...  # type: ignore[override]
 
 class _WindowInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -5608,7 +5528,7 @@ class DoorInterzone(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _DoorInterzoneFields = ..., /, **kwargs: Unpack[_DoorInterzoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DoorInterzoneFields]) -> None: ...  # type: ignore[override]
 
 class _DoorInterzoneFields(TypedDict, total=False):
     construction_name: str | None
@@ -5641,7 +5561,7 @@ class GlazedDoorInterzone(IDFObject):
     """[m]"""
 
     def update(
-        self, values: _GlazedDoorInterzoneFields = ..., /, **kwargs: Unpack[_GlazedDoorInterzoneFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GlazedDoorInterzoneFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GlazedDoorInterzoneFields(TypedDict, total=False):
@@ -5733,7 +5653,7 @@ class WindowShadingControl(IDFObject):
     fenestration_surfaces: ExtensibleList[WindowShadingControlFenestrationSurfacesGroup]
 
     def update(
-        self, values: _WindowShadingControlFields = ..., /, **kwargs: Unpack[_WindowShadingControlFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowShadingControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowShadingControlFields(TypedDict, total=False):
@@ -5876,10 +5796,7 @@ class WindowPropertyFrameAndDivider(IDFObject):
     """Used when computing the assembly u-factor, SHGC and visible transmittance for reporting only; Default: CurtainWall; Since: 22.1.0"""
 
     def update(
-        self,
-        values: _WindowPropertyFrameAndDividerFields = ...,
-        /,
-        **kwargs: Unpack[_WindowPropertyFrameAndDividerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyFrameAndDividerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowPropertyFrameAndDividerFields(TypedDict, total=False):
@@ -5955,10 +5872,7 @@ class WindowPropertyAirflowControl(IDFObject):
     """Name of the return air node for this airflow window if the Airflow Destination is ReturnAir. If left blank, defaults ..."""
 
     def update(
-        self,
-        values: _WindowPropertyAirflowControlFields = ...,
-        /,
-        **kwargs: Unpack[_WindowPropertyAirflowControlFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyAirflowControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowPropertyAirflowControlFields(TypedDict, total=False):
@@ -5987,7 +5901,7 @@ class WindowPropertyStormWindow(IDFObject):
     """Range: >= 1, <= 31"""
 
     def update(
-        self, values: _WindowPropertyStormWindowFields = ..., /, **kwargs: Unpack[_WindowPropertyStormWindowFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowPropertyStormWindowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WindowPropertyStormWindowFields(TypedDict, total=False):
@@ -6010,7 +5924,7 @@ class InternalMass(IDFObject):
     surface_area: float | None
     """[m2]; Range: > 0.0"""
 
-    def update(self, values: _InternalMassFields = ..., /, **kwargs: Unpack[_InternalMassFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_InternalMassFields]) -> None: ...  # type: ignore[override]
 
 class _InternalMassFields(TypedDict, total=False):
     construction_name: str | None
@@ -6036,7 +5950,7 @@ class ShadingSite(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _ShadingSiteFields = ..., /, **kwargs: Unpack[_ShadingSiteFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteFields]) -> None: ...  # type: ignore[override]
 
 class _ShadingSiteFields(TypedDict, total=False):
     azimuth_angle: float | None
@@ -6065,7 +5979,7 @@ class ShadingBuilding(IDFObject):
     height: float | None
     """[m]"""
 
-    def update(self, values: _ShadingBuildingFields = ..., /, **kwargs: Unpack[_ShadingBuildingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingFields]) -> None: ...  # type: ignore[override]
 
 class _ShadingBuildingFields(TypedDict, total=False):
     azimuth_angle: float | None
@@ -6093,7 +6007,7 @@ class ShadingSiteDetailed(IDFObject):
     vertices: ExtensibleList[ShadingSiteDetailedVerticesGroup]
 
     def update(
-        self, values: _ShadingSiteDetailedFields = ..., /, **kwargs: Unpack[_ShadingSiteDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingSiteDetailedFields(TypedDict, total=False):
@@ -6118,7 +6032,7 @@ class ShadingBuildingDetailed(IDFObject):
     vertices: ExtensibleList[ShadingBuildingDetailedVerticesGroup]
 
     def update(
-        self, values: _ShadingBuildingDetailedFields = ..., /, **kwargs: Unpack[_ShadingBuildingDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingBuildingDetailedFields(TypedDict, total=False):
@@ -6141,7 +6055,7 @@ class ShadingOverhang(IDFObject):
     depth: float | None
     """[m]; Range: >= 0.0"""
 
-    def update(self, values: _ShadingOverhangFields = ..., /, **kwargs: Unpack[_ShadingOverhangFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingOverhangFields]) -> None: ...  # type: ignore[override]
 
 class _ShadingOverhangFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -6167,7 +6081,7 @@ class ShadingOverhangProjection(IDFObject):
     """[dimensionless]; Range: >= 0.0"""
 
     def update(
-        self, values: _ShadingOverhangProjectionFields = ..., /, **kwargs: Unpack[_ShadingOverhangProjectionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingOverhangProjectionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingOverhangProjectionFields(TypedDict, total=False):
@@ -6203,7 +6117,7 @@ class ShadingFin(IDFObject):
     right_depth: float | None
     """[m]; Range: >= 0.0"""
 
-    def update(self, values: _ShadingFinFields = ..., /, **kwargs: Unpack[_ShadingFinFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingFinFields]) -> None: ...  # type: ignore[override]
 
 class _ShadingFinFields(TypedDict, total=False):
     window_or_door_name: str | None
@@ -6244,7 +6158,7 @@ class ShadingFinProjection(IDFObject):
     """[dimensionless]; Range: >= 0.0"""
 
     def update(
-        self, values: _ShadingFinProjectionFields = ..., /, **kwargs: Unpack[_ShadingFinProjectionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingFinProjectionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingFinProjectionFields(TypedDict, total=False):
@@ -6278,7 +6192,7 @@ class ShadingZoneDetailed(IDFObject):
     vertices: ExtensibleList[ShadingZoneDetailedVerticesGroup]
 
     def update(
-        self, values: _ShadingZoneDetailedFields = ..., /, **kwargs: Unpack[_ShadingZoneDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingZoneDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingZoneDetailedFields(TypedDict, total=False):
@@ -6300,7 +6214,7 @@ class ShadingPropertyReflectance(IDFObject):
     """Required if Fraction of Shading Surface That Is Glazed > 0.0"""
 
     def update(
-        self, values: _ShadingPropertyReflectanceFields = ..., /, **kwargs: Unpack[_ShadingPropertyReflectanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingPropertyReflectanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingPropertyReflectanceFields(TypedDict, total=False):
@@ -6325,10 +6239,7 @@ class SurfacePropertyHeatTransferAlgorithm(IDFObject):
     """Default: ConductionTransferFunction"""
 
     def update(
-        self,
-        values: _SurfacePropertyHeatTransferAlgorithmFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatTransferAlgorithmFields(TypedDict, total=False):
@@ -6374,7 +6285,7 @@ class SurfacePropertyHeatTransferAlgorithmMultipleSurface(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields],
     ) -> None: ...  # type: ignore[override]
@@ -6428,7 +6339,7 @@ class SurfacePropertyHeatTransferAlgorithmSurfaceList(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyHeatTransferAlgorithmSurfaceListFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmSurfaceListFields],
     ) -> None: ...  # type: ignore[override]
@@ -6464,7 +6375,7 @@ class SurfacePropertyHeatTransferAlgorithmConstruction(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyHeatTransferAlgorithmConstructionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmConstructionFields],
     ) -> None: ...  # type: ignore[override]
@@ -6491,10 +6402,7 @@ class SurfacePropertyHeatBalanceSourceTerm(IDFObject):
     """The value of this schedule is the source term value for the outside face of this surface If this field is left blank,..."""
 
     def update(
-        self,
-        values: _SurfacePropertyHeatBalanceSourceTermFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyHeatBalanceSourceTermFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyHeatBalanceSourceTermFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatBalanceSourceTermFields(TypedDict, total=False):
@@ -6509,10 +6417,7 @@ class SurfaceControlMovableInsulation(IDFObject):
     schedule_name: str | None
 
     def update(
-        self,
-        values: _SurfaceControlMovableInsulationFields = ...,
-        /,
-        **kwargs: Unpack[_SurfaceControlMovableInsulationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceControlMovableInsulationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfaceControlMovableInsulationFields(TypedDict, total=False):
@@ -6551,10 +6456,7 @@ class SurfacePropertyOtherSideCoefficients(IDFObject):
     """This field specifies an upper limit for the other side temperature result. Blank indicates no limit; [C]"""
 
     def update(
-        self,
-        values: _SurfacePropertyOtherSideCoefficientsFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyOtherSideCoefficientsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyOtherSideCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyOtherSideCoefficientsFields(TypedDict, total=False):
@@ -6589,7 +6491,7 @@ class SurfacePropertyOtherSideConditionsModel(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyOtherSideConditionsModelFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyOtherSideConditionsModelFields],
     ) -> None: ...  # type: ignore[override]
@@ -6617,7 +6519,7 @@ class SurfacePropertyUnderwater(IDFObject):
     """[m/s]"""
 
     def update(
-        self, values: _SurfacePropertyUnderwaterFields = ..., /, **kwargs: Unpack[_SurfacePropertyUnderwaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyUnderwaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyUnderwaterFields(TypedDict, total=False):
@@ -6665,7 +6567,7 @@ class FoundationKiva(IDFObject):
     """Top-to-bottom dimension of the footing (not to be confused with its depth in the ground). The width of the footing is...; [m]; Default: 0.3; Range: > 0.0"""
     blocks: ExtensibleList[FoundationKivaBlocksGroup]
 
-    def update(self, values: _FoundationKivaFields = ..., /, **kwargs: Unpack[_FoundationKivaFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKivaFields]) -> None: ...  # type: ignore[override]
 
 class _FoundationKivaFields(TypedDict, total=False):
     initial_indoor_air_temperature: float | None
@@ -6713,7 +6615,7 @@ class FoundationKivaSettings(IDFObject):
     """Default: Hourly"""
 
     def update(
-        self, values: _FoundationKivaSettingsFields = ..., /, **kwargs: Unpack[_FoundationKivaSettingsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKivaSettingsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FoundationKivaSettingsFields(TypedDict, total=False):
@@ -6749,7 +6651,7 @@ class SurfacePropertyExposedFoundationPerimeter(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyExposedFoundationPerimeterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyExposedFoundationPerimeterFields],
     ) -> None: ...  # type: ignore[override]
@@ -7284,7 +7186,7 @@ class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(IDFObject):
 
     def update(
         self,
-        values: _SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields],
     ) -> None: ...  # type: ignore[override]
@@ -7807,7 +7709,7 @@ class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections(IDFObject):
 
     def update(
         self,
-        values: _SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields],
     ) -> None: ...  # type: ignore[override]
@@ -7904,7 +7806,7 @@ class SurfaceConvectionAlgorithmInsideUserCurve(IDFObject):
 
     def update(
         self,
-        values: _SurfaceConvectionAlgorithmInsideUserCurveFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideUserCurveFields],
     ) -> None: ...  # type: ignore[override]
@@ -7934,7 +7836,7 @@ class SurfaceConvectionAlgorithmOutsideUserCurve(IDFObject):
 
     def update(
         self,
-        values: _SurfaceConvectionAlgorithmOutsideUserCurveFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideUserCurveFields],
     ) -> None: ...  # type: ignore[override]
@@ -8066,10 +7968,7 @@ class SurfacePropertyConvectionCoefficients(IDFObject):
     """used if Convection Type = UserCurve"""
 
     def update(
-        self,
-        values: _SurfacePropertyConvectionCoefficientsFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyConvectionCoefficientsFields(TypedDict, total=False):
@@ -8302,7 +8201,7 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsMultipleSurfaceFields],
     ) -> None: ...  # type: ignore[override]
@@ -8430,10 +8329,7 @@ class SurfacePropertiesVaporCoefficients(IDFObject):
     """[kg/Pa-s-m2]; Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _SurfacePropertiesVaporCoefficientsFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertiesVaporCoefficientsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertiesVaporCoefficientsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertiesVaporCoefficientsFields(TypedDict, total=False):
@@ -8475,7 +8371,7 @@ class SurfacePropertyExteriorNaturalVentedCavity(IDFObject):
 
     def update(
         self,
-        values: _SurfacePropertyExteriorNaturalVentedCavityFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfacePropertyExteriorNaturalVentedCavityFields],
     ) -> None: ...  # type: ignore[override]
@@ -8504,10 +8400,7 @@ class SurfacePropertySolarIncidentInside(IDFObject):
     """Values in schedule are expected to be in W/m2"""
 
     def update(
-        self,
-        values: _SurfacePropertySolarIncidentInsideFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertySolarIncidentInsideFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertySolarIncidentInsideFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertySolarIncidentInsideFields(TypedDict, total=False):
@@ -8524,10 +8417,7 @@ class SurfacePropertyIncidentSolarMultiplier(IDFObject):
     """The schedule values should be greater than or equal to 0 and less than or equal to 1."""
 
     def update(
-        self,
-        values: _SurfacePropertyIncidentSolarMultiplierFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyIncidentSolarMultiplierFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyIncidentSolarMultiplierFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyIncidentSolarMultiplierFields(TypedDict, total=False):
@@ -8549,10 +8439,7 @@ class SurfacePropertyLocalEnvironment(IDFObject):
     """Enter the name of a SurfaceProperty:GroundSurfaces object; Since: 22.2.0"""
 
     def update(
-        self,
-        values: _SurfacePropertyLocalEnvironmentFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyLocalEnvironmentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyLocalEnvironmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyLocalEnvironmentFields(TypedDict, total=False):
@@ -8571,10 +8458,7 @@ class ZonePropertyLocalEnvironment(IDFObject):
     """Enter the name of an OutdoorAir:Node object"""
 
     def update(
-        self,
-        values: _ZonePropertyLocalEnvironmentFields = ...,
-        /,
-        **kwargs: Unpack[_ZonePropertyLocalEnvironmentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZonePropertyLocalEnvironmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZonePropertyLocalEnvironmentFields(TypedDict, total=False):
@@ -8602,10 +8486,7 @@ class SurfacePropertySurroundingSurfaces(IDFObject):
     surfaces: ExtensibleList[SurfacePropertySurroundingSurfacesSurfacesGroup]
 
     def update(
-        self,
-        values: _SurfacePropertySurroundingSurfacesFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertySurroundingSurfacesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertySurroundingSurfacesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertySurroundingSurfacesFields(TypedDict, total=False):
@@ -8629,10 +8510,7 @@ class SurfacePropertyGroundSurfaces(IDFObject):
     ground_surfaces: ExtensibleList[SurfacePropertyGroundSurfacesGroundSurfacesGroup]
 
     def update(
-        self,
-        values: _SurfacePropertyGroundSurfacesFields = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertyGroundSurfacesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfacePropertyGroundSurfacesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyGroundSurfacesFields(TypedDict, total=False):
@@ -8656,7 +8534,7 @@ class ComplexFenestrationPropertySolarAbsorbedLayers(IDFObject):
 
     def update(
         self,
-        values: _ComplexFenestrationPropertySolarAbsorbedLayersFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ComplexFenestrationPropertySolarAbsorbedLayersFields],
     ) -> None: ...  # type: ignore[override]
@@ -8684,7 +8562,7 @@ class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
 
     def update(
         self,
-        values: _ZonePropertyUserViewFactorsBySurfaceNameFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceNameFields],
     ) -> None: ...  # type: ignore[override]
@@ -8704,7 +8582,7 @@ class ZoneMRTCalculation(IDFObject):
     people_names: ExtensibleList[ZoneMRTCalculationPeopleNamesGroup]
 
     def update(
-        self, values: _ZoneMRTCalculationFields = ..., /, **kwargs: Unpack[_ZoneMRTCalculationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneMRTCalculationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneMRTCalculationFields(TypedDict, total=False):
@@ -8719,7 +8597,7 @@ class GroundHeatTransferControl(IDFObject):
     """Default: No"""
 
     def update(
-        self, values: _GroundHeatTransferControlFields = ..., /, **kwargs: Unpack[_GroundHeatTransferControlFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferControlFields(TypedDict, total=False):
@@ -8747,10 +8625,7 @@ class GroundHeatTransferSlabMaterials(IDFObject):
     """typical value= 4-10; [W/m2-K]; Default: 9.26; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabMaterialsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabMaterialsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabMaterialsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
@@ -8778,10 +8653,7 @@ class GroundHeatTransferSlabMatlProps(IDFObject):
     """Conductivity of Soil Material typical value= 1.0; [W/m-K]; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabMatlPropsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabMatlPropsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabMatlPropsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMatlPropsFields(TypedDict, total=False):
@@ -8804,10 +8676,7 @@ class GroundHeatTransferSlabBoundConds(IDFObject):
     """Used only if USRHflag is TRUE and the heat transfer coefficient value is specified in this field.; [W/m2-K]"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabBoundCondsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
@@ -8853,10 +8722,7 @@ class GroundHeatTransferSlabBldgProps(IDFObject):
     """This field specifies the convergence tolerance used to control the iteration. When the temperature change of all node...; Default: 0.1"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabBldgPropsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabBldgPropsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBldgPropsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
@@ -8890,10 +8756,7 @@ class GroundHeatTransferSlabInsulation(IDFObject):
     """Specifies if the vertical insulation configuration is being used. values: 1=yes vertical insulation 0=no under-slab i...; Default: 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabInsulationFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabInsulationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabInsulationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabInsulationFields(TypedDict, total=False):
@@ -8913,10 +8776,7 @@ class GroundHeatTransferSlabEquivalentSlab(IDFObject):
     """This field specifies the vertical distance from the slab to the bottom edge of the area that will be modeled with the...; [m]; Default: 15.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabEquivalentSlabFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabEquivalentSlabFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabEquivalentSlabFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabEquivalentSlabFields(TypedDict, total=False):
@@ -8937,10 +8797,7 @@ class GroundHeatTransferSlabAutoGrid(IDFObject):
     """[m]; Default: 15.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabAutoGridFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabAutoGridFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabAutoGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabAutoGridFields(TypedDict, total=False):
@@ -8962,10 +8819,7 @@ class GroundHeatTransferSlabManualGrid(IDFObject):
     """typical values= 1-10"""
 
     def update(
-        self,
-        values: _GroundHeatTransferSlabManualGridFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferSlabManualGridFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabManualGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabManualGridFields(TypedDict, total=False):
@@ -8991,7 +8845,7 @@ class GroundHeatTransferBasementSimParameters(IDFObject):
 
     def update(
         self,
-        values: _GroundHeatTransferBasementSimParametersFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_GroundHeatTransferBasementSimParametersFields],
     ) -> None: ...  # type: ignore[override]
@@ -9040,10 +8894,7 @@ class GroundHeatTransferBasementMatlProps(IDFObject):
     """[W/m-K]; Default: 0.12; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementMatlPropsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementMatlPropsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementMatlPropsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
@@ -9073,10 +8924,7 @@ class GroundHeatTransferBasementInsulation(IDFObject):
     """True for full insulation False for insulation half way down side wall from grade line"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementInsulationFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInsulationFields(TypedDict, total=False):
@@ -9099,10 +8947,7 @@ class GroundHeatTransferBasementSurfaceProps(IDFObject):
     """Typically, PET is False; Default: FALSE"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementSurfacePropsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
@@ -9126,10 +8971,7 @@ class GroundHeatTransferBasementBldgData(IDFObject):
     """[m]; Default: 0.1; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementBldgDataFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementBldgDataFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementBldgDataFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementBldgDataFields(TypedDict, total=False):
@@ -9155,10 +8997,7 @@ class GroundHeatTransferBasementInterior(IDFObject):
     """[W/m2-K]; Default: 8.29; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementInteriorFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
@@ -9198,10 +9037,7 @@ class GroundHeatTransferBasementComBldg(IDFObject):
     """(Normally zero, just for checking); [deltaC]; Default: 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementComBldgFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementComBldgFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementComBldgFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
@@ -9225,10 +9061,7 @@ class GroundHeatTransferBasementEquivSlab(IDFObject):
     """Will the dimensions of an equivalent slab be calculated (TRUE) or will the dimensions be input directly? (FALSE)] Onl..."""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementEquivSlabFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementEquivSlabFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementEquivSlabFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementEquivSlabFields(TypedDict, total=False):
@@ -9244,7 +9077,7 @@ class GroundHeatTransferBasementEquivAutoGrid(IDFObject):
 
     def update(
         self,
-        values: _GroundHeatTransferBasementEquivAutoGridFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_GroundHeatTransferBasementEquivAutoGridFields],
     ) -> None: ...  # type: ignore[override]
@@ -9268,10 +9101,7 @@ class GroundHeatTransferBasementAutoGrid(IDFObject):
     """[m]; Default: 2.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementAutoGridFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
@@ -9295,10 +9125,7 @@ class GroundHeatTransferBasementManualGrid(IDFObject):
     kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float | None
 
     def update(
-        self,
-        values: _GroundHeatTransferBasementManualGridFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
@@ -9340,7 +9167,7 @@ class RoomAirModelType(IDFObject):
     air_temperature_coupling_strategy: Literal["", "Direct", "Indirect"] | None
     """Default: Direct"""
 
-    def update(self, values: _RoomAirModelTypeFields = ..., /, **kwargs: Unpack[_RoomAirModelTypeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirModelTypeFields]) -> None: ...  # type: ignore[override]
 
 class _RoomAirModelTypeFields(TypedDict, total=False):
     zone_name: str | None
@@ -9370,10 +9197,7 @@ class RoomAirTemperaturePatternUserDefined(IDFObject):
     """The schedule should contain integer values that correspond to unique Control Integer fields in one of the RoomAir:Tem..."""
 
     def update(
-        self,
-        values: _RoomAirTemperaturePatternUserDefinedFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirTemperaturePatternUserDefinedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirTemperaturePatternUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirTemperaturePatternUserDefinedFields(TypedDict, total=False):
@@ -9397,7 +9221,7 @@ class RoomAirTemperaturePatternConstantGradient(IDFObject):
 
     def update(
         self,
-        values: _RoomAirTemperaturePatternConstantGradientFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternConstantGradientFields],
     ) -> None: ...  # type: ignore[override]
@@ -9444,10 +9268,7 @@ class RoomAirTemperaturePatternTwoGradient(IDFObject):
     """[W]"""
 
     def update(
-        self,
-        values: _RoomAirTemperaturePatternTwoGradientFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirTemperaturePatternTwoGradientFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirTemperaturePatternTwoGradientFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirTemperaturePatternTwoGradientFields(TypedDict, total=False):
@@ -9493,7 +9314,7 @@ class RoomAirTemperaturePatternNondimensionalHeight(IDFObject):
 
     def update(
         self,
-        values: _RoomAirTemperaturePatternNondimensionalHeightFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeightFields],
     ) -> None: ...  # type: ignore[override]
@@ -9526,7 +9347,7 @@ class RoomAirTemperaturePatternSurfaceMapping(IDFObject):
 
     def update(
         self,
-        values: _RoomAirTemperaturePatternSurfaceMappingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirTemperaturePatternSurfaceMappingFields],
     ) -> None: ...  # type: ignore[override]
@@ -9567,7 +9388,7 @@ class RoomAirNode(IDFObject):
     surface_20_name: str | None
     surface_21_name: str | None
 
-    def update(self, values: _RoomAirNodeFields = ..., /, **kwargs: Unpack[_RoomAirNodeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeFields]) -> None: ...  # type: ignore[override]
 
 class _RoomAirNodeFields(TypedDict, total=False):
     node_type: Literal["Ceiling", "Control", "Floor", "Inlet", "MundtRoom", "Return"] | None
@@ -9605,7 +9426,7 @@ class RoomAirSettingsOneNodeDisplacementVentilation(IDFObject):
 
     def update(
         self,
-        values: _RoomAirSettingsOneNodeDisplacementVentilationFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirSettingsOneNodeDisplacementVentilationFields],
     ) -> None: ...  # type: ignore[override]
@@ -9630,7 +9451,7 @@ class RoomAirSettingsThreeNodeDisplacementVentilation(IDFObject):
 
     def update(
         self,
-        values: _RoomAirSettingsThreeNodeDisplacementVentilationFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirSettingsThreeNodeDisplacementVentilationFields],
     ) -> None: ...  # type: ignore[override]
@@ -9651,10 +9472,7 @@ class RoomAirSettingsCrossVentilation(IDFObject):
     """Required field whenever thermal comfort is predicted defines Air temperature and Airflow velocity that will be used i..."""
 
     def update(
-        self,
-        values: _RoomAirSettingsCrossVentilationFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirSettingsCrossVentilationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirSettingsCrossVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsCrossVentilationFields(TypedDict, total=False):
@@ -9695,7 +9513,7 @@ class RoomAirSettingsUnderFloorAirDistributionInterior(IDFObject):
 
     def update(
         self,
-        values: _RoomAirSettingsUnderFloorAirDistributionInteriorFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionInteriorFields],
     ) -> None: ...  # type: ignore[override]
@@ -9750,7 +9568,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior(IDFObject):
 
     def update(
         self,
-        values: _RoomAirSettingsUnderFloorAirDistributionExteriorFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionExteriorFields],
     ) -> None: ...  # type: ignore[override]
@@ -9782,7 +9600,7 @@ class RoomAirNodeAirflowNetwork(IDFObject):
     roomair_node_airflownetwork_hvacequipment_name: str | None
 
     def update(
-        self, values: _RoomAirNodeAirflowNetworkFields = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirNodeAirflowNetworkFields(TypedDict, total=False):
@@ -9802,7 +9620,7 @@ class RoomAirNodeAirflowNetworkAdjacentSurfaceList(IDFObject):
 
     def update(
         self,
-        values: _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RoomAirNodeAirflowNetworkAdjacentSurfaceListFields],
     ) -> None: ...  # type: ignore[override]
@@ -9873,10 +9691,7 @@ class RoomAirNodeAirflowNetworkInternalGains(IDFObject):
     gains: ExtensibleList[RoomAirNodeAirflowNetworkInternalGainsGainsGroup]
 
     def update(
-        self,
-        values: _RoomAirNodeAirflowNetworkInternalGainsFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGainsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGainsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirNodeAirflowNetworkInternalGainsFields(TypedDict, total=False):
@@ -9938,10 +9753,7 @@ class RoomAirNodeAirflowNetworkHVACEquipment(IDFObject):
     equipment_fractions: ExtensibleList[RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup]
 
     def update(
-        self,
-        values: _RoomAirNodeAirflowNetworkHVACEquipmentFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipmentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentFields(TypedDict, total=False):
@@ -9961,10 +9773,7 @@ class RoomAirSettingsAirflowNetwork(IDFObject):
     nodes: ExtensibleList[RoomAirSettingsAirflowNetworkNodesGroup]
 
     def update(
-        self,
-        values: _RoomAirSettingsAirflowNetworkFields = ...,
-        /,
-        **kwargs: Unpack[_RoomAirSettingsAirflowNetworkFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoomAirSettingsAirflowNetworkFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsAirflowNetworkFields(TypedDict, total=False):
@@ -10055,7 +9864,7 @@ class People(IDFObject):
     heat_stress_temperature_threshold: float | None
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0; Since: 22.2.0"""
 
-    def update(self, values: _PeopleFields = ..., /, **kwargs: Unpack[_PeopleFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleFields]) -> None: ...  # type: ignore[override]
 
 class _PeopleFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10142,7 +9951,7 @@ class PeopleInstance(IDFObject):
     heat_stress_temperature_threshold: float | None
     """this is the indoor safe temperature threshold for heat stress; [C]; Default: 30.0"""
 
-    def update(self, values: _PeopleInstanceFields = ..., /, **kwargs: Unpack[_PeopleInstanceFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleInstanceFields]) -> None: ...  # type: ignore[override]
 
 class _PeopleInstanceFields(TypedDict, total=False):
     people_definition_name: str | None
@@ -10219,7 +10028,7 @@ class PeopleDefinition(IDFObject):
     )
     """optional (seventh thermal comfort model and report type)"""
 
-    def update(self, values: _PeopleDefinitionFields = ..., /, **kwargs: Unpack[_PeopleDefinitionFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PeopleDefinitionFields]) -> None: ...  # type: ignore[override]
 
 class _PeopleDefinitionFields(TypedDict, total=False):
     number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None
@@ -10272,7 +10081,7 @@ class ComfortViewFactorAngles(IDFObject):
     angles: ExtensibleList[ComfortViewFactorAnglesAnglesGroup]
 
     def update(
-        self, values: _ComfortViewFactorAnglesFields = ..., /, **kwargs: Unpack[_ComfortViewFactorAnglesFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComfortViewFactorAnglesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ComfortViewFactorAnglesFields(TypedDict, total=False):
@@ -10314,7 +10123,7 @@ class Lights(IDFObject):
     exhaust_air_heat_gain_node_name: str | None
     """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both...; Since: 9.6.0"""
 
-    def update(self, values: _LightsFields = ..., /, **kwargs: Unpack[_LightsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsFields]) -> None: ...  # type: ignore[override]
 
 class _LightsFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10352,7 +10161,7 @@ class LightsInstance(IDFObject):
     exhaust_air_heat_gain_node_name: str | None
     """Name of the exhaust air node for this heat gain. If the node name is entered, return heat gain will be shared by both..."""
 
-    def update(self, values: _LightsInstanceFields = ..., /, **kwargs: Unpack[_LightsInstanceFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsInstanceFields]) -> None: ...  # type: ignore[override]
 
 class _LightsInstanceFields(TypedDict, total=False):
     lights_definition_name: str | None
@@ -10388,7 +10197,7 @@ class LightsDefinition(IDFObject):
     return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None
     """Used only if Return Air Fraction Is Calculated from Plenum Temperature = Yes Equation is Return Air Fraction = Coeffi...; [1/K]; Default: 0.0; Range: >= 0.0"""
 
-    def update(self, values: _LightsDefinitionFields = ..., /, **kwargs: Unpack[_LightsDefinitionFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LightsDefinitionFields]) -> None: ...  # type: ignore[override]
 
 class _LightsDefinitionFields(TypedDict, total=False):
     design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"] | None
@@ -10426,7 +10235,7 @@ class ElectricEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _ElectricEquipmentFields = ..., /, **kwargs: Unpack[_ElectricEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _ElectricEquipmentFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10453,7 +10262,7 @@ class ElectricEquipmentInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _ElectricEquipmentInstanceFields = ..., /, **kwargs: Unpack[_ElectricEquipmentInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricEquipmentInstanceFields(TypedDict, total=False):
@@ -10482,7 +10291,7 @@ class ElectricEquipmentDefinition(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _ElectricEquipmentDefinitionFields = ..., /, **kwargs: Unpack[_ElectricEquipmentDefinitionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricEquipmentDefinitionFields(TypedDict, total=False):
@@ -10522,7 +10331,7 @@ class GasEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _GasEquipmentFields = ..., /, **kwargs: Unpack[_GasEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _GasEquipmentFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10552,7 +10361,7 @@ class GasEquipmentInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _GasEquipmentInstanceFields = ..., /, **kwargs: Unpack[_GasEquipmentInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GasEquipmentInstanceFields(TypedDict, total=False):
@@ -10585,7 +10394,7 @@ class GasEquipmentDefinition(IDFObject):
     """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented. For unvented equ...; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
 
     def update(
-        self, values: _GasEquipmentDefinitionFields = ..., /, **kwargs: Unpack[_GasEquipmentDefinitionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GasEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GasEquipmentDefinitionFields(TypedDict, total=False):
@@ -10626,7 +10435,7 @@ class HotWaterEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _HotWaterEquipmentFields = ..., /, **kwargs: Unpack[_HotWaterEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _HotWaterEquipmentFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10655,7 +10464,7 @@ class HotWaterEquipmentInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _HotWaterEquipmentInstanceFields = ..., /, **kwargs: Unpack[_HotWaterEquipmentInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HotWaterEquipmentInstanceFields(TypedDict, total=False):
@@ -10686,7 +10495,7 @@ class HotWaterEquipmentDefinition(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _HotWaterEquipmentDefinitionFields = ..., /, **kwargs: Unpack[_HotWaterEquipmentDefinitionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HotWaterEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HotWaterEquipmentDefinitionFields(TypedDict, total=False):
@@ -10726,7 +10535,7 @@ class SteamEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _SteamEquipmentFields = ..., /, **kwargs: Unpack[_SteamEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _SteamEquipmentFields(TypedDict, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
@@ -10755,7 +10564,7 @@ class SteamEquipmentInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _SteamEquipmentInstanceFields = ..., /, **kwargs: Unpack[_SteamEquipmentInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SteamEquipmentInstanceFields(TypedDict, total=False):
@@ -10786,7 +10595,7 @@ class SteamEquipmentDefinition(IDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _SteamEquipmentDefinitionFields = ..., /, **kwargs: Unpack[_SteamEquipmentDefinitionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SteamEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SteamEquipmentDefinitionFields(TypedDict, total=False):
@@ -10849,7 +10658,7 @@ class OtherEquipment(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _OtherEquipmentFields = ..., /, **kwargs: Unpack[_OtherEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _OtherEquipmentFields(TypedDict, total=False):
     fuel_type: (
@@ -10920,7 +10729,7 @@ class OtherEquipmentInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _OtherEquipmentInstanceFields = ..., /, **kwargs: Unpack[_OtherEquipmentInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OtherEquipmentInstanceFields(TypedDict, total=False):
@@ -10973,7 +10782,7 @@ class OtherEquipmentDefinition(IDFObject):
     """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented.; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
 
     def update(
-        self, values: _OtherEquipmentDefinitionFields = ..., /, **kwargs: Unpack[_OtherEquipmentDefinitionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OtherEquipmentDefinitionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OtherEquipmentDefinitionFields(TypedDict, total=False):
@@ -11014,7 +10823,7 @@ class IndoorLivingWall(IDFObject):
     radiant_fraction_of_led_lights: float | None
     """This field defines the fraction of radiation from LED lights; Default: 0.6; Range: >= 0.0, <= 1.0"""
 
-    def update(self, values: _IndoorLivingWallFields = ..., /, **kwargs: Unpack[_IndoorLivingWallFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWallFields]) -> None: ...  # type: ignore[override]
 
 class _IndoorLivingWallFields(TypedDict, total=False):
     surface_name: str | None
@@ -11096,10 +10905,7 @@ class ElectricEquipmentITEAirCooled(IDFObject):
     """The difference schedule of the actual AHU return air temperature to the IT equipment outlet temperature. Either Retur..."""
 
     def update(
-        self,
-        values: _ElectricEquipmentITEAirCooledFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricEquipmentITEAirCooledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentITEAirCooledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricEquipmentITEAirCooledFields(TypedDict, total=False):
@@ -11161,10 +10967,7 @@ class ElectricEquipmentITEAirCooledInstance(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: ITE-UPS"""
 
     def update(
-        self,
-        values: _ElectricEquipmentITEAirCooledInstanceFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricEquipmentITEAirCooledInstanceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricEquipmentITEAirCooledInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricEquipmentITEAirCooledInstanceFields(TypedDict, total=False):
@@ -11228,7 +11031,7 @@ class ElectricEquipmentITEAirCooledDefinition(IDFObject):
 
     def update(
         self,
-        values: _ElectricEquipmentITEAirCooledDefinitionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ElectricEquipmentITEAirCooledDefinitionFields],
     ) -> None: ...  # type: ignore[override]
@@ -11280,7 +11083,7 @@ class ZoneBaseboardOutdoorTemperatureControlled(IDFObject):
 
     def update(
         self,
-        values: _ZoneBaseboardOutdoorTemperatureControlledFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneBaseboardOutdoorTemperatureControlledFields],
     ) -> None: ...  # type: ignore[override]
@@ -11327,7 +11130,7 @@ class SwimmingPoolIndoor(IDFObject):
     people_heat_gain_schedule: str | None
 
     def update(
-        self, values: _SwimmingPoolIndoorFields = ..., /, **kwargs: Unpack[_SwimmingPoolIndoorFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SwimmingPoolIndoorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SwimmingPoolIndoorFields(TypedDict, total=False):
@@ -11360,7 +11163,7 @@ class ZoneContaminantSourceAndSinkCarbonDioxide(IDFObject):
 
     def update(
         self,
-        values: _ZoneContaminantSourceAndSinkCarbonDioxideFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkCarbonDioxideFields],
     ) -> None: ...  # type: ignore[override]
@@ -11385,7 +11188,7 @@ class ZoneContaminantSourceAndSinkGenericConstant(IDFObject):
 
     def update(
         self,
-        values: _ZoneContaminantSourceAndSinkGenericConstantFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericConstantFields],
     ) -> None: ...  # type: ignore[override]
@@ -11410,7 +11213,7 @@ class SurfaceContaminantSourceAndSinkGenericPressureDriven(IDFObject):
 
     def update(
         self,
-        values: _SurfaceContaminantSourceAndSinkGenericPressureDrivenFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericPressureDrivenFields],
     ) -> None: ...  # type: ignore[override]
@@ -11434,7 +11237,7 @@ class ZoneContaminantSourceAndSinkGenericCutoffModel(IDFObject):
 
     def update(
         self,
-        values: _ZoneContaminantSourceAndSinkGenericCutoffModelFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericCutoffModelFields],
     ) -> None: ...  # type: ignore[override]
@@ -11458,7 +11261,7 @@ class ZoneContaminantSourceAndSinkGenericDecaySource(IDFObject):
 
     def update(
         self,
-        values: _ZoneContaminantSourceAndSinkGenericDecaySourceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDecaySourceFields],
     ) -> None: ...  # type: ignore[override]
@@ -11482,7 +11285,7 @@ class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion(IDFObject):
 
     def update(
         self,
-        values: _SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields],
     ) -> None: ...  # type: ignore[override]
@@ -11504,7 +11307,7 @@ class SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink(IDFObject):
 
     def update(
         self,
-        values: _SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields],
     ) -> None: ...  # type: ignore[override]
@@ -11525,7 +11328,7 @@ class ZoneContaminantSourceAndSinkGenericDepositionRateSink(IDFObject):
 
     def update(
         self,
-        values: _ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields],
     ) -> None: ...  # type: ignore[override]
@@ -11570,7 +11373,7 @@ class DaylightingControls(IDFObject):
     control_data: ExtensibleList[DaylightingControlsControlDataGroup]
 
     def update(
-        self, values: _DaylightingControlsFields = ..., /, **kwargs: Unpack[_DaylightingControlsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControlsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingControlsFields(TypedDict, total=False):
@@ -11601,7 +11404,7 @@ class DaylightingReferencePoint(IDFObject):
     """[m]; Default: 0.8"""
 
     def update(
-        self, values: _DaylightingReferencePointFields = ..., /, **kwargs: Unpack[_DaylightingReferencePointFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingReferencePointFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingReferencePointFields(TypedDict, total=False):
@@ -11623,10 +11426,7 @@ class DaylightingDELightComplexFenestration(IDFObject):
     """In-plane counter-clockwise rotation angle of the Complex Fenestration optical reference direction and the base edge o...; [deg]; Default: 0.0"""
 
     def update(
-        self,
-        values: _DaylightingDELightComplexFenestrationFields = ...,
-        /,
-        **kwargs: Unpack[_DaylightingDELightComplexFenestrationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDELightComplexFenestrationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDELightComplexFenestrationFields(TypedDict, total=False):
@@ -11658,7 +11458,7 @@ class DaylightingDeviceTubular(IDFObject):
     transition_lengths: ExtensibleList[DaylightingDeviceTubularTransitionLengthsGroup]
 
     def update(
-        self, values: _DaylightingDeviceTubularFields = ..., /, **kwargs: Unpack[_DaylightingDeviceTubularFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceTubularFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDeviceTubularFields(TypedDict, total=False):
@@ -11684,7 +11484,7 @@ class DaylightingDeviceShelf(IDFObject):
     """Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _DaylightingDeviceShelfFields = ..., /, **kwargs: Unpack[_DaylightingDeviceShelfFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceShelfFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDeviceShelfFields(TypedDict, total=False):
@@ -11707,7 +11507,7 @@ class DaylightingDeviceLightWell(IDFObject):
     """[dimensionless]; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _DaylightingDeviceLightWellFields = ..., /, **kwargs: Unpack[_DaylightingDeviceLightWellFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingDeviceLightWellFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDeviceLightWellFields(TypedDict, total=False):
@@ -11740,7 +11540,7 @@ class OutputIlluminanceMap(IDFObject):
     """Maximum number of total grid points must be <= 2500 (X*Y); Default: 2; Range: >= 1"""
 
     def update(
-        self, values: _OutputIlluminanceMapFields = ..., /, **kwargs: Unpack[_OutputIlluminanceMapFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputIlluminanceMapFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputIlluminanceMapFields(TypedDict, total=False):
@@ -11787,10 +11587,7 @@ class ZoneInfiltrationDesignFlowRate(IDFObject):
     """The air density to use when converting from volume flow to mass flow.; Default: Outdoor; Since: 25.1.0"""
 
     def update(
-        self,
-        values: _ZoneInfiltrationDesignFlowRateFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneInfiltrationDesignFlowRateFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneInfiltrationDesignFlowRateFields(TypedDict, total=False):
@@ -11824,10 +11621,7 @@ class ZoneInfiltrationEffectiveLeakageArea(IDFObject):
     """'Cw' in Equation; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ZoneInfiltrationEffectiveLeakageAreaFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneInfiltrationEffectiveLeakageAreaFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationEffectiveLeakageAreaFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneInfiltrationEffectiveLeakageAreaFields(TypedDict, total=False):
@@ -11856,10 +11650,7 @@ class ZoneInfiltrationFlowCoefficient(IDFObject):
     """'s' in Equation; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ZoneInfiltrationFlowCoefficientFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneInfiltrationFlowCoefficientFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneInfiltrationFlowCoefficientFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneInfiltrationFlowCoefficientFields(TypedDict, total=False):
@@ -11928,10 +11719,7 @@ class ZoneVentilationDesignFlowRate(IDFObject):
     """The air density to use when converting from volume flow to mass flow.; Default: Outdoor; Since: 25.1.0"""
 
     def update(
-        self,
-        values: _ZoneVentilationDesignFlowRateFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneVentilationDesignFlowRateFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneVentilationDesignFlowRateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneVentilationDesignFlowRateFields(TypedDict, total=False):
@@ -12003,10 +11791,7 @@ class ZoneVentilationWindandStackOpenArea(IDFObject):
     """This is the outdoor wind speed above which ventilation is shutoff.; [m/s]; Default: 40.0; Range: >= 0.0, <= 40.0"""
 
     def update(
-        self,
-        values: _ZoneVentilationWindandStackOpenAreaFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneVentilationWindandStackOpenAreaFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneVentilationWindandStackOpenAreaFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneVentilationWindandStackOpenAreaFields(TypedDict, total=False):
@@ -12041,7 +11826,7 @@ class ZoneAirBalanceOutdoorAir(IDFObject):
     """This schedule contains the fraction values applied to the Induced Outdoor Air given in the previous input field (0.0 ..."""
 
     def update(
-        self, values: _ZoneAirBalanceOutdoorAirFields = ..., /, **kwargs: Unpack[_ZoneAirBalanceOutdoorAirFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirBalanceOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirBalanceOutdoorAirFields(TypedDict, total=False):
@@ -12086,7 +11871,7 @@ class ZoneMixing(IDFObject):
     maximum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time above which mixing is shutoff."""
 
-    def update(self, values: _ZoneMixingFields = ..., /, **kwargs: Unpack[_ZoneMixingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneMixingFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneMixingFields(TypedDict, total=False):
     zone_or_space_name: str | None
@@ -12142,7 +11927,7 @@ class ZoneCrossMixing(IDFObject):
     maximum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time above which cross mixing is shutoff."""
 
-    def update(self, values: _ZoneCrossMixingFields = ..., /, **kwargs: Unpack[_ZoneCrossMixingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCrossMixingFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneCrossMixingFields(TypedDict, total=False):
     zone_or_space_name: str | None
@@ -12179,7 +11964,7 @@ class ZoneRefrigerationDoorMixing(IDFObject):
     """Door protection can reduce the air flow through a refrigeration door The default value is 'None' Choices: 'None', 'Ai...; Default: None"""
 
     def update(
-        self, values: _ZoneRefrigerationDoorMixingFields = ..., /, **kwargs: Unpack[_ZoneRefrigerationDoorMixingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneRefrigerationDoorMixingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneRefrigerationDoorMixingFields(TypedDict, total=False):
@@ -12239,7 +12024,7 @@ class ZoneEarthtube(IDFObject):
     earth_tube_model_parameters: str | None
     """Since: 23.2.0"""
 
-    def update(self, values: _ZoneEarthtubeFields = ..., /, **kwargs: Unpack[_ZoneEarthtubeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtubeFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneEarthtubeFields(TypedDict, total=False):
     schedule_name: str | None
@@ -12281,7 +12066,7 @@ class ZoneEarthtubeParameters(IDFObject):
     """Width of the nodes in the direction parallel to the ground, multiplied by earth tube radius; [dimensionless]; Default: 4.0; Range: >= 3.0, <= 20.0"""
 
     def update(
-        self, values: _ZoneEarthtubeParametersFields = ..., /, **kwargs: Unpack[_ZoneEarthtubeParametersFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtubeParametersFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneEarthtubeParametersFields(TypedDict, total=False):
@@ -12321,7 +12106,7 @@ class ZoneCoolTowerShower(IDFObject):
     """[W]"""
 
     def update(
-        self, values: _ZoneCoolTowerShowerFields = ..., /, **kwargs: Unpack[_ZoneCoolTowerShowerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneCoolTowerShowerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneCoolTowerShowerFields(TypedDict, total=False):
@@ -12514,7 +12299,7 @@ class ZoneThermalChimney(IDFObject):
     """[m2]; Range: >= 0.0"""
 
     def update(
-        self, values: _ZoneThermalChimneyFields = ..., /, **kwargs: Unpack[_ZoneThermalChimneyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneThermalChimneyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneThermalChimneyFields(TypedDict, total=False):
@@ -12648,10 +12433,7 @@ class AirflowNetworkSimulationControl(IDFObject):
     """Controls duct sizing. See AirflowNetwork:Distribution:DuctSizing for sizing options.; Default: No; Since: 22.2.0"""
 
     def update(
-        self,
-        values: _AirflowNetworkSimulationControlFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkSimulationControlFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkSimulationControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkSimulationControlFields(TypedDict, total=False):
@@ -12709,7 +12491,7 @@ class AirflowNetworkMultiZoneZone(IDFObject):
     """Enter the name where Occupancy Ventilation Control is required."""
 
     def update(
-        self, values: _AirflowNetworkMultiZoneZoneFields = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneZoneFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneZoneFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
@@ -12774,10 +12556,7 @@ class AirflowNetworkMultiZoneSurface(IDFObject):
     """This field is used when UserDefinedAspectRatio is entered in the Equivalent Rectangle Method field.; [dimensionless]; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _AirflowNetworkMultiZoneSurfaceFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneSurfaceFields(TypedDict, total=False):
@@ -12822,7 +12601,7 @@ class AirflowNetworkMultiZoneReferenceCrackConditions(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneReferenceCrackConditionsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneReferenceCrackConditionsFields],
     ) -> None: ...  # type: ignore[override]
@@ -12843,10 +12622,7 @@ class AirflowNetworkMultiZoneSurfaceCrack(IDFObject):
     """Select a AirflowNetwork:MultiZone:ReferenceCrackConditions name associated with the air mass flow coefficient entered..."""
 
     def update(
-        self,
-        values: _AirflowNetworkMultiZoneSurfaceCrackFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceCrackFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceCrackFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneSurfaceCrackFields(TypedDict, total=False):
@@ -12868,7 +12644,7 @@ class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields],
     ) -> None: ...  # type: ignore[override]
@@ -12889,7 +12665,7 @@ class AirflowNetworkMultiZoneSpecifiedFlowRate(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneSpecifiedFlowRateFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneSpecifiedFlowRateFields],
     ) -> None: ...  # type: ignore[override]
@@ -12954,7 +12730,7 @@ class AirflowNetworkMultiZoneComponentDetailedOpening(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneComponentDetailedOpeningFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentDetailedOpeningFields],
     ) -> None: ...  # type: ignore[override]
@@ -13000,7 +12776,7 @@ class AirflowNetworkMultiZoneComponentSimpleOpening(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneComponentSimpleOpeningFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentSimpleOpeningFields],
     ) -> None: ...  # type: ignore[override]
@@ -13025,7 +12801,7 @@ class AirflowNetworkMultiZoneComponentHorizontalOpening(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneComponentHorizontalOpeningFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentHorizontalOpeningFields],
     ) -> None: ...  # type: ignore[override]
@@ -13048,7 +12824,7 @@ class AirflowNetworkMultiZoneComponentZoneExhaustFan(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneComponentZoneExhaustFanFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneComponentZoneExhaustFanFields],
     ) -> None: ...  # type: ignore[override]
@@ -13071,10 +12847,7 @@ class AirflowNetworkMultiZoneExternalNode(IDFObject):
     """Specify whether the angle used to compute the wind pressure coefficient is absolute or relative Specify Relative to c...; Default: Absolute"""
 
     def update(
-        self,
-        values: _AirflowNetworkMultiZoneExternalNodeFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkMultiZoneExternalNodeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkMultiZoneExternalNodeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneExternalNodeFields(TypedDict, total=False):
@@ -13161,7 +12934,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientArray(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneWindPressureCoefficientArrayFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientArrayFields],
     ) -> None: ...  # type: ignore[override]
@@ -13284,7 +13057,7 @@ class AirflowNetworkMultiZoneWindPressureCoefficientValues(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkMultiZoneWindPressureCoefficientValuesFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientValuesFields],
     ) -> None: ...  # type: ignore[override]
@@ -13347,7 +13120,7 @@ class AirflowNetworkZoneControlPressureController(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkZoneControlPressureControllerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkZoneControlPressureControllerFields],
     ) -> None: ...  # type: ignore[override]
@@ -13388,10 +13161,7 @@ class AirflowNetworkDistributionNode(IDFObject):
     """Enter the reference height used to calculate the relative pressure.; [m]; Default: 0.0"""
 
     def update(
-        self,
-        values: _AirflowNetworkDistributionNodeFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkDistributionNodeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionNodeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionNodeFields(TypedDict, total=False):
@@ -13422,7 +13192,7 @@ class AirflowNetworkDistributionComponentLeak(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentLeakFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakFields],
     ) -> None: ...  # type: ignore[override]
@@ -13445,7 +13215,7 @@ class AirflowNetworkDistributionComponentLeakageRatio(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentLeakageRatioFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakageRatioFields],
     ) -> None: ...  # type: ignore[override]
@@ -13480,7 +13250,7 @@ class AirflowNetworkDistributionComponentDuct(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentDuctFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentDuctFields],
     ) -> None: ...  # type: ignore[override]
@@ -13505,10 +13275,7 @@ class AirflowNetworkDistributionComponentFan(IDFObject):
     """Default: Fan:ConstantVolume"""
 
     def update(
-        self,
-        values: _AirflowNetworkDistributionComponentFanFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkDistributionComponentFanFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionComponentFanFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentFanFields(TypedDict, total=False):
@@ -13553,7 +13320,7 @@ class AirflowNetworkDistributionComponentCoil(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentCoilFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentCoilFields],
     ) -> None: ...  # type: ignore[override]
@@ -13607,7 +13374,7 @@ class AirflowNetworkDistributionComponentHeatExchanger(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentHeatExchangerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentHeatExchangerFields],
     ) -> None: ...  # type: ignore[override]
@@ -13638,7 +13405,7 @@ class AirflowNetworkDistributionComponentTerminalUnit(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentTerminalUnitFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentTerminalUnitFields],
     ) -> None: ...  # type: ignore[override]
@@ -13658,7 +13425,7 @@ class AirflowNetworkDistributionComponentConstantPressureDrop(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentConstantPressureDropFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentConstantPressureDropFields],
     ) -> None: ...  # type: ignore[override]
@@ -13680,7 +13447,7 @@ class AirflowNetworkDistributionComponentOutdoorAirFlow(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentOutdoorAirFlowFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentOutdoorAirFlowFields],
     ) -> None: ...  # type: ignore[override]
@@ -13705,7 +13472,7 @@ class AirflowNetworkDistributionComponentReliefAirFlow(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionComponentReliefAirFlowFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionComponentReliefAirFlowFields],
     ) -> None: ...  # type: ignore[override]
@@ -13729,10 +13496,7 @@ class AirflowNetworkDistributionLinkage(IDFObject):
     """Only used if component = AirflowNetwork:Distribution:Component:Duct The zone name is where AirflowNetwork:Distributio..."""
 
     def update(
-        self,
-        values: _AirflowNetworkDistributionLinkageFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkDistributionLinkageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionLinkageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionLinkageFields(TypedDict, total=False):
@@ -13758,7 +13522,7 @@ class AirflowNetworkDistributionDuctViewFactors(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkDistributionDuctViewFactorsFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkDistributionDuctViewFactorsFields],
     ) -> None: ...  # type: ignore[override]
@@ -13787,10 +13551,7 @@ class AirflowNetworkDistributionDuctSizing(IDFObject):
     """Duct diameter is calculated using Colebrook's equation. When there is no solution, velocity = 5 m/s is used to calcul...; [Pa]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _AirflowNetworkDistributionDuctSizingFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkDistributionDuctSizingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkDistributionDuctSizingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionDuctSizingFields(TypedDict, total=False):
@@ -13826,7 +13587,7 @@ class AirflowNetworkOccupantVentilationControl(IDFObject):
 
     def update(
         self,
-        values: _AirflowNetworkOccupantVentilationControlFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirflowNetworkOccupantVentilationControlFields],
     ) -> None: ...  # type: ignore[override]
@@ -13853,7 +13614,7 @@ class AirflowNetworkIntraZoneNode(IDFObject):
     """Enter the reference height used to calculate the relative pressure; [m]; Default: 0.0"""
 
     def update(
-        self, values: _AirflowNetworkIntraZoneNodeFields = ..., /, **kwargs: Unpack[_AirflowNetworkIntraZoneNodeFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkIntraZoneNodeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkIntraZoneNodeFields(TypedDict, total=False):
@@ -13874,10 +13635,7 @@ class AirflowNetworkIntraZoneLinkage(IDFObject):
     """Only used when one of two nodes defined above are not located in the same zone, and the input of the Component Name f..."""
 
     def update(
-        self,
-        values: _AirflowNetworkIntraZoneLinkageFields = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkIntraZoneLinkageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirflowNetworkIntraZoneLinkageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkIntraZoneLinkageFields(TypedDict, total=False):
@@ -13898,7 +13656,7 @@ class DuctLossConduction(IDFObject):
     ambient_humidity_ratio_schedule_name: str | None
 
     def update(
-        self, values: _DuctLossConductionFields = ..., /, **kwargs: Unpack[_DuctLossConductionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossConductionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DuctLossConductionFields(TypedDict, total=False):
@@ -13915,7 +13673,7 @@ class DuctLossLeakage(IDFObject):
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
-    def update(self, values: _DuctLossLeakageFields = ..., /, **kwargs: Unpack[_DuctLossLeakageFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossLeakageFields]) -> None: ...  # type: ignore[override]
 
 class _DuctLossLeakageFields(TypedDict, total=False):
     airloophvac_name: str | None
@@ -13927,7 +13685,7 @@ class DuctLossMakeupAir(IDFObject):
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
-    def update(self, values: _DuctLossMakeupAirFields = ..., /, **kwargs: Unpack[_DuctLossMakeupAirFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctLossMakeupAirFields]) -> None: ...  # type: ignore[override]
 
 class _DuctLossMakeupAirFields(TypedDict, total=False):
     airloophvac_name: str | None
@@ -13945,7 +13703,7 @@ class ExteriorLights(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _ExteriorLightsFields = ..., /, **kwargs: Unpack[_ExteriorLightsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorLightsFields]) -> None: ...  # type: ignore[override]
 
 class _ExteriorLightsFields(TypedDict, total=False):
     schedule_name: str | None
@@ -13983,7 +13741,7 @@ class ExteriorFuelEquipment(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _ExteriorFuelEquipmentFields = ..., /, **kwargs: Unpack[_ExteriorFuelEquipmentFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorFuelEquipmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ExteriorFuelEquipmentFields(TypedDict, total=False):
@@ -14023,7 +13781,7 @@ class ExteriorWaterEquipment(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _ExteriorWaterEquipmentFields = ..., /, **kwargs: Unpack[_ExteriorWaterEquipmentFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExteriorWaterEquipmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ExteriorWaterEquipmentFields(TypedDict, total=False):
@@ -14045,7 +13803,7 @@ class HVACTemplateThermostat(IDFObject):
     """Ignored if schedule specified above, must enter schedule or constant setpoint; [C]"""
 
     def update(
-        self, values: _HVACTemplateThermostatFields = ..., /, **kwargs: Unpack[_HVACTemplateThermostatFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateThermostatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateThermostatFields(TypedDict, total=False):
@@ -14121,10 +13879,7 @@ class HVACTemplateZoneIdealLoadsAirSystem(IDFObject):
     """Applicable only if Heat Recovery Type is Enthalpy.; [dimensionless]; Default: 0.65; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _HVACTemplateZoneIdealLoadsAirSystemFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneIdealLoadsAirSystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneIdealLoadsAirSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
@@ -14193,10 +13948,7 @@ class HVACTemplateZoneBaseboardHeat(IDFObject):
     """This field is used only when Outdoor Air Method=DetailedSpecification."""
 
     def update(
-        self,
-        values: _HVACTemplateZoneBaseboardHeatFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneBaseboardHeatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneBaseboardHeatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
@@ -14304,7 +14056,7 @@ class HVACTemplateZoneFanCoil(IDFObject):
     """[W]; Default: Autosize"""
 
     def update(
-        self, values: _HVACTemplateZoneFanCoilFields = ..., /, **kwargs: Unpack[_HVACTemplateZoneFanCoilFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneFanCoilFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneFanCoilFields(TypedDict, total=False):
@@ -14449,7 +14201,7 @@ class HVACTemplateZonePTAC(IDFObject):
     """Default: None; Since: 9.0.1"""
 
     def update(
-        self, values: _HVACTemplateZonePTACFields = ..., /, **kwargs: Unpack[_HVACTemplateZonePTACFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTACFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZonePTACFields(TypedDict, total=False):
@@ -14608,7 +14360,7 @@ class HVACTemplateZonePTHP(IDFObject):
     """Default: None; Since: 9.0.1"""
 
     def update(
-        self, values: _HVACTemplateZonePTHPFields = ..., /, **kwargs: Unpack[_HVACTemplateZonePTHPFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZonePTHPFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZonePTHPFields(TypedDict, total=False):
@@ -14763,10 +14515,7 @@ class HVACTemplateZoneWaterToAirHeatPump(IDFObject):
     """[W]; Default: Autosize"""
 
     def update(
-        self,
-        values: _HVACTemplateZoneWaterToAirHeatPumpFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneWaterToAirHeatPumpFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneWaterToAirHeatPumpFields(TypedDict, total=False):
@@ -14916,7 +14665,7 @@ class HVACTemplateZoneVRF(IDFObject):
     """[W]; Default: Autosize"""
 
     def update(
-        self, values: _HVACTemplateZoneVRFFields = ..., /, **kwargs: Unpack[_HVACTemplateZoneVRFFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVRFFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVRFFields(TypedDict, total=False):
@@ -15025,7 +14774,7 @@ class HVACTemplateZoneUnitary(IDFObject):
     """This field is used only when Outdoor Air Method=DetailedSpecification."""
 
     def update(
-        self, values: _HVACTemplateZoneUnitaryFields = ..., /, **kwargs: Unpack[_HVACTemplateZoneUnitaryFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneUnitaryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
@@ -15135,7 +14884,7 @@ class HVACTemplateZoneVAV(IDFObject):
     """This field is used only when Outdoor Air Method=DetailedSpecification."""
 
     def update(
-        self, values: _HVACTemplateZoneVAVFields = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFields(TypedDict, total=False):
@@ -15252,10 +15001,7 @@ class HVACTemplateZoneVAVFanPowered(IDFObject):
     design_specification_zone_air_distribution_object_name: str | None
 
     def update(
-        self,
-        values: _HVACTemplateZoneVAVFanPoweredFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneVAVFanPoweredFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVFanPoweredFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
@@ -15361,10 +15107,7 @@ class HVACTemplateZoneVAVHeatAndCool(IDFObject):
     """Zone Heating Design Supply Air Temperature is only used when Zone Heating Design Supply Air Temperature Input Method ...; [deltaC]; Default: 30.0"""
 
     def update(
-        self,
-        values: _HVACTemplateZoneVAVHeatAndCoolFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneVAVHeatAndCoolFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneVAVHeatAndCoolFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
@@ -15462,10 +15205,7 @@ class HVACTemplateZoneConstantVolume(IDFObject):
     """Zone Heating Design Supply Air Temperature is only used when Zone Heating Design Supply Air Temperature Input Method ...; [deltaC]; Default: 30.0"""
 
     def update(
-        self,
-        values: _HVACTemplateZoneConstantVolumeFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateZoneConstantVolumeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
@@ -15562,7 +15302,7 @@ class HVACTemplateZoneDualDuct(IDFObject):
     """Zone Heating Design Supply Air Temperature is only used when Zone Heating Design Supply Air Temperature Input Method ...; [deltaC]; Default: 30.0"""
 
     def update(
-        self, values: _HVACTemplateZoneDualDuctFields = ..., /, **kwargs: Unpack[_HVACTemplateZoneDualDuctFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateZoneDualDuctFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneDualDuctFields(TypedDict, total=False):
@@ -15696,7 +15436,7 @@ class HVACTemplateSystemVRF(IDFObject):
     """The maximum outdoor temperature above which heat recovery mode will not operate.; [C]; Default: 45.0"""
 
     def update(
-        self, values: _HVACTemplateSystemVRFFields = ..., /, **kwargs: Unpack[_HVACTemplateSystemVRFFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVRFFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemVRFFields(TypedDict, total=False):
@@ -15872,7 +15612,7 @@ class HVACTemplateSystemUnitary(IDFObject):
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _HVACTemplateSystemUnitaryFields = ..., /, **kwargs: Unpack[_HVACTemplateSystemUnitaryFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemUnitaryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemUnitaryFields(TypedDict, total=False):
@@ -16078,7 +15818,7 @@ class HVACTemplateSystemUnitaryHeatPumpAirToAir(IDFObject):
 
     def update(
         self,
-        values: _HVACTemplateSystemUnitaryHeatPumpAirToAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HVACTemplateSystemUnitaryHeatPumpAirToAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -16348,10 +16088,7 @@ class HVACTemplateSystemUnitarySystem(IDFObject):
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _HVACTemplateSystemUnitarySystemFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateSystemUnitarySystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemUnitarySystemFields(TypedDict, total=False):
@@ -16631,7 +16368,7 @@ class HVACTemplateSystemVAV(IDFObject):
     """This field selects a predefined set of fan power coefficients. The ASHRAE 90.1-2004 Appendix G coefficients are from ...; Default: InletVaneDampers"""
 
     def update(
-        self, values: _HVACTemplateSystemVAVFields = ..., /, **kwargs: Unpack[_HVACTemplateSystemVAVFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemVAVFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemVAVFields(TypedDict, total=False):
@@ -16887,10 +16624,7 @@ class HVACTemplateSystemPackagedVAV(IDFObject):
     """This field selects a predefined set of fan power coefficients. The ASHRAE 90.1-2004 Appendix G coefficients are from ...; Default: InletVaneDampers"""
 
     def update(
-        self,
-        values: _HVACTemplateSystemPackagedVAVFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateSystemPackagedVAVFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemPackagedVAVFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemPackagedVAVFields(TypedDict, total=False):
@@ -17152,10 +16886,7 @@ class HVACTemplateSystemConstantVolume(IDFObject):
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _HVACTemplateSystemConstantVolumeFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateSystemConstantVolumeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemConstantVolumeFields(TypedDict, total=False):
@@ -17499,7 +17230,7 @@ class HVACTemplateSystemDualDuct(IDFObject):
     """This field selects a predefined set of fan power coefficients. The ASHRAE 90.1-2004 Appendix G coefficients are from ...; Default: InletVaneDampers"""
 
     def update(
-        self, values: _HVACTemplateSystemDualDuctFields = ..., /, **kwargs: Unpack[_HVACTemplateSystemDualDuctFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemDualDuctFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemDualDuctFields(TypedDict, total=False):
@@ -17770,10 +17501,7 @@ class HVACTemplateSystemDedicatedOutdoorAir(IDFObject):
     """Leave blank to use constant setpoint specified in Humidifier Constant Setpoint above. Schedule values must be in unit..."""
 
     def update(
-        self,
-        values: _HVACTemplateSystemDedicatedOutdoorAirFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplateSystemDedicatedOutdoorAirFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplateSystemDedicatedOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateSystemDedicatedOutdoorAirFields(TypedDict, total=False):
@@ -17955,10 +17683,7 @@ class HVACTemplatePlantChilledWaterLoop(IDFObject):
     """Default: SequentialLoad"""
 
     def update(
-        self,
-        values: _HVACTemplatePlantChilledWaterLoopFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplatePlantChilledWaterLoopFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantChilledWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantChilledWaterLoopFields(TypedDict, total=False):
@@ -18072,7 +17797,7 @@ class HVACTemplatePlantChiller(IDFObject):
     """[C]; Default: 5.0"""
 
     def update(
-        self, values: _HVACTemplatePlantChillerFields = ..., /, **kwargs: Unpack[_HVACTemplatePlantChillerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantChillerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantChillerFields(TypedDict, total=False):
@@ -18105,7 +17830,7 @@ class HVACTemplatePlantChillerObjectReference(IDFObject):
 
     def update(
         self,
-        values: _HVACTemplatePlantChillerObjectReferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HVACTemplatePlantChillerObjectReferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -18137,7 +17862,7 @@ class HVACTemplatePlantTower(IDFObject):
     """Specifies if this tower serves a template chilled water loop or mixed water loop If left blank, will serve a chilled ..."""
 
     def update(
-        self, values: _HVACTemplatePlantTowerFields = ..., /, **kwargs: Unpack[_HVACTemplatePlantTowerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantTowerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantTowerFields(TypedDict, total=False):
@@ -18166,10 +17891,7 @@ class HVACTemplatePlantTowerObjectReference(IDFObject):
     """Specifies if this tower serves a template chilled water loop or mixed water loop If left blank, will serve a chilled ..."""
 
     def update(
-        self,
-        values: _HVACTemplatePlantTowerObjectReferenceFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplatePlantTowerObjectReferenceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantTowerObjectReferenceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantTowerObjectReferenceFields(TypedDict, total=False):
@@ -18252,10 +17974,7 @@ class HVACTemplatePlantHotWaterLoop(IDFObject):
     """Default: SequentialLoad"""
 
     def update(
-        self,
-        values: _HVACTemplatePlantHotWaterLoopFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplatePlantHotWaterLoopFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantHotWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantHotWaterLoopFields(TypedDict, total=False):
@@ -18347,7 +18066,7 @@ class HVACTemplatePlantBoiler(IDFObject):
     """Specifies if this boiler serves a template hot water loop or mixed water loop If left blank, will serve a hot water l..."""
 
     def update(
-        self, values: _HVACTemplatePlantBoilerFields = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoilerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoilerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantBoilerFields(TypedDict, total=False):
@@ -18390,10 +18109,7 @@ class HVACTemplatePlantBoilerObjectReference(IDFObject):
     """Specifies if this boiler serves a template hot water loop or mixed water loop If left blank, will serve a hot water l..."""
 
     def update(
-        self,
-        values: _HVACTemplatePlantBoilerObjectReferenceFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplatePlantBoilerObjectReferenceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantBoilerObjectReferenceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantBoilerObjectReferenceFields(TypedDict, total=False):
@@ -18466,10 +18182,7 @@ class HVACTemplatePlantMixedWaterLoop(IDFObject):
     """Default: SequentialLoad"""
 
     def update(
-        self,
-        values: _HVACTemplatePlantMixedWaterLoopFields = ...,
-        /,
-        **kwargs: Unpack[_HVACTemplatePlantMixedWaterLoopFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HVACTemplatePlantMixedWaterLoopFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplatePlantMixedWaterLoopFields(TypedDict, total=False):
@@ -18550,10 +18263,7 @@ class DesignSpecificationOutdoorAir(IDFObject):
     """This input is only used to calculate the minimum outdoor air flow rate when the field System Outdoor Air Method = Pro..."""
 
     def update(
-        self,
-        values: _DesignSpecificationOutdoorAirFields = ...,
-        /,
-        **kwargs: Unpack[_DesignSpecificationOutdoorAirFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DesignSpecificationOutdoorAirFields(TypedDict, total=False):
@@ -18591,10 +18301,7 @@ class DesignSpecificationOutdoorAirSpaceList(IDFObject):
     space_specs: ExtensibleList[DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup]
 
     def update(
-        self,
-        values: _DesignSpecificationOutdoorAirSpaceListFields = ...,
-        /,
-        **kwargs: Unpack[_DesignSpecificationOutdoorAirSpaceListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationOutdoorAirSpaceListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DesignSpecificationOutdoorAirSpaceListFields(TypedDict, total=False):
@@ -18615,10 +18322,7 @@ class DesignSpecificationZoneAirDistribution(IDFObject):
     """[dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _DesignSpecificationZoneAirDistributionFields = ...,
-        /,
-        **kwargs: Unpack[_DesignSpecificationZoneAirDistributionFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationZoneAirDistributionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DesignSpecificationZoneAirDistributionFields(TypedDict, total=False):
@@ -18636,7 +18340,7 @@ class SizingParameters(IDFObject):
     timesteps_in_averaging_window: int | None
     """blank => set the timesteps in averaging window to Number of Timesteps per Hour resulting in a 1 hour averaging window...; Range: >= 1"""
 
-    def update(self, values: _SizingParametersFields = ..., /, **kwargs: Unpack[_SizingParametersFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingParametersFields]) -> None: ...  # type: ignore[override]
 
 class _SizingParametersFields(TypedDict, total=False):
     cooling_sizing_factor: float | None
@@ -18736,7 +18440,7 @@ class SizingZone(IDFObject):
     maximum_heating_capacity_to_cooling_load_sizing_ratio: float | None
     """[W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
-    def update(self, values: _SizingZoneFields = ..., /, **kwargs: Unpack[_SizingZoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZoneFields]) -> None: ...  # type: ignore[override]
 
 class _SizingZoneFields(TypedDict, total=False):
     zone_cooling_design_supply_air_temperature_input_method: (
@@ -18880,10 +18584,7 @@ class DesignSpecificationZoneHVACSizing(IDFObject):
     """Enter the fraction of auto-sized heating design capacity. Required field when capacity the heating design capacity me...; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _DesignSpecificationZoneHVACSizingFields = ...,
-        /,
-        **kwargs: Unpack[_DesignSpecificationZoneHVACSizingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationZoneHVACSizingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DesignSpecificationZoneHVACSizingFields(TypedDict, total=False):
@@ -18962,10 +18663,7 @@ class DesignSpecificationAirTerminalSizing(IDFObject):
     """The fraction of the zone minimum outdoor air requirement to be met by this terminal unit.; [dimensionless]; Default: 1.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _DesignSpecificationAirTerminalSizingFields = ...,
-        /,
-        **kwargs: Unpack[_DesignSpecificationAirTerminalSizingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DesignSpecificationAirTerminalSizingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DesignSpecificationAirTerminalSizingFields(TypedDict, total=False):
@@ -19084,7 +18782,7 @@ class SizingSystem(IDFObject):
     maximum_heating_capacity_to_cooling_capacity_sizing_ratio: float | None
     """The limit of heating coil capacity to cooling coil capacity; [W/W]; Default: 1.0; Range: >= 1.0; Since: 25.2.0"""
 
-    def update(self, values: _SizingSystemFields = ..., /, **kwargs: Unpack[_SizingSystemFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystemFields]) -> None: ...  # type: ignore[override]
 
 class _SizingSystemFields(TypedDict, total=False):
     type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
@@ -19173,7 +18871,7 @@ class SizingPlant(IDFObject):
     )
     """this is used to adjust the result for coincident sizing by applying a sizing factor"""
 
-    def update(self, values: _SizingPlantFields = ..., /, **kwargs: Unpack[_SizingPlantFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPlantFields]) -> None: ...  # type: ignore[override]
 
 class _SizingPlantFields(TypedDict, total=False):
     loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"] | None
@@ -19200,7 +18898,7 @@ class ZoneControlHumidistat(IDFObject):
     """When using RelativeHumidity, the schedule values should be in percentages.; Default: RelativeHumidity; Since: 26.2.0"""
 
     def update(
-        self, values: _ZoneControlHumidistatFields = ..., /, **kwargs: Unpack[_ZoneControlHumidistatFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlHumidistatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlHumidistatFields(TypedDict, total=False):
@@ -19263,7 +18961,7 @@ class ZoneControlThermostat(IDFObject):
     """This optional choice field provides a temperature difference between cut-out temperature and setpoint. The difference...; [deltaC]; Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self, values: _ZoneControlThermostatFields = ..., /, **kwargs: Unpack[_ZoneControlThermostatFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlThermostatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatFields(TypedDict, total=False):
@@ -19337,7 +19035,7 @@ class ZoneControlThermostatOperativeTemperature(IDFObject):
 
     def update(
         self,
-        values: _ZoneControlThermostatOperativeTemperatureFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneControlThermostatOperativeTemperatureFields],
     ) -> None: ...  # type: ignore[override]
@@ -19421,10 +19119,7 @@ class ZoneControlThermostatThermalComfort(IDFObject):
     """Control type names are names for individual control type objects. Schedule values in these objects list actual setpoi..."""
 
     def update(
-        self,
-        values: _ZoneControlThermostatThermalComfortFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneControlThermostatThermalComfortFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlThermostatThermalComfortFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatThermalComfortFields(TypedDict, total=False):
@@ -19493,7 +19188,7 @@ class ZoneControlThermostatTemperatureAndHumidity(IDFObject):
 
     def update(
         self,
-        values: _ZoneControlThermostatTemperatureAndHumidityFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneControlThermostatTemperatureAndHumidityFields],
     ) -> None: ...  # type: ignore[override]
@@ -19512,10 +19207,7 @@ class ThermostatSetpointSingleHeating(IDFObject):
     setpoint_temperature_schedule_name: str | None
 
     def update(
-        self,
-        values: _ThermostatSetpointSingleHeatingFields = ...,
-        /,
-        **kwargs: Unpack[_ThermostatSetpointSingleHeatingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointSingleHeatingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermostatSetpointSingleHeatingFields(TypedDict, total=False):
@@ -19527,10 +19219,7 @@ class ThermostatSetpointSingleCooling(IDFObject):
     setpoint_temperature_schedule_name: str | None
 
     def update(
-        self,
-        values: _ThermostatSetpointSingleCoolingFields = ...,
-        /,
-        **kwargs: Unpack[_ThermostatSetpointSingleCoolingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointSingleCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermostatSetpointSingleCoolingFields(TypedDict, total=False):
@@ -19543,7 +19232,7 @@ class ThermostatSetpointSingleHeatingOrCooling(IDFObject):
 
     def update(
         self,
-        values: _ThermostatSetpointSingleHeatingOrCoolingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ThermostatSetpointSingleHeatingOrCoolingFields],
     ) -> None: ...  # type: ignore[override]
@@ -19558,10 +19247,7 @@ class ThermostatSetpointDualSetpoint(IDFObject):
     cooling_setpoint_temperature_schedule_name: str | None
 
     def update(
-        self,
-        values: _ThermostatSetpointDualSetpointFields = ...,
-        /,
-        **kwargs: Unpack[_ThermostatSetpointDualSetpointFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermostatSetpointDualSetpointFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermostatSetpointDualSetpointFields(TypedDict, total=False):
@@ -19576,7 +19262,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeating(IDFObject):
 
     def update(
         self,
-        values: _ThermostatSetpointThermalComfortFangerSingleHeatingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingFields],
     ) -> None: ...  # type: ignore[override]
@@ -19592,7 +19278,7 @@ class ThermostatSetpointThermalComfortFangerSingleCooling(IDFObject):
 
     def update(
         self,
-        values: _ThermostatSetpointThermalComfortFangerSingleCoolingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleCoolingFields],
     ) -> None: ...  # type: ignore[override]
@@ -19608,7 +19294,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling(IDFObject):
 
     def update(
         self,
-        values: _ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields],
     ) -> None: ...  # type: ignore[override]
@@ -19626,7 +19312,7 @@ class ThermostatSetpointThermalComfortFangerDualSetpoint(IDFObject):
 
     def update(
         self,
-        values: _ThermostatSetpointThermalComfortFangerDualSetpointFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerDualSetpointFields],
     ) -> None: ...  # type: ignore[override]
@@ -19668,7 +19354,7 @@ class ZoneControlThermostatStagedDualSetpoint(IDFObject):
 
     def update(
         self,
-        values: _ZoneControlThermostatStagedDualSetpointFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneControlThermostatStagedDualSetpointFields],
     ) -> None: ...  # type: ignore[override]
@@ -19708,10 +19394,7 @@ class ZoneControlContaminantController(IDFObject):
     """Schedule values should be generic contaminant concentration in parts per million (ppm) This field is used when the fi..."""
 
     def update(
-        self,
-        values: _ZoneControlContaminantControllerFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneControlContaminantControllerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneControlContaminantControllerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlContaminantControllerFields(TypedDict, total=False):
@@ -19828,7 +19511,7 @@ class ZoneHVACIdealLoadsAirSystem(IDFObject):
     """Default: DistrictCooling; Since: 25.2.0"""
 
     def update(
-        self, values: _ZoneHVACIdealLoadsAirSystemFields = ..., /, **kwargs: Unpack[_ZoneHVACIdealLoadsAirSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACIdealLoadsAirSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACIdealLoadsAirSystemFields(TypedDict, total=False):
@@ -19974,7 +19657,7 @@ class ZoneHVACFourPipeFanCoil(IDFObject):
     """For Capacity Control Method = ASHRAE90VariableFan, enter the maximum air temperature in heating mode. Leave this fiel...; [C]; Default: Autosize"""
 
     def update(
-        self, values: _ZoneHVACFourPipeFanCoilFields = ..., /, **kwargs: Unpack[_ZoneHVACFourPipeFanCoilFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACFourPipeFanCoilFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACFourPipeFanCoilFields(TypedDict, total=False):
@@ -20064,10 +19747,7 @@ class ZoneHVACWindowAirConditioner(IDFObject):
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
     def update(
-        self,
-        values: _ZoneHVACWindowAirConditionerFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACWindowAirConditionerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACWindowAirConditionerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACWindowAirConditionerFields(TypedDict, total=False):
@@ -20160,10 +19840,7 @@ class ZoneHVACPackagedTerminalAirConditioner(IDFObject):
     """For Capacity Control Method = SingleZoneVAV, enter the maximum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
 
     def update(
-        self,
-        values: _ZoneHVACPackagedTerminalAirConditionerFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditionerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditionerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACPackagedTerminalAirConditionerFields(TypedDict, total=False):
@@ -20282,10 +19959,7 @@ class ZoneHVACPackagedTerminalHeatPump(IDFObject):
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
     def update(
-        self,
-        values: _ZoneHVACPackagedTerminalHeatPumpFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPumpFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACPackagedTerminalHeatPumpFields(TypedDict, total=False):
@@ -20405,7 +20079,7 @@ class ZoneHVACWaterToAirHeatPump(IDFObject):
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
     def update(
-        self, values: _ZoneHVACWaterToAirHeatPumpFields = ..., /, **kwargs: Unpack[_ZoneHVACWaterToAirHeatPumpFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACWaterToAirHeatPumpFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACWaterToAirHeatPumpFields(TypedDict, total=False):
@@ -20484,7 +20158,7 @@ class ZoneHVACDehumidifierDX(IDFObject):
     """Name of storage tank used to collect water removed by the dehumidifier."""
 
     def update(
-        self, values: _ZoneHVACDehumidifierDXFields = ..., /, **kwargs: Unpack[_ZoneHVACDehumidifierDXFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACDehumidifierDXFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACDehumidifierDXFields(TypedDict, total=False):
@@ -20527,10 +20201,7 @@ class ZoneHVACEnergyRecoveryVentilator(IDFObject):
     """Enter the name of an AvailabilityManagerAssignmentList object."""
 
     def update(
-        self,
-        values: _ZoneHVACEnergyRecoveryVentilatorFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEnergyRecoveryVentilatorFields(TypedDict, total=False):
@@ -20575,7 +20246,7 @@ class ZoneHVACEnergyRecoveryVentilatorController(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACEnergyRecoveryVentilatorControllerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorControllerFields],
     ) -> None: ...  # type: ignore[override]
@@ -20651,7 +20322,7 @@ class ZoneHVACUnitVentilator(IDFObject):
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
     def update(
-        self, values: _ZoneHVACUnitVentilatorFields = ..., /, **kwargs: Unpack[_ZoneHVACUnitVentilatorFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACUnitVentilatorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACUnitVentilatorFields(TypedDict, total=False):
@@ -20725,7 +20396,7 @@ class ZoneHVACUnitHeater(IDFObject):
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
     def update(
-        self, values: _ZoneHVACUnitHeaterFields = ..., /, **kwargs: Unpack[_ZoneHVACUnitHeaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACUnitHeaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACUnitHeaterFields(TypedDict, total=False):
@@ -20807,10 +20478,7 @@ class ZoneHVACEvaporativeCoolerUnit(IDFObject):
     """Zone relative humidity above which the evap cooler is shut off.; [percent]; Range: >= 0.0, <= 100.0; Since: 23.2.0"""
 
     def update(
-        self,
-        values: _ZoneHVACEvaporativeCoolerUnitFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACEvaporativeCoolerUnitFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEvaporativeCoolerUnitFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEvaporativeCoolerUnitFields(TypedDict, total=False):
@@ -21018,7 +20686,7 @@ class ZoneHVACHybridUnitaryHVAC(IDFObject):
     modes: ExtensibleList[ZoneHVACHybridUnitaryHVACModesGroup]
 
     def update(
-        self, values: _ZoneHVACHybridUnitaryHVACFields = ..., /, **kwargs: Unpack[_ZoneHVACHybridUnitaryHVACFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHybridUnitaryHVACFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACHybridUnitaryHVACFields(TypedDict, total=False):
@@ -21153,7 +20821,7 @@ class ZoneHVACOutdoorAirUnit(IDFObject):
     """Enter the name of an AvailabilityManagerAssignmentList object."""
 
     def update(
-        self, values: _ZoneHVACOutdoorAirUnitFields = ..., /, **kwargs: Unpack[_ZoneHVACOutdoorAirUnitFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACOutdoorAirUnitFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACOutdoorAirUnitFields(TypedDict, total=False):
@@ -21333,10 +21001,7 @@ class ZoneHVACOutdoorAirUnitEquipmentList(IDFObject):
     component_8_name: str | None
 
     def update(
-        self,
-        values: _ZoneHVACOutdoorAirUnitEquipmentListFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACOutdoorAirUnitEquipmentListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACOutdoorAirUnitEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACOutdoorAirUnitEquipmentListFields(TypedDict, total=False):
@@ -21574,7 +21239,7 @@ class ZoneHVACTerminalUnitVariableRefrigerantFlow(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACTerminalUnitVariableRefrigerantFlowFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlowFields],
     ) -> None: ...  # type: ignore[override]
@@ -21645,7 +21310,7 @@ class ZoneHVACBaseboardRadiantConvectiveWaterDesign(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACBaseboardRadiantConvectiveWaterDesignFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterDesignFields],
     ) -> None: ...  # type: ignore[override]
@@ -21687,7 +21352,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACBaseboardRadiantConvectiveWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -21723,7 +21388,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteamDesign(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACBaseboardRadiantConvectiveSteamDesignFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamDesignFields],
     ) -> None: ...  # type: ignore[override]
@@ -21763,7 +21428,7 @@ class ZoneHVACBaseboardRadiantConvectiveSteam(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACBaseboardRadiantConvectiveSteamFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamFields],
     ) -> None: ...  # type: ignore[override]
@@ -21809,7 +21474,7 @@ class ZoneHVACBaseboardRadiantConvectiveElectric(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACBaseboardRadiantConvectiveElectricFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveElectricFields],
     ) -> None: ...  # type: ignore[override]
@@ -21887,7 +21552,7 @@ class ZoneHVACCoolingPanelRadiantConvectiveWater(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACCoolingPanelRadiantConvectiveWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACCoolingPanelRadiantConvectiveWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -21953,10 +21618,7 @@ class ZoneHVACBaseboardConvectiveWater(IDFObject):
     """Default: 0.001; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ZoneHVACBaseboardConvectiveWaterFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACBaseboardConvectiveWaterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACBaseboardConvectiveWaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACBaseboardConvectiveWaterFields(TypedDict, total=False):
@@ -21992,10 +21654,7 @@ class ZoneHVACBaseboardConvectiveElectric(IDFObject):
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ZoneHVACBaseboardConvectiveElectricFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACBaseboardConvectiveElectricFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACBaseboardConvectiveElectricFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACBaseboardConvectiveElectricFields(TypedDict, total=False):
@@ -22040,7 +21699,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlow(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACLowTemperatureRadiantVariableFlowFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowFields],
     ) -> None: ...  # type: ignore[override]
@@ -22121,7 +21780,7 @@ class ZoneHVACLowTemperatureRadiantVariableFlowDesign(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACLowTemperatureRadiantVariableFlowDesignFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowDesignFields],
     ) -> None: ...  # type: ignore[override]
@@ -22206,7 +21865,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlow(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACLowTemperatureRadiantConstantFlowFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowFields],
     ) -> None: ...  # type: ignore[override]
@@ -22277,7 +21936,7 @@ class ZoneHVACLowTemperatureRadiantConstantFlowDesign(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACLowTemperatureRadiantConstantFlowDesignFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowDesignFields],
     ) -> None: ...  # type: ignore[override]
@@ -22348,10 +22007,7 @@ class ZoneHVACLowTemperatureRadiantElectric(IDFObject):
     heating_setpoint_temperature_schedule_name: str | None
 
     def update(
-        self,
-        values: _ZoneHVACLowTemperatureRadiantElectricFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantElectricFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantElectricFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACLowTemperatureRadiantElectricFields(TypedDict, total=False):
@@ -22394,7 +22050,7 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup(IDFObject):
 
     def update(
         self,
-        values: _ZoneHVACLowTemperatureRadiantSurfaceGroupFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantSurfaceGroupFields],
     ) -> None: ...  # type: ignore[override]
@@ -22457,10 +22113,7 @@ class ZoneHVACHighTemperatureRadiant(IDFObject):
     surface_fractions: ExtensibleList[ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup]
 
     def update(
-        self,
-        values: _ZoneHVACHighTemperatureRadiantFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACHighTemperatureRadiantFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACHighTemperatureRadiantFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACHighTemperatureRadiantFields(TypedDict, total=False):
@@ -22583,7 +22236,7 @@ class ZoneHVACVentilatedSlab(IDFObject):
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
     def update(
-        self, values: _ZoneHVACVentilatedSlabFields = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACVentilatedSlabFields(TypedDict, total=False):
@@ -22665,10 +22318,7 @@ class ZoneHVACVentilatedSlabSlabGroup(IDFObject):
     data: ExtensibleList[ZoneHVACVentilatedSlabSlabGroupDataGroup]
 
     def update(
-        self,
-        values: _ZoneHVACVentilatedSlabSlabGroupFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroupFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroupFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACVentilatedSlabSlabGroupFields(TypedDict, total=False):
@@ -22698,7 +22348,7 @@ class AirTerminalSingleDuctConstantVolumeReheat(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctConstantVolumeReheatFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeReheatFields],
     ) -> None: ...  # type: ignore[override]
@@ -22735,7 +22385,7 @@ class AirTerminalSingleDuctConstantVolumeNoReheat(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctConstantVolumeNoReheatFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeNoReheatFields],
     ) -> None: ...  # type: ignore[override]
@@ -22771,10 +22421,7 @@ class AirTerminalSingleDuctVAVNoReheat(IDFObject):
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
     def update(
-        self,
-        values: _AirTerminalSingleDuctVAVNoReheatFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalSingleDuctVAVNoReheatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctVAVNoReheatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctVAVNoReheatFields(TypedDict, total=False):
@@ -22834,10 +22481,7 @@ class AirTerminalSingleDuctVAVReheat(IDFObject):
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
     def update(
-        self,
-        values: _AirTerminalSingleDuctVAVReheatFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctVAVReheatFields(TypedDict, total=False):
@@ -22896,7 +22540,7 @@ class AirTerminalSingleDuctVAVReheatVariableSpeedFan(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctVAVReheatVariableSpeedFanFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatVariableSpeedFanFields],
     ) -> None: ...  # type: ignore[override]
@@ -22936,7 +22580,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields],
     ) -> None: ...  # type: ignore[override]
@@ -22981,7 +22625,7 @@ class AirTerminalSingleDuctVAVHeatAndCoolReheat(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctVAVHeatAndCoolReheatFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolReheatFields],
     ) -> None: ...  # type: ignore[override]
@@ -23042,10 +22686,7 @@ class AirTerminalSingleDuctSeriesPIUReheat(IDFObject):
     """Only used if Heating Control Type is Modulated Used to determine end of third stage heating; [C]; Default: 37.7; Since: 24.2.0"""
 
     def update(
-        self,
-        values: _AirTerminalSingleDuctSeriesPIUReheatFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctSeriesPIUReheatFields(TypedDict, total=False):
@@ -23116,10 +22757,7 @@ class AirTerminalSingleDuctParallelPIUReheat(IDFObject):
     """Name of a zone that will be impacted by the backdraft damper leakage.; Since: 26.1.0"""
 
     def update(
-        self,
-        values: _AirTerminalSingleDuctParallelPIUReheatFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctParallelPIUReheatFields(TypedDict, total=False):
@@ -23182,7 +22820,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeInduction(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctConstantVolumeFourPipeInductionFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeInductionFields],
     ) -> None: ...  # type: ignore[override]
@@ -23264,7 +22902,7 @@ class AirTerminalSingleDuctConstantVolumeFourPipeBeam(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctConstantVolumeFourPipeBeamFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeBeamFields],
     ) -> None: ...  # type: ignore[override]
@@ -23342,7 +22980,7 @@ class AirTerminalSingleDuctConstantVolumeCooledBeam(IDFObject):
 
     def update(
         self,
-        values: _AirTerminalSingleDuctConstantVolumeCooledBeamFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeCooledBeamFields],
     ) -> None: ...  # type: ignore[override]
@@ -23403,7 +23041,7 @@ class AirTerminalSingleDuctMixer(IDFObject):
     """CurrentOccupancy models demand controlled ventilation using the current number of people DesignOccupancy uses the tot...; Default: CurrentOccupancy"""
 
     def update(
-        self, values: _AirTerminalSingleDuctMixerFields = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctMixerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctMixerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctMixerFields(TypedDict, total=False):
@@ -23440,10 +23078,7 @@ class AirTerminalDualDuctConstantVolume(IDFObject):
     """[m3/s]"""
 
     def update(
-        self,
-        values: _AirTerminalDualDuctConstantVolumeFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalDualDuctConstantVolumeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctConstantVolumeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalDualDuctConstantVolumeFields(TypedDict, total=False):
@@ -23472,7 +23107,7 @@ class AirTerminalDualDuctVAV(IDFObject):
     """This field adjusts the design minimum flow rate by multiplying it using this schedule of fraction values. This field ...; Since: 9.3.0"""
 
     def update(
-        self, values: _AirTerminalDualDuctVAVFields = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAVFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAVFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalDualDuctVAVFields(TypedDict, total=False):
@@ -23502,10 +23137,7 @@ class AirTerminalDualDuctVAVOutdoorAir(IDFObject):
     """CurrentOccupancy models demand controlled ventilation using the current number of people DesignOccupancy uses the tot..."""
 
     def update(
-        self,
-        values: _AirTerminalDualDuctVAVOutdoorAirFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalDualDuctVAVOutdoorAirFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalDualDuctVAVOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalDualDuctVAVOutdoorAirFields(TypedDict, total=False):
@@ -23552,7 +23184,7 @@ class ZoneHVACAirDistributionUnit(IDFObject):
     """This optional field is the name of a DesignSpecification:AirTerminal:Sizing object which specifies sizing adjustments..."""
 
     def update(
-        self, values: _ZoneHVACAirDistributionUnitFields = ..., /, **kwargs: Unpack[_ZoneHVACAirDistributionUnitFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACAirDistributionUnitFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACAirDistributionUnitFields(TypedDict, total=False):
@@ -23611,7 +23243,7 @@ class ZoneHVACExhaustControl(IDFObject):
     """Schedule name of the Balanced Exhaust Fraction."""
 
     def update(
-        self, values: _ZoneHVACExhaustControlFields = ..., /, **kwargs: Unpack[_ZoneHVACExhaustControlFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACExhaustControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACExhaustControlFields(TypedDict, total=False):
@@ -23682,7 +23314,7 @@ class ZoneHVACEquipmentList(IDFObject):
     equipment: ExtensibleList[ZoneHVACEquipmentListEquipmentGroup]
 
     def update(
-        self, values: _ZoneHVACEquipmentListFields = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEquipmentListFields(TypedDict, total=False):
@@ -23704,10 +23336,7 @@ class ZoneHVACEquipmentConnections(IDFObject):
     """The optional basis node(s) used to calculate the base return air flow rate for the first return air node in this zone..."""
 
     def update(
-        self,
-        values: _ZoneHVACEquipmentConnectionsFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACEquipmentConnectionsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACEquipmentConnectionsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
@@ -23732,10 +23361,7 @@ class SpaceHVACEquipmentConnections(IDFObject):
     """The optional basis node(s) used to calculate the base return air flow rate for the first return air node in this spac..."""
 
     def update(
-        self,
-        values: _SpaceHVACEquipmentConnectionsFields = ...,
-        /,
-        **kwargs: Unpack[_SpaceHVACEquipmentConnectionsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACEquipmentConnectionsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
@@ -23809,10 +23435,7 @@ class SpaceHVACZoneEquipmentSplitter(IDFObject):
     spaces: ExtensibleList[SpaceHVACZoneEquipmentSplitterSpacesGroup]
 
     def update(
-        self,
-        values: _SpaceHVACZoneEquipmentSplitterFields = ...,
-        /,
-        **kwargs: Unpack[_SpaceHVACZoneEquipmentSplitterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneEquipmentSplitterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACZoneEquipmentSplitterFields(TypedDict, total=False):
@@ -23884,7 +23507,7 @@ class SpaceHVACZoneEquipmentMixer(IDFObject):
     spaces: ExtensibleList[SpaceHVACZoneEquipmentMixerSpacesGroup]
 
     def update(
-        self, values: _SpaceHVACZoneEquipmentMixerFields = ..., /, **kwargs: Unpack[_SpaceHVACZoneEquipmentMixerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneEquipmentMixerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACZoneEquipmentMixerFields(TypedDict, total=False):
@@ -23911,7 +23534,7 @@ class SpaceHVACZoneReturnMixer(IDFObject):
     spaces: ExtensibleList[SpaceHVACZoneReturnMixerSpacesGroup]
 
     def update(
-        self, values: _SpaceHVACZoneReturnMixerFields = ..., /, **kwargs: Unpack[_SpaceHVACZoneReturnMixerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SpaceHVACZoneReturnMixerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACZoneReturnMixerFields(TypedDict, total=False):
@@ -23972,7 +23595,7 @@ class FanSystemModel(IDFObject):
     """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1"""
     speed_fractions: ExtensibleList[FanSystemModelSpeedFractionsGroup]
 
-    def update(self, values: _FanSystemModelFields = ..., /, **kwargs: Unpack[_FanSystemModelFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModelFields]) -> None: ...  # type: ignore[override]
 
 class _FanSystemModelFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24020,7 +23643,7 @@ class FanConstantVolume(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _FanConstantVolumeFields = ..., /, **kwargs: Unpack[_FanConstantVolumeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanConstantVolumeFields]) -> None: ...  # type: ignore[override]
 
 class _FanConstantVolumeFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24065,7 +23688,7 @@ class FanVariableVolume(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _FanVariableVolumeFields = ..., /, **kwargs: Unpack[_FanVariableVolumeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanVariableVolumeFields]) -> None: ...  # type: ignore[override]
 
 class _FanVariableVolumeFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24108,7 +23731,7 @@ class FanOnOff(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _FanOnOffFields = ..., /, **kwargs: Unpack[_FanOnOffFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanOnOffFields]) -> None: ...  # type: ignore[override]
 
 class _FanOnOffFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24147,7 +23770,7 @@ class FanZoneExhaust(IDFObject):
     balanced_exhaust_fraction_schedule_name: str | None
     """Used to control fan's impact on flow at the return air node. Enter the portion of the exhaust that is balanced by sim..."""
 
-    def update(self, values: _FanZoneExhaustFields = ..., /, **kwargs: Unpack[_FanZoneExhaustFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanZoneExhaustFields]) -> None: ...  # type: ignore[override]
 
 class _FanZoneExhaustFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24177,10 +23800,7 @@ class FanPerformanceNightVentilation(IDFObject):
     """0.0 means fan motor outside of airstream 1.0 means fan motor inside of airstream; Default: 1.0; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _FanPerformanceNightVentilationFields = ...,
-        /,
-        **kwargs: Unpack[_FanPerformanceNightVentilationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanPerformanceNightVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FanPerformanceNightVentilationFields(TypedDict, total=False):
@@ -24264,7 +23884,7 @@ class FanComponentModel(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _FanComponentModelFields = ..., /, **kwargs: Unpack[_FanComponentModelFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanComponentModelFields]) -> None: ...  # type: ignore[override]
 
 class _FanComponentModelFields(TypedDict, total=False):
     air_inlet_node_name: str | None
@@ -24335,7 +23955,7 @@ class CoilCoolingWater(IDFObject):
     design_water_temperature_difference: float | None
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
 
-    def update(self, values: _CoilCoolingWaterFields = ..., /, **kwargs: Unpack[_CoilCoolingWaterFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingWaterFields]) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -24403,10 +24023,7 @@ class CoilCoolingWaterDetailedGeometry(IDFObject):
     """This input field is optional. If specified, it is used for sizing the coil Design Geometry Parameters. If autosized, ...; [C]; Default: Autosize; Since: 9.6.0"""
 
     def update(
-        self,
-        values: _CoilCoolingWaterDetailedGeometryFields = ...,
-        /,
-        **kwargs: Unpack[_CoilCoolingWaterDetailedGeometryFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingWaterDetailedGeometryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingWaterDetailedGeometryFields(TypedDict, total=False):
@@ -24467,7 +24084,7 @@ class CoilSystemCoolingWater(IDFObject):
     """Only used for heat recovery loops. Entering a coil name indicates a heat recovery loop is specified. Coil listed is c..."""
 
     def update(
-        self, values: _CoilSystemCoolingWaterFields = ..., /, **kwargs: Unpack[_CoilSystemCoolingWaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingWaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilSystemCoolingWaterFields(TypedDict, total=False):
@@ -24508,7 +24125,7 @@ class CoilCoolingDX(IDFObject):
     condensate_collection_water_storage_tank_name: str | None
     evaporative_condenser_supply_water_storage_tank_name: str | None
 
-    def update(self, values: _CoilCoolingDXFields = ..., /, **kwargs: Unpack[_CoilCoolingDXFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXFields]) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXFields(TypedDict, total=False):
     evaporator_inlet_node_name: str | None
@@ -24566,10 +24183,7 @@ class CoilCoolingDXCurveFitPerformance(IDFObject):
     """The alternative operating mode is used for enhanced dehumidification. If this is blank, the coil will always operate ..."""
 
     def update(
-        self,
-        values: _CoilCoolingDXCurveFitPerformanceFields = ...,
-        /,
-        **kwargs: Unpack[_CoilCoolingDXCurveFitPerformanceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitPerformanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXCurveFitPerformanceFields(TypedDict, total=False):
@@ -24640,10 +24254,7 @@ class CoilCoolingDXCurveFitOperatingMode(IDFObject):
     speed_10_name: str | None
 
     def update(
-        self,
-        values: _CoilCoolingDXCurveFitOperatingModeFields = ...,
-        /,
-        **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingModeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingModeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXCurveFitOperatingModeFields(TypedDict, total=False):
@@ -24709,7 +24320,7 @@ class CoilCoolingDXCurveFitSpeed(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow I..."""
 
     def update(
-        self, values: _CoilCoolingDXCurveFitSpeedFields = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXCurveFitSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXCurveFitSpeedFields(TypedDict, total=False):
@@ -24744,7 +24355,7 @@ class CoilDXASHRAE205Performance(IDFObject):
     """Not yet implemented / reserved for future use. Full load heating capacity at AHRI 210/240 'H1' test conditions. Used ...; [W]; Default: Autosize"""
 
     def update(
-        self, values: _CoilDXASHRAE205PerformanceFields = ..., /, **kwargs: Unpack[_CoilDXASHRAE205PerformanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilDXASHRAE205PerformanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilDXASHRAE205PerformanceFields(TypedDict, total=False):
@@ -24822,7 +24433,7 @@ class CoilCoolingDXSingleSpeed(IDFObject):
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
 
     def update(
-        self, values: _CoilCoolingDXSingleSpeedFields = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXSingleSpeedFields(TypedDict, total=False):
@@ -24946,7 +24557,7 @@ class CoilCoolingDXTwoSpeed(IDFObject):
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
 
     def update(
-        self, values: _CoilCoolingDXTwoSpeedFields = ..., /, **kwargs: Unpack[_CoilCoolingDXTwoSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXTwoSpeedFields(TypedDict, total=False):
@@ -25188,7 +24799,7 @@ class CoilCoolingDXMultiSpeed(IDFObject):
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
 
     def update(
-        self, values: _CoilCoolingDXMultiSpeedFields = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXMultiSpeedFields(TypedDict, total=False):
@@ -25548,7 +25159,7 @@ class CoilCoolingDXVariableSpeed(IDFObject):
     """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
 
     def update(
-        self, values: _CoilCoolingDXVariableSpeedFields = ..., /, **kwargs: Unpack[_CoilCoolingDXVariableSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXVariableSpeedFields(TypedDict, total=False):
@@ -25716,7 +25327,7 @@ class CoilCoolingDXTwoStageWithHumidityControlMode(IDFObject):
 
     def update(
         self,
-        values: _CoilCoolingDXTwoStageWithHumidityControlModeFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilCoolingDXTwoStageWithHumidityControlModeFields],
     ) -> None: ...  # type: ignore[override]
@@ -25792,7 +25403,7 @@ class CoilPerformanceDXCooling(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow"""
 
     def update(
-        self, values: _CoilPerformanceDXCoolingFields = ..., /, **kwargs: Unpack[_CoilPerformanceDXCoolingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilPerformanceDXCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilPerformanceDXCoolingFields(TypedDict, total=False):
@@ -25837,10 +25448,7 @@ class CoilCoolingDXVariableRefrigerantFlow(IDFObject):
     name_of_water_storage_tank_for_condensate_collection: str | None
 
     def update(
-        self,
-        values: _CoilCoolingDXVariableRefrigerantFlowFields = ...,
-        /,
-        **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXVariableRefrigerantFlowFields(TypedDict, total=False):
@@ -25870,10 +25478,7 @@ class CoilHeatingDXVariableRefrigerantFlow(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow"""
 
     def update(
-        self,
-        values: _CoilHeatingDXVariableRefrigerantFlowFields = ...,
-        /,
-        **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingDXVariableRefrigerantFlowFields(TypedDict, total=False):
@@ -25905,7 +25510,7 @@ class CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
 
     def update(
         self,
-        values: _CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
@@ -25937,7 +25542,7 @@ class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
 
     def update(
         self,
-        values: _CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
@@ -25980,7 +25585,7 @@ class CoilHeatingWater(IDFObject):
     design_water_temperature_difference: float | None
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
 
-    def update(self, values: _CoilHeatingWaterFields = ..., /, **kwargs: Unpack[_CoilHeatingWaterFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingWaterFields]) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingWaterFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26019,7 +25624,7 @@ class CoilHeatingSteam(IDFObject):
     temperature_setpoint_node_name: str | None
     """Required if Coil Control Type is TemperatureSetpointControl"""
 
-    def update(self, values: _CoilHeatingSteamFields = ..., /, **kwargs: Unpack[_CoilHeatingSteamFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingSteamFields]) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingSteamFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26048,7 +25653,7 @@ class CoilHeatingElectric(IDFObject):
     """Required if coil is temperature controlled."""
 
     def update(
-        self, values: _CoilHeatingElectricFields = ..., /, **kwargs: Unpack[_CoilHeatingElectricFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingElectricFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingElectricFields(TypedDict, total=False):
@@ -26088,10 +25693,7 @@ class CoilHeatingElectricMultiStage(IDFObject):
     """[W]"""
 
     def update(
-        self,
-        values: _CoilHeatingElectricMultiStageFields = ...,
-        /,
-        **kwargs: Unpack[_CoilHeatingElectricMultiStageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingElectricMultiStageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingElectricMultiStageFields(TypedDict, total=False):
@@ -26145,7 +25747,7 @@ class CoilHeatingFuel(IDFObject):
     off_cycle_parasitic_fuel_load: float | None
     """parasitic fuel load when the coil is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
-    def update(self, values: _CoilHeatingFuelFields = ..., /, **kwargs: Unpack[_CoilHeatingFuelFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingFuelFields]) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingFuelFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -26214,7 +25816,7 @@ class CoilHeatingGasMultiStage(IDFObject):
     """Stage 4 parasitic electric load associated with the gas coil operation such as an inducer fan, etc. This will be modi...; [W] (W); Since: 23.2.0"""
 
     def update(
-        self, values: _CoilHeatingGasMultiStageFields = ..., /, **kwargs: Unpack[_CoilHeatingGasMultiStageFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingGasMultiStageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingGasMultiStageFields(TypedDict, total=False):
@@ -26268,7 +25870,7 @@ class CoilHeatingDesuperheater(IDFObject):
     """parasitic electric load associated with the desuperheater coil operation such as solenoid valves, etc.; [W] (W); Range: >= 0.0; Since: 23.2.0"""
 
     def update(
-        self, values: _CoilHeatingDesuperheaterFields = ..., /, **kwargs: Unpack[_CoilHeatingDesuperheaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingDesuperheaterFields(TypedDict, total=False):
@@ -26357,7 +25959,7 @@ class CoilHeatingDXSingleSpeed(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = secondary air flow fraction of t..."""
 
     def update(
-        self, values: _CoilHeatingDXSingleSpeedFields = ..., /, **kwargs: Unpack[_CoilHeatingDXSingleSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingDXSingleSpeedFields(TypedDict, total=False):
@@ -26565,7 +26167,7 @@ class CoilHeatingDXMultiSpeed(IDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = secondary air flow fraction of t..."""
 
     def update(
-        self, values: _CoilHeatingDXMultiSpeedFields = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXMultiSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingDXMultiSpeedFields(TypedDict, total=False):
@@ -26843,7 +26445,7 @@ class CoilHeatingDXVariableSpeed(IDFObject):
     """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
 
     def update(
-        self, values: _CoilHeatingDXVariableSpeedFields = ..., /, **kwargs: Unpack[_CoilHeatingDXVariableSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilHeatingDXVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilHeatingDXVariableSpeedFields(TypedDict, total=False):
@@ -27001,7 +26603,7 @@ class CoilCoolingWaterToAirHeatPumpParameterEstimation(IDFObject):
 
     def update(
         self,
-        values: _CoilCoolingWaterToAirHeatPumpParameterEstimationFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
@@ -27091,7 +26693,7 @@ class CoilHeatingWaterToAirHeatPumpParameterEstimation(IDFObject):
 
     def update(
         self,
-        values: _CoilHeatingWaterToAirHeatPumpParameterEstimationFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpParameterEstimationFields],
     ) -> None: ...  # type: ignore[override]
@@ -27169,7 +26771,7 @@ class CoilCoolingWaterToAirHeatPumpEquationFit(IDFObject):
 
     def update(
         self,
-        values: _CoilCoolingWaterToAirHeatPumpEquationFitFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
@@ -27494,7 +27096,7 @@ class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
 
     def update(
         self,
-        values: _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
@@ -27680,7 +27282,7 @@ class CoilHeatingWaterToAirHeatPumpEquationFit(IDFObject):
 
     def update(
         self,
-        values: _CoilHeatingWaterToAirHeatPumpEquationFitFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFitFields],
     ) -> None: ...  # type: ignore[override]
@@ -27966,7 +27568,7 @@ class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(IDFObject):
 
     def update(
         self,
-        values: _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields],
     ) -> None: ...  # type: ignore[override]
@@ -28168,7 +27770,7 @@ class CoilWaterHeatingAirToWaterHeatPumpPumped(IDFObject):
 
     def update(
         self,
-        values: _CoilWaterHeatingAirToWaterHeatPumpPumpedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpPumpedFields],
     ) -> None: ...  # type: ignore[override]
@@ -28250,7 +27852,7 @@ class CoilWaterHeatingAirToWaterHeatPumpWrapped(IDFObject):
 
     def update(
         self,
-        values: _CoilWaterHeatingAirToWaterHeatPumpWrappedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpWrappedFields],
     ) -> None: ...  # type: ignore[override]
@@ -28567,7 +28169,7 @@ class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(IDFObject):
 
     def update(
         self,
-        values: _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields],
     ) -> None: ...  # type: ignore[override]
@@ -28775,10 +28377,7 @@ class CoilWaterHeatingDesuperheater(IDFObject):
     """Parasitic electric load consumed when the desuperheater water heating coil is off. Parasitic electric load does not c...; [W] (W); Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _CoilWaterHeatingDesuperheaterFields = ...,
-        /,
-        **kwargs: Unpack[_CoilWaterHeatingDesuperheaterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilWaterHeatingDesuperheaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilWaterHeatingDesuperheaterFields(TypedDict, total=False):
@@ -28851,7 +28450,7 @@ class CoilSystemCoolingDX(IDFObject):
     """DX cooling coil leaving minimum air temperature defines the minimum DX cooling coil leaving air temperature that shou...; [C]; Default: 2.0; Range: >= 0.0, <= 7.2"""
 
     def update(
-        self, values: _CoilSystemCoolingDXFields = ..., /, **kwargs: Unpack[_CoilSystemCoolingDXFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemCoolingDXFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilSystemCoolingDXFields(TypedDict, total=False):
@@ -28887,7 +28486,7 @@ class CoilSystemHeatingDX(IDFObject):
     heating_coil_name: str | None
 
     def update(
-        self, values: _CoilSystemHeatingDXFields = ..., /, **kwargs: Unpack[_CoilSystemHeatingDXFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemHeatingDXFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilSystemHeatingDXFields(TypedDict, total=False):
@@ -28907,7 +28506,7 @@ class CoilSystemCoolingWaterHeatExchangerAssisted(IDFObject):
 
     def update(
         self,
-        values: _CoilSystemCoolingWaterHeatExchangerAssistedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilSystemCoolingWaterHeatExchangerAssistedFields],
     ) -> None: ...  # type: ignore[override]
@@ -28939,7 +28538,7 @@ class CoilSystemCoolingDXHeatExchangerAssisted(IDFObject):
 
     def update(
         self,
-        values: _CoilSystemCoolingDXHeatExchangerAssistedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_CoilSystemCoolingDXHeatExchangerAssistedFields],
     ) -> None: ...  # type: ignore[override]
@@ -29001,10 +28600,7 @@ class CoilSystemIntegratedHeatPumpAirSource(IDFObject):
     """[dimensionless]; Default: 1; Range: > 0, < 10"""
 
     def update(
-        self,
-        values: _CoilSystemIntegratedHeatPumpAirSourceFields = ...,
-        /,
-        **kwargs: Unpack[_CoilSystemIntegratedHeatPumpAirSourceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilSystemIntegratedHeatPumpAirSourceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilSystemIntegratedHeatPumpAirSourceFields(TypedDict, total=False):
@@ -29228,10 +28824,7 @@ class CoilCoolingDXSingleSpeedThermalStorage(IDFObject):
     """For fluid storage tanks only, maximum limit for storage tank If omitted,then the maximum temperature limit is that us...; [C]"""
 
     def update(
-        self,
-        values: _CoilCoolingDXSingleSpeedThermalStorageFields = ...,
-        /,
-        **kwargs: Unpack[_CoilCoolingDXSingleSpeedThermalStorageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilCoolingDXSingleSpeedThermalStorageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoilCoolingDXSingleSpeedThermalStorageFields(TypedDict, total=False):
@@ -29359,10 +28952,7 @@ class EvaporativeCoolerDirectCelDekPad(IDFObject):
     water_supply_storage_tank_name: str | None
 
     def update(
-        self,
-        values: _EvaporativeCoolerDirectCelDekPadFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeCoolerDirectCelDekPadFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerDirectCelDekPadFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeCoolerDirectCelDekPadFields(TypedDict, total=False):
@@ -29403,10 +28993,7 @@ class EvaporativeCoolerIndirectCelDekPad(IDFObject):
     """Enter the name of an outdoor air node"""
 
     def update(
-        self,
-        values: _EvaporativeCoolerIndirectCelDekPadFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeCoolerIndirectCelDekPadFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerIndirectCelDekPadFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeCoolerIndirectCelDekPadFields(TypedDict, total=False):
@@ -29449,10 +29036,7 @@ class EvaporativeCoolerIndirectWetCoil(IDFObject):
     """Enter the name of an outdoor air node"""
 
     def update(
-        self,
-        values: _EvaporativeCoolerIndirectWetCoilFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeCoolerIndirectWetCoilFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerIndirectWetCoilFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeCoolerIndirectWetCoilFields(TypedDict, total=False):
@@ -29522,7 +29106,7 @@ class EvaporativeCoolerIndirectResearchSpecial(IDFObject):
 
     def update(
         self,
-        values: _EvaporativeCoolerIndirectResearchSpecialFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_EvaporativeCoolerIndirectResearchSpecialFields],
     ) -> None: ...  # type: ignore[override]
@@ -29589,10 +29173,7 @@ class EvaporativeCoolerDirectResearchSpecial(IDFObject):
     """This numeric field defines the evaporative cooler air inlet node dry-bulb temperature maximum limit in degrees Celsiu..."""
 
     def update(
-        self,
-        values: _EvaporativeCoolerDirectResearchSpecialFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeCoolerDirectResearchSpecialFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeCoolerDirectResearchSpecialFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeCoolerDirectResearchSpecialFields(TypedDict, total=False):
@@ -29631,7 +29212,7 @@ class HumidifierSteamElectric(IDFObject):
     water_storage_tank_name: str | None
 
     def update(
-        self, values: _HumidifierSteamElectricFields = ..., /, **kwargs: Unpack[_HumidifierSteamElectricFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HumidifierSteamElectricFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HumidifierSteamElectricFields(TypedDict, total=False):
@@ -29668,7 +29249,7 @@ class HumidifierSteamGas(IDFObject):
     """The inlet water temperature can be fixed at 20C as it is done for electric steam humidifier or it can be allowed to v...; Default: FixedInletWaterTemperature"""
 
     def update(
-        self, values: _HumidifierSteamGasFields = ..., /, **kwargs: Unpack[_HumidifierSteamGasFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HumidifierSteamGasFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HumidifierSteamGasFields(TypedDict, total=False):
@@ -29739,7 +29320,7 @@ class DehumidifierDesiccantNoFans(IDFObject):
     """Nominal regen temperature upon which the regen energy modifier curve is based. Not used if Default if chosen for the ...; [C]; Range: >= 40.0, <= 250.0"""
 
     def update(
-        self, values: _DehumidifierDesiccantNoFansFields = ..., /, **kwargs: Unpack[_DehumidifierDesiccantNoFansFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DehumidifierDesiccantNoFansFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DehumidifierDesiccantNoFansFields(TypedDict, total=False):
@@ -29810,7 +29391,7 @@ class DehumidifierDesiccantSystem(IDFObject):
     """Curve object type must be Curve:Quadratic or Curve:Cubic"""
 
     def update(
-        self, values: _DehumidifierDesiccantSystemFields = ..., /, **kwargs: Unpack[_DehumidifierDesiccantSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DehumidifierDesiccantSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DehumidifierDesiccantSystemFields(TypedDict, total=False):
@@ -29869,10 +29450,7 @@ class HeatExchangerAirToAirFlatPlate(IDFObject):
     secondary_air_outlet_node_name: str | None
 
     def update(
-        self,
-        values: _HeatExchangerAirToAirFlatPlateFields = ...,
-        /,
-        **kwargs: Unpack[_HeatExchangerAirToAirFlatPlateFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerAirToAirFlatPlateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatExchangerAirToAirFlatPlateFields(TypedDict, total=False):
@@ -29938,10 +29516,7 @@ class HeatExchangerAirToAirSensibleAndLatent(IDFObject):
     """optional if this field has value, then the latent effectiveness for cooling will be the value in N5 multiplied by thi...; Since: 24.1.0"""
 
     def update(
-        self,
-        values: _HeatExchangerAirToAirSensibleAndLatentFields = ...,
-        /,
-        **kwargs: Unpack[_HeatExchangerAirToAirSensibleAndLatentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerAirToAirSensibleAndLatentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatExchangerAirToAirSensibleAndLatentFields(TypedDict, total=False):
@@ -29988,10 +29563,7 @@ class HeatExchangerDesiccantBalancedFlow(IDFObject):
     """Yes means that the heat exchanger will be locked out (off) when the economizer is operating or high humidity control ...; Default: Yes"""
 
     def update(
-        self,
-        values: _HeatExchangerDesiccantBalancedFlowFields = ...,
-        /,
-        **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatExchangerDesiccantBalancedFlowFields(TypedDict, total=False):
@@ -30098,7 +29670,7 @@ class HeatExchangerDesiccantBalancedFlowPerformanceDataType1(IDFObject):
 
     def update(
         self,
-        values: _HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields],
     ) -> None: ...  # type: ignore[override]
@@ -30339,7 +29911,7 @@ class AirLoopHVACUnitarySystem(IDFObject):
     """The name of the performance specification object used to describe the multispeed coil."""
 
     def update(
-        self, values: _AirLoopHVACUnitarySystemFields = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitarySystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitarySystemFields(TypedDict, total=False):
@@ -30493,10 +30065,7 @@ class UnitarySystemPerformanceMultispeed(IDFObject):
     flow_ratios: ExtensibleList[UnitarySystemPerformanceMultispeedFlowRatiosGroup]
 
     def update(
-        self,
-        values: _UnitarySystemPerformanceMultispeedFields = ...,
-        /,
-        **kwargs: Unpack[_UnitarySystemPerformanceMultispeedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UnitarySystemPerformanceMultispeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UnitarySystemPerformanceMultispeedFields(TypedDict, total=False):
@@ -30532,10 +30101,7 @@ class AirLoopHVACUnitaryFurnaceHeatOnly(IDFObject):
     heating_coil_name: str | None
 
     def update(
-        self,
-        values: _AirLoopHVACUnitaryFurnaceHeatOnlyFields = ...,
-        /,
-        **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatOnlyFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatOnlyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryFurnaceHeatOnlyFields(TypedDict, total=False):
@@ -30609,10 +30175,7 @@ class AirLoopHVACUnitaryFurnaceHeatCool(IDFObject):
     """Only required if dehumidification control type is 'CoolReheat'"""
 
     def update(
-        self,
-        values: _AirLoopHVACUnitaryFurnaceHeatCoolFields = ...,
-        /,
-        **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatCoolFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatCoolFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryFurnaceHeatCoolFields(TypedDict, total=False):
@@ -30680,7 +30243,7 @@ class AirLoopHVACUnitaryHeatOnly(IDFObject):
     heating_coil_name: str | None
 
     def update(
-        self, values: _AirLoopHVACUnitaryHeatOnlyFields = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatOnlyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatOnlyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryHeatOnlyFields(TypedDict, total=False):
@@ -30754,7 +30317,7 @@ class AirLoopHVACUnitaryHeatCool(IDFObject):
     """Only required if dehumidification control type is 'CoolReheat'"""
 
     def update(
-        self, values: _AirLoopHVACUnitaryHeatCoolFields = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryHeatCoolFields(TypedDict, total=False):
@@ -30855,10 +30418,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAir(IDFObject):
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
     def update(
-        self,
-        values: _AirLoopHVACUnitaryHeatPumpAirToAirFields = ...,
-        /,
-        **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryHeatPumpAirToAirFields(TypedDict, total=False):
@@ -30960,10 +30520,7 @@ class AirLoopHVACUnitaryHeatPumpWaterToAir(IDFObject):
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0; Since: 25.2.0"""
 
     def update(
-        self,
-        values: _AirLoopHVACUnitaryHeatPumpWaterToAirFields = ...,
-        /,
-        **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAirFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACUnitaryHeatPumpWaterToAirFields(TypedDict, total=False):
@@ -31087,7 +30644,7 @@ class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(IDFObject):
 
     def update(
         self,
-        values: _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields],
     ) -> None: ...  # type: ignore[override]
@@ -31219,7 +30776,7 @@ class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(IDFObject):
 
     def update(
         self,
-        values: _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields],
     ) -> None: ...  # type: ignore[override]
@@ -31453,10 +31010,7 @@ class AirConditionerVariableRefrigerantFlow(IDFObject):
     """Enter the time constant used to model the transition from cooling only mode to heat recovery mode; [hr]; Default: 0.0"""
 
     def update(
-        self,
-        values: _AirConditionerVariableRefrigerantFlowFields = ...,
-        /,
-        **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirConditionerVariableRefrigerantFlowFields(TypedDict, total=False):
@@ -31650,7 +31204,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
 
     def update(
         self,
-        values: _AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields],
     ) -> None: ...  # type: ignore[override]
@@ -31826,7 +31380,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(IDFObject):
 
     def update(
         self,
-        values: _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields],
     ) -> None: ...  # type: ignore[override]
@@ -31904,7 +31458,7 @@ class ZoneTerminalUnitList(IDFObject):
     terminal_units: ExtensibleList[ZoneTerminalUnitListTerminalUnitsGroup]
 
     def update(
-        self, values: _ZoneTerminalUnitListFields = ..., /, **kwargs: Unpack[_ZoneTerminalUnitListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneTerminalUnitListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneTerminalUnitListFields(TypedDict, total=False):
@@ -31928,7 +31482,7 @@ class ControllerWaterCoil(IDFObject):
     """[m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self, values: _ControllerWaterCoilFields = ..., /, **kwargs: Unpack[_ControllerWaterCoilFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerWaterCoilFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ControllerWaterCoilFields(TypedDict, total=False):
@@ -32010,7 +31564,7 @@ class ControllerOutdoorAir(IDFObject):
     """This input is only used when the Controller:OutdoorAir is used in conjunction with an AirLoopHVAC:UnitarySystem with ...; Default: InterlockedWithMechanicalCooling; Since: 23.2.0"""
 
     def update(
-        self, values: _ControllerOutdoorAirFields = ..., /, **kwargs: Unpack[_ControllerOutdoorAirFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerOutdoorAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ControllerOutdoorAirFields(TypedDict, total=False):
@@ -32091,10 +31645,7 @@ class ControllerMechanicalVentilation(IDFObject):
     zone_specifications: ExtensibleList[ControllerMechanicalVentilationZoneSpecificationsGroup]
 
     def update(
-        self,
-        values: _ControllerMechanicalVentilationFields = ...,
-        /,
-        **kwargs: Unpack[_ControllerMechanicalVentilationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ControllerMechanicalVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ControllerMechanicalVentilationFields(TypedDict, total=False):
@@ -32139,7 +31690,7 @@ class AirLoopHVACControllerList(IDFObject):
     controller_8_name: str | None
 
     def update(
-        self, values: _AirLoopHVACControllerListFields = ..., /, **kwargs: Unpack[_AirLoopHVACControllerListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACControllerListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACControllerListFields(TypedDict, total=False):
@@ -32184,7 +31735,7 @@ class AirLoopHVAC(IDFObject):
     design_return_air_flow_fraction_of_supply_air_flow: float | None
     """The design return air flow rate as a fraction of supply air flow rate with no exhaust. This can be used to model a pr...; Default: 1.0; Range: >= 0.0"""
 
-    def update(self, values: _AirLoopHVACFields = ..., /, **kwargs: Unpack[_AirLoopHVACFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACFields]) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACFields(TypedDict, total=False):
     controller_list_name: str | None
@@ -32222,7 +31773,7 @@ class AirLoopHVACOutdoorAirSystemEquipmentList(IDFObject):
 
     def update(
         self,
-        values: _AirLoopHVACOutdoorAirSystemEquipmentListFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemEquipmentListFields],
     ) -> None: ...  # type: ignore[override]
@@ -32256,7 +31807,7 @@ class AirLoopHVACOutdoorAirSystem(IDFObject):
     """Enter the name of an AirLoopHVAC:OutdoorAirSystem:EquipmentList object."""
 
     def update(
-        self, values: _AirLoopHVACOutdoorAirSystemFields = ..., /, **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACOutdoorAirSystemFields(TypedDict, total=False):
@@ -32275,7 +31826,7 @@ class OutdoorAirMixer(IDFObject):
     return_air_stream_node_name: str | None
     """Name of Return Air Stream Node"""
 
-    def update(self, values: _OutdoorAirMixerFields = ..., /, **kwargs: Unpack[_OutdoorAirMixerFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirMixerFields]) -> None: ...  # type: ignore[override]
 
 class _OutdoorAirMixerFields(TypedDict, total=False):
     mixed_air_node_name: str | None
@@ -32295,7 +31846,7 @@ class AirLoopHVACZoneSplitter(IDFObject):
     nodes: ExtensibleList[AirLoopHVACZoneSplitterNodesGroup]
 
     def update(
-        self, values: _AirLoopHVACZoneSplitterFields = ..., /, **kwargs: Unpack[_AirLoopHVACZoneSplitterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACZoneSplitterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACZoneSplitterFields(TypedDict, total=False):
@@ -32316,7 +31867,7 @@ class AirLoopHVACSupplyPlenum(IDFObject):
     nodes: ExtensibleList[AirLoopHVACSupplyPlenumNodesGroup]
 
     def update(
-        self, values: _AirLoopHVACSupplyPlenumFields = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPlenumFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPlenumFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACSupplyPlenumFields(TypedDict, total=False):
@@ -32338,7 +31889,7 @@ class AirLoopHVACSupplyPath(IDFObject):
     components: ExtensibleList[AirLoopHVACSupplyPathComponentsGroup]
 
     def update(
-        self, values: _AirLoopHVACSupplyPathFields = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPathFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSupplyPathFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACSupplyPathFields(TypedDict, total=False):
@@ -32357,7 +31908,7 @@ class AirLoopHVACZoneMixer(IDFObject):
     nodes: ExtensibleList[AirLoopHVACZoneMixerNodesGroup]
 
     def update(
-        self, values: _AirLoopHVACZoneMixerFields = ..., /, **kwargs: Unpack[_AirLoopHVACZoneMixerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACZoneMixerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACZoneMixerFields(TypedDict, total=False):
@@ -32379,7 +31930,7 @@ class AirLoopHVACReturnPlenum(IDFObject):
     nodes: ExtensibleList[AirLoopHVACReturnPlenumNodesGroup]
 
     def update(
-        self, values: _AirLoopHVACReturnPlenumFields = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPlenumFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPlenumFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACReturnPlenumFields(TypedDict, total=False):
@@ -32402,7 +31953,7 @@ class AirLoopHVACReturnPath(IDFObject):
     components: ExtensibleList[AirLoopHVACReturnPathComponentsGroup]
 
     def update(
-        self, values: _AirLoopHVACReturnPathFields = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPathFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACReturnPathFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACReturnPathFields(TypedDict, total=False):
@@ -32418,7 +31969,7 @@ class AirLoopHVACExhaustSystem(IDFObject):
     fan_name: str | None
 
     def update(
-        self, values: _AirLoopHVACExhaustSystemFields = ..., /, **kwargs: Unpack[_AirLoopHVACExhaustSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACExhaustSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACExhaustSystemFields(TypedDict, total=False):
@@ -32455,10 +32006,7 @@ class AirLoopHVACDedicatedOutdoorAirSystem(IDFObject):
     airloophvacs: ExtensibleList[AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup]
 
     def update(
-        self,
-        values: _AirLoopHVACDedicatedOutdoorAirSystemFields = ...,
-        /,
-        **kwargs: Unpack[_AirLoopHVACDedicatedOutdoorAirSystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACDedicatedOutdoorAirSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACDedicatedOutdoorAirSystemFields(TypedDict, total=False):
@@ -32484,7 +32032,7 @@ class AirLoopHVACMixer(IDFObject):
     outlet_node_name: str | None
     nodes: ExtensibleList[AirLoopHVACMixerNodesGroup]
 
-    def update(self, values: _AirLoopHVACMixerFields = ..., /, **kwargs: Unpack[_AirLoopHVACMixerFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACMixerFields]) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
@@ -32502,7 +32050,7 @@ class AirLoopHVACSplitter(IDFObject):
     nodes: ExtensibleList[AirLoopHVACSplitterNodesGroup]
 
     def update(
-        self, values: _AirLoopHVACSplitterFields = ..., /, **kwargs: Unpack[_AirLoopHVACSplitterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirLoopHVACSplitterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirLoopHVACSplitterFields(TypedDict, total=False):
@@ -32524,7 +32072,7 @@ class Branch(IDFObject):
     """Optional field to include this branch in plant pressure drop calculations This field is only relevant for branches in..."""
     components: ExtensibleList[BranchComponentsGroup]
 
-    def update(self, values: _BranchFields = ..., /, **kwargs: Unpack[_BranchFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BranchFields]) -> None: ...  # type: ignore[override]
 
 class _BranchFields(TypedDict, total=False):
     pressure_drop_curve_name: str | None
@@ -32540,7 +32088,7 @@ class BranchList(IDFObject):
 
     branches: ExtensibleList[BranchListBranchesGroup]
 
-    def update(self, values: _BranchListFields = ..., /, **kwargs: Unpack[_BranchListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BranchListFields]) -> None: ...  # type: ignore[override]
 
 class _BranchListFields(TypedDict, total=False):
     branches: list[Any]
@@ -32556,7 +32104,7 @@ class ConnectorSplitter(IDFObject):
     inlet_branch_name: str | None
     branches: ExtensibleList[ConnectorSplitterBranchesGroup]
 
-    def update(self, values: _ConnectorSplitterFields = ..., /, **kwargs: Unpack[_ConnectorSplitterFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorSplitterFields]) -> None: ...  # type: ignore[override]
 
 class _ConnectorSplitterFields(TypedDict, total=False):
     inlet_branch_name: str | None
@@ -32573,7 +32121,7 @@ class ConnectorMixer(IDFObject):
     outlet_branch_name: str | None
     branches: ExtensibleList[ConnectorMixerBranchesGroup]
 
-    def update(self, values: _ConnectorMixerFields = ..., /, **kwargs: Unpack[_ConnectorMixerFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorMixerFields]) -> None: ...  # type: ignore[override]
 
 class _ConnectorMixerFields(TypedDict, total=False):
     outlet_branch_name: str | None
@@ -32587,7 +32135,7 @@ class ConnectorList(IDFObject):
     connector_2_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
     connector_2_name: str | None
 
-    def update(self, values: _ConnectorListFields = ..., /, **kwargs: Unpack[_ConnectorListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConnectorListFields]) -> None: ...  # type: ignore[override]
 
 class _ConnectorListFields(TypedDict, total=False):
     connector_1_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
@@ -32605,7 +32153,7 @@ class NodeList(IDFObject):
 
     nodes: ExtensibleList[NodeListNodesGroup]
 
-    def update(self, values: _NodeListFields = ..., /, **kwargs: Unpack[_NodeListFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_NodeListFields]) -> None: ...  # type: ignore[override]
 
 class _NodeListFields(TypedDict, total=False):
     nodes: list[Any]
@@ -32630,7 +32178,7 @@ class OutdoorAirNode(IDFObject):
     wind_angle_type: Literal["", "Absolute", "Relative"] | None
     """Specify whether the angle used to compute the wind pressure coefficient is absolute or relative Specify Relative to c...; Default: Absolute"""
 
-    def update(self, values: _OutdoorAirNodeFields = ..., /, **kwargs: Unpack[_OutdoorAirNodeFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirNodeFields]) -> None: ...  # type: ignore[override]
 
 class _OutdoorAirNodeFields(TypedDict, total=False):
     height_above_ground: float | None
@@ -32653,7 +32201,7 @@ class OutdoorAirNodeList(IDFObject):
     nodes: ExtensibleList[OutdoorAirNodeListNodesGroup]
 
     def update(
-        self, values: _OutdoorAirNodeListFields = ..., /, **kwargs: Unpack[_OutdoorAirNodeListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutdoorAirNodeListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutdoorAirNodeListFields(TypedDict, total=False):
@@ -32665,7 +32213,7 @@ class PipeAdiabatic(IDFObject):
     inlet_node_name: str | None
     outlet_node_name: str | None
 
-    def update(self, values: _PipeAdiabaticFields = ..., /, **kwargs: Unpack[_PipeAdiabaticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeAdiabaticFields]) -> None: ...  # type: ignore[override]
 
 class _PipeAdiabaticFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -32678,7 +32226,7 @@ class PipeAdiabaticSteam(IDFObject):
     outlet_node_name: str | None
 
     def update(
-        self, values: _PipeAdiabaticSteamFields = ..., /, **kwargs: Unpack[_PipeAdiabaticSteamFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeAdiabaticSteamFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PipeAdiabaticSteamFields(TypedDict, total=False):
@@ -32701,7 +32249,7 @@ class PipeIndoor(IDFObject):
     pipe_length: float | None
     """[m]; Range: > 0.0"""
 
-    def update(self, values: _PipeIndoorFields = ..., /, **kwargs: Unpack[_PipeIndoorFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeIndoorFields]) -> None: ...  # type: ignore[override]
 
 class _PipeIndoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -32726,7 +32274,7 @@ class PipeOutdoor(IDFObject):
     pipe_length: float | None
     """[m]; Range: > 0.0"""
 
-    def update(self, values: _PipeOutdoorFields = ..., /, **kwargs: Unpack[_PipeOutdoorFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeOutdoorFields]) -> None: ...  # type: ignore[override]
 
 class _PipeOutdoorFields(TypedDict, total=False):
     construction_name: str | None
@@ -32758,7 +32306,7 @@ class PipeUnderground(IDFObject):
     )
     undisturbed_ground_temperature_model_name: str | None
 
-    def update(self, values: _PipeUndergroundFields = ..., /, **kwargs: Unpack[_PipeUndergroundFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipeUndergroundFields]) -> None: ...  # type: ignore[override]
 
 class _PipeUndergroundFields(TypedDict, total=False):
     construction_name: str | None
@@ -32849,10 +32397,7 @@ class PipingSystemUndergroundDomain(IDFObject):
     pipe_circuits: ExtensibleList[PipingSystemUndergroundDomainPipeCircuitsGroup]
 
     def update(
-        self,
-        values: _PipingSystemUndergroundDomainFields = ...,
-        /,
-        **kwargs: Unpack[_PipingSystemUndergroundDomainFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundDomainFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PipingSystemUndergroundDomainFields(TypedDict, total=False):
@@ -32929,10 +32474,7 @@ class PipingSystemUndergroundPipeCircuit(IDFObject):
     pipe_segments: ExtensibleList[PipingSystemUndergroundPipeCircuitPipeSegmentsGroup]
 
     def update(
-        self,
-        values: _PipingSystemUndergroundPipeCircuitFields = ...,
-        /,
-        **kwargs: Unpack[_PipingSystemUndergroundPipeCircuitFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundPipeCircuitFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PipingSystemUndergroundPipeCircuitFields(TypedDict, total=False):
@@ -32962,10 +32504,7 @@ class PipingSystemUndergroundPipeSegment(IDFObject):
     """This segment will be simulated such that the flow is in the selected direction. This can allow for detailed analysis ..."""
 
     def update(
-        self,
-        values: _PipingSystemUndergroundPipeSegmentFields = ...,
-        /,
-        **kwargs: Unpack[_PipingSystemUndergroundPipeSegmentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PipingSystemUndergroundPipeSegmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PipingSystemUndergroundPipeSegmentFields(TypedDict, total=False):
@@ -32979,7 +32518,7 @@ class Duct(IDFObject):
     inlet_node_name: str | None
     outlet_node_name: str | None
 
-    def update(self, values: _DuctFields = ..., /, **kwargs: Unpack[_DuctFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DuctFields]) -> None: ...  # type: ignore[override]
 
 class _DuctFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -33044,7 +32583,7 @@ class PumpVariableSpeed(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
-    def update(self, values: _PumpVariableSpeedFields = ..., /, **kwargs: Unpack[_PumpVariableSpeedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeedFields]) -> None: ...  # type: ignore[override]
 
 class _PumpVariableSpeedFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -33115,7 +32654,7 @@ class PumpConstantSpeed(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
-    def update(self, values: _PumpConstantSpeedFields = ..., /, **kwargs: Unpack[_PumpConstantSpeedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpConstantSpeedFields]) -> None: ...  # type: ignore[override]
 
 class _PumpConstantSpeedFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -33176,7 +32715,7 @@ class PumpVariableSpeedCondensate(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
     def update(
-        self, values: _PumpVariableSpeedCondensateFields = ..., /, **kwargs: Unpack[_PumpVariableSpeedCondensateFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PumpVariableSpeedCondensateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PumpVariableSpeedCondensateFields(TypedDict, total=False):
@@ -33235,7 +32774,7 @@ class HeaderedPumpsConstantSpeed(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
     def update(
-        self, values: _HeaderedPumpsConstantSpeedFields = ..., /, **kwargs: Unpack[_HeaderedPumpsConstantSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeaderedPumpsConstantSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeaderedPumpsConstantSpeedFields(TypedDict, total=False):
@@ -33303,7 +32842,7 @@ class HeaderedPumpsVariableSpeed(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General; Since: 9.1.0"""
 
     def update(
-        self, values: _HeaderedPumpsVariableSpeedFields = ..., /, **kwargs: Unpack[_HeaderedPumpsVariableSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeaderedPumpsVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeaderedPumpsVariableSpeedFields(TypedDict, total=False):
@@ -33343,7 +32882,7 @@ class TemperingValve(IDFObject):
     """Name of a Node"""
     pump_outlet_node_name: str | None
 
-    def update(self, values: _TemperingValveFields = ..., /, **kwargs: Unpack[_TemperingValveFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TemperingValveFields]) -> None: ...  # type: ignore[override]
 
 class _TemperingValveFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -33369,7 +32908,7 @@ class LoadProfilePlant(IDFObject):
     degree_of_loop_subcooling: float | None
     """This field is used only when Plant Loop Fluid Type=Steam.; [C]; Default: 20.0; Range: >= 10.0; Since: 23.2.0"""
 
-    def update(self, values: _LoadProfilePlantFields = ..., /, **kwargs: Unpack[_LoadProfilePlantFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LoadProfilePlantFields]) -> None: ...  # type: ignore[override]
 
 class _LoadProfilePlantFields(TypedDict, total=False):
     inlet_node_name: str | None
@@ -33403,10 +32942,7 @@ class SolarCollectorPerformanceFlatPlate(IDFObject):
     """2nd order term"""
 
     def update(
-        self,
-        values: _SolarCollectorPerformanceFlatPlateFields = ...,
-        /,
-        **kwargs: Unpack[_SolarCollectorPerformanceFlatPlateFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorPerformanceFlatPlateFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SolarCollectorPerformanceFlatPlateFields(TypedDict, total=False):
@@ -33431,10 +32967,7 @@ class SolarCollectorFlatPlateWater(IDFObject):
     """[m3/s] (gal/min); Range: > 0.0"""
 
     def update(
-        self,
-        values: _SolarCollectorFlatPlateWaterFields = ...,
-        /,
-        **kwargs: Unpack[_SolarCollectorFlatPlateWaterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorFlatPlateWaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SolarCollectorFlatPlateWaterFields(TypedDict, total=False):
@@ -33461,7 +32994,7 @@ class SolarCollectorFlatPlatePhotovoltaicThermal(IDFObject):
 
     def update(
         self,
-        values: _SolarCollectorFlatPlatePhotovoltaicThermalFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SolarCollectorFlatPlatePhotovoltaicThermalFields],
     ) -> None: ...  # type: ignore[override]
@@ -33491,7 +33024,7 @@ class SolarCollectorPerformancePhotovoltaicThermalSimple(IDFObject):
 
     def update(
         self,
-        values: _SolarCollectorPerformancePhotovoltaicThermalSimpleFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalSimpleFields],
     ) -> None: ...  # type: ignore[override]
@@ -33539,7 +33072,7 @@ class SolarCollectorPerformancePhotovoltaicThermalBIPVT(IDFObject):
 
     def update(
         self,
-        values: _SolarCollectorPerformancePhotovoltaicThermalBIPVTFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalBIPVTFields],
     ) -> None: ...  # type: ignore[override]
@@ -33576,10 +33109,7 @@ class SolarCollectorIntegralCollectorStorage(IDFObject):
     """[m3/s] (gal/min); Range: > 0.0"""
 
     def update(
-        self,
-        values: _SolarCollectorIntegralCollectorStorageFields = ...,
-        /,
-        **kwargs: Unpack[_SolarCollectorIntegralCollectorStorageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorIntegralCollectorStorageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SolarCollectorIntegralCollectorStorageFields(TypedDict, total=False):
@@ -33633,7 +33163,7 @@ class SolarCollectorPerformanceIntegralCollectorStorage(IDFObject):
 
     def update(
         self,
-        values: _SolarCollectorPerformanceIntegralCollectorStorageFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SolarCollectorPerformanceIntegralCollectorStorageFields],
     ) -> None: ...  # type: ignore[override]
@@ -33709,10 +33239,7 @@ class SolarCollectorUnglazedTranspired(IDFObject):
     surfaces: ExtensibleList[SolarCollectorUnglazedTranspiredSurfacesGroup]
 
     def update(
-        self,
-        values: _SolarCollectorUnglazedTranspiredFields = ...,
-        /,
-        **kwargs: Unpack[_SolarCollectorUnglazedTranspiredFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SolarCollectorUnglazedTranspiredFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
@@ -33754,7 +33281,7 @@ class SolarCollectorUnglazedTranspiredMultisystem(IDFObject):
 
     def update(
         self,
-        values: _SolarCollectorUnglazedTranspiredMultisystemFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SolarCollectorUnglazedTranspiredMultisystemFields],
     ) -> None: ...  # type: ignore[override]
@@ -33810,7 +33337,7 @@ class BoilerHotWater(IDFObject):
     off_cycle_parasitic_fuel_load: float | None
     """parasitic fuel load when the boiler is not operating (i.e., standing pilot); [W]; Since: 23.2.0"""
 
-    def update(self, values: _BoilerHotWaterFields = ..., /, **kwargs: Unpack[_BoilerHotWaterFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerHotWaterFields]) -> None: ...  # type: ignore[override]
 
 class _BoilerHotWaterFields(TypedDict, total=False):
     fuel_type: (
@@ -33887,7 +33414,7 @@ class BoilerSteam(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _BoilerSteamFields = ..., /, **kwargs: Unpack[_BoilerSteamFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BoilerSteamFields]) -> None: ...  # type: ignore[override]
 
 class _BoilerSteamFields(TypedDict, total=False):
     fuel_type: (
@@ -33966,7 +33493,7 @@ class ChillerElectricASHRAE205(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _ChillerElectricASHRAE205Fields = ..., /, **kwargs: Unpack[_ChillerElectricASHRAE205Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricASHRAE205Fields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerElectricASHRAE205Fields(TypedDict, total=False):
@@ -34076,7 +33603,7 @@ class ChillerElectricEIR(IDFObject):
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
     def update(
-        self, values: _ChillerElectricEIRFields = ..., /, **kwargs: Unpack[_ChillerElectricEIRFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerElectricEIRFields(TypedDict, total=False):
@@ -34195,10 +33722,7 @@ class ChillerElectricReformulatedEIR(IDFObject):
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
     def update(
-        self,
-        values: _ChillerElectricReformulatedEIRFields = ...,
-        /,
-        **kwargs: Unpack[_ChillerElectricReformulatedEIRFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricReformulatedEIRFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerElectricReformulatedEIRFields(TypedDict, total=False):
@@ -34309,7 +33833,7 @@ class ChillerElectric(IDFObject):
     thermosiphon_minimum_temperature_difference: float | None
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
-    def update(self, values: _ChillerElectricFields = ..., /, **kwargs: Unpack[_ChillerElectricFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerElectricFields]) -> None: ...  # type: ignore[override]
 
 class _ChillerElectricFields(TypedDict, total=False):
     condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None
@@ -34411,7 +33935,7 @@ class ChillerAbsorptionIndirect(IDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self, values: _ChillerAbsorptionIndirectFields = ..., /, **kwargs: Unpack[_ChillerAbsorptionIndirectFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerAbsorptionIndirectFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerAbsorptionIndirectFields(TypedDict, total=False):
@@ -34491,7 +34015,7 @@ class ChillerAbsorption(IDFObject):
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
-    def update(self, values: _ChillerAbsorptionFields = ..., /, **kwargs: Unpack[_ChillerAbsorptionFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerAbsorptionFields]) -> None: ...  # type: ignore[override]
 
 class _ChillerAbsorptionFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -34554,7 +34078,7 @@ class ChillerConstantCOP(IDFObject):
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
     def update(
-        self, values: _ChillerConstantCOPFields = ..., /, **kwargs: Unpack[_ChillerConstantCOPFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerConstantCOPFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerConstantCOPFields(TypedDict, total=False):
@@ -34659,7 +34183,7 @@ class ChillerEngineDriven(IDFObject):
     """This optional field is the fraction of total rejected heat that can be recovered at full load. Also used to autosize ...; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _ChillerEngineDrivenFields = ..., /, **kwargs: Unpack[_ChillerEngineDrivenFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerEngineDrivenFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerEngineDrivenFields(TypedDict, total=False):
@@ -34811,7 +34335,7 @@ class ChillerCombustionTurbine(IDFObject):
     """This optional field is the nominal turbine engine efficiency and is used when Gas Turbine Engine Capacity is set to A...; Default: 0.35"""
 
     def update(
-        self, values: _ChillerCombustionTurbineFields = ..., /, **kwargs: Unpack[_ChillerCombustionTurbineFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerCombustionTurbineFields(TypedDict, total=False):
@@ -34953,10 +34477,7 @@ class ChillerHeaterAbsorptionDirectFired(IDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ChillerHeaterAbsorptionDirectFiredFields = ...,
-        /,
-        **kwargs: Unpack[_ChillerHeaterAbsorptionDirectFiredFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterAbsorptionDirectFiredFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerHeaterAbsorptionDirectFiredFields(TypedDict, total=False):
@@ -35063,10 +34584,7 @@ class ChillerHeaterAbsorptionDoubleEffect(IDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ChillerHeaterAbsorptionDoubleEffectFields = ...,
-        /,
-        **kwargs: Unpack[_ChillerHeaterAbsorptionDoubleEffectFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterAbsorptionDoubleEffectFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerHeaterAbsorptionDoubleEffectFields(TypedDict, total=False):
@@ -35163,7 +34681,7 @@ class HeatPumpPlantLoopEIRCooling(IDFObject):
     """Thermosiphon model is disabled below this minimum limit and when the load is greater than calculated using the previo...; Default: 0.0; Range: >= 0.0; Since: 24.2.0"""
 
     def update(
-        self, values: _HeatPumpPlantLoopEIRCoolingFields = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRCoolingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpPlantLoopEIRCoolingFields(TypedDict, total=False):
@@ -35272,7 +34790,7 @@ class HeatPumpPlantLoopEIRHeating(IDFObject):
     """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*HWS + c*HWS**2 + d*ECT + e...; Since: 24.2.0"""
 
     def update(
-        self, values: _HeatPumpPlantLoopEIRHeatingFields = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRHeatingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpPlantLoopEIRHeatingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpPlantLoopEIRHeatingFields(TypedDict, total=False):
@@ -35395,10 +34913,7 @@ class HeatPumpAirToWaterFuelFiredHeating(IDFObject):
     """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
 
     def update(
-        self,
-        values: _HeatPumpAirToWaterFuelFiredHeatingFields = ...,
-        /,
-        **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredHeatingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredHeatingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpAirToWaterFuelFiredHeatingFields(TypedDict, total=False):
@@ -35519,10 +35034,7 @@ class HeatPumpAirToWaterFuelFiredCooling(IDFObject):
     """Minimum modulation level of the gas-fired heat pump. Typically less than 1.0 and slightly higher than the minimum par...; Default: 0.25; Range: >= 0.0, <= 1.0; Since: 25.2.0"""
 
     def update(
-        self,
-        values: _HeatPumpAirToWaterFuelFiredCoolingFields = ...,
-        /,
-        **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredCoolingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpAirToWaterFuelFiredCoolingFields(TypedDict, total=False):
@@ -35782,7 +35294,7 @@ class HeatPumpAirToWater(IDFObject):
     """EIRFPLR - Fuel Energy Input Ratio Function of Part Load Ratio(PLR) Curve Name, which is a cubic curve or a lookup table."""
 
     def update(
-        self, values: _HeatPumpAirToWaterFields = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpAirToWaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpAirToWaterFields(TypedDict, total=False):
@@ -35919,10 +35431,7 @@ class HeatPumpWaterToWaterEquationFitHeating(IDFObject):
     companion_cooling_heat_pump_name: str | None
 
     def update(
-        self,
-        values: _HeatPumpWaterToWaterEquationFitHeatingFields = ...,
-        /,
-        **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitHeatingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitHeatingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpWaterToWaterEquationFitHeatingFields(TypedDict, total=False):
@@ -35967,10 +35476,7 @@ class HeatPumpWaterToWaterEquationFitCooling(IDFObject):
     """This optional field is used to coordinate sizing calculations between heating and cooling modes."""
 
     def update(
-        self,
-        values: _HeatPumpWaterToWaterEquationFitCoolingFields = ...,
-        /,
-        **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitCoolingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatPumpWaterToWaterEquationFitCoolingFields(TypedDict, total=False):
@@ -36032,7 +35538,7 @@ class HeatPumpWaterToWaterParameterEstimationCooling(IDFObject):
 
     def update(
         self,
-        values: _HeatPumpWaterToWaterParameterEstimationCoolingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationCoolingFields],
     ) -> None: ...  # type: ignore[override]
@@ -36104,7 +35610,7 @@ class HeatPumpWaterToWaterParameterEstimationHeating(IDFObject):
 
     def update(
         self,
-        values: _HeatPumpWaterToWaterParameterEstimationHeatingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationHeatingFields],
     ) -> None: ...  # type: ignore[override]
@@ -36142,7 +35648,7 @@ class DistrictCooling(IDFObject):
     capacity_fraction_schedule_name: str | None
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
-    def update(self, values: _DistrictCoolingFields = ..., /, **kwargs: Unpack[_DistrictCoolingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictCoolingFields]) -> None: ...  # type: ignore[override]
 
 class _DistrictCoolingFields(TypedDict, total=False):
     chilled_water_inlet_node_name: str | None
@@ -36161,7 +35667,7 @@ class DistrictHeatingWater(IDFObject):
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
     def update(
-        self, values: _DistrictHeatingWaterFields = ..., /, **kwargs: Unpack[_DistrictHeatingWaterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictHeatingWaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DistrictHeatingWaterFields(TypedDict, total=False):
@@ -36181,7 +35687,7 @@ class DistrictHeatingSteam(IDFObject):
     """Schedule values are multiplied by Nominal Capacity for current capacity"""
 
     def update(
-        self, values: _DistrictHeatingSteamFields = ..., /, **kwargs: Unpack[_DistrictHeatingSteamFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DistrictHeatingSteamFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DistrictHeatingSteamFields(TypedDict, total=False):
@@ -36206,10 +35712,7 @@ class PlantComponentTemperatureSource(IDFObject):
     """Used if Temperature Specification Type = Scheduled; [C]"""
 
     def update(
-        self,
-        values: _PlantComponentTemperatureSourceFields = ...,
-        /,
-        **kwargs: Unpack[_PlantComponentTemperatureSourceFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantComponentTemperatureSourceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantComponentTemperatureSourceFields(TypedDict, total=False):
@@ -36335,7 +35838,7 @@ class CentralHeatPumpSystem(IDFObject):
     """Default: 1; Range: >= 1"""
 
     def update(
-        self, values: _CentralHeatPumpSystemFields = ..., /, **kwargs: Unpack[_CentralHeatPumpSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CentralHeatPumpSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CentralHeatPumpSystemFields(TypedDict, total=False):
@@ -36491,10 +35994,7 @@ class ChillerHeaterPerformanceElectricEIR(IDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ChillerHeaterPerformanceElectricEIRFields = ...,
-        /,
-        **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIRFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIRFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ChillerHeaterPerformanceElectricEIRFields(TypedDict, total=False):
@@ -36608,7 +36108,7 @@ class CoolingTowerSingleSpeed(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _CoolingTowerSingleSpeedFields = ..., /, **kwargs: Unpack[_CoolingTowerSingleSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerSingleSpeedFields(TypedDict, total=False):
@@ -36742,7 +36242,7 @@ class CoolingTowerTwoSpeed(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _CoolingTowerTwoSpeedFields = ..., /, **kwargs: Unpack[_CoolingTowerTwoSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerTwoSpeedFields(TypedDict, total=False):
@@ -36883,10 +36383,7 @@ class CoolingTowerVariableSpeedMerkel(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self,
-        values: _CoolingTowerVariableSpeedMerkelFields = ...,
-        /,
-        **kwargs: Unpack[_CoolingTowerVariableSpeedMerkelFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerVariableSpeedMerkelFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerVariableSpeedMerkelFields(TypedDict, total=False):
@@ -36999,7 +36496,7 @@ class CoolingTowerVariableSpeed(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self, values: _CoolingTowerVariableSpeedFields = ..., /, **kwargs: Unpack[_CoolingTowerVariableSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerVariableSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerVariableSpeedFields(TypedDict, total=False):
@@ -37090,10 +36587,7 @@ class CoolingTowerPerformanceCoolTools(IDFObject):
     coefficient_35: float | None
 
     def update(
-        self,
-        values: _CoolingTowerPerformanceCoolToolsFields = ...,
-        /,
-        **kwargs: Unpack[_CoolingTowerPerformanceCoolToolsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerPerformanceCoolToolsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerPerformanceCoolToolsFields(TypedDict, total=False):
@@ -37191,10 +36685,7 @@ class CoolingTowerPerformanceYorkCalc(IDFObject):
     coefficient_27: float | None
 
     def update(
-        self,
-        values: _CoolingTowerPerformanceYorkCalcFields = ...,
-        /,
-        **kwargs: Unpack[_CoolingTowerPerformanceYorkCalcFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoolingTowerPerformanceYorkCalcFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CoolingTowerPerformanceYorkCalcFields(TypedDict, total=False):
@@ -37290,10 +36781,7 @@ class EvaporativeFluidCoolerSingleSpeed(IDFObject):
     supply_water_storage_tank_name: str | None
 
     def update(
-        self,
-        values: _EvaporativeFluidCoolerSingleSpeedFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeFluidCoolerSingleSpeedFields(TypedDict, total=False):
@@ -37398,10 +36886,7 @@ class EvaporativeFluidCoolerTwoSpeed(IDFObject):
     supply_water_storage_tank_name: str | None
 
     def update(
-        self,
-        values: _EvaporativeFluidCoolerTwoSpeedFields = ...,
-        /,
-        **kwargs: Unpack[_EvaporativeFluidCoolerTwoSpeedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EvaporativeFluidCoolerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EvaporativeFluidCoolerTwoSpeedFields(TypedDict, total=False):
@@ -37471,7 +36956,7 @@ class FluidCoolerSingleSpeed(IDFObject):
     """Enter the name of an outdoor air node"""
 
     def update(
-        self, values: _FluidCoolerSingleSpeedFields = ..., /, **kwargs: Unpack[_FluidCoolerSingleSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidCoolerSingleSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidCoolerSingleSpeedFields(TypedDict, total=False):
@@ -37532,7 +37017,7 @@ class FluidCoolerTwoSpeed(IDFObject):
     outdoor_air_inlet_node_name: str | None
 
     def update(
-        self, values: _FluidCoolerTwoSpeedFields = ..., /, **kwargs: Unpack[_FluidCoolerTwoSpeedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidCoolerTwoSpeedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidCoolerTwoSpeedFields(TypedDict, total=False):
@@ -37593,7 +37078,7 @@ class GroundHeatExchangerSystem(IDFObject):
     vertical_well_locations: ExtensibleList[GroundHeatExchangerSystemVerticalWellLocationsGroup]
 
     def update(
-        self, values: _GroundHeatExchangerSystemFields = ..., /, **kwargs: Unpack[_GroundHeatExchangerSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerSystemFields(TypedDict, total=False):
@@ -37646,7 +37131,7 @@ class GroundHeatExchangerVerticalSizingRectangle(IDFObject):
 
     def update(
         self,
-        values: _GroundHeatExchangerVerticalSizingRectangleFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_GroundHeatExchangerVerticalSizingRectangleFields],
     ) -> None: ...  # type: ignore[override]
@@ -37689,10 +37174,7 @@ class GroundHeatExchangerVerticalProperties(IDFObject):
     """[m]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatExchangerVerticalPropertiesFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerVerticalPropertiesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalPropertiesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerVerticalPropertiesFields(TypedDict, total=False):
@@ -37717,10 +37199,7 @@ class GroundHeatExchangerVerticalArray(IDFObject):
     """[m]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _GroundHeatExchangerVerticalArrayFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerVerticalArrayFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalArrayFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerVerticalArrayFields(TypedDict, total=False):
@@ -37737,10 +37216,7 @@ class GroundHeatExchangerVerticalSingle(IDFObject):
     """[m]"""
 
     def update(
-        self,
-        values: _GroundHeatExchangerVerticalSingleFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerVerticalSingleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerVerticalSingleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerVerticalSingleFields(TypedDict, total=False):
@@ -37764,10 +37240,7 @@ class GroundHeatExchangerResponseFactors(IDFObject):
     g_functions: ExtensibleList[GroundHeatExchangerResponseFactorsGFunctionsGroup]
 
     def update(
-        self,
-        values: _GroundHeatExchangerResponseFactorsFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerResponseFactorsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerResponseFactorsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerResponseFactorsFields(TypedDict, total=False):
@@ -37799,7 +37272,7 @@ class GroundHeatExchangerPond(IDFObject):
     """[m]; Range: >= 0.0"""
 
     def update(
-        self, values: _GroundHeatExchangerPondFields = ..., /, **kwargs: Unpack[_GroundHeatExchangerPondFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerPondFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerPondFields(TypedDict, total=False):
@@ -37834,7 +37307,7 @@ class GroundHeatExchangerSurface(IDFObject):
     """Default: Ground"""
 
     def update(
-        self, values: _GroundHeatExchangerSurfaceFields = ..., /, **kwargs: Unpack[_GroundHeatExchangerSurfaceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSurfaceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerSurfaceFields(TypedDict, total=False):
@@ -37896,10 +37369,7 @@ class GroundHeatExchangerHorizontalTrench(IDFObject):
     """This specifies the ground cover effects during evapotranspiration calculations. The value roughly represents the foll...; Default: 0.4; Range: >= 0.0, <= 1.5"""
 
     def update(
-        self,
-        values: _GroundHeatExchangerHorizontalTrenchFields = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerHorizontalTrenchFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerHorizontalTrenchFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerHorizontalTrenchFields(TypedDict, total=False):
@@ -37981,7 +37451,7 @@ class GroundHeatExchangerSlinky(IDFObject):
     """[years]"""
 
     def update(
-        self, values: _GroundHeatExchangerSlinkyFields = ..., /, **kwargs: Unpack[_GroundHeatExchangerSlinkyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatExchangerSlinkyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatExchangerSlinkyFields(TypedDict, total=False):
@@ -38088,7 +37558,7 @@ class HeatExchangerFluidToFluid(IDFObject):
     """Upper limit on inlet temperatures, heat exchanger will not operate if either inlet is above this limit; [C]"""
 
     def update(
-        self, values: _HeatExchangerFluidToFluidFields = ..., /, **kwargs: Unpack[_HeatExchangerFluidToFluidFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HeatExchangerFluidToFluidFields]
     ) -> None: ...  # type: ignore[override]
 
 class _HeatExchangerFluidToFluidFields(TypedDict, total=False):
@@ -38269,7 +37739,7 @@ class WaterHeaterMixed(IDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
-    def update(self, values: _WaterHeaterMixedFields = ..., /, **kwargs: Unpack[_WaterHeaterMixedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterMixedFields]) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterMixedFields(TypedDict, total=False):
     tank_volume: float | Literal["", "Autosize"] | None
@@ -38539,7 +38009,7 @@ class WaterHeaterStratified(IDFObject):
     """This field is only used if the previous is set to IndirectHeatAlternateSetpoint"""
 
     def update(
-        self, values: _WaterHeaterStratifiedFields = ..., /, **kwargs: Unpack[_WaterHeaterStratifiedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterStratifiedFields(TypedDict, total=False):
@@ -38698,7 +38168,7 @@ class WaterHeaterSizing(IDFObject):
     height_aspect_ratio: float | None
     """only used if for WaterHeater:Stratified; Range: >= 0.0"""
 
-    def update(self, values: _WaterHeaterSizingFields = ..., /, **kwargs: Unpack[_WaterHeaterSizingFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterSizingFields]) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterSizingFields(TypedDict, total=False):
     design_mode: (
@@ -38811,10 +38281,7 @@ class WaterHeaterHeatPumpPumpedCondenser(IDFObject):
     """Used to indicate height of control sensor for Tank Object Type = WaterHeater:Stratified If left blank, it will defaul...; [m]; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _WaterHeaterHeatPumpPumpedCondenserFields = ...,
-        /,
-        **kwargs: Unpack[_WaterHeaterHeatPumpPumpedCondenserFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterHeatPumpPumpedCondenserFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterHeatPumpPumpedCondenserFields(TypedDict, total=False):
@@ -38944,10 +38411,7 @@ class WaterHeaterHeatPumpWrappedCondenser(IDFObject):
     """Used to indicate height of control sensor if Tank Object Type is WaterHeater:Stratified If left blank, it will defaul...; [m]; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _WaterHeaterHeatPumpWrappedCondenserFields = ...,
-        /,
-        **kwargs: Unpack[_WaterHeaterHeatPumpWrappedCondenserFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterHeatPumpWrappedCondenserFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterHeatPumpWrappedCondenserFields(TypedDict, total=False):
@@ -39002,7 +38466,7 @@ class ThermalStorageIceSimple(IDFObject):
     """used only when tank capacity is autosized; Since: 25.2.0"""
 
     def update(
-        self, values: _ThermalStorageIceSimpleFields = ..., /, **kwargs: Unpack[_ThermalStorageIceSimpleFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceSimpleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageIceSimpleFields(TypedDict, total=False):
@@ -39047,7 +38511,7 @@ class ThermalStorageIceDetailed(IDFObject):
     """used only when tank capacity is autosized; Since: 25.2.0"""
 
     def update(
-        self, values: _ThermalStorageIceDetailedFields = ..., /, **kwargs: Unpack[_ThermalStorageIceDetailedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageIceDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageIceDetailedFields(TypedDict, total=False):
@@ -39110,10 +38574,7 @@ class ThermalStorageChilledWaterMixed(IDFObject):
     """Parameter for autosizing design flow rates for indirectly cooled water tanks time required to lower temperature of en...; [hr]; Default: 4.0; Range: > 0.0"""
 
     def update(
-        self,
-        values: _ThermalStorageChilledWaterMixedFields = ...,
-        /,
-        **kwargs: Unpack[_ThermalStorageChilledWaterMixedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageChilledWaterMixedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageChilledWaterMixedFields(TypedDict, total=False):
@@ -39220,10 +38681,7 @@ class ThermalStorageChilledWaterStratified(IDFObject):
     """[W/K]; Default: 0.0"""
 
     def update(
-        self,
-        values: _ThermalStorageChilledWaterStratifiedFields = ...,
-        /,
-        **kwargs: Unpack[_ThermalStorageChilledWaterStratifiedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageChilledWaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageChilledWaterStratifiedFields(TypedDict, total=False):
@@ -39358,10 +38816,7 @@ class ThermalStorageHotWaterStratified(IDFObject):
     """[W/K]; Default: 0.0"""
 
     def update(
-        self,
-        values: _ThermalStorageHotWaterStratifiedFields = ...,
-        /,
-        **kwargs: Unpack[_ThermalStorageHotWaterStratifiedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageHotWaterStratifiedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageHotWaterStratifiedFields(TypedDict, total=False):
@@ -39430,7 +38885,7 @@ class ThermalStoragePCM(IDFObject):
     plant_side_design_flow_rate: float | Literal["Autosize"] | None
     """[m3/s]"""
 
-    def update(self, values: _ThermalStoragePCMFields = ..., /, **kwargs: Unpack[_ThermalStoragePCMFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStoragePCMFields]) -> None: ...  # type: ignore[override]
 
 class _ThermalStoragePCMFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -39455,7 +38910,7 @@ class ThermalStorageSizing(IDFObject):
     """Default: 1.0; Range: > 0.0"""
 
     def update(
-        self, values: _ThermalStorageSizingFields = ..., /, **kwargs: Unpack[_ThermalStorageSizingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ThermalStorageSizingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ThermalStorageSizingFields(TypedDict, total=False):
@@ -39504,7 +38959,7 @@ class PlantLoop(IDFObject):
     loop_circulation_time: float | None
     """This field is only used to autocalculate the Plant Loop Volume. Loop Volume = Loop Circulation Time * Maximum Loop Fl...; [minutes]; Default: 2.0; Range: >= 0.0"""
 
-    def update(self, values: _PlantLoopFields = ..., /, **kwargs: Unpack[_PlantLoopFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantLoopFields]) -> None: ...  # type: ignore[override]
 
 class _PlantLoopFields(TypedDict, total=False):
     fluid_type: Literal["", "Steam", "UserDefinedFluidType", "Water"] | None
@@ -39569,7 +39024,7 @@ class CondenserLoop(IDFObject):
     loop_circulation_time: float | None
     """This field is only used to autocalculate the Condenser Loop Volume. Loop Volume = Loop Circulation Time * Maximum Loo...; [minutes]; Default: 2.0; Range: >= 0.0"""
 
-    def update(self, values: _CondenserLoopFields = ..., /, **kwargs: Unpack[_CondenserLoopFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserLoopFields]) -> None: ...  # type: ignore[override]
 
 class _CondenserLoopFields(TypedDict, total=False):
     fluid_type: Literal["", "UserDefinedFluidType", "Water"] | None
@@ -39607,7 +39062,7 @@ class PlantEquipmentList(IDFObject):
     equipment: ExtensibleList[PlantEquipmentListEquipmentGroup]
 
     def update(
-        self, values: _PlantEquipmentListFields = ..., /, **kwargs: Unpack[_PlantEquipmentListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentListFields(TypedDict, total=False):
@@ -39625,7 +39080,7 @@ class CondenserEquipmentList(IDFObject):
     equipment: ExtensibleList[CondenserEquipmentListEquipmentGroup]
 
     def update(
-        self, values: _CondenserEquipmentListFields = ..., /, **kwargs: Unpack[_CondenserEquipmentListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserEquipmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CondenserEquipmentListFields(TypedDict, total=False):
@@ -39637,10 +39092,7 @@ class PlantEquipmentOperationUncontrolled(IDFObject):
     equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationUncontrolledFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationUncontrolledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationUncontrolledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationUncontrolledFields(TypedDict, total=False):
@@ -39701,10 +39153,7 @@ class PlantEquipmentOperationCoolingLoad(IDFObject):
     range_10_equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationCoolingLoadFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationCoolingLoadFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationCoolingLoadFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationCoolingLoadFields(TypedDict, total=False):
@@ -39794,10 +39243,7 @@ class PlantEquipmentOperationHeatingLoad(IDFObject):
     range_10_equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationHeatingLoadFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationHeatingLoadFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationHeatingLoadFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationHeatingLoadFields(TypedDict, total=False):
@@ -39887,10 +39333,7 @@ class PlantEquipmentOperationOutdoorDryBulb(IDFObject):
     range_10_equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationOutdoorDryBulbFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationOutdoorDryBulbFields(TypedDict, total=False):
@@ -39980,10 +39423,7 @@ class PlantEquipmentOperationOutdoorWetBulb(IDFObject):
     range_10_equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationOutdoorWetBulbFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationOutdoorWetBulbFields(TypedDict, total=False):
@@ -40074,7 +39514,7 @@ class PlantEquipmentOperationOutdoorRelativeHumidity(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationOutdoorRelativeHumidityFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorRelativeHumidityFields],
     ) -> None: ...  # type: ignore[override]
@@ -40166,10 +39606,7 @@ class PlantEquipmentOperationOutdoorDewpoint(IDFObject):
     range_10_equipment_list_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationOutdoorDewpointFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationOutdoorDewpointFields(TypedDict, total=False):
@@ -40280,7 +39717,7 @@ class PlantEquipmentOperationComponentSetpoint(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationComponentSetpointFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationComponentSetpointFields],
     ) -> None: ...  # type: ignore[override]
@@ -40581,7 +40018,7 @@ class PlantEquipmentOperationThermalEnergyStorage(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationThermalEnergyStorageFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationThermalEnergyStorageFields],
     ) -> None: ...  # type: ignore[override]
@@ -40856,7 +40293,7 @@ class PlantEquipmentOperationOutdoorDryBulbDifference(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationOutdoorDryBulbDifferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbDifferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -40951,7 +40388,7 @@ class PlantEquipmentOperationOutdoorWetBulbDifference(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationOutdoorWetBulbDifferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbDifferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -41046,7 +40483,7 @@ class PlantEquipmentOperationOutdoorDewpointDifference(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationOutdoorDewpointDifferenceFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointDifferenceFields],
     ) -> None: ...  # type: ignore[override]
@@ -41119,7 +40556,7 @@ class PlantEquipmentOperationChillerHeaterChangeover(IDFObject):
 
     def update(
         self,
-        values: _PlantEquipmentOperationChillerHeaterChangeoverFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PlantEquipmentOperationChillerHeaterChangeoverFields],
     ) -> None: ...  # type: ignore[override]
@@ -41316,10 +40753,7 @@ class PlantEquipmentOperationSchemes(IDFObject):
     control_scheme_8_schedule_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationSchemesFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationSchemesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationSchemesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationSchemesFields(TypedDict, total=False):
@@ -41641,10 +41075,7 @@ class CondenserEquipmentOperationSchemes(IDFObject):
     control_scheme_8_schedule_name: str | None
 
     def update(
-        self,
-        values: _CondenserEquipmentOperationSchemesFields = ...,
-        /,
-        **kwargs: Unpack[_CondenserEquipmentOperationSchemesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CondenserEquipmentOperationSchemesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CondenserEquipmentOperationSchemesFields(TypedDict, total=False):
@@ -41800,10 +41231,7 @@ class EnergyManagementSystemSensor(IDFObject):
     output_variable_or_output_meter_name: str | None
 
     def update(
-        self,
-        values: _EnergyManagementSystemSensorFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemSensorFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemSensorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemSensorFields(TypedDict, total=False):
@@ -41818,10 +41246,7 @@ class EnergyManagementSystemActuator(IDFObject):
     actuated_component_control_type: str | None
 
     def update(
-        self,
-        values: _EnergyManagementSystemActuatorFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemActuatorFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemActuatorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemActuatorFields(TypedDict, total=False):
@@ -41864,7 +41289,7 @@ class EnergyManagementSystemProgramCallingManager(IDFObject):
 
     def update(
         self,
-        values: _EnergyManagementSystemProgramCallingManagerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_EnergyManagementSystemProgramCallingManagerFields],
     ) -> None: ...  # type: ignore[override]
@@ -41906,10 +41331,7 @@ class EnergyManagementSystemProgram(IDFObject):
     lines: ExtensibleList[EnergyManagementSystemProgramLinesGroup]
 
     def update(
-        self,
-        values: _EnergyManagementSystemProgramFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemProgramFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemProgramFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemProgramFields(TypedDict, total=False):
@@ -41926,10 +41348,7 @@ class EnergyManagementSystemSubroutine(IDFObject):
     lines: ExtensibleList[EnergyManagementSystemSubroutineLinesGroup]
 
     def update(
-        self,
-        values: _EnergyManagementSystemSubroutineFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemSubroutineFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemSubroutineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemSubroutineFields(TypedDict, total=False):
@@ -41946,10 +41365,7 @@ class EnergyManagementSystemGlobalVariable(IDFObject):
     variables: ExtensibleList[EnergyManagementSystemGlobalVariableVariablesGroup]
 
     def update(
-        self,
-        values: _EnergyManagementSystemGlobalVariableFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemGlobalVariableFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemGlobalVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemGlobalVariableFields(TypedDict, total=False):
@@ -41968,10 +41384,7 @@ class EnergyManagementSystemOutputVariable(IDFObject):
     """optional but will result in dimensionless units for blank EnergyPlus units are standard SI units"""
 
     def update(
-        self,
-        values: _EnergyManagementSystemOutputVariableFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemOutputVariableFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemOutputVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemOutputVariableFields(TypedDict, total=False):
@@ -42054,7 +41467,7 @@ class EnergyManagementSystemMeteredOutputVariable(IDFObject):
 
     def update(
         self,
-        values: _EnergyManagementSystemMeteredOutputVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_EnergyManagementSystemMeteredOutputVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42130,10 +41543,7 @@ class EnergyManagementSystemTrendVariable(IDFObject):
     """Range: >= 1"""
 
     def update(
-        self,
-        values: _EnergyManagementSystemTrendVariableFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemTrendVariableFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemTrendVariableFields(TypedDict, total=False):
@@ -42147,10 +41557,7 @@ class EnergyManagementSystemInternalVariable(IDFObject):
     internal_data_type: str | None
 
     def update(
-        self,
-        values: _EnergyManagementSystemInternalVariableFields = ...,
-        /,
-        **kwargs: Unpack[_EnergyManagementSystemInternalVariableFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnergyManagementSystemInternalVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnergyManagementSystemInternalVariableFields(TypedDict, total=False):
@@ -42164,7 +41571,7 @@ class EnergyManagementSystemCurveOrTableIndexVariable(IDFObject):
 
     def update(
         self,
-        values: _EnergyManagementSystemCurveOrTableIndexVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_EnergyManagementSystemCurveOrTableIndexVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42179,7 +41586,7 @@ class EnergyManagementSystemConstructionIndexVariable(IDFObject):
 
     def update(
         self,
-        values: _EnergyManagementSystemConstructionIndexVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_EnergyManagementSystemConstructionIndexVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42198,7 +41605,7 @@ class ExternalInterfaceSchedule(IDFObject):
     """Used during warm-up and system sizing."""
 
     def update(
-        self, values: _ExternalInterfaceScheduleFields = ..., /, **kwargs: Unpack[_ExternalInterfaceScheduleFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceScheduleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceScheduleFields(TypedDict, total=False):
@@ -42212,7 +41619,7 @@ class ExternalInterfaceVariable(IDFObject):
     """Used during warm-up and system sizing."""
 
     def update(
-        self, values: _ExternalInterfaceVariableFields = ..., /, **kwargs: Unpack[_ExternalInterfaceVariableFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceVariableFields(TypedDict, total=False):
@@ -42228,7 +41635,7 @@ class ExternalInterfaceActuator(IDFObject):
     """If specified, it is used during warm-up and system sizing. If not specified, then the actuator only overwrites the ac..."""
 
     def update(
-        self, values: _ExternalInterfaceActuatorFields = ..., /, **kwargs: Unpack[_ExternalInterfaceActuatorFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceActuatorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceActuatorFields(TypedDict, total=False):
@@ -42247,7 +41654,7 @@ class ExternalInterfaceFunctionalMockupUnitImport(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitImportFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFields],
     ) -> None: ...  # type: ignore[override]
@@ -42266,7 +41673,7 @@ class ExternalInterfaceFunctionalMockupUnitImportFromVariable(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFromVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42289,7 +41696,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToSchedule(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitImportToScheduleFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToScheduleFields],
     ) -> None: ...  # type: ignore[override]
@@ -42315,7 +41722,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToActuator(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitImportToActuatorFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToActuatorFields],
     ) -> None: ...  # type: ignore[override]
@@ -42340,7 +41747,7 @@ class ExternalInterfaceFunctionalMockupUnitImportToVariable(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitImportToVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42359,7 +41766,7 @@ class ExternalInterfaceFunctionalMockupUnitExportFromVariable(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportFromVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42378,7 +41785,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToScheduleFields],
     ) -> None: ...  # type: ignore[override]
@@ -42400,7 +41807,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToActuator(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToActuatorFields],
     ) -> None: ...  # type: ignore[override]
@@ -42421,7 +41828,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToVariable(IDFObject):
 
     def update(
         self,
-        values: _ExternalInterfaceFunctionalMockupUnitExportToVariableFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToVariableFields],
     ) -> None: ...  # type: ignore[override]
@@ -42461,10 +41868,7 @@ class ZoneHVACForcedAirUserDefined(IDFObject):
     """Used for modeling device losses to surrounding zone"""
 
     def update(
-        self,
-        values: _ZoneHVACForcedAirUserDefinedFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACForcedAirUserDefinedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACForcedAirUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACForcedAirUserDefinedFields(TypedDict, total=False):
@@ -42514,10 +41918,7 @@ class AirTerminalSingleDuctUserDefined(IDFObject):
     """Used for modeling device losses to surrounding zone"""
 
     def update(
-        self,
-        values: _AirTerminalSingleDuctUserDefinedFields = ...,
-        /,
-        **kwargs: Unpack[_AirTerminalSingleDuctUserDefinedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AirTerminalSingleDuctUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AirTerminalSingleDuctUserDefinedFields(TypedDict, total=False):
@@ -42562,7 +41963,7 @@ class CoilUserDefined(IDFObject):
     ambient_zone_name: str | None
     """Used for modeling device losses to surrounding zone"""
 
-    def update(self, values: _CoilUserDefinedFields = ..., /, **kwargs: Unpack[_CoilUserDefinedFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CoilUserDefinedFields]) -> None: ...  # type: ignore[override]
 
 class _CoilUserDefinedFields(TypedDict, total=False):
     overall_model_simulation_program_calling_manager_name: str | None
@@ -42668,7 +42069,7 @@ class PlantComponentUserDefined(IDFObject):
     """Used for modeling device losses to surrounding zone"""
 
     def update(
-        self, values: _PlantComponentUserDefinedFields = ..., /, **kwargs: Unpack[_PlantComponentUserDefinedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantComponentUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantComponentUserDefinedFields(TypedDict, total=False):
@@ -42775,10 +42176,7 @@ class PlantEquipmentOperationUserDefined(IDFObject):
     equipment_10_name: str | None
 
     def update(
-        self,
-        values: _PlantEquipmentOperationUserDefinedFields = ...,
-        /,
-        **kwargs: Unpack[_PlantEquipmentOperationUserDefinedFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PlantEquipmentOperationUserDefinedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PlantEquipmentOperationUserDefinedFields(TypedDict, total=False):
@@ -42811,10 +42209,7 @@ class AvailabilityManagerScheduled(IDFObject):
     schedule_name: str | None
 
     def update(
-        self,
-        values: _AvailabilityManagerScheduledFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerScheduledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerScheduledFields(TypedDict, total=False):
@@ -42826,10 +42221,7 @@ class AvailabilityManagerScheduledOn(IDFObject):
     schedule_name: str | None
 
     def update(
-        self,
-        values: _AvailabilityManagerScheduledOnFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerScheduledOnFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledOnFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerScheduledOnFields(TypedDict, total=False):
@@ -42841,10 +42233,7 @@ class AvailabilityManagerScheduledOff(IDFObject):
     schedule_name: str | None
 
     def update(
-        self,
-        values: _AvailabilityManagerScheduledOffFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerScheduledOffFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerScheduledOffFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerScheduledOffFields(TypedDict, total=False):
@@ -42880,10 +42269,7 @@ class AvailabilityManagerOptimumStart(IDFObject):
     """this is the number of days that their actual temperature gradients will be used in the AdaptiveTemperatureGradient me...; [days]; Default: 2; Range: >= 2, <= 5"""
 
     def update(
-        self,
-        values: _AvailabilityManagerOptimumStartFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerOptimumStartFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerOptimumStartFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerOptimumStartFields(TypedDict, total=False):
@@ -42937,10 +42323,7 @@ class AvailabilityManagerNightCycle(IDFObject):
     heating_zone_fans_only_zone_or_zone_list_name: str | None
 
     def update(
-        self,
-        values: _AvailabilityManagerNightCycleFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerNightCycleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerNightCycleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerNightCycleFields(TypedDict, total=False):
@@ -42980,7 +42363,7 @@ class AvailabilityManagerDifferentialThermostat(IDFObject):
 
     def update(
         self,
-        values: _AvailabilityManagerDifferentialThermostatFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AvailabilityManagerDifferentialThermostatFields],
     ) -> None: ...  # type: ignore[override]
@@ -43000,7 +42383,7 @@ class AvailabilityManagerHighTemperatureTurnOff(IDFObject):
 
     def update(
         self,
-        values: _AvailabilityManagerHighTemperatureTurnOffFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOffFields],
     ) -> None: ...  # type: ignore[override]
@@ -43018,7 +42401,7 @@ class AvailabilityManagerHighTemperatureTurnOn(IDFObject):
 
     def update(
         self,
-        values: _AvailabilityManagerHighTemperatureTurnOnFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOnFields],
     ) -> None: ...  # type: ignore[override]
@@ -43038,7 +42421,7 @@ class AvailabilityManagerLowTemperatureTurnOff(IDFObject):
 
     def update(
         self,
-        values: _AvailabilityManagerLowTemperatureTurnOffFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOffFields],
     ) -> None: ...  # type: ignore[override]
@@ -43057,7 +42440,7 @@ class AvailabilityManagerLowTemperatureTurnOn(IDFObject):
 
     def update(
         self,
-        values: _AvailabilityManagerLowTemperatureTurnOnFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOnFields],
     ) -> None: ...  # type: ignore[override]
@@ -43083,10 +42466,7 @@ class AvailabilityManagerNightVentilation(IDFObject):
     """When AvailabilityManager:NightVentilation is used in the zone component availability manager assignment list, the Con..."""
 
     def update(
-        self,
-        values: _AvailabilityManagerNightVentilationFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerNightVentilationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerNightVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerNightVentilationFields(TypedDict, total=False):
@@ -43139,10 +42519,7 @@ class AvailabilityManagerHybridVentilation(IDFObject):
     """Minimum ventilation time when natural ventilation is forced on.; [minutes]; Default: 0.0; Range: >= 0.0"""
 
     def update(
-        self,
-        values: _AvailabilityManagerHybridVentilationFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerHybridVentilationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerHybridVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerHybridVentilationFields(TypedDict, total=False):
@@ -43192,10 +42569,7 @@ class AvailabilityManagerAssignmentList(IDFObject):
     managers: ExtensibleList[AvailabilityManagerAssignmentListManagersGroup]
 
     def update(
-        self,
-        values: _AvailabilityManagerAssignmentListFields = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerAssignmentListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _AvailabilityManagerAssignmentListFields(TypedDict, total=False):
@@ -43223,7 +42597,7 @@ class SetpointManagerScheduled(IDFObject):
     """Node(s) at which control variable will be set"""
 
     def update(
-        self, values: _SetpointManagerScheduledFields = ..., /, **kwargs: Unpack[_SetpointManagerScheduledFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerScheduledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerScheduledFields(TypedDict, total=False):
@@ -43255,10 +42629,7 @@ class SetpointManagerScheduledDualSetpoint(IDFObject):
     """Node(s) at which temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerScheduledDualSetpointFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerScheduledDualSetpointFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerScheduledDualSetpointFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerScheduledDualSetpointFields(TypedDict, total=False):
@@ -43294,10 +42665,7 @@ class SetpointManagerOutdoorAirReset(IDFObject):
     """2nd outdoor air temperature reset rule; [C]"""
 
     def update(
-        self,
-        values: _SetpointManagerOutdoorAirResetFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerOutdoorAirResetFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerOutdoorAirResetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerOutdoorAirResetFields(TypedDict, total=False):
@@ -43329,10 +42697,7 @@ class SetpointManagerSingleZoneReheat(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerSingleZoneReheatFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerSingleZoneReheatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneReheatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerSingleZoneReheatFields(TypedDict, total=False):
@@ -43360,10 +42725,7 @@ class SetpointManagerSingleZoneHeating(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerSingleZoneHeatingFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerSingleZoneHeatingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneHeatingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerSingleZoneHeatingFields(TypedDict, total=False):
@@ -43391,10 +42753,7 @@ class SetpointManagerSingleZoneCooling(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerSingleZoneCoolingFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerSingleZoneCoolingFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSingleZoneCoolingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerSingleZoneCoolingFields(TypedDict, total=False):
@@ -43416,7 +42775,7 @@ class SetpointManagerSingleZoneHumidityMinimum(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerSingleZoneHumidityMinimumFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMinimumFields],
     ) -> None: ...  # type: ignore[override]
@@ -43435,7 +42794,7 @@ class SetpointManagerSingleZoneHumidityMaximum(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerSingleZoneHumidityMaximumFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMaximumFields],
     ) -> None: ...  # type: ignore[override]
@@ -43462,7 +42821,7 @@ class SetpointManagerMixedAir(IDFObject):
     """Optional field used to limit economizer operation to prevent freezing of DX cooling coil.; [C]; Default: 7.2; Range: > 0.0"""
 
     def update(
-        self, values: _SetpointManagerMixedAirFields = ..., /, **kwargs: Unpack[_SetpointManagerMixedAirFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMixedAirFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerMixedAirFields(TypedDict, total=False):
@@ -43499,10 +42858,7 @@ class SetpointManagerOutdoorAirPretreat(IDFObject):
     """Node(s) at which the temperature or humidity ratio will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerOutdoorAirPretreatFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerOutdoorAirPretreatFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerOutdoorAirPretreatFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerOutdoorAirPretreatFields(TypedDict, total=False):
@@ -43534,7 +42890,7 @@ class SetpointManagerWarmest(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self, values: _SetpointManagerWarmestFields = ..., /, **kwargs: Unpack[_SetpointManagerWarmestFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerWarmestFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerWarmestFields(TypedDict, total=False):
@@ -43562,7 +42918,7 @@ class SetpointManagerColdest(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self, values: _SetpointManagerColdestFields = ..., /, **kwargs: Unpack[_SetpointManagerColdestFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerColdestFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerColdestFields(TypedDict, total=False):
@@ -43583,10 +42939,7 @@ class SetpointManagerReturnAirBypassFlow(IDFObject):
     temperature_setpoint_schedule_name: str | None
 
     def update(
-        self,
-        values: _SetpointManagerReturnAirBypassFlowFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerReturnAirBypassFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerReturnAirBypassFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerReturnAirBypassFlowFields(TypedDict, total=False):
@@ -43612,10 +42965,7 @@ class SetpointManagerWarmestTemperatureFlow(IDFObject):
     """Fraction of the maximum supply air flow rate. Used to define the minimum supply flow for the TemperatureFirst strategy.; [dimensionless]; Default: 0.2; Range: > 0.0"""
 
     def update(
-        self,
-        values: _SetpointManagerWarmestTemperatureFlowFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerWarmestTemperatureFlowFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerWarmestTemperatureFlowFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerWarmestTemperatureFlowFields(TypedDict, total=False):
@@ -43640,10 +42990,7 @@ class SetpointManagerMultiZoneHeatingAverage(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerMultiZoneHeatingAverageFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerMultiZoneHeatingAverageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMultiZoneHeatingAverageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerMultiZoneHeatingAverageFields(TypedDict, total=False):
@@ -43665,10 +43012,7 @@ class SetpointManagerMultiZoneCoolingAverage(IDFObject):
     """Node(s) at which the temperature will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerMultiZoneCoolingAverageFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerMultiZoneCoolingAverageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerMultiZoneCoolingAverageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerMultiZoneCoolingAverageFields(TypedDict, total=False):
@@ -43691,7 +43035,7 @@ class SetpointManagerMultiZoneMinimumHumidityAverage(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerMultiZoneMinimumHumidityAverageFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneMinimumHumidityAverageFields],
     ) -> None: ...  # type: ignore[override]
@@ -43716,7 +43060,7 @@ class SetpointManagerMultiZoneMaximumHumidityAverage(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerMultiZoneMaximumHumidityAverageFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneMaximumHumidityAverageFields],
     ) -> None: ...  # type: ignore[override]
@@ -43741,7 +43085,7 @@ class SetpointManagerMultiZoneHumidityMinimum(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerMultiZoneHumidityMinimumFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMinimumFields],
     ) -> None: ...  # type: ignore[override]
@@ -43766,7 +43110,7 @@ class SetpointManagerMultiZoneHumidityMaximum(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerMultiZoneHumidityMaximumFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMaximumFields],
     ) -> None: ...  # type: ignore[override]
@@ -43795,7 +43139,7 @@ class SetpointManagerFollowOutdoorAirTemperature(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerFollowOutdoorAirTemperatureFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerFollowOutdoorAirTemperatureFields],
     ) -> None: ...  # type: ignore[override]
@@ -43827,7 +43171,7 @@ class SetpointManagerFollowSystemNodeTemperature(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerFollowSystemNodeTemperatureFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerFollowSystemNodeTemperatureFields],
     ) -> None: ...  # type: ignore[override]
@@ -43865,10 +43209,7 @@ class SetpointManagerFollowGroundTemperature(IDFObject):
     """Node(s) at which control variable will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerFollowGroundTemperatureFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerFollowGroundTemperatureFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerFollowGroundTemperatureFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerFollowGroundTemperatureFields(TypedDict, total=False):
@@ -43907,10 +43248,7 @@ class SetpointManagerCondenserEnteringReset(IDFObject):
     """Node(s) at which control variable will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerCondenserEnteringResetFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerCondenserEnteringResetFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerCondenserEnteringResetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerCondenserEnteringResetFields(TypedDict, total=False):
@@ -43938,7 +43276,7 @@ class SetpointManagerCondenserEnteringResetIdeal(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerCondenserEnteringResetIdealFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerCondenserEnteringResetIdealFields],
     ) -> None: ...  # type: ignore[override]
@@ -43962,7 +43300,7 @@ class SetpointManagerSingleZoneOneStageCooling(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerSingleZoneOneStageCoolingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneOneStageCoolingFields],
     ) -> None: ...  # type: ignore[override]
@@ -43986,7 +43324,7 @@ class SetpointManagerSingleZoneOneStageHeating(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerSingleZoneOneStageHeatingFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerSingleZoneOneStageHeatingFields],
     ) -> None: ...  # type: ignore[override]
@@ -44017,7 +43355,7 @@ class SetpointManagerReturnTemperatureChilledWater(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerReturnTemperatureChilledWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerReturnTemperatureChilledWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -44051,7 +43389,7 @@ class SetpointManagerReturnTemperatureHotWater(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerReturnTemperatureHotWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerReturnTemperatureHotWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -44084,7 +43422,7 @@ class SetpointManagerSystemNodeResetTemperature(IDFObject):
 
     def update(
         self,
-        values: _SetpointManagerSystemNodeResetTemperatureFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_SetpointManagerSystemNodeResetTemperatureFields],
     ) -> None: ...  # type: ignore[override]
@@ -44116,10 +43454,7 @@ class SetpointManagerSystemNodeResetHumidity(IDFObject):
     """Node(s) at which humidity ratio will be set"""
 
     def update(
-        self,
-        values: _SetpointManagerSystemNodeResetHumidityFields = ...,
-        /,
-        **kwargs: Unpack[_SetpointManagerSystemNodeResetHumidityFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SetpointManagerSystemNodeResetHumidityFields]
     ) -> None: ...  # type: ignore[override]
 
 class _SetpointManagerSystemNodeResetHumidityFields(TypedDict, total=False):
@@ -44222,7 +43557,7 @@ class RefrigerationCase(IDFObject):
     under_case_hvac_return_air_node_name: str | None
     """Name of the return air node for this case. If left blank, defaults to the first return air node for this zone."""
 
-    def update(self, values: _RefrigerationCaseFields = ..., /, **kwargs: Unpack[_RefrigerationCaseFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCaseFields]) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCaseFields(TypedDict, total=False):
     availability_schedule_name: str | None
@@ -44332,7 +43667,7 @@ class RefrigerationCompressorRack(IDFObject):
     """This must be a controlled zone and appear in a ZoneHVAC:EquipmentConnections object. Required only if walk-in[s] are ..."""
 
     def update(
-        self, values: _RefrigerationCompressorRackFields = ..., /, **kwargs: Unpack[_RefrigerationCompressorRackFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorRackFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCompressorRackFields(TypedDict, total=False):
@@ -44373,10 +43708,7 @@ class RefrigerationCaseAndWalkInList(IDFObject):
     cases_and_walkins: ExtensibleList[RefrigerationCaseAndWalkInListCasesAndWalkinsGroup]
 
     def update(
-        self,
-        values: _RefrigerationCaseAndWalkInListFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationCaseAndWalkInListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCaseAndWalkInListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCaseAndWalkInListFields(TypedDict, total=False):
@@ -44407,10 +43739,7 @@ class RefrigerationCondenserAirCooled(IDFObject):
     """optional input; [kg]; Default: 0.0"""
 
     def update(
-        self,
-        values: _RefrigerationCondenserAirCooledFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationCondenserAirCooledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserAirCooledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCondenserAirCooledFields(TypedDict, total=False):
@@ -44475,7 +43804,7 @@ class RefrigerationCondenserEvaporativeCooled(IDFObject):
 
     def update(
         self,
-        values: _RefrigerationCondenserEvaporativeCooledFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_RefrigerationCondenserEvaporativeCooledFields],
     ) -> None: ...  # type: ignore[override]
@@ -44539,10 +43868,7 @@ class RefrigerationCondenserWaterCooled(IDFObject):
     """optional input; [kg]"""
 
     def update(
-        self,
-        values: _RefrigerationCondenserWaterCooledFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationCondenserWaterCooledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserWaterCooledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCondenserWaterCooledFields(TypedDict, total=False):
@@ -44582,10 +43908,7 @@ class RefrigerationCondenserCascade(IDFObject):
     """optional input; [kg]"""
 
     def update(
-        self,
-        values: _RefrigerationCondenserCascadeFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationCondenserCascadeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCondenserCascadeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCondenserCascadeFields(TypedDict, total=False):
@@ -44628,10 +43951,7 @@ class RefrigerationGasCoolerAirCooled(IDFObject):
     """optional input; [kg]; Default: 0.0"""
 
     def update(
-        self,
-        values: _RefrigerationGasCoolerAirCooledFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationGasCoolerAirCooledFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationGasCoolerAirCooledFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationGasCoolerAirCooledFields(TypedDict, total=False):
@@ -44660,10 +43980,7 @@ class RefrigerationTransferLoadList(IDFObject):
     transfer_loads: ExtensibleList[RefrigerationTransferLoadListTransferLoadsGroup]
 
     def update(
-        self,
-        values: _RefrigerationTransferLoadListFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationTransferLoadListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationTransferLoadListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationTransferLoadListFields(TypedDict, total=False):
@@ -44686,7 +44003,7 @@ class RefrigerationSubcooler(IDFObject):
     """Control Temperature Out for subcooled liquid Applicable only and required for mechanical subcoolers; [C]"""
 
     def update(
-        self, values: _RefrigerationSubcoolerFields = ..., /, **kwargs: Unpack[_RefrigerationSubcoolerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSubcoolerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationSubcoolerFields(TypedDict, total=False):
@@ -44720,7 +44037,7 @@ class RefrigerationCompressor(IDFObject):
     transcritical_compressor_capacity_curve_name: str | None
 
     def update(
-        self, values: _RefrigerationCompressorFields = ..., /, **kwargs: Unpack[_RefrigerationCompressorFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCompressorFields(TypedDict, total=False):
@@ -44746,7 +44063,7 @@ class RefrigerationCompressorList(IDFObject):
     compressors: ExtensibleList[RefrigerationCompressorListCompressorsGroup]
 
     def update(
-        self, values: _RefrigerationCompressorListFields = ..., /, **kwargs: Unpack[_RefrigerationCompressorListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationCompressorListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationCompressorListFields(TypedDict, total=False):
@@ -44786,7 +44103,7 @@ class RefrigerationSystem(IDFObject):
     high_stage_compressor_or_compressorlist_name: str | None
 
     def update(
-        self, values: _RefrigerationSystemFields = ..., /, **kwargs: Unpack[_RefrigerationSystemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationSystemFields(TypedDict, total=False):
@@ -44836,10 +44153,7 @@ class RefrigerationTranscriticalSystem(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self,
-        values: _RefrigerationTranscriticalSystemFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationTranscriticalSystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationTranscriticalSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationTranscriticalSystemFields(TypedDict, total=False):
@@ -44907,10 +44221,7 @@ class RefrigerationSecondarySystem(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
     def update(
-        self,
-        values: _RefrigerationSecondarySystemFields = ...,
-        /,
-        **kwargs: Unpack[_RefrigerationSecondarySystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationSecondarySystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationSecondarySystemFields(TypedDict, total=False):
@@ -44999,7 +44310,7 @@ class RefrigerationWalkIn(IDFObject):
     zone_data: ExtensibleList[RefrigerationWalkInZoneDataGroup]
 
     def update(
-        self, values: _RefrigerationWalkInFields = ..., /, **kwargs: Unpack[_RefrigerationWalkInFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationWalkInFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationWalkInFields(TypedDict, total=False):
@@ -45101,7 +44412,7 @@ class RefrigerationAirChiller(IDFObject):
     """This value is only used if the Cooling Source Type is DXEvaporator; [kg]; Default: 0.0"""
 
     def update(
-        self, values: _RefrigerationAirChillerFields = ..., /, **kwargs: Unpack[_RefrigerationAirChillerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationAirChillerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _RefrigerationAirChillerFields(TypedDict, total=False):
@@ -45169,10 +44480,7 @@ class ZoneHVACRefrigerationChillerSet(IDFObject):
     chillers: ExtensibleList[ZoneHVACRefrigerationChillerSetChillersGroup]
 
     def update(
-        self,
-        values: _ZoneHVACRefrigerationChillerSetFields = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACRefrigerationChillerSetFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACRefrigerationChillerSetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACRefrigerationChillerSetFields(TypedDict, total=False):
@@ -45214,7 +44522,7 @@ class DemandManagerAssignmentList(IDFObject):
     manager_data: ExtensibleList[DemandManagerAssignmentListManagerDataGroup]
 
     def update(
-        self, values: _DemandManagerAssignmentListFields = ..., /, **kwargs: Unpack[_DemandManagerAssignmentListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerAssignmentListFields(TypedDict, total=False):
@@ -45250,7 +44558,7 @@ class DemandManagerExteriorLights(IDFObject):
     lights: ExtensibleList[DemandManagerExteriorLightsLightsGroup]
 
     def update(
-        self, values: _DemandManagerExteriorLightsFields = ..., /, **kwargs: Unpack[_DemandManagerExteriorLightsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerExteriorLightsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerExteriorLightsFields(TypedDict, total=False):
@@ -45286,7 +44594,7 @@ class DemandManagerLights(IDFObject):
     lights: ExtensibleList[DemandManagerLightsLightsGroup]
 
     def update(
-        self, values: _DemandManagerLightsFields = ..., /, **kwargs: Unpack[_DemandManagerLightsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerLightsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerLightsFields(TypedDict, total=False):
@@ -45322,10 +44630,7 @@ class DemandManagerElectricEquipment(IDFObject):
     equipment: ExtensibleList[DemandManagerElectricEquipmentEquipmentGroup]
 
     def update(
-        self,
-        values: _DemandManagerElectricEquipmentFields = ...,
-        /,
-        **kwargs: Unpack[_DemandManagerElectricEquipmentFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerElectricEquipmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerElectricEquipmentFields(TypedDict, total=False):
@@ -45363,7 +44668,7 @@ class DemandManagerThermostats(IDFObject):
     thermostats: ExtensibleList[DemandManagerThermostatsThermostatsGroup]
 
     def update(
-        self, values: _DemandManagerThermostatsFields = ..., /, **kwargs: Unpack[_DemandManagerThermostatsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerThermostatsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerThermostatsFields(TypedDict, total=False):
@@ -45403,7 +44708,7 @@ class DemandManagerVentilation(IDFObject):
     controllers: ExtensibleList[DemandManagerVentilationControllersGroup]
 
     def update(
-        self, values: _DemandManagerVentilationFields = ..., /, **kwargs: Unpack[_DemandManagerVentilationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DemandManagerVentilationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _DemandManagerVentilationFields(TypedDict, total=False):
@@ -45463,10 +44768,7 @@ class GeneratorInternalCombustionEngine(IDFObject):
     """[C]; Default: 80.0; Range: >= 0.0, <= 100.0"""
 
     def update(
-        self,
-        values: _GeneratorInternalCombustionEngineFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorInternalCombustionEngineFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorInternalCombustionEngineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorInternalCombustionEngineFields(TypedDict, total=False):
@@ -45557,7 +44859,7 @@ class GeneratorCombustionTurbine(IDFObject):
     """Enter the name of an outdoor air node"""
 
     def update(
-        self, values: _GeneratorCombustionTurbineFields = ..., /, **kwargs: Unpack[_GeneratorCombustionTurbineFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorCombustionTurbineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorCombustionTurbineFields(TypedDict, total=False):
@@ -45691,7 +44993,7 @@ class GeneratorMicroTurbine(IDFObject):
     """Quadratic curve = a + b*PLR + c*PLR**2 Cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = ratio of Generator Load to..."""
 
     def update(
-        self, values: _GeneratorMicroTurbineFields = ..., /, **kwargs: Unpack[_GeneratorMicroTurbineFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroTurbineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorMicroTurbineFields(TypedDict, total=False):
@@ -45781,7 +45083,7 @@ class GeneratorPhotovoltaic(IDFObject):
     """Number of PV modules wired in series for each string.; [dimensionless]; Default: 1.0; Range: >= 1.0"""
 
     def update(
-        self, values: _GeneratorPhotovoltaicFields = ..., /, **kwargs: Unpack[_GeneratorPhotovoltaicFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorPhotovoltaicFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorPhotovoltaicFields(TypedDict, total=False):
@@ -45821,10 +45123,7 @@ class PhotovoltaicPerformanceSimple(IDFObject):
     efficiency_schedule_name: str | None
 
     def update(
-        self,
-        values: _PhotovoltaicPerformanceSimpleFields = ...,
-        /,
-        **kwargs: Unpack[_PhotovoltaicPerformanceSimpleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PhotovoltaicPerformanceSimpleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PhotovoltaicPerformanceSimpleFields(TypedDict, total=False):
@@ -45876,7 +45175,7 @@ class PhotovoltaicPerformanceEquivalentOneDiode(IDFObject):
 
     def update(
         self,
-        values: _PhotovoltaicPerformanceEquivalentOneDiodeFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_PhotovoltaicPerformanceEquivalentOneDiodeFields],
     ) -> None: ...  # type: ignore[override]
@@ -45985,10 +45284,7 @@ class PhotovoltaicPerformanceSandia(IDFObject):
     """(non-dimensional); [dimensionless]"""
 
     def update(
-        self,
-        values: _PhotovoltaicPerformanceSandiaFields = ...,
-        /,
-        **kwargs: Unpack[_PhotovoltaicPerformanceSandiaFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PhotovoltaicPerformanceSandiaFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PhotovoltaicPerformanceSandiaFields(TypedDict, total=False):
@@ -46052,7 +45348,7 @@ class GeneratorPVWatts(IDFObject):
     ground_coverage_ratio: float | None
     """Applies only to arrays with one-axis tracking and is the ratio of module surface area to area of the ground or roof o...; Default: 0.4; Range: >= 0.0, <= 1.0"""
 
-    def update(self, values: _GeneratorPVWattsFields = ..., /, **kwargs: Unpack[_GeneratorPVWattsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorPVWattsFields]) -> None: ...  # type: ignore[override]
 
 class _GeneratorPVWattsFields(TypedDict, total=False):
     pvwatts_version: Literal["5"] | None
@@ -46075,10 +45371,7 @@ class ElectricLoadCenterInverterPVWatts(IDFObject):
     """Default: 0.96; Range: > 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ElectricLoadCenterInverterPVWattsFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterInverterPVWattsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterPVWattsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterInverterPVWattsFields(TypedDict, total=False):
@@ -46107,7 +45400,7 @@ class GeneratorFuelCell(IDFObject):
     stack_cooler_name: str | None
     """Enter the name of a Generator:FuelCell:StackCooler object. optional, used for PEMFC"""
 
-    def update(self, values: _GeneratorFuelCellFields = ..., /, **kwargs: Unpack[_GeneratorFuelCellFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellFields]) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellFields(TypedDict, total=False):
     power_module_name: str | None
@@ -46183,10 +45476,7 @@ class GeneratorFuelCellPowerModule(IDFObject):
     """[W]"""
 
     def update(
-        self,
-        values: _GeneratorFuelCellPowerModuleFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorFuelCellPowerModuleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellPowerModuleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellPowerModuleFields(TypedDict, total=False):
@@ -46263,7 +45553,7 @@ class GeneratorFuelCellAirSupply(IDFObject):
     constituent_fractions: ExtensibleList[GeneratorFuelCellAirSupplyConstituentFractionsGroup]
 
     def update(
-        self, values: _GeneratorFuelCellAirSupplyFields = ..., /, **kwargs: Unpack[_GeneratorFuelCellAirSupplyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellAirSupplyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellAirSupplyFields(TypedDict, total=False):
@@ -46308,10 +45598,7 @@ class GeneratorFuelCellWaterSupply(IDFObject):
     water_temperature_schedule_name: str | None
 
     def update(
-        self,
-        values: _GeneratorFuelCellWaterSupplyFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorFuelCellWaterSupplyFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellWaterSupplyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellWaterSupplyFields(TypedDict, total=False):
@@ -46348,10 +45635,7 @@ class GeneratorFuelCellAuxiliaryHeater(IDFObject):
     """[kmol/s]"""
 
     def update(
-        self,
-        values: _GeneratorFuelCellAuxiliaryHeaterFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorFuelCellAuxiliaryHeaterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellAuxiliaryHeaterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellAuxiliaryHeaterFields(TypedDict, total=False):
@@ -46402,7 +45686,7 @@ class GeneratorFuelCellExhaustGasToWaterHeatExchanger(IDFObject):
 
     def update(
         self,
-        values: _GeneratorFuelCellExhaustGasToWaterHeatExchangerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_GeneratorFuelCellExhaustGasToWaterHeatExchangerFields],
     ) -> None: ...  # type: ignore[override]
@@ -46452,10 +45736,7 @@ class GeneratorFuelCellElectricalStorage(IDFObject):
     """[J]"""
 
     def update(
-        self,
-        values: _GeneratorFuelCellElectricalStorageFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorFuelCellElectricalStorageFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellElectricalStorageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellElectricalStorageFields(TypedDict, total=False):
@@ -46476,7 +45757,7 @@ class GeneratorFuelCellInverter(IDFObject):
     efficiency_function_of_dc_power_curve_name: str | None
 
     def update(
-        self, values: _GeneratorFuelCellInverterFields = ..., /, **kwargs: Unpack[_GeneratorFuelCellInverterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellInverterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellInverterFields(TypedDict, total=False):
@@ -46518,10 +45799,7 @@ class GeneratorFuelCellStackCooler(IDFObject):
     stack_air_cooler_fan_coefficient_f2: float | None
 
     def update(
-        self,
-        values: _GeneratorFuelCellStackCoolerFields = ...,
-        /,
-        **kwargs: Unpack[_GeneratorFuelCellStackCoolerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelCellStackCoolerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelCellStackCoolerFields(TypedDict, total=False):
@@ -46561,7 +45839,7 @@ class GeneratorMicroCHP(IDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
 
-    def update(self, values: _GeneratorMicroCHPFields = ..., /, **kwargs: Unpack[_GeneratorMicroCHPFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorMicroCHPFields]) -> None: ...  # type: ignore[override]
 
 class _GeneratorMicroCHPFields(TypedDict, total=False):
     performance_parameters_name: str | None
@@ -46623,7 +45901,7 @@ class GeneratorMicroCHPNonNormalizedParameters(IDFObject):
 
     def update(
         self,
-        values: _GeneratorMicroCHPNonNormalizedParametersFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_GeneratorMicroCHPNonNormalizedParametersFields],
     ) -> None: ...  # type: ignore[override]
@@ -46913,7 +46191,7 @@ class GeneratorFuelSupply(IDFObject):
     """Range: >= 0.0, <= 1.0"""
 
     def update(
-        self, values: _GeneratorFuelSupplyFields = ..., /, **kwargs: Unpack[_GeneratorFuelSupplyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorFuelSupplyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorFuelSupplyFields(TypedDict, total=False):
@@ -47217,7 +46495,7 @@ class GeneratorWindTurbine(IDFObject):
     """Default: 21.0; Range: > 0.0"""
 
     def update(
-        self, values: _GeneratorWindTurbineFields = ..., /, **kwargs: Unpack[_GeneratorWindTurbineFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeneratorWindTurbineFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GeneratorWindTurbineFields(TypedDict, total=False):
@@ -47283,10 +46561,7 @@ class ElectricLoadCenterGenerators(IDFObject):
     generator_outputs: ExtensibleList[ElectricLoadCenterGeneratorsGeneratorOutputsGroup]
 
     def update(
-        self,
-        values: _ElectricLoadCenterGeneratorsFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterGeneratorsFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterGeneratorsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterGeneratorsFields(TypedDict, total=False):
@@ -47305,10 +46580,7 @@ class ElectricLoadCenterInverterSimple(IDFObject):
     """Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ElectricLoadCenterInverterSimpleFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterInverterSimpleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterSimpleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterInverterSimpleFields(TypedDict, total=False):
@@ -47342,7 +46614,7 @@ class ElectricLoadCenterInverterFunctionOfPower(IDFObject):
 
     def update(
         self,
-        values: _ElectricLoadCenterInverterFunctionOfPowerFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ElectricLoadCenterInverterFunctionOfPowerFields],
     ) -> None: ...  # type: ignore[override]
@@ -47388,10 +46660,7 @@ class ElectricLoadCenterInverterLookUpTable(IDFObject):
     """Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ElectricLoadCenterInverterLookUpTableFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterInverterLookUpTableFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterInverterLookUpTableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterInverterLookUpTableFields(TypedDict, total=False):
@@ -47431,10 +46700,7 @@ class ElectricLoadCenterStorageSimple(IDFObject):
     """[J]"""
 
     def update(
-        self,
-        values: _ElectricLoadCenterStorageSimpleFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterStorageSimpleFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageSimpleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterStorageSimpleFields(TypedDict, total=False):
@@ -47493,10 +46759,7 @@ class ElectricLoadCenterStorageBattery(IDFObject):
     """Determines the number of cycles to failure in relation to cycle range. Only required when battery life calculation is..."""
 
     def update(
-        self,
-        values: _ElectricLoadCenterStorageBatteryFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterStorageBatteryFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageBatteryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterStorageBatteryFields(TypedDict, total=False):
@@ -47569,7 +46832,7 @@ class ElectricLoadCenterStorageLiIonNMCBattery(IDFObject):
 
     def update(
         self,
-        values: _ElectricLoadCenterStorageLiIonNMCBatteryFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_ElectricLoadCenterStorageLiIonNMCBatteryFields],
     ) -> None: ...  # type: ignore[override]
@@ -47642,10 +46905,7 @@ class ElectricLoadCenterTransformer(IDFObject):
     meters: ExtensibleList[ElectricLoadCenterTransformerMetersGroup]
 
     def update(
-        self,
-        values: _ElectricLoadCenterTransformerFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterTransformerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterTransformerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterTransformerFields(TypedDict, total=False):
@@ -47743,10 +47003,7 @@ class ElectricLoadCenterDistribution(IDFObject):
     """Modifies the target utility service demand power over time. Schedule values should be fractions from -1.0 to 1.0, inc..."""
 
     def update(
-        self,
-        values: _ElectricLoadCenterDistributionFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterDistributionFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterDistributionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterDistributionFields(TypedDict, total=False):
@@ -47822,10 +47079,7 @@ class ElectricLoadCenterStorageConverter(IDFObject):
     """fraction of zone heat gains treated as thermal radiation; Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _ElectricLoadCenterStorageConverterFields = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterStorageConverterFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterStorageConverterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ElectricLoadCenterStorageConverterFields(TypedDict, total=False):
@@ -47859,7 +47113,7 @@ class WaterUseEquipment(IDFObject):
     latent_fraction_schedule_name: str | None
     """Defaults to 0.0 at all times"""
 
-    def update(self, values: _WaterUseEquipmentFields = ..., /, **kwargs: Unpack[_WaterUseEquipmentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseEquipmentFields]) -> None: ...  # type: ignore[override]
 
 class _WaterUseEquipmentFields(TypedDict, total=False):
     end_use_subcategory: str | None
@@ -47898,7 +47152,7 @@ class WaterUseConnections(IDFObject):
     connections: ExtensibleList[WaterUseConnectionsConnectionsGroup]
 
     def update(
-        self, values: _WaterUseConnectionsFields = ..., /, **kwargs: Unpack[_WaterUseConnectionsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseConnectionsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WaterUseConnectionsFields(TypedDict, total=False):
@@ -47946,7 +47200,7 @@ class WaterUseStorage(IDFObject):
     """[W/m2-K]"""
     tank_outside_surface_material_name: str | None
 
-    def update(self, values: _WaterUseStorageFields = ..., /, **kwargs: Unpack[_WaterUseStorageFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseStorageFields]) -> None: ...  # type: ignore[override]
 
 class _WaterUseStorageFields(TypedDict, total=False):
     water_quality_subcategory: str | None
@@ -47991,7 +47245,7 @@ class WaterUseWell(IDFObject):
     """[m]"""
     water_table_depth_schedule_name: str | None
 
-    def update(self, values: _WaterUseWellFields = ..., /, **kwargs: Unpack[_WaterUseWellFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseWellFields]) -> None: ...  # type: ignore[override]
 
 class _WaterUseWellFields(TypedDict, total=False):
     storage_tank_name: str | None
@@ -48024,7 +47278,7 @@ class WaterUseRainCollector(IDFObject):
     surfaces: ExtensibleList[WaterUseRainCollectorSurfacesGroup]
 
     def update(
-        self, values: _WaterUseRainCollectorFields = ..., /, **kwargs: Unpack[_WaterUseRainCollectorFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterUseRainCollectorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _WaterUseRainCollectorFields(TypedDict, total=False):
@@ -48047,7 +47301,7 @@ class FaultModelTemperatureSensorOffsetOutdoorAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelTemperatureSensorOffsetOutdoorAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48071,7 +47325,7 @@ class FaultModelHumiditySensorOffsetOutdoorAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelHumiditySensorOffsetOutdoorAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelHumiditySensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48095,7 +47349,7 @@ class FaultModelEnthalpySensorOffsetOutdoorAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelEnthalpySensorOffsetOutdoorAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelEnthalpySensorOffsetOutdoorAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48119,7 +47373,7 @@ class FaultModelTemperatureSensorOffsetReturnAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelTemperatureSensorOffsetReturnAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetReturnAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48143,7 +47397,7 @@ class FaultModelEnthalpySensorOffsetReturnAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelEnthalpySensorOffsetReturnAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelEnthalpySensorOffsetReturnAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48181,7 +47435,7 @@ class FaultModelTemperatureSensorOffsetChillerSupplyWater(IDFObject):
 
     def update(
         self,
-        values: _FaultModelTemperatureSensorOffsetChillerSupplyWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetChillerSupplyWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -48235,7 +47489,7 @@ class FaultModelTemperatureSensorOffsetCoilSupplyAir(IDFObject):
 
     def update(
         self,
-        values: _FaultModelTemperatureSensorOffsetCoilSupplyAirFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCoilSupplyAirFields],
     ) -> None: ...  # type: ignore[override]
@@ -48284,7 +47538,7 @@ class FaultModelTemperatureSensorOffsetCondenserSupplyWater(IDFObject):
 
     def update(
         self,
-        values: _FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields = ...,
+        values: Mapping[str, Any] | None = ...,
         /,
         **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields],
     ) -> None: ...  # type: ignore[override]
@@ -48315,7 +47569,7 @@ class FaultModelThermostatOffset(IDFObject):
     """[deltaC]; Default: 2.0; Range: > -10.0, < 10.0"""
 
     def update(
-        self, values: _FaultModelThermostatOffsetFields = ..., /, **kwargs: Unpack[_FaultModelThermostatOffsetFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelThermostatOffsetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelThermostatOffsetFields(TypedDict, total=False):
@@ -48341,7 +47595,7 @@ class FaultModelHumidistatOffset(IDFObject):
     """Enter the name of a FaultModel:ThermostatOffset object Required field for Type ThermostatOffsetDependent"""
 
     def update(
-        self, values: _FaultModelHumidistatOffsetFields = ..., /, **kwargs: Unpack[_FaultModelHumidistatOffsetFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelHumidistatOffsetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelHumidistatOffsetFields(TypedDict, total=False):
@@ -48366,7 +47620,7 @@ class FaultModelFoulingAirFilter(IDFObject):
     """The curve describes the relationship between the fan pressure rise and air flow rate"""
 
     def update(
-        self, values: _FaultModelFoulingAirFilterFields = ..., /, **kwargs: Unpack[_FaultModelFoulingAirFilterFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingAirFilterFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingAirFilterFields(TypedDict, total=False):
@@ -48389,7 +47643,7 @@ class FaultModelFoulingBoiler(IDFObject):
     """The factor indicates the decrease of the nominal capacity of the boiler It is the ratio between the nominal capacity ...; [dimensionless]; Default: 1.0; Range: > 0.0, <= 1.0"""
 
     def update(
-        self, values: _FaultModelFoulingBoilerFields = ..., /, **kwargs: Unpack[_FaultModelFoulingBoilerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingBoilerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingBoilerFields(TypedDict, total=False):
@@ -48412,10 +47666,7 @@ class FaultModelFoulingEvaporativeCooler(IDFObject):
     """The factor indicates the decrease of the indirect stage efficiency It is the ratio between the indirect stage efficie...; [dimensionless]; Default: 1.0; Range: > 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _FaultModelFoulingEvaporativeCoolerFields = ...,
-        /,
-        **kwargs: Unpack[_FaultModelFoulingEvaporativeCoolerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingEvaporativeCoolerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingEvaporativeCoolerFields(TypedDict, total=False):
@@ -48448,7 +47699,7 @@ class FaultModelFoulingChiller(IDFObject):
     """The factor indicates the decrease of the nominal capacity of the chiller It is the ratio between the nominal capacity...; [dimensionless]; Default: 1.0; Range: > 0.0, <= 1.0"""
 
     def update(
-        self, values: _FaultModelFoulingChillerFields = ..., /, **kwargs: Unpack[_FaultModelFoulingChillerFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingChillerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingChillerFields(TypedDict, total=False):
@@ -48483,10 +47734,7 @@ class FaultModelFoulingCoolingTower(IDFObject):
     """Factor describing the tower UA reduction due to fouling It is the ratio between the UA value at fouling case and that...; [dimensionless]; Range: > 0.0"""
 
     def update(
-        self,
-        values: _FaultModelFoulingCoolingTowerFields = ...,
-        /,
-        **kwargs: Unpack[_FaultModelFoulingCoolingTowerFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingCoolingTowerFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingCoolingTowerFields(TypedDict, total=False):
@@ -48518,7 +47766,7 @@ class FaultModelFoulingCoil(IDFObject):
     """For Fouling Input Method: FoulingFactor; [dimensionless]; Default: 0.07; Range: > 0.0"""
 
     def update(
-        self, values: _FaultModelFoulingCoilFields = ..., /, **kwargs: Unpack[_FaultModelFoulingCoilFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FaultModelFoulingCoilFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FaultModelFoulingCoilFields(TypedDict, total=False):
@@ -48545,7 +47793,7 @@ class MatrixTwoDimension(IDFObject):
     values: ExtensibleList[MatrixTwoDimensionValuesGroup]
 
     def update(
-        self, values: _MatrixTwoDimensionFields = ..., /, **kwargs: Unpack[_MatrixTwoDimensionFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MatrixTwoDimensionFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MatrixTwoDimensionFields(TypedDict, total=False):
@@ -48594,7 +47842,7 @@ class HybridModelZone(IDFObject):
     end_day_of_month: int | None
     """Range: >= 1, <= 31"""
 
-    def update(self, values: _HybridModelZoneFields = ..., /, **kwargs: Unpack[_HybridModelZoneFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_HybridModelZoneFields]) -> None: ...  # type: ignore[override]
 
 class _HybridModelZoneFields(TypedDict, total=False):
     zone_name: str | None
@@ -48636,7 +47884,7 @@ class CurveLinear(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveLinearFields = ..., /, **kwargs: Unpack[_CurveLinearFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveLinearFields]) -> None: ...  # type: ignore[override]
 
 class _CurveLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -48728,7 +47976,7 @@ class CurveQuadLinear(IDFObject):
     )
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveQuadLinearFields = ..., /, **kwargs: Unpack[_CurveQuadLinearFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadLinearFields]) -> None: ...  # type: ignore[override]
 
 class _CurveQuadLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -48893,7 +48141,7 @@ class CurveQuintLinear(IDFObject):
     )
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveQuintLinearFields = ..., /, **kwargs: Unpack[_CurveQuintLinearFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuintLinearFields]) -> None: ...  # type: ignore[override]
 
 class _CurveQuintLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -48999,7 +48247,7 @@ class CurveQuadratic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveQuadraticFields = ..., /, **kwargs: Unpack[_CurveQuadraticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadraticFields]) -> None: ...  # type: ignore[override]
 
 class _CurveQuadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49034,7 +48282,7 @@ class CurveCubic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveCubicFields = ..., /, **kwargs: Unpack[_CurveCubicFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveCubicFields]) -> None: ...  # type: ignore[override]
 
 class _CurveCubicFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49071,7 +48319,7 @@ class CurveQuartic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveQuarticFields = ..., /, **kwargs: Unpack[_CurveQuarticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuarticFields]) -> None: ...  # type: ignore[override]
 
 class _CurveQuarticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49109,7 +48357,7 @@ class CurveExponent(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveExponentFields = ..., /, **kwargs: Unpack[_CurveExponentFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentFields]) -> None: ...  # type: ignore[override]
 
 class _CurveExponentFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49156,7 +48404,7 @@ class CurveBicubic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveBicubicFields = ..., /, **kwargs: Unpack[_CurveBicubicFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveBicubicFields]) -> None: ...  # type: ignore[override]
 
 class _CurveBicubicFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49211,7 +48459,7 @@ class CurveBiquadratic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveBiquadraticFields = ..., /, **kwargs: Unpack[_CurveBiquadraticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveBiquadraticFields]) -> None: ...  # type: ignore[override]
 
 class _CurveBiquadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49263,7 +48511,7 @@ class CurveQuadraticLinear(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveQuadraticLinearFields = ..., /, **kwargs: Unpack[_CurveQuadraticLinearFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveQuadraticLinearFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveQuadraticLinearFields(TypedDict, total=False):
@@ -49311,7 +48559,7 @@ class CurveCubicLinear(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveCubicLinearFields = ..., /, **kwargs: Unpack[_CurveCubicLinearFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveCubicLinearFields]) -> None: ...  # type: ignore[override]
 
 class _CurveCubicLinearFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49385,7 +48633,7 @@ class CurveTriquadratic(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveTriquadraticFields = ..., /, **kwargs: Unpack[_CurveTriquadraticFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveTriquadraticFields]) -> None: ...  # type: ignore[override]
 
 class _CurveTriquadraticFields(TypedDict, total=False):
     coefficient1_constant: float | None
@@ -49449,7 +48697,7 @@ class CurveFunctionalPressureDrop(IDFObject):
     """Optional way to set a constant value for 'f', instead of using internal Moody-chart approximations; Range: > 0.0"""
 
     def update(
-        self, values: _CurveFunctionalPressureDropFields = ..., /, **kwargs: Unpack[_CurveFunctionalPressureDropFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveFunctionalPressureDropFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveFunctionalPressureDropFields(TypedDict, total=False):
@@ -49480,7 +48728,7 @@ class CurveFanPressureRise(IDFObject):
     """Specify the maximum value calculated by this curve object; [Pa] (Pa)"""
 
     def update(
-        self, values: _CurveFanPressureRiseFields = ..., /, **kwargs: Unpack[_CurveFanPressureRiseFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveFanPressureRiseFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveFanPressureRiseFields(TypedDict, total=False):
@@ -49514,7 +48762,7 @@ class CurveExponentialSkewNormal(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveExponentialSkewNormalFields = ..., /, **kwargs: Unpack[_CurveExponentialSkewNormalFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentialSkewNormalFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveExponentialSkewNormalFields(TypedDict, total=False):
@@ -49548,7 +48796,7 @@ class CurveSigmoid(IDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
-    def update(self, values: _CurveSigmoidFields = ..., /, **kwargs: Unpack[_CurveSigmoidFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveSigmoidFields]) -> None: ...  # type: ignore[override]
 
 class _CurveSigmoidFields(TypedDict, total=False):
     coefficient1_c1: float | None
@@ -49581,7 +48829,7 @@ class CurveRectangularHyperbola1(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveRectangularHyperbola1Fields = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola1Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola1Fields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveRectangularHyperbola1Fields(TypedDict, total=False):
@@ -49613,7 +48861,7 @@ class CurveRectangularHyperbola2(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveRectangularHyperbola2Fields = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveRectangularHyperbola2Fields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveRectangularHyperbola2Fields(TypedDict, total=False):
@@ -49645,7 +48893,7 @@ class CurveExponentialDecay(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveExponentialDecayFields = ..., /, **kwargs: Unpack[_CurveExponentialDecayFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveExponentialDecayFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveExponentialDecayFields(TypedDict, total=False):
@@ -49681,7 +48929,7 @@ class CurveDoubleExponentialDecay(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self, values: _CurveDoubleExponentialDecayFields = ..., /, **kwargs: Unpack[_CurveDoubleExponentialDecayFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveDoubleExponentialDecayFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveDoubleExponentialDecayFields(TypedDict, total=False):
@@ -49732,10 +48980,7 @@ class CurveChillerPartLoadWithLift(IDFObject):
     """Default: Dimensionless"""
 
     def update(
-        self,
-        values: _CurveChillerPartLoadWithLiftFields = ...,
-        /,
-        **kwargs: Unpack[_CurveChillerPartLoadWithLiftFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurveChillerPartLoadWithLiftFields]
     ) -> None: ...  # type: ignore[override]
 
 class _CurveChillerPartLoadWithLiftFields(TypedDict, total=False):
@@ -49791,7 +49036,7 @@ class TableIndependentVariable(IDFObject):
     values: ExtensibleList[TableIndependentVariableValuesGroup]
 
     def update(
-        self, values: _TableIndependentVariableFields = ..., /, **kwargs: Unpack[_TableIndependentVariableFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableIndependentVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _TableIndependentVariableFields(TypedDict, total=False):
@@ -49819,10 +49064,7 @@ class TableIndependentVariableList(IDFObject):
     independent_variables: ExtensibleList[TableIndependentVariableListIndependentVariablesGroup]
 
     def update(
-        self,
-        values: _TableIndependentVariableListFields = ...,
-        /,
-        **kwargs: Unpack[_TableIndependentVariableListFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableIndependentVariableListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _TableIndependentVariableListFields(TypedDict, total=False):
@@ -49852,7 +49094,7 @@ class TableLookup(IDFObject):
     """Range: >= 1"""
     values: ExtensibleList[TableLookupValuesGroup]
 
-    def update(self, values: _TableLookupFields = ..., /, **kwargs: Unpack[_TableLookupFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TableLookupFields]) -> None: ...  # type: ignore[override]
 
 class _TableLookupFields(TypedDict, total=False):
     independent_variable_list_name: str | None
@@ -49872,7 +49114,7 @@ class FluidPropertiesName(IDFObject):
     fluid_type: Literal["Glycol", "Refrigerant"] | None
 
     def update(
-        self, values: _FluidPropertiesNameFields = ..., /, **kwargs: Unpack[_FluidPropertiesNameFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesNameFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesNameFields(TypedDict, total=False):
@@ -49888,10 +49130,7 @@ class FluidPropertiesGlycolConcentration(IDFObject):
     """Range: >= 0.0, <= 1.0"""
 
     def update(
-        self,
-        values: _FluidPropertiesGlycolConcentrationFields = ...,
-        /,
-        **kwargs: Unpack[_FluidPropertiesGlycolConcentrationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesGlycolConcentrationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesGlycolConcentrationFields(TypedDict, total=False):
@@ -50404,7 +49643,7 @@ class FluidPropertiesTemperatures(IDFObject):
     """[C]"""
 
     def update(
-        self, values: _FluidPropertiesTemperaturesFields = ..., /, **kwargs: Unpack[_FluidPropertiesTemperaturesFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesTemperaturesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesTemperaturesFields(TypedDict, total=False):
@@ -50920,7 +50159,7 @@ class FluidPropertiesSaturated(IDFObject):
     property_value_250: float | None
 
     def update(
-        self, values: _FluidPropertiesSaturatedFields = ..., /, **kwargs: Unpack[_FluidPropertiesSaturatedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesSaturatedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSaturatedFields(TypedDict, total=False):
@@ -51439,7 +50678,7 @@ class FluidPropertiesSuperheated(IDFObject):
     property_value_250: float | None
 
     def update(
-        self, values: _FluidPropertiesSuperheatedFields = ..., /, **kwargs: Unpack[_FluidPropertiesSuperheatedFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesSuperheatedFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
@@ -51958,10 +51197,7 @@ class FluidPropertiesConcentration(IDFObject):
     property_value_250: float | None
 
     def update(
-        self,
-        values: _FluidPropertiesConcentrationFields = ...,
-        /,
-        **kwargs: Unpack[_FluidPropertiesConcentrationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FluidPropertiesConcentrationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesConcentrationFields(TypedDict, total=False):
@@ -52239,7 +51475,7 @@ class ComponentCostAdjustments(IDFObject):
     """for use with average data in line item and Misc cost models; [dimensionless]"""
 
     def update(
-        self, values: _ComponentCostAdjustmentsFields = ..., /, **kwargs: Unpack[_ComponentCostAdjustmentsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostAdjustmentsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostAdjustmentsFields(TypedDict, total=False):
@@ -52268,7 +51504,7 @@ class ComponentCostReference(IDFObject):
     """for use with average data in line item and Misc cost models; [dimensionless]"""
 
     def update(
-        self, values: _ComponentCostReferenceFields = ..., /, **kwargs: Unpack[_ComponentCostReferenceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostReferenceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostReferenceFields(TypedDict, total=False):
@@ -52323,7 +51559,7 @@ class ComponentCostLineItem(IDFObject):
     """optional for use with Cost per Each and 'General' object Type; [dimensionless]"""
 
     def update(
-        self, values: _ComponentCostLineItemFields = ..., /, **kwargs: Unpack[_ComponentCostLineItemFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComponentCostLineItemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostLineItemFields(TypedDict, total=False):
@@ -52389,7 +51625,7 @@ class UtilityCostTariff(IDFObject):
     buy_or_sell: Literal["", "BuyFromUtility", "NetMetering", "SellToUtility"] | None
     """Sets whether the tariff is used for buying selling or both to the utility. This should be allowed to default to buyFr...; Default: BuyFromUtility"""
 
-    def update(self, values: _UtilityCostTariffFields = ..., /, **kwargs: Unpack[_UtilityCostTariffFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostTariffFields]) -> None: ...  # type: ignore[override]
 
 class _UtilityCostTariffFields(TypedDict, total=False):
     output_meter_name: str | None
@@ -52428,7 +51664,7 @@ class UtilityCostQualify(IDFObject):
     """A number from 1 to 12. If no value entered 12 is assumed when the qualify type is minimum and 1 when the qualify type...; Range: >= 1.0, <= 12.0"""
 
     def update(
-        self, values: _UtilityCostQualifyFields = ..., /, **kwargs: Unpack[_UtilityCostQualifyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostQualifyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostQualifyFields(TypedDict, total=False):
@@ -52469,7 +51705,7 @@ class UtilityCostChargeSimple(IDFObject):
     """This field contains either a single number or the name of a variable. The number is multiplied with all of the energy..."""
 
     def update(
-        self, values: _UtilityCostChargeSimpleFields = ..., /, **kwargs: Unpack[_UtilityCostChargeSimpleFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeSimpleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeSimpleFields(TypedDict, total=False):
@@ -52584,7 +51820,7 @@ class UtilityCostChargeBlock(IDFObject):
     """The cost of the block. This field is unusual for the EnergyPlus syntax because it can be either a number or a name of..."""
 
     def update(
-        self, values: _UtilityCostChargeBlockFields = ..., /, **kwargs: Unpack[_UtilityCostChargeBlockFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostChargeBlockFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeBlockFields(TypedDict, total=False):
@@ -52658,7 +51894,7 @@ class UtilityCostRatchet(IDFObject):
     """A less common strategy is to say that the ratchet must be all demand greater than a value in this case an offset that..."""
 
     def update(
-        self, values: _UtilityCostRatchetFields = ..., /, **kwargs: Unpack[_UtilityCostRatchetFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostRatchetFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostRatchetFields(TypedDict, total=False):
@@ -52691,7 +51927,7 @@ class UtilityCostVariable(IDFObject):
     december_value: float | None
 
     def update(
-        self, values: _UtilityCostVariableFields = ..., /, **kwargs: Unpack[_UtilityCostVariableFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostVariableFields(TypedDict, total=False):
@@ -52748,7 +51984,7 @@ class UtilityCostComputation(IDFObject):
     compute_step_30: str | None
 
     def update(
-        self, values: _UtilityCostComputationFields = ..., /, **kwargs: Unpack[_UtilityCostComputationFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_UtilityCostComputationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostComputationFields(TypedDict, total=False):
@@ -52863,7 +52099,7 @@ class LifeCycleCostParameters(IDFObject):
     """For an analysis that includes income tax impacts this entry describes how capital costs are depreciated. Only one dep...; Default: None"""
 
     def update(
-        self, values: _LifeCycleCostParametersFields = ..., /, **kwargs: Unpack[_LifeCycleCostParametersFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostParametersFields]
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostParametersFields(TypedDict, total=False):
@@ -52963,7 +52199,7 @@ class LifeCycleCostRecurringCosts(IDFObject):
     """Enter the annual escalation rate as a decimal. For a 1% rate enter the value 0.01. This input is used when the Inflat...; Range: >= -0.3, <= 0.3"""
 
     def update(
-        self, values: _LifeCycleCostRecurringCostsFields = ..., /, **kwargs: Unpack[_LifeCycleCostRecurringCostsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostRecurringCostsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostRecurringCostsFields(TypedDict, total=False):
@@ -53003,10 +52239,7 @@ class LifeCycleCostNonrecurringCost(IDFObject):
     """This field and the Years From Start field together represent the time from either the start of the Service Period on ...; Range: >= 0, <= 1200"""
 
     def update(
-        self,
-        values: _LifeCycleCostNonrecurringCostFields = ...,
-        /,
-        **kwargs: Unpack[_LifeCycleCostNonrecurringCostFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostNonrecurringCostFields]
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostNonrecurringCostFields(TypedDict, total=False):
@@ -53071,10 +52304,7 @@ class LifeCycleCostUsePriceEscalation(IDFObject):
     escalations: ExtensibleList[LifeCycleCostUsePriceEscalationEscalationsGroup]
 
     def update(
-        self,
-        values: _LifeCycleCostUsePriceEscalationFields = ...,
-        /,
-        **kwargs: Unpack[_LifeCycleCostUsePriceEscalationFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostUsePriceEscalationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostUsePriceEscalationFields(TypedDict, total=False):
@@ -53156,7 +52386,7 @@ class LifeCycleCostUseAdjustment(IDFObject):
     multipliers: ExtensibleList[LifeCycleCostUseAdjustmentMultipliersGroup]
 
     def update(
-        self, values: _LifeCycleCostUseAdjustmentFields = ..., /, **kwargs: Unpack[_LifeCycleCostUseAdjustmentFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_LifeCycleCostUseAdjustmentFields]
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostUseAdjustmentFields(TypedDict, total=False):
@@ -53196,7 +52426,7 @@ class ParametricSetValueForRun(IDFObject):
     values: ExtensibleList[ParametricSetValueForRunValuesGroup]
 
     def update(
-        self, values: _ParametricSetValueForRunFields = ..., /, **kwargs: Unpack[_ParametricSetValueForRunFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricSetValueForRunFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ParametricSetValueForRunFields(TypedDict, total=False):
@@ -53212,7 +52442,7 @@ class ParametricLogic(IDFObject):
 
     lines: ExtensibleList[ParametricLogicLinesGroup]
 
-    def update(self, values: _ParametricLogicFields = ..., /, **kwargs: Unpack[_ParametricLogicFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricLogicFields]) -> None: ...  # type: ignore[override]
 
 class _ParametricLogicFields(TypedDict, total=False):
     lines: list[Any]
@@ -53228,7 +52458,7 @@ class ParametricRunControl(IDFObject):
     runs: ExtensibleList[ParametricRunControlRunsGroup]
 
     def update(
-        self, values: _ParametricRunControlFields = ..., /, **kwargs: Unpack[_ParametricRunControlFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricRunControlFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ParametricRunControlFields(TypedDict, total=False):
@@ -53245,7 +52475,7 @@ class ParametricFileNameSuffix(IDFObject):
     suffixes: ExtensibleList[ParametricFileNameSuffixSuffixesGroup]
 
     def update(
-        self, values: _ParametricFileNameSuffixFields = ..., /, **kwargs: Unpack[_ParametricFileNameSuffixFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ParametricFileNameSuffixFields]
     ) -> None: ...  # type: ignore[override]
 
 class _ParametricFileNameSuffixFields(TypedDict, total=False):
@@ -53257,7 +52487,7 @@ class OutputVariableDictionary(IDFObject):
     sort_option: Literal["Name", "Unsorted"] | None
 
     def update(
-        self, values: _OutputVariableDictionaryFields = ..., /, **kwargs: Unpack[_OutputVariableDictionaryFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableDictionaryFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputVariableDictionaryFields(TypedDict, total=False):
@@ -53270,7 +52500,7 @@ class OutputSurfacesList(IDFObject):
     """(IDF, only for Output:Surfaces:List, Lines report -- will print transformed coordinates in IDF style)"""
 
     def update(
-        self, values: _OutputSurfacesListFields = ..., /, **kwargs: Unpack[_OutputSurfacesListFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSurfacesListFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesListFields(TypedDict, total=False):
@@ -53285,7 +52515,7 @@ class OutputSurfacesDrawing(IDFObject):
     """Use ColorScheme Name for DXF reports"""
 
     def update(
-        self, values: _OutputSurfacesDrawingFields = ..., /, **kwargs: Unpack[_OutputSurfacesDrawingFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSurfacesDrawingFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesDrawingFields(TypedDict, total=False):
@@ -53301,7 +52531,7 @@ class OutputConstructions(IDFObject):
     details_type_2: Literal["Constructions", "Materials"] | None
 
     def update(
-        self, values: _OutputConstructionsFields = ..., /, **kwargs: Unpack[_OutputConstructionsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputConstructionsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputConstructionsFields(TypedDict, total=False):
@@ -53316,10 +52546,7 @@ class OutputEnergyManagementSystem(IDFObject):
     """Default: None"""
 
     def update(
-        self,
-        values: _OutputEnergyManagementSystemFields = ...,
-        /,
-        **kwargs: Unpack[_OutputEnergyManagementSystemFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputEnergyManagementSystemFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputEnergyManagementSystemFields(TypedDict, total=False):
@@ -53661,10 +52888,7 @@ class OutputControlSurfaceColorScheme(IDFObject):
     """use color number for output assignment (e.g. DXF); Range: >= 0, <= 255"""
 
     def update(
-        self,
-        values: _OutputControlSurfaceColorSchemeFields = ...,
-        /,
-        **kwargs: Unpack[_OutputControlSurfaceColorSchemeFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlSurfaceColorSchemeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlSurfaceColorSchemeFields(TypedDict, total=False):
@@ -54101,7 +53325,7 @@ class OutputTableSummaryReports(IDFObject):
     reports: ExtensibleList[OutputTableSummaryReportsReportsGroup]
 
     def update(
-        self, values: _OutputTableSummaryReportsFields = ..., /, **kwargs: Unpack[_OutputTableSummaryReportsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableSummaryReportsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableSummaryReportsFields(TypedDict, total=False):
@@ -54123,7 +53347,7 @@ class OutputTableTimeBins(IDFObject):
     """Optional input on the type of units for the variable used by other fields in the object."""
 
     def update(
-        self, values: _OutputTableTimeBinsFields = ..., /, **kwargs: Unpack[_OutputTableTimeBinsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableTimeBinsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableTimeBinsFields(TypedDict, total=False):
@@ -54165,7 +53389,7 @@ class OutputTableMonthly(IDFObject):
     variable_details: ExtensibleList[OutputTableMonthlyVariableDetailsGroup]
 
     def update(
-        self, values: _OutputTableMonthlyFields = ..., /, **kwargs: Unpack[_OutputTableMonthlyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthlyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableMonthlyFields(TypedDict, total=False):
@@ -54208,7 +53432,7 @@ class OutputTableAnnual(IDFObject):
     """Optional schedule name. If left blank, aggregation is performed for all hours simulated. If a schedule is specified, ..."""
     variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup]
 
-    def update(self, values: _OutputTableAnnualFields = ..., /, **kwargs: Unpack[_OutputTableAnnualFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnualFields]) -> None: ...  # type: ignore[override]
 
 class _OutputTableAnnualFields(TypedDict, total=False):
     filter: str | None
@@ -54241,7 +53465,7 @@ class OutputTableReportPeriod(IDFObject):
     """Range: >= 1, <= 24"""
 
     def update(
-        self, values: _OutputTableReportPeriodFields = ..., /, **kwargs: Unpack[_OutputTableReportPeriodFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriodFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableReportPeriodFields(TypedDict, total=False):
@@ -54267,7 +53491,7 @@ class OutputControlTableStyle(IDFObject):
     """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
     def update(
-        self, values: _OutputControlTableStyleFields = ..., /, **kwargs: Unpack[_OutputControlTableStyleFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTableStyleFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlTableStyleFields(TypedDict, total=False):
@@ -54281,10 +53505,7 @@ class OutputControlReportingTolerances(IDFObject):
     """If the zone temperature is above the cooling setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
 
     def update(
-        self,
-        values: _OutputControlReportingTolerancesFields = ...,
-        /,
-        **kwargs: Unpack[_OutputControlReportingTolerancesFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlReportingTolerancesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlReportingTolerancesFields(TypedDict, total=False):
@@ -54303,7 +53524,7 @@ class OutputVariable(IDFObject):
     """Detailed lists every instance (i.e. HVAC variable timesteps) Timestep refers to the zone Timestep/Number of Timesteps...; Default: Hourly"""
     schedule_name: str | None
 
-    def update(self, values: _OutputVariableFields = ..., /, **kwargs: Unpack[_OutputVariableFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableFields]) -> None: ...  # type: ignore[override]
 
 class _OutputVariableFields(TypedDict, total=False):
     variable_name: str | None
@@ -54320,7 +53541,7 @@ class OutputMeter(IDFObject):
     )
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
-    def update(self, values: _OutputMeterFields = ..., /, **kwargs: Unpack[_OutputMeterFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterFields]) -> None: ...  # type: ignore[override]
 
 class _OutputMeterFields(TypedDict, total=False):
     reporting_frequency: (
@@ -54336,7 +53557,7 @@ class OutputMeterMeterFileOnly(IDFObject):
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
     def update(
-        self, values: _OutputMeterMeterFileOnlyFields = ..., /, **kwargs: Unpack[_OutputMeterMeterFileOnlyFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterMeterFileOnlyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterMeterFileOnlyFields(TypedDict, total=False):
@@ -54353,7 +53574,7 @@ class OutputMeterCumulative(IDFObject):
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
     def update(
-        self, values: _OutputMeterCumulativeFields = ..., /, **kwargs: Unpack[_OutputMeterCumulativeFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterCumulativeFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeFields(TypedDict, total=False):
@@ -54370,10 +53591,7 @@ class OutputMeterCumulativeMeterFileOnly(IDFObject):
     """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same; Default: Hourly"""
 
     def update(
-        self,
-        values: _OutputMeterCumulativeMeterFileOnlyFields = ...,
-        /,
-        **kwargs: Unpack[_OutputMeterCumulativeMeterFileOnlyFields],
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterCumulativeMeterFileOnlyFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
@@ -54413,7 +53631,7 @@ class MeterCustom(IDFObject):
     """Since: 9.4.0"""
     variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
 
-    def update(self, values: _MeterCustomFields = ..., /, **kwargs: Unpack[_MeterCustomFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomFields]) -> None: ...  # type: ignore[override]
 
 class _MeterCustomFields(TypedDict, total=False):
     resource_type: (
@@ -54473,7 +53691,7 @@ class MeterCustomDecrement(IDFObject):
     variable_details: ExtensibleList[MeterCustomDecrementVariableDetailsGroup]
 
     def update(
-        self, values: _MeterCustomDecrementFields = ..., /, **kwargs: Unpack[_MeterCustomDecrementFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MeterCustomDecrementFields]
     ) -> None: ...  # type: ignore[override]
 
 class _MeterCustomDecrementFields(TypedDict, total=False):
@@ -54569,7 +53787,7 @@ class OutputControlFiles(IDFObject):
     """epluspsz.csv; Default: Yes; Since: 25.2.0"""
 
     def update(
-        self, values: _OutputControlFilesFields = ..., /, **kwargs: Unpack[_OutputControlFilesFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlFilesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlFilesFields(TypedDict, total=False):
@@ -54613,7 +53831,7 @@ class OutputControlTimestamp(IDFObject):
     """Determines where the timestamp is produced, either at the beginning (Yes) or end (No) of the interval; Default: No"""
 
     def update(
-        self, values: _OutputControlTimestampFields = ..., /, **kwargs: Unpack[_OutputControlTimestampFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlTimestampFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlTimestampFields(TypedDict, total=False):
@@ -54645,7 +53863,7 @@ class OutputJSON(IDFObject):
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
     """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
-    def update(self, values: _OutputJSONFields = ..., /, **kwargs: Unpack[_OutputJSONFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputJSONFields]) -> None: ...  # type: ignore[override]
 
 class _OutputJSONFields(TypedDict, total=False):
     output_json: Literal["", "No", "Yes"] | None
@@ -54686,7 +53904,7 @@ class OutputSQLite(IDFObject):
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
     """If No, all digits are shown after the decimal point without any rounding (23.238769213). If Yes, values are rounded f...; Default: Yes; Since: 25.2.0"""
 
-    def update(self, values: _OutputSQLiteFields = ..., /, **kwargs: Unpack[_OutputSQLiteFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLiteFields]) -> None: ...  # type: ignore[override]
 
 class _OutputSQLiteFields(TypedDict, total=False):
     unit_conversion_for_tabular_data: (
@@ -54722,7 +53940,7 @@ class EnvironmentalImpactFactors(IDFObject):
     """[kg/kg]; Default: 0.2727"""
 
     def update(
-        self, values: _EnvironmentalImpactFactorsFields = ..., /, **kwargs: Unpack[_EnvironmentalImpactFactorsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_EnvironmentalImpactFactorsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _EnvironmentalImpactFactorsFields(TypedDict, total=False):
@@ -54787,7 +54005,7 @@ class FuelFactors(IDFObject):
     """[m3/MJ]"""
     nuclear_low_level_emission_factor_schedule_name: str | None
 
-    def update(self, values: _FuelFactorsFields = ..., /, **kwargs: Unpack[_FuelFactorsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactorsFields]) -> None: ...  # type: ignore[override]
 
 class _FuelFactorsFields(TypedDict, total=False):
     source_energy_factor: float | None
@@ -54851,7 +54069,7 @@ class OutputDiagnostics(IDFObject):
 
     diagnostics: ExtensibleList[OutputDiagnosticsDiagnosticsGroup]
 
-    def update(self, values: _OutputDiagnosticsFields = ..., /, **kwargs: Unpack[_OutputDiagnosticsFields]) -> None: ...  # type: ignore[override]
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDiagnosticsFields]) -> None: ...  # type: ignore[override]
 
 class _OutputDiagnosticsFields(TypedDict, total=False):
     diagnostics: list[Any]
@@ -54863,7 +54081,7 @@ class OutputDebuggingData(IDFObject):
     """Default: No"""
 
     def update(
-        self, values: _OutputDebuggingDataFields = ..., /, **kwargs: Unpack[_OutputDebuggingDataFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDebuggingDataFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputDebuggingDataFields(TypedDict, total=False):
@@ -54886,7 +54104,7 @@ class OutputPreprocessorMessage(IDFObject):
     message_line_10: str | None
 
     def update(
-        self, values: _OutputPreprocessorMessageFields = ..., /, **kwargs: Unpack[_OutputPreprocessorMessageFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputPreprocessorMessageFields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputPreprocessorMessageFields(TypedDict, total=False):
@@ -54919,7 +54137,7 @@ class PythonPluginSearchPaths(IDFObject):
     py_search_paths: ExtensibleList[PythonPluginSearchPathsPySearchPathsGroup]
 
     def update(
-        self, values: _PythonPluginSearchPathsFields = ..., /, **kwargs: Unpack[_PythonPluginSearchPathsFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginSearchPathsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PythonPluginSearchPathsFields(TypedDict, total=False):
@@ -54939,7 +54157,7 @@ class PythonPluginInstance(IDFObject):
     """This is the name of the class to be executed as a plugin during a simulation The class must inherit the EnergyPlusPlu..."""
 
     def update(
-        self, values: _PythonPluginInstanceFields = ..., /, **kwargs: Unpack[_PythonPluginInstanceFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginInstanceFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PythonPluginInstanceFields(TypedDict, total=False):
@@ -54958,7 +54176,7 @@ class PythonPluginVariables(IDFObject):
     global_py_vars: ExtensibleList[PythonPluginVariablesGlobalPyVarsGroup]
 
     def update(
-        self, values: _PythonPluginVariablesFields = ..., /, **kwargs: Unpack[_PythonPluginVariablesFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginVariablesFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PythonPluginVariablesFields(TypedDict, total=False):
@@ -54972,7 +54190,7 @@ class PythonPluginTrendVariable(IDFObject):
     """Range: >= 1"""
 
     def update(
-        self, values: _PythonPluginTrendVariableFields = ..., /, **kwargs: Unpack[_PythonPluginTrendVariableFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginTrendVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PythonPluginTrendVariableFields(TypedDict, total=False):
@@ -55051,7 +54269,7 @@ class PythonPluginOutputVariable(IDFObject):
     """This field is always optional. For regular output variables with 'Type of Data in Variable' set to either Averaged or..."""
 
     def update(
-        self, values: _PythonPluginOutputVariableFields = ..., /, **kwargs: Unpack[_PythonPluginOutputVariableFields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PythonPluginOutputVariableFields]
     ) -> None: ...  # type: ignore[override]
 
 class _PythonPluginOutputVariableFields(TypedDict, total=False):

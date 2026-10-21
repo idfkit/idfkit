@@ -416,16 +416,18 @@ def _generate_object_class(
 def _generate_update(cls_name: str, fields: list[tuple[str, str]], indent: str) -> list[str]:
     """Type ``update`` on *cls_name* with a private ``TypedDict`` of its fields.
 
-    The one ``TypedDict`` types both forms of the group, the positional mapping and the keywords
-    (through ``Unpack``), so a type checker reports an unknown field name or a wrongly typed value
-    in either. ``name`` is left out because ``update`` refuses it. The override narrows
-    ``IDFObject.update``'s ``Mapping[str, Any]``, which mypy reports; pyright does not.
+    The ``TypedDict`` types the keywords (through ``Unpack``), so a type checker reports an unknown
+    field name or a wrongly typed value given as a keyword. ``name`` is left out because ``update``
+    refuses it. The positional mapping stays ``Mapping[str, Any] | None``, as at run time: a
+    ``TypedDict`` there would reject a mapping built at run time, ``None``, and the spaced field
+    names single assignment accepts, all of which the method accepts. The override narrows
+    ``IDFObject.update``'s ``**kwargs: Any``, which mypy reports; pyright does not.
     """
     fields_cls = f"_{cls_name}Fields"
     lines = [
         "",
-        f"{indent}    def update(self, values: {fields_cls} = ..., /, **kwargs: Unpack[{fields_cls}]) -> None: ...  "
-        "# type: ignore[override]",
+        f"{indent}    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[{fields_cls}]) "
+        "-> None: ...  # type: ignore[override]",
         "",
         f"{indent}class {fields_cls}(TypedDict, total=False):",
     ]
@@ -587,6 +589,7 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("")
     parts.append("from __future__ import annotations")
     parts.append("")
+    parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
     parts.append("from typing_extensions import Unpack")

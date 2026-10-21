@@ -31,6 +31,12 @@ def correct_calls(doc: IDFDocument[Any]) -> None:
     )
     doc["Construction"]["Wall"].update(outside_layer="Concrete")
     doc["Schedule:Constant"]["Always On"].update(hourly_value=1.0)
+    # The positional mapping accepts what the method accepts at run time: a mapping built at run
+    # time, ``None``, and the spaced field names single assignment resolves.
+    computed: dict[str, Any] = {"x_origin": 1.0}
+    doc["Zone"]["Office"].update(computed)
+    doc["Zone"]["Office"].update(None, x_origin=2.0)
+    doc["Zone"]["Office"].update({"X Origin": 3.0})
 
 
 def seeded_errors(doc: IDFDocument[Any]) -> None:
@@ -39,5 +45,5 @@ def seeded_errors(doc: IDFDocument[Any]) -> None:
     heater.update(heater_fuel_typo="Electricity")  # pyright: ignore[reportCallIssue]  (unknown keyword)
     zone.update(x_origin="ten")  # pyright: ignore[reportArgumentType]  (wrong value type)
     heater.update(heater_fuel_type="Plutonium")  # pyright: ignore[reportArgumentType]  (value outside the Literal)
-    zone.update({"x_orign": 1.0})  # pyright: ignore[reportArgumentType]  (unknown key in the mapping)
+    doc["Material"]["Concrete"].update(thickness="thick")  # pyright: ignore[reportArgumentType]  (wrong value type)
     zone.update(name="Other")  # pyright: ignore[reportCallIssue]  (name is refused)
