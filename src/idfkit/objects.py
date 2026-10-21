@@ -11,11 +11,12 @@ import re
 import warnings
 from collections.abc import Callable, Iterator, Mapping
 from copy import deepcopy
+from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from .exceptions import InvalidFieldError
+from .exceptions import InvalidFieldError, format_refused
 
 __all__ = [
     "ExtensibleGroup",
@@ -420,6 +421,20 @@ def to_idf_name(python_name: str) -> str:
     'direction_of_relative_north' -> 'Direction of Relative North'
     """
     return " ".join(word.capitalize() for word in python_name.split("_"))
+
+
+@dataclass(frozen=True, slots=True)
+class RefusedEntry:
+    """One entry of an :meth:`IDFObject.update` group that will not be applied.
+
+    ``reason`` is ``"unknown"`` (not a field of the type), ``"name"`` (renaming has its own
+    operation), ``"legacy-flat"`` (an eppy-style flat extensible name) or ``"wrapper-value"``
+    (the extensible wrapper key given something other than a list).
+    """
+
+    name: str
+    reason: Literal["unknown", "name", "legacy-flat", "wrapper-value"]
+    detail: str
 
 
 class IDFObject(EppyObjectMixin):
@@ -919,6 +934,92 @@ class IDFObject(EppyObjectMixin):
         """
         value = getattr(self, key)
         return value if value is not None else default
+
+    def update(self, values: Mapping[str, Any] | None = None, /, **kwargs: Any) -> None:
+        """Set several fields in one call, all or nothing.
+
+        The group is a mapping, keyword arguments, or both; where both name the same field,
+        the keyword wins, as with ``dict.update``. Field names are accepted exactly as single
+        assignment accepts them, and ``None`` clears a field.
+
+        Every entry is examined before any is applied. If one is refused, no field changes and
+        the error lists every refused entry, not only the first. An entry is refused when its
+        name is not a field of the type, when it is ``name`` (use
+        :meth:`IDFDocument.rename <idfkit.document.IDFDocument.rename>`, which also updates the
+        objects that refer to this one), when it is a legacy flat extensible name such as
+        ``vertex_3_x_coordinate``, or when it gives the extensible wrapper key (such as
+        ``vertices``) a value that is not a list.
+
+        Unknown names are refused even in a document opened with ``strict=False``, where
+        single assignment would store them. Accepted entries are applied in order by ordinary
+        attribute assignment, so reference tracking and change tracking are exactly those of
+        consecutive single assignments.
+
+        Raises:
+            InvalidFieldError: An entry is unknown, is ``name``, or is a legacy flat
+                extensible name. ``field_name`` is the first refused entry and ``refused``
+                holds them all.
+            TypeError: The only refused entries give the wrapper key a value that is not a list.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Office")
+            >>> zone.update(x_origin=10.0, y_origin=5.0)
+            >>> zone.x_origin, zone.y_origin
+            (10.0, 5.0)
+            >>> zone.update(x_origin=0.0, x_orign=0.0)
+            Traceback (most recent call last):
+                ...
+            idfkit.exceptions.InvalidFieldError: Update of object type 'Zone' refused; no field was changed:
+              - x_orign: unknown (not a field of Zone)
+            ...
+            >>> zone.x_origin
+            10.0
+        """
+        group: dict[str, Any] = dict(values) if values is not None else {}
+        group.update(kwargs)
+        refused = [entry for key, value in group.items() if (entry := self._examine(key, value)) is not None]
+        if refused:
+            self._refuse(refused)
+        for key, value in group.items():
+            setattr(self, key, value)
+
+    def _examine(self, key: str, value: Any) -> RefusedEntry | None:
+        """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
+        if key[:1] == "_":
+            return RefusedEntry(key, "unknown", "private attribute, not a field")
+        if key.lower() == "name":
+            return RefusedEntry(key, "name", "use rename() to change an object's name")
+        wrapper_key = self._wrapper_key
+        python_key = to_python_name(key)
+        if wrapper_key is not None and (key == wrapper_key or python_key == wrapper_key):
+            if isinstance(value, list):
+                return None
+            return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
+        if self._extensibles and wrapper_key is not None:
+            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            if base is not None:
+                return RefusedEntry(key, "legacy-flat", f"use {wrapper_key}[{group_idx - 1}].{base}")
+        field_order = self._field_order
+        if field_order is not None and not self._is_known_field(python_key, field_order):
+            return RefusedEntry(key, "unknown", f"not a field of {self._type}")
+        return None
+
+    def _refuse(self, refused: list[RefusedEntry]) -> None:
+        """Raise the error for a refused :meth:`update` group, before anything is written."""
+        if all(entry.reason == "wrapper-value" for entry in refused):
+            raise TypeError(format_refused(self._type, refused))
+        doc = self._document
+        field_order = self._field_order
+        raise InvalidFieldError(
+            self._type,
+            refused[0].name,
+            available_fields=list(field_order) if field_order is not None else None,
+            version=object.__getattribute__(doc, "version") if doc is not None else None,
+            extensible_fields=self._extensibles,
+            refused=refused,
+        )
 
     def copy(self) -> IDFObject:
         """Create a copy of this object."""

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
-    from .objects import IDFObject
+    from .objects import IDFObject, RefusedEntry
 
 
 class IdfKitError(Exception):
@@ -163,6 +163,13 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
         super().__init__(msg)
 
 
+def format_refused(obj_type: str, refused: Sequence[RefusedEntry]) -> str:
+    """Message for an ``IDFObject.update`` group that was refused: the type, then one line per entry."""
+    lines = [f"Update of object type '{obj_type}' refused; no field was changed:"]
+    lines.extend(f"  - {entry.name}: {entry.reason} ({entry.detail})" for entry in refused)
+    return "\n".join(lines)
+
+
 class InvalidFieldError(IdfKitError, AttributeError):
     """Raised when an invalid field is accessed or set.
 
@@ -178,13 +185,20 @@ class InvalidFieldError(IdfKitError, AttributeError):
         available_fields: list[str] | None = None,
         version: tuple[int, int, int] | None = None,
         extensible_fields: frozenset[str] | None = None,
+        *,
+        refused: Sequence[RefusedEntry] | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
         self.available_fields = available_fields
         self.version = version
         self.extensible_fields = extensible_fields
-        msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
+        self.refused = tuple(refused) if refused else ()
+        msg = (
+            format_refused(obj_type, refused)
+            if refused
+            else f"Invalid field '{field_name}' for object type '{obj_type}'"
+        )
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:

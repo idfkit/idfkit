@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `IDFObject.update` sets several fields in one call, given as a mapping, keyword arguments, or both; where both name the same field, the keyword wins, as with `dict.update`. The call is all or nothing: every entry is examined before any is applied, and if one is refused, no field changes. An entry is refused when its name is not a field of the type, when it is `name` (use `IDFDocument.rename`), when it is a legacy flat extensible name such as `vertex_3_x_coordinate`, or when it gives the extensible wrapper key a value that is not a list. Unknown names are refused even in a document opened with `strict=False`, where single assignment stores them. Accepted entries are applied by ordinary attribute assignment, so reference and change tracking are those of consecutive assignments. The method returns `None`; the TypeScript `IdfObject.update` returns the object, a difference recorded in the naming register. The generated stubs type `update` per object type, so a type checker reports a misspelled field name or a wrongly typed value in either form of the call. ([#235](https://github.com/idfkit/idfkit/issues/235))
+- `InvalidFieldError` accepts an optional keyword-only `refused`, the entries of a refused `update` group, and then lists every one in its message and in its `refused` attribute. Without it, every message is unchanged.
+
 ## [1.1.1] - 2026-10-19
 
 ### Fixed
