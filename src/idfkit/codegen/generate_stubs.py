@@ -400,13 +400,41 @@ def _generate_object_class(
             lines.append("")
         return lines
 
+    update_fields: list[tuple[str, str]] = []
     if field_names:
-        _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+        update_fields = _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
 
     # Add the canonical wrapper attribute typed as ExtensibleList[<GroupCls>].
     if group_cls_name and wrapper_key:
         lines.append(f"{body_indent}{wrapper_key}: ExtensibleList[{group_cls_name}]")
+        update_fields.append((wrapper_key, "list[Any]"))
 
+    lines.extend(_generate_update(cls_name, update_fields, indent))
+    return lines
+
+
+def _generate_update(cls_name: str, fields: list[tuple[str, str]], indent: str) -> list[str]:
+    """Type ``update`` on *cls_name* with a private ``TypedDict`` of its fields.
+
+    The ``TypedDict`` types the keywords (through ``Unpack``), so a type checker reports an unknown
+    field name or a wrongly typed value given as a keyword. ``name`` is left out because ``update``
+    refuses it. The positional mapping stays ``Mapping[str, Any] | None``, as at run time: a
+    ``TypedDict`` there would reject a mapping built at run time, ``None``, and the spaced field
+    names single assignment accepts, all of which the method accepts. The override narrows
+    ``IDFObject.update``'s ``**kwargs: Any``, which mypy reports; pyright does not.
+    """
+    fields_cls = f"_{cls_name}Fields"
+    lines = [
+        "",
+        f"{indent}    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[{fields_cls}]) "
+        "-> None: ...  # type: ignore[override]",
+        "",
+        f"{indent}class {fields_cls}(TypedDict, total=False):",
+    ]
+    entries = [(name, py_type) for name, py_type in fields if name != "name"]
+    if not entries:
+        lines[-1] += " ..."
+    lines.extend(f"{indent}    {name}: {py_type}" for name, py_type in entries)
     return lines
 
 
@@ -426,10 +454,11 @@ def _generate_fields(
     indent: str,
     obj_since: tuple[int, int, int] | None,
     field_since: dict[tuple[str, str], tuple[int, int, int]] | None,
-) -> None:
-    """Append typed field declarations to *lines*."""
+) -> list[tuple[str, str]]:
+    """Append typed field declarations to *lines*; return each declared field with its value type."""
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    declared: list[tuple[str, str]] = []
 
     for field_name in field_names:
         if not field_name.isidentifier():
@@ -441,6 +470,7 @@ def _generate_fields(
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
         lines.append(f"{indent}{field_name}: {py_type} | None")
+        declared.append((field_name, f"{py_type} | None"))
 
         # Determine field "Since:" — only if the field appeared after the type itself
         fld_since: tuple[int, int, int] | None = None
@@ -452,6 +482,7 @@ def _generate_fields(
         docstring = _field_docstring(field_schema, since_version=fld_since)
         if docstring:
             lines.append(f'{indent}"""{docstring}"""')
+    return declared
 
 
 # ---- TypedDict mapping generation ------------------------------------------
@@ -558,7 +589,10 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("")
     parts.append("from __future__ import annotations")
     parts.append("")
+    parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
+    parts.append("")
+    parts.append("from typing_extensions import Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")

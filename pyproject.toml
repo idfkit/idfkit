@@ -105,14 +105,14 @@ packages = ["src/idfkit"]
 # one value, so the declared level and the pinned tag cannot diverge. A gate that finds no level
 # declared here must refuse to run rather than fall back to a default.
 [tool.idfkit.conformance]
-level = "conformance-2026.16"
+level = "conformance-2026.19"
 
 # Governance artifact level this release is checked against, as an immutable tag in
 # idfkit-conformance. Read from this one value by both the CI gate and the release check, for the
 # same reason: the declaration and the pin stay a single fact. A gate must refuse to run against a
 # copy that declares no level.
 [tool.idfkit.governance]
-level = "governance-2026.22"
+level = "governance-2026.30"
 
 [tool.pyright]
 pythonVersion = "3.10"
@@ -192,7 +192,7 @@ reportUnusedImport = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/idfkit"]
-addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/weather --ignore=src/idfkit/schedules --ignore=src/idfkit/thermal --ignore=src/idfkit/visualization --ignore=src/idfkit/download.py --ignore=src/idfkit/compat"
+addopts = "--doctest-modules --ignore=src/idfkit/simulation --ignore=src/idfkit/weather --ignore=src/idfkit/schedules --ignore=src/idfkit/thermal --ignore=src/idfkit/visualization --ignore=src/idfkit/download.py --ignore=src/idfkit/compat --ignore=tests/type_checks"
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 markers = [
     "integration: marks tests as requiring EnergyPlus installation (deselect with '-m \"not integration\"')",

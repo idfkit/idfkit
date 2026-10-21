@@ -15,7 +15,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
-from .exceptions import InvalidFieldError
+from .exceptions import InvalidFieldError, RefusedEntry, format_refused
 
 __all__ = [
     "ExtensibleGroup",
@@ -369,11 +369,20 @@ class ExtensibleList(Generic[GroupT_co]):
         self._owner._bump_version()  # pyright: ignore[reportPrivateUsage]
         return snapshot
 
-    def replace(self, items: list[Any]) -> None:
-        """Replace the entire wrapper contents with *items* (each a dict or group)."""
+    def _coerce_all(self, items: list[Any]) -> list[dict[str, Any]]:
+        """Coerce and validate every group of a whole-list replacement, writing nothing.
+
+        Raises ``TypeError`` for an item that is not a dict or group and ``ValueError`` for an
+        unknown inner field, so a caller can reject the list before any write.
+        """
         coerced = [self._coerce_item(it, {}) for it in items]
         for it in coerced:
             self._validate_inner(it)
+        return coerced
+
+    def replace(self, items: list[Any]) -> None:
+        """Replace the entire wrapper contents with *items* (each a dict or group)."""
+        coerced = self._coerce_all(items)
         self.clear()
         for it in coerced:
             self.append(it)
@@ -919,6 +928,104 @@ class IDFObject(EppyObjectMixin):
         """
         value = getattr(self, key)
         return value if value is not None else default
+
+    def update(self, values: Mapping[str, Any] | None = None, /, **kwargs: Any) -> None:
+        """Set several fields in one call, all or nothing.
+
+        The group is a mapping, keyword arguments, or both; where both name the same field,
+        the keyword wins, as with ``dict.update``. Field names are accepted exactly as single
+        assignment accepts them, and ``None`` clears a field.
+
+        Every entry is examined before any is applied. If one is refused, no field changes and
+        the error lists every refused entry, not only the first. An entry is refused when its
+        name is not a field of the type, when it is ``name`` (use
+        :meth:`IDFDocument.rename <idfkit.document.IDFDocument.rename>`, which also updates the
+        objects that refer to this one), when it is a legacy flat extensible name such as
+        ``vertex_3_x_coordinate``, or when it gives the extensible wrapper key (such as
+        ``vertices``) a value that single assignment would reject: something other than a list,
+        or a list holding an item that is not a dict or group, or a group with an unknown field.
+
+        Unknown names are refused even in a document opened with ``strict=False``, where
+        single assignment would store them. An object without a schema field order, such as
+        one constructed detached, accepts any name, as single assignment does. Accepted
+        entries are applied in order by ordinary attribute assignment, so reference tracking
+        and change tracking are exactly those of consecutive single assignments.
+
+        Raises:
+            InvalidFieldError: An entry is unknown, is ``name``, or is a legacy flat
+                extensible name. ``field_name`` is the first entry refused for its name, and
+                ``refused`` holds every refused entry, including any refused for its value.
+            TypeError: Every refused entry gives the wrapper key a value it rejects.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Office")
+            >>> zone.update(x_origin=10.0, y_origin=5.0)
+            >>> zone.x_origin, zone.y_origin
+            (10.0, 5.0)
+            >>> zone.update(x_origin=0.0, x_orign=0.0)
+            Traceback (most recent call last):
+                ...
+            idfkit.exceptions.InvalidFieldError: Update of object type 'Zone' refused; no field was changed:
+              - x_orign: unknown (not a field of Zone)
+            ...
+            >>> zone.x_origin
+            10.0
+        """
+        # Keyed by the name single assignment resolves, so ``"X Origin"`` and ``x_origin`` are one
+        # entry and a keyword overrides a mapping entry however either is spelled.
+        group: dict[str, tuple[str, Any]] = {}
+        for source in (values if values is not None else {}, kwargs):
+            for key, value in source.items():
+                group[key if key[:1] == "_" else to_python_name(key)] = (key, value)
+        refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
+        if refused:
+            self._refuse(refused)
+        for key, value in group.values():
+            setattr(self, key, value)
+
+    def _examine(self, key: str, value: Any) -> RefusedEntry | None:
+        """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
+        if key[:1] == "_":
+            return RefusedEntry(key, "unknown", "private attribute, not a field")
+        python_key = to_python_name(key)
+        if key.lower() == "name" or python_key == "name":
+            return RefusedEntry(key, "name", "use rename() to change an object's name")
+        wrapper_key = self._wrapper_key
+        if wrapper_key is not None and (key == wrapper_key or python_key == wrapper_key):
+            if not isinstance(value, list):
+                return RefusedEntry(key, "wrapper-value", f"expected a list, got {type(value).__name__}")
+            view = ExtensibleList[ExtensibleGroup](self, wrapper_key, self._ext_inner_names)
+            try:
+                view._coerce_all(cast("list[Any]", value))  # pyright: ignore[reportPrivateUsage]
+            except (TypeError, ValueError) as exc:
+                return RefusedEntry(key, "wrapper-value", str(exc))
+            return None
+        if self._extensibles and wrapper_key is not None:
+            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            if base is not None:
+                return RefusedEntry(key, "legacy-flat", f"use {wrapper_key}[{group_idx - 1}].{base}")
+        field_order = self._field_order
+        if field_order is not None and not self._is_known_field(python_key, field_order):
+            return RefusedEntry(key, "unknown", f"not a field of {self._type}")
+        return None
+
+    def _refuse(self, refused: list[RefusedEntry]) -> None:
+        """Raise the error for a refused :meth:`update` group, before anything is written."""
+        named = [entry for entry in refused if entry.reason != "wrapper-value"]
+        if not named:
+            raise TypeError(format_refused(self._type, refused))
+        doc = self._document
+        field_order = self._field_order
+        raise InvalidFieldError(
+            self._type,
+            named[0].name,
+            available_fields=list(field_order) if field_order is not None else None,
+            version=object.__getattribute__(doc, "version") if doc is not None else None,
+            extensible_fields=self._extensibles,
+            refused=refused,
+        )
 
     def copy(self) -> IDFObject:
         """Create a copy of this object."""
