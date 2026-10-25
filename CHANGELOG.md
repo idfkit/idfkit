@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A simulation run into an `output_dir` that already held a weather file of the same name, left by an earlier run with a different weather file, now replaces that stale copy. EnergyPlus previously ran with the earlier weather file while `SimulationCache.compute_key` hashed the new one, so the cache stored results under the wrong key. A copy with identical content, or a weather file that already lives in `output_dir`, is left untouched. ([#227](https://github.com/idfkit/idfkit/issues/227))
+
 ## [1.1.1] - 2026-10-19
 
 ### Fixed

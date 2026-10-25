@@ -5,6 +5,7 @@ Internal module — not part of the public API.
 
 from __future__ import annotations
 
+import filecmp
 import os
 import shutil
 import tempfile
@@ -437,9 +438,13 @@ def prepare_run_directory(output_dir: str | Path | None, weather_path: Path | No
         refuse_default_weather(run_dir)
         return run_dir
 
-    # Copy weather file into run dir
+    # Copy weather file into run dir, replacing a stale copy left by an earlier
+    # run with a different weather file of the same name. A file that already
+    # is the caller's weather file, or has identical content, is left alone.
     dest = run_dir / weather_path.name
-    if not dest.exists():
+    if not dest.exists() or (
+        not os.path.samefile(weather_path, dest) and not filecmp.cmp(weather_path, dest, shallow=False)
+    ):
         shutil.copy2(weather_path, dest)
 
     return run_dir
