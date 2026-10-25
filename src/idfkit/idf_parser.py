@@ -32,8 +32,10 @@ if TYPE_CHECKING:
     from .schema import EpJSONSchema, ParsingCache
 
 # Regex patterns for parsing
+# Components past the patch are accepted and ignored: DesignBuilder writes
+# ``Version, 23.1.0.002;``, which resolves to 23.1.0 (as idfkit-js does).
 _VERSION_PATTERN = re.compile(
-    rb"VERSION\s*,\s*(\d+)\.(\d+)(?:\.(\d+))?\s*;",
+    rb"VERSION\s*,\s*(\d+)\.(\d+)(?:\.(\d+))?(?:\.\d+)*\s*;",
     re.IGNORECASE,
 )
 
