@@ -30,6 +30,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+#: ``run_dir`` of the result for a job that failed before EnergyPlus ran and
+#: that named no ``output_dir``. The path is never created, so a batch of
+#: refused jobs leaves nothing behind.
+REFUSED_RUN_DIR = Path(tempfile.gettempdir()) / "idfkit-refused-job"
+
 
 @dataclass(frozen=True, slots=True)
 class SimulationJob:
@@ -282,7 +287,7 @@ def _run_job(
         # Catch all exceptions (SimulationError, ExpandObjectsError,
         # EnergyPlusNotFoundError, etc.) so that a single job failure
         # never crashes the entire batch.
-        failed_run_dir = Path(job.output_dir) if job.output_dir is not None else Path(tempfile.mkdtemp())
+        failed_run_dir = Path(job.output_dir) if job.output_dir is not None else REFUSED_RUN_DIR
         exit_code = getattr(exc, "exit_code", None)
         stderr = getattr(exc, "stderr", None) or str(exc)
         return SimulationResult(

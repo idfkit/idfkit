@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -24,7 +25,7 @@ from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from idfkit.simulation.async_runner import async_simulate
-from idfkit.simulation.batch import SimulationJob
+from idfkit.simulation.batch import REFUSED_RUN_DIR, SimulationJob
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
 
@@ -275,6 +276,22 @@ class TestAsyncSimulateBatch:
         job = SimulationJob(model=new_document(), weather=weather_file)
         result = await async_simulate_batch([job], energyplus=mock_config)
         assert result.total_runtime_seconds >= 0
+
+    @pytest.mark.asyncio
+    async def test_refused_job_creates_no_directory(
+        self, mock_config: EnergyPlusConfig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A job refused before EnergyPlus runs leaves no temporary directory behind (#228)."""
+        temp_root = tmp_path / "tmp"
+        temp_root.mkdir()
+        monkeypatch.setattr(tempfile, "tempdir", str(temp_root))
+        jobs = [SimulationJob(model=new_document(), annual=True, label=f"annual-{i}") for i in range(3)]
+        result = await async_simulate_batch(jobs, energyplus=mock_config)
+        assert not any(r.success for r in result)
+        assert list(temp_root.iterdir()) == []
+        assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
+        assert not REFUSED_RUN_DIR.exists()
+        assert (await result[0].async_errors()).fatal_count == 0
 
     @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")

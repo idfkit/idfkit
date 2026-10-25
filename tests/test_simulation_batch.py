@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -9,7 +10,7 @@ import pytest
 from conftest import REFUSAL_R2, InMemoryFileSystem
 
 from idfkit import LATEST_VERSION, new_document
-from idfkit.simulation.batch import BatchResult, SimulationJob, simulate_batch
+from idfkit.simulation.batch import REFUSED_RUN_DIR, BatchResult, SimulationJob, simulate_batch
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
 from idfkit.simulation.result import SimulationResult
@@ -330,3 +331,18 @@ class TestSimulateBatchWithoutWeather:
         assert not result[2].success
         assert REFUSAL_R2 in result[2].stderr
         assert mock_run.call_count == 2
+
+    def test_refused_job_creates_no_directory(
+        self, mock_config: EnergyPlusConfig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A job refused before EnergyPlus runs leaves no temporary directory behind (#228)."""
+        temp_root = tmp_path / "tmp"
+        temp_root.mkdir()
+        monkeypatch.setattr(tempfile, "tempdir", str(temp_root))
+        jobs = [SimulationJob(model=new_document(), annual=True, label=f"annual-{i}") for i in range(3)]
+        result = simulate_batch(jobs, energyplus=mock_config)
+        assert not any(r.success for r in result)
+        assert list(temp_root.iterdir()) == []
+        assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
+        assert not REFUSED_RUN_DIR.exists()
+        assert result[0].errors.fatal_count == 0

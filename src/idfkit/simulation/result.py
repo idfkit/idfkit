@@ -360,11 +360,19 @@ class SimulationResult:
         if primary.is_file():
             return primary
 
-        # Fallback: scan directory
+        return self._scan_run_dir(suffix)
+
+    def _scan_run_dir(self, suffix: str) -> Path | None:
+        """Return the first file in the local run directory ending with *suffix*.
+
+        A run directory that does not exist, such as the placeholder of a refused
+        batch job, holds no file.
+        """
+        if not self.run_dir.is_dir():
+            return None
         for p in self.run_dir.iterdir():
             if p.is_file() and p.name.endswith(suffix):
                 return p
-
         return None
 
     # ------------------------------------------------------------------
@@ -625,11 +633,7 @@ class SimulationResult:
         if primary.is_file():
             return primary
 
-        for p in self.run_dir.iterdir():
-            if p.is_file() and p.name.endswith(suffix):
-                return p
-
-        return None
+        return self._scan_run_dir(suffix)
 
     @classmethod
     def from_directory(
