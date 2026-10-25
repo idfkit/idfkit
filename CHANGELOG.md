@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- An IDF file whose last object has no closing `;`, such as `Version, 24.1;\nZone, Z1, 0`, no longer loads with that object silently dropped. A strict parse (the default) raises `IDFParseError` with an `Unterminated object near "..." (missing ";")` finding of code `ParseError`, positioned at the line the object starts on and naming its type. With `strict_parsing=False` or `load_idf_with_diagnostics` the rest of the file still loads, and the finding is logged as a warning and returned. Trailing whitespace and comments are not affected. The same change removes exponential backtracking in the object pattern, which made an unterminated tail of thirty characters take more than one hundred seconds to read. ([#187](https://github.com/idfkit/idfkit/issues/187))
+
 ## [1.1.1] - 2026-10-19
 
 ### Fixed
