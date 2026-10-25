@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- A batch job refused before EnergyPlus runs, such as one without `weather` that is not design-day-only, no longer leaves an empty temporary directory behind when it names no `output_dir`. `simulate_batch` and `async_simulate_batch` created one with `tempfile.mkdtemp()` for every such job and never removed it. The failed result's `run_dir` is now `idfkit.simulation.batch.REFUSED_RUN_DIR`, a placeholder path that is never created, and its output accessors such as `errors` return empty results for it rather than raising. ([#228](https://github.com/idfkit/idfkit/issues/228))
+- A batch job refused before EnergyPlus runs, such as one without `weather` that is not design-day-only, no longer leaves an empty temporary directory behind when it names no `output_dir`. `simulate_batch` and `async_simulate_batch` created one with `tempfile.mkdtemp()` for every such job and never removed it. The failed result's `run_dir` is now `idfkit.simulation.batch.REFUSED_RUN_DIR`, a placeholder path that is never created, and its output accessors such as `errors` return empty results for it rather than raising. ([#228](https://github.com/idfkit/idfkit/issues/228), [#239](https://github.com/idfkit/idfkit/pull/239))
 
 ## [1.1.1] - 2026-10-19
 
