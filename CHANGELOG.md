@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `load_idf()` and `get_idf_version()` raised `VersionNotFoundError` on an IDF whose `Version` object carries more than three components, such as the `Version, 23.1.0.002;` that DesignBuilder writes. Components past the patch are now ignored, so that file resolves to 23.1.0, as it does in idfkit-js. The epJSON parser already read such strings this way. (PR_REF)
+- `load_idf()` and `get_idf_version()` raised `VersionNotFoundError` on an IDF whose `Version` object carries more than three components, such as the `Version, 23.1.0.002;` that DesignBuilder writes. Components past the patch are now ignored, so that file resolves to 23.1.0, as it does in idfkit-js. The epJSON parser already read such strings this way. ([#238](https://github.com/idfkit/idfkit/pull/238))
 
 ## [1.1.1] - 2026-10-19
 
