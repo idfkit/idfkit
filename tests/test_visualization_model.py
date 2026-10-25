@@ -236,7 +236,7 @@ def fenestration_doc(multi_zone_doc):
 # ---------------------------------------------------------------------------
 
 
-def _square(n: int) -> list[Vector3D]:
+def _regular_polygon(n: int) -> list[Vector3D]:
     """A regular ``n``-gon in the XY plane, which is convex."""
     import math
 
@@ -298,7 +298,7 @@ class TestTriangulatePolygon:
         assert (i[1], j[1], k[1]) == (0, 2, 3)
 
     def test_pentagon(self):
-        i, _j, _k = _triangulate_polygon(_square(5), 0)
+        i, _j, _k = _triangulate_polygon(_regular_polygon(5), 0)
         assert len(i) == 3
 
     def test_offset(self):
@@ -327,6 +327,21 @@ class TestTriangulatePolygon:
     @pytest.mark.parametrize("start", range(6))
     def test_l_shape_every_starting_vertex(self, start: int):
         _covers_exactly(_L_SHAPE[start:] + _L_SHAPE[:start])
+
+    def test_clockwise_floor_keeps_its_winding(self):
+        """Ear-clipped triangles face the same way as the polygon, as the convex fan's do."""
+        floor = list(reversed(_L_SHAPE))
+        normal = Polygon3D(floor).normal
+        i, j, k = _triangulate_polygon(floor, 0)
+        for a, b, c in zip(i, j, k, strict=True):
+            face = (floor[b] - floor[a]).cross(floor[c] - floor[a])
+            assert face.dot(normal) > 0
+
+    def test_keyhole_with_coincident_bridge_vertices(self):
+        """A courtyard floor drawn as a keyhole doubles its bridge vertices; they must not block ears."""
+        pts = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 5), (4, 5), (4, 6), (6, 6), (6, 4), (4, 4), (4, 5), (0, 5)]
+        keyhole = [Vector3D(x, y, 0) for x, y in pts]
+        assert sum(_triangle_areas(keyhole)) == pytest.approx(100 - 4)
 
     def test_l_shaped_wall(self):
         """A concave polygon in a vertical plane: the L in the XZ plane, lifted and slanted in y."""

@@ -19,7 +19,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from ..geometry import Polygon3D, Vector3D
+from ..geometry import Polygon3D, Vector3D, is_convex_2d
 from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
@@ -205,8 +205,12 @@ def _ear_clip(pts: list[tuple[float, float]]) -> list[tuple[int, int, int]]:
     """Ear-clip a simple 2D polygon into triangles of indices into ``pts``.
 
     Vertices that are collinear with or coincide with their neighbours bound no area, so
-    they are dropped rather than clipped. If no ear can be found at all (a self-intersecting
-    polygon), the remainder is fan-triangulated so the surface is still drawn.
+    they are dropped rather than clipped. A vertex that coincides with a corner of a candidate
+    ear (the doubled bridge vertices of a keyhole polygon, say) does not block it. If no ear can
+    be found at all (a self-intersecting polygon), the remainder is fan-triangulated so the
+    surface is still drawn.
+
+    The triangles keep the winding of ``pts``, so a clockwise polygon yields clockwise triangles.
     """
     n = len(pts)
     signed = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
@@ -224,7 +228,10 @@ def _ear_clip(pts: list[tuple[float, float]]) -> list[tuple[int, int, int]]:
             a, b, c = pts[i0], pts[i1], pts[i2]
             if _cross_2d(a, b, c) <= eps:
                 continue
-            if any(o not in (i0, i1, i2) and _in_triangle_2d(pts[o], a, b, c, eps) for o in idx):
+            corners = (a, b, c)
+            if any(
+                o not in (i0, i1, i2) and pts[o] not in corners and _in_triangle_2d(pts[o], a, b, c, eps) for o in idx
+            ):
                 continue
             triangles.append((i0, i1, i2))
             idx.pop(k)
@@ -238,10 +245,13 @@ def _ear_clip(pts: list[tuple[float, float]]) -> list[tuple[int, int, int]]:
         )
         if degenerate is None:
             triangles.extend((idx[0], idx[t], idx[t + 1]) for t in range(1, m - 1))
-            return triangles
+            idx.clear()
+            break
         idx.pop(degenerate)
-    if abs(_cross_2d(pts[idx[0]], pts[idx[1]], pts[idx[2]])) > eps:
+    if len(idx) == 3 and abs(_cross_2d(pts[idx[0]], pts[idx[1]], pts[idx[2]])) > eps:
         triangles.append((idx[0], idx[1], idx[2]))
+    if signed < 0:
+        triangles = [(t0, t2, t1) for t0, t1, t2 in triangles]
     return triangles
 
 
@@ -255,7 +265,7 @@ def _triangulate_polygon(vertices: Sequence[Vector3D], offset: int) -> tuple[lis
     """
     num_vertices = len(vertices)
     pts = _project_to_plane(vertices) if num_vertices > 3 else []
-    if num_vertices <= 3 or _is_convex_2d(pts):
+    if num_vertices <= 3 or is_convex_2d(pts):
         triangles = [(0, n, n + 1) for n in range(1, num_vertices - 1)]
     else:
         triangles = _ear_clip(pts)
@@ -264,19 +274,6 @@ def _triangulate_polygon(vertices: Sequence[Vector3D], offset: int) -> tuple[lis
         [offset + t[1] for t in triangles],
         [offset + t[2] for t in triangles],
     )
-
-
-def _is_convex_2d(pts: list[tuple[float, float]]) -> bool:
-    """Whether every turn of the 2D polygon goes the same way (collinear turns allowed)."""
-    n = len(pts)
-    pos = neg = False
-    for i in range(n):
-        cross = _cross_2d(pts[i - 1], pts[i], pts[(i + 1) % n])
-        pos = pos or cross > 0
-        neg = neg or cross < 0
-        if pos and neg:
-            return False
-    return True
 
 
 def _polygon_edges(polygon: Polygon3D) -> tuple[list[float | None], list[float | None], list[float | None]]:
