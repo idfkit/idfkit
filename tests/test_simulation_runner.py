@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -233,13 +234,45 @@ class TestPrepareRunDirectory:
         assert run_dir.is_dir()
         assert (run_dir / weather_file.name).is_file()
 
-    def test_weather_not_copied_if_exists(self, tmp_path: Path, weather_file: Path) -> None:
+    def test_stale_weather_copy_replaced(self, tmp_path: Path, weather_file: Path) -> None:
         out = tmp_path / "existing"
         out.mkdir()
         dest = out / weather_file.name
         dest.write_text("existing content")
         _prepare_run_directory(out, weather_file)
-        assert dest.read_text() == "existing content"
+        assert dest.read_bytes() == weather_file.read_bytes()
+
+    def test_second_run_with_same_named_weather_uses_new_file(self, tmp_path: Path) -> None:
+        """Two runs into one output_dir with different weather files of the same name (#227)."""
+        first = tmp_path / "a" / "site.epw"
+        second = tmp_path / "b" / "site.epw"
+        first.parent.mkdir()
+        second.parent.mkdir()
+        first.write_text("LOCATION,First\n")
+        second.write_text("LOCATION,Second city\n")
+        out = tmp_path / "run"
+
+        _prepare_run_directory(out, first)
+        assert (out / "site.epw").read_text() == "LOCATION,First\n"
+        _prepare_run_directory(out, second)
+        assert (out / "site.epw").read_text() == "LOCATION,Second city\n"
+
+    def test_identical_weather_copy_not_rewritten(self, tmp_path: Path, weather_file: Path) -> None:
+        out = tmp_path / "run"
+        _prepare_run_directory(out, weather_file)
+        dest = out / weather_file.name
+        os.utime(dest, (0, 0))
+        _prepare_run_directory(out, weather_file)
+        assert dest.stat().st_mtime == 0
+
+    def test_weather_already_in_output_dir(self, tmp_path: Path) -> None:
+        out = tmp_path / "run"
+        out.mkdir()
+        weather = out / "site.epw"
+        weather.write_text("LOCATION,Here\n")
+        run_dir = _prepare_run_directory(out, weather)
+        assert run_dir == out.resolve()
+        assert weather.read_text() == "LOCATION,Here\n"
 
     def test_without_weather_copies_nothing(self, tmp_path: Path) -> None:
         run_dir = _prepare_run_directory(tmp_path / "run", None)
