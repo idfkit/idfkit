@@ -949,3 +949,27 @@ Zone,
         text = write_idf(doc, preserve_formatting=True)
         body = text.split("Blank Zone", 1)[1].split(";", 1)[0]
         assert body.count(",") == 12
+
+    def test_reassigning_a_blank_field_is_not_an_edit(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf, preserve_formatting=True)
+        before = write_idf(doc, preserve_formatting=True)
+        zone = doc["Zone"]["Blank Zone"]
+        version = zone.mutation_version
+        zone.ceiling_height = zone.ceiling_height
+        zone["Volume"] = ""
+        assert zone.mutation_version == version
+        assert "ceiling_height" not in zone.data
+        assert "volume" not in zone.data
+        assert write_idf(doc, preserve_formatting=True) == before
+
+    def test_assigning_a_blank_clears_the_field(self, zones_idf: Path, tmp_path: Path) -> None:
+        doc = parse_idf(zones_idf)
+        gap = doc["Zone"]["Gap Zone"]
+        gap["Multiplier"] = ""
+        gap["X_Origin"] = None
+        assert "multiplier" not in gap.data
+        assert "x_origin" not in gap.data
+        output_path = tmp_path / "cleared.idf"
+        save_idf(doc, output_path)
+        reparsed = parse_idf(output_path)["Zone"]["Gap Zone"]
+        assert reparsed.to_dict() == gap.to_dict()

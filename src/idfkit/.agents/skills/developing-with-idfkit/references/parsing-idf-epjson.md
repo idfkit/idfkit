@@ -65,7 +65,7 @@ except IDFParseError as e:
 
 ## Blank fields are unset
 
-A blank IDF field (`, ,`) is an unset field. It is not stored in `obj.data`, it is not written to epJSON, and it reads as `None`, the same as a field cut off by an early semicolon. An explicit `0` is a value and is kept. Writing the document back to IDF and reading it again gives an equal model.
+A blank IDF field (`, ,`) is an unset field. It is not stored in `obj.data`, it is not written to epJSON, and it reads as `None`, the same as a field cut off by an early semicolon. An explicit `0` is a value and is kept. Assigning `None` or `""` to a field clears it the same way. Writing the document back to IDF and reading it again gives an equal model.
 
 ```python
 # Zone, Office, 0, 0, 0, 0, , , ;  -- type, multiplier and ceiling height left blank

@@ -869,18 +869,33 @@ class IDFObject(EppyObjectMixin):
         The comparison is on the value the field holds, not on the whole object,
         so it costs one lookup on a path that was already reading the field for
         the reference graph.
+
+        A blank value (``None`` or ``""``) clears the field rather than storing a
+        placeholder, as the parser leaves a blank field absent (idfkit#183) and as
+        :func:`assign_slot` clears an extensible slot (idfkit#182). Writing a blank
+        over a field that is already unset is therefore not a change either, so
+        ``obj.f = obj.f`` on a blank field leaves the object untouched.
         """
-        current = self._data.get(python_key)
-        if current == value and python_key in self._data:
+        data = self._data
+        blank = is_blank_slot(value)
+        if python_key in data:
+            current = data[python_key]
+            if current == value:
+                return
+        elif blank:
             return
+        else:
+            current = None
+
+        if blank:
+            del data[python_key]
+        else:
+            data[python_key] = value
 
         doc = self._document
         ref_fields = self._ref_fields
         if doc is not None and ref_fields is not None and python_key in ref_fields:
-            self._data[python_key] = value
             doc.notify_reference_change(self, python_key, current, value)
-        else:
-            self._data[python_key] = value
 
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)

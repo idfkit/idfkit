@@ -675,12 +675,12 @@ class IDFParser:
         field_types = pc.field_types
         num_named = len(field_names)
 
-        for i, value in enumerate(remaining_fields):
+        # zip stops at the named fields: the extensible tail is bucketed below, not walked here.
+        for i, (field_name, value) in enumerate(zip(field_names, remaining_fields, strict=False)):
             # A blank field is unset and stays absent, as in epJSON and as the extensible groups below
             # already do. Holding it as "" made the model disagree with both writers, which drop it,
             # so a re-parse of idfkit's own output was not equal to the original (idfkit#183).
-            if i < num_named and value:
-                field_name = field_names[i]
+            if value:
                 field_type = field_types.get(field_name)
                 coerced = _coerce_value_fast(field_type, value)
                 data[field_name] = coerced
