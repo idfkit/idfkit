@@ -773,6 +773,53 @@ class TestUnterminatedObject:
         assert time.perf_counter() - start < 5
         assert [d.obj_type for d in result.diagnostics] == ["Zone"]
 
+    def test_object_patterns_do_not_backtrack_on_a_tail(self) -> None:
+        """The patterns themselves, not just the bounded scan in front of them, are linear per attempt."""
+        from idfkit.idf_parser import _CST_OBJECT_RE, _OBJECT_PATTERN
+
+        tail = "Zone,\n" + "  a,\n" * 200
+        start = time.perf_counter()
+
+        assert _OBJECT_PATTERN.match(tail.encode()) is None
+        assert _CST_OBJECT_RE.match(tail) is None
+        assert time.perf_counter() - start < 5
+
+    def test_preserve_formatting_reports_the_tail(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone,\n" + "  a,\n" * 50)
+
+        start = time.perf_counter()
+        result = load_idf_with_diagnostics(str(path), preserve_formatting=True)
+
+        assert time.perf_counter() - start < 5
+        # The tail cannot be linked to a parsed object, so the formatting tree is discarded too.
+        assert result.diagnostics[0].obj_type == "Zone"
+        assert "Unterminated" in result.diagnostics[0].message
+
+    def test_iter_idf_objects_skips_the_tail(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        path = self._write(tmp_path, self.TRUNCATED)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            types = [obj_type for obj_type, _, _ in iter_idf_objects(path)]
+
+        assert types == ["Version", "Building"]
+        assert any("unterminated" in r.getMessage().lower() for r in caplog.records)
+
+    def test_tail_cut_inside_a_multibyte_character(self, tmp_path: Path) -> None:
+        path = tmp_path / "cut.idf"
+        path.write_bytes(b"Version, 24.1;\nZone, Z\xc3")
+
+        with pytest.raises(IDFParseError) as caught:
+            parse_idf(path, encoding="utf-8")
+
+        assert caught.value.diagnostics[0].obj_type == "Zone"
+
+    def test_tail_type_is_read_like_an_object_type(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone\n  Z1\n  , 0\n")
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert [(d.line, d.obj_type) for d in result.diagnostics] == [(2, None)]
+
 
 class TestInvalidFieldDiagnostic:
     """idfkit#191: a value of the wrong kind is reported rather than stored in silence.

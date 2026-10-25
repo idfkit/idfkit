@@ -65,6 +65,10 @@ _TRAILING_BLANK = b" \t\r\n\x0b\x0c\x1a"
 #: How much of an unterminated tail is quoted in its finding.
 _UNTERMINATED_EXCERPT = 40
 
+#: The object type at the start of an unterminated tail, read the way group 1 of `_OBJECT_PATTERN`
+#: reads it, so a tail that does not open like an object is reported with no type.
+_TAIL_TYPE_PATTERN = re.compile(rb"([A-Za-z/*][A-Za-z0-9:_ /*\-]*?)\s*,")
+
 # Pattern to split fields (handles inline comments)
 _FIELD_SPLIT_PATTERN = re.compile(rb"\s*,\s*")
 
@@ -88,8 +92,10 @@ _CST_OBJECT_RE = re.compile(
     r"|"
     r"("  # Alt 2: object (capture group 1)
     r"[A-Za-z][A-Za-z0-9:_ \t-]*\s*,"  #   Type name + first comma
-    r"(?:[^;!]*(?:![^\n]*\n?)?)*"  #   Fields with inline comments
-    r"[^;!]*;"  #   Final field + semicolon
+    # Fields with inline comments, then the semicolon, as an unrolled loop. The earlier nested form
+    # backtracked exponentially on an unterminated tail, as `_OBJECT_PATTERN` did (idfkit#187). A
+    # comment not ending in a newline runs to the end of the text, so no `;` can follow it anyway.
+    r"[^;!]*(?:![^\n]*\n[^;!]*)*;"
     r"[^\n]*"  #   Trailing inline comment on semicolon line
     r"[\r\n]*"  #   Trailing newlines
     r")",
@@ -596,17 +602,21 @@ class IDFParser:
             return
 
         offset = end + len(tail) - len(stripped)
-        head, comma, _ = stripped.partition(b",")
-        obj_type = head.decode(encoding).strip() if comma else None
-        excerpt = " ".join(stripped.decode(encoding).split())
-        if len(excerpt) > _UNTERMINATED_EXCERPT:
+        # A truncated file can end inside a multibyte character, so decoding must not raise here:
+        # that would replace the finding with a UnicodeDecodeError, even on the returning path.
+        type_match = _TAIL_TYPE_PATTERN.match(stripped)
+        obj_type = type_match.group(1).decode(encoding, errors="replace").strip() if type_match else None
+        # Only a few bytes per quoted character are needed; the tail may be most of the file.
+        head = stripped[: _UNTERMINATED_EXCERPT * 8].decode(encoding, errors="replace")
+        excerpt = " ".join(head.split())
+        if len(excerpt) > _UNTERMINATED_EXCERPT or len(stripped) > _UNTERMINATED_EXCERPT * 8:
             excerpt = excerpt[:_UNTERMINATED_EXCERPT] + "..."
         message = f'Unterminated object near "{excerpt}" (missing ";")'
 
         if self._strict_parsing:
-            self._raise_parse_error(content, offset, message, obj_type=obj_type or None)
+            self._raise_parse_error(content, offset, message, obj_type=obj_type)
         logger.warning("Skipping unterminated object %r: %s", obj_type or "<unknown>", message)
-        self._record(message, code="ParseError", obj_type=obj_type or None, content=content, offset=offset)
+        self._record(message, code="ParseError", obj_type=obj_type, content=content, offset=offset)
 
     def _parse_object_cached(
         self,
@@ -966,7 +976,13 @@ def iter_idf_objects(
     # Strip comments before matching to prevent phantom objects
     content = _COMMENT_PATTERN.sub(b"", content)
 
-    for match in _OBJECT_PATTERN.finditer(content):
+    # As in `IDFParser._parse_objects`: no match reaches past the last `;`, and scanning an
+    # unterminated tail costs time quadratic in its length for nothing (idfkit#187).
+    end = content.rfind(b";") + 1
+    if content[end:].strip(_TRAILING_BLANK):
+        logger.warning('Ignoring unterminated object at the end of %s (missing ";")', filepath)
+
+    for match in _OBJECT_PATTERN.finditer(content, 0, end):
         obj_type = match.group(1).decode(encoding).strip()
         fields_raw = match.group(2).decode(encoding)
 
