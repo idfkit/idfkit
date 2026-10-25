@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- A simulation run into an `output_dir` that already held a weather file of the same name, left by an earlier run with a different weather file, now replaces that stale copy. EnergyPlus previously ran with the earlier weather file while `SimulationCache.compute_key` hashed the new one, so the cache stored results under the wrong key. A copy with identical content, or a weather file that already lives in `output_dir`, is left untouched. ([#227](https://github.com/idfkit/idfkit/issues/227))
+- A simulation run into an `output_dir` that already held a weather file of the same name, left by an earlier run with a different weather file, now replaces that stale copy. EnergyPlus previously ran with the earlier weather file while `SimulationCache.compute_key` hashed the new one, so the cache stored results under the wrong key. A copy with identical content, or a weather file that already lives in `output_dir`, is left untouched. ([#227](https://github.com/idfkit/idfkit/issues/227), [#237](https://github.com/idfkit/idfkit/pull/237))
+- `load_idf()` and `get_idf_version()` raised `VersionNotFoundError` on an IDF whose `Version` object carries more than three components, such as the `Version, 23.1.0.002;` that DesignBuilder writes. Components past the patch are now ignored, so that file resolves to 23.1.0, as it does in idfkit-js. The epJSON parser already read such strings this way. ([#238](https://github.com/idfkit/idfkit/pull/238))
 
 ## [1.1.1] - 2026-10-19
 
