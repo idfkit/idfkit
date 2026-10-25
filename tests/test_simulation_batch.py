@@ -346,3 +346,16 @@ class TestSimulateBatchWithoutWeather:
         assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
         assert not REFUSED_RUN_DIR.exists()
         assert result[0].errors.fatal_count == 0
+
+    def test_refused_result_ignores_files_at_placeholder(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Files another process put at the shared placeholder path are never read as outputs (#228)."""
+        placeholder = tmp_path / "idfkit-refused-job"
+        placeholder.mkdir()
+        (placeholder / "eplusout.err").write_text("   ** Fatal  ** planted\n")
+        monkeypatch.setattr("idfkit.simulation.result.REFUSED_RUN_DIR", placeholder)
+        result = SimulationResult(
+            run_dir=placeholder, success=False, exit_code=None, stdout="", stderr="refused", runtime_seconds=0.0
+        )
+        assert result.err_path is None
+        assert result.errors.fatal_count == 0
+        assert result.sql is None

@@ -6,6 +6,7 @@ after a simulation run.
 
 from __future__ import annotations
 
+import os
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -24,6 +25,12 @@ if TYPE_CHECKING:
 
 # Sentinel for "not yet computed" (distinct from None = "computed, no file found")
 _UNSET: Any = object()
+
+#: ``run_dir`` of the result for a batch job that failed before EnergyPlus ran
+#: and that named no ``output_dir``. It lies under the null device, so it can
+#: never be created, and the output accessors never look inside it: a batch of
+#: refused jobs leaves nothing behind.
+REFUSED_RUN_DIR = Path(os.devnull) / "idfkit-refused-job"
 
 
 @dataclass(slots=True)
@@ -345,6 +352,9 @@ class SimulationResult:
             )
             raise RuntimeError(msg)
 
+        if self.run_dir == REFUSED_RUN_DIR:
+            return None
+
         primary = self.run_dir / f"{self.output_prefix}out{suffix}"
 
         if self.fs is not None:
@@ -363,13 +373,7 @@ class SimulationResult:
         return self._scan_run_dir(suffix)
 
     def _scan_run_dir(self, suffix: str) -> Path | None:
-        """Return the first file in the local run directory ending with *suffix*.
-
-        A run directory that does not exist, such as the placeholder of a refused
-        batch job, holds no file.
-        """
-        if not self.run_dir.is_dir():
-            return None
+        """Return the first file in the local run directory ending with *suffix*."""
         for p in self.run_dir.iterdir():
             if p.is_file() and p.name.endswith(suffix):
                 return p
@@ -611,6 +615,9 @@ class SimulationResult:
         Returns:
             Path to the file, or None if not found.
         """
+        if self.run_dir == REFUSED_RUN_DIR:
+            return None
+
         primary = self.run_dir / f"{self.output_prefix}out{suffix}"
 
         if self.async_fs is not None:

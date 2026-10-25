@@ -46,11 +46,10 @@ import os
 import time
 from collections.abc import AsyncIterator, Callable, Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .async_runner import async_simulate
-from .batch import REFUSED_RUN_DIR, BatchResult, SimulationJob
+from .batch import BatchResult, SimulationJob, failed_job_result
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
@@ -312,18 +311,7 @@ async def _async_run_job(
         # Catch all exceptions (SimulationError, ExpandObjectsError,
         # EnergyPlusNotFoundError, etc.) so that a single job failure
         # never crashes the entire batch.
-        failed_run_dir = Path(job.output_dir) if job.output_dir is not None else REFUSED_RUN_DIR
-        exit_code = getattr(exc, "exit_code", None)
-        stderr = getattr(exc, "stderr", None) or str(exc)
-        return SimulationResult(
-            run_dir=failed_run_dir,
-            success=False,
-            exit_code=exit_code,
-            stdout="",
-            stderr=stderr,
-            runtime_seconds=0.0,
-            output_prefix=job.output_prefix,
-        )
+        return failed_job_result(job, exc)
 
 
 def _make_async_job_progress_callback(

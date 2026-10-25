@@ -70,10 +70,11 @@ from .plotting import (
 )
 from .progress import ProgressParser, SimulationProgress
 from .progress_bars import tqdm_progress
-from .result import SimulationResult
+from .result import REFUSED_RUN_DIR, SimulationResult
 from .runner import simulate
 
 __all__ = [
+    "REFUSED_RUN_DIR",
     "AsyncFileSystem",
     "AsyncLocalFileSystem",
     "AsyncS3FileSystem",

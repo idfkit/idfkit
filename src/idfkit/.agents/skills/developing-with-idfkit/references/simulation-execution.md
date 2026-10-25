@@ -124,7 +124,7 @@ asyncio.run(main())
 ## Batch parameter sweeps
 
 ```python
-from idfkit.simulation import simulate_batch, SimulationJob
+from idfkit.simulation import REFUSED_RUN_DIR, simulate_batch, SimulationJob
 
 jobs = []
 for wwr in (0.2, 0.3, 0.4, 0.5):
@@ -136,10 +136,15 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
 
 batch = simulate_batch(jobs, max_workers=4)
 for job, result in zip(jobs, batch):
-    print(job.label, result.errors.summary())
+    if result.run_dir == REFUSED_RUN_DIR:
+        print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
+    else:
+        print(job.label, result.errors.summary())
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
+
+A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job refused before EnergyPlus ran (for example `weather=None` on a job that is not design-day-only) and that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created; its `errors` report is empty, so read `stderr` for the reason.
 
 ## Caching
 
