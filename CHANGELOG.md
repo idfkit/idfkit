@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A blank field of an object type with no repeating group is omitted from the model, as `write_idf` and `write_epjson` already omitted it and as ConvertInputFormat and idfkit-js do. It was stored as `""`, numeric fields included, so re-parsing idfkit's own IDF output did not equal the document it was written from: a `Zone` written with eight blank trailing commas parsed to 12 fields and came back with 4. A blank field now reads as `None`, as a field cut off by an earlier semicolon always has, in attribute, item and positional access and in the eppy-compatible `fieldvalues`; code that compared such a field with `""` should test for `None`. An explicit `0` is still a value, and `write_idf` still writes an interior blank in its position. ([#183](https://github.com/idfkit/idfkit/issues/183))
+
 ## [1.1.1] - 2026-10-19
 
 ### Fixed

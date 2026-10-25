@@ -43,6 +43,16 @@ except IDFParseError as e:
 # --8<-- [end:strict-parsing]
 
 
+# --8<-- [start:blank-fields]
+# Zone, Office, 0, 0, 0, 0, , , ;  -- type, multiplier and ceiling height left blank
+zone = doc["Zone"]["Office"]
+zone.ceiling_height  # None, exactly as if the semicolon had come earlier
+"ceiling_height" in zone.data  # False: a blank field is not stored
+if zone.ceiling_height is None:
+    zone.ceiling_height = "Autocalculate"
+# --8<-- [end:blank-fields]
+
+
 # --8<-- [start:version]
 from idfkit import get_idf_version
 
@@ -104,6 +114,12 @@ if report.success and report.migrated_model is not None:
     doc = report.migrated_model
     save_idf(doc, "legacy_v25.idf")
 # --8<-- [end:mistake-version-good]
+
+
+# --8<-- [start:mistake-blank-good]
+if zone.multiplier is None:  # blank or never written: both read as None
+    ...
+# --8<-- [end:mistake-blank-good]
 
 
 # --8<-- [start:mistake-preserve-good]

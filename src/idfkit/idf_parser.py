@@ -674,16 +674,16 @@ class IDFParser:
         num_named = len(field_names)
 
         for i, value in enumerate(remaining_fields):
-            if i < num_named:
+            # A blank field is unset and stays absent, as in epJSON and as the extensible groups below
+            # already do. Holding it as "" made the model disagree with both writers, which drop it,
+            # so a re-parse of idfkit's own output was not equal to the original (idfkit#183).
+            if i < num_named and value:
                 field_name = field_names[i]
-                if value:
-                    field_type = field_types.get(field_name)
-                    coerced = _coerce_value_fast(field_type, value)
-                    data[field_name] = coerced
-                    if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
-                        invalid.append((i, field_name, value))
-                else:
-                    data[field_name] = ""
+                field_type = field_types.get(field_name)
+                coerced = _coerce_value_fast(field_type, value)
+                data[field_name] = coerced
+                if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
+                    invalid.append((i, field_name, value))
 
         if not pc.extensible and len(remaining_fields) > num_named and self._strict_parsing:
             overflow = len(remaining_fields) - num_named
