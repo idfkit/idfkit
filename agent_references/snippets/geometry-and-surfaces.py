@@ -153,7 +153,8 @@ polygon_difference_2d(a, b)  # a minus b: [(0, 0), (5, 0), (5, 5), (0, 5)]
 
 
 # --8<-- [start:polygon-difference-parts]
-from idfkit import create_block, footprint_rectangle, polygon_difference_parts_2d
+from idfkit import create_block, footprint_rectangle
+from idfkit.geometry import polygon_difference_parts_2d
 
 site = footprint_rectangle(105, 60)
 courtyard = footprint_rectangle(40, 25, origin=(35, 20))  # strictly inside: leaves a hole

@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `polygon_difference_parts_2d(outer, *inners)` subtracts one or more polygons and returns hole-free, non-overlapping, counter-clockwise pieces, largest first, that together cover the difference. A result with a hole is cut by a vertical line through each hole. Every piece is a valid EnergyPlus surface outline or `create_block` footprint. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
-- `split_horizontal_surface_by_regions(doc, surface, regions)` splits a horizontal surface under several regions in one step and returns `(region_surfaces, remaining_surfaces)`. `link_blocks` now uses it for each roof, so adjacent floors resting on one roof are subtracted together. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
+- `idfkit.geometry.polygon_difference_parts_2d(outer, *inners)` subtracts one or more polygons and returns hole-free, non-overlapping, counter-clockwise pieces, largest first, that together cover the difference. A result with a hole is cut by a vertical line through each hole. Every piece is a valid EnergyPlus surface outline or `create_block` footprint. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
+- `idfkit.geometry_builders.split_horizontal_surface_by_regions(doc, surface, regions)` splits a horizontal surface under several regions in one step and returns `(region_surfaces, remaining_surfaces)`. `link_blocks` now uses it for each roof, so adjacent floors resting on one roof are subtracted together. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 
 ### Changed
 
