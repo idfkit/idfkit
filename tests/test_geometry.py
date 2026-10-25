@@ -682,6 +682,20 @@ class TestPolygonDifferenceParts2D:
         poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
         assert polygon_difference_parts_2d(poly) == [poly]
 
+    @pytest.mark.parametrize("gap", [1e-6, 1e-5])
+    def test_thin_strip_below_probe_distance_survives(self, gap: float) -> None:
+        """A strip thinner than the side-probe distance must not wipe out the whole result."""
+        outer = [(0, 0), (100, 0), (100, 100), (0, 100)]
+        inner = [(10, gap), (110, gap), (110, 110), (10, 110)]
+        parts = polygon_difference_parts_2d(outer, inner)
+        assert len(parts) == 1
+        assert polygon_area_2d(parts[0]) == pytest.approx(10 * 100 + 90 * gap)
+
+    def test_far_away_inner_does_not_inflate_tolerance(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        far = [(1e6, 0), (1e6 + 1, 0), (1e6 + 1, 1), (1e6, 1)]
+        assert polygon_difference_parts_2d(outer, far) == [outer]
+
     def test_degenerate_outer(self) -> None:
         assert polygon_difference_parts_2d([(0, 0), (1, 1)], [(0, 0), (1, 0), (1, 1)]) == []
         assert polygon_difference_parts_2d([(0, 0), (0, 0), (0, 0)]) == []

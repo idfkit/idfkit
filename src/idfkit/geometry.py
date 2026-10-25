@@ -1556,19 +1556,57 @@ def _split_segments(
     return fragments
 
 
+def _point_segment_distance(
+    p: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+) -> float:
+    """Distance from *p* to the segment *ab*."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length_sq = dx * dx + dy * dy
+    t = 0.0 if length_sq == 0 else min(max(((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length_sq, 0.0), 1.0)
+    return math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)
+
+
+def _probe_offsets(
+    fragments: Sequence[tuple[int, int]],
+    points: Sequence[tuple[float, float]],
+    probe: float,
+) -> list[float]:
+    """Side-probe distance for each fragment, kept below half the clearance to every other fragment.
+
+    A probe that reaches past a neighbouring edge samples the wrong face, so
+    a feature thinner than *probe* (but wider than the snapping tolerance)
+    would otherwise be misclassified and dropped.
+    """
+    offsets: list[float] = []
+    for i, j in fragments:
+        p, q = points[i], points[j]
+        length = math.hypot(q[0] - p[0], q[1] - p[1])
+        h = min(probe, 0.1 * length)
+        mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+        for k, m in fragments:
+            if (k, m) == (i, j):
+                continue
+            d = _point_segment_distance(mid, points[k], points[m])
+            if 0 < d < 2 * h:
+                h = d / 2
+        offsets.append(h)
+    return offsets
+
+
 def _boundary_edges(
-    fragments: set[tuple[int, int]],
+    fragments: Sequence[tuple[int, int]],
+    offsets: Sequence[float],
     points: Sequence[tuple[float, float]],
     inside: Callable[[tuple[float, float]], bool],
-    probe: float,
 ) -> list[tuple[int, int]]:
     """Orient each fragment with *inside* on its left, dropping fragments with *inside* on both sides or neither."""
     edges: list[tuple[int, int]] = []
-    for i, j in sorted(fragments):
+    for (i, j), h in zip(fragments, offsets, strict=True):
         p, q = points[i], points[j]
         dx, dy = q[0] - p[0], q[1] - p[1]
         length = math.hypot(dx, dy)
-        h = min(probe, 0.1 * length)
         mx, my = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
         nx, ny = -dy / length * h, dx / length * h
         left = inside((mx + nx, my + ny))
@@ -1599,12 +1637,14 @@ def _trace_rings(
         if used[first]:
             continue
         ring: list[int] = []
+        closed = False
         k = first
         while True:
             used[k] = True
             s, t = edges[k]
             ring.append(s)
             if t == edges[first][0]:
+                closed = True
                 break
             candidates = [c for c in outgoing.get(t, []) if not used[c]]
             if not candidates:
@@ -1617,6 +1657,10 @@ def _trace_rings(
                 return math.atan2(dx * ny - dy * nx, dx * nx + dy * ny)
 
             k = max(candidates, key=_turn)
+        if not closed:
+            # A dangling chain is not a boundary; closing it implicitly would invent an edge.
+            logger.warning("polygon difference: dropped an unclosed boundary chain of %d vertices", len(ring))
+            continue
         rings.extend(_split_ring_at_repeats(ring))
     return rings
 
@@ -1684,9 +1728,13 @@ def _difference_rings(
     outer_ring = list(outer)
     inner_rings = [list(r) for r in inners if len(r) >= 3]
     rings_in = [outer_ring, *inner_rings]
-    xs = [p[0] for r in rings_in for p in r]
     ys = [p[1] for r in rings_in for p in r]
-    scale = max(max(xs) - min(xs), max(ys) - min(ys))
+    # Tolerances follow the outer polygon's size: a large or far-away inner
+    # must not inflate them and swallow the outer's own features.
+    scale = max(
+        max(p[0] for p in outer_ring) - min(p[0] for p in outer_ring),
+        max(p[1] for p in outer_ring) - min(p[1] for p in outer_ring),
+    )
     if scale <= 0:
         return []
     tol = 1e-9 * scale
@@ -1701,8 +1749,10 @@ def _difference_rings(
     snapper = _PointSnapper(tol)
     # Register the input vertices first so they keep their exact coordinates.
     keep = {snapper.snap(p) for r in rings_in for p in r}
-    fragments = _split_segments(segments, snapper)
+    fragments = sorted(_split_segments(segments, snapper))
     points = snapper.points
+    offsets = _probe_offsets(fragments, points, probe)
+    order = {p: k for k, p in reversed(list(enumerate(outer_ring)))}
 
     def in_difference(p: tuple[float, float]) -> bool:
         return _point_in_polygon_2d(p, outer_ring) and not any(_point_in_polygon_2d(p, r) for r in inner_rings)
@@ -1714,21 +1764,20 @@ def _difference_rings(
         def in_strip(p: tuple[float, float], lo: float = lo, hi: float = hi) -> bool:
             return lo < p[0] < hi and in_difference(p)
 
-        edges = _boundary_edges(fragments, points, in_strip, probe)
+        edges = _boundary_edges(fragments, offsets, points, in_strip)
         for ring in _trace_rings(edges, points):
             ring = _drop_collinear(ring, points, keep, tol)
             poly = [points[v] for v in ring]
             if len(poly) >= 3 and abs(polygon_area_2d(poly)) > tol * scale:
-                rings.append(_rotate_to_first_input_vertex(poly, outer_ring))
+                rings.append(_rotate_to_first_input_vertex(poly, order))
     return rings
 
 
 def _rotate_to_first_input_vertex(
     poly: Polygon2D,
-    reference: Sequence[tuple[float, float]],
+    order: dict[tuple[float, float], int],
 ) -> Polygon2D:
-    """Rotate *poly* so it starts at the earliest vertex of *reference* it contains."""
-    order = {p: k for k, p in reversed(list(enumerate(reference)))}
+    """Rotate *poly* so it starts at the reference vertex with the lowest index in *order*."""
     starts = [(order[p], k) for k, p in enumerate(poly) if p in order]
     if not starts:
         return poly
@@ -1783,7 +1832,7 @@ def polygon_difference_2d(
     if len(rings) == 1 and not holes:
         return rings[0]
     if holes:
-        detail = f"has {holes} hole(s); inner lies strictly inside outer"
+        detail = f"has {holes} hole(s); inner lies inside outer, touching its boundary at most at isolated points"
     else:
         detail = f"splits into {len(rings)} separate polygons"
     msg = (
