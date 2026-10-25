@@ -84,6 +84,7 @@ from .geometry import (
     polygon_area_2d,
     polygon_contains_2d,
     polygon_difference_2d,
+    polygon_difference_parts_2d,
     polygon_intersection_2d,
     rotate_building,
     set_wwr,
@@ -100,6 +101,7 @@ from .geometry_builders import (
     scale_building,
     set_default_constructions,
     split_horizontal_surface,
+    split_horizontal_surface_by_regions,
 )
 
 # Parsing functions
@@ -578,6 +580,7 @@ __all__ = [
     "polygon_area_2d",
     "polygon_contains_2d",
     "polygon_difference_2d",
+    "polygon_difference_parts_2d",
     "polygon_intersection_2d",
     "rotate_building",
     "save_epjson",
@@ -587,6 +590,7 @@ __all__ = [
     "set_default_constructions",
     "set_wwr",
     "split_horizontal_surface",
+    "split_horizontal_surface_by_regions",
     "translate_building",
     "validate_document",
     "validate_object",

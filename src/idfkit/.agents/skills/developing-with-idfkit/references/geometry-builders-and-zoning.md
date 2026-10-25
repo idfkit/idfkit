@@ -175,6 +175,23 @@ new_a, new_b = split_horizontal_surface(
 )
 ```
 
+The remainder is always EnergyPlus-safe: no holes and no zero-width slits. When the region sits strictly inside the surface, the remainder would be a frame with a hole, so it is cut into hole-free pieces. The original surface keeps the largest piece, and each other piece becomes a new `"<name> Remainder"` surface that copies its construction, zone and boundary conditions. To get those surfaces back, or to split under several adjacent regions at once (as `link_blocks` does for every floor resting on one roof), use `split_horizontal_surface_by_regions`:
+
+```python
+from idfkit.geometry_builders import split_horizontal_surface_by_regions
+
+region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
+    doc,
+    surface,
+    regions=[
+        [(10, 5), (15, 5), (15, 15), (10, 15)],
+        [(15, 5), (20, 5), (20, 15), (15, 15)],
+    ],
+)
+# region_surfaces: one new surface per region, in order
+# remaining_surfaces: the original surface first, then any extra remainder pieces
+```
+
 ## Common mistakes
 
 !!! failure "passing a clockwise footprint"
