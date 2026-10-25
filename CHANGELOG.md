@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `view_model()` and the other 3D viewers in `idfkit.visualization` drew concave surfaces, such as L- and U-shaped floors and roofs, with spurious triangles spanning their notches. Surfaces were fan-triangulated from their first vertex, which is only correct for convex polygons; concave ones are now ear-clipped on their own plane, and convex ones keep the fan. Collinear and duplicate vertices are skipped, and a self-intersecting polygon falls back to the fan instead of raising. ([#174](https://github.com/idfkit/idfkit/issues/174))
+- `load_idf()` and `get_idf_version()` raised `VersionNotFoundError` on an IDF whose `Version` object carries more than three components, such as the `Version, 23.1.0.002;` that DesignBuilder writes. Components past the patch are now ignored, so that file resolves to 23.1.0, as it does in idfkit-js. The epJSON parser already read such strings this way. ([#238](https://github.com/idfkit/idfkit/pull/238))
+- `view_model()` and the other 3D viewers in `idfkit.visualization` drew concave surfaces, such as L- and U-shaped floors and roofs, with spurious triangles spanning their notches. Surfaces were fan-triangulated from their first vertex, which is only correct for convex polygons; concave ones are now ear-clipped on their own plane, and convex ones keep the fan. Collinear and duplicate vertices are skipped, and a self-intersecting polygon falls back to the fan instead of raising. ([#240](https://github.com/idfkit/idfkit/pull/240))
 
 ## [1.1.1] - 2026-10-19
 
