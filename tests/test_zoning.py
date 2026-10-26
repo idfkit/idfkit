@@ -216,6 +216,12 @@ class TestFootprintCourtyardParts:
         with pytest.raises(ValueError, match="inner_depth"):
             footprint_courtyard_parts(20, 20, 5, 20)
 
+    @pytest.mark.parametrize(("inner_width", "inner_depth"), [(0, 10), (-20, 10), (20, 0), (20, -10)])
+    def test_non_positive_inner_raises(self, inner_width: float, inner_depth: float) -> None:
+        # Zero would return one piece; a negative size would silently cut a courtyard of |size|.
+        with pytest.raises(ValueError, match="must be > 0"):
+            footprint_courtyard_parts(50, 40, inner_width, inner_depth)
+
 
 # =========================================================================
 # Polygon utilities
@@ -1394,6 +1400,21 @@ class TestCreateCourtyardBlock:
             create_courtyard_block(
                 new_document(), "X", footprint_rectangle(10, 10), [footprint_rectangle(20, 20, (-5, -5))], 3.0
             )
+
+    def test_single_polygon_instead_of_list_raises(self) -> None:
+        # Its (x, y) points would each subtract nothing and the courtyard would vanish.
+        with pytest.raises(ValueError, match=r"courtyards\[0\]"):
+            create_courtyard_block(
+                new_document(),
+                "X",
+                footprint_rectangle(50, 40),
+                footprint_rectangle(20, 10, origin=(15, 15)),  # type: ignore[arg-type]
+                3.0,
+            )
+
+    def test_degenerate_outer_raises(self) -> None:
+        with pytest.raises(ValueError, match="outer must have at least 3 vertices"):
+            create_courtyard_block(new_document(), "X", [(0, 0), (1, 0)], [], 3.0)
 
     def test_slit_footprint_is_what_this_replaces(self) -> None:
         # The deprecated slit ring repeats (0, 15) and runs back out along the

@@ -349,10 +349,7 @@ def footprint_courtyard(
     )
     _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
     x, y = origin
-    margin_x = (outer_width - inner_width) / 2
-    margin_y = (outer_depth - inner_depth) / 2
-    ix0 = x + margin_x
-    iy0 = y + margin_y
+    ix0, iy0 = _courtyard_inner_origin(outer_width, outer_depth, inner_width, inner_depth, origin)
     ix1 = ix0 + inner_width
     iy1 = iy0 + inner_depth
     return [
@@ -362,14 +359,14 @@ def footprint_courtyard(
         (x + outer_width, y + outer_depth),
         (x, y + outer_depth),
         # Slit down to inner (from outer top-left back down to inner)
-        (x, y + margin_y),  # slit entry
+        (x, iy0),  # slit entry
         # Inner rectangle (CW to cut a hole)
         (ix0, iy0),
         (ix0, iy1),
         (ix1, iy1),
         (ix1, iy0),
         # Slit back out
-        (x, y + margin_y),  # slit exit (same point, degenerate edge)
+        (x, iy0),  # slit exit (same point, degenerate edge)
     ]
 
 
@@ -418,13 +415,27 @@ def footprint_courtyard_parts(
         >>> sum(polygon_area_2d(p) for p in parts)
         1800.0
     """
+    for label, value in (("inner_width", inner_width), ("inner_depth", inner_depth)):
+        if value <= 0:
+            msg = f"{label} ({value}) must be > 0"
+            raise ValueError(msg)
     _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
-    x, y = origin
-    margin_x = (outer_width - inner_width) / 2
-    margin_y = (outer_depth - inner_depth) / 2
     outer = footprint_rectangle(outer_width, outer_depth, origin)
-    inner = footprint_rectangle(inner_width, inner_depth, (x + margin_x, y + margin_y))
+    inner_origin = _courtyard_inner_origin(outer_width, outer_depth, inner_width, inner_depth, origin)
+    inner = footprint_rectangle(inner_width, inner_depth, inner_origin)
     return [[(float(px), float(py)) for px, py in part] for part in polygon_difference_parts_2d(outer, inner)]
+
+
+def _courtyard_inner_origin(
+    outer_width: float,
+    outer_depth: float,
+    inner_width: float,
+    inner_depth: float,
+    origin: tuple[float, float],
+) -> tuple[float, float]:
+    """Lower-left corner of a courtyard centred in the outer rectangle."""
+    x, y = origin
+    return (x + (outer_width - inner_width) / 2, y + (outer_depth - inner_depth) / 2)
 
 
 def _check_courtyard_dims(outer_width: float, outer_depth: float, inner_width: float, inner_depth: float) -> None:
@@ -1182,7 +1193,10 @@ def create_courtyard_block(
         All created [IDFObject][idfkit.objects.IDFObject] instances.
 
     Raises:
-        ValueError: If the courtyards cover the whole footprint.
+        ValueError: If *outer* or a courtyard has fewer than three
+            vertices (for example a single polygon passed as
+            *courtyards* instead of a list of polygons), or if the
+            courtyards cover the whole footprint.
 
     Examples:
         A 50 x 40 m block around a centred 20 x 10 m courtyard:
@@ -1202,6 +1216,19 @@ def create_courtyard_block(
             )
             ```
     """
+    if len(outer) < 3:
+        msg = f"create_courtyard_block: outer must have at least 3 vertices, got {len(outer)}"
+        raise ValueError(msg)
+    for k, courtyard in enumerate(courtyards):
+        # A single polygon passed instead of a list of polygons unpacks into
+        # (x, y) points here; each would subtract nothing and the block would
+        # silently be built without its courtyard.
+        if len(courtyard) < 3 or any(len(p) != 2 for p in courtyard):
+            msg = (
+                f"create_courtyard_block: courtyards[{k}] is not a polygon of at least 3 (x, y) vertices; "
+                "pass a list of polygons, e.g. [footprint_rectangle(...)]"
+            )
+            raise ValueError(msg)
     parts = polygon_difference_parts_2d(outer, *courtyards)
     if not parts:
         msg = "create_courtyard_block: the courtyards cover the whole footprint"
