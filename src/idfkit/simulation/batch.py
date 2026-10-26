@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 import os
-import tempfile
 import time
 from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -20,7 +19,7 @@ from typing import TYPE_CHECKING, Literal, overload
 
 from .progress import SimulationProgress
 from .progress_bars import resolve_on_progress
-from .result import SimulationResult
+from .result import REFUSED_RUN_DIR, SimulationResult
 from .runner import simulate
 
 if TYPE_CHECKING:
@@ -156,7 +155,9 @@ def simulate_batch(
             ``None``).
         max_workers: Maximum number of concurrent simulations.  Defaults
             to ``min(len(jobs), os.cpu_count() or 1)``.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  See
+            [SimulationCache][idfkit.simulation.cache.SimulationCache] for what
+            the key covers and which models are never cached.
         progress: Optional callback invoked after each job completes.
             Called as ``progress(completed=N, total=M, label=label,
             success=bool)``.
@@ -282,18 +283,20 @@ def _run_job(
         # Catch all exceptions (SimulationError, ExpandObjectsError,
         # EnergyPlusNotFoundError, etc.) so that a single job failure
         # never crashes the entire batch.
-        failed_run_dir = Path(job.output_dir) if job.output_dir is not None else Path(tempfile.mkdtemp())
-        exit_code = getattr(exc, "exit_code", None)
-        stderr = getattr(exc, "stderr", None) or str(exc)
-        return SimulationResult(
-            run_dir=failed_run_dir,
-            success=False,
-            exit_code=exit_code,
-            stdout="",
-            stderr=stderr,
-            runtime_seconds=0.0,
-            output_prefix=job.output_prefix,
-        )
+        return failed_job_result(job, exc)
+
+
+def failed_job_result(job: SimulationJob, exc: Exception) -> SimulationResult:
+    """Build the failed result for a job whose simulation raised *exc*."""
+    return SimulationResult(
+        run_dir=Path(job.output_dir) if job.output_dir is not None else REFUSED_RUN_DIR,
+        success=False,
+        exit_code=getattr(exc, "exit_code", None),
+        stdout="",
+        stderr=getattr(exc, "stderr", None) or str(exc),
+        runtime_seconds=0.0,
+        output_prefix=job.output_prefix,
+    )
 
 
 def _make_job_progress_callback(

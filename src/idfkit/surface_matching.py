@@ -53,6 +53,7 @@ from .geometry import (
     polygon_contains_2d,
     polygon_intersection_2d,
     set_surface_coords,
+    triangulate_2d,
 )
 
 if TYPE_CHECKING:
@@ -200,67 +201,14 @@ def _clip_halfplane(
     return out
 
 
-def _ear_cross(verts: list[tuple[float, float]], idx: list[int], k: int) -> float:
-    """Cross product at candidate ear tip ``idx[k]`` (larger = more convex)."""
-    m = len(idx)
-    a, b, c = verts[idx[(k - 1) % m]], verts[idx[k]], verts[idx[(k + 1) % m]]
-    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
-
-
 def _triangulate(poly: Poly2D) -> list[Poly2D]:
-    """Ear-clip a simple polygon into triangles (each convex)."""
+    """Ear-clip a simple polygon into counter-clockwise triangles (each convex)."""
     verts = _ensure_ccw(_clean_poly(poly))
     if len(verts) < 3:
         return []
     if len(verts) == 3:
         return [verts]
-    triangles: list[Poly2D] = []
-    idx = list(range(len(verts)))
-    guard = 0
-    while len(idx) > 3 and guard < len(idx) * len(idx):
-        guard += 1
-        ear_found = False
-        m = len(idx)
-        for k in range(m):
-            i0, i1, i2 = idx[(k - 1) % m], idx[k], idx[(k + 1) % m]
-            a, b, c = verts[i0], verts[i1], verts[i2]
-            cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
-            if cross <= _EPS:  # reflex or collinear — not an ear tip
-                continue
-            tri = [a, b, c]
-            if any(idx[o] not in (i0, i1, i2) and _point_in_triangle(verts[idx[o]], a, b, c) for o in range(m)):
-                continue
-            triangles.append(tri)
-            idx.pop(k)
-            ear_found = True
-            break
-        if not ear_found:
-            # No strictly-valid ear (degenerate/near-collinear vertices from
-            # snap-rounding can starve the strict test). Clip the least-reflex
-            # candidate anyway so triangulation always covers the full
-            # polygon instead of silently dropping the untriangulated tail.
-            best_k = max(range(m), key=lambda k: _ear_cross(verts, idx, k))
-            i0, i1, i2 = idx[(best_k - 1) % m], idx[best_k], idx[(best_k + 1) % m]
-            triangles.append([verts[i0], verts[i1], verts[i2]])
-            idx.pop(best_k)
-    if len(idx) == 3:
-        triangles.append([verts[idx[0]], verts[idx[1]], verts[idx[2]]])
-    return triangles
-
-
-def _point_in_triangle(
-    p: tuple[float, float],
-    a: tuple[float, float],
-    b: tuple[float, float],
-    c: tuple[float, float],
-) -> bool:
-    def sign(u: tuple[float, float], v: tuple[float, float], w: tuple[float, float]) -> float:
-        return (u[0] - w[0]) * (v[1] - w[1]) - (v[0] - w[0]) * (u[1] - w[1])
-
-    d1, d2, d3 = sign(p, a, b), sign(p, b, c), sign(p, c, a)
-    has_neg = d1 < -_EPS or d2 < -_EPS or d3 < -_EPS
-    has_pos = d1 > _EPS or d2 > _EPS or d3 > _EPS
-    return not (has_neg and has_pos)
+    return [[verts[a], verts[b], verts[c]] for a, b, c in triangulate_2d(verts)]
 
 
 def _convex_difference(subject: Poly2D, cutter: Poly2D) -> list[Poly2D]:

@@ -47,13 +47,14 @@ from ._common import (
     resolve_config,
     upload_results,
 )
+from .cache import runner_cache_key
 from .progress import ProgressParser, SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
-    from .cache import CacheKey, SimulationCache
+    from .cache import SimulationCache
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
 
@@ -180,7 +181,11 @@ async def async_simulate(
             ``IDFKIT_PREPROCESSOR_TIMEOUT`` environment variable, falling
             back to 120 s.  Independent of *timeout*.
         extra_args: Additional command-line arguments.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  The key
+            covers the contents of every file the model names (a
+            ``Schedule:File`` CSV staged into *output_dir*, for example).  A
+            model with a ``PythonPlugin:Instance`` or a co-simulation
+            ``ExternalInterface`` is never cached; a warning is logged.
         fs: Optional file system backend for storing results on remote
             storage (e.g., S3).  Both sync [FileSystem][idfkit.simulation.fs.FileSystem]
             and async [AsyncFileSystem][idfkit.simulation.fs.AsyncFileSystem] are accepted.
@@ -248,11 +253,21 @@ async def async_simulate(
             "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
         )
 
-        cache_key: CacheKey | None = None
+        # Copy model to avoid mutation.  The copy is taken before any await so
+        # that the cache key and the simulated model describe the same state,
+        # even if another coroutine mutates the caller's model meanwhile.
+        sim_model = sim_input_model.copy()
+
+        cache_key = None
         if cache is not None:
-            cache_key = cache.compute_key(
-                sim_input_model,
+            # Hashing the model's external files is blocking I/O, so it runs off the event loop.
+            cache_key = await asyncio.to_thread(
+                runner_cache_key,
+                cache,
+                sim_model,
                 weather_path,
+                output_dir=local_output_dir,
+                config=config,
                 expand_objects=expand_objects,
                 annual=annual,
                 design_day=design_day,
@@ -260,13 +275,12 @@ async def async_simulate(
                 readvars=readvars,
                 extra_args=extra_args,
             )
+        if cache is not None and cache_key is not None:
             cached = cache.get(cache_key)
             if cached is not None:
                 cached.migration_report = migration_report
                 return cached
 
-        # Copy model to avoid mutation
-        sim_model = sim_input_model.copy()
         ensure_sql_output(sim_model)
 
         # Preprocessing may invoke subprocesses synchronously — delegate to a

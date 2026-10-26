@@ -124,7 +124,7 @@ asyncio.run(main())
 ## Batch parameter sweeps
 
 ```python
-from idfkit.simulation import simulate_batch, SimulationJob
+from idfkit.simulation import REFUSED_RUN_DIR, simulate_batch, SimulationJob
 
 jobs = []
 for wwr in (0.2, 0.3, 0.4, 0.5):
@@ -136,10 +136,15 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
 
 batch = simulate_batch(jobs, max_workers=4)
 for job, result in zip(jobs, batch):
-    print(job.label, result.errors.summary())
+    if result.run_dir == REFUSED_RUN_DIR:
+        print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
+    else:
+        print(job.label, result.errors.summary())
 ```
 
 `async_simulate_batch` and `async_simulate_batch_stream` give you async/streaming variants. `simulate_batch` runs jobs concurrently on a thread pool (use `max_workers` to cap parallelism); each job is an EnergyPlus subprocess, so threads are all the parallelism it needs and documents never cross a process boundary.
+
+A job that fails never raises out of the batch: its result has `success=False` and the reason in `result.stderr`. A job refused before EnergyPlus ran (for example `weather=None` on a job that is not design-day-only) and that named no `output_dir` gets `run_dir == REFUSED_RUN_DIR`, a placeholder that is never created; its `errors` report is empty, so read `stderr` for the reason.
 
 ## Caching
 
@@ -153,7 +158,9 @@ result = simulate(doc, "weather.epw", cache=cache)  # first call runs
 result = simulate(doc, "weather.epw", cache=cache)  # second call cache-hits, milliseconds
 ```
 
-The cache key is the SHA-256 of the (model bytes + weather bytes + flags) tuple. Any change invalidates the entry.
+The cache key is the SHA-256 of the model, the weather file, the run flags, and the contents of every other file the model names: `Schedule:File` and `Schedule:File:Shading` CSVs, `Table:Lookup` / `Table:IndependentVariable` data files, `Construction:WindowDataFile`, ASHRAE 205 representation files and imported FMUs (the list is derived from the model's schema, so it follows the EnergyPlus version). Any change to any of them is a miss, and restoring a file's earlier content is a hit on the earlier entry. So staging a `Schedule:File` CSV into `output_dir` and varying it across runs caches correctly. A relative file path is resolved the way EnergyPlus resolves it: against `output_dir`, then the EnergyPlus executable's directory.
+
+A model with a `PythonPlugin:Instance`, or with an `ExternalInterface` in `PtolemyServer` or `FunctionalMockupUnitExport` mode, has inputs no key can cover. `simulate` never caches it and logs a warning saying why.
 
 ## Progress events
 

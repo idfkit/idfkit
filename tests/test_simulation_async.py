@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -24,7 +25,7 @@ from idfkit import LATEST_VERSION, new_document
 from idfkit.exceptions import SimulationError
 from idfkit.simulation.async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from idfkit.simulation.async_runner import async_simulate
-from idfkit.simulation.batch import SimulationJob
+from idfkit.simulation.batch import REFUSED_RUN_DIR, SimulationJob
 from idfkit.simulation.cache import SimulationCache
 from idfkit.simulation.config import EnergyPlusConfig
 
@@ -277,6 +278,22 @@ class TestAsyncSimulateBatch:
         assert result.total_runtime_seconds >= 0
 
     @pytest.mark.asyncio
+    async def test_refused_job_creates_no_directory(
+        self, mock_config: EnergyPlusConfig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A job refused before EnergyPlus runs leaves no temporary directory behind (#228)."""
+        temp_root = tmp_path / "tmp"
+        temp_root.mkdir()
+        monkeypatch.setattr(tempfile, "tempdir", str(temp_root))
+        jobs = [SimulationJob(model=new_document(), annual=True, label=f"annual-{i}") for i in range(3)]
+        result = await async_simulate_batch(jobs, energyplus=mock_config)
+        assert not any(r.success for r in result)
+        assert list(temp_root.iterdir()) == []
+        assert all(r.run_dir == REFUSED_RUN_DIR for r in result)
+        assert not REFUSED_RUN_DIR.exists()
+        assert (await result[0].async_errors()).fatal_count == 0
+
+    @pytest.mark.asyncio
     @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
     async def test_cache_integration(
         self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
@@ -295,6 +312,49 @@ class TestAsyncSimulateBatch:
         result2 = await async_simulate_batch([job], energyplus=mock_config, cache=cache)
         assert result2[0].success
         assert mock_exec.call_count == 1  # no additional call
+
+
+class TestAsyncSimulateCacheCoversExternalFiles:
+    """async_simulate hashes the files the model names into the cache key (#216)."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_staged_file_in_output_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        csv = run_dir / "hourly.csv"
+        model = new_document()
+        model.add("Schedule:File", "Staged", file_name="hourly.csv", column_number=1, validate=False)
+
+        async def run() -> None:
+            await async_simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
+
+        csv.write_text("1\n")
+        await run()
+        await run()
+        assert mock_exec.call_count == 1
+        csv.write_text("2\n")
+        await run()
+        assert mock_exec.call_count == 2
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_batch_job_with_cosimulation_is_never_cached(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+        model.add("ExternalInterface", "", name_of_external_interface="PtolemyServer", validate=False)
+        job = SimulationJob(model=model, weather=weather_file)
+
+        await async_simulate_batch([job], energyplus=mock_config, cache=cache)
+        await async_simulate_batch([job], energyplus=mock_config, cache=cache)
+        assert mock_exec.call_count == 2
 
 
 # ---------------------------------------------------------------------------

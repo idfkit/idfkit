@@ -1,8 +1,14 @@
 """Content-hash simulation cache.
 
 Caches simulation results keyed by a SHA-256 digest of the normalised model,
-weather file, and simulation flags.  Cache entries are full copies of the
-simulation run directory so that all output files remain available.
+weather file, simulation flags, and the contents of every other file the model
+names (a ``Schedule:File`` CSV, a ``Table:Lookup`` data file, a window data
+file, an ASHRAE 205 representation, an FMU).  Cache entries are full copies of
+the simulation run directory so that all output files remain available.
+
+A model whose inputs the key cannot cover (one that runs a Python plugin, or
+that exchanges data with another program through ``ExternalInterface``) is
+never looked up or stored; the runners log a warning and simulate.
 """
 
 from __future__ import annotations
@@ -21,7 +27,10 @@ from typing import TYPE_CHECKING, Literal
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from ..document import IDFDocument
+    from .config import EnergyPlusConfig
     from .result import SimulationResult
 
 
@@ -38,6 +47,83 @@ def default_simulation_cache_dir() -> Path:
     return base / "idfkit" / "simulation"
 
 
+def _external_files_bytes(model: IDFDocument, search_dirs: list[Path]) -> bytes:
+    """Return the bytes that bring every external file *model* names into the key.
+
+    Empty when the model names no external file, so such a model keeps the
+    key it had before external files were covered.
+    """
+    from ._external_files import external_file_refs, resolve_external_file
+
+    refs = external_file_refs(model)
+    if not refs:
+        return b""
+    parts = [b"\0external-files\0"]
+    for ref in refs:
+        parts.append(json.dumps([ref.obj_type, ref.field, ref.value]).encode("utf-8"))
+        path = resolve_external_file(ref.value, search_dirs)
+        if path is None:
+            parts.append(b"\0missing\0")
+            continue
+        try:
+            parts.append(b"\0found\0" + _file_digest(path))
+        except OSError:
+            # EnergyPlus cannot read it either; the run fails and is not stored.
+            parts.append(b"\0unreadable\0")
+    return b"".join(parts)
+
+
+def _file_digest(path: Path) -> bytes:
+    """Return the SHA-256 digest of *path*'s contents, read in chunks."""
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.digest()
+
+
+def runner_cache_key(
+    cache: SimulationCache | None,
+    model: IDFDocument,
+    weather: Path | None,
+    *,
+    output_dir: str | Path | None,
+    config: EnergyPlusConfig,
+    expand_objects: bool,
+    annual: bool,
+    design_day: bool,
+    output_suffix: Literal["C", "L", "D"],
+    readvars: bool,
+    extra_args: list[str] | None,
+) -> CacheKey | None:
+    """Compute the cache key for one runner invocation, or ``None`` when the run must not use the cache.
+
+    Internal helper shared by [simulate][idfkit.simulation.runner.simulate]
+    and [async_simulate][idfkit.simulation.async_runner.async_simulate].  It
+    returns ``None`` when there is no cache, and when *model* has inputs the
+    key cannot cover, in which case it logs a warning naming them.
+    """
+    if cache is None:
+        return None
+    from ._external_files import search_dirs_for_run, uncacheable_reason
+
+    reason = uncacheable_reason(model)
+    if reason is not None:
+        logger.warning("Not using the simulation cache: %s", reason)
+        return None
+    return cache.compute_key(
+        model,
+        weather,
+        expand_objects=expand_objects,
+        annual=annual,
+        design_day=design_day,
+        output_suffix=output_suffix,
+        readvars=readvars,
+        extra_args=extra_args,
+        search_dirs=search_dirs_for_run(output_dir, config.executable),
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CacheKey:
     """Opaque cache key wrapping a hex digest string."""
@@ -50,6 +136,16 @@ class SimulationCache:
 
     Each entry is a directory named by the cache key containing a full copy
     of the simulation run directory plus a ``_cache_meta.json`` manifest.
+
+    The key covers the model, the weather file, the run flags and the
+    contents of every other file the model names, so editing a staged
+    ``Schedule:File`` CSV (in ``output_dir`` or anywhere else) is a miss and
+    restoring it is a hit again.  A model that runs a ``PythonPlugin:Instance``
+    or an ``ExternalInterface`` in ``PtolemyServer`` or
+    ``FunctionalMockupUnitExport`` mode has inputs no key can cover, so
+    [simulate][idfkit.simulation.runner.simulate] and
+    [async_simulate][idfkit.simulation.async_runner.async_simulate] neither
+    look it up nor store it, and log a warning.
     """
 
     __slots__ = ("_cache_dir",)
@@ -75,12 +171,23 @@ class SimulationCache:
         output_suffix: Literal["C", "L", "D"] = "C",
         readvars: bool = False,
         extra_args: list[str] | tuple[str, ...] | None = None,
+        search_dirs: Sequence[str | Path] = (),
     ) -> CacheKey:
         """Compute a deterministic cache key for a simulation invocation.
 
         The model is copied and normalised (``Output:SQLite`` is ensured) so
         that models differing only in the presence of that object produce the
         same key.
+
+        Every file the model names for EnergyPlus to read contributes its
+        contents: ``Schedule:File``, ``Schedule:File:Shading``, the
+        ``Table:*`` external data files, ``Construction:WindowDataFile``, the
+        ASHRAE 205 representation files and FMUs.  An absolute path is read
+        as is; a relative path is looked up in *search_dirs* in order, as
+        EnergyPlus looks in its working directory and then next to its
+        executable.  A file that cannot be found contributes a marker
+        instead, so its later appearance changes the key.  A model that names
+        no such file gets the same key as it did before this was added.
 
         Args:
             model: The EnergyPlus model.
@@ -93,6 +200,10 @@ class SimulationCache:
             output_suffix: Output file naming suffix (``"C"``, ``"L"``, or ``"D"``).
             readvars: Whether ReadVarsESO post-processing will run.
             extra_args: Additional command-line arguments.
+            search_dirs: Directories a relative external file path resolves
+                against, in order.  The runners pass the run directory
+                (when ``output_dir`` is given) and the EnergyPlus
+                executable's directory.
 
         Returns:
             A [CacheKey][idfkit.simulation.cache.CacheKey] for use with [get][idfkit.simulation.cache.SimulationCache.get] / [put][idfkit.simulation.cache.SimulationCache.put].
@@ -125,6 +236,8 @@ class SimulationCache:
         h.update(idf_text.encode("utf-8"))
         h.update(weather_bytes)
         h.update(flags.encode("utf-8"))
+        dirs = [search_dirs] if isinstance(search_dirs, str) else search_dirs
+        h.update(_external_files_bytes(model, [Path(d) for d in dirs]))
         key = CacheKey(hex_digest=h.hexdigest())
         logger.debug("Computed cache key %s", key.hex_digest[:12])
         return key

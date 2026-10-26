@@ -22,7 +22,7 @@ from .geometry import (
     Vector3D,
     get_surface_coords,
     polygon_area_2d,
-    polygon_difference_2d,
+    polygon_difference_parts_2d,
     polygon_intersection_2d,
     set_surface_coords,
 )
@@ -389,6 +389,115 @@ def detect_horizontal_adjacencies(
     return adjacencies
 
 
+def _add_horizontal_like(
+    doc: IDFDocument,
+    template: IDFObject,
+    base_name: str,
+    footprint: list[tuple[float, float]],
+    z: float,
+    *,
+    reverse: bool,
+) -> IDFObject:
+    """Add a surface copying *template*'s attributes with a new footprint and a unique name."""
+    name = base_name
+    counter = 1
+    while doc.getobject("BuildingSurface:Detailed", name) is not None:
+        counter += 1
+        name = f"{base_name} {counter}"
+    srf = doc.add(
+        "BuildingSurface:Detailed",
+        name,
+        surface_type=getattr(template, "surface_type", "") or "",
+        construction_name=getattr(template, "construction_name", "") or "",
+        zone_name=getattr(template, "zone_name", "") or "",
+        outside_boundary_condition=getattr(template, "outside_boundary_condition", "") or "",
+        outside_boundary_condition_object=getattr(template, "outside_boundary_condition_object", "") or "",
+        sun_exposure=getattr(template, "sun_exposure", "") or "",
+        wind_exposure=getattr(template, "wind_exposure", "") or "",
+        validate=False,
+    )
+    set_surface_coords(srf, horizontal_poly(footprint, z, reverse=reverse))
+    return srf
+
+
+def split_horizontal_surface_by_regions(
+    doc: IDFDocument,
+    surface: IDFObject,
+    regions: Sequence[Sequence[tuple[float, float]]],
+) -> tuple[list[IDFObject], list[IDFObject]]:
+    """Split a horizontal surface under several non-overlapping 2-D regions at once.
+
+    One new surface is created per region, covering the part of the
+    surface inside that region.  The rest of the surface (the surface
+    minus all regions together) is computed with
+    [polygon_difference_parts_2d][idfkit.geometry.polygon_difference_parts_2d],
+    so it is always EnergyPlus-safe: no holes and no zero-width slits.  The
+    original surface takes the largest remaining piece.  When more pieces
+    remain, for example around a region sitting in the middle of the
+    surface, each extra piece becomes a new surface named
+    ``"<surface name> Remainder"`` (numbered when that name is taken) that
+    copies the original's construction, zone, and boundary conditions.
+
+    Splitting under every region in one call matters when the regions are
+    adjacent, such as the floors of a core-and-perimeter tower standing on
+    a podium roof.  Their union is subtracted in one step, so the remainder
+    is cut only where it has to be.
+
+    Args:
+        doc: The document containing the surface.
+        surface: Horizontal surface to split (floor, ceiling, or roof).
+        regions: 2-D polygons to split at.  Each must overlap the surface
+            and be convex or have a convex overlap with it.
+
+    Returns:
+        ``(region_surfaces, remaining_surfaces)``.  *region_surfaces*
+        holds one surface per region, in order.  *remaining_surfaces*
+        starts with the original surface, followed by any extra remainder
+        pieces.  It is empty when the regions cover the whole surface; the
+        original surface is then left unchanged.
+
+    Raises:
+        ValueError: If the surface has no coordinates or a region does not
+            overlap it.
+    """
+    result = _extract_horizontal_footprint(surface)
+    if result is None:
+        msg = f"Surface '{surface.name}' has no coordinates"
+        raise ValueError(msg)
+    z, footprint = result
+    _, clockwise = get_geometry_convention(doc)
+
+    inters: list[list[tuple[float, float]]] = []
+    for region in regions:
+        inter = polygon_intersection_2d(footprint, list(region))
+        if inter is None:
+            msg = f"Region does not overlap surface '{surface.name}'"
+            raise ValueError(msg)
+        inters.append(inter)
+
+    # Determine surface type for winding
+    st = (getattr(surface, "surface_type", "") or "").upper()
+    # For roofs/ceilings, winding is clockwise; for floors, not clockwise
+    reverse = clockwise if st in ("ROOF", "CEILING") else not clockwise
+
+    region_surfaces = [
+        _add_horizontal_like(doc, surface, f"{surface.name} Split", inter, z, reverse=reverse) for inter in inters
+    ]
+
+    pieces = [p for p in polygon_difference_parts_2d(footprint, *inters) if abs(polygon_area_2d(p)) >= 0.01]
+    if not pieces:
+        return region_surfaces, []
+
+    # Update original surface geometry to the largest remaining piece
+    set_surface_coords(surface, horizontal_poly(pieces[0], z, reverse=reverse))
+    remaining = [surface]
+    remaining.extend(
+        _add_horizontal_like(doc, surface, f"{surface.name} Remainder", piece, z, reverse=reverse)
+        for piece in pieces[1:]
+    )
+    return region_surfaces, remaining
+
+
 def split_horizontal_surface(
     doc: IDFDocument,
     surface: IDFObject,
@@ -397,8 +506,17 @@ def split_horizontal_surface(
     """Split a horizontal surface at a 2-D region boundary.
 
     A new surface is created for the area *inside* the region.  The
-    original surface is shrunk to the area *outside* the region (the
-    remaining frame).
+    original surface is shrunk to the area *outside* the region.
+
+    When the region sits strictly inside the surface, the outside area is
+    a frame with a hole, which no single EnergyPlus surface can describe.
+    The frame is then cut into hole-free pieces: the original surface
+    keeps the largest, and each other piece is added to *doc* as a new
+    surface named ``"<surface name> Remainder"`` (numbered when that name
+    is taken).  Use
+    [split_horizontal_surface_by_regions][idfkit.geometry_builders.split_horizontal_surface_by_regions]
+    to get those extra surfaces back, or to split under several regions
+    at once.
 
     Args:
         doc: The document containing the surface.
@@ -410,64 +528,8 @@ def split_horizontal_surface(
         *remaining_surface* is ``None`` if the region covers the entire
         surface (i.e. no remaining area).
     """
-    result = _extract_horizontal_footprint(surface)
-    if result is None:
-        msg = f"Surface '{surface.name}' has no coordinates"
-        raise ValueError(msg)
-    z, footprint = result
-    _, clockwise = get_geometry_convention(doc)
-
-    # Compute intersection of footprint and region
-    inter = polygon_intersection_2d(footprint, list(region))
-    if inter is None:
-        msg = f"Region does not overlap surface '{surface.name}'"
-        raise ValueError(msg)
-
-    inter_area = abs(polygon_area_2d(inter))
-    surface_area = abs(polygon_area_2d(footprint))
-
-    # Determine surface type for winding
-    st = (getattr(surface, "surface_type", "") or "").upper()
-    # For roofs/ceilings, winding is clockwise; for floors, not clockwise
-    reverse = clockwise if st in ("ROOF", "CEILING") else not clockwise
-
-    # Create new surface for the intersection region
-    zone_name: str = getattr(surface, "zone_name", "") or ""
-    construction: str = getattr(surface, "construction_name", "") or ""
-    new_name = f"{surface.name} Split"
-    # Ensure unique name
-    counter = 1
-    while doc.getobject("BuildingSurface:Detailed", new_name) is not None:
-        counter += 1
-        new_name = f"{surface.name} Split {counter}"
-
-    new_srf = doc.add(
-        "BuildingSurface:Detailed",
-        new_name,
-        surface_type=getattr(surface, "surface_type", "") or "",
-        construction_name=construction,
-        zone_name=zone_name,
-        outside_boundary_condition=getattr(surface, "outside_boundary_condition", "") or "",
-        outside_boundary_condition_object=getattr(surface, "outside_boundary_condition_object", "") or "",
-        sun_exposure=getattr(surface, "sun_exposure", "") or "",
-        wind_exposure=getattr(surface, "wind_exposure", "") or "",
-        validate=False,
-    )
-    set_surface_coords(new_srf, horizontal_poly(inter, z, reverse=reverse))
-
-    # Check if the region covers the entire surface
-    if abs(inter_area - surface_area) < 0.01:
-        return new_srf, None
-
-    # Compute remaining area (frame polygon)
-    remaining = polygon_difference_2d(footprint, inter)
-
-    if remaining is None or abs(polygon_area_2d(remaining)) < 0.01:
-        return new_srf, None
-
-    # Update original surface geometry to the remaining area
-    set_surface_coords(surface, horizontal_poly(remaining, z, reverse=reverse))
-    return new_srf, surface
+    region_surfaces, remaining = split_horizontal_surface_by_regions(doc, surface, [region])
+    return region_surfaces[0], (remaining[0] if remaining else None)
 
 
 def link_horizontal_surfaces(ceiling: IDFObject, floor: IDFObject) -> None:

@@ -68,6 +68,35 @@ class TestIDFParserVersionDetection:
             parse_idf(filepath)
 
 
+class TestVersionExtraComponents:
+    """Version strings with more or fewer than three components (#177)."""
+
+    def test_four_part_version_loads(self, tmp_path: Path) -> None:
+        """DesignBuilder writes a build suffix after the patch; it is ignored."""
+        filepath = tmp_path / "designbuilder.idf"
+        filepath.write_text("Version, 23.1.0.002;\nZone, MyZone;\n")
+        doc = load_idf(filepath)
+        assert doc.version == (23, 1, 0)
+        assert "MyZone" in doc["Zone"]
+
+    def test_four_part_version_get_idf_version(self, tmp_path: Path) -> None:
+        filepath = tmp_path / "designbuilder.idf"
+        filepath.write_text("Version,\n  23.1.0.002;                !- Version Identifier\n")
+        assert get_idf_version(filepath) == (23, 1, 0)
+
+    def test_two_part_version_loads(self, tmp_path: Path) -> None:
+        filepath = tmp_path / "two_part.idf"
+        filepath.write_text("Version, 23.1;\nZone, MyZone;\n")
+        assert load_idf(filepath).version == (23, 1, 0)
+        assert get_idf_version(filepath) == (23, 1, 0)
+
+    def test_four_part_version_epjson(self, tmp_path: Path) -> None:
+        filepath = tmp_path / "designbuilder.epJSON"
+        filepath.write_text(json.dumps({"Version": {"Version 1": {"version_identifier": "23.1.0.002"}}}))
+        assert parse_epjson(filepath).version == (23, 1, 0)
+        assert get_epjson_version(filepath) == (23, 1, 0)
+
+
 class TestIDFParserTypeCoercion:
     def test_numeric_fields_coerced(self, idf_file: Path) -> None:
         """Numeric fields should be coerced to float/int during parsing."""

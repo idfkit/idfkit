@@ -164,7 +164,7 @@ For higher-level ceiling↔floor helpers, see [geometry-builders-and-zoning.md](
 
 ## 2D polygon utilities
 
-For computing footprint overlaps or differences (e.g. courtyard cut-outs):
+For computing footprint overlaps or differences (e.g. corner cut-outs):
 
 ```python
 from idfkit import (
@@ -181,12 +181,57 @@ inner = [(1, 1), (4, 1), (4, 4), (1, 4)]
 polygon_area_2d(a)  # 50.0
 polygon_contains_2d(a, inner)  # True (every vertex of inner is inside a)
 polygon_intersection_2d(a, b)  # overlapping rectangle
-polygon_difference_2d(a, b)  # a minus b
+polygon_difference_2d(a, b)  # a minus b: [(0, 0), (5, 0), (5, 5), (0, 5)]
 ```
 
 These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on building footprints in plan view.
 
+`polygon_difference_2d` returns one clean, counter-clockwise, simple polygon with no duplicate or coincident vertices, ready for `create_block`. The subtracted polygon may cross the outer boundary, sit flush with a corner, or extend outside it. A single ring cannot describe a result with a hole (the subtracted polygon strictly inside) or a result in several pieces, so `polygon_difference_2d` raises `ValueError` for those. Use `polygon_difference_parts_2d` from `idfkit.geometry` there. It subtracts any number of polygons and returns hole-free pieces, largest first, each one a valid EnergyPlus surface outline or `create_block` footprint. Building each piece with its own `create_block` call leaves the walls along the cuts as exterior walls; `create_courtyard_block` (in `idfkit.zoning`) builds the pieces as zones of one block so those walls are paired interior walls:
+
+```python
+from idfkit import footprint_rectangle
+from idfkit.geometry import polygon_difference_parts_2d
+from idfkit.zoning import create_courtyard_block
+
+site = footprint_rectangle(105, 60)
+courtyard = footprint_rectangle(40, 25, origin=(35, 20))  # strictly inside: leaves a hole
+office = footprint_rectangle(33.3, 9.0)  # corner cut-out
+
+# polygon_difference_2d(site, courtyard) raises ValueError: the result has a hole.
+pieces = polygon_difference_parts_2d(site, courtyard, office)
+
+# To build them, keep the pieces in one block so the cut walls become interior walls:
+create_courtyard_block(doc, "Wing", site, [courtyard, office], floor_to_floor=3.5)
+```
+
+To cut a concave outline into triangles (for a mesh, or for area-weighted sampling), use `triangulate_2d` from `idfkit.geometry`. It returns index triples into the input, in the input's winding, and it handles keyhole outlines whose bridge vertices are doubled:
+
+```python
+from idfkit.geometry import triangulate_2d
+
+l_shape = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+triangles = triangulate_2d(l_shape)  # [(5, 0, 1), (1, 2, 3), (1, 3, 4), (1, 4, 5)]
+total = sum(polygon_area_2d([l_shape[i] for i in tri]) for tri in triangles)  # 75.0
+```
+
 ## Common mistakes
+
+!!! failure "stitching a hole into one polygon with a slit"
+
+    ```python
+    # Joining the outer ring and the hole ring with a zero-width "bridge" edge
+    # gives coincident vertices, so create_block makes degenerate surfaces and EnergyPlus fatals.
+    slit = [*outer, outer[0], hole[0], *reversed(hole), hole[0]]
+    create_block(doc, "Block", slit, floor_to_floor=3.5)
+    ```
+
+!!! success "split it into hole-free pieces in one block"
+
+    ```python
+    from idfkit.zoning import create_courtyard_block
+
+    create_courtyard_block(doc, "Block", site, [courtyard], floor_to_floor=3.5)
+    ```
 
 !!! failure "manually summing vertex coordinates"
 

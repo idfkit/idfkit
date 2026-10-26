@@ -17,6 +17,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Find or update cross-references between objects | [reference-tracking.md](references/reference-tracking.md) |
 | Compute surface area, zone volume, azimuth, WWR | [geometry-and-surfaces.md](references/geometry-and-surfaces.md) |
 | Build a building footprint and zone it | [geometry-builders-and-zoning.md](references/geometry-builders-and-zoning.md) |
+| Build a footprint with a courtyard or hole (no slit polygons) | [geometry-builders-and-zoning.md](references/geometry-builders-and-zoning.md) |
 | Stand up an HVAC system quickly with `HVACTemplate:*` | [hvac-templates.md](references/hvac-templates.md) |
 | Hand-author `AirLoopHVAC` / `PlantLoop` / `CondenserLoop` | [hvac-loops.md](references/hvac-loops.md) |
 | Run EnergyPlus simulations (sync, async, batch) | [simulation-execution.md](references/simulation-execution.md) |

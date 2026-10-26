@@ -236,32 +236,161 @@ def fenestration_doc(multi_zone_doc):
 # ---------------------------------------------------------------------------
 
 
+def _regular_polygon(n: int) -> list[Vector3D]:
+    """A regular ``n``-gon in the XY plane, which is convex."""
+    import math
+
+    return [Vector3D(math.cos(2 * math.pi * t / n), math.sin(2 * math.pi * t / n), 0) for t in range(n)]
+
+
+#: An L-shaped floor: a 10 m x 10 m square with its 5 m x 5 m north-east quarter cut away,
+#: so its area is 75 m². It starts at the corner beside the notch: fanned from there, the
+#: triangle (10,5)-(5,5)-(5,10) covers the cut-away quarter and the fan totals 87.5 m².
+_L_SHAPE = [
+    Vector3D(10, 5, 0),
+    Vector3D(5, 5, 0),
+    Vector3D(5, 10, 0),
+    Vector3D(0, 10, 0),
+    Vector3D(0, 0, 0),
+    Vector3D(10, 0, 0),
+]
+
+
+def _triangle_areas(vertices: list[Vector3D], offset: int = 0) -> list[float]:
+    i, j, k = _triangulate_polygon(vertices, offset)
+    return [
+        Polygon3D([vertices[a - offset], vertices[b - offset], vertices[c - offset]]).area
+        for a, b, c in zip(i, j, k, strict=True)
+    ]
+
+
+def _covers_exactly(vertices: list[Vector3D]) -> None:
+    """Assert the triangles tile the polygon: they sum to its area and none sticks out of it.
+
+    Summing areas alone would pass a fan that double-covers one region and misses another, so
+    each triangle's centroid is also checked to lie inside the polygon (projected to 2D).
+    """
+    from idfkit.geometry import _point_in_polygon_2d  # pyright: ignore[reportPrivateUsage]
+
+    i, j, k = _triangulate_polygon(vertices, 0)
+    assert sum(_triangle_areas(vertices)) == pytest.approx(Polygon3D(vertices).area)
+    normal = Polygon3D(vertices).normal
+    drop = max(range(3), key=lambda a: abs(normal.as_tuple()[a]))
+    keep = [a for a in range(3) if a != drop]
+    poly2d = [(v.as_tuple()[keep[0]], v.as_tuple()[keep[1]]) for v in vertices]
+    for a, b, c in zip(i, j, k, strict=True):
+        cen = (vertices[a] + vertices[b] + vertices[c]) / 3
+        assert _point_in_polygon_2d((cen.as_tuple()[keep[0]], cen.as_tuple()[keep[1]]), poly2d)
+
+
 class TestTriangulatePolygon:
     """Tests for _triangulate_polygon."""
 
     def test_triangle(self):
-        i, j, k = _triangulate_polygon(3, 0)
+        i, j, k = _triangulate_polygon(_TRIANGLE_POLY.vertices, 0)
         assert len(i) == 1
         assert (i[0], j[0], k[0]) == (0, 1, 2)
 
     def test_quad(self):
-        i, j, k = _triangulate_polygon(4, 0)
+        i, j, k = _triangulate_polygon(_QUAD_POLY.vertices, 0)
         assert len(i) == 2
         assert (i[0], j[0], k[0]) == (0, 1, 2)
         assert (i[1], j[1], k[1]) == (0, 2, 3)
 
     def test_pentagon(self):
-        i, _j, _k = _triangulate_polygon(5, 0)
+        i, _j, _k = _triangulate_polygon(_regular_polygon(5), 0)
         assert len(i) == 3
 
     def test_offset(self):
-        i, j, k = _triangulate_polygon(4, 10)
+        i, j, k = _triangulate_polygon(_QUAD_POLY.vertices, 10)
         assert i[0] == 10
         assert j[0] == 11
         assert k[0] == 12
         assert i[1] == 10
         assert j[1] == 12
         assert k[1] == 13
+
+    def test_l_shaped_floor_covers_exactly_its_area(self):
+        """The regression in #174: a fan from vertex 0 spills over the L's notch."""
+        i, _j, _k = _triangulate_polygon(_L_SHAPE, 0)
+        assert len(i) == 4
+        assert sum(_triangle_areas(_L_SHAPE)) == pytest.approx(75.0)
+        _covers_exactly(_L_SHAPE)
+
+    def test_l_shaped_floor_clockwise(self):
+        """A floor's vertices run clockwise seen from above (its normal points down)."""
+        _covers_exactly(list(reversed(_L_SHAPE)))
+
+    def test_l_shaped_floor_with_offset(self):
+        assert sum(_triangle_areas(_L_SHAPE, offset=7)) == pytest.approx(75.0)
+
+    @pytest.mark.parametrize("start", range(6))
+    def test_l_shape_every_starting_vertex(self, start: int):
+        _covers_exactly(_L_SHAPE[start:] + _L_SHAPE[:start])
+
+    def test_clockwise_floor_keeps_its_winding(self):
+        """Ear-clipped triangles face the same way as the polygon, as the convex fan's do."""
+        floor = list(reversed(_L_SHAPE))
+        normal = Polygon3D(floor).normal
+        i, j, k = _triangulate_polygon(floor, 0)
+        for a, b, c in zip(i, j, k, strict=True):
+            face = (floor[b] - floor[a]).cross(floor[c] - floor[a])
+            assert face.dot(normal) > 0
+
+    def test_keyhole_with_coincident_bridge_vertices(self):
+        """A courtyard floor drawn as a keyhole doubles its bridge vertices; they must not block ears."""
+        pts = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 5), (4, 5), (4, 6), (6, 6), (6, 4), (4, 4), (4, 5), (0, 5)]
+        keyhole = [Vector3D(x, y, 0) for x, y in pts]
+        assert sum(_triangle_areas(keyhole)) == pytest.approx(100 - 4)
+
+    def test_l_shaped_wall(self):
+        """A concave polygon in a vertical plane: the L in the XZ plane, lifted and slanted in y."""
+        wall = [Vector3D(v.x, 3.0, v.y) for v in _L_SHAPE]
+        _covers_exactly(wall)
+        wall_yz = [Vector3D(2.0, v.x, v.y) for v in _L_SHAPE]
+        _covers_exactly(wall_yz)
+
+    def test_u_shaped_roof(self):
+        u = [
+            Vector3D(0, 0, 3),
+            Vector3D(9, 0, 3),
+            Vector3D(9, 9, 3),
+            Vector3D(6, 9, 3),
+            Vector3D(6, 3, 3),
+            Vector3D(3, 3, 3),
+            Vector3D(3, 9, 3),
+            Vector3D(0, 9, 3),
+        ]
+        _covers_exactly(u)
+        assert sum(_triangle_areas(u)) == pytest.approx(81 - 18)
+
+    def test_concave_with_collinear_vertex(self):
+        """A vertex midway along an edge bounds no area and must not stall the clipper."""
+        verts = [*_L_SHAPE[:5], Vector3D(5, 0, 0), *_L_SHAPE[5:]]
+        _covers_exactly(verts)
+
+    def test_concave_with_duplicate_vertex(self):
+        verts = [*_L_SHAPE[:3], _L_SHAPE[2], *_L_SHAPE[3:]]
+        _covers_exactly(verts)
+
+    def test_all_collinear_does_not_crash(self):
+        verts = [Vector3D(0, 0, 0), Vector3D(1, 0, 0), Vector3D(2, 0, 0), Vector3D(3, 0, 0)]
+        i, j, k = _triangulate_polygon(verts, 0)
+        assert len(i) == len(j) == len(k)
+
+    def test_self_intersecting_falls_back_without_crash(self):
+        bowtie = [
+            Vector3D(0, 0, 0),
+            Vector3D(2, 2, 0),
+            Vector3D(2, 0, 0),
+            Vector3D(1, 3, 0),
+            Vector3D(0, 2, 0),
+        ]
+        i, _j, _k = _triangulate_polygon(bowtie, 0)
+        assert all(0 <= idx < len(bowtie) for idx in i)
+
+    def test_fewer_than_three_vertices(self):
+        assert _triangulate_polygon([Vector3D(0, 0, 0), Vector3D(1, 0, 0)], 0) == ([], [], [])
 
 
 class TestPolygonEdges:

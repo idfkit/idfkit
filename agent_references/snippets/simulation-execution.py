@@ -94,7 +94,7 @@ asyncio.run(main())
 
 
 # --8<-- [start:batch]
-from idfkit.simulation import simulate_batch, SimulationJob
+from idfkit.simulation import REFUSED_RUN_DIR, simulate_batch, SimulationJob
 
 jobs = []
 for wwr in (0.2, 0.3, 0.4, 0.5):
@@ -106,7 +106,10 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
 
 batch = simulate_batch(jobs, max_workers=4)
 for job, result in zip(jobs, batch):
-    print(job.label, result.errors.summary())
+    if result.run_dir == REFUSED_RUN_DIR:
+        print(job.label, "refused:", result.stderr)  # EnergyPlus never ran
+    else:
+        print(job.label, result.errors.summary())
 # --8<-- [end:batch]
 
 
