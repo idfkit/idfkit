@@ -1427,19 +1427,25 @@ def _cross_2d(a: tuple[float, float], b: tuple[float, float], c: tuple[float, fl
 
 def _blocks_ear(
     p: tuple[float, float],
+    neighbours: tuple[tuple[float, float], tuple[float, float]],
     a: tuple[float, float],
     b: tuple[float, float],
     c: tuple[float, float],
     eps: float,
 ) -> bool:
-    """Whether ``p`` stops counter-clockwise triangle ``abc`` from being clipped as an ear.
+    """Whether ring vertex ``p`` stops counter-clockwise triangle ``abc`` from being clipped as an ear.
 
-    A point inside or on the triangle blocks it, unless it coincides with one of its corners:
-    a keyhole polygon visits each bridge vertex twice, and the second visit lies on the ear.
+    A point inside or on the triangle blocks it. A point coinciding with one of its corners (a
+    keyhole polygon visits each bridge vertex twice, a pinched polygon its pinch vertex) blocks
+    it only when one of the ring edges at ``p``, towards its ``neighbours``, leaves that corner
+    into the triangle: the triangle then overlaps the part of the polygon around that other visit.
     """
-    if any((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 <= eps for q in (a, b, c)):
+    if _cross_2d(a, b, p) < -eps or _cross_2d(b, c, p) < -eps or _cross_2d(c, a, p) < -eps:
         return False
-    return _cross_2d(a, b, p) >= -eps and _cross_2d(b, c, p) >= -eps and _cross_2d(c, a, p) >= -eps
+    for q, u, v in ((a, b, c), (b, c, a), (c, a, b)):
+        if (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 <= eps:
+            return any(_cross_2d(q, u, n) > eps and _cross_2d(q, n, v) > eps for n in neighbours)
+    return True
 
 
 def triangulate_2d(poly: Sequence[tuple[float, float]]) -> list[tuple[int, int, int]]:
@@ -1455,12 +1461,12 @@ def triangulate_2d(poly: Sequence[tuple[float, float]]) -> list[tuple[int, int, 
       outlines are treated alike.
     - Vertices collinear with or coincident with their neighbours bound no area and are
       dropped rather than clipped.
-    - A vertex coinciding with a corner of a candidate ear does not block it, so a keyhole
-      polygon (a courtyard joined to its outer boundary by a doubled bridge edge) and a
-      polygon pinched at a vertex clip correctly.
+    - A vertex coinciding with a corner of a candidate ear blocks it only when one of its
+      own edges runs into the ear, so a keyhole polygon (a courtyard joined to its outer
+      boundary by a doubled bridge edge) and a polygon pinched at a vertex clip correctly.
     - If no valid ear exists (a self-intersecting polygon, or rounding that starves the
       strict test), the most convex candidate is clipped anyway, so every vertex is still
-      covered.
+      covered. Only a self-intersecting polygon can then yield triangles wound against it.
 
     Args:
         poly: Polygon vertices, without a repeated closing vertex.
@@ -1520,7 +1526,11 @@ def _is_ear(poly: Sequence[tuple[float, float]], idx: list[int], k: int, eps: fl
     a, b, c = poly[i0], poly[i1], poly[i2]
     if _cross_2d(a, b, c) <= eps:
         return False
-    return not any(o not in (i0, i1, i2) and _blocks_ear(poly[o], a, b, c, eps) for o in idx)
+    m = len(idx)
+    return not any(
+        o not in (i0, i1, i2) and _blocks_ear(poly[o], (poly[idx[j - 1]], poly[idx[(j + 1) % m]]), a, b, c, eps)
+        for j, o in enumerate(idx)
+    )
 
 
 def _next_ear_clip_step(poly: Sequence[tuple[float, float]], idx: list[int], eps: float) -> tuple[int, bool]:

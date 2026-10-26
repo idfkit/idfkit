@@ -1475,6 +1475,8 @@ _U_2D: _Poly2D = [(0, 0), (9, 0), (9, 9), (6, 9), (6, 3), (3, 3), (3, 9), (0, 9)
 _KEYHOLE_2D: _Poly2D = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)]
 #: Two triangles touching at a single doubled vertex (area 8).
 _PINCHED_2D: _Poly2D = [(0, 0), (4, 0), (2, 2), (4, 4), (0, 4), (2, 2)]
+#: Two triangles pinched at the origin on the same side of it, so the ring turns convexly across their gap (area 12.5).
+_PINCHED_SAME_SIDE_2D: _Poly2D = [(0, 0), (-4, 1), (-3, -3), (0, 0), (-1, -2), (4, -2)]
 
 
 def _assert_tiles(poly: _Poly2D, expected_area: float) -> None:
@@ -1496,8 +1498,8 @@ def _assert_tiles(poly: _Poly2D, expected_area: float) -> None:
 class TestTriangulate2D:
     @pytest.mark.parametrize(
         ("poly", "area"),
-        [(_L_2D, 75.0), (_U_2D, 63.0), (_KEYHOLE_2D, 96.0), (_PINCHED_2D, 8.0)],
-        ids=["L", "U", "keyhole", "pinched"],
+        [(_L_2D, 75.0), (_U_2D, 63.0), (_KEYHOLE_2D, 96.0), (_PINCHED_2D, 8.0), (_PINCHED_SAME_SIDE_2D, 12.5)],
+        ids=["L", "U", "keyhole", "pinched", "pinched-same-side"],
     )
     @pytest.mark.parametrize("reverse", [False, True], ids=["ccw", "cw"])
     def test_tiles_from_every_start_vertex(self, poly: _Poly2D, area: float, reverse: bool) -> None:
