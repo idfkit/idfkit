@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import logging
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import TYPE_CHECKING, Any, cast
 
 logger = logging.getLogger(__name__)
@@ -1469,58 +1470,424 @@ def polygon_intersection_2d(
     return result
 
 
+class _PointSnapper:
+    """Merge 2-D points closer than *tol* into a single shared index."""
+
+    def __init__(self, tol: float) -> None:
+        self.tol = tol
+        self.points: list[tuple[float, float]] = []
+        self._grid: dict[tuple[int, int], list[int]] = {}
+
+    def snap(self, p: tuple[float, float]) -> int:
+        """Return the index of the stored point within *tol* of *p*, adding *p* if there is none."""
+        gx = math.floor(p[0] / self.tol)
+        gy = math.floor(p[1] / self.tol)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for idx in self._grid.get((gx + dx, gy + dy), ()):
+                    q = self.points[idx]
+                    if math.hypot(p[0] - q[0], p[1] - q[1]) <= self.tol:
+                        return idx
+        idx = len(self.points)
+        self.points.append(p)
+        self._grid.setdefault((gx, gy), []).append(idx)
+        return idx
+
+
+def _split_params(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    segments: Sequence[tuple[tuple[float, float], tuple[float, float]]],
+    tol: float,
+) -> list[float]:
+    """Parameters along segment *ab* where any of *segments* crosses or touches it."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length_sq = dx * dx + dy * dy
+    length = math.sqrt(length_sq)
+    t_eps = tol / length
+    params = [0.0, 1.0]
+    for c, d in segments:
+        # Endpoints of the other segment lying on this one (touches and collinear overlaps).
+        for e in (c, d):
+            t = ((e[0] - a[0]) * dx + (e[1] - a[1]) * dy) / length_sq
+            if -t_eps <= t <= 1 + t_eps and math.hypot(e[0] - a[0] - t * dx, e[1] - a[1] - t * dy) <= tol:
+                params.append(min(max(t, 0.0), 1.0))
+        # Proper crossings.
+        ex, ey = d[0] - c[0], d[1] - c[1]
+        denom = dx * ey - dy * ex
+        other_len = math.hypot(ex, ey)
+        if other_len <= tol or abs(denom) <= 1e-12 * length * other_len:
+            continue
+        t = ((c[0] - a[0]) * ey - (c[1] - a[1]) * ex) / denom
+        u = ((c[0] - a[0]) * dy - (c[1] - a[1]) * dx) / denom
+        u_eps = tol / other_len
+        if -t_eps <= t <= 1 + t_eps and -u_eps <= u <= 1 + u_eps:
+            params.append(min(max(t, 0.0), 1.0))
+    return sorted(params)
+
+
+def _split_segments(
+    segments: Sequence[tuple[tuple[float, float], tuple[float, float]]],
+    snapper: _PointSnapper,
+) -> set[tuple[int, int]]:
+    """Split every segment wherever another segment crosses or touches it.
+
+    Returns the undirected fragments as ``(i, j)`` index pairs with
+    ``i < j``.  Collinear overlaps collapse to a single fragment.
+    """
+    tol = snapper.tol
+    fragments: set[tuple[int, int]] = set()
+    for a, b in segments:
+        if math.hypot(b[0] - a[0], b[1] - a[1]) <= tol:
+            continue
+        ids: list[int] = []
+        for t in _split_params(a, b, segments, tol):
+            if t == 0.0:
+                p = a
+            elif t == 1.0:
+                p = b
+            else:
+                p = (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]))
+            idx = snapper.snap(p)
+            if not ids or ids[-1] != idx:
+                ids.append(idx)
+        for i, j in pairwise(ids):
+            fragments.add((i, j) if i < j else (j, i))
+    return fragments
+
+
+def _point_segment_distance(
+    p: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+) -> float:
+    """Distance from *p* to the segment *ab*."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length_sq = dx * dx + dy * dy
+    t = 0.0 if length_sq == 0 else min(max(((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length_sq, 0.0), 1.0)
+    return math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)
+
+
+def _probe_offsets(
+    fragments: Sequence[tuple[int, int]],
+    points: Sequence[tuple[float, float]],
+    probe: float,
+) -> list[float]:
+    """Side-probe distance for each fragment, kept below half the clearance to every other fragment.
+
+    A probe that reaches past a neighbouring edge samples the wrong face, so
+    a feature thinner than *probe* (but wider than the snapping tolerance)
+    would otherwise be misclassified and dropped.
+    """
+    offsets: list[float] = []
+    for i, j in fragments:
+        p, q = points[i], points[j]
+        length = math.hypot(q[0] - p[0], q[1] - p[1])
+        h = min(probe, 0.1 * length)
+        mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+        for k, m in fragments:
+            if (k, m) == (i, j):
+                continue
+            d = _point_segment_distance(mid, points[k], points[m])
+            if 0 < d < 2 * h:
+                h = d / 2
+        offsets.append(h)
+    return offsets
+
+
+def _boundary_edges(
+    fragments: Sequence[tuple[int, int]],
+    offsets: Sequence[float],
+    points: Sequence[tuple[float, float]],
+    inside: Callable[[tuple[float, float]], bool],
+) -> list[tuple[int, int]]:
+    """Orient each fragment with *inside* on its left, dropping fragments with *inside* on both sides or neither."""
+    edges: list[tuple[int, int]] = []
+    for (i, j), h in zip(fragments, offsets, strict=True):
+        p, q = points[i], points[j]
+        dx, dy = q[0] - p[0], q[1] - p[1]
+        length = math.hypot(dx, dy)
+        mx, my = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
+        nx, ny = -dy / length * h, dx / length * h
+        left = inside((mx + nx, my + ny))
+        right = inside((mx - nx, my - ny))
+        if left and not right:
+            edges.append((i, j))
+        elif right and not left:
+            edges.append((j, i))
+    return edges
+
+
+def _trace_rings(
+    edges: Sequence[tuple[int, int]],
+    points: Sequence[tuple[float, float]],
+) -> list[list[int]]:
+    """Link directed boundary edges into closed rings.
+
+    At a vertex with several unused outgoing edges the sharpest left turn
+    is taken, and any ring that still revisits a vertex is split there, so
+    every returned ring is simple (no repeated vertices).
+    """
+    outgoing: dict[int, list[int]] = {}
+    for k, (s, _) in enumerate(edges):
+        outgoing.setdefault(s, []).append(k)
+    used = [False] * len(edges)
+    rings: list[list[int]] = []
+    for first in range(len(edges)):
+        if used[first]:
+            continue
+        ring: list[int] = []
+        closed = False
+        k = first
+        while True:
+            used[k] = True
+            s, t = edges[k]
+            ring.append(s)
+            if t == edges[first][0]:
+                closed = True
+                break
+            candidates = [c for c in outgoing.get(t, []) if not used[c]]
+            if not candidates:
+                break
+            dx, dy = points[t][0] - points[s][0], points[t][1] - points[s][1]
+
+            def _turn(c: int, dx: float = dx, dy: float = dy, t: int = t) -> float:
+                nx = points[edges[c][1]][0] - points[t][0]
+                ny = points[edges[c][1]][1] - points[t][1]
+                return math.atan2(dx * ny - dy * nx, dx * nx + dy * ny)
+
+            k = max(candidates, key=_turn)
+        if not closed:
+            # A dangling chain is not a boundary; closing it implicitly would invent an edge.
+            logger.warning("polygon difference: dropped an unclosed boundary chain of %d vertices", len(ring))
+            continue
+        rings.extend(_split_ring_at_repeats(ring))
+    return rings
+
+
+def _split_ring_at_repeats(ring: Sequence[int]) -> list[list[int]]:
+    """Split a ring that touches itself into simple sub-rings."""
+    result: list[list[int]] = []
+    path: list[int] = []
+    position: dict[int, int] = {}
+    for v in ring:
+        if v in position:
+            k = position[v]
+            result.append(path[k:])
+            for w in path[k + 1 :]:
+                del position[w]
+            del path[k + 1 :]
+        else:
+            position[v] = len(path)
+            path.append(v)
+    result.append(path)
+    return [r for r in result if len(r) >= 3]
+
+
+def _drop_collinear(
+    ring: list[int],
+    points: Sequence[tuple[float, float]],
+    keep: set[int],
+    tol: float,
+) -> list[int]:
+    """Remove straight-through vertices introduced by edge splitting (inputs' own vertices are kept)."""
+    changed = True
+    while changed and len(ring) > 3:
+        changed = False
+        for k in range(len(ring)):
+            v = ring[k]
+            if v in keep:
+                continue
+            p, q, r = points[ring[k - 1]], points[v], points[ring[(k + 1) % len(ring)]]
+            ax, ay = q[0] - p[0], q[1] - p[1]
+            bx, by = r[0] - q[0], r[1] - q[1]
+            base = math.hypot(r[0] - p[0], r[1] - p[1])
+            if base > 0 and abs(ax * by - ay * bx) <= tol * base and ax * bx + ay * by > 0:
+                del ring[k]
+                changed = True
+                break
+    return ring
+
+
+def _difference_rings(
+    outer: Sequence[tuple[float, float]],
+    inners: Sequence[Sequence[tuple[float, float]]],
+    cuts: Sequence[float] = (),
+) -> list[Polygon2D]:
+    """Boundary rings of *outer* minus *inners*, optionally sliced by vertical lines.
+
+    Builds the planar overlay of every input edge (plus a vertical line at
+    each x in *cuts*), keeps each edge fragment that has the result region
+    on exactly one side, and traces the kept fragments into rings.  Outer
+    boundaries come back counter-clockwise and holes clockwise; no ring
+    repeats a vertex.  With *cuts*, each vertical strip between cut lines
+    is traced separately, so a ring never crosses a cut.
+    """
+    if len(outer) < 3:
+        return []
+    outer_ring = list(outer)
+    inner_rings = [list(r) for r in inners if len(r) >= 3]
+    rings_in = [outer_ring, *inner_rings]
+    ys = [p[1] for r in rings_in for p in r]
+    # Tolerances follow the outer polygon's size: a large or far-away inner
+    # must not inflate them and swallow the outer's own features.
+    scale = max(
+        max(p[0] for p in outer_ring) - min(p[0] for p in outer_ring),
+        max(p[1] for p in outer_ring) - min(p[1] for p in outer_ring),
+    )
+    if scale <= 0:
+        return []
+    tol = 1e-9 * scale
+    probe = 1e-7 * scale
+
+    segments: list[tuple[tuple[float, float], tuple[float, float]]] = []
+    for r in rings_in:
+        segments.extend((r[i], r[(i + 1) % len(r)]) for i in range(len(r)))
+    pad = scale
+    segments.extend(((c, min(ys) - pad), (c, max(ys) + pad)) for c in cuts)
+
+    snapper = _PointSnapper(tol)
+    # Register the input vertices first so they keep their exact coordinates.
+    keep = {snapper.snap(p) for r in rings_in for p in r}
+    fragments = sorted(_split_segments(segments, snapper))
+    points = snapper.points
+    offsets = _probe_offsets(fragments, points, probe)
+    order = {p: k for k, p in reversed(list(enumerate(outer_ring)))}
+
+    def in_difference(p: tuple[float, float]) -> bool:
+        return _point_in_polygon_2d(p, outer_ring) and not any(_point_in_polygon_2d(p, r) for r in inner_rings)
+
+    bounds = [-math.inf, *sorted(set(cuts)), math.inf]
+    rings: list[Polygon2D] = []
+    for lo, hi in pairwise(bounds):
+
+        def in_strip(p: tuple[float, float], lo: float = lo, hi: float = hi) -> bool:
+            return lo < p[0] < hi and in_difference(p)
+
+        edges = _boundary_edges(fragments, offsets, points, in_strip)
+        for ring in _trace_rings(edges, points):
+            ring = _drop_collinear(ring, points, keep, tol)
+            poly = [points[v] for v in ring]
+            if len(poly) >= 3 and abs(polygon_area_2d(poly)) > tol * scale:
+                rings.append(_rotate_to_first_input_vertex(poly, order))
+    return rings
+
+
+def _rotate_to_first_input_vertex(
+    poly: Polygon2D,
+    order: dict[tuple[float, float], int],
+) -> Polygon2D:
+    """Rotate *poly* so it starts at the reference vertex with the lowest index in *order*."""
+    starts = [(order[p], k) for k, p in enumerate(poly) if p in order]
+    if not starts:
+        return poly
+    k = min(starts)[1]
+    return poly[k:] + poly[:k]
+
+
 def polygon_difference_2d(
     outer: Sequence[tuple[float, float]],
     inner: Sequence[tuple[float, float]],
 ) -> Polygon2D | None:
-    """Subtract *inner* from *outer* using a bridge/slit polygon.
+    """Subtract *inner* from *outer*, returning one clean simple polygon.
 
-    The *inner* polygon must be fully contained within *outer*.  Both
-    must be counter-clockwise.  Returns a single simple (non-convex)
-    polygon representing the frame region, or ``None`` if the inner
-    polygon covers the entire outer polygon.
+    *inner* may lie anywhere: inside *outer*, across its edge, flush with a
+    corner, or partly outside it.  Either winding is accepted for both
+    inputs.  The result is counter-clockwise, simple, and has no
+    duplicate, coincident, or zero-width-slit vertices, so it can be passed
+    straight to [create_block][idfkit.zoning.create_block] or used as a
+    surface outline.  It starts at the first vertex of *outer* that
+    survives, and the vertices of *outer* and *inner* on its boundary are
+    kept even when collinear.
 
-    The approach is the same slit technique used by
-    :func:`~idfkit.zoning.footprint_courtyard`.
+    A single ring cannot describe every difference.  When *inner* sits
+    strictly inside *outer* the result has a hole, and when *inner* cuts
+    *outer* in two the result is several polygons.  EnergyPlus surfaces
+    cannot have holes, and the old "bridge/slit" ring (two coincident edges
+    joining the hole to the boundary) produces degenerate surfaces, so this
+    function raises instead.  Use
+    [polygon_difference_parts_2d][idfkit.geometry.polygon_difference_parts_2d]
+    for those cases: it returns hole-free pieces that together cover the
+    difference.
+
+    Args:
+        outer: Polygon to subtract from.
+        inner: Polygon to subtract.
+
+    Returns:
+        The difference polygon (counter-clockwise), or ``None`` when *inner*
+        covers *outer* entirely.
+
+    Raises:
+        ValueError: If the difference has a hole or more than one piece.
+
+    Examples:
+        >>> polygon_difference_2d([(0, 0), (10, 0), (10, 10), (0, 10)], [(5, 5), (10, 5), (10, 10), (5, 10)])
+        [(0, 0), (10, 0), (10, 5), (5, 5), (5, 10), (0, 10)]
     """
-    outer_list = list(outer)
-    inner_list = list(inner)
-
-    outer_area = abs(polygon_area_2d(outer_list))
-    inner_area = abs(polygon_area_2d(inner_list))
-    if abs(outer_area - inner_area) < 1e-6:
+    rings = _difference_rings(outer, [inner])
+    if not rings:
         return None
+    holes = sum(1 for r in rings if polygon_area_2d(r) < 0)
+    if len(rings) == 1 and not holes:
+        return rings[0]
+    if holes:
+        detail = f"has {holes} hole(s); inner lies inside outer, touching its boundary at most at isolated points"
+    else:
+        detail = f"splits into {len(rings)} separate polygons"
+    msg = (
+        f"polygon_difference_2d: the difference {detail}, which one simple polygon cannot represent. "
+        "Use polygon_difference_parts_2d() to get hole-free pieces."
+    )
+    raise ValueError(msg)
 
-    # Find closest vertex pair for the slit
-    best_dist = float("inf")
-    best_oi = 0
-    best_ii = 0
-    for oi, op in enumerate(outer_list):
-        for ii, ip in enumerate(inner_list):
-            d = math.hypot(op[0] - ip[0], op[1] - ip[1])
-            if d < best_dist:
-                best_dist = d
-                best_oi = oi
-                best_ii = ii
 
-    n_outer = len(outer_list)
-    n_inner = len(inner_list)
+def polygon_difference_parts_2d(
+    outer: Sequence[tuple[float, float]],
+    *inners: Sequence[tuple[float, float]],
+) -> list[Polygon2D]:
+    """Subtract one or more polygons from *outer*, returning hole-free pieces.
 
-    # Build bridge polygon:
-    # Walk outer CCW from best_oi+1 back to best_oi,
-    # slit to inner at best_ii,
-    # walk inner CW (reversed) from best_ii back to best_ii+1,
-    # slit back to outer.
-    result: Polygon2D = []
-    for k in range(n_outer):
-        result.append(outer_list[(best_oi + 1 + k) % n_outer])
-    # Slit entry: last point is outer[best_oi], now add inner[best_ii]
-    for k in range(n_inner):
-        result.append(inner_list[(best_ii - k) % n_inner])
-    # Slit exit: last point is inner[best_ii+1 in CW = best_ii-n_inner+1]
-    # Close back to outer[best_oi+1] via the implicit polygon close
+    The pieces are simple, counter-clockwise, free of duplicate or
+    coincident vertices, and do not overlap; together they cover exactly
+    ``outer - inner_1 - inner_2 - ...``.  Every piece is valid as an
+    EnergyPlus surface outline or a [create_block][idfkit.zoning.create_block]
+    footprint.
 
-    return result
+    A result that would have a hole (an *inner* strictly inside *outer*)
+    is cut by a vertical line through each hole, giving notched pieces
+    whose shared cut edges line up.  A result that is already hole-free
+    is returned as is: one piece for an edge or corner cut-out, several
+    when the *inners* split *outer* apart.
+
+    Args:
+        outer: Polygon to subtract from.
+        *inners: Polygons to subtract.  They may overlap each other, touch,
+            or extend past *outer*.
+
+    Returns:
+        The pieces, largest first.  Empty when nothing remains.
+
+    Examples:
+        A 1 m border left by a centred 8 x 8 cut-out comes back as two
+        U-shaped halves:
+
+        >>> parts = polygon_difference_parts_2d(
+        ...     [(0, 0), (10, 0), (10, 10), (0, 10)],
+        ...     [(1, 1), (9, 1), (9, 9), (1, 9)],
+        ... )
+        >>> len(parts), round(sum(polygon_area_2d(p) for p in parts), 6)
+        (2, 36.0)
+    """
+    rings = _difference_rings(outer, inners)
+    holes = [r for r in rings if polygon_area_2d(r) < 0]
+    if holes:
+        cuts = [(min(p[0] for p in h) + max(p[0] for p in h)) / 2 for h in holes]
+        rings = _difference_rings(outer, inners, cuts)
+        if any(polygon_area_2d(r) < 0 for r in rings):  # pragma: no cover - every hole is crossed by its own cut
+            msg = "polygon_difference_parts_2d: failed to cut the difference into hole-free pieces"
+            raise RuntimeError(msg)
+    return sorted(rings, key=polygon_area_2d, reverse=True)
 
 
 def polygon_contains_2d(

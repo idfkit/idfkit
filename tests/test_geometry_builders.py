@@ -14,6 +14,7 @@ from idfkit.geometry_builders import (
     scale_building,
     set_default_constructions,
     split_horizontal_surface,
+    split_horizontal_surface_by_regions,
 )
 from idfkit.zoning import ZonedBlock, create_block, footprint_rectangle
 
@@ -406,6 +407,60 @@ class TestSplitHorizontalSurface:
         new_srf, remaining = split_horizontal_surface(doc, roof, region)
         assert new_srf is not None
         assert remaining is not None
+
+    def test_interior_region_conserves_area(self) -> None:
+        """Issue #164: an interior region used to leave a wrong-area slit roof."""
+        from idfkit.geometry import calculate_surface_area
+
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(105, 60), 3.5, num_stories=1)
+        roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
+        assert roof is not None
+        region = footprint_rectangle(40, 25, origin=(35, 20))
+        new_srf, remaining = split_horizontal_surface(doc, roof, region)
+        assert remaining is roof
+        extra = doc.getobject("BuildingSurface:Detailed", "B Roof Remainder")
+        assert extra is not None
+        assert extra.zone_name == roof.zone_name
+        assert extra.construction_name == roof.construction_name
+        assert extra.outside_boundary_condition == "Outdoors"
+        assert calculate_surface_area(new_srf) == pytest.approx(1000.0)
+        assert calculate_surface_area(roof) + calculate_surface_area(extra) == pytest.approx(5300.0)
+        for srf in (roof, extra):
+            coords = get_surface_coords(srf)
+            assert coords is not None
+            pts = [(v.x, v.y) for v in coords.vertices]
+            assert len(set(pts)) == len(pts)
+            # Roof winding is preserved: outward normal points up.
+            assert coords.normal.z > 0
+
+    def test_by_regions_adjacent_regions(self) -> None:
+        """Adjacent interior regions are subtracted together, so the frame is cut once."""
+        from idfkit.geometry import calculate_surface_area
+
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(30, 20), 3.5, num_stories=1)
+        roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
+        assert roof is not None
+        left = footprint_rectangle(5, 10, origin=(10, 5))
+        right = footprint_rectangle(5, 10, origin=(15, 5))
+        ceilings, remaining = split_horizontal_surface_by_regions(doc, roof, [left, right])
+        assert [c.name for c in ceilings] == ["B Roof Split", "B Roof Split 2"]
+        assert remaining[0] is roof
+        assert len(remaining) == 2
+        assert sum(calculate_surface_area(s) for s in ceilings) == pytest.approx(100.0)
+        assert sum(calculate_surface_area(s) for s in remaining) == pytest.approx(500.0)
+
+    def test_by_regions_full_cover(self) -> None:
+        doc = new_document()
+        create_block(doc, "B", footprint_rectangle(10, 10), 3.5, num_stories=1)
+        roof = doc.getobject("BuildingSurface:Detailed", "B Roof")
+        assert roof is not None
+        ceilings, remaining = split_horizontal_surface_by_regions(
+            doc, roof, [footprint_rectangle(5, 10), footprint_rectangle(5, 10, origin=(5, 0))]
+        )
+        assert len(ceilings) == 2
+        assert remaining == []
 
 
 # ---------------------------------------------------------------------------

@@ -50,11 +50,12 @@ from typing import TYPE_CHECKING, overload
 from .geometry import Polygon3D, Vector3D, set_surface_coords
 from .geometry_builders import (
     WALL_ORDER,
+    HorizontalAdjacency,
     detect_horizontal_adjacencies,
     get_geometry_convention,
     horizontal_poly,
     link_horizontal_surfaces,
-    split_horizontal_surface,
+    split_horizontal_surface_by_regions,
 )
 
 if TYPE_CHECKING:
@@ -1094,7 +1095,7 @@ def link_blocks(
       blocks (surfaces whose zone name starts with the given prefix).
 
     Uses the lower-level :func:`~idfkit.geometry_builders.detect_horizontal_adjacencies`,
-    :func:`~idfkit.geometry_builders.split_horizontal_surface`, and
+    :func:`~idfkit.geometry_builders.split_horizontal_surface_by_regions`, and
     :func:`~idfkit.geometry_builders.link_horizontal_surfaces` functions.
 
     Args:
@@ -1136,20 +1137,23 @@ def link_blocks(
     if not adjacencies:
         return []
 
-    modified: list[IDFObject] = []
-
+    # Group the adjacencies by roof surface so each roof is split under all
+    # of its overlapping floors in one step.  Splitting one region at a time
+    # would cut the remainder around the first region before the others are
+    # known, and a later region could then straddle two remainder pieces.
+    by_roof: dict[int, list[HorizontalAdjacency]] = {}
     for adj in adjacencies:
-        # Split the roof surface: new ceiling for the overlap, remaining roof.
-        # When a single roof overlaps multiple floor surfaces, successive
-        # splits progressively shrink the original roof geometry — each
-        # iteration operates on the (already-reduced) remaining area.
-        new_ceiling, remaining_roof = split_horizontal_surface(doc, adj.roof_surface, adj.intersection)
+        by_roof.setdefault(id(adj.roof_surface), []).append(adj)
 
-        # Link the new ceiling to the floor surface
-        link_horizontal_surfaces(new_ceiling, adj.floor_surface)
-        modified.append(new_ceiling)
-        modified.append(adj.floor_surface)
-        if remaining_roof is not None:
-            modified.append(remaining_roof)
+    modified: list[IDFObject] = []
+    for group in by_roof.values():
+        roof = group[0].roof_surface
+        ceilings, remaining = split_horizontal_surface_by_regions(doc, roof, [adj.intersection for adj in group])
+        for new_ceiling, adj in zip(ceilings, group, strict=True):
+            # Link the new ceiling to the floor surface
+            link_horizontal_surfaces(new_ceiling, adj.floor_surface)
+            modified.append(new_ceiling)
+            modified.append(adj.floor_surface)
+        modified.extend(remaining)
 
     return modified

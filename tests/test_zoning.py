@@ -954,6 +954,38 @@ class TestLinkBlocks:
                     total_area += calculate_surface_area(s)
         assert _close(total_area, original_roof_area, tol=1.0)
 
+    def test_centred_tower_area_conservation(self) -> None:
+        """Issue #164: a tower centred on its podium leaves a frame-shaped exposed roof."""
+        doc = new_document()
+        create_block(doc, "Base", footprint_rectangle(105, 60), 3.5, num_stories=1)
+        create_block(
+            doc,
+            "Tower",
+            footprint_rectangle(40, 25, origin=(35, 20)),
+            3.5,
+            num_stories=1,
+            base_elevation=3.5,
+            zoning=ZoningScheme.CORE_PERIMETER,
+        )
+        link_blocks(doc)
+        exposed = 0.0
+        ceilings = 0.0
+        for s in doc["BuildingSurface:Detailed"]:
+            st = (getattr(s, "surface_type", "") or "").upper()
+            coords = get_surface_coords(s)
+            if st not in ("ROOF", "CEILING") or coords is None or not _close(coords.vertices[0].z, 3.5):
+                continue
+            pts = [(v.x, v.y) for v in coords.vertices]
+            assert len(set(pts)) == len(pts)
+            if st == "ROOF":
+                assert s.outside_boundary_condition == "Outdoors"
+                exposed += calculate_surface_area(s)
+            elif st == "CEILING":
+                assert s.outside_boundary_condition == "Surface"
+                ceilings += calculate_surface_area(s)
+        assert _close(ceilings, 1000.0, tol=1e-6)
+        assert _close(exposed, 5300.0, tol=1e-6)
+
     def test_no_overlap_no_changes(self) -> None:
         doc = new_document()
         create_block(doc, "A", footprint_rectangle(10, 10), 3, num_stories=2)
