@@ -43,18 +43,20 @@ from __future__ import annotations
 
 import enum
 import math
+import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
-from .geometry import Polygon3D, Vector3D, set_surface_coords
+from .geometry import Polygon3D, Vector3D, polygon_difference_parts_2d, set_surface_coords
 from .geometry_builders import (
     WALL_ORDER,
+    HorizontalAdjacency,
     detect_horizontal_adjacencies,
     get_geometry_convention,
     horizontal_poly,
     link_horizontal_surfaces,
-    split_horizontal_surface,
+    split_horizontal_surface_by_regions,
 )
 
 if TYPE_CHECKING:
@@ -308,10 +310,21 @@ def footprint_courtyard(
 ) -> list[tuple[float, float]]:
     """Return a courtyard (donut) footprint as a single slit polygon.
 
+    !!! warning "Deprecated"
+        Use [footprint_courtyard_parts][idfkit.zoning.footprint_courtyard_parts]
+        for hole-free pieces, or
+        [create_courtyard_block][idfkit.zoning.create_courtyard_block] to build
+        the block directly.  This function emits a ``DeprecationWarning`` and
+        will be removed in a future release.
+
     The polygon traces the outer boundary counter-clockwise, steps into
-    the inner courtyard through a slit at the bottom-right corner, traces
-    the courtyard clockwise, and returns.  This is a valid simple polygon
-    that EnergyPlus can handle.
+    the courtyard through a zero-width slit from the left edge, traces the
+    courtyard clockwise, and returns along the slit.  The area is right,
+    but the slit vertex appears twice and the slit is traversed in both
+    directions, so [create_block][idfkit.zoning.create_block] turns it into
+    two overlapping, opposite-facing exterior walls and a self-touching
+    floor and roof, which EnergyPlus rejects.  EnergyPlus surfaces cannot
+    have holes, so a courtyard has to be split into several simple pieces.
 
         ```text
         ┌──────────────────┐
@@ -328,18 +341,15 @@ def footprint_courtyard(
         inner_depth: Courtyard depth (Y), must be < *outer_depth*.
         origin: ``(x, y)`` of the lower-left corner.
     """
-    if inner_width >= outer_width:
-        msg = f"inner_width ({inner_width}) must be < outer_width ({outer_width})"
-        raise ValueError(msg)
-    if inner_depth >= outer_depth:
-        msg = f"inner_depth ({inner_depth}) must be < outer_depth ({outer_depth})"
-        raise ValueError(msg)
+    warnings.warn(
+        "footprint_courtyard() returns a slit polygon that create_block() turns into overlapping walls; "
+        "use idfkit.zoning.footprint_courtyard_parts() or idfkit.zoning.create_courtyard_block() instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
     x, y = origin
-    margin_x = (outer_width - inner_width) / 2
-    margin_y = (outer_depth - inner_depth) / 2
-    # Outer CCW
-    ix0 = x + margin_x
-    iy0 = y + margin_y
+    ix0, iy0 = _courtyard_inner_origin(outer_width, outer_depth, inner_width, inner_depth, origin)
     ix1 = ix0 + inner_width
     iy1 = iy0 + inner_depth
     return [
@@ -349,15 +359,92 @@ def footprint_courtyard(
         (x + outer_width, y + outer_depth),
         (x, y + outer_depth),
         # Slit down to inner (from outer top-left back down to inner)
-        (x, y + margin_y),  # slit entry
+        (x, iy0),  # slit entry
         # Inner rectangle (CW to cut a hole)
         (ix0, iy0),
         (ix0, iy1),
         (ix1, iy1),
         (ix1, iy0),
         # Slit back out
-        (x, y + margin_y),  # slit exit (same point, degenerate edge)
+        (x, iy0),  # slit exit (same point, degenerate edge)
     ]
+
+
+def footprint_courtyard_parts(
+    outer_width: float,
+    outer_depth: float,
+    inner_width: float,
+    inner_depth: float,
+    origin: tuple[float, float] = (0.0, 0.0),
+) -> list[list[tuple[float, float]]]:
+    """Return a centred-courtyard footprint as hole-free pieces.
+
+    EnergyPlus surfaces cannot have holes, so the ring around the
+    courtyard is cut by a vertical line through the courtyard's centre
+    into two U-shaped halves.  The pieces are simple, counter-clockwise,
+    free of repeated or coincident vertices, and do not overlap; their
+    areas add up to ``outer_width * outer_depth - inner_width * inner_depth``.
+    The two cut edges are shared exactly, so passing the pieces as
+    ``CUSTOM`` zones of one block (which
+    [create_courtyard_block][idfkit.zoning.create_courtyard_block] does)
+    makes them interior walls.
+
+        ```text
+        ┌─────────┬─────────┐
+        │  ┌──────┴──────┐  │
+        │  │  courtyard  │  │
+        │  └──────┬──────┘  │
+        └─────────┴─────────┘
+        ```
+
+    Args:
+        outer_width: Outer bounding box width (X).
+        outer_depth: Outer bounding box depth (Y).
+        inner_width: Courtyard width (X), must be < *outer_width*.
+        inner_depth: Courtyard depth (Y), must be < *outer_depth*.
+        origin: ``(x, y)`` of the lower-left corner.
+
+    Returns:
+        The pieces, largest first.
+
+    Examples:
+        >>> from idfkit.geometry import polygon_area_2d
+        >>> parts = footprint_courtyard_parts(50, 40, 20, 10)
+        >>> parts[0]
+        [(0.0, 0.0), (25.0, 0.0), (25.0, 15.0), (15.0, 15.0), (15.0, 25.0), (25.0, 25.0), (25.0, 40.0), (0.0, 40.0)]
+        >>> sum(polygon_area_2d(p) for p in parts)
+        1800.0
+    """
+    for label, value in (("inner_width", inner_width), ("inner_depth", inner_depth)):
+        if value <= 0:
+            msg = f"{label} ({value}) must be > 0"
+            raise ValueError(msg)
+    _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
+    outer = footprint_rectangle(outer_width, outer_depth, origin)
+    inner_origin = _courtyard_inner_origin(outer_width, outer_depth, inner_width, inner_depth, origin)
+    inner = footprint_rectangle(inner_width, inner_depth, inner_origin)
+    return [[(float(px), float(py)) for px, py in part] for part in polygon_difference_parts_2d(outer, inner)]
+
+
+def _courtyard_inner_origin(
+    outer_width: float,
+    outer_depth: float,
+    inner_width: float,
+    inner_depth: float,
+    origin: tuple[float, float],
+) -> tuple[float, float]:
+    """Lower-left corner of a courtyard centred in the outer rectangle."""
+    x, y = origin
+    return (x + (outer_width - inner_width) / 2, y + (outer_depth - inner_depth) / 2)
+
+
+def _check_courtyard_dims(outer_width: float, outer_depth: float, inner_width: float, inner_depth: float) -> None:
+    if inner_width >= outer_width:
+        msg = f"inner_width ({inner_width}) must be < outer_width ({outer_width})"
+        raise ValueError(msg)
+    if inner_depth >= outer_depth:
+        msg = f"inner_depth ({inner_depth}) must be < outer_depth ({outer_depth})"
+        raise ValueError(msg)
 
 
 # ---------------------------------------------------------------------------
@@ -1063,6 +1150,102 @@ def create_block(
     return block.build(doc)
 
 
+def create_courtyard_block(
+    doc: IDFDocument,
+    name: str,
+    outer: Sequence[tuple[float, float]],
+    courtyards: Sequence[Sequence[tuple[float, float]]],
+    floor_to_floor: float,
+    num_stories: int = 1,
+    *,
+    air_boundary: bool = False,
+    base_elevation: float = 0.0,
+) -> list[IDFObject]:
+    """Create a block with one or more courtyards cut out of its footprint.
+
+    EnergyPlus surfaces cannot have holes, so the footprint ``outer`` minus
+    ``courtyards`` is split into hole-free pieces with
+    [polygon_difference_parts_2d][idfkit.geometry.polygon_difference_parts_2d]
+    and each piece becomes one zone per story, named
+    ``"<name> Part <k>"`` (``"<name> Story <n> Part <k>"`` for several
+    stories), largest piece first.  The pieces are built as ``CUSTOM``
+    zones of a single block, so the walls along the cuts between pieces
+    are interior walls (``Surface`` boundary, paired with the neighbouring
+    piece's wall) rather than exterior walls, and the courtyard facades are
+    exterior walls.  The pieces come from one planar overlay, so wherever
+    two of them touch they carry the same vertices, which is what the
+    reversed-edge wall pairing needs.  No surface has repeated or
+    coincident vertices.
+
+    Args:
+        doc: The document to add objects to.
+        name: Base name for zones and surfaces.
+        outer: Outer 2-D footprint as ``(x, y)`` tuples (CCW).
+        courtyards: Polygons to cut out of *outer*.  They may touch or
+            cross the outer boundary, which leaves a notch instead of a hole.
+        floor_to_floor: Floor-to-floor height in metres.
+        num_stories: Number of above-ground stories.
+        air_boundary: If ``True``, apply ``Construction:AirBoundary`` to
+            the walls between pieces, so the ring behaves as one open space.
+        base_elevation: Elevation of the ground floor in metres.
+
+    Returns:
+        All created [IDFObject][idfkit.objects.IDFObject] instances.
+
+    Raises:
+        ValueError: If *outer* or a courtyard has fewer than three
+            vertices (for example a single polygon passed as
+            *courtyards* instead of a list of polygons), or if the
+            courtyards cover the whole footprint.
+
+    Examples:
+        A 50 x 40 m block around a centred 20 x 10 m courtyard:
+
+            ```python
+            from idfkit import new_document
+            from idfkit.zoning import create_courtyard_block, footprint_rectangle
+
+            doc = new_document()
+            create_courtyard_block(
+                doc,
+                "Office",
+                footprint_rectangle(50, 40),
+                [footprint_rectangle(20, 10, origin=(15, 15))],
+                floor_to_floor=3.5,
+                num_stories=2,
+            )
+            ```
+    """
+    if len(outer) < 3:
+        msg = f"create_courtyard_block: outer must have at least 3 vertices, got {len(outer)}"
+        raise ValueError(msg)
+    for k, courtyard in enumerate(courtyards):
+        # A single polygon passed instead of a list of polygons unpacks into
+        # (x, y) points here; each would subtract nothing and the block would
+        # silently be built without its courtyard.
+        if len(courtyard) < 3 or any(len(p) != 2 for p in courtyard):
+            msg = (
+                f"create_courtyard_block: courtyards[{k}] is not a polygon of at least 3 (x, y) vertices; "
+                "pass a list of polygons, e.g. [footprint_rectangle(...)]"
+            )
+            raise ValueError(msg)
+    parts = polygon_difference_parts_2d(outer, *courtyards)
+    if not parts:
+        msg = "create_courtyard_block: the courtyards cover the whole footprint"
+        raise ValueError(msg)
+    block = ZonedBlock(
+        name=name,
+        footprint=outer,
+        floor_to_floor=floor_to_floor,
+        num_stories=num_stories,
+        zoning=ZoningScheme.CUSTOM,
+        custom_zones=[ZoneFootprint(f"Part {k + 1}", part) for k, part in enumerate(parts)],
+        air_boundary=air_boundary,
+        base_elevation=base_elevation,
+    )
+    return block.build(doc)
+
+
 # ---------------------------------------------------------------------------
 # link_blocks — automatic adjacency linking between stacked blocks
 # ---------------------------------------------------------------------------
@@ -1094,7 +1277,7 @@ def link_blocks(
       blocks (surfaces whose zone name starts with the given prefix).
 
     Uses the lower-level :func:`~idfkit.geometry_builders.detect_horizontal_adjacencies`,
-    :func:`~idfkit.geometry_builders.split_horizontal_surface`, and
+    :func:`~idfkit.geometry_builders.split_horizontal_surface_by_regions`, and
     :func:`~idfkit.geometry_builders.link_horizontal_surfaces` functions.
 
     Args:
@@ -1136,20 +1319,23 @@ def link_blocks(
     if not adjacencies:
         return []
 
-    modified: list[IDFObject] = []
-
+    # Group the adjacencies by roof surface so each roof is split under all
+    # of its overlapping floors in one step.  Splitting one region at a time
+    # would cut the remainder around the first region before the others are
+    # known, and a later region could then straddle two remainder pieces.
+    by_roof: dict[int, list[HorizontalAdjacency]] = {}
     for adj in adjacencies:
-        # Split the roof surface: new ceiling for the overlap, remaining roof.
-        # When a single roof overlaps multiple floor surfaces, successive
-        # splits progressively shrink the original roof geometry — each
-        # iteration operates on the (already-reduced) remaining area.
-        new_ceiling, remaining_roof = split_horizontal_surface(doc, adj.roof_surface, adj.intersection)
+        by_roof.setdefault(id(adj.roof_surface), []).append(adj)
 
-        # Link the new ceiling to the floor surface
-        link_horizontal_surfaces(new_ceiling, adj.floor_surface)
-        modified.append(new_ceiling)
-        modified.append(adj.floor_surface)
-        if remaining_roof is not None:
-            modified.append(remaining_roof)
+    modified: list[IDFObject] = []
+    for group in by_roof.values():
+        roof = group[0].roof_surface
+        ceilings, remaining = split_horizontal_surface_by_regions(doc, roof, [adj.intersection for adj in group])
+        for new_ceiling, adj in zip(ceilings, group, strict=True):
+            # Link the new ceiling to the floor surface
+            link_horizontal_surfaces(new_ceiling, adj.floor_surface)
+            modified.append(new_ceiling)
+            modified.append(adj.floor_surface)
+        modified.extend(remaining)
 
     return modified

@@ -31,12 +31,14 @@ from idfkit.geometry import (
     polygon_area_2d,
     polygon_contains_2d,
     polygon_difference_2d,
+    polygon_difference_parts_2d,
     polygon_intersection_2d,
     rotate_building,
     set_surface_coords,
     set_wwr,
     translate_building,
     translate_to_world,
+    triangulate_2d,
 )
 from idfkit.objects import IDFObject
 from idfkit.schema import get_schema
@@ -474,23 +476,268 @@ class TestPolygonIntersection2D:
         assert abs(polygon_area_2d(result)) > 0
 
 
+def _assert_clean_ring(poly: list[tuple[float, float]]) -> None:
+    """A ring EnergyPlus accepts: CCW, no repeated vertices, no zero-length or self-crossing edges."""
+    assert len(poly) >= 3
+    assert polygon_area_2d(poly) > 0
+    n = len(poly)
+    for i in range(n):
+        for j in range(i + 1, n):
+            assert math.dist(poly[i], poly[j]) > 1e-6, f"coincident vertices {poly[i]} at {i} and {j}"
+    for i in range(n):
+        a1, a2 = poly[i], poly[(i + 1) % n]
+        for j in range(i + 2, n):
+            if i == 0 and j == n - 1:
+                continue
+            b1, b2 = poly[j], poly[(j + 1) % n]
+
+            def orient(p: tuple[float, float], q: tuple[float, float], r: tuple[float, float]) -> float:
+                return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+
+            crosses = orient(a1, a2, b1) * orient(a1, a2, b2) < 0 and orient(b1, b2, a1) * orient(b1, b2, a2) < 0
+            assert not crosses, f"edges {i} and {j} cross"
+
+
 class TestPolygonDifference2D:
-    def test_rectangles_frame(self) -> None:
-        outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
-        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+    def test_interior_hole_raises(self) -> None:
+        """Issue #164 repro 1: a fully interior cut-out cannot be one simple ring."""
+        from idfkit.zoning import footprint_rectangle
+
+        fp = footprint_rectangle(105, 60)
+        island = footprint_rectangle(40, 25, origin=(35, 20))
+        with pytest.raises(ValueError, match="polygon_difference_parts_2d"):
+            polygon_difference_2d(fp, island)
+
+    def test_chained_corner_cuts_are_clean(self) -> None:
+        """Issue #164 repro 2: corner cut-outs give a clean ring with the right area."""
+        from idfkit.zoning import footprint_rectangle
+
+        fp = footprint_rectangle(105, 60)
+        office = footprint_rectangle(33.3, 9.0, origin=(0, 0))
+        robot = footprint_rectangle(47.2, 25.4, origin=(57.8, 34.6))
+        step = polygon_difference_2d(fp, office)
+        assert step is not None
+        wh = polygon_difference_2d(step, robot)
+        assert wh is not None
+        _assert_clean_ring(wh)
+        assert len(wh) == 8
+        assert polygon_area_2d(wh) == pytest.approx(105 * 60 - 33.3 * 9.0 - 47.2 * 25.4)
+
+    def test_chained_corner_cuts_build_valid_block(self) -> None:
+        """The cleaned footprint builds surfaces with no degenerate vertices."""
+        from idfkit.zoning import create_block, footprint_rectangle
+
+        fp = footprint_rectangle(105, 60)
+        step = polygon_difference_2d(fp, footprint_rectangle(33.3, 9.0))
+        assert step is not None
+        wh = polygon_difference_2d(step, footprint_rectangle(47.2, 25.4, origin=(57.8, 34.6)))
+        assert wh is not None
+        doc = new_document()
+        create_block(doc, "WH", wh, 6.0)
+        for srf in doc["BuildingSurface:Detailed"]:
+            coords = get_surface_coords(srf)
+            assert coords is not None
+            verts = coords.vertices
+            assert calculate_surface_area(srf) > 1.0
+            for i in range(len(verts)):
+                for j in range(i + 1, len(verts)):
+                    assert (verts[i] - verts[j]).length() > 1e-6
+
+    def test_edge_notch(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        notch = [(4, 8), (6, 8), (6, 10), (4, 10)]
+        result = polygon_difference_2d(outer, notch)
+        assert result == [(0, 0), (10, 0), (10, 10), (6, 10), (6, 8), (4, 8), (4, 10), (0, 10)]
+
+    def test_partial_overlap(self) -> None:
+        a = [(0, 0), (10, 0), (10, 5), (0, 5)]
+        b = [(5, 0), (15, 0), (15, 5), (5, 5)]
+        assert polygon_difference_2d(a, b) == [(0, 0), (5, 0), (5, 5), (0, 5)]
+
+    def test_inner_extends_past_outer(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        inner = [(8, -2), (12, -2), (12, 3), (8, 3)]
         result = polygon_difference_2d(outer, inner)
         assert result is not None
-        # The result is a slit/bridge polygon containing vertices from both
-        # outer and inner polygons.
-        assert len(result) == len(outer) + len(inner)
-        # The conceptual frame area can be computed from the original polygons.
-        frame_area = abs(polygon_area_2d(outer)) - abs(polygon_area_2d(inner))
-        assert abs(frame_area - 300.0) < 0.01
+        _assert_clean_ring(result)
+        assert polygon_area_2d(result) == pytest.approx(100 - 2 * 3)
+
+    def test_disjoint_returns_outer(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert polygon_difference_2d(outer, [(20, 20), (30, 20), (30, 30), (20, 30)]) == outer
+
+    def test_clockwise_inputs(self) -> None:
+        outer = [(0, 10), (10, 10), (10, 0), (0, 0)]
+        corner = [(0, 5), (5, 5), (5, 0), (0, 0)]
+        result = polygon_difference_2d(outer, corner)
+        assert result is not None
+        _assert_clean_ring(result)
+        assert polygon_area_2d(result) == pytest.approx(75.0)
+
+    def test_split_in_two_raises(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 5), (0, 5)]
+        strip = [(4, -1), (6, -1), (6, 6), (4, 6)]
+        with pytest.raises(ValueError, match="2 separate polygons"):
+            polygon_difference_2d(outer, strip)
 
     def test_same_polygon_returns_none(self) -> None:
         poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
         result = polygon_difference_2d(poly, poly)
         assert result is None
+
+    def test_covering_inner_returns_none(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert polygon_difference_2d(poly, [(-1, -1), (11, -1), (11, 11), (-1, 11)]) is None
+
+
+class TestPolygonDifferenceParts2D:
+    def test_interior_hole_pieces(self) -> None:
+        """Issue #164 repro 1: the pieces cover the right area and are hole-free."""
+        from idfkit.zoning import footprint_rectangle
+
+        fp = footprint_rectangle(105, 60)
+        island = footprint_rectangle(40, 25, origin=(35, 20))
+        parts = polygon_difference_parts_2d(fp, island)
+        assert len(parts) == 2
+        for part in parts:
+            _assert_clean_ring(part)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(5300.0)
+        # Pieces do not overlap each other or the island.
+        assert polygon_intersection_2d(island, parts[0]) is None
+        assert polygon_intersection_2d(island, parts[1]) is None
+
+    def test_rectangles_frame(self) -> None:
+        outer = [(0, 0), (20, 0), (20, 20), (0, 20)]
+        inner = [(5, 5), (15, 5), (15, 15), (5, 15)]
+        parts = polygon_difference_parts_2d(outer, inner)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(300.0)
+        for part in parts:
+            _assert_clean_ring(part)
+
+    def test_hole_free_result_is_one_piece(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        corner = [(5, 5), (10, 5), (10, 10), (5, 10)]
+        assert polygon_difference_parts_2d(outer, corner) == [polygon_difference_2d(outer, corner)]
+
+    def test_multiple_inners(self) -> None:
+        from idfkit.zoning import footprint_rectangle
+
+        fp = footprint_rectangle(105, 60)
+        office = footprint_rectangle(33.3, 9.0)
+        robot = footprint_rectangle(47.2, 25.4, origin=(57.8, 34.6))
+        parts = polygon_difference_parts_2d(fp, office, robot)
+        assert len(parts) == 1
+        _assert_clean_ring(parts[0])
+        assert polygon_area_2d(parts[0]) == pytest.approx(105 * 60 - 33.3 * 9.0 - 47.2 * 25.4)
+
+    def test_overlapping_inners(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        a = [(2, 2), (6, 2), (6, 6), (2, 6)]
+        b = [(4, 4), (8, 4), (8, 8), (4, 8)]
+        parts = polygon_difference_parts_2d(outer, a, b)
+        for part in parts:
+            _assert_clean_ring(part)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(100 - (16 + 16 - 4))
+
+    def test_two_holes(self) -> None:
+        outer = [(0, 0), (30, 0), (30, 10), (0, 10)]
+        h1 = [(2, 2), (8, 2), (8, 8), (2, 8)]
+        h2 = [(20, 3), (25, 3), (25, 7), (20, 7)]
+        parts = polygon_difference_parts_2d(outer, h1, h2)
+        for part in parts:
+            _assert_clean_ring(part)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(300 - 36 - 20)
+
+    def test_split_in_two(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 5), (0, 5)]
+        strip = [(4, -1), (6, -1), (6, 6), (4, 6)]
+        parts = polygon_difference_parts_2d(outer, strip)
+        assert sorted(sorted(p) for p in parts) == [
+            [(0, 0), (0, 5), (4.0, 0.0), (4.0, 5.0)],
+            [(6.0, 0.0), (6.0, 5.0), (10, 0), (10, 5)],
+        ]
+
+    def test_hole_touching_boundary_at_a_point(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        diamond = [(5, 0), (6, 1), (5, 2), (4, 1)]
+        parts = polygon_difference_parts_2d(outer, diamond)
+        for part in parts:
+            _assert_clean_ring(part)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(98.0)
+
+    def test_concave_outer(self) -> None:
+        from idfkit.zoning import footprint_l_shape
+
+        l_shape = footprint_l_shape(20, 10, 8, 5)
+        hole = [(2, 2), (4, 2), (4, 4), (2, 4)]
+        parts = polygon_difference_parts_2d(l_shape, hole)
+        for part in parts:
+            _assert_clean_ring(part)
+        assert sum(polygon_area_2d(p) for p in parts) == pytest.approx(polygon_area_2d(l_shape) - 4)
+
+    def test_nothing_left(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert polygon_difference_parts_2d(poly, poly) == []
+
+    def test_no_inners_returns_outer(self) -> None:
+        poly = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        assert polygon_difference_parts_2d(poly) == [poly]
+
+    @pytest.mark.parametrize("gap", [1e-6, 1e-5])
+    def test_thin_strip_below_probe_distance_survives(self, gap: float) -> None:
+        """A strip thinner than the side-probe distance must not wipe out the whole result."""
+        outer = [(0, 0), (100, 0), (100, 100), (0, 100)]
+        inner = [(10, gap), (110, gap), (110, 110), (10, 110)]
+        parts = polygon_difference_parts_2d(outer, inner)
+        assert len(parts) == 1
+        assert polygon_area_2d(parts[0]) == pytest.approx(10 * 100 + 90 * gap)
+
+    def test_far_away_inner_does_not_inflate_tolerance(self) -> None:
+        outer = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        far = [(1e6, 0), (1e6 + 1, 0), (1e6 + 1, 1), (1e6, 1)]
+        assert polygon_difference_parts_2d(outer, far) == [outer]
+
+    def test_degenerate_outer(self) -> None:
+        assert polygon_difference_parts_2d([(0, 0), (1, 1)], [(0, 0), (1, 0), (1, 1)]) == []
+        assert polygon_difference_parts_2d([(0, 0), (0, 0), (0, 0)]) == []
+
+    def test_nearly_aligned_holes_share_one_cut(self) -> None:
+        """Two holes whose middles are 1 cm apart get one cut, not two that leave slivers."""
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        a = footprint_rectangle(10, 10, origin=(5, 5))
+        b = footprint_rectangle(10, 10, origin=(5.01, 20))
+        parts = polygon_difference_parts_2d(outer, a, b)
+        assert len(parts) == 2
+        assert min(polygon_area_2d(p) for p in parts) > 1.0
+        assert math.isclose(sum(polygon_area_2d(p) for p in parts), 2400 - 200)
+
+    def test_one_cut_crossing_several_holes(self) -> None:
+        """A cut through the largest hole also opens every hole whose x-range it crosses."""
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        big = footprint_rectangle(20, 8, origin=(10, 4))  # cut at x = 20
+        small = footprint_rectangle(6, 6, origin=(16, 24))  # spans x 16..22
+        parts = polygon_difference_parts_2d(outer, small, big)
+        assert len(parts) == 2
+        xs = {x for p in parts for x, _ in p}
+        assert 20.0 in xs
+        assert 19.0 not in xs  # the small hole's own middle is not cut
+
+    def test_holes_apart_in_x_get_their_own_cuts(self) -> None:
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        a = footprint_rectangle(10, 10, origin=(5, 5))
+        b = footprint_rectangle(10, 10, origin=(40, 20))
+        parts = polygon_difference_parts_2d(outer, a, b)
+        assert len(parts) == 3
+        assert math.isclose(sum(polygon_area_2d(p) for p in parts), 2400 - 200)
+        for p in parts:
+            assert polygon_area_2d(p) > 0
+            assert len(set(p)) == len(p)
 
 
 class TestPolygonContains2D:
@@ -1250,6 +1497,98 @@ class TestIsConvex2DEdgeCases:
         # Square with an extra collinear point
         poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
         assert is_convex_2d(poly)
+
+
+# ---------------------------------------------------------------------------
+# triangulate_2d
+# ---------------------------------------------------------------------------
+
+_Poly2D = list[tuple[float, float]]
+
+#: A 10 x 10 square with its 5 x 5 north-east quarter cut away (area 75).
+_L_2D: _Poly2D = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+#: A 9 x 9 square with a 3 x 6 slot cut from its north edge (area 63).
+_U_2D: _Poly2D = [(0, 0), (9, 0), (9, 9), (6, 9), (6, 3), (3, 3), (3, 9), (0, 9)]
+#: A 10 x 10 square around a 2 x 2 courtyard, joined by a doubled bridge edge (area 96).
+_KEYHOLE_2D: _Poly2D = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)]
+#: Two triangles touching at a single doubled vertex (area 8).
+_PINCHED_2D: _Poly2D = [(0, 0), (4, 0), (2, 2), (4, 4), (0, 4), (2, 2)]
+#: Two triangles pinched at the origin on the same side of it, so the ring turns convexly across their gap (area 12.5).
+_PINCHED_SAME_SIDE_2D: _Poly2D = [(0, 0), (-4, 1), (-3, -3), (0, 0), (-1, -2), (4, -2)]
+
+
+def _assert_tiles(poly: _Poly2D, expected_area: float) -> None:
+    """Assert the triangles tile ``poly``: areas sum to its area, each keeps its winding and lies inside it.
+
+    Summing areas alone would pass a triangulation that double-covers one region and misses
+    another, so each triangle's centroid is also checked to lie inside the polygon.
+    """
+    triangles = triangulate_2d(poly)
+    winding = 1.0 if polygon_area_2d(poly) > 0 else -1.0
+    areas = [polygon_area_2d([poly[a], poly[b], poly[c]]) for a, b, c in triangles]
+    assert all(area * winding > 0 for area in areas)
+    assert sum(abs(area) for area in areas) == pytest.approx(expected_area)
+    for a, b, c in triangles:
+        centroid = ((poly[a][0] + poly[b][0] + poly[c][0]) / 3, (poly[a][1] + poly[b][1] + poly[c][1]) / 3)
+        assert _point_in_polygon_2d(centroid, poly)
+
+
+class TestTriangulate2D:
+    @pytest.mark.parametrize(
+        ("poly", "area"),
+        [(_L_2D, 75.0), (_U_2D, 63.0), (_KEYHOLE_2D, 96.0), (_PINCHED_2D, 8.0), (_PINCHED_SAME_SIDE_2D, 12.5)],
+        ids=["L", "U", "keyhole", "pinched", "pinched-same-side"],
+    )
+    @pytest.mark.parametrize("reverse", [False, True], ids=["ccw", "cw"])
+    def test_tiles_from_every_start_vertex(self, poly: _Poly2D, area: float, reverse: bool) -> None:
+        ring = list(reversed(poly)) if reverse else poly
+        for start in range(len(ring)):
+            _assert_tiles(ring[start:] + ring[:start], area)
+
+    def test_keyhole_with_bridge_along_an_edge(self) -> None:
+        """The bridge leaves the outer ring midway along an edge, so its doubled end is collinear there."""
+        keyhole: _Poly2D = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 5), (4, 5), (4, 6), (6, 6), (6, 4), (4, 4)]
+        keyhole += [(4, 5), (0, 5)]
+        _assert_tiles(keyhole, 96.0)
+
+    def test_collinear_vertex(self) -> None:
+        """A vertex midway along an edge bounds no area and must not stall the clipper."""
+        poly = [*_L_2D[:5], (5.0, 0.0), *_L_2D[5:]]
+        for start in range(len(poly)):
+            _assert_tiles(poly[start:] + poly[:start], 75.0)
+
+    def test_notch_corner_on_a_diagonal_corners_its_triangles(self) -> None:
+        """The L's notch corner lies on the diagonal between two outer corners; it is not cut through."""
+        _assert_tiles(_L_2D, 75.0)
+        assert len(triangulate_2d(_L_2D)) == 4
+
+    def test_duplicate_vertex(self) -> None:
+        poly = [*_L_2D[:3], _L_2D[2], *_L_2D[3:]]
+        for start in range(len(poly)):
+            _assert_tiles(poly[start:] + poly[:start], 75.0)
+
+    def test_scale_invariant(self) -> None:
+        """A millimetre-sized and a kilometre-sized L tile alike."""
+        for scale in (1e-3, 1e3):
+            _assert_tiles([(x * scale, y * scale) for x, y in _L_2D], 75.0 * scale**2)
+
+    def test_self_intersecting_bowtie_covers_every_vertex(self) -> None:
+        """No ear is valid in a bowtie; the fallback still clips and uses every vertex."""
+        bowtie: _Poly2D = [(0, 0), (2, 2), (2, 0), (1, 3), (0, 2)]
+        triangles = triangulate_2d(bowtie)
+        assert triangles
+        assert {i for tri in triangles for i in tri} == set(range(len(bowtie)))
+
+    def test_degenerate_inputs(self) -> None:
+        assert triangulate_2d([]) == []
+        assert triangulate_2d([(0, 0), (1, 0)]) == []
+        assert triangulate_2d([(0, 0), (1, 0), (2, 0), (3, 0)]) == []
+
+    def test_triangle_keeps_its_winding(self) -> None:
+        assert triangulate_2d([(0, 0), (1, 0), (0, 1)]) == [(0, 1, 2)]
+        clockwise: _Poly2D = [(0, 0), (0, 1), (1, 0)]
+        [(a, b, c)] = triangulate_2d(clockwise)
+        assert polygon_area_2d([clockwise[a], clockwise[b], clockwise[c]]) < 0
 
 
 # ---------------------------------------------------------------------------

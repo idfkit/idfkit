@@ -148,8 +148,41 @@ inner = [(1, 1), (4, 1), (4, 4), (1, 4)]
 polygon_area_2d(a)  # 50.0
 polygon_contains_2d(a, inner)  # True (every vertex of inner is inside a)
 polygon_intersection_2d(a, b)  # overlapping rectangle
-polygon_difference_2d(a, b)  # a minus b
+polygon_difference_2d(a, b)  # a minus b: [(0, 0), (5, 0), (5, 5), (0, 5)]
 # --8<-- [end:polygon-2d]
+
+
+# --8<-- [start:polygon-difference-parts]
+from idfkit import footprint_rectangle
+from idfkit.geometry import polygon_difference_parts_2d
+from idfkit.zoning import create_courtyard_block
+
+site = footprint_rectangle(105, 60)
+courtyard = footprint_rectangle(40, 25, origin=(35, 20))  # strictly inside: leaves a hole
+office = footprint_rectangle(33.3, 9.0)  # corner cut-out
+
+# polygon_difference_2d(site, courtyard) raises ValueError: the result has a hole.
+pieces = polygon_difference_parts_2d(site, courtyard, office)
+
+# To build them, keep the pieces in one block so the cut walls become interior walls:
+create_courtyard_block(doc, "Wing", site, [courtyard, office], floor_to_floor=3.5)
+# --8<-- [end:polygon-difference-parts]
+
+
+# --8<-- [start:triangulate-2d]
+from idfkit.geometry import triangulate_2d
+
+l_shape = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+triangles = triangulate_2d(l_shape)  # [(5, 0, 1), (1, 2, 3), (1, 3, 4), (1, 4, 5)]
+total = sum(polygon_area_2d([l_shape[i] for i in tri]) for tri in triangles)  # 75.0
+# --8<-- [end:triangulate-2d]
+
+
+# --8<-- [start:mistake-hole-good]
+from idfkit.zoning import create_courtyard_block
+
+create_courtyard_block(doc, "Block", site, [courtyard], floor_to_floor=3.5)
+# --8<-- [end:mistake-hole-good]
 
 
 # --8<-- [start:mistake-area-good]

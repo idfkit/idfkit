@@ -27,14 +27,32 @@ from idfkit import (
     footprint_rectangle,
     footprint_l_shape,
     footprint_u_shape,
-    footprint_courtyard,
 )
 
 rect = footprint_rectangle(width=50, depth=30)
 ell = footprint_l_shape(width=40, depth=20, wing_width=20, wing_depth=15)
 u = footprint_u_shape(width=40, depth=30, courtyard_width=15, courtyard_depth=10)
-courtyard = footprint_courtyard(outer_width=40, outer_depth=30, inner_width=15, inner_depth=10)
 # --8<-- [end:footprints]
+
+
+# --8<-- [start:courtyard]
+from idfkit.zoning import create_courtyard_block, footprint_courtyard_parts
+
+# One call: the footprint minus the courtyard(s), split into hole-free pieces,
+# one zone per piece per story, cut walls between pieces paired as interior walls.
+create_courtyard_block(
+    doc,
+    "Office",
+    footprint_rectangle(50, 40),
+    [footprint_rectangle(20, 10, origin=(15, 15))],
+    floor_to_floor=3.5,
+    num_stories=3,
+)
+# Zones: "Office Story 1 Part 1", "Office Story 1 Part 2", ...
+
+# Just the pieces (two U-shaped halves), e.g. to inspect or zone them yourself
+halves = footprint_courtyard_parts(outer_width=50, outer_depth=40, inner_width=20, inner_depth=10)
+# --8<-- [end:courtyard]
 
 
 # --8<-- [start:zoning-schemes]
@@ -133,6 +151,22 @@ new_a, new_b = split_horizontal_surface(
 # --8<-- [end:split-surface]
 
 
+# --8<-- [start:split-surface-regions]
+from idfkit.geometry_builders import split_horizontal_surface_by_regions
+
+region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
+    doc,
+    surface,
+    regions=[
+        [(10, 5), (15, 5), (15, 15), (10, 15)],
+        [(15, 5), (20, 5), (20, 15), (15, 15)],
+    ],
+)
+# region_surfaces: one new surface per region, in order
+# remaining_surfaces: the original surface first, then any extra remainder pieces
+# --8<-- [end:split-surface-regions]
+
+
 # --8<-- [start:mistake-ccw-good]
 ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
 # --8<-- [end:mistake-ccw-good]
@@ -143,6 +177,13 @@ create_block(doc, "Office", footprint_rectangle(50, 30), floor_to_floor=3.5, num
 for zone in doc["Zone"]:
     doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", zone_name=zone.name, template_thermostat_name="OfficeThermostat")
 # --8<-- [end:mistake-hvac-good]
+
+
+# --8<-- [start:mistake-courtyard-good]
+create_courtyard_block(
+    doc, "Office", footprint_rectangle(50, 40), [footprint_rectangle(20, 10, origin=(15, 15))], floor_to_floor=3.5
+)
+# --8<-- [end:mistake-courtyard-good]
 
 
 # --8<-- [start:mistake-link-good]
