@@ -164,7 +164,7 @@ For higher-level ceiling↔floor helpers, see [geometry-builders-and-zoning.md](
 
 ## 2D polygon utilities
 
-For computing footprint overlaps or differences (e.g. courtyard cut-outs):
+For computing footprint overlaps or differences (e.g. corner cut-outs):
 
 ```python
 from idfkit import (
@@ -181,12 +181,44 @@ inner = [(1, 1), (4, 1), (4, 4), (1, 4)]
 polygon_area_2d(a)  # 50.0
 polygon_contains_2d(a, inner)  # True (every vertex of inner is inside a)
 polygon_intersection_2d(a, b)  # overlapping rectangle
-polygon_difference_2d(a, b)  # a minus b
+polygon_difference_2d(a, b)  # a minus b: [(0, 0), (5, 0), (5, 5), (0, 5)]
 ```
 
 These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on building footprints in plan view.
 
+`polygon_difference_2d` returns one clean, counter-clockwise, simple polygon with no duplicate or coincident vertices, ready for `create_block`. The subtracted polygon may cross the outer boundary, sit flush with a corner, or extend outside it. A single ring cannot describe a result with a hole (the subtracted polygon strictly inside) or a result in several pieces, so `polygon_difference_2d` raises `ValueError` for those. Use `polygon_difference_parts_2d` from `idfkit.geometry` there. It subtracts any number of polygons and returns hole-free pieces, largest first, each one a valid EnergyPlus surface outline or `create_block` footprint:
+
+```python
+from idfkit import create_block, footprint_rectangle
+from idfkit.geometry import polygon_difference_parts_2d
+
+site = footprint_rectangle(105, 60)
+courtyard = footprint_rectangle(40, 25, origin=(35, 20))  # strictly inside: leaves a hole
+office = footprint_rectangle(33.3, 9.0)  # corner cut-out
+
+# polygon_difference_2d(site, courtyard) raises ValueError: the result has a hole.
+pieces = polygon_difference_parts_2d(site, courtyard, office)
+for k, piece in enumerate(pieces):
+    create_block(doc, f"Wing {k + 1}", piece, floor_to_floor=3.5)
+```
+
 ## Common mistakes
+
+!!! failure "stitching a hole into one polygon with a slit"
+
+    ```python
+    # Joining the outer ring and the hole ring with a zero-width "bridge" edge
+    # gives coincident vertices, so create_block makes degenerate surfaces and EnergyPlus fatals.
+    slit = [*outer, outer[0], hole[0], *reversed(hole), hole[0]]
+    create_block(doc, "Block", slit, floor_to_floor=3.5)
+    ```
+
+!!! success "split the difference into hole-free pieces"
+
+    ```python
+    for k, piece in enumerate(polygon_difference_parts_2d(site, courtyard)):
+        create_block(doc, f"Block {k + 1}", piece, floor_to_floor=3.5)
+    ```
 
 !!! failure "manually summing vertex coordinates"
 

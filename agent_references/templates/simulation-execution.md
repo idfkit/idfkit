@@ -90,7 +90,9 @@ If you re-simulate the same model + weather + flags often (e.g. iterating on out
 --8<-- "agent_references/snippets/simulation-execution.py:caching"
 ```
 
-The cache key is the SHA-256 of the (model bytes + weather bytes + flags) tuple. Any change invalidates the entry.
+The cache key is the SHA-256 of the model, the weather file, the run flags, and the contents of every other file the model names: `Schedule:File` and `Schedule:File:Shading` CSVs, `Table:Lookup` / `Table:IndependentVariable` data files, `Construction:WindowDataFile`, ASHRAE 205 representation files and imported FMUs (the list is derived from the model's schema, so it follows the EnergyPlus version). Any change to any of them is a miss, and restoring a file's earlier content is a hit on the earlier entry. So staging a `Schedule:File` CSV into `output_dir` and varying it across runs caches correctly. A relative file path is resolved the way EnergyPlus resolves it: against `output_dir`, then the EnergyPlus executable's directory.
+
+A model with a `PythonPlugin:Instance`, or with an `ExternalInterface` in `PtolemyServer` or `FunctionalMockupUnitExport` mode, has inputs no key can cover. `simulate` never caches it and logs a warning saying why.
 
 ## Progress events
 

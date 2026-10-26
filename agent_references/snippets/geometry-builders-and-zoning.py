@@ -133,6 +133,22 @@ new_a, new_b = split_horizontal_surface(
 # --8<-- [end:split-surface]
 
 
+# --8<-- [start:split-surface-regions]
+from idfkit.geometry_builders import split_horizontal_surface_by_regions
+
+region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
+    doc,
+    surface,
+    regions=[
+        [(10, 5), (15, 5), (15, 15), (10, 15)],
+        [(15, 5), (20, 5), (20, 15), (15, 15)],
+    ],
+)
+# region_surfaces: one new surface per region, in order
+# remaining_surfaces: the original surface first, then any extra remainder pieces
+# --8<-- [end:split-surface-regions]
+
+
 # --8<-- [start:mistake-ccw-good]
 ccw_rect = footprint_rectangle(50, 30)  # CCW by construction
 # --8<-- [end:mistake-ccw-good]

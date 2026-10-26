@@ -111,7 +111,9 @@ async def async_simulate_batch(
             ``None``).
         max_concurrent: Maximum number of concurrent simulations.  Defaults
             to ``min(len(jobs), os.cpu_count() or 1)``.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  See
+            [SimulationCache][idfkit.simulation.cache.SimulationCache] for what
+            the key covers and which models are never cached.
         fs: Optional file system backend passed through to each
             [async_simulate][idfkit.simulation.async_runner.async_simulate] call.
         on_progress: Optional callback invoked with
@@ -207,7 +209,9 @@ async def async_simulate_batch_stream(
             ``None``).
         max_concurrent: Maximum number of concurrent simulations.  Defaults
             to ``min(len(jobs), os.cpu_count() or 1)``.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  See
+            [SimulationCache][idfkit.simulation.cache.SimulationCache] for what
+            the key covers and which models are never cached.
         fs: Optional file system backend.
         on_progress: Optional callback invoked with
             [SimulationProgress][idfkit.simulation.progress.SimulationProgress] events

@@ -297,6 +297,49 @@ class TestAsyncSimulateBatch:
         assert mock_exec.call_count == 1  # no additional call
 
 
+class TestAsyncSimulateCacheCoversExternalFiles:
+    """async_simulate hashes the files the model names into the cache key (#216)."""
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_staged_file_in_output_dir(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        csv = run_dir / "hourly.csv"
+        model = new_document()
+        model.add("Schedule:File", "Staged", file_name="hourly.csv", column_number=1, validate=False)
+
+        async def run() -> None:
+            await async_simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
+
+        csv.write_text("1\n")
+        await run()
+        await run()
+        assert mock_exec.call_count == 1
+        csv.write_text("2\n")
+        await run()
+        assert mock_exec.call_count == 2
+
+    @pytest.mark.asyncio
+    @patch("idfkit.simulation.async_runner.asyncio.create_subprocess_exec")
+    async def test_batch_job_with_cosimulation_is_never_cached(
+        self, mock_exec: AsyncMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        mock_exec.return_value = _make_mock_process()
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+        model.add("ExternalInterface", "", name_of_external_interface="PtolemyServer", validate=False)
+        job = SimulationJob(model=model, weather=weather_file)
+
+        await async_simulate_batch([job], energyplus=mock_config, cache=cache)
+        await async_simulate_batch([job], energyplus=mock_config, cache=cache)
+        assert mock_exec.call_count == 2
+
+
 # ---------------------------------------------------------------------------
 # async_simulate_batch_stream
 # ---------------------------------------------------------------------------

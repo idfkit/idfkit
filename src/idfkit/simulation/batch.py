@@ -156,7 +156,9 @@ def simulate_batch(
             ``None``).
         max_workers: Maximum number of concurrent simulations.  Defaults
             to ``min(len(jobs), os.cpu_count() or 1)``.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  See
+            [SimulationCache][idfkit.simulation.cache.SimulationCache] for what
+            the key covers and which models are never cached.
         progress: Optional callback invoked after each job completes.
             Called as ``progress(completed=N, total=M, label=label,
             success=bool)``.
