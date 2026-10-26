@@ -1161,7 +1161,10 @@ def create_courtyard_block(
     zones of a single block, so the walls along the cuts between pieces
     are interior walls (``Surface`` boundary, paired with the neighbouring
     piece's wall) rather than exterior walls, and the courtyard facades are
-    exterior walls.  No surface has repeated or coincident vertices.
+    exterior walls.  The pieces come from one planar overlay, so wherever
+    two of them touch they carry the same vertices, which is what the
+    reversed-edge wall pairing needs.  No surface has repeated or
+    coincident vertices.
 
     Args:
         doc: The document to add objects to.
@@ -1199,7 +1202,7 @@ def create_courtyard_block(
             )
             ```
     """
-    parts = _conform_shared_edges(polygon_difference_parts_2d(outer, *courtyards))
+    parts = polygon_difference_parts_2d(outer, *courtyards)
     if not parts:
         msg = "create_courtyard_block: the courtyards cover the whole footprint"
         raise ValueError(msg)
@@ -1214,39 +1217,6 @@ def create_courtyard_block(
         base_elevation=base_elevation,
     )
     return block.build(doc)
-
-
-def _conform_shared_edges(parts: list[list[tuple[float, float]]], tol: float = 1e-9) -> list[list[tuple[float, float]]]:
-    """Insert every piece's vertices that lie inside another piece's edges into that edge.
-
-    Walls between zones are paired by exact reversed edges, so a shared
-    boundary must carry the same vertices on both sides.  Pieces that
-    meet with a T-junction (one piece's corner in the middle of the
-    neighbour's edge) get the junction added to the longer edge.
-
-    Examples:
-        >>> _conform_shared_edges([[(0, 0), (2, 0), (2, 2), (0, 2)], [(2, 0), (3, 0), (3, 1), (2, 1)]])[0]
-        [(0, 0), (2, 0), (2, 1), (2, 2), (0, 2)]
-    """
-    out: list[list[tuple[float, float]]] = []
-    for i, part in enumerate(parts):
-        others = [p for j, other in enumerate(parts) if j != i for p in other]
-        conformed: list[tuple[float, float]] = []
-        n = len(part)
-        for k in range(n):
-            a, b = part[k], part[(k + 1) % n]
-            conformed.append(a)
-            dx, dy = b[0] - a[0], b[1] - a[1]
-            length_sq = dx * dx + dy * dy
-            inner: dict[tuple[float, float], float] = {}
-            for p in others:
-                t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length_sq
-                cross = (p[0] - a[0]) * dy - (p[1] - a[1]) * dx
-                if tol < t < 1 - tol and abs(cross) <= tol * math.sqrt(length_sq):
-                    inner[p] = t
-            conformed.extend(sorted(inner, key=inner.__getitem__))
-        out.append(conformed)
-    return out
 
 
 # ---------------------------------------------------------------------------

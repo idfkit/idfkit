@@ -12,7 +12,6 @@ from idfkit.zoning import (
     ZoneFootprint,
     ZoningScheme,
     _classify_edge_orientation,
-    _conform_shared_edges,
     _inset_polygon_2d,
     _is_convex,
     _polygon_area_signed,
@@ -1367,9 +1366,9 @@ class TestCreateCourtyardBlock:
         assert interior
         assert all(w.construction_name == "Air Boundary" for w in interior)
 
-    def test_t_junctions_between_pieces_are_matched(self) -> None:
-        # Two courtyards whose cuts land 2 m apart leave thin strips whose
-        # corners sit in the middle of the neighbouring pieces' edges.
+    def test_two_courtyards_pieces_are_matched(self) -> None:
+        # Two courtyards whose cuts land 2 m apart leave five pieces,
+        # including thin strips between the cuts; every shared wall pairs up.
         doc = new_document()
         create_courtyard_block(
             doc,
@@ -1378,6 +1377,7 @@ class TestCreateCourtyardBlock:
             [footprint_rectangle(10, 10, origin=(5, 5)), footprint_rectangle(10, 10, origin=(7, 20))],
             floor_to_floor=3.0,
         )
+        assert len(doc["Zone"]) == 5
         walls = _surfaces(doc, "Wall")
         exterior = [w for w in walls if w.outside_boundary_condition == "Outdoors"]
         exterior_area = sum(calculate_surface_area(w) for w in exterior)
@@ -1412,16 +1412,3 @@ class TestCreateCourtyardBlock:
                 on_slit.append(sorted(v.x for v in poly.vertices))
         overlaps = [min(a[-1], b[-1]) - max(a[0], b[0]) for i, a in enumerate(on_slit) for b in on_slit[i + 1 :]]
         assert any(_close(o, 15.0) for o in overlaps)
-
-
-class TestConformSharedEdges:
-    def test_inserts_t_junction(self) -> None:
-        big = [(0.0, 0.0), (2.0, 0.0), (2.0, 2.0), (0.0, 2.0)]
-        small = [(2.0, 0.0), (3.0, 0.0), (3.0, 1.0), (2.0, 1.0)]
-        out = _conform_shared_edges([big, small])
-        assert out[0] == [(0.0, 0.0), (2.0, 0.0), (2.0, 1.0), (2.0, 2.0), (0.0, 2.0)]
-        assert out[1] == small
-
-    def test_leaves_conforming_pieces_alone(self) -> None:
-        parts = footprint_courtyard_parts(50, 40, 20, 10)
-        assert _conform_shared_edges(parts) == parts
