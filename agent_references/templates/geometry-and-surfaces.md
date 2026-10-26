@@ -97,6 +97,12 @@ These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on bui
 --8<-- "agent_references/snippets/geometry-and-surfaces.py:polygon-difference-parts"
 ```
 
+To cut a concave outline into triangles (for a mesh, or for area-weighted sampling), use `triangulate_2d` from `idfkit.geometry`. It returns index triples into the input, in the input's winding, and it handles keyhole outlines whose bridge vertices are doubled:
+
+```python
+--8<-- "agent_references/snippets/geometry-and-surfaces.py:triangulate-2d"
+```
+
 ## Common mistakes
 
 !!! failure "stitching a hole into one polygon with a slit"

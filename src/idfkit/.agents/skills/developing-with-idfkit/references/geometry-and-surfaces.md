@@ -202,6 +202,16 @@ for k, piece in enumerate(pieces):
     create_block(doc, f"Wing {k + 1}", piece, floor_to_floor=3.5)
 ```
 
+To cut a concave outline into triangles (for a mesh, or for area-weighted sampling), use `triangulate_2d` from `idfkit.geometry`. It returns index triples into the input, in the input's winding, and it handles keyhole outlines whose bridge vertices are doubled:
+
+```python
+from idfkit.geometry import triangulate_2d
+
+l_shape = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+triangles = triangulate_2d(l_shape)  # [(5, 0, 1), (1, 2, 3), (1, 3, 4), (1, 4, 5)]
+total = sum(polygon_area_2d([l_shape[i] for i in tri]) for tri in triangles)  # 75.0
+```
+
 ## Common mistakes
 
 !!! failure "stitching a hole into one polygon with a slit"

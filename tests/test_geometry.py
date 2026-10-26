@@ -38,6 +38,7 @@ from idfkit.geometry import (
     set_wwr,
     translate_building,
     translate_to_world,
+    triangulate_2d,
 )
 from idfkit.objects import IDFObject
 from idfkit.schema import get_schema
@@ -1458,6 +1459,96 @@ class TestIsConvex2DEdgeCases:
         # Square with an extra collinear point
         poly = [(0, 0), (5, 0), (10, 0), (10, 10), (0, 10)]
         assert is_convex_2d(poly)
+
+
+# ---------------------------------------------------------------------------
+# triangulate_2d
+# ---------------------------------------------------------------------------
+
+_Poly2D = list[tuple[float, float]]
+
+#: A 10 x 10 square with its 5 x 5 north-east quarter cut away (area 75).
+_L_2D: _Poly2D = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+#: A 9 x 9 square with a 3 x 6 slot cut from its north edge (area 63).
+_U_2D: _Poly2D = [(0, 0), (9, 0), (9, 9), (6, 9), (6, 3), (3, 3), (3, 9), (0, 9)]
+#: A 10 x 10 square around a 2 x 2 courtyard, joined by a doubled bridge edge (area 96).
+_KEYHOLE_2D: _Poly2D = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)]
+#: Two triangles touching at a single doubled vertex (area 8).
+_PINCHED_2D: _Poly2D = [(0, 0), (4, 0), (2, 2), (4, 4), (0, 4), (2, 2)]
+
+
+def _assert_tiles(poly: _Poly2D, expected_area: float) -> None:
+    """Assert the triangles tile ``poly``: areas sum to its area, each keeps its winding and lies inside it.
+
+    Summing areas alone would pass a triangulation that double-covers one region and misses
+    another, so each triangle's centroid is also checked to lie inside the polygon.
+    """
+    triangles = triangulate_2d(poly)
+    winding = 1.0 if polygon_area_2d(poly) > 0 else -1.0
+    areas = [polygon_area_2d([poly[a], poly[b], poly[c]]) for a, b, c in triangles]
+    assert all(area * winding > 0 for area in areas)
+    assert sum(abs(area) for area in areas) == pytest.approx(expected_area)
+    for a, b, c in triangles:
+        centroid = ((poly[a][0] + poly[b][0] + poly[c][0]) / 3, (poly[a][1] + poly[b][1] + poly[c][1]) / 3)
+        assert _point_in_polygon_2d(centroid, poly)
+
+
+class TestTriangulate2D:
+    @pytest.mark.parametrize(
+        ("poly", "area"),
+        [(_L_2D, 75.0), (_U_2D, 63.0), (_KEYHOLE_2D, 96.0), (_PINCHED_2D, 8.0)],
+        ids=["L", "U", "keyhole", "pinched"],
+    )
+    @pytest.mark.parametrize("reverse", [False, True], ids=["ccw", "cw"])
+    def test_tiles_from_every_start_vertex(self, poly: _Poly2D, area: float, reverse: bool) -> None:
+        ring = list(reversed(poly)) if reverse else poly
+        for start in range(len(ring)):
+            _assert_tiles(ring[start:] + ring[:start], area)
+
+    def test_keyhole_with_bridge_along_an_edge(self) -> None:
+        """The bridge leaves the outer ring midway along an edge, so its doubled end is collinear there."""
+        keyhole: _Poly2D = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 5), (4, 5), (4, 6), (6, 6), (6, 4), (4, 4)]
+        keyhole += [(4, 5), (0, 5)]
+        _assert_tiles(keyhole, 96.0)
+
+    def test_collinear_vertex(self) -> None:
+        """A vertex midway along an edge bounds no area and must not stall the clipper."""
+        poly = [*_L_2D[:5], (5.0, 0.0), *_L_2D[5:]]
+        for start in range(len(poly)):
+            _assert_tiles(poly[start:] + poly[:start], 75.0)
+
+    def test_notch_corner_on_a_diagonal_corners_its_triangles(self) -> None:
+        """The L's notch corner lies on the diagonal between two outer corners; it is not cut through."""
+        _assert_tiles(_L_2D, 75.0)
+        assert len(triangulate_2d(_L_2D)) == 4
+
+    def test_duplicate_vertex(self) -> None:
+        poly = [*_L_2D[:3], _L_2D[2], *_L_2D[3:]]
+        for start in range(len(poly)):
+            _assert_tiles(poly[start:] + poly[:start], 75.0)
+
+    def test_scale_invariant(self) -> None:
+        """A millimetre-sized and a kilometre-sized L tile alike."""
+        for scale in (1e-3, 1e3):
+            _assert_tiles([(x * scale, y * scale) for x, y in _L_2D], 75.0 * scale**2)
+
+    def test_self_intersecting_bowtie_covers_every_vertex(self) -> None:
+        """No ear is valid in a bowtie; the fallback still clips and uses every vertex."""
+        bowtie: _Poly2D = [(0, 0), (2, 2), (2, 0), (1, 3), (0, 2)]
+        triangles = triangulate_2d(bowtie)
+        assert triangles
+        assert {i for tri in triangles for i in tri} == set(range(len(bowtie)))
+
+    def test_degenerate_inputs(self) -> None:
+        assert triangulate_2d([]) == []
+        assert triangulate_2d([(0, 0), (1, 0)]) == []
+        assert triangulate_2d([(0, 0), (1, 0), (2, 0), (3, 0)]) == []
+
+    def test_triangle_keeps_its_winding(self) -> None:
+        assert triangulate_2d([(0, 0), (1, 0), (0, 1)]) == [(0, 1, 2)]
+        clockwise: _Poly2D = [(0, 0), (0, 1), (1, 0)]
+        [(a, b, c)] = triangulate_2d(clockwise)
+        assert polygon_area_2d([clockwise[a], clockwise[b], clockwise[c]]) < 0
 
 
 # ---------------------------------------------------------------------------

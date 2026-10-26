@@ -81,6 +81,30 @@ class TestConvexDifferenceKernel:
         assert sum(_area(t) for t in tris) == pytest.approx(_area(ell))
         assert all(len(t) == 3 for t in tris)
 
+    @pytest.mark.parametrize(
+        "subject",
+        [
+            # A 10 x 10 square around a 2 x 2 courtyard, joined by a doubled bridge edge.
+            [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)],
+            # Two 4 x 2 triangles touching at a doubled vertex, rotated so the clipper starts at the pinch.
+            [(4, 0), (2, 2), (4, 4), (0, 4), (2, 2), (0, 0)],
+        ],
+        ids=["keyhole", "pinched"],
+    )
+    def test_triangulate_keyhole_and_pinched(self, subject: Poly) -> None:
+        """Doubled vertices must not stall the clipper into clipping triangles outside the polygon."""
+        tris = _triangulate(subject)
+        assert all(_signed_area(t) > 0 for t in tris)
+        assert sum(_area(t) for t in tris) == pytest.approx(_area(subject))
+
+    def test_keyhole_subject_difference(self) -> None:
+        """A courtyard subject minus a corner cutter keeps only the area outside the cutter."""
+        keyhole: Poly = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)]
+        corner: Poly = [(8, 8), (12, 8), (12, 12), (8, 12)]
+        remainder = _difference_many(keyhole, [corner])
+        assert sum(_area(p) for p in remainder) == pytest.approx(96.0 - 4.0)
+        assert all(_is_convex(p) for p in remainder)
+
     def test_clean_poly_drops_collinear(self) -> None:
         poly: Poly = [(0, 0), (1, 0), (2, 0), (2, 2), (0, 2)]
         cleaned = _clean_poly(poly)
@@ -253,6 +277,22 @@ class TestIntersectAndMatch:
         assert report.pairs_matched == 0
         w1 = doc.getobject("BuildingSurface:Detailed", "w1")
         assert w1.outside_boundary_condition == "Outdoors"
+
+    def test_keyhole_ceiling_split_keeps_its_area(self) -> None:
+        """A courtyard ceiling drawn as a keyhole splits into fragments that still total its area."""
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Zone", "Lower", {})
+        doc.add("Zone", "Upper", {})
+        ring = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (4, 4), (4, 6), (6, 6), (6, 4), (4, 4)]
+        _wall(doc, "c", "Lower", [(x, y, 3) for x, y in ring], surface_type="Ceiling")
+        _wall(doc, "f", "Upper", [(8, 8, 3), (8, 10, 3), (10, 10, 3), (10, 8, 3)], surface_type="Floor")
+        report = intersect_and_match(doc)
+        assert report.pairs_matched == 1
+        lower = [s for s in doc["BuildingSurface:Detailed"] if s.zone_name == "Lower"]
+        areas = {s.name: get_surface_coords(s).area for s in lower}
+        assert sum(areas.values()) == pytest.approx(96.0)
+        exterior = [s for s in lower if s.outside_boundary_condition == "Outdoors"]
+        assert sum(areas[s.name] for s in exterior) == pytest.approx(92.0)
 
 
 class TestFenestration:

@@ -1420,6 +1420,132 @@ def is_convex_2d(poly: Sequence[tuple[float, float]], *, eps: float = 1e-12) -> 
     return True
 
 
+def _cross_2d(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> float:
+    """Twice the signed area of triangle ``abc`` (positive when counter-clockwise)."""
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
+def _blocks_ear(
+    p: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    eps: float,
+) -> bool:
+    """Whether ``p`` stops counter-clockwise triangle ``abc`` from being clipped as an ear.
+
+    A point inside or on the triangle blocks it, unless it coincides with one of its corners:
+    a keyhole polygon visits each bridge vertex twice, and the second visit lies on the ear.
+    """
+    if any((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 <= eps for q in (a, b, c)):
+        return False
+    return _cross_2d(a, b, p) >= -eps and _cross_2d(b, c, p) >= -eps and _cross_2d(c, a, p) >= -eps
+
+
+def triangulate_2d(poly: Sequence[tuple[float, float]]) -> list[tuple[int, int, int]]:
+    """Ear-clip a simple 2-D polygon, convex or concave, into triangles.
+
+    Returns triangles as index triples into ``poly``, in the polygon's own winding: a
+    clockwise polygon yields clockwise triangles. The triangles tile the polygon, so their
+    areas sum to its area.
+
+    The clipper tolerates the polygons building geometry produces:
+
+    - The tolerance scales with the polygon's extent, so millimetre and kilometre
+      outlines are treated alike.
+    - Vertices collinear with or coincident with their neighbours bound no area and are
+      dropped rather than clipped.
+    - A vertex coinciding with a corner of a candidate ear does not block it, so a keyhole
+      polygon (a courtyard joined to its outer boundary by a doubled bridge edge) and a
+      polygon pinched at a vertex clip correctly.
+    - If no valid ear exists (a self-intersecting polygon, or rounding that starves the
+      strict test), the most convex candidate is clipped anyway, so every vertex is still
+      covered.
+
+    Args:
+        poly: Polygon vertices, without a repeated closing vertex.
+
+    Returns:
+        Index triples, one per triangle. Empty for fewer than three vertices or a polygon
+        with no area.
+
+    Examples:
+        An L shape is cut into four triangles that stay inside it:
+
+        >>> triangulate_2d([(0, 0), (2, 0), (2, 1), (1, 1), (1, 2), (0, 2)])
+        [(0, 1, 2), (0, 2, 3), (5, 0, 3), (3, 4, 5)]
+    """
+    n = len(poly)
+    if n < 3:
+        return []
+    signed = sum(poly[i][0] * poly[(i + 1) % n][1] - poly[(i + 1) % n][0] * poly[i][1] for i in range(n))
+    idx = list(range(n)) if signed >= 0 else list(range(n - 1, -1, -1))
+    xs = [p[0] for p in poly]
+    ys = [p[1] for p in poly]
+    eps = 1e-12 * max(max(xs) - min(xs), max(ys) - min(ys), 1.0) ** 2
+
+    triangles: list[tuple[int, int, int]] = []
+    while len(idx) > 3:
+        k, clip = _next_ear_clip_step(poly, idx, eps)
+        if clip:
+            triangles.append(_corner(idx, k))
+        idx.pop(k)
+    if len(idx) == 3 and abs(_corner_cross(poly, idx, 1)) > eps:
+        triangles.append(_corner(idx, 1))
+    if signed < 0:
+        triangles = [(t0, t2, t1) for t0, t1, t2 in triangles]
+    return triangles
+
+
+def _corner(idx: list[int], k: int) -> tuple[int, int, int]:
+    """The vertex ``idx[k]`` with its neighbours in the ring ``idx``."""
+    return idx[k - 1], idx[k], idx[(k + 1) % len(idx)]
+
+
+def _corner_cross(poly: Sequence[tuple[float, float]], idx: list[int], k: int) -> float:
+    i0, i1, i2 = _corner(idx, k)
+    return _cross_2d(poly[i0], poly[i1], poly[i2])
+
+
+def _is_spike(poly: Sequence[tuple[float, float]], idx: list[int], k: int, eps: float) -> bool:
+    """Whether the ring doubles back at ``idx[k]`` (or stands still there), bounding no area."""
+    i0, i1, i2 = _corner(idx, k)
+    a, b, c = poly[i0], poly[i1], poly[i2]
+    return abs(_cross_2d(a, b, c)) <= eps and (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]) >= 0
+
+
+def _is_ear(poly: Sequence[tuple[float, float]], idx: list[int], k: int, eps: float) -> bool:
+    """Whether ``idx[k]`` is a convex corner of the counter-clockwise ring ``idx`` with no vertex in its triangle."""
+    i0, i1, i2 = _corner(idx, k)
+    a, b, c = poly[i0], poly[i1], poly[i2]
+    if _cross_2d(a, b, c) <= eps:
+        return False
+    return not any(o not in (i0, i1, i2) and _blocks_ear(poly[o], a, b, c, eps) for o in idx)
+
+
+def _next_ear_clip_step(poly: Sequence[tuple[float, float]], idx: list[int], eps: float) -> tuple[int, bool]:
+    """Pick the next vertex of the counter-clockwise ring ``idx`` to remove.
+
+    Returns its position in ``idx`` and whether to emit its corner as a triangle (``False``
+    when the vertex bounds no area and is simply dropped).
+    """
+    m = len(idx)
+    # Retract spikes before looking for ears: clipping a pinched polygon can leave an
+    # out-and-back spike whose base would otherwise pass for an ear outside the polygon.
+    k = next((k for k in range(m) if _is_spike(poly, idx, k, eps)), None)
+    if k is not None:
+        return k, False
+    k = next((k for k in range(m) if _is_ear(poly, idx, k, eps)), None)
+    if k is not None:
+        return k, True
+    # A vertex midway along a straight edge is kept while ears remain, so it still corners
+    # the triangles beside it, and dropped only once it stalls the clipper.
+    k = next((k for k in range(m) if abs(_corner_cross(poly, idx, k)) <= eps), None)
+    if k is not None:
+        return k, False
+    return max(range(m), key=lambda k: _corner_cross(poly, idx, k)), True
+
+
 def _point_in_polygon_2d(
     point: tuple[float, float],
     polygon: Sequence[tuple[float, float]],

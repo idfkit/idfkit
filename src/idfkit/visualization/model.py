@@ -19,7 +19,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from ..geometry import Polygon3D, Vector3D, is_convex_2d
+from ..geometry import Polygon3D, Vector3D, is_convex_2d, triangulate_2d
 from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
@@ -185,76 +185,6 @@ def _project_to_plane(vertices: Sequence[Vector3D]) -> list[tuple[float, float]]
     return [(v.y, v.z) for v in vertices]
 
 
-def _cross_2d(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> float:
-    """Twice the signed area of triangle ``abc`` (positive when counter-clockwise)."""
-    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
-
-
-def _in_triangle_2d(
-    p: tuple[float, float],
-    a: tuple[float, float],
-    b: tuple[float, float],
-    c: tuple[float, float],
-    eps: float,
-) -> bool:
-    """Whether ``p`` lies inside or on counter-clockwise triangle ``abc``."""
-    return _cross_2d(a, b, p) >= -eps and _cross_2d(b, c, p) >= -eps and _cross_2d(c, a, p) >= -eps
-
-
-def _ear_clip(pts: list[tuple[float, float]]) -> list[tuple[int, int, int]]:
-    """Ear-clip a simple 2D polygon into triangles of indices into ``pts``.
-
-    Vertices that are collinear with or coincide with their neighbours bound no area, so
-    they are dropped rather than clipped. A vertex that coincides with a corner of a candidate
-    ear (the doubled bridge vertices of a keyhole polygon, say) does not block it. If no ear can
-    be found at all (a self-intersecting polygon), the remainder is fan-triangulated so the
-    surface is still drawn.
-
-    The triangles keep the winding of ``pts``, so a clockwise polygon yields clockwise triangles.
-    """
-    n = len(pts)
-    signed = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
-    idx = list(range(n)) if signed >= 0 else list(range(n - 1, -1, -1))
-    xs = [p[0] for p in pts]
-    ys = [p[1] for p in pts]
-    eps = 1e-12 * max(max(xs) - min(xs), max(ys) - min(ys), 1.0) ** 2
-
-    triangles: list[tuple[int, int, int]] = []
-    while len(idx) > 3:
-        m = len(idx)
-        clipped = False
-        for k in range(m):
-            i0, i1, i2 = idx[k - 1], idx[k], idx[(k + 1) % m]
-            a, b, c = pts[i0], pts[i1], pts[i2]
-            if _cross_2d(a, b, c) <= eps:
-                continue
-            corners = (a, b, c)
-            if any(
-                o not in (i0, i1, i2) and pts[o] not in corners and _in_triangle_2d(pts[o], a, b, c, eps) for o in idx
-            ):
-                continue
-            triangles.append((i0, i1, i2))
-            idx.pop(k)
-            clipped = True
-            break
-        if clipped:
-            continue
-        degenerate = next(
-            (k for k in range(m) if abs(_cross_2d(pts[idx[k - 1]], pts[idx[k]], pts[idx[(k + 1) % m]])) <= eps),
-            None,
-        )
-        if degenerate is None:
-            triangles.extend((idx[0], idx[t], idx[t + 1]) for t in range(1, m - 1))
-            idx.clear()
-            break
-        idx.pop(degenerate)
-    if len(idx) == 3 and abs(_cross_2d(pts[idx[0]], pts[idx[1]], pts[idx[2]])) > eps:
-        triangles.append((idx[0], idx[1], idx[2]))
-    if signed < 0:
-        triangles = [(t0, t2, t1) for t0, t1, t2 in triangles]
-    return triangles
-
-
 def _triangulate_polygon(vertices: Sequence[Vector3D], offset: int) -> tuple[list[int], list[int], list[int]]:
     """Triangulate a planar polygon, concave or convex, for Mesh3d.
 
@@ -268,7 +198,7 @@ def _triangulate_polygon(vertices: Sequence[Vector3D], offset: int) -> tuple[lis
     if num_vertices <= 3 or is_convex_2d(pts):
         triangles = [(0, n, n + 1) for n in range(1, num_vertices - 1)]
     else:
-        triangles = _ear_clip(pts)
+        triangles = triangulate_2d(pts)
     return (
         [offset + t[0] for t in triangles],
         [offset + t[1] for t in triangles],

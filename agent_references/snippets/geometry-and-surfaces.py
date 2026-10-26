@@ -167,6 +167,15 @@ for k, piece in enumerate(pieces):
 # --8<-- [end:polygon-difference-parts]
 
 
+# --8<-- [start:triangulate-2d]
+from idfkit.geometry import triangulate_2d
+
+l_shape = [(10, 5), (5, 5), (5, 10), (0, 10), (0, 0), (10, 0)]
+triangles = triangulate_2d(l_shape)  # [(5, 0, 1), (1, 2, 3), (1, 3, 4), (1, 4, 5)]
+total = sum(polygon_area_2d([l_shape[i] for i in tri]) for tri in triangles)  # 75.0
+# --8<-- [end:triangulate-2d]
+
+
 # --8<-- [start:mistake-hole-good]
 for k, piece in enumerate(polygon_difference_parts_2d(site, courtyard)):
     create_block(doc, f"Block {k + 1}", piece, floor_to_floor=3.5)
