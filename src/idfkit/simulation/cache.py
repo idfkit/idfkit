@@ -62,7 +62,14 @@ def _external_files_bytes(model: IDFDocument, search_dirs: list[Path]) -> bytes:
     for ref in refs:
         parts.append(json.dumps([ref.obj_type, ref.field, ref.value]).encode("utf-8"))
         path = resolve_external_file(ref.value, search_dirs)
-        parts.append(b"\0missing\0" if path is None else b"\0found\0" + _file_digest(path))
+        if path is None:
+            parts.append(b"\0missing\0")
+            continue
+        try:
+            parts.append(b"\0found\0" + _file_digest(path))
+        except OSError:
+            # EnergyPlus cannot read it either; the run fails and is not stored.
+            parts.append(b"\0unreadable\0")
     return b"".join(parts)
 
 
@@ -229,7 +236,8 @@ class SimulationCache:
         h.update(idf_text.encode("utf-8"))
         h.update(weather_bytes)
         h.update(flags.encode("utf-8"))
-        h.update(_external_files_bytes(model, [Path(d) for d in search_dirs]))
+        dirs = [search_dirs] if isinstance(search_dirs, str) else search_dirs
+        h.update(_external_files_bytes(model, [Path(d) for d in dirs]))
         key = CacheKey(hex_digest=h.hexdigest())
         logger.debug("Computed cache key %s", key.hex_digest[:12])
         return key

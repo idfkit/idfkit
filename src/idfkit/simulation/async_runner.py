@@ -253,29 +253,34 @@ async def async_simulate(
             "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
         )
 
-        # Hashing the model's external files is blocking I/O, so it runs off the event loop.
-        cache_key = await asyncio.to_thread(
-            runner_cache_key,
-            cache,
-            sim_input_model,
-            weather_path,
-            output_dir=local_output_dir,
-            config=config,
-            expand_objects=expand_objects,
-            annual=annual,
-            design_day=design_day,
-            output_suffix=output_suffix,
-            readvars=readvars,
-            extra_args=extra_args,
-        )
+        # Copy model to avoid mutation.  The copy is taken before any await so
+        # that the cache key and the simulated model describe the same state,
+        # even if another coroutine mutates the caller's model meanwhile.
+        sim_model = sim_input_model.copy()
+
+        cache_key = None
+        if cache is not None:
+            # Hashing the model's external files is blocking I/O, so it runs off the event loop.
+            cache_key = await asyncio.to_thread(
+                runner_cache_key,
+                cache,
+                sim_model,
+                weather_path,
+                output_dir=local_output_dir,
+                config=config,
+                expand_objects=expand_objects,
+                annual=annual,
+                design_day=design_day,
+                output_suffix=output_suffix,
+                readvars=readvars,
+                extra_args=extra_args,
+            )
         if cache is not None and cache_key is not None:
             cached = cache.get(cache_key)
             if cached is not None:
                 cached.migration_report = migration_report
                 return cached
 
-        # Copy model to avoid mutation
-        sim_model = sim_input_model.copy()
         ensure_sql_output(sim_model)
 
         # Preprocessing may invoke subprocesses synchronously — delegate to a

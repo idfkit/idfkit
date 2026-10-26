@@ -6,6 +6,7 @@ import gzip
 import json
 import re
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -164,6 +165,25 @@ class TestComputeKeyCoversExternalFiles:
         assert cache.compute_key(model, weather_file, search_dirs=[a]) == cache.compute_key(
             model, weather_file, search_dirs=[b]
         )
+
+    def test_bare_string_search_dir(self, cache: SimulationCache, weather_file: Path, tmp_path: Path) -> None:
+        """A single directory passed as a string is one directory, not a sequence of characters."""
+        (tmp_path / "hourly.csv").write_text("1\n")
+        model = _schedule_file_model("hourly.csv")
+        assert cache.compute_key(model, weather_file, search_dirs=str(tmp_path)) == cache.compute_key(
+            model, weather_file, search_dirs=[tmp_path]
+        )
+
+    def test_unreadable_file_gives_a_key_instead_of_raising(
+        self, cache: SimulationCache, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """EnergyPlus fails such a run, and failed runs are never stored, so a marker is enough."""
+        (tmp_path / "hourly.csv").write_text("1\n")
+        model = _schedule_file_model("hourly.csv")
+        readable = cache.compute_key(model, weather_file, search_dirs=[tmp_path])
+        with patch("idfkit.simulation.cache._file_digest", side_effect=PermissionError("denied")):
+            unreadable = cache.compute_key(model, weather_file, search_dirs=[tmp_path])
+        assert unreadable != readable
 
 
 class TestUncacheableReason:

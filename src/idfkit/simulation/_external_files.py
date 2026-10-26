@@ -48,10 +48,11 @@ def is_file_field(field_name: str, field_schema: dict[str, Any]) -> bool:
     refers to another object, not to a file.
 
     Across every bundled schema (8.9 through 26.2) this finds exactly the
-    file fields EnergyPlus resolves with ``CheckForActualFilePath``, plus the
-    ``PythonPlugin:SearchPaths`` directories, whose models are never cached
-    anyway.  A field it wrongly includes costs nothing: a value that is not
-    an existing file contributes a fixed marker to the key.
+    top-level file fields EnergyPlus resolves with ``CheckForActualFilePath``.
+    The ``PythonPlugin:SearchPaths`` directories sit in an extensible array
+    and are not found, which does not matter: a model that runs a Python
+    plugin is never cached.  A field it wrongly includes costs nothing: a
+    value that is not an existing file contributes a fixed marker to the key.
     """
     return (
         bool(field_schema.get("retaincase"))
