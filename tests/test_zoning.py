@@ -4,20 +4,23 @@ from __future__ import annotations
 
 import pytest
 
-from idfkit import new_document
-from idfkit.geometry import calculate_surface_area, get_surface_coords
+from idfkit import IDFDocument, IDFObject, new_document
+from idfkit.geometry import calculate_surface_area, get_surface_coords, polygon_area_2d
 from idfkit.zoning import (
     ASHRAE_PERIMETER_DEPTH,
     ZonedBlock,
     ZoneFootprint,
     ZoningScheme,
     _classify_edge_orientation,
+    _conform_shared_edges,
     _inset_polygon_2d,
     _is_convex,
     _polygon_area_signed,
     _split_core_perimeter,
     create_block,
+    create_courtyard_block,
     footprint_courtyard,
+    footprint_courtyard_parts,
     footprint_h_shape,
     footprint_l_shape,
     footprint_rectangle,
@@ -142,17 +145,77 @@ class TestFootprintHShape:
 
 
 class TestFootprintCourtyard:
-    def test_vertex_count(self) -> None:
-        fp = footprint_courtyard(30, 20, 10, 8)
-        assert len(fp) == 10
+    def test_is_deprecated(self) -> None:
+        with pytest.warns(DeprecationWarning, match="footprint_courtyard_parts"):
+            footprint_courtyard(30, 20, 10, 8)
+
+    def test_output_is_unchanged(self) -> None:
+        # Deprecated, not changed: existing callers keep getting the slit ring.
+        with pytest.warns(DeprecationWarning):
+            fp = footprint_courtyard(50, 40, 20, 10)
+        assert fp == [
+            (0, 0),
+            (50, 0),
+            (50, 40),
+            (0, 40),
+            (0, 15),
+            (15, 15),
+            (15, 25),
+            (35, 25),
+            (35, 15),
+            (0, 15),
+        ]
 
     def test_inner_wider_than_outer_raises(self) -> None:
-        with pytest.raises(ValueError, match="inner_width"):
+        with pytest.warns(DeprecationWarning), pytest.raises(ValueError, match="inner_width"):
             footprint_courtyard(20, 20, 20, 5)
 
     def test_inner_deeper_than_outer_raises(self) -> None:
-        with pytest.raises(ValueError, match="inner_depth"):
+        with pytest.warns(DeprecationWarning), pytest.raises(ValueError, match="inner_depth"):
             footprint_courtyard(20, 20, 5, 20)
+
+
+def _assert_clean_ring(poly: list[tuple[float, float]], tol: float = 1e-6) -> None:
+    """No vertex repeats or coincides with another, anywhere in the ring."""
+    for i, a in enumerate(poly):
+        for b in poly[i + 1 :]:
+            assert abs(a[0] - b[0]) > tol or abs(a[1] - b[1]) > tol, f"coincident vertices {a} and {b} in {poly}"
+
+
+class TestFootprintCourtyardParts:
+    def test_two_hole_free_pieces(self) -> None:
+        parts = footprint_courtyard_parts(50, 40, 20, 10)
+        assert len(parts) == 2
+        for part in parts:
+            _assert_clean_ring(part)
+            assert polygon_area_2d(part) > 0  # CCW
+
+    def test_area_conserved(self) -> None:
+        parts = footprint_courtyard_parts(50, 40, 20, 10)
+        assert _close(sum(polygon_area_2d(p) for p in parts), 50 * 40 - 20 * 10)
+
+    def test_pieces_share_the_cut_edges(self) -> None:
+        left, right = sorted(footprint_courtyard_parts(50, 40, 20, 10), key=lambda p: min(x for x, _ in p))
+
+        def edges(poly: list[tuple[float, float]]) -> set[tuple[tuple[float, float], tuple[float, float]]]:
+            return {(poly[k], poly[(k + 1) % len(poly)]) for k in range(len(poly))}
+
+        shared = {(b, a) for a, b in edges(left)} & edges(right)
+        assert shared == {((25.0, 15.0), (25.0, 0.0)), ((25.0, 40.0), (25.0, 25.0))}
+
+    def test_origin(self) -> None:
+        parts = footprint_courtyard_parts(50, 40, 20, 10, origin=(100, 200))
+        xs = [x for p in parts for x, _ in p]
+        ys = [y for p in parts for _, y in p]
+        assert (min(xs), max(xs), min(ys), max(ys)) == (100, 150, 200, 240)
+
+    def test_inner_wider_than_outer_raises(self) -> None:
+        with pytest.raises(ValueError, match="inner_width"):
+            footprint_courtyard_parts(20, 20, 20, 5)
+
+    def test_inner_deeper_than_outer_raises(self) -> None:
+        with pytest.raises(ValueError, match="inner_depth"):
+            footprint_courtyard_parts(20, 20, 5, 20)
 
 
 # =========================================================================
@@ -1215,3 +1278,150 @@ class TestApplyAirBoundariesExisting:
         )
         air_boundaries = list(doc["Construction:AirBoundary"])
         assert len(air_boundaries) == 1
+
+
+# =========================================================================
+# create_courtyard_block
+# =========================================================================
+
+
+def _surfaces(doc: IDFDocument, surface_type: str) -> list[IDFObject]:
+    return [s for s in doc["BuildingSurface:Detailed"] if s.surface_type == surface_type]
+
+
+def _vertex_key(surface: IDFObject) -> frozenset[tuple[float, float, float]]:
+    poly = get_surface_coords(surface)
+    assert poly is not None
+    return frozenset((round(v.x, 6), round(v.y, 6), round(v.z, 6)) for v in poly.vertices)
+
+
+class TestCreateCourtyardBlock:
+    def _build(self, num_stories: int = 1, **kwargs: bool) -> IDFDocument:
+        doc = new_document()
+        create_courtyard_block(
+            doc,
+            "Office",
+            footprint_rectangle(50, 40),
+            [footprint_rectangle(20, 10, origin=(15, 15))],
+            floor_to_floor=3.5,
+            num_stories=num_stories,
+            **kwargs,
+        )
+        return doc
+
+    def test_zone_per_piece_per_story(self) -> None:
+        doc = self._build(num_stories=2)
+        assert sorted(z.name for z in doc["Zone"]) == [
+            "Office Story 1 Part 1",
+            "Office Story 1 Part 2",
+            "Office Story 2 Part 1",
+            "Office Story 2 Part 2",
+        ]
+
+    def test_no_repeated_or_coincident_vertices(self) -> None:
+        doc = self._build(num_stories=2)
+        for srf in doc["BuildingSurface:Detailed"]:
+            poly = get_surface_coords(srf)
+            assert poly is not None
+            verts = poly.vertices
+            for i, a in enumerate(verts):
+                for b in verts[i + 1 :]:
+                    assert (a - b).length() > 1e-6, f"{srf.name}: coincident vertices {a}"
+
+    def test_area_conserved(self) -> None:
+        doc = self._build()
+        for surface_type in ("Floor", "Roof"):
+            area = sum(calculate_surface_area(s) for s in _surfaces(doc, surface_type))
+            assert _close(area, 50 * 40 - 20 * 10)
+
+    def test_cut_walls_are_paired_interior_walls(self) -> None:
+        doc = self._build()
+        walls = {w.name: w for w in _surfaces(doc, "Wall")}
+        interior = [w for w in walls.values() if w.outside_boundary_condition == "Surface"]
+        assert len(interior) == 4  # two cuts, one wall on each side
+        for wall in interior:
+            other = walls[wall.outside_boundary_condition_object]
+            assert other.outside_boundary_condition_object == wall.name
+            assert other.zone_name != wall.zone_name
+            assert _vertex_key(other) == _vertex_key(wall)
+            assert wall.sun_exposure == "NoSun"
+            assert _close(calculate_surface_area(wall), 15 * 3.5)
+
+    def test_exterior_walls_cover_both_facades(self) -> None:
+        doc = self._build()
+        exterior = [w for w in _surfaces(doc, "Wall") if w.outside_boundary_condition == "Outdoors"]
+        area = sum(calculate_surface_area(w) for w in exterior)
+        assert _close(area, (2 * (50 + 40) + 2 * (20 + 10)) * 3.5)
+        keys = [_vertex_key(w) for w in exterior]
+        assert len(set(keys)) == len(keys), "two exterior walls coincide"
+
+    def test_floors_link_between_stories(self) -> None:
+        doc = self._build(num_stories=2)
+        floor = doc["BuildingSurface:Detailed"]["Office Story 2 Part 1 Floor"]
+        assert floor.outside_boundary_condition == "Surface"
+        assert floor.outside_boundary_condition_object == "Office Story 1 Part 1 Ceiling"
+
+    def test_air_boundary(self) -> None:
+        doc = self._build(air_boundary=True)
+        interior = [w for w in _surfaces(doc, "Wall") if w.outside_boundary_condition == "Surface"]
+        assert interior
+        assert all(w.construction_name == "Air Boundary" for w in interior)
+
+    def test_t_junctions_between_pieces_are_matched(self) -> None:
+        # Two courtyards whose cuts land 2 m apart leave thin strips whose
+        # corners sit in the middle of the neighbouring pieces' edges.
+        doc = new_document()
+        create_courtyard_block(
+            doc,
+            "Block",
+            footprint_rectangle(60, 40),
+            [footprint_rectangle(10, 10, origin=(5, 5)), footprint_rectangle(10, 10, origin=(7, 20))],
+            floor_to_floor=3.0,
+        )
+        walls = _surfaces(doc, "Wall")
+        exterior = [w for w in walls if w.outside_boundary_condition == "Outdoors"]
+        exterior_area = sum(calculate_surface_area(w) for w in exterior)
+        assert _close(exterior_area, (2 * (60 + 40) + 4 * (10 + 10)) * 3.0)
+        by_name = {w.name: w for w in walls}
+        for wall in walls:
+            if wall.outside_boundary_condition == "Surface":
+                assert _vertex_key(by_name[wall.outside_boundary_condition_object]) == _vertex_key(wall)
+        floor_area = sum(calculate_surface_area(s) for s in _surfaces(doc, "Floor"))
+        assert _close(floor_area, 60 * 40 - 2 * 100)
+
+    def test_courtyard_covering_footprint_raises(self) -> None:
+        with pytest.raises(ValueError, match="cover the whole footprint"):
+            create_courtyard_block(
+                new_document(), "X", footprint_rectangle(10, 10), [footprint_rectangle(20, 20, (-5, -5))], 3.0
+            )
+
+    def test_slit_footprint_is_what_this_replaces(self) -> None:
+        # The deprecated slit ring repeats (0, 15) and runs back out along the
+        # slit, so create_block builds two overlapping, opposite-facing
+        # exterior walls on y = 15 that share the 15 m slit.
+        doc = new_document()
+        with pytest.warns(DeprecationWarning):
+            fp = footprint_courtyard(50, 40, 20, 10)
+        assert fp.count((0, 15)) == 2
+        create_block(doc, "Old", fp, floor_to_floor=3.5)
+        on_slit = []
+        for wall in _surfaces(doc, "Wall"):
+            poly = get_surface_coords(wall)
+            assert poly is not None
+            if all(_close(v.y, 15.0) for v in poly.vertices):
+                on_slit.append(sorted(v.x for v in poly.vertices))
+        overlaps = [min(a[-1], b[-1]) - max(a[0], b[0]) for i, a in enumerate(on_slit) for b in on_slit[i + 1 :]]
+        assert any(_close(o, 15.0) for o in overlaps)
+
+
+class TestConformSharedEdges:
+    def test_inserts_t_junction(self) -> None:
+        big = [(0.0, 0.0), (2.0, 0.0), (2.0, 2.0), (0.0, 2.0)]
+        small = [(2.0, 0.0), (3.0, 0.0), (3.0, 1.0), (2.0, 1.0)]
+        out = _conform_shared_edges([big, small])
+        assert out[0] == [(0.0, 0.0), (2.0, 0.0), (2.0, 1.0), (2.0, 2.0), (0.0, 2.0)]
+        assert out[1] == small
+
+    def test_leaves_conforming_pieces_alone(self) -> None:
+        parts = footprint_courtyard_parts(50, 40, 20, 10)
+        assert _conform_shared_edges(parts) == parts

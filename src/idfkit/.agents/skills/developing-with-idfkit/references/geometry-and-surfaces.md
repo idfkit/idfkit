@@ -186,11 +186,12 @@ polygon_difference_2d(a, b)  # a minus b: [(0, 0), (5, 0), (5, 5), (0, 5)]
 
 These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on building footprints in plan view.
 
-`polygon_difference_2d` returns one clean, counter-clockwise, simple polygon with no duplicate or coincident vertices, ready for `create_block`. The subtracted polygon may cross the outer boundary, sit flush with a corner, or extend outside it. A single ring cannot describe a result with a hole (the subtracted polygon strictly inside) or a result in several pieces, so `polygon_difference_2d` raises `ValueError` for those. Use `polygon_difference_parts_2d` from `idfkit.geometry` there. It subtracts any number of polygons and returns hole-free pieces, largest first, each one a valid EnergyPlus surface outline or `create_block` footprint:
+`polygon_difference_2d` returns one clean, counter-clockwise, simple polygon with no duplicate or coincident vertices, ready for `create_block`. The subtracted polygon may cross the outer boundary, sit flush with a corner, or extend outside it. A single ring cannot describe a result with a hole (the subtracted polygon strictly inside) or a result in several pieces, so `polygon_difference_2d` raises `ValueError` for those. Use `polygon_difference_parts_2d` from `idfkit.geometry` there. It subtracts any number of polygons and returns hole-free pieces, largest first, each one a valid EnergyPlus surface outline or `create_block` footprint. Building each piece with its own `create_block` call leaves the walls along the cuts as exterior walls; `create_courtyard_block` (in `idfkit.zoning`) builds the pieces as zones of one block so those walls are paired interior walls:
 
 ```python
-from idfkit import create_block, footprint_rectangle
+from idfkit import footprint_rectangle
 from idfkit.geometry import polygon_difference_parts_2d
+from idfkit.zoning import create_courtyard_block
 
 site = footprint_rectangle(105, 60)
 courtyard = footprint_rectangle(40, 25, origin=(35, 20))  # strictly inside: leaves a hole
@@ -198,8 +199,9 @@ office = footprint_rectangle(33.3, 9.0)  # corner cut-out
 
 # polygon_difference_2d(site, courtyard) raises ValueError: the result has a hole.
 pieces = polygon_difference_parts_2d(site, courtyard, office)
-for k, piece in enumerate(pieces):
-    create_block(doc, f"Wing {k + 1}", piece, floor_to_floor=3.5)
+
+# To build them, keep the pieces in one block so the cut walls become interior walls:
+create_courtyard_block(doc, "Wing", site, [courtyard, office], floor_to_floor=3.5)
 ```
 
 ## Common mistakes
@@ -213,11 +215,12 @@ for k, piece in enumerate(pieces):
     create_block(doc, "Block", slit, floor_to_floor=3.5)
     ```
 
-!!! success "split the difference into hole-free pieces"
+!!! success "split it into hole-free pieces in one block"
 
     ```python
-    for k, piece in enumerate(polygon_difference_parts_2d(site, courtyard)):
-        create_block(doc, f"Block {k + 1}", piece, floor_to_floor=3.5)
+    from idfkit.zoning import create_courtyard_block
+
+    create_courtyard_block(doc, "Block", site, [courtyard], floor_to_floor=3.5)
     ```
 
 !!! failure "manually summing vertex coordinates"

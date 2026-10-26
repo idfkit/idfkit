@@ -43,11 +43,12 @@ from __future__ import annotations
 
 import enum
 import math
+import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
-from .geometry import Polygon3D, Vector3D, set_surface_coords
+from .geometry import Polygon3D, Vector3D, polygon_difference_parts_2d, set_surface_coords
 from .geometry_builders import (
     WALL_ORDER,
     HorizontalAdjacency,
@@ -309,10 +310,21 @@ def footprint_courtyard(
 ) -> list[tuple[float, float]]:
     """Return a courtyard (donut) footprint as a single slit polygon.
 
+    !!! warning "Deprecated"
+        Use [footprint_courtyard_parts][idfkit.zoning.footprint_courtyard_parts]
+        for hole-free pieces, or
+        [create_courtyard_block][idfkit.zoning.create_courtyard_block] to build
+        the block directly.  This function emits a ``DeprecationWarning`` and
+        will be removed in a future release.
+
     The polygon traces the outer boundary counter-clockwise, steps into
-    the inner courtyard through a slit at the bottom-right corner, traces
-    the courtyard clockwise, and returns.  This is a valid simple polygon
-    that EnergyPlus can handle.
+    the courtyard through a zero-width slit from the left edge, traces the
+    courtyard clockwise, and returns along the slit.  The area is right,
+    but the slit vertex appears twice and the slit is traversed in both
+    directions, so [create_block][idfkit.zoning.create_block] turns it into
+    two overlapping, opposite-facing exterior walls and a self-touching
+    floor and roof, which EnergyPlus rejects.  EnergyPlus surfaces cannot
+    have holes, so a courtyard has to be split into several simple pieces.
 
         ```text
         ┌──────────────────┐
@@ -329,16 +341,16 @@ def footprint_courtyard(
         inner_depth: Courtyard depth (Y), must be < *outer_depth*.
         origin: ``(x, y)`` of the lower-left corner.
     """
-    if inner_width >= outer_width:
-        msg = f"inner_width ({inner_width}) must be < outer_width ({outer_width})"
-        raise ValueError(msg)
-    if inner_depth >= outer_depth:
-        msg = f"inner_depth ({inner_depth}) must be < outer_depth ({outer_depth})"
-        raise ValueError(msg)
+    warnings.warn(
+        "footprint_courtyard() returns a slit polygon that create_block() turns into overlapping walls; "
+        "use idfkit.zoning.footprint_courtyard_parts() or idfkit.zoning.create_courtyard_block() instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
     x, y = origin
     margin_x = (outer_width - inner_width) / 2
     margin_y = (outer_depth - inner_depth) / 2
-    # Outer CCW
     ix0 = x + margin_x
     iy0 = y + margin_y
     ix1 = ix0 + inner_width
@@ -359,6 +371,69 @@ def footprint_courtyard(
         # Slit back out
         (x, y + margin_y),  # slit exit (same point, degenerate edge)
     ]
+
+
+def footprint_courtyard_parts(
+    outer_width: float,
+    outer_depth: float,
+    inner_width: float,
+    inner_depth: float,
+    origin: tuple[float, float] = (0.0, 0.0),
+) -> list[list[tuple[float, float]]]:
+    """Return a centred-courtyard footprint as hole-free pieces.
+
+    EnergyPlus surfaces cannot have holes, so the ring around the
+    courtyard is cut by a vertical line through the courtyard's centre
+    into two U-shaped halves.  The pieces are simple, counter-clockwise,
+    free of repeated or coincident vertices, and do not overlap; their
+    areas add up to ``outer_width * outer_depth - inner_width * inner_depth``.
+    The two cut edges are shared exactly, so passing the pieces as
+    ``CUSTOM`` zones of one block (which
+    [create_courtyard_block][idfkit.zoning.create_courtyard_block] does)
+    makes them interior walls.
+
+        ```text
+        ┌─────────┬─────────┐
+        │  ┌──────┴──────┐  │
+        │  │  courtyard  │  │
+        │  └──────┬──────┘  │
+        └─────────┴─────────┘
+        ```
+
+    Args:
+        outer_width: Outer bounding box width (X).
+        outer_depth: Outer bounding box depth (Y).
+        inner_width: Courtyard width (X), must be < *outer_width*.
+        inner_depth: Courtyard depth (Y), must be < *outer_depth*.
+        origin: ``(x, y)`` of the lower-left corner.
+
+    Returns:
+        The pieces, largest first.
+
+    Examples:
+        >>> from idfkit.geometry import polygon_area_2d
+        >>> parts = footprint_courtyard_parts(50, 40, 20, 10)
+        >>> parts[0]
+        [(0.0, 0.0), (25.0, 0.0), (25.0, 15.0), (15.0, 15.0), (15.0, 25.0), (25.0, 25.0), (25.0, 40.0), (0.0, 40.0)]
+        >>> sum(polygon_area_2d(p) for p in parts)
+        1800.0
+    """
+    _check_courtyard_dims(outer_width, outer_depth, inner_width, inner_depth)
+    x, y = origin
+    margin_x = (outer_width - inner_width) / 2
+    margin_y = (outer_depth - inner_depth) / 2
+    outer = footprint_rectangle(outer_width, outer_depth, origin)
+    inner = footprint_rectangle(inner_width, inner_depth, (x + margin_x, y + margin_y))
+    return [[(float(px), float(py)) for px, py in part] for part in polygon_difference_parts_2d(outer, inner)]
+
+
+def _check_courtyard_dims(outer_width: float, outer_depth: float, inner_width: float, inner_depth: float) -> None:
+    if inner_width >= outer_width:
+        msg = f"inner_width ({inner_width}) must be < outer_width ({outer_width})"
+        raise ValueError(msg)
+    if inner_depth >= outer_depth:
+        msg = f"inner_depth ({inner_depth}) must be < outer_depth ({outer_depth})"
+        raise ValueError(msg)
 
 
 # ---------------------------------------------------------------------------
@@ -1062,6 +1137,116 @@ def create_block(
         base_elevation=base_elevation,
     )
     return block.build(doc)
+
+
+def create_courtyard_block(
+    doc: IDFDocument,
+    name: str,
+    outer: Sequence[tuple[float, float]],
+    courtyards: Sequence[Sequence[tuple[float, float]]],
+    floor_to_floor: float,
+    num_stories: int = 1,
+    *,
+    air_boundary: bool = False,
+    base_elevation: float = 0.0,
+) -> list[IDFObject]:
+    """Create a block with one or more courtyards cut out of its footprint.
+
+    EnergyPlus surfaces cannot have holes, so the footprint ``outer`` minus
+    ``courtyards`` is split into hole-free pieces with
+    [polygon_difference_parts_2d][idfkit.geometry.polygon_difference_parts_2d]
+    and each piece becomes one zone per story, named
+    ``"<name> Part <k>"`` (``"<name> Story <n> Part <k>"`` for several
+    stories), largest piece first.  The pieces are built as ``CUSTOM``
+    zones of a single block, so the walls along the cuts between pieces
+    are interior walls (``Surface`` boundary, paired with the neighbouring
+    piece's wall) rather than exterior walls, and the courtyard facades are
+    exterior walls.  No surface has repeated or coincident vertices.
+
+    Args:
+        doc: The document to add objects to.
+        name: Base name for zones and surfaces.
+        outer: Outer 2-D footprint as ``(x, y)`` tuples (CCW).
+        courtyards: Polygons to cut out of *outer*.  They may touch or
+            cross the outer boundary, which leaves a notch instead of a hole.
+        floor_to_floor: Floor-to-floor height in metres.
+        num_stories: Number of above-ground stories.
+        air_boundary: If ``True``, apply ``Construction:AirBoundary`` to
+            the walls between pieces, so the ring behaves as one open space.
+        base_elevation: Elevation of the ground floor in metres.
+
+    Returns:
+        All created [IDFObject][idfkit.objects.IDFObject] instances.
+
+    Raises:
+        ValueError: If the courtyards cover the whole footprint.
+
+    Examples:
+        A 50 x 40 m block around a centred 20 x 10 m courtyard:
+
+            ```python
+            from idfkit import new_document
+            from idfkit.zoning import create_courtyard_block, footprint_rectangle
+
+            doc = new_document()
+            create_courtyard_block(
+                doc,
+                "Office",
+                footprint_rectangle(50, 40),
+                [footprint_rectangle(20, 10, origin=(15, 15))],
+                floor_to_floor=3.5,
+                num_stories=2,
+            )
+            ```
+    """
+    parts = _conform_shared_edges(polygon_difference_parts_2d(outer, *courtyards))
+    if not parts:
+        msg = "create_courtyard_block: the courtyards cover the whole footprint"
+        raise ValueError(msg)
+    block = ZonedBlock(
+        name=name,
+        footprint=outer,
+        floor_to_floor=floor_to_floor,
+        num_stories=num_stories,
+        zoning=ZoningScheme.CUSTOM,
+        custom_zones=[ZoneFootprint(f"Part {k + 1}", part) for k, part in enumerate(parts)],
+        air_boundary=air_boundary,
+        base_elevation=base_elevation,
+    )
+    return block.build(doc)
+
+
+def _conform_shared_edges(parts: list[list[tuple[float, float]]], tol: float = 1e-9) -> list[list[tuple[float, float]]]:
+    """Insert every piece's vertices that lie inside another piece's edges into that edge.
+
+    Walls between zones are paired by exact reversed edges, so a shared
+    boundary must carry the same vertices on both sides.  Pieces that
+    meet with a T-junction (one piece's corner in the middle of the
+    neighbour's edge) get the junction added to the longer edge.
+
+    Examples:
+        >>> _conform_shared_edges([[(0, 0), (2, 0), (2, 2), (0, 2)], [(2, 0), (3, 0), (3, 1), (2, 1)]])[0]
+        [(0, 0), (2, 0), (2, 1), (2, 2), (0, 2)]
+    """
+    out: list[list[tuple[float, float]]] = []
+    for i, part in enumerate(parts):
+        others = [p for j, other in enumerate(parts) if j != i for p in other]
+        conformed: list[tuple[float, float]] = []
+        n = len(part)
+        for k in range(n):
+            a, b = part[k], part[(k + 1) % n]
+            conformed.append(a)
+            dx, dy = b[0] - a[0], b[1] - a[1]
+            length_sq = dx * dx + dy * dy
+            inner: dict[tuple[float, float], float] = {}
+            for p in others:
+                t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length_sq
+                cross = (p[0] - a[0]) * dy - (p[1] - a[1]) * dx
+                if tol < t < 1 - tol and abs(cross) <= tol * math.sqrt(length_sq):
+                    inner[p] = t
+            conformed.extend(sorted(inner, key=inner.__getitem__))
+        out.append(conformed)
+    return out
 
 
 # ---------------------------------------------------------------------------

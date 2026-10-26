@@ -27,6 +27,16 @@ idfkit provides parametric footprint generators that return `list[tuple[float, f
 
 Or pass any CCW `list[tuple[float, float]]` you generate yourself.
 
+## Courtyards (footprints with holes)
+
+EnergyPlus surfaces cannot have holes, so a footprint with a courtyard has to become several simple pieces. Use `create_courtyard_block` from `idfkit.zoning`: it subtracts the courtyard polygons from the outer footprint with `polygon_difference_parts_2d`, makes one zone per piece per story (`"<name> Part <k>"`, largest first), and builds the pieces as `CUSTOM` zones of one block, so the walls along the cuts are interior `Surface` walls paired between the pieces' zones, not exterior walls. Courtyards may also touch or cross the outer edge (a notch). `footprint_courtyard_parts` returns the two hole-free halves of a centred rectangular courtyard if you want the polygons themselves:
+
+```python
+--8<-- "agent_references/snippets/geometry-builders-and-zoning.py:courtyard"
+```
+
+Each piece is concave, so there is no `zoning=` argument: every piece is one zone per story. For a finer split, compute the pieces yourself and pass them (or your own subdivision of them) as `custom_zones` to `create_block` with `ZoningScheme.CUSTOM`; walls whose edges match in reverse become interior walls.
+
 ## Zoning schemes
 
 `ZoningScheme` controls how each story is partitioned:
@@ -125,6 +135,21 @@ The remainder is always EnergyPlus-safe: no holes and no zero-width slits. When 
     ```
 
 See [hvac-templates.md](hvac-templates.md).
+
+!!! failure "the deprecated `footprint_courtyard` slit polygon"
+
+    ```python
+    fp = footprint_courtyard(50, 40, 20, 10)  # DeprecationWarning
+    create_block(doc, "Office", fp, floor_to_floor=3.5)
+    # The ring repeats a vertex and runs out and back along a zero-width slit:
+    # two overlapping exterior walls and a self-touching floor. EnergyPlus fails.
+    ```
+
+!!! success "`create_courtyard_block`"
+
+    ```python
+    --8<-- "agent_references/snippets/geometry-builders-and-zoning.py:mistake-courtyard-good"
+    ```
 
 !!! failure "forgetting `link_blocks` between setbacks"
 
