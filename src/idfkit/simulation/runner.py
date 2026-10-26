@@ -24,13 +24,14 @@ from ._common import (
     resolve_version_mismatch,
     upload_results,
 )
+from .cache import runner_cache_key
 from .progress import ProgressParser, SimulationProgress
 from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
     from ..document import IDFDocument
-    from .cache import CacheKey, SimulationCache
+    from .cache import SimulationCache
     from .fs import FileSystem
 
 logger = logging.getLogger(__name__)
@@ -156,7 +157,11 @@ def simulate(
             back to 120 s.  Independent of *timeout* — there is no shared
             wall-clock cap across the pipeline.
         extra_args: Additional command-line arguments.
-        cache: Optional simulation cache for content-hash lookups.
+        cache: Optional simulation cache for content-hash lookups.  The key
+            covers the contents of every file the model names (a
+            ``Schedule:File`` CSV staged into *output_dir*, for example).  A
+            model with a ``PythonPlugin:Instance`` or a co-simulation
+            ``ExternalInterface`` is never cached; a warning is logged.
         fs: Optional file system backend for storing results on remote
             storage (e.g., S3). When provided, ``output_dir`` is required
             and specifies the remote destination path. EnergyPlus runs
@@ -234,18 +239,20 @@ def simulate(
             "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
         )
 
-        cache_key: CacheKey | None = None
-        if cache is not None:
-            cache_key = cache.compute_key(
-                sim_input_model,
-                weather_path,
-                expand_objects=expand_objects,
-                annual=annual,
-                design_day=design_day,
-                output_suffix=output_suffix,
-                readvars=readvars,
-                extra_args=extra_args,
-            )
+        cache_key = runner_cache_key(
+            cache,
+            sim_input_model,
+            weather_path,
+            output_dir=local_output_dir,
+            config=config,
+            expand_objects=expand_objects,
+            annual=annual,
+            design_day=design_day,
+            output_suffix=output_suffix,
+            readvars=readvars,
+            extra_args=extra_args,
+        )
+        if cache is not None and cache_key is not None:
             cached = cache.get(cache_key)
             if cached is not None:
                 logger.debug("Cache hit for key %s", cache_key.hex_digest[:12])

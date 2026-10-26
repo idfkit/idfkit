@@ -249,6 +249,28 @@ class TestSimulateBatch:
         assert mock_run.call_count == 1  # no additional call
 
     @patch("idfkit.simulation.runner.subprocess.run")
+    def test_cache_follows_staged_file_content(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        """A job's staged Schedule:File CSV is part of its cache key (#216)."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        csv = run_dir / "hourly.csv"
+        model = new_document()
+        model.add("Schedule:File", "Staged", file_name="hourly.csv", column_number=1, validate=False)
+        job = SimulationJob(model=model, weather=weather_file, output_dir=run_dir)
+
+        csv.write_text("1\n")
+        simulate_batch([job], energyplus=mock_config, cache=cache)
+        simulate_batch([job], energyplus=mock_config, cache=cache)
+        assert mock_run.call_count == 1
+        csv.write_text("2\n")
+        simulate_batch([job], energyplus=mock_config, cache=cache)
+        assert mock_run.call_count == 2
+
+    @patch("idfkit.simulation.runner.subprocess.run")
     def test_total_runtime_populated(
         self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path
     ) -> None:
