@@ -700,6 +700,44 @@ class TestPolygonDifferenceParts2D:
         assert polygon_difference_parts_2d([(0, 0), (1, 1)], [(0, 0), (1, 0), (1, 1)]) == []
         assert polygon_difference_parts_2d([(0, 0), (0, 0), (0, 0)]) == []
 
+    def test_nearly_aligned_holes_share_one_cut(self) -> None:
+        """Two holes whose middles are 1 cm apart get one cut, not two that leave slivers."""
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        a = footprint_rectangle(10, 10, origin=(5, 5))
+        b = footprint_rectangle(10, 10, origin=(5.01, 20))
+        parts = polygon_difference_parts_2d(outer, a, b)
+        assert len(parts) == 2
+        assert min(polygon_area_2d(p) for p in parts) > 1.0
+        assert math.isclose(sum(polygon_area_2d(p) for p in parts), 2400 - 200)
+
+    def test_one_cut_crossing_several_holes(self) -> None:
+        """A cut through the largest hole also opens every hole whose x-range it crosses."""
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        big = footprint_rectangle(20, 8, origin=(10, 4))  # cut at x = 20
+        small = footprint_rectangle(6, 6, origin=(16, 24))  # spans x 16..22
+        parts = polygon_difference_parts_2d(outer, small, big)
+        assert len(parts) == 2
+        xs = {x for p in parts for x, _ in p}
+        assert 20.0 in xs
+        assert 19.0 not in xs  # the small hole's own middle is not cut
+
+    def test_holes_apart_in_x_get_their_own_cuts(self) -> None:
+        from idfkit.zoning import footprint_rectangle
+
+        outer = footprint_rectangle(60, 40)
+        a = footprint_rectangle(10, 10, origin=(5, 5))
+        b = footprint_rectangle(10, 10, origin=(40, 20))
+        parts = polygon_difference_parts_2d(outer, a, b)
+        assert len(parts) == 3
+        assert math.isclose(sum(polygon_area_2d(p) for p in parts), 2400 - 200)
+        for p in parts:
+            assert polygon_area_2d(p) > 0
+            assert len(set(p)) == len(p)
+
 
 class TestPolygonContains2D:
     def test_contained(self) -> None:

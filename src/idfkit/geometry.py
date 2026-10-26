@@ -1855,8 +1855,11 @@ def polygon_difference_parts_2d(
     footprint.
 
     A result that would have a hole (an *inner* strictly inside *outer*)
-    is cut by a vertical line through each hole, giving notched pieces
-    whose shared cut edges line up.  A result that is already hole-free
+    is cut open by vertical lines, giving notched pieces whose shared cut
+    edges line up.  The largest hole is cut through its middle, and a hole
+    that an earlier cut already crosses gets no cut of its own, so holes
+    whose middles nearly line up share one cut instead of leaving a sliver
+    piece between two.  A result that is already hole-free
     is returned as is: one piece for an edge or corner cut-out, several
     when the *inners* split *outer* apart.
 
@@ -1882,12 +1885,35 @@ def polygon_difference_parts_2d(
     rings = _difference_rings(outer, inners)
     holes = [r for r in rings if polygon_area_2d(r) < 0]
     if holes:
-        cuts = [(min(p[0] for p in h) + max(p[0] for p in h)) / 2 for h in holes]
-        rings = _difference_rings(outer, inners, cuts)
-        if any(polygon_area_2d(r) < 0 for r in rings):  # pragma: no cover - every hole is crossed by its own cut
+        rings = _difference_rings(outer, inners, _hole_cuts(holes))
+        if any(polygon_area_2d(r) < 0 for r in rings):  # pragma: no cover - every hole is crossed by a cut
             msg = "polygon_difference_parts_2d: failed to cut the difference into hole-free pieces"
             raise RuntimeError(msg)
     return sorted(rings, key=polygon_area_2d, reverse=True)
+
+
+def _hole_cuts(holes: Sequence[Polygon2D]) -> list[float]:
+    """Choose the x of the vertical lines that break *holes* open, as few as needed.
+
+    A cut runs across the whole polygon, so a line through one hole also
+    breaks any other hole whose x-range it crosses.  The largest hole is cut
+    through its middle first, and a hole an earlier cut already crosses gets
+    no cut of its own.  Two holes with nearly the same middle would
+    otherwise get two cuts a hair apart, leaving sliver pieces between them.
+
+    Examples:
+        >>> _hole_cuts([[(5, 5), (5, 15), (15, 15), (15, 5)], [(5.01, 20), (5.01, 28), (13.01, 28), (13.01, 20)]])
+        [10.0]
+        >>> _hole_cuts([[(5, 5), (5, 15), (15, 15), (15, 5)], [(40, 5), (40, 15), (50, 15), (50, 5)]])
+        [10.0, 45.0]
+    """
+    cuts: list[float] = []
+    for hole in sorted(holes, key=polygon_area_2d):  # holes are clockwise: most negative = largest first
+        lo = min(p[0] for p in hole)
+        hi = max(p[0] for p in hole)
+        if not any(lo < c < hi for c in cuts):
+            cuts.append((lo + hi) / 2)
+    return cuts
 
 
 def polygon_contains_2d(

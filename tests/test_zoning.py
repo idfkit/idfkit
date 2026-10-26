@@ -1373,17 +1373,18 @@ class TestCreateCourtyardBlock:
         assert all(w.construction_name == "Air Boundary" for w in interior)
 
     def test_two_courtyards_pieces_are_matched(self) -> None:
-        # Two courtyards whose cuts land 2 m apart leave five pieces,
-        # including thin strips between the cuts; every shared wall pairs up.
+        # Two courtyards apart in x each get their own cut: three pieces, and
+        # every shared wall pairs up.
         doc = new_document()
         create_courtyard_block(
             doc,
             "Block",
             footprint_rectangle(60, 40),
-            [footprint_rectangle(10, 10, origin=(5, 5)), footprint_rectangle(10, 10, origin=(7, 20))],
+            [footprint_rectangle(10, 10, origin=(5, 5)), footprint_rectangle(10, 10, origin=(40, 20))],
             floor_to_floor=3.0,
         )
-        assert len(doc["Zone"]) == 5
+        assert len(doc["Zone"]) == 3
+        assert len([w for w in _surfaces(doc, "Wall") if w.outside_boundary_condition == "Surface"]) == 8
         walls = _surfaces(doc, "Wall")
         exterior = [w for w in walls if w.outside_boundary_condition == "Outdoors"]
         exterior_area = sum(calculate_surface_area(w) for w in exterior)
@@ -1394,6 +1395,18 @@ class TestCreateCourtyardBlock:
                 assert _vertex_key(by_name[wall.outside_boundary_condition_object]) == _vertex_key(wall)
         floor_area = sum(calculate_surface_area(s) for s in _surfaces(doc, "Floor"))
         assert _close(floor_area, 60 * 40 - 2 * 100)
+
+    def test_nearly_aligned_courtyards_make_no_sliver_zones(self) -> None:
+        doc = new_document()
+        create_courtyard_block(
+            doc,
+            "Block",
+            footprint_rectangle(60, 40),
+            [footprint_rectangle(10, 10, origin=(5, 5)), footprint_rectangle(10, 10, origin=(5.01, 20))],
+            floor_to_floor=3.0,
+        )
+        assert len(doc["Zone"]) == 2
+        assert min(calculate_surface_area(f) for f in _surfaces(doc, "Floor")) > 1.0
 
     def test_courtyard_covering_footprint_raises(self) -> None:
         with pytest.raises(ValueError, match="cover the whole footprint"):
