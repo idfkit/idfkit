@@ -9,11 +9,11 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import new_document
+from idfkit import get_schema, new_document
 from idfkit.document import IDFDocument
 from idfkit.simulation._external_files import (
-    EXTERNAL_FILE_FIELDS,
     ExternalFileRef,
+    external_file_fields,
     external_file_refs,
     resolve_external_file,
     search_dirs_for_run,
@@ -192,19 +192,31 @@ class TestUncacheableReason:
         assert uncacheable_reason(model) is None
 
 
-# Fields whose names look like file references but do not name a file EnergyPlus reads as input.
-_NOT_INPUT_FILES = {
-    ("Parametric:FileNameSuffix", "suffix_for_file_name_in_run"),  # names output files of a parametric run
+# The file fields EnergyPlus resolves with CheckForActualFilePath, read from its source.  The rule
+# that derives the list from the schema must keep finding every one of them in the versions that have it.
+_KNOWN_FILE_FIELDS = {
+    ("Schedule:File", "file_name"),
+    ("Schedule:File:Shading", "file_name"),
+    ("Table:IndependentVariable", "external_file_name"),
+    ("Table:Lookup", "external_file_name"),
+    ("Table:MultiVariableLookup", "external_file_name"),
+    ("Table:TwoIndependentVariables", "external_file_name"),
+    ("Construction:WindowDataFile", "file_name"),
+    ("Chiller:Electric:ASHRAE205", "representation_file_name"),
+    ("Coil:DX:ASHRAE205:Performance", "representation_file_name"),
+    ("ExternalInterface:FunctionalMockupUnitImport", "fmu_file_name"),
 }
-# Fields that do name input files, on object types that make a run uncacheable instead.
-_UNCACHEABLE_FIELDS = {
-    ("PythonPlugin:Instance", "python_module_name"),
-    ("PythonPlugin:SearchPaths", "search_path"),
+# Fields a name-only scan flags that the derived rule rightly leaves out, each reviewed.
+_REVIEWED_EXCEPTIONS = {
+    ("Parametric:FileNameSuffix", "suffixes[].suffix_for_file_name_in_run"),  # names output files of a run
+    ("PythonPlugin:Instance", "python_module_name"),  # the model is never cached instead
+    ("PythonPlugin:SearchPaths", "py_search_paths[].search_path"),  # the model is never cached instead
 }
-_FILE_FIELD = re.compile(r"file|path|director|module_name", re.IGNORECASE)
+_LOOSE_FILE_NAME = re.compile(r"file|path|director|module_name", re.IGNORECASE)
 
 
-def _file_like_fields(schema: dict[str, object]) -> set[tuple[str, str]]:
+def _loose_file_fields(schema: dict[str, object]) -> set[tuple[str, str]]:
+    """Every string field whose name merely looks like a file reference, arrays included."""
     found: set[tuple[str, str]] = set()
     properties = schema["properties"]
     assert isinstance(properties, dict)
@@ -213,26 +225,45 @@ def _file_like_fields(schema: dict[str, object]) -> set[tuple[str, str]]:
             for name, field in body.get("properties", {}).items():
                 candidates = [(name, field)]
                 if field.get("type") == "array":
-                    candidates = list(field.get("items", {}).get("properties", {}).items())
-                for sub_name, sub in candidates:
-                    if not _FILE_FIELD.search(sub_name) or "enum" in sub or "object_list" in sub:
+                    candidates = [(f"{name}[].{k}", v) for k, v in field.get("items", {}).get("properties", {}).items()]
+                for key, sub in candidates:
+                    leaf = key.rsplit(".", 1)[-1]
+                    if not _LOOSE_FILE_NAME.search(leaf) or "enum" in sub or "object_list" in sub:
                         continue
-                    if sub.get("type") not in (None, "string") or "node_name" in sub_name:
+                    if sub.get("type") not in (None, "string") or "node_name" in leaf:
                         continue
-                    found.add((obj_type, re.sub(r"_\d+$", "", sub_name)))
+                    found.add((obj_type, key))
     return found
 
 
-@pytest.mark.parametrize("schema_dir", sorted(p.name for p in SCHEMAS.glob("V*")))
-def test_every_file_field_in_every_bundled_schema_is_classified(schema_dir: str) -> None:
-    """A schema that adds a file-reading field fails here until the cache key covers it.
+_BUNDLED = sorted(p.name for p in SCHEMAS.glob("V*"))
 
-    The cache key hashes files named by EXTERNAL_FILE_FIELDS.  An unclassified
-    field would be a file EnergyPlus reads that the key ignores, which is the
-    stale-hit bug of #216.
+
+@pytest.mark.parametrize("schema_dir", _BUNDLED)
+def test_derived_file_fields_cover_every_file_field(schema_dir: str) -> None:
+    """The fields derived from the schema include every known file field, and nothing that only looks like one is missed.
+
+    A new EnergyPlus release that adds a file field marked ``retaincase`` is
+    covered without any change.  One that adds a file-like field without the
+    mark fails here, so it is reviewed before the cache can ignore it.
     """
     with gzip.open(SCHEMAS / schema_dir / "Energy+.schema.epJSON.gz") as f:
-        schema = json.loads(f.read())
-    covered = {(t, f) for t, fs in EXTERNAL_FILE_FIELDS.items() for f in fs}
-    unclassified = _file_like_fields(schema) - covered - _NOT_INPUT_FILES - _UNCACHEABLE_FIELDS
-    assert not unclassified, f"{schema_dir}: classify these file fields for the cache key: {sorted(unclassified)}"
+        raw = json.loads(f.read())
+    major, minor, patch = (int(x) for x in schema_dir[1:].split("-"))
+    derived = {
+        (t, field) for t, fields in external_file_fields(get_schema((major, minor, patch))).items() for field in fields
+    }
+
+    present = {(t, field) for t, field in _KNOWN_FILE_FIELDS if t in raw["properties"]}
+    assert present <= derived, f"{schema_dir}: the rule no longer finds {sorted(present - derived)}"
+
+    missed = _loose_file_fields(raw) - derived - _REVIEWED_EXCEPTIONS
+    assert not missed, f"{schema_dir}: review these file-like fields the rule does not cover: {sorted(missed)}"
+
+
+def test_derived_fields_exclude_labels_that_keep_their_case() -> None:
+    """``retaincase`` alone also marks labels; the field name keeps them out."""
+    fields = external_file_fields(get_schema((26, 2, 0)))
+    assert "Lights" not in fields  # end_use_subcategory keeps its case but is not a file
+    assert "Output:PreprocessorMessage" not in fields
+    assert fields["Schedule:File"] == ("file_name",)

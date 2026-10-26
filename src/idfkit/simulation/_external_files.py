@@ -2,6 +2,10 @@
 
 Internal module — not part of the public API.
 
+Which fields name such a file is derived from the model's own schema (see
+[is_file_field][idfkit.simulation._external_files.is_file_field]), so the
+list follows the EnergyPlus version of the model and grows with new releases.
+
 EnergyPlus finds each of these files with ``CheckForActualFilePath``, which
 tries, in order, the path as written (absolute, or relative to the working
 directory), the IDF's directory, and the directory of the EnergyPlus
@@ -16,29 +20,75 @@ read.  The two environment variables are not consulted.
 
 from __future__ import annotations
 
+import functools
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from ..document import IDFDocument
+    from ..schema import EpJSONSchema
 
-EXTERNAL_FILE_FIELDS: dict[str, tuple[str, ...]] = {
-    "Schedule:File": ("file_name",),
-    "Schedule:File:Shading": ("file_name",),
-    "Table:IndependentVariable": ("external_file_name",),
-    "Table:Lookup": ("external_file_name",),
-    "Table:MultiVariableLookup": ("external_file_name",),
-    "Table:TwoIndependentVariables": ("external_file_name",),
-    "Construction:WindowDataFile": ("file_name",),
-    "Chiller:Electric:ASHRAE205": ("representation_file_name",),
-    "Coil:DX:ASHRAE205:Performance": ("representation_file_name",),
-    "ExternalInterface:FunctionalMockupUnitImport": ("fmu_file_name",),
-}
-"""Object types whose fields name a file EnergyPlus reads, across every bundled schema version."""
+FILE_FIELD_NAME = re.compile(r"file|path|director", re.IGNORECASE)
+"""Matches the field names EnergyPlus gives fields that name a file or a directory."""
+
+
+def is_file_field(field_name: str, field_schema: dict[str, Any]) -> bool:
+    """Whether a top-level epJSON field names a file EnergyPlus reads.
+
+    EnergyPlus marks no field as a file path, so this combines two signals
+    the schema does carry.  ``retaincase`` (the IDD's ``\\retaincase``) marks
+    strings EnergyPlus must not upper-case, which every file name is, along
+    with labels such as end-use subcategories.  The field name then
+    separates file names from those labels.  A field with an ``object_list``
+    refers to another object, not to a file.
+
+    Across every bundled schema (8.9 through 26.2) this finds exactly the
+    file fields EnergyPlus resolves with ``CheckForActualFilePath``, plus the
+    ``PythonPlugin:SearchPaths`` directories, whose models are never cached
+    anyway.  A field it wrongly includes costs nothing: a value that is not
+    an existing file contributes a fixed marker to the key.
+    """
+    return (
+        bool(field_schema.get("retaincase"))
+        and "object_list" not in field_schema
+        and field_schema.get("type") in (None, "string")
+        and bool(FILE_FIELD_NAME.search(field_name))
+    )
+
+
+@functools.lru_cache(maxsize=32)
+def external_file_fields(schema: EpJSONSchema) -> dict[str, tuple[str, ...]]:
+    """Return, per object type in *schema*, the fields that name a file EnergyPlus reads.
+
+    Derived from the schema itself with
+    [is_file_field][idfkit.simulation._external_files.is_file_field], so
+    file fields that a new EnergyPlus release adds are covered without a
+    change here.
+    """
+    fields: dict[str, tuple[str, ...]] = {}
+    for obj_type in schema.object_types:
+        inner = schema.get_inner_schema(obj_type) or {}
+        properties: dict[str, dict[str, Any]] = inner.get("properties", {})
+        names = tuple(name for name, spec in properties.items() if is_file_field(name, spec))
+        if names:
+            fields[obj_type] = names
+    return fields
+
+
+def _model_file_fields(model: IDFDocument) -> dict[str, tuple[str, ...]]:
+    schema = model.schema
+    if schema is None:
+        from ..schema import get_schema
+        from ..versions import LATEST_VERSION
+
+        schema = get_schema(LATEST_VERSION)
+    return external_file_fields(schema)
+
 
 DEFAULT_FILE_NAMES: dict[tuple[str, str], str] = {
     ("Construction:WindowDataFile", "file_name"): "Window5DataFile.dat",
@@ -65,7 +115,7 @@ def external_file_refs(model: IDFDocument) -> list[ExternalFileRef]:
     contributes that default; any other blank field contributes nothing.
     """
     refs: set[ExternalFileRef] = set()
-    for obj_type, fields in EXTERNAL_FILE_FIELDS.items():
+    for obj_type, fields in _model_file_fields(model).items():
         if obj_type not in model:
             continue
         for obj in model.get_collection(obj_type):
