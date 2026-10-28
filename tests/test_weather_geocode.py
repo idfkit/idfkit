@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import json
 from datetime import datetime, timedelta, timezone
+from email.message import Message
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -108,8 +109,10 @@ class TestGeocode:
     def test_empty_response_raises(self, mock_urlopen: MagicMock) -> None:
         mock_urlopen.return_value = _mock_response(b"[]")
 
-        with pytest.raises(GeocodingError, match="No results found"):
+        with pytest.raises(GeocodingError, match="No results found") as info:
             geocode("zzzznonexistentplace")
+        assert info.value.kind == "not-found"
+        assert info.value.status is None
 
     @patch("urllib.request.urlopen")
     def test_network_error_raises(self, mock_urlopen: MagicMock) -> None:
@@ -117,23 +120,71 @@ class TestGeocode:
 
         mock_urlopen.side_effect = URLError("Network unreachable")
 
-        with pytest.raises(GeocodingError, match="Failed to geocode"):
+        with pytest.raises(GeocodingError, match="Failed to geocode") as info:
             geocode("Chicago, IL")
+        assert info.value.kind == "unreachable"
 
     @patch("urllib.request.urlopen")
     def test_invalid_json_raises(self, mock_urlopen: MagicMock) -> None:
         mock_urlopen.return_value = _mock_response(b"not valid json")
 
-        with pytest.raises(GeocodingError, match="Failed to geocode"):
+        with pytest.raises(GeocodingError, match="Failed to geocode") as info:
             geocode("Some address")
+        assert info.value.kind == "invalid-response"
 
     @patch("urllib.request.urlopen")
     def test_missing_lat_lon_raises(self, mock_urlopen: MagicMock) -> None:
         response_data = [{"display_name": "Chicago"}]  # Missing lat/lon
         mock_urlopen.return_value = _mock_response(json.dumps(response_data).encode())
 
-        with pytest.raises(GeocodingError, match="Failed to geocode"):
+        with pytest.raises(GeocodingError, match="Failed to geocode") as info:
             geocode("Chicago, IL")
+        assert info.value.kind == "invalid-response"
+
+    @patch("urllib.request.urlopen")
+    def test_http_error_carries_status(self, mock_urlopen: MagicMock) -> None:
+        from urllib.error import HTTPError
+
+        mock_urlopen.side_effect = HTTPError("https://x", 429, "Too Many Requests", Message(), None)
+
+        with pytest.raises(GeocodingError, match="429") as info:
+            geocode("Chicago, IL")
+        assert info.value.kind == "http"
+        assert info.value.status == 429
+
+    @patch("urllib.request.urlopen")
+    def test_non_list_response_is_invalid(self, mock_urlopen: MagicMock) -> None:
+        mock_urlopen.return_value = _mock_response(b'{"error": "bad"}')
+
+        with pytest.raises(GeocodingError) as info:
+            geocode("Chicago, IL")
+        assert info.value.kind == "invalid-response"
+
+    @patch("urllib.request.urlopen")
+    def test_truncated_body_is_unreachable(self, mock_urlopen: MagicMock) -> None:
+        import http.client
+
+        response = _mock_response(b"")
+        response.read.side_effect = http.client.IncompleteRead(b'[{"lat":', 40)
+        mock_urlopen.return_value = response
+
+        with pytest.raises(GeocodingError) as info:
+            geocode("Chicago, IL")
+        assert info.value.kind == "unreachable"
+
+    @pytest.mark.parametrize("hit", [{"lat": "nan", "lon": "1"}, {"lat": "", "lon": "1"}, {"lat": None, "lon": "1"}])
+    @patch("urllib.request.urlopen")
+    def test_unusable_coordinates_are_invalid(self, mock_urlopen: MagicMock, hit: dict[str, object]) -> None:
+        mock_urlopen.return_value = _mock_response(json.dumps([hit]).encode())
+
+        with pytest.raises(GeocodingError) as info:
+            geocode("Chicago, IL")
+        assert info.value.kind == "invalid-response"
+
+    def test_kind_defaults_to_unreachable(self) -> None:
+        error = GeocodingError("offline")
+        assert error.kind == "unreachable"
+        assert error.status is None
 
 
 class TestDetectLocation:
@@ -161,24 +212,57 @@ class TestDetectLocation:
 
         mock_urlopen.side_effect = URLError("Network unreachable")
 
-        with pytest.raises(GeocodingError, match="Failed to detect location"):
+        with pytest.raises(GeocodingError, match="Failed to detect location") as info:
             detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "unreachable"
+
+    @patch("urllib.request.urlopen")
+    def test_http_error_carries_status(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        from urllib.error import HTTPError
+
+        mock_urlopen.side_effect = HTTPError("https://x", 503, "Service Unavailable", Message(), None)
+
+        with pytest.raises(GeocodingError) as info:
+            detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "http"
+        assert info.value.status == 503
 
     @patch("urllib.request.urlopen")
     def test_error_response_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
-        body = {"error": True, "reason": "RateLimited", "message": "slow down"}
+        body = {"error": True, "reason": "Reserved IP Address", "message": "127.0.0.1 is reserved"}
         mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
 
-        with pytest.raises(GeocodingError, match=r"could not locate"):
+        with pytest.raises(GeocodingError, match=r"could not locate") as info:
             detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "not-found"
+
+    @patch("urllib.request.urlopen")
+    def test_rate_limit_payload_is_http_429(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        body = {"error": True, "reason": "RateLimited", "message": "Visit https://ipapi.co/ratelimited/"}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        with pytest.raises(GeocodingError, match=r"rate-limited") as info:
+            detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "http"
+        assert info.value.status == 429
+
+    @patch("urllib.request.urlopen")
+    def test_non_numeric_coordinates_are_invalid(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
+        body = {"latitude": "nan", "longitude": True}
+        mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
+
+        with pytest.raises(GeocodingError) as info:
+            detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "invalid-response"
 
     @patch("urllib.request.urlopen")
     def test_missing_lat_lon_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
         body = {"city": "somewhere"}  # No latitude/longitude
         mock_urlopen.return_value = _mock_response(json.dumps(body).encode())
 
-        with pytest.raises(GeocodingError, match="missing latitude/longitude"):
+        with pytest.raises(GeocodingError, match="missing latitude/longitude") as info:
             detect_location(cache_dir=tmp_path)
+        assert info.value.kind == "invalid-response"
 
     @patch("urllib.request.urlopen")
     def test_invalid_json_raises(self, mock_urlopen: MagicMock, tmp_path: Path) -> None:
