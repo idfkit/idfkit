@@ -387,8 +387,9 @@ def _parse_expanded(run_dir: Path, model: _DocT) -> _DocT:
     """Parse the ``expanded.idf`` in *run_dir*, which the preprocessors wrote from *model*."""
     from ..idf_parser import parse_idf
 
-    # The file carries the model's version line, so the result has the model's version.
-    return cast("_DocT", parse_idf(run_dir / "expanded.idf"))
+    # The file carries the model's version line, so the result has the model's version. Strictness
+    # is not in the file, so it is carried over, as model.copy() does when there is nothing to expand.
+    return cast("_DocT", parse_idf(run_dir / "expanded.idf", strict=model.strict))
 
 
 def _append_file(target: Path, source: Path) -> None:

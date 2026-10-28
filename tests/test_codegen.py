@@ -563,13 +563,13 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
     types_file = real_base / "_generated_types.pyi"
     doc_file = real_base / "document.pyi"
     generated = [types_file, doc_file, real_base / "versioned.pyi", real_base / "versioned.py"]
-    backups = {path: path.read_text() if path.exists() else None for path in generated}
+    backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
 
     yield types_file, doc_file
 
     for path, backup in backups.items():
         if backup is not None:
-            path.write_text(backup)
+            path.write_text(backup, encoding="utf-8")
         elif path.exists():
             path.unlink()
 

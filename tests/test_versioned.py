@@ -9,15 +9,16 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import get_origin
 
 import pytest
 
 import idfkit.versioned as versioned
-from idfkit import new_document
+from idfkit import load_idf, new_document
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.verify_stubs import verify
 from idfkit.document import AnyIDFDocument, IDFDocument
-from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
+from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 
 _PACKAGE = Path(versioned.__file__).resolve().parent
 
@@ -59,6 +60,23 @@ class TestRuntimeTypes:
         assert isinstance(new_document(), AnyIDFDocument)
         assert versioned.AnyIDFDocument is AnyIDFDocument
 
+    def test_a_two_component_version_line_matches_its_release(self, tmp_path: Path) -> None:
+        # A file states 9.0.1 as "9.0", which reads as 9.0.0, the way the schema is chosen.
+        path = tmp_path / "legacy.idf"
+        path.write_text("Version,9.0;\nZone,Office;\n", encoding="latin-1")
+        doc = load_idf(str(path))
+        assert doc.version == (9, 0, 0)
+        assert isinstance(doc, versioned.IDFDocumentV9_0)
+        assert not isinstance(doc, versioned.IDFDocumentV9_1)
+        assert versioned.as_version(doc, versioned.IDFDocumentV9_0) is doc
+        copied = new_document(version=(9, 0, 1)).copy()
+        assert versioned.as_version(copied, versioned.IDFDocumentV9_0) is copied
+
+    def test_document_types_take_type_arguments(self) -> None:
+        # The stubs declare them generic, so an annotation evaluated at run time must not raise.
+        assert get_origin(versioned.IDFDocumentV9_4[bool]) is versioned.IDFDocumentV9_4
+        assert get_origin(AnyIDFDocument[bool]) is AnyIDFDocument
+
     def test_document_types_are_not_instantiated(self) -> None:
         with pytest.raises(TypeError, match="new_document"):
             versioned.IDFDocumentV9_4()
@@ -79,8 +97,14 @@ class TestAsVersion:
     def test_idfdocument_means_the_latest_release(self) -> None:
         current = new_document()
         assert versioned.as_version(current, IDFDocument) is current
-        with pytest.raises(TypeError, match="not 26"):
+        with pytest.raises(TypeError, match=rf"not {re.escape(version_string(LATEST_VERSION))}"):
             versioned.as_version(new_document(version=(9, 4, 0)), IDFDocument)
+
+    def test_accepts_a_document_type_with_type_arguments(self) -> None:
+        current = new_document()
+        assert versioned.as_version(current, IDFDocument[bool]) is current
+        legacy = new_document(version=(9, 4, 0))
+        assert versioned.as_version(legacy, versioned.IDFDocumentV9_4[bool]) is legacy
 
     def test_any_document_accepts_every_version(self) -> None:
         doc = new_document(version=(8, 9, 0))

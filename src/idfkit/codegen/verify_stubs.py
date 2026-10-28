@@ -85,9 +85,13 @@ def _read(source: str, module: _Module | None = None) -> _Module:
 
 
 def _linearise(module: _Module, name: str) -> list[str]:
-    """*name* and the generated classes it derives from, most derived last overriding first."""
+    """*name* and the generated classes it derives from, each overriding those before it.
+
+    Bases are taken last first, so that where two declare the same attribute the first base wins,
+    as it does in Python's method resolution order.
+    """
     order: list[str] = []
-    for base in module.classes[name].bases:
+    for base in reversed(module.classes[name].bases):
         if base in module.classes or base in module.typed_dicts:
             for item in _linearise(module, base) if base in module.classes else [base]:
                 if item not in order:

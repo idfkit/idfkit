@@ -1203,9 +1203,10 @@ class IDFCollection(Generic[_T_co]):
         key = obj.name.upper() if obj.name else ""
         if key in self._by_name:
             del self._by_name[key]
-        if obj in self._items:
-            # list.remove would take only a _T_co; find the same element list.remove would.
-            del self._items[next(i for i, item in enumerate(self._items) if item == obj)]
+        # Typed as a list of _T_co, list.remove would take only a _T_co; any IDFObject compares.
+        items = cast("list[IDFObject]", self._items)
+        if obj in items:
+            items.remove(obj)
 
     def __getitem__(self, key: str | int) -> _T_co:
         """Get object by name or index."""

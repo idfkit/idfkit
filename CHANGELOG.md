@@ -11,24 +11,25 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Added
 
-- **A document can be typed for the EnergyPlus release it was written for, not only the
-  latest one.** `idfkit.versioned` has one type per supported release,
+- **A document became typeable for the EnergyPlus release it was written for, not only the
+  latest one.** `idfkit.versioned` gained one type per supported release,
   `IDFDocumentV<major>_<minor>` from `IDFDocumentV8_9` to `IDFDocumentV26_2` (which is
-  `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)` returns the document under that type
-  after checking its version at run time. Such a document is indexed, completed and checked
+  `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)`, which returns the document under that
+  type after checking its release at run time. Such a document is indexed, completed and checked
   with that release's object types, field value types and choices, accessors and `update()`
   keywords: on a 9.4 model `doc["Space"]` is a type error and `People` has
   `zone_or_zonelist_name`. Documents stay typed for the latest release unless their version is
   stated this way. The stubs encode each object type's declaration once per contiguous range of
-  releases that share it, and `python -m idfkit.codegen.generate_stubs` checks what it wrote
+  releases that share it, and `python -m idfkit.codegen.generate_stubs` now checks what it wrote
   against every bundled schema before finishing, so adopting a release only needs a
   regeneration ([#194](https://github.com/idfkit/idfkit/issues/194)).
-- `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) accepts a document of any
-  supported release and, through it, offers what every release has: the object types present
-  in all of them, each field typed to admit every release's values. idfkit's own functions take
-  it, so `save_idf`, `simulate`, the geometry and zoning helpers and the rest accept a document
-  typed for any release; `expand_objects` and the ground heat-transfer preprocessors return
-  the type they were given ([#194](https://github.com/idfkit/idfkit/issues/194)).
+- `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) was added. It accepts a
+  document of any supported release and, through it, offers what every release has: the object
+  types present in all of them, each field typed to admit every release's values. idfkit's own
+  functions were retyped to take it, so `save_idf`, `simulate`, the geometry and zoning helpers
+  and the rest accept a document typed for any release; `expand_objects` and the ground
+  heat-transfer preprocessors return the type they were given
+  ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - **Every object type in a document's schema became reachable as a typed attribute
   on `IDFDocument`, not only the hand-written shorthands.** Each type has one
   `snake_case` plural, declared in `document.pyi`: `doc.air_loop_hvacs` is
@@ -52,9 +53,9 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Changed
 
-- `IDFCollection` is covariant in its object type, so `IDFCollection[Zone]` is accepted where
-  `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` takes any `IDFObject`, and
-  `get(name, default)` returns the object type or the default's type
+- `IDFCollection` became covariant in its object type, so `IDFCollection[Zone]` is accepted
+  where `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` now takes any `IDFObject`,
+  and `get(name, default)` returns the object type or the default's type
   ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - **Breaking:** `polygon_difference_2d` raises `ValueError` when the difference has a hole (the subtracted polygon lies strictly inside) or falls into several pieces, and names `polygon_difference_parts_2d` as the replacement. It used to return a single "bridge/slit" ring for these cases, which had the wrong area or coincident vertices. The subtracted polygon no longer has to lie inside the outer one, and either winding is accepted. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 
@@ -64,6 +65,10 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Fixed
 
+- `expand_objects`, `IDFDocument.expand` and the ground heat-transfer preprocessors returned a
+  strict document for a model opened with `strict=False` whenever a preprocessor ran; only a model
+  with nothing to expand came back as it was. The result now keeps the model's strictness, as
+  `IDFDocument.copy` does ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - A batch job refused before EnergyPlus runs, such as one without `weather` that is not design-day-only, no longer leaves an empty temporary directory behind when it names no `output_dir`. `simulate_batch` and `async_simulate_batch` created one with `tempfile.mkdtemp()` for every such job and never removed it. The failed result's `run_dir` is now `idfkit.simulation.REFUSED_RUN_DIR`, a placeholder path under the null device that cannot be created, and its output accessors such as `errors` return empty results for it without reading the filesystem. ([#228](https://github.com/idfkit/idfkit/issues/228), [#239](https://github.com/idfkit/idfkit/pull/239))
 - `SimulationCache` no longer returns a previous run's results after a file the model reads has changed. The key covered the model, the weather file and the run flags, so editing a `Schedule:File` CSV staged into `output_dir`, or one referenced by absolute path, returned the earlier run silently. The key now also hashes the contents of every file the model names for EnergyPlus to read: `Schedule:File`, `Schedule:File:Shading`, the `Table:Lookup`, `Table:IndependentVariable`, `Table:MultiVariableLookup` and `Table:TwoIndependentVariables` external files, `Construction:WindowDataFile` (including its default `Window5DataFile.dat`), the ASHRAE 205 representation files of `Chiller:Electric:ASHRAE205` and `Coil:DX:ASHRAE205:Performance`, and FMUs imported through `ExternalInterface:FunctionalMockupUnitImport`. The list is derived from the model's own schema, as the string fields marked `retaincase` whose names refer to a file or path, so file fields added by later EnergyPlus releases are covered too. A relative path is resolved as EnergyPlus resolves it, against `output_dir` and then the EnergyPlus executable's directory. Restoring a file's earlier content hits the earlier entry. A model with a `PythonPlugin:Instance`, or an `ExternalInterface` in `PtolemyServer` or `FunctionalMockupUnitExport` mode, can read inputs no key can cover, so `simulate`, `async_simulate` and the batch helpers now neither look it up nor store it, and log a warning. `SimulationCache.compute_key` takes a new `search_dirs` argument for resolving relative paths. A model that names no external file keeps the key it had, so existing cache entries stay valid. ([#241](https://github.com/idfkit/idfkit/pull/241))
 - A simulation run into an `output_dir` that already held a weather file of the same name, left by an earlier run with a different weather file, now replaces that stale copy. EnergyPlus previously ran with the earlier weather file while `SimulationCache.compute_key` hashed the new one, so the cache stored results under the wrong key. A copy with identical content, or a weather file that already lives in `output_dir`, is left untouched. ([#227](https://github.com/idfkit/idfkit/issues/227), [#237](https://github.com/idfkit/idfkit/pull/237))

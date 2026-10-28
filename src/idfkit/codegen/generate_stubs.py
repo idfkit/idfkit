@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from idfkit.schema import EpJSONSchema, get_schema
-from idfkit.versions import ENERGYPLUS_VERSIONS
+from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
 # ---- helpers ---------------------------------------------------------------
 
@@ -398,7 +398,6 @@ def _generate_object_class(
     skip_fields: frozenset[str] = frozenset(),
     omit_group: bool = False,
     fields_base: str = "TypedDict",
-    update_skip: frozenset[str] = frozenset(),
     emit_update: bool = True,
     undocumented: frozenset[str] = frozenset(),
 ) -> list[str]:
@@ -423,7 +422,6 @@ def _generate_object_class(
         skip_fields: Fields left to *base*.
         omit_group: Leave the extensible group and its wrapper attribute to *base* (or out).
         fields_base: The ``TypedDict`` that ``update``'s keyword ``TypedDict`` extends.
-        update_skip: Fields left out of that ``TypedDict`` because *fields_base* declares them.
         emit_update: Whether to type ``update`` on this class.
         undocumented: Fields declared without a docstring.
     """
@@ -479,7 +477,6 @@ def _generate_object_class(
         update_fields.append((wrapper_key, "list[Any]"))
 
     if emit_update:
-        update_fields = [(name, py_type) for name, py_type in update_fields if name not in update_skip]
         lines.extend(_generate_update(cls_name, update_fields, indent, fields_base))
     return lines
 
@@ -654,10 +651,6 @@ def _generate_attr_properties(
 def _version_tag(ver: Version) -> str:
     """``(9, 4, 0)`` -> ``'9_4'``. Major and minor identify every supported release."""
     return f"{ver[0]}_{ver[1]}"
-
-
-def _version_str(ver: Version) -> str:
-    return f"{ver[0]}.{ver[1]}.{ver[2]}"
 
 
 def _class_signature(lines: list[str]) -> tuple[str, ...]:
@@ -1054,7 +1047,7 @@ def generate_versioned_pyi() -> str:
     ]
     for obj_type, run in older_runs:
         schema = get_schema(run[-1])
-        span = _version_str(run[0]) if len(run) == 1 else f"{_version_str(run[0])} to {_version_str(run[-1])}"
+        span = version_string(run[0]) if len(run) == 1 else f"{version_string(run[0])} to {version_string(run[-1])}"
         doc = f"``{obj_type}`` as declared in EnergyPlus {span}."
         memo = schema.get_object_memo(obj_type)
         if memo:
@@ -1126,7 +1119,7 @@ def generate_versioned_pyi() -> str:
         parts.append("")
         bases = ", ".join([f"_ObjectTypeMapV{tag}", *mixins, "_IDFDocumentMethods[Strict]"])
         parts.append(f"class {_document_class_name(ver)}({bases}):  # type: ignore[misc]")
-        parts.append(f'    """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus {_version_str(ver)}."""')
+        parts.append(f'    """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus {version_string(ver)}."""')
         parts.append("")
     parts.append(f"{_document_class_name(SUPPORTED.latest)} = IDFDocument")
     parts.append("")
@@ -1319,9 +1312,7 @@ _ANY_VERSION_DOCUMENT_DOC = """What every supported EnergyPlus version's documen
 
 def _generate_any_accessors() -> list[str]:
     """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
-    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
-
-    per_version = [_build_resolver(get_schema(ver)).accessors() for ver in SUPPORTED.versions]
+    per_version = [_accessors(ver) for ver in SUPPORTED.versions]
     common = set(_common_object_types())
     lines: list[str] = []
     for name, obj_type in per_version[-1].items():

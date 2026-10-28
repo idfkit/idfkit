@@ -1450,7 +1450,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 _RESERVED: frozenset[str] = frozenset(dir(IDFDocument))
 
 
-class AnyIDFDocument(IDFDocument[bool], metaclass=DocumentTypeMeta):
+class AnyIDFDocument(IDFDocument[Strict], metaclass=DocumentTypeMeta):
     """A document of any supported EnergyPlus version.
 
     For a type checker (``document.pyi``) this is the type every version's document is assignable to.
