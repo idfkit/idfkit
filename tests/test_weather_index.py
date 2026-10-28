@@ -9,6 +9,7 @@ import os
 import sys
 import tempfile
 from collections.abc import Iterator
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -853,6 +854,92 @@ class TestSearch:
         idx = StationIndex.from_stations(_fixture_stations())
         results = idx.search("ZZZ_Fake.Station.999999_TMYx")
         assert len(results) == 0
+
+
+class TestSearchTokenization:
+    """Punctuation, diacritics and location qualifiers in queries (idfkit/idfkit#248)."""
+
+    @staticmethod
+    def _index() -> StationIndex:
+        base = _fixture_stations()[0]
+        rows = [
+            ("USA", "CO", "Boulder.Muni.AP", "724699"),
+            ("USA", "CO", "Nederland-Univ.Colorado.Boulder.Mountain.Research.Stn", "720533"),
+            ("USA", "MS", "Columbus-Golden.Triangle.Rgnl.AP", "723307"),
+            ("AGO", "ZAI", "Mbanza.Congo", "661600"),
+            ("BEN", "LI", "Cotonou-Cadjehoun.AP", "653440"),
+            ("CAN", "QC", "Montreal-Trudeau.Intl.AP", "716270"),
+            ("CHE", "ZH", "Zürich.AP", "066700"),
+        ]
+        return StationIndex.from_stations([
+            replace(base, country=country, state=state, city=city, wmo=wmo) for country, state, city, wmo in rows
+        ])
+
+    def test_comma_separated_city_and_state(self) -> None:
+        results = self._index().search("Boulder, CO")
+        assert results[0].station.city == "Boulder.Muni.AP"
+        assert results[0].score >= 0.6
+
+    def test_semicolon_and_no_separator_agree_with_comma(self) -> None:
+        idx = self._index()
+        expected = [(r.station.wmo, r.score) for r in idx.search("Boulder, CO")]
+        assert [(r.station.wmo, r.score) for r in idx.search("Boulder;CO")] == expected
+        assert [(r.station.wmo, r.score) for r in idx.search("Boulder CO")] == expected
+
+    def test_short_token_does_not_prefix_match_unrelated_names(self) -> None:
+        """'co' must not pull in Congo, Cotonou, or Columbus by prefix."""
+        cities = {r.station.city for r in self._index().search("Golden, CO", limit=20)}
+        assert "Mbanza.Congo" not in cities
+        assert "Cotonou-Cadjehoun.AP" not in cities
+        # Golden Triangle still matches on "golden", but only partially: "co" is not its state.
+        golden = [r for r in self._index().search("Golden, CO") if r.station.city.startswith("Columbus")]
+        assert golden
+        assert golden[0].score == pytest.approx(0.15)
+
+    def test_short_token_matches_a_whole_name_token(self) -> None:
+        station = _fixture_stations()[2]  # New.York.J.F.Kennedy.Intl.AP
+        # Out of order, so neither substring signal fires: the token signal decides.
+        score, field = _score_station(station, "kennedy j f", ["kennedy", "j", "f"])
+        assert score >= 0.6
+        assert field == "name"
+        # "ke" is short and names no whole token, so it cannot prefix-match "kennedy".
+        score, _ = _score_station(station, "york ke", ["york", "ke"])
+        assert score == pytest.approx(0.15)
+
+    def test_accented_query_matches_unaccented_name(self) -> None:
+        results = self._index().search("Montréal")
+        assert results
+        assert results[0].station.city == "Montreal-Trudeau.Intl.AP"
+        assert results[0].score > 0.85
+
+    def test_unaccented_query_matches_accented_name(self) -> None:
+        results = self._index().search("zurich")
+        assert results
+        assert results[0].station.city == "Zürich.AP"
+
+    def test_letters_without_combining_marks_are_folded(self) -> None:
+        base = _fixture_stations()[0]
+        idx = StationIndex.from_stations([replace(base, country="NOR", state="TR", city="Tromso", wmo="010250")])
+        results = idx.search("Tromsø")
+        assert results
+        assert results[0].station.city == "Tromso"
+
+    def test_dots_and_hyphens_split_like_station_names(self) -> None:
+        base = _fixture_stations()[0]
+        idx = StationIndex.from_stations([
+            replace(base, country="USA", state="MO", city="St.Louis-Lambert.Intl.AP", wmo="724340"),
+            replace(base, country="SEN", state="SL", city="Saint.Louis.AP", wmo="616000"),
+            replace(base, country="USA", state="NC", city="Winston-Salem-Smith.Reynolds.AP", wmo="723193"),
+        ])
+        assert idx.search("St. Louis, MO")[0].station.wmo == "724340"
+        assert idx.search("St. Louis, MO")[0].score >= 0.6
+        assert idx.search("Winston-Salem, NC")[0].station.wmo == "723193"
+
+    def test_qualifier_counts_toward_a_partial_match(self) -> None:
+        idx = self._index()
+        boulder = next(r for r in idx.search("Boulder Denver, CO") if r.station.city == "Boulder.Muni.AP")
+        # "boulder" and the qualifier "co" match; "denver" does not.
+        assert boulder.score == pytest.approx(0.2)
 
 
 class TestGetByFilename:

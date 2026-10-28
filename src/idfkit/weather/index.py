@@ -12,6 +12,7 @@ import re
 import sys
 import tempfile
 import time
+import unicodedata
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
@@ -462,13 +463,86 @@ def _extract_wmo_from_filename(filename: str) -> str | None:
 # ---------------------------------------------------------------------------
 
 
+# Dots and hyphens split too, as they do in station names ("St.Louis-Lambert"),
+# so "St. Louis" and "Winston-Salem" tokenise the way the names they target do.
+_QUERY_SPLIT_RE = re.compile(r"[\s,;.\-]+")
+
+# A query token shorter than this must equal a name token rather than prefix one:
+# two letters such as "co" would otherwise prefix-match "congo" and "columbus".
+_MIN_PREFIX_TOKEN_LEN = 3
+
+# Lower-case letters that carry no combining mark under NFD, so stripping marks
+# leaves them alone: "Tromsø" must still read as "tromso".
+_FOLD_TABLE = str.maketrans({
+    "æ": "ae",
+    "ð": "d",
+    "đ": "d",
+    "ħ": "h",
+    "\u0131": "i",  # dotless i
+    "ł": "l",
+    "ø": "o",
+    "œ": "oe",
+    "ß": "ss",
+    "þ": "th",
+    "ŧ": "t",
+})
+
+
+def _fold(text: str) -> str:
+    """Lower-case *text* and strip its diacritics, so "Montréal" reads as "montreal"."""
+    lowered = text.lower()
+    if lowered.isascii():
+        return lowered
+    stripped = "".join(c for c in unicodedata.normalize("NFD", lowered) if unicodedata.category(c) != "Mn")
+    return stripped.translate(_FOLD_TABLE)
+
+
+def _tokenize_query(query: str) -> list[str]:
+    """Split a folded query on whitespace, commas, semicolons, dots and hyphens, dropping empty tokens."""
+    return [t for t in _QUERY_SPLIT_RE.split(query) if t]
+
+
+def _score_name_tokens(name_lower: str, name_query: list[str], n_tokens: int) -> float:
+    """Score the query tokens that must match a station name against its tokens.
+
+    A token of ``_MIN_PREFIX_TOKEN_LEN`` characters or more matches as a
+    prefix of a name token; a shorter one must equal a whole name token.
+    All tokens matching scores 0.6-0.9 by coverage of the name; some of
+    them matching scores up to 0.3, as a share of all *n_tokens* query
+    tokens, where each qualifier the caller removed from *name_query*
+    counts as matched.
+    """
+    if not name_query:
+        return 0.0
+    name_tokens = set(name_lower.split())
+
+    def in_name(qt: str) -> bool:
+        if len(qt) < _MIN_PREFIX_TOKEN_LEN:
+            return qt in name_tokens
+        return any(t.startswith(qt) for t in name_tokens)
+
+    matching = sum(1 for qt in name_query if in_name(qt))
+    if matching == len(name_query):
+        coverage = sum(len(qt) for qt in name_query) / max(len(name_lower), 1)
+        return 0.6 + 0.3 * min(coverage, 1.0)
+    if matching == 0:
+        return 0.0
+    qualifiers = n_tokens - len(name_query)
+    return 0.3 * (matching + qualifiers) / n_tokens
+
+
 def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tuple[float, str]:
     """Score a station against a search query.
 
+    *query* is the folded query (see ``_fold``) and *tokens* its
+    ``_tokenize_query`` split. A token equal to the station's state or
+    country code is read as a location qualifier ("Boulder, CO") and is
+    not required to match the station name.
+
     Returns ``(score, match_field)`` where score is 0.0-1.0.
     """
-    name_lower = station.city.lower().replace(".", " ").replace("-", " ")
-    display_lower = station.display_name.lower()
+    name_lower = _fold(station.city).replace(".", " ").replace("-", " ")
+    display_lower = _fold(station.display_name)
 
     # Signal 1: Exact WMO match
     if query.isdigit() and query == station.wmo:
@@ -484,18 +558,13 @@ def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tu
         coverage = len(query) / max(len(name_lower), 1)
         return 0.85 + 0.1 * coverage, "name"
 
-    # Signal 4: All query tokens appear in the name
-    name_tokens = set(name_lower.split())
-    if tokens and all(any(t.startswith(qt) for t in name_tokens) for qt in tokens):
-        coverage = sum(len(qt) for qt in tokens) / max(len(name_lower), 1)
-        return 0.6 + 0.3 * min(coverage, 1.0), "name"
+    qualifiers = {station.state.lower(), station.country.lower()} - {""}
+    name_query = [qt for qt in tokens if qt not in qualifiers]
 
-    # Signal 5: Partial token overlap (prefix matching)
-    if tokens:
-        matching = sum(1 for qt in tokens if any(t.startswith(qt) for t in name_tokens))
-        if matching > 0:
-            ratio = matching / len(tokens)
-            return 0.3 * ratio, "name"
+    # Signals 4 and 5: query tokens as prefixes of the name's tokens
+    token_score = _score_name_tokens(name_lower, name_query, len(tokens))
+    if token_score > 0:
+        return token_score, "name"
 
     # Signal 6: State or country match
     if query == station.state.lower():
@@ -825,8 +894,12 @@ class StationIndex:
     ) -> list[SearchResult]:
         """Fuzzy-search stations by name, city, state, WMO number, or EPW filename.
 
-        Matching is case-insensitive and uses substring / token-prefix
-        heuristics (no external NLP dependencies).  Canonical EPW
+        Matching is case- and accent-insensitive ("Montréal" finds
+        "Montreal") and uses substring / token-prefix heuristics (no
+        external NLP dependencies).  The query is split on whitespace,
+        commas, semicolons, dots and hyphens, and a token equal to a station's state or
+        country code qualifies the match rather than having to appear in
+        the name, so "Boulder, CO" ranks Boulder, Colorado first.  Canonical EPW
         filenames (e.g.
         ``"USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023"``) are
         detected automatically and resolved via
@@ -838,7 +911,7 @@ class StationIndex:
             country: If given, restrict to stations in this country code.
         """
         raw = query.strip()
-        q = raw.lower()
+        q = _fold(raw)
         if not q:
             return []
 
@@ -853,7 +926,7 @@ class StationIndex:
                 ]
                 return results[:limit]
 
-        tokens = q.split()
+        tokens = _tokenize_query(q)
 
         scored: list[SearchResult] = []
         for station in self._stations:
