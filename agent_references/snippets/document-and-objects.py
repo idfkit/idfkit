@@ -133,7 +133,8 @@ doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
 
 # --8<-- [start:versioned]
 from idfkit import load_idf
-from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4, as_version
+from idfkit.document import AnyIDFDocument
+from idfkit.versioned import IDFDocumentV9_4, as_version
 
 legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)  # TypeError unless the file is 9.4
 people = legacy["People"]["Office"]
