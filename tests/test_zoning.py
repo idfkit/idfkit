@@ -846,6 +846,7 @@ class TestAirBoundary:
 
     def test_courtyard_air_boundary_before_9_2_raises(self) -> None:
         doc = new_document(version=(9, 1, 0))
+        before = len(list(doc.all_objects))
         with pytest.raises(ValueError, match="Construction:AirBoundary"):
             create_courtyard_block(
                 doc,
@@ -855,7 +856,7 @@ class TestAirBoundary:
                 floor_to_floor=3,
                 air_boundary=True,
             )
-        assert len(list(doc["BuildingSurface:Detailed"])) == 0
+        assert len(list(doc.all_objects)) == before
 
 
 # =========================================================================

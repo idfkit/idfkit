@@ -58,6 +58,7 @@ from .geometry_builders import (
     link_horizontal_surfaces,
     split_horizontal_surface_by_regions,
 )
+from .versions import version_string
 
 if TYPE_CHECKING:
     from .document import IDFDocument
@@ -1041,7 +1042,7 @@ class ZonedBlock:
         # Check before creating any surface, so an unsupported version does
         # not leave the document holding a half-built block.
         if self.air_boundary and doc.schema is not None and "Construction:AirBoundary" not in doc.schema:
-            version = ".".join(str(part) for part in doc.version)
+            version = version_string(doc.version)
             msg = (
                 f"air_boundary=True needs Construction:AirBoundary, which EnergyPlus {version} does not have "
                 "(it was added in 9.2); build the block without air_boundary or use a 9.2+ document"
