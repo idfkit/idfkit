@@ -16,7 +16,7 @@ from idfkit.schedules.types import DayTypeInput, InterpolationInput
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
-    from idfkit.document import IDFDocument
+    from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
     from idfkit.simulation.fs import FileSystem
 
@@ -27,7 +27,7 @@ def to_series(
     freq: str = "h",
     start_date: tuple[int, int] = (1, 1),
     end_date: tuple[int, int] = (12, 31),
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     interpolation: InterpolationInput | None = None,
     fs: FileSystem | None = None,
@@ -151,7 +151,7 @@ def plot_schedule(
     year: int = 2024,
     start_date: tuple[int, int] = (1, 1),
     end_date: tuple[int, int] = (12, 31),
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
@@ -198,7 +198,7 @@ def plot_week(
     schedule: IDFObject,
     year: int = 2024,
     week: int = 1,
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
@@ -247,7 +247,7 @@ def plot_day(
     year: int = 2024,
     month: int = 1,
     day: int = 1,
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,

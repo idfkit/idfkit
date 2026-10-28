@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from .cst import CSTNode
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFObject
     from .schema import ChoiceSpellings, ParsingCache
 
@@ -66,7 +66,7 @@ DEFAULT_INDENT = 2
 DEFAULT_COMMENT_COLUMN = 30
 
 
-def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
+def _resolve_version_identifier(doc: AnyIDFDocument[bool]) -> str:
     """Read version_identifier from the Version object, falling back to doc.version."""
     version_coll = doc.collections.get("Version")
     if version_coll:
@@ -80,7 +80,7 @@ def _resolve_version_identifier(doc: IDFDocument[bool]) -> str:
 
 
 def write_idf(
-    doc: IDFDocument[bool],
+    doc: AnyIDFDocument[bool],
     output_type: OutputType = "standard",
     *,
     preserve_formatting: bool | None = None,
@@ -223,7 +223,7 @@ def write_idf(
 
 
 def save_idf(
-    doc: IDFDocument[bool],
+    doc: AnyIDFDocument[bool],
     path: Path | str,
     encoding: str = "latin-1",
     output_type: OutputType = "standard",
@@ -285,7 +285,7 @@ def save_idf(
 
 
 def write_epjson(
-    doc: IDFDocument[bool],
+    doc: AnyIDFDocument[bool],
     indent: int = 2,
     *,
     preserve_formatting: bool | None = None,
@@ -352,7 +352,7 @@ def write_epjson(
 
 
 def save_epjson(
-    doc: IDFDocument[bool],
+    doc: AnyIDFDocument[bool],
     path: Path | str,
     indent: int = 2,
     *,
@@ -386,7 +386,7 @@ def save_epjson(
 
 
 def render_cst_node(
-    doc: IDFDocument[bool],
+    doc: AnyIDFDocument[bool],
     node: CSTNode,
     *,
     field_comments: FieldComments = "preserve",
@@ -516,7 +516,7 @@ def _annotations(source_text: str) -> list[FieldAnnotation]:
     return annotations
 
 
-def _write_idf_lossless(doc: IDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
+def _write_idf_lossless(doc: AnyIDFDocument[bool], field_comments: FieldComments = "preserve") -> str:
     """Produce IDF output that preserves original formatting via the CST.
 
     Unmodified objects are emitted verbatim.  Mutated or new objects use
@@ -570,7 +570,7 @@ class IDFWriter:
 
     def __init__(
         self,
-        doc: IDFDocument,
+        doc: AnyIDFDocument,
         output_type: OutputType = "standard",
         *,
         indent: int = DEFAULT_INDENT,
@@ -896,7 +896,7 @@ class EpJSONWriter:
     ```
     """
 
-    def __init__(self, doc: IDFDocument):
+    def __init__(self, doc: AnyIDFDocument):
         self._doc = doc
         self._group_needs_format: dict[str, bool] = {}
 

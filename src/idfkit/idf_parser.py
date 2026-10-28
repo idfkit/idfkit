@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, cast
 
 from .cst import CSTNode, DocumentCST
-from .document import IDFDocument
+from .document import AnyIDFDocument, IDFDocument
 from .exceptions import IDFParseError, ParseDiagnostic, ParseDiagnosticCode, VersionNotFoundError
 from .objects import IDFObject
 from .schema import SIZING_SENTINELS
@@ -221,7 +221,7 @@ class ParseResult:
     two reads the same two names in the same order.
     """
 
-    document: IDFDocument
+    document: AnyIDFDocument
     diagnostics: tuple[ParseDiagnostic, ...]
 
 
@@ -498,7 +498,7 @@ class IDFParser:
     def _parse_objects(
         self,
         content: bytes,
-        doc: IDFDocument,
+        doc: AnyIDFDocument,
         schema: EpJSONSchema | None,
     ) -> None:
         """Parse all objects from content into document."""
@@ -1022,7 +1022,7 @@ def _build_idf_cst(text: str) -> DocumentCST:
 
 def _link_cst_to_objects(
     cst: DocumentCST,
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     diagnostics: list[ParseDiagnostic] | None = None,
     filepath: str | None = None,
 ) -> bool:

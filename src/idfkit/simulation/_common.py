@@ -62,17 +62,17 @@ def resolve_preprocessor_timeout(explicit: float | None) -> float:
 
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..migration.report import MigrationReport
     from .fs import AsyncFileSystem, FileSystem
 
 
 def resolve_version_mismatch(
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     config: EnergyPlusConfig,
     auto_migrate: bool,
-) -> tuple[IDFDocument, MigrationReport | None]:
+) -> tuple[AnyIDFDocument, MigrationReport | None]:
     """Reconcile a model's version with the installed EnergyPlus version.
 
     Returns a ``(model_to_simulate, migration_report)`` pair. If the versions
@@ -117,10 +117,10 @@ def resolve_version_mismatch(
 
 async def async_resolve_version_mismatch(
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     config: EnergyPlusConfig,
     auto_migrate: bool,
-) -> tuple[IDFDocument, MigrationReport | None]:
+) -> tuple[AnyIDFDocument, MigrationReport | None]:
     """Async counterpart to [resolve_version_mismatch][idfkit.simulation._common.resolve_version_mismatch].
 
     Differs only in that the migration step is dispatched through
@@ -175,7 +175,7 @@ WEATHER_DEFAULT_FILE_MESSAGE = (
 def admit_weather(
     weather: str | Path | None,
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     design_day: bool,
     annual: bool,
     expand_objects: bool,
@@ -286,7 +286,7 @@ def resolve_config(energyplus: EnergyPlusConfig | None) -> EnergyPlusConfig:
     return find_energyplus()
 
 
-def ensure_sql_output(model: IDFDocument) -> None:
+def ensure_sql_output(model: AnyIDFDocument) -> None:
     """Add Output:SQLite to the model if not already present.
 
     Args:
@@ -296,7 +296,7 @@ def ensure_sql_output(model: IDFDocument) -> None:
         model.add("Output:SQLite", "", option_type="SimpleAndTabular", validate=False)
 
 
-def prep_outputs(model: IDFDocument) -> None:
+def prep_outputs(model: AnyIDFDocument) -> None:
     """Add standard output objects to the model if not already present.
 
     Ensures the model includes:
@@ -320,13 +320,13 @@ def prep_outputs(model: IDFDocument) -> None:
 
 
 def maybe_preprocess(
-    original: IDFDocument,
-    sim_model: IDFDocument,
+    original: AnyIDFDocument,
+    sim_model: AnyIDFDocument,
     config: EnergyPlusConfig,
     weather_path: Path | None,
     expand_objects: bool,
     preprocessor_timeout: float | None = None,
-) -> tuple[IDFDocument, bool]:
+) -> tuple[AnyIDFDocument, bool]:
     """Run ground heat-transfer preprocessing if needed.
 
     The EnergyPlus CLI's ``-x`` flag runs ExpandObjects for HVACTemplate

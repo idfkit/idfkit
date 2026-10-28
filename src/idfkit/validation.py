@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFObject
     from .schema import EpJSONSchema
 
@@ -96,7 +96,7 @@ class ValidationResult:
 
 
 def validate_document(  # noqa: C901
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     schema: EpJSONSchema | None = None,
     check_references: bool = True,
     check_required: bool = True,
@@ -1022,7 +1022,7 @@ class _DeclaredNames:
     zones: set[str]
 
 
-def _declared_names(doc: IDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
+def _declared_names(doc: AnyIDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
     """Collect the names a document declares.
 
     An object usually declares its name through its name field, but not always. A field may
@@ -1054,7 +1054,7 @@ def _declared_names(doc: IDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
 
 
 def _validate_references(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     schema: EpJSONSchema,
 ) -> list[ValidationError]:
     """Validate all object references."""

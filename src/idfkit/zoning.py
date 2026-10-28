@@ -60,7 +60,7 @@ from .geometry_builders import (
 )
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFObject
 
 # ASHRAE 90.1 Appendix G default perimeter depth (15 ft ≈ 4.57 m).
@@ -731,7 +731,7 @@ class _StorySpec:
 
 
 def _build_story_surfaces(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     base_name: str,
     spec: _StorySpec,
     num_stories: int,
@@ -935,14 +935,16 @@ def _find_adjacent_zone(
     return None
 
 
-def _apply_air_boundaries(doc: IDFDocument, created: list[IDFObject]) -> None:
+def _apply_air_boundaries(doc: AnyIDFDocument, created: list[IDFObject]) -> None:
     """Set ``Construction:AirBoundary`` on inter-zone walls.
 
     Creates a single ``Construction:AirBoundary`` object if one doesn't
     already exist, then assigns it to all ``Surface``-boundary walls.
     """
     air_name = "Air Boundary"
-    if not list(doc["Construction:AirBoundary"]):
+    # Construction:AirBoundary exists from EnergyPlus 9.2 on, so it is not a key of AnyIDFDocument;
+    # for an older model the add below raises UnknownObjectTypeError, as it always has.
+    if not list(doc.get_collection("Construction:AirBoundary")):
         doc.add("Construction:AirBoundary", air_name, validate=False)
 
     for obj in created:
@@ -1027,7 +1029,7 @@ class ZonedBlock:
         """Total floor area across all stories in square metres."""
         return self.floor_area * self.num_stories
 
-    def build(self, doc: IDFDocument) -> list[IDFObject]:
+    def build(self, doc: AnyIDFDocument) -> list[IDFObject]:
         """Realise the zoned geometry in the document.
 
         Returns:
@@ -1072,7 +1074,7 @@ class ZonedBlock:
 
 
 def create_block(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     footprint: Sequence[tuple[float, float]],
     floor_to_floor: float,
@@ -1151,7 +1153,7 @@ def create_block(
 
 
 def create_courtyard_block(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     outer: Sequence[tuple[float, float]],
     courtyards: Sequence[Sequence[tuple[float, float]]],
@@ -1252,15 +1254,15 @@ def create_courtyard_block(
 
 
 @overload
-def link_blocks(doc: IDFDocument) -> list[IDFObject]: ...
+def link_blocks(doc: AnyIDFDocument) -> list[IDFObject]: ...
 
 
 @overload
-def link_blocks(doc: IDFDocument, lower: str, upper: str) -> list[IDFObject]: ...
+def link_blocks(doc: AnyIDFDocument, lower: str, upper: str) -> list[IDFObject]: ...
 
 
 def link_blocks(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     lower: str | None = None,
     upper: str | None = None,
 ) -> list[IDFObject]:

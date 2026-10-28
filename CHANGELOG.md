@@ -11,6 +11,24 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Added
 
+- **A document can be typed for the EnergyPlus release it was written for, not only the
+  latest one.** `idfkit.versioned` has one type per supported release,
+  `IDFDocumentV<major>_<minor>` from `IDFDocumentV8_9` to `IDFDocumentV26_2` (which is
+  `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)` returns the document under that type
+  after checking its version at run time. Such a document is indexed, completed and checked
+  with that release's object types, field value types and choices, accessors and `update()`
+  keywords: on a 9.4 model `doc["Space"]` is a type error and `People` has
+  `zone_or_zonelist_name`. Documents stay typed for the latest release unless their version is
+  stated this way. The stubs encode each object type's declaration once per contiguous range of
+  releases that share it, and `python -m idfkit.codegen.generate_stubs` checks what it wrote
+  against every bundled schema before finishing, so adopting a release only needs a
+  regeneration ([#194](https://github.com/idfkit/idfkit/issues/194)).
+- `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) accepts a document of any
+  supported release and, through it, offers what every release has: the object types present
+  in all of them, each field typed to admit every release's values. idfkit's own functions take
+  it, so `save_idf`, `simulate`, the geometry and zoning helpers and the rest accept a document
+  typed for any release; `expand_objects` and the ground heat-transfer preprocessors return
+  the type they were given ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - **Every object type in a document's schema became reachable as a typed attribute
   on `IDFDocument`, not only the hand-written shorthands.** Each type has one
   `snake_case` plural, declared in `document.pyi`: `doc.air_loop_hvacs` is
@@ -34,6 +52,10 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Changed
 
+- `IDFCollection` is covariant in its object type, so `IDFCollection[Zone]` is accepted where
+  `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` takes any `IDFObject`, and
+  `get(name, default)` returns the object type or the default's type
+  ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - **Breaking:** `polygon_difference_2d` raises `ValueError` when the difference has a hole (the subtracted polygon lies strictly inside) or falls into several pieces, and names `polygon_difference_parts_2d` as the replacement. It used to return a single "bridge/slit" ring for these cases, which had the wrong area or coincident vertices. The subtracted polygon no longer has to lie inside the outer one, and either winding is accepted. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 
 ### Deprecated

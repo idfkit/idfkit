@@ -11,6 +11,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Task | Reference |
 |---|---|
 | Build, load, query, or modify a model | [document-and-objects.md](references/document-and-objects.md) |
+| Type a model of an older EnergyPlus release for that release | [document-and-objects.md](references/document-and-objects.md) |
 | Parse `.idf` / `.epJSON` files | [parsing-idf-epjson.md](references/parsing-idf-epjson.md) |
 | Write `.idf` / `.epJSON` files | [writing-output.md](references/writing-output.md) |
 | Validate a model against the schema | [schema-and-validation.md](references/schema-and-validation.md) |

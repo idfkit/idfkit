@@ -100,7 +100,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from ..exceptions import ExpandObjectsError
 from .config import EnergyPlusConfig, find_energyplus
@@ -108,7 +108,11 @@ from .config import EnergyPlusConfig, find_energyplus
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
+
+# The preprocessors return a new document of the model's own version, so of the model's own type:
+# a document typed for 9.4 (idfkit.versioned) comes back typed for 9.4, and IDFDocument as IDFDocument.
+_DocT = TypeVar("_DocT", bound="AnyIDFDocument[Any]")
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +132,7 @@ _BASEMENT_PREFIX = "GroundHeatTransfer:Basement:"
 # ---------------------------------------------------------------------------
 
 
-def _has_objects_in_group(model: IDFDocument, group: str, prefix: str) -> bool:
+def _has_objects_in_group(model: AnyIDFDocument, group: str, prefix: str) -> bool:
     """Return ``True`` if *model* contains objects belonging to *group*.
 
     Uses the schema ``group`` field when available, falling back to a name
@@ -140,13 +144,13 @@ def _has_objects_in_group(model: IDFDocument, group: str, prefix: str) -> bool:
     return any(obj_type.startswith(prefix) for obj_type in model)
 
 
-def _needs_expansion(model: IDFDocument) -> bool:
+def _needs_expansion(model: AnyIDFDocument) -> bool:
     """Return ``True`` if *model* contains ``HVACTemplate:*`` objects."""
     return _has_objects_in_group(model, _HVAC_TEMPLATE_GROUP, _HVAC_TEMPLATE_PREFIX)
 
 
 def ground_heat_object_types(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     prefixes: tuple[str, ...] = (_SLAB_PREFIX, _BASEMENT_PREFIX),
 ) -> list[str]:
     """Return the sorted ground heat-transfer types in *model* that hold at least one object.
@@ -163,7 +167,7 @@ def ground_heat_object_types(
     return sorted(present)
 
 
-def _control_enables(model: IDFDocument, field: str) -> bool:
+def _control_enables(model: AnyIDFDocument, field: str) -> bool:
     """Return ``True`` if a ``GroundHeatTransfer:Control`` object sets *field* to ``Yes``.
 
     Both control fields default to ``No``, and ExpandObjects writes no
@@ -176,7 +180,7 @@ def _control_enables(model: IDFDocument, field: str) -> bool:
     )
 
 
-def enabled_ground_heat_object_types(model: IDFDocument) -> list[str]:
+def enabled_ground_heat_object_types(model: AnyIDFDocument) -> list[str]:
     """Return the sorted ground heat-transfer types in *model* whose preprocessor is enabled.
 
     A Slab type counts only when ``GroundHeatTransfer:Control`` sets
@@ -194,12 +198,12 @@ def enabled_ground_heat_object_types(model: IDFDocument) -> list[str]:
     return ground_heat_object_types(model, tuple(prefixes))
 
 
-def _has_slab_objects(model: IDFDocument) -> bool:
+def _has_slab_objects(model: AnyIDFDocument) -> bool:
     """Return ``True`` if *model* contains ``GroundHeatTransfer:Slab:*`` objects."""
     return bool(ground_heat_object_types(model, (_SLAB_PREFIX,)))
 
 
-def _has_basement_objects(model: IDFDocument) -> bool:
+def _has_basement_objects(model: AnyIDFDocument) -> bool:
     """Return ``True`` if *model* contains ``GroundHeatTransfer:Basement:*`` objects."""
     return bool(ground_heat_object_types(model, (_BASEMENT_PREFIX,)))
 
@@ -360,7 +364,7 @@ def _run_expand_objects(config: EnergyPlusConfig, run_dir: Path, *, timeout: flo
     logger.info("ExpandObjects completed (exit code %d)", proc.returncode)
 
 
-def _prepare_run_dir(model: IDFDocument, *, weather: str | Path | None = None) -> Path:
+def _prepare_run_dir(model: AnyIDFDocument, *, weather: str | Path | None = None) -> Path:
     """Write *model* to a temporary directory and return its path.
 
     If *weather* is provided it is copied into the directory as ``in.epw``
@@ -379,11 +383,12 @@ def _prepare_run_dir(model: IDFDocument, *, weather: str | Path | None = None) -
     return run_dir
 
 
-def _parse_expanded(run_dir: Path) -> IDFDocument:
-    """Parse the ``expanded.idf`` in *run_dir*."""
+def _parse_expanded(run_dir: Path, model: _DocT) -> _DocT:
+    """Parse the ``expanded.idf`` in *run_dir*, which the preprocessors wrote from *model*."""
     from ..idf_parser import parse_idf
 
-    return parse_idf(run_dir / "expanded.idf")
+    # The file carries the model's version line, so the result has the model's version.
+    return cast("_DocT", parse_idf(run_dir / "expanded.idf"))
 
 
 def _append_file(target: Path, source: Path) -> None:
@@ -464,7 +469,7 @@ def _run_basement_in_dir(config: EnergyPlusConfig, run_dir: Path, *, timeout: fl
 # ---------------------------------------------------------------------------
 
 
-def needs_ground_heat_preprocessing(model: IDFDocument) -> bool:
+def needs_ground_heat_preprocessing(model: AnyIDFDocument) -> bool:
     """Return ``True`` if *model* contains ground heat-transfer objects.
 
     Checks for ``GroundHeatTransfer:Slab:*`` and
@@ -478,12 +483,12 @@ def needs_ground_heat_preprocessing(model: IDFDocument) -> bool:
 
 
 def run_preprocessing(
-    model: IDFDocument,
+    model: _DocT,
     *,
     energyplus: EnergyPlusConfig | None = None,
     weather: str | Path | None = None,
     timeout: float = 120.0,
-) -> IDFDocument:
+) -> _DocT:
     """Run ExpandObjects and any required ground heat-transfer preprocessors.
 
     This is a convenience function that runs all needed preprocessors in
@@ -524,17 +529,17 @@ def run_preprocessing(
         if (run_dir / "BasementGHTIn.idf").is_file():
             _run_basement_in_dir(config, run_dir, timeout=timeout)
 
-        return _parse_expanded(run_dir)
+        return _parse_expanded(run_dir, model)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
 
 def expand_objects(
-    model: IDFDocument[bool],
+    model: _DocT,
     *,
     energyplus: EnergyPlusConfig | None = None,
     timeout: float = 120.0,
-) -> IDFDocument[bool]:
+) -> _DocT:
     """Run the EnergyPlus *ExpandObjects* preprocessor and return the expanded document.
 
     ``ExpandObjects`` replaces ``HVACTemplate:*`` objects with their fully
@@ -570,18 +575,18 @@ def expand_objects(
     run_dir = _prepare_run_dir(model)
     try:
         _run_expand_objects(config, run_dir, timeout=timeout)
-        return _parse_expanded(run_dir)
+        return _parse_expanded(run_dir, model)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
 
 def run_slab_preprocessor(
-    model: IDFDocument,
+    model: _DocT,
     *,
     energyplus: EnergyPlusConfig | None = None,
     weather: str | Path | None = None,
     timeout: float = 120.0,
-) -> IDFDocument:
+) -> _DocT:
     """Run the *Slab* ground heat-transfer preprocessor and return the expanded document.
 
     The workflow is:
@@ -633,18 +638,18 @@ def run_slab_preprocessor(
             raise ExpandObjectsError(msg, preprocessor="ExpandObjects")
 
         _run_slab_in_dir(config, run_dir, timeout=timeout)
-        return _parse_expanded(run_dir)
+        return _parse_expanded(run_dir, model)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)
 
 
 def run_basement_preprocessor(
-    model: IDFDocument,
+    model: _DocT,
     *,
     energyplus: EnergyPlusConfig | None = None,
     weather: str | Path | None = None,
     timeout: float = 120.0,
-) -> IDFDocument:
+) -> _DocT:
     """Run the *Basement* ground heat-transfer preprocessor and return the expanded document.
 
     The workflow is:
@@ -696,6 +701,6 @@ def run_basement_preprocessor(
             raise ExpandObjectsError(msg, preprocessor="ExpandObjects")
 
         _run_basement_in_dir(config, run_dir, timeout=timeout)
-        return _parse_expanded(run_dir)
+        return _parse_expanded(run_dir, model)
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)

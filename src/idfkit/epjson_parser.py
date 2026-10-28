@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-from .document import IDFDocument
+from .document import AnyIDFDocument, IDFDocument
 from .exceptions import VersionNotFoundError
 from .objects import IDFObject, drop_blank_group_slots
 
@@ -221,7 +221,7 @@ class EpJSONParser:
     def _parse_objects(
         self,
         data: dict[str, Any],
-        doc: IDFDocument,
+        doc: AnyIDFDocument,
         schema: EpJSONSchema | None,
     ) -> None:
         """Parse all objects from epJSON data into document."""

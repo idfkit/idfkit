@@ -62,6 +62,16 @@ Names are derived from the schema by rule, so object types added in a new Energy
 
 Resolution is strict about separators: `doc.z_o_n_e`, `doc.zone_`, `doc.airloophvacs` and the singular `doc.air_loop_hvac` all raise rather than guess. The raw type name with `_` in place of `:` resolves in any case (`doc.Site_Location`, `doc.ZONE`), as it did before derived names existed, but is untyped. A name owned by a real member wins over any accessor: `doc.version` is the version tuple, and the `Version` objects are `doc.versions`.
 
+## Typing a document for its EnergyPlus version
+
+The type stubs describe the latest supported release, and every document is typed as one unless you say otherwise: a model's version is read from its file, so a type checker cannot know it. For a model of an older release, state the version with `as_version`, which checks it at run time (`TypeError` if the file is another version) and returns the same document typed for that release. Its object types, field value types and choices, `update()` keywords and accessors are that release's, so editors complete the fields the release has, and a type the release lacks is an error:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned"
+```
+
+`idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` to accept a document of any release; through it, a document offers the object types every release has, each field typed to admit every release's values, and no field that some release lacks. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. As everywhere in idfkit, reading or setting an unknown field name is not a type error (fields resolve at run time); value types and `update()` keywords are checked.
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:

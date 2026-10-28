@@ -123,6 +123,7 @@ exclude = [
     # Generated type stubs — used as stubs by pyright, not analyzed directly
     "src/idfkit/_generated_types.pyi",
     "src/idfkit/document.pyi",
+    "src/idfkit/versioned.pyi",
 ]
 
 # The codegen modules are maintainer tools, not library code. They are never imported by an

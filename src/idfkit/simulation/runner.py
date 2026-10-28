@@ -30,7 +30,7 @@ from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from .cache import SimulationCache
     from .fs import FileSystem
 
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 @overload
 def simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: str | Path | None,
     *,
     output_dir: str | Path | None = None,
@@ -62,7 +62,7 @@ def simulate(
 
 @overload
 def simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: None = None,
     *,
     output_dir: str | Path | None = None,
@@ -84,7 +84,7 @@ def simulate(
 
 
 def simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: str | Path | None = None,
     *,
     output_dir: str | Path | None = None,
