@@ -32,7 +32,7 @@ from idfkit.schedules.year import evaluate_year
 from idfkit.simulation.fs import FileSystem, LocalFileSystem
 
 if TYPE_CHECKING:
-    from idfkit.document import IDFDocument
+    from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
 
 
@@ -60,7 +60,7 @@ class MalformedScheduleError(ScheduleEvaluationError):
     pass
 
 
-def _get_special_days(document: IDFDocument | None, year: int) -> tuple[set[date], set[date], set[date]]:
+def _get_special_days(document: AnyIDFDocument | None, year: int) -> tuple[set[date], set[date], set[date]]:
     """Get holidays and custom days from document."""
     if document is None:
         return set(), set(), set()
@@ -99,7 +99,7 @@ _DOCUMENT_REQUIRED_TYPES = frozenset(["Schedule:Week:Daily", "Schedule:Week:Comp
 def evaluate(
     schedule: IDFObject,
     dt: datetime,
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     fs: FileSystem | None = None,
     base_path: Path | str | None = None,
@@ -170,7 +170,7 @@ def evaluate(
 def _eval_document_schedule(
     schedule: IDFObject,
     dt: datetime,
-    document: IDFDocument,
+    document: AnyIDFDocument,
     day_type: DayType,
     holidays: set[date],
     custom_day_1: set[date],
@@ -194,7 +194,7 @@ def values(
     timestep: int = 1,
     start_date: tuple[int, int] = (1, 1),
     end_date: tuple[int, int] = (12, 31),
-    document: IDFDocument | None = None,
+    document: AnyIDFDocument | None = None,
     day_type: DayTypeInput | None = None,
     interpolation: InterpolationInput | None = None,
     fs: FileSystem | None = None,
@@ -281,7 +281,7 @@ def values(
 def _evaluate_with_interpolation(
     schedule: IDFObject,
     dt: datetime,
-    document: IDFDocument | None,
+    document: AnyIDFDocument | None,
     day_type: DayType,
     holidays: set[date],
     custom_day_1: set[date],
@@ -320,7 +320,7 @@ def _evaluate_with_interpolation(
 def _eval_document_with_interp(
     schedule: IDFObject,
     dt: datetime,
-    document: IDFDocument,
+    document: AnyIDFDocument,
     day_type: DayType,
     holidays: set[date],
     custom_day_1: set[date],

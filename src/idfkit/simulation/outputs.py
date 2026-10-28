@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 from .parsers.rdd import OutputMeter, OutputVariable, parse_mdd_file, parse_rdd_file
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from .result import SimulationResult
 
 
@@ -114,7 +114,7 @@ class OutputVariableIndex:
 
     def add_all_to_model(
         self,
-        model: IDFDocument,
+        model: AnyIDFDocument,
         *,
         frequency: str = "Timestep",
         filter_pattern: str | None = None,

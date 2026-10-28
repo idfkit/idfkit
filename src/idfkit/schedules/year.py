@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, cast
 from idfkit.schedules.types import DayType, Interpolation
 
 if TYPE_CHECKING:
-    from idfkit.document import IDFDocument
+    from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
 
 
@@ -51,7 +51,7 @@ def _parse_month_day(month_str: str, day_str: str) -> tuple[int, int]:
 def evaluate_year(
     obj: IDFObject,
     dt: datetime,
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     day_type: DayType = DayType.NORMAL,
     holidays: set[date] | None = None,
     custom_day_1: set[date] | None = None,
@@ -123,7 +123,7 @@ def _find_week_for_date(
     obj: IDFObject,
     d: date,
     year: int,
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
 ) -> tuple[str, IDFObject | None]:
     """Find the week schedule that covers a specific date.
 
@@ -182,7 +182,7 @@ def _find_week_for_date(
     return "", None
 
 
-def _find_week_schedule(doc: IDFDocument, name: str) -> IDFObject | None:
+def _find_week_schedule(doc: AnyIDFDocument, name: str) -> IDFObject | None:
     """Find a week schedule by name in the document.
 
     Args:

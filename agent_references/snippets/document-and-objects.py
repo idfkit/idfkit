@@ -129,3 +129,21 @@ surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex
 # --8<-- [start:mistake-rename-good]
 doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
 # --8<-- [end:mistake-rename-good]
+
+
+# --8<-- [start:versioned]
+from idfkit import load_idf
+from idfkit.document import AnyIDFDocument
+from idfkit.versioned import IDFDocumentV9_4, as_version
+
+legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)  # TypeError unless the file is 9.4
+people = legacy["People"]["Office"]
+people.update(zone_or_zonelist_name="Office")  # the 9.4 name; 9.6 renamed it, and the new name is an error here
+
+
+def count_people(doc: AnyIDFDocument) -> int:
+    """Accept a document of any supported release."""
+    return len(doc["People"])
+
+
+# --8<-- [end:versioned]

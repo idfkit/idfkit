@@ -17,7 +17,7 @@ from ..exceptions import NoDesignDaysError
 from ..versions import LATEST_VERSION
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..objects import IDFObject
     from .station import WeatherStation
 
@@ -422,7 +422,7 @@ class DesignDayManager:
 
     def apply_to_model(
         self,
-        model: IDFDocument,
+        model: AnyIDFDocument,
         *,
         heating: Literal["99.6%", "99%", "both"] = "99.6%",
         cooling: Literal["0.4%", "1%", "2%", "all"] = "1%",
@@ -502,7 +502,7 @@ class DesignDayManager:
 
 
 def apply_ashrae_sizing(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     station: WeatherStation,
     *,
     standard: Literal["90.1", "general"] = "general",

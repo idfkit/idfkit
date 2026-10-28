@@ -14,10 +14,10 @@ To opt out early, avoid importing or calling any symbol from this module.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument, IDFDocument
     from .objects import IDFObject
 
 
@@ -36,7 +36,7 @@ class EppyObjectMixin:
         _name: str
         _data: dict[str, Any]
         _schema: dict[str, Any] | None
-        _document: IDFDocument | None
+        _document: AnyIDFDocument | None
         _field_order: list[str] | None
 
         def _set_name(self, value: str) -> None: ...
@@ -95,7 +95,8 @@ class EppyObjectMixin:
         !!! tip
             Prefer ``obj._document`` for new code.
         """
-        return self._document
+        # Typed for the latest release, as every document is unless its caller names a version.
+        return cast("IDFDocument | None", self._document)
 
     # -- Schema introspection ------------------------------------------------
 

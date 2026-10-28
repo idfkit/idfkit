@@ -123,26 +123,24 @@ exclude = [
     # Generated type stubs — used as stubs by pyright, not analyzed directly
     "src/idfkit/_generated_types.pyi",
     "src/idfkit/document.pyi",
+    "src/idfkit/versioned.pyi",
 ]
 
 # The codegen modules are maintainer tools, not library code. They are never imported by an
 # installed package: they produce files that are committed, and `make check` regenerates and
 # diffs those files. So they may assume the interpreter a maintainer and CI actually run, 3.11,
 # which is what lets generate_conformance.py read pyproject.toml with the standard-library
-# tomllib rather than a dependency. The library itself is still analysed at 3.10 by the block
-# below, and still supports it. This MUST precede the broader src/idfkit block: pyright uses the
-# FIRST matching execution environment.
+# tomllib rather than a dependency. The library itself is still analysed at 3.10, the project's
+# pythonVersion above, and still supports it.
+#
+# reportTypedDictNotRequiredAccess is on everywhere. It was suppressed for the package while the
+# document stub's map was total=False; it is total=True, and the one map with entries that are not
+# required, behind AnyIDFDocument, has them because some EnergyPlus versions lack those types, which
+# is exactly what the rule should report in idfkit's own code.
 [[tool.pyright.executionEnvironments]]
 root = "src/idfkit/codegen"
 pythonVersion = "3.11"
-reportTypedDictNotRequiredAccess = false
 
-# IDFDocument uses a TypedDict stub for O(1) __getitem__ type resolution.
-# All keys are total=False (the document is not a real TypedDict at runtime),
-# so we scope the suppression to the package rather than globally.
-[[tool.pyright.executionEnvironments]]
-root = "src/idfkit"
-reportTypedDictNotRequiredAccess = false
 
 # Three of the four execution environments that stood here described docs/snippets/, which moved to
 # idfkit/idfkit-developers with the rest of the site. They went with it: the rules that catch API
@@ -157,7 +155,6 @@ reportTypedDictNotRequiredAccess = false
 # style legitimately provokes.
 [[tool.pyright.executionEnvironments]]
 root = "agent_references/snippets"
-reportTypedDictNotRequiredAccess = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnknownArgumentType = false

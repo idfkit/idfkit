@@ -248,6 +248,21 @@ ZoneHVAC:IdealLoadsAirSystem,
         assert len(idd_found) == 1
         assert idd_found[0] is True
 
+    def test_keeps_the_model_strictness(self, mock_config: EnergyPlusConfig) -> None:
+        # Typed to return the model's own type, strictness included; copy() keeps it too.
+        doc = new_document(version=(24, 1, 0), strict=False)
+        doc.add(
+            "HVACTemplate:Zone:IdealLoadsAirSystem",
+            "Office Ideal Loads",
+            {"zone_name": "Office"},
+            validate=False,
+        )
+
+        with patch("idfkit.simulation.expand.subprocess.run", side_effect=_fake_expand_run()):
+            expanded = expand_objects(doc, energyplus=mock_config)
+
+        assert expanded.strict is False
+
     def test_skips_subprocess_when_nothing_to_expand(self) -> None:
         doc = new_document(version=(24, 1, 0))
         doc.add("Zone", "Office", {"x_origin": 0.0})

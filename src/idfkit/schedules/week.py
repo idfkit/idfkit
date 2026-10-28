@@ -16,7 +16,7 @@ from idfkit.schedules.types import (
 )
 
 if TYPE_CHECKING:
-    from idfkit.document import IDFDocument
+    from idfkit.document import AnyIDFDocument
     from idfkit.objects import IDFObject
 
 # Schedule:Week:Daily field order (EnergyPlus uses Sunday as first day)
@@ -114,7 +114,7 @@ def _get_field_by_index(obj: IDFObject, index: int) -> str | None:
 def evaluate_week_daily(
     obj: IDFObject,
     dt: datetime,
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     day_type: DayType = DayType.NORMAL,
     holidays: set[date] | None = None,
     custom_day_1: set[date] | None = None,
@@ -180,7 +180,7 @@ def evaluate_week_daily(
         raise ValueError(msg)
 
 
-def _find_day_schedule(doc: IDFDocument, name: str) -> IDFObject | None:
+def _find_day_schedule(doc: AnyIDFDocument, name: str) -> IDFObject | None:
     """Find a day schedule by name in the document.
 
     Searches all day schedule types.
@@ -211,7 +211,7 @@ def _find_day_schedule(doc: IDFDocument, name: str) -> IDFObject | None:
 def evaluate_week_compact(
     obj: IDFObject,
     dt: datetime,
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     day_type: DayType = DayType.NORMAL,
     holidays: set[date] | None = None,
     custom_day_1: set[date] | None = None,

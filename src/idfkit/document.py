@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
+from ._document_types import DocumentTypeMeta
 from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
@@ -1447,3 +1448,17 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 # fire for them. Computed after the class body so dir() sees every one, and from the
 # class rather than an instance, so it never runs an instance __dir__.
 _RESERVED: frozenset[str] = frozenset(dir(IDFDocument))
+
+
+class AnyIDFDocument(IDFDocument[Strict], metaclass=DocumentTypeMeta):
+    """A document of any supported EnergyPlus version.
+
+    For a type checker (``document.pyi``) this is the type every version's document is assignable to.
+    At run time no document is created as one: ``isinstance`` holds for every :class:`IDFDocument`.
+    """
+
+    _energyplus_version = None
+
+
+# The version-agnostic member of AnyIDFDocument in document.pyi; at run time the same stand-in.
+IDFDocumentAllVersions = AnyIDFDocument
