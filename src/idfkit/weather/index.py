@@ -463,11 +463,29 @@ def _extract_wmo_from_filename(filename: str) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-_QUERY_SPLIT_RE = re.compile(r"[\s,;]+")
+# Dots and hyphens split too, as they do in station names ("St.Louis-Lambert"),
+# so "St. Louis" and "Winston-Salem" tokenise the way the names they target do.
+_QUERY_SPLIT_RE = re.compile(r"[\s,;.\-]+")
 
 # A query token shorter than this must equal a name token rather than prefix one:
 # two letters such as "co" would otherwise prefix-match "congo" and "columbus".
 _MIN_PREFIX_TOKEN_LEN = 3
+
+# Lower-case letters that carry no combining mark under NFD, so stripping marks
+# leaves them alone: "Tromsø" must still read as "tromso".
+_FOLD_TABLE = str.maketrans({
+    "æ": "ae",
+    "ð": "d",
+    "đ": "d",
+    "ħ": "h",
+    "\u0131": "i",  # dotless i
+    "ł": "l",
+    "ø": "o",
+    "œ": "oe",
+    "ß": "ss",
+    "þ": "th",
+    "ŧ": "t",
+})
 
 
 def _fold(text: str) -> str:
@@ -475,11 +493,12 @@ def _fold(text: str) -> str:
     lowered = text.lower()
     if lowered.isascii():
         return lowered
-    return "".join(c for c in unicodedata.normalize("NFD", lowered) if unicodedata.category(c) != "Mn")
+    stripped = "".join(c for c in unicodedata.normalize("NFD", lowered) if unicodedata.category(c) != "Mn")
+    return stripped.translate(_FOLD_TABLE)
 
 
 def _tokenize_query(query: str) -> list[str]:
-    """Split a folded query on whitespace, commas and semicolons, dropping empty tokens."""
+    """Split a folded query on whitespace, commas, semicolons, dots and hyphens, dropping empty tokens."""
     return [t for t in _QUERY_SPLIT_RE.split(query) if t]
 
 
@@ -490,7 +509,8 @@ def _score_name_tokens(name_lower: str, name_query: list[str], n_tokens: int) ->
     prefix of a name token; a shorter one must equal a whole name token.
     All tokens matching scores 0.6-0.9 by coverage of the name; some of
     them matching scores up to 0.3, as a share of all *n_tokens* query
-    tokens (qualifiers included).
+    tokens, where each qualifier the caller removed from *name_query*
+    counts as matched.
     """
     if not name_query:
         return 0.0
@@ -505,7 +525,10 @@ def _score_name_tokens(name_lower: str, name_query: list[str], n_tokens: int) ->
     if matching == len(name_query):
         coverage = sum(len(qt) for qt in name_query) / max(len(name_lower), 1)
         return 0.6 + 0.3 * min(coverage, 1.0)
-    return 0.3 * matching / n_tokens
+    if matching == 0:
+        return 0.0
+    qualifiers = n_tokens - len(name_query)
+    return 0.3 * (matching + qualifiers) / n_tokens
 
 
 def _score_station(station: WeatherStation, query: str, tokens: list[str]) -> tuple[float, str]:
@@ -874,7 +897,7 @@ class StationIndex:
         Matching is case- and accent-insensitive ("Montréal" finds
         "Montreal") and uses substring / token-prefix heuristics (no
         external NLP dependencies).  The query is split on whitespace,
-        commas and semicolons, and a token equal to a station's state or
+        commas, semicolons, dots and hyphens, and a token equal to a station's state or
         country code qualifies the match rather than having to appear in
         the name, so "Boulder, CO" ranks Boulder, Colorado first.  Canonical EPW
         filenames (e.g.

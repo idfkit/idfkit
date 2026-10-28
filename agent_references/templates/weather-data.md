@@ -29,7 +29,7 @@
 --8<-- "agent_references/snippets/weather-data.py:search-name"
 ```
 
-`search` splits the query on whitespace, commas and semicolons, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. Use it for "I know roughly what the station is called."
+`search` splits the query on whitespace, commas, semicolons, dots and hyphens, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. Use it for "I know roughly what the station is called."
 
 ### By address (geocode + nearest)
 

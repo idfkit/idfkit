@@ -917,6 +917,30 @@ class TestSearchTokenization:
         assert results
         assert results[0].station.city == "Zürich.AP"
 
+    def test_letters_without_combining_marks_are_folded(self) -> None:
+        base = _fixture_stations()[0]
+        idx = StationIndex.from_stations([replace(base, country="NOR", state="TR", city="Tromso", wmo="010250")])
+        results = idx.search("Tromsø")
+        assert results
+        assert results[0].station.city == "Tromso"
+
+    def test_dots_and_hyphens_split_like_station_names(self) -> None:
+        base = _fixture_stations()[0]
+        idx = StationIndex.from_stations([
+            replace(base, country="USA", state="MO", city="St.Louis-Lambert.Intl.AP", wmo="724340"),
+            replace(base, country="SEN", state="SL", city="Saint.Louis.AP", wmo="616000"),
+            replace(base, country="USA", state="NC", city="Winston-Salem-Smith.Reynolds.AP", wmo="723193"),
+        ])
+        assert idx.search("St. Louis, MO")[0].station.wmo == "724340"
+        assert idx.search("St. Louis, MO")[0].score >= 0.6
+        assert idx.search("Winston-Salem, NC")[0].station.wmo == "723193"
+
+    def test_qualifier_counts_toward_a_partial_match(self) -> None:
+        idx = self._index()
+        boulder = next(r for r in idx.search("Boulder Denver, CO") if r.station.city == "Boulder.Muni.AP")
+        # "boulder" and the qualifier "co" match; "denver" does not.
+        assert boulder.score == pytest.approx(0.2)
+
 
 class TestGetByFilename:
     def test_exact_filename_stem(self) -> None:
