@@ -817,6 +817,47 @@ class TestAirBoundary:
         )
         assert len(list(doc["Construction:AirBoundary"])) == 0
 
+    def test_air_boundary_still_works_on_9_2(self) -> None:
+        doc = new_document(version=(9, 2, 0))
+        create_block(
+            doc,
+            "Open",
+            footprint_rectangle(50, 30),
+            floor_to_floor=3,
+            zoning=ZoningScheme.CORE_PERIMETER,
+            air_boundary=True,
+        )
+        assert len(list(doc["Construction:AirBoundary"])) == 1
+
+    @pytest.mark.parametrize("version", [(8, 9, 0), (9, 1, 0)])
+    def test_air_boundary_before_9_2_raises_without_adding(self, version: tuple[int, int, int]) -> None:
+        doc = new_document(version=version)
+        before = len(list(doc.all_objects))
+        with pytest.raises(ValueError, match=r"Construction:AirBoundary.*added in 9\.2"):
+            create_block(
+                doc,
+                "Open",
+                footprint_rectangle(50, 30),
+                floor_to_floor=3,
+                zoning=ZoningScheme.CORE_PERIMETER,
+                air_boundary=True,
+            )
+        assert len(list(doc.all_objects)) == before
+
+    def test_courtyard_air_boundary_before_9_2_raises(self) -> None:
+        doc = new_document(version=(9, 1, 0))
+        before = len(list(doc.all_objects))
+        with pytest.raises(ValueError, match="Construction:AirBoundary"):
+            create_courtyard_block(
+                doc,
+                "Court",
+                footprint_rectangle(50, 40),
+                [footprint_rectangle(20, 10, origin=(15, 15))],
+                floor_to_floor=3,
+                air_boundary=True,
+            )
+        assert len(list(doc.all_objects)) == before
+
 
 # =========================================================================
 # Default perimeter depth
