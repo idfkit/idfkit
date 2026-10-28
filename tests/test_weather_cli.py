@@ -453,6 +453,25 @@ class TestRunTmy:
         assert "geocoding failed" in err
         assert "offline" in err
 
+    def test_near_place_not_found_returns_exit_1(
+        self,
+        sample_index: StationIndex,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        from idfkit.weather.geocode import GeocodingError
+
+        ns = _parse(["--near", "zzzzqq"])
+        with (
+            patch.object(StationIndex, "load", return_value=sample_index),
+            patch(
+                "idfkit.weather._cli.geocode",
+                side_effect=GeocodingError("No results found for address: zzzzqq", kind="not-found"),
+            ),
+        ):
+            code = run_tmy(ns)
+        assert code == EXIT_NO_MATCHES
+        assert "No results found" in capsys.readouterr().err
+
     def test_nearby_with_near_errors(
         self,
         capsys: pytest.CaptureFixture[str],

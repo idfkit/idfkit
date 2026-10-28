@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two.
+This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
 
 ### Added
 
@@ -55,8 +55,26 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 - `IDFObject.update` sets several fields in one call, given as a mapping, keyword arguments, or both; where both name the same field, the keyword wins, as with `dict.update`. The call is all or nothing: every entry is examined before any is applied, and if one is refused, no field changes. An entry is refused when its name is not a field of the type, when it is `name` (use `IDFDocument.rename`), when it is a legacy flat extensible name such as `vertex_3_x_coordinate`, or when it gives the extensible wrapper key a value single assignment rejects: something other than a list, or a list holding an item that is not a dict or group, or a group with an unknown field. Unknown names are refused whenever the object has a schema field order, including in a document opened with `strict=False`, where single assignment stores them; an object constructed detached without one accepts any name, as single assignment does. Accepted entries are applied by ordinary attribute assignment, so reference and change tracking are those of consecutive assignments. The method returns `None`; the TypeScript `IdfObject.update` returns the object, a difference recorded in the naming register. The generated stubs type `update` per object type, so a type checker reports a misspelled field name or a wrongly typed value given as a keyword; the positional mapping is typed `Mapping[str, Any] | None`, as at run time, so that a mapping built at run time is accepted. ([#235](https://github.com/idfkit/idfkit/issues/235))
 - `InvalidFieldError` accepts an optional keyword-only `refused`, the entries of a refused `update` group, and then lists every one in its message and in its `refused` attribute, a tuple of `idfkit.exceptions.RefusedEntry`. Without it, every message is unchanged.
 
+- **`GeocodingError` gained `kind` and `status`.** `kind` is `"not-found"`,
+  `"unreachable"`, `"http"` or `"invalid-response"`, and `status` holds the HTTP
+  code when `kind` is `"http"`, so a caller can tell a place name that matches
+  nothing from a service that could not be reached without matching message
+  text. `geocode` and `detect_location` set both on every error they raise. An
+  HTTP error from Nominatim or ipapi.co, previously reported only as "Failed to
+  geocode", now names its status. An ipapi.co payload that reports a rate limit
+  is `"http"` with `status` `429`, and a truncated response body is
+  `"unreachable"` rather than escaping as `http.client.IncompleteRead`.
+  Coordinates that are blank, boolean or not finite are `"invalid-response"`.
+  `@idfkit/weather` carries the same fields
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
+
 ### Changed
 
+- `idfkit tmy --near ADDRESS` now exits `1` (no matches) instead of `3`
+  (network failure) when the address resolves to no place. Exit `3` remains for
+  a geocoder that could not be reached, answered with an HTTP error, or returned
+  an unreadable body
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
 - `IDFCollection` became covariant in its object type, so `IDFCollection[Zone]` is accepted
   where `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` now takes any `IDFObject`,
   and `get(name, default)` returns the object type or the default's type
@@ -69,6 +87,7 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Fixed
 
+- `create_block`, `create_courtyard_block` and `ZonedBlock.build` with `air_boundary=True` now raise a `ValueError` naming the version requirement on a document older than EnergyPlus 9.2, before adding anything. `Construction:AirBoundary` first appeared in 9.2, and they previously added every zone and surface of the block and then failed with `UnknownObjectTypeError`, leaving the document holding a block with blank constructions on its interior walls. ([#247](https://github.com/idfkit/idfkit/pull/247))
 - `expand_objects`, `IDFDocument.expand` and the ground heat-transfer preprocessors returned a
   strict document for a model opened with `strict=False` whenever a preprocessor ran; only a model
   with nothing to expand came back as it was. The result now keeps the model's strictness, as
@@ -84,6 +103,7 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 - `view_model()` and the other 3D viewers in `idfkit.visualization` drew concave surfaces, such as L- and U-shaped floors and roofs, with spurious triangles spanning their notches. Surfaces were fan-triangulated from their first vertex, which is only correct for convex polygons; concave ones are now ear-clipped on their own plane, keeping the surface's winding, and convex ones keep the fan. Collinear and duplicate vertices are skipped, keyhole polygons with doubled bridge vertices are clipped correctly, and a self-intersecting polygon is still drawn instead of raising. ([#240](https://github.com/idfkit/idfkit/pull/240), [#246](https://github.com/idfkit/idfkit/pull/246))
 - `intersect_and_match` and `intersect_match` no longer give a concave surface drawn as a keyhole (a courtyard roof or ceiling with doubled bridge vertices), or one pinched at a vertex, the wrong area when they split it. Its triangulation clipped triangles that lay outside the surface. A 96 m² keyhole ceiling with one 4 m² floor above it was split into fragments totalling 168 m²; they now total 96 m². ([#246](https://github.com/idfkit/idfkit/pull/246))
 - A blank fixed field (any field outside a repeating group, in every object type) was stored in the model as `""`, numeric fields included, although `write_idf` and `write_epjson` both omitted it, so re-parsing idfkit's own IDF output did not equal the document it was written from: a `Zone` written with eight blank trailing commas parsed to 12 fields and came back with 4. Such a field is now left out of the model, as ConvertInputFormat and idfkit-js leave it out, and assigning `None` or `""` to a field now clears it, as it already cleared an extensible slot. A blank field now reads as `None`, as a field cut off by an earlier semicolon always has, in attribute, item and positional access and in the eppy-compatible `fieldvalues`; code that compared such a field with `""` should test for `None`. An explicit `0` is still a value, and `write_idf` still writes an interior blank in its position. ([#183](https://github.com/idfkit/idfkit/issues/183), [#242](https://github.com/idfkit/idfkit/pull/242))
+- An IDF file whose last object has no closing `;`, such as `Version, 24.1;\nZone, Z1, 0`, no longer loads with that object silently dropped. A strict parse (the default) raises `IDFParseError` with an `Unterminated object near "..." (missing ";")` finding of code `ParseError`, positioned at the line the object starts on and naming its type. With `strict_parsing=False` or `load_idf_with_diagnostics` the rest of the file still loads, and the finding is logged as a warning and returned. Trailing whitespace and comments are not affected. The same change removes exponential backtracking in the object pattern and in the `preserve_formatting=True` syntax-tree pattern, which made an unterminated tail of thirty characters take more than one hundred seconds to read, and `iter_idf_objects` now skips such a tail with a warning instead of scanning it. ([#187](https://github.com/idfkit/idfkit/issues/187), [#243](https://github.com/idfkit/idfkit/pull/243))
 
 ## [1.1.1] - 2026-10-19
 

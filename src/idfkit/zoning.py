@@ -58,6 +58,7 @@ from .geometry_builders import (
     link_horizontal_surfaces,
     split_horizontal_surface_by_regions,
 )
+from .versions import version_string
 
 if TYPE_CHECKING:
     from .document import AnyIDFDocument
@@ -943,8 +944,7 @@ def _apply_air_boundaries(doc: AnyIDFDocument, created: list[IDFObject]) -> None
     """
     air_name = "Air Boundary"
     # Construction:AirBoundary exists from EnergyPlus 9.2 on, so through AnyIDFDocument it is a key
-    # that may be missing; for an older model the add below raises UnknownObjectTypeError, as it
-    # always has.
+    # that may be missing. ZonedBlock.build refuses an older model before anything reaches here.
     if not list(doc.get_collection("Construction:AirBoundary")):
         doc.add("Construction:AirBoundary", air_name, validate=False)
 
@@ -1035,7 +1035,22 @@ class ZonedBlock:
 
         Returns:
             All created [IDFObject][idfkit.objects.IDFObject] instances.
+
+        Raises:
+            ValueError: If ``air_boundary`` is set and the document's
+                EnergyPlus version has no ``Construction:AirBoundary``
+                (versions before 9.2).  Nothing is added to the document.
         """
+        # Check before creating any surface, so an unsupported version does
+        # not leave the document holding a half-built block.
+        if self.air_boundary and doc.schema is not None and "Construction:AirBoundary" not in doc.schema:
+            version = version_string(doc.version)
+            msg = (
+                f"air_boundary=True needs Construction:AirBoundary, which EnergyPlus {version} does not have "
+                "(it was added in 9.2); build the block without air_boundary or use a 9.2+ document"
+            )
+            raise ValueError(msg)
+
         fp = list(self.footprint)
 
         # Determine zone layout per floor
@@ -1116,6 +1131,11 @@ def create_block(
 
     Returns:
         All created [IDFObject][idfkit.objects.IDFObject] instances.
+
+    Raises:
+        ValueError: If ``air_boundary`` is ``True`` and the document's
+            EnergyPlus version is older than 9.2, which has no
+            ``Construction:AirBoundary``.
 
     Examples:
         Core-perimeter zoning for a 3-story office:
@@ -1199,7 +1219,9 @@ def create_courtyard_block(
         ValueError: If *outer* or a courtyard has fewer than three
             vertices (for example a single polygon passed as
             *courtyards* instead of a list of polygons), or if the
-            courtyards cover the whole footprint.
+            courtyards cover the whole footprint, or if ``air_boundary``
+            is ``True`` and the document's EnergyPlus version is older
+            than 9.2, which has no ``Construction:AirBoundary``.
 
     Examples:
         A 50 x 40 m block around a centred 20 x 10 m courtyard:

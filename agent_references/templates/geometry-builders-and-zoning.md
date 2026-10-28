@@ -51,7 +51,7 @@ Each piece is concave, so there is no `zoning=` argument: every piece is one zon
 
 `create_block` also accepts:
 
-- `air_boundary=True` — apply `Construction:AirBoundary` to all inter-zone walls. Use for open-plan spaces that share air but are still thermally distinct.
+- `air_boundary=True` — apply `Construction:AirBoundary` to all inter-zone walls. Use for open-plan spaces that share air but are still thermally distinct. Needs EnergyPlus 9.2+; on an older document it raises `ValueError` before adding anything.
 - `base_elevation` — ground floor Z (default 0). When > 0, the ground-floor boundary becomes `Outdoors` instead of `Ground`.
 
 ## Multi-block buildings (setbacks)

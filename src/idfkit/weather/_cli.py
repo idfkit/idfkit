@@ -890,7 +890,8 @@ def run_tmy(ns: argparse.Namespace) -> int:
         )
     except GeocodingError as exc:
         _error(f"geocoding failed: {exc}")
-        return EXIT_NETWORK
+        # A place that does not exist is a search with no matches, not a network failure.
+        return EXIT_NO_MATCHES if exc.kind == "not-found" else EXIT_NETWORK
 
     if cfg.action is TmyAction.DOWNLOAD:
         return _run_download(cfg, matches)

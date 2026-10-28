@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import http.client
 import json
+import math
+import re
 import threading
 import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
-from urllib.error import URLError
+from typing import TYPE_CHECKING, Literal, cast
+from urllib.error import HTTPError
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -35,8 +38,64 @@ _IPAPI_URL = "https://ipapi.co/json/"
 _IPGEO_CACHE_FILENAME = "ipgeo.json"
 
 
+_GeocodingErrorKind = Literal["not-found", "unreachable", "http", "invalid-response"]
+"""Why a geocoding call failed.
+
+- ``"not-found"``: the service answered and has no location for the query.
+  Retrying will not help; a different query might.
+- ``"unreachable"``: the request never got an answer (offline, DNS, refused,
+  timed out). A retry may help.
+- ``"http"``: the service answered with an HTTP error;
+  [status][idfkit.weather.geocode.GeocodingError.status] holds the code. A
+  ``429`` or ``5xx`` may clear on retry.
+- ``"invalid-response"``: the service answered with a body that is not the
+  expected JSON, which is what a captive portal or an intercepting proxy
+  produces.
+"""
+
+
 class GeocodingError(Exception):
-    """Raised when an address cannot be geocoded."""
+    """Raised when an address or IP cannot be resolved to coordinates.
+
+    Branch on [kind][idfkit.weather.geocode.GeocodingError.kind] rather than on
+    the message, whose wording may change.
+
+    Args:
+        message: Human-readable description.
+        kind: Why the call failed. Defaults to ``"unreachable"``.
+        status: The HTTP status, when ``kind`` is ``"http"``.
+
+    Attributes:
+        kind: Why the call failed.
+        status: The HTTP status when ``kind`` is ``"http"``, otherwise ``None``.
+    """
+
+    def __init__(self, message: str, *, kind: _GeocodingErrorKind = "unreachable", status: int | None = None) -> None:
+        super().__init__(message)
+        self.kind: _GeocodingErrorKind = kind
+        self.status: int | None = status
+
+
+def _coordinate(value: object) -> float:
+    """Read a coordinate from a JSON field: a number or a numeric string, finite.
+
+    Raises:
+        TypeError: For ``None``, a bool, or any other non-numeric JSON value.
+        ValueError: For a string that is not a number, or a non-finite value.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        msg = f"not a coordinate: {value!r}"
+        raise TypeError(msg)
+    result = float(value)
+    if not math.isfinite(result):
+        msg = f"not a finite coordinate: {value!r}"
+        raise ValueError(msg)
+    return result
+
+
+# ipapi.co reports a rate limit or an exhausted quota in the same payload shape
+# as a reserved address. Only the latter means a retry will not help.
+_IPAPI_RATE_LIMITED = re.compile(r"rate ?limit|quota", re.IGNORECASE)
 
 
 class RateLimiter:
@@ -110,8 +169,11 @@ def geocode(address: str) -> tuple[float, float]:
         A ``(latitude, longitude)`` tuple in decimal degrees.
 
     Raises:
-        GeocodingError: If the address cannot be resolved or the service is
-            unreachable.
+        GeocodingError: If the address cannot be resolved. Its ``kind`` says
+            why: ``"not-found"`` when Nominatim has no match,
+            ``"unreachable"`` when the request failed, ``"http"`` (with
+            ``status``) on an HTTP error, and ``"invalid-response"`` when the
+            body is not what Nominatim returns.
 
     Example:
         >>> lat, lon = geocode("Empire State Building, NYC")
@@ -127,14 +189,31 @@ def geocode(address: str) -> tuple[float, float]:
     req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
-            data = json.loads(resp.read())
-            if data:
-                return float(data[0]["lat"]), float(data[0]["lon"])
-    except (URLError, TimeoutError, json.JSONDecodeError, KeyError, IndexError) as exc:
+            body = resp.read()
+    except HTTPError as exc:
+        msg = f"Failed to geocode address {address}: {exc.code} {exc.reason}"
+        raise GeocodingError(msg, kind="http", status=exc.code) from exc
+    except (OSError, http.client.HTTPException) as exc:  # URLError, timeouts, resets, truncated bodies
         msg = f"Failed to geocode address: {address}"
-        raise GeocodingError(msg) from exc
-    msg = f"No results found for address: {address}"
-    raise GeocodingError(msg)
+        raise GeocodingError(msg, kind="unreachable") from exc
+
+    try:
+        data = json.loads(body)
+    except ValueError as exc:
+        msg = f"Failed to geocode address: {address}"
+        raise GeocodingError(msg, kind="invalid-response") from exc
+    if not isinstance(data, list):
+        msg = f"Unexpected response geocoding address: {address}"
+        raise GeocodingError(msg, kind="invalid-response")
+    if not data:
+        msg = f"No results found for address: {address}"
+        raise GeocodingError(msg, kind="not-found")
+    first = cast("Mapping[str, object]", data[0])
+    try:
+        return _coordinate(first["lat"]), _coordinate(first["lon"])
+    except (KeyError, TypeError, ValueError) as exc:
+        msg = f"Failed to geocode address: {address}"
+        raise GeocodingError(msg, kind="invalid-response") from exc
 
 
 def _max_age_seconds(max_age: timedelta | float | None) -> float | None:
@@ -234,8 +313,11 @@ def detect_location(
         A ``(latitude, longitude)`` tuple in decimal degrees.
 
     Raises:
-        GeocodingError: If the IP cannot be located or the service is
-            unreachable.
+        GeocodingError: If the IP cannot be located. Its ``kind`` reads as for
+            [geocode][idfkit.weather.geocode.geocode]; ``"not-found"`` means
+            ipapi.co answered with an error payload, such as for a reserved
+            address. An error payload that reports a rate limit or an
+            exhausted quota is ``"http"`` with ``status`` ``429`` instead.
 
     Note:
         Calling this function sends your public IP address to ipapi.co
@@ -254,20 +336,32 @@ def detect_location(
     req = urllib.request.Request(_IPAPI_URL, headers={"User-Agent": _USER_AGENT})  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
-            data: Mapping[str, object] = json.loads(resp.read())
+            body = resp.read()
+    except HTTPError as exc:
+        msg = f"Failed to detect location from IP: {exc.code} {exc.reason}"
+        raise GeocodingError(msg, kind="http", status=exc.code) from exc
+    except (OSError, http.client.HTTPException) as exc:  # URLError, timeouts, resets, truncated bodies
+        msg = f"Failed to detect location from IP: {exc}"
+        raise GeocodingError(msg, kind="unreachable") from exc
+
+    try:
+        data: Mapping[str, object] = json.loads(body)
         if data.get("error"):
             reason = data.get("reason") or data.get("message") or "unknown error"
+            if _IPAPI_RATE_LIMITED.search(f"{reason} {data.get('message') or ''}"):
+                msg = f"ipapi.co rate-limited this request: {reason}"
+                raise GeocodingError(msg, kind="http", status=429)
             msg = f"ipapi.co could not locate this IP: {reason}"
-            raise GeocodingError(msg)
+            raise GeocodingError(msg, kind="not-found")
         lat = data.get("latitude")
         lon = data.get("longitude")
         if lat is None or lon is None:
             msg = "ipapi.co response missing latitude/longitude"
-            raise GeocodingError(msg)
-        coords = (float(lat), float(lon))  # pyright: ignore[reportArgumentType]
-    except (URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError, TypeError, AttributeError) as exc:
+            raise GeocodingError(msg, kind="invalid-response")
+        coords = (_coordinate(lat), _coordinate(lon))
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
         msg = f"Failed to detect location from IP: {exc}"
-        raise GeocodingError(msg) from exc
+        raise GeocodingError(msg, kind="invalid-response") from exc
 
     _write_ipgeo_cache(cache_path, *coords)
     return coords
