@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([a392da4](https://github.com/idfkit/idfkit/commit/a392da4)).
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
