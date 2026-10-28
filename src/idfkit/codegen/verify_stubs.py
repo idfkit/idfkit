@@ -37,6 +37,7 @@ class _Class:
     bases: list[str]
     fields: dict[str, str]
     properties: dict[str, str]
+    closed: bool = False
 
 
 @dataclasses.dataclass
@@ -57,7 +58,8 @@ def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ClassDef):
-            cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {})
+            closed = any(k.arg == "closed" and ast.unparse(k.value) == "True" for k in node.keywords)
+            cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {}, closed)
             for item in node.body:
                 if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                     cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
@@ -224,43 +226,50 @@ def verify(types_source: str, document_source: str, versioned_source: str, versi
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
     """
-    latest = versions[-1]
-    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
-    from idfkit.schema import get_schema
-
     module = _read(versioned_source, _read(document_source, _read(types_source)))
     problems: list[str] = []
     for ver in versions:
-        tag = f"{ver[0]}_{ver[1]}"
-        schema = get_schema(ver)
-        if ver == latest:
-            map_name, doc_name = "_ObjectTypeMap", "IDFDocument"
-        else:
-            map_name, doc_name = f"_ObjectTypeMapV{tag}", f"IDFDocumentV{tag}"
-        if map_name not in module.classes and map_name not in module.typed_dicts:
-            problems.append(f"{'.'.join(map(str, ver))}: no {map_name}")
-            continue
-        entries = _map_entries(module, map_name, problems)
-        if set(entries) != set(schema.object_types):
-            missing = sorted(set(schema.object_types) - set(entries))
-            extra = sorted(set(entries) - set(schema.object_types))
-            problems.append(f"{map_name}: missing types {missing}, extra types {extra}")
-        classes = {obj_type: _collection_class(annotation) for obj_type, annotation in entries.items()}
-        for obj_type in schema.object_types:
-            if obj_type in classes:
-                _check_class(module, classes[obj_type], ver, obj_type, problems)
-        if doc_name not in module.classes:
-            problems.append(f"{'.'.join(map(str, ver))}: no {doc_name}")
-            continue
-        if ver != latest:
-            expected_accessors = {
-                name: f"IDFCollection[{classes[obj_type]}]"
-                for name, obj_type in _build_resolver(schema).accessors().items()
-            }
-            if _properties(module, doc_name) != expected_accessors:
-                problems.append(f"{doc_name}: attribute accessors differ from the version's")
+        _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
     return problems
+
+
+def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:
+    """Check the document type of one release: its map, every class it maps to, and its accessors."""
+    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
+    from idfkit.schema import get_schema
+
+    tag = f"{ver[0]}_{ver[1]}"
+    schema = get_schema(ver)
+    if is_latest:
+        map_name, doc_name = "_ObjectTypeMap", "IDFDocument"
+    else:
+        map_name, doc_name = f"_ObjectTypeMapV{tag}", f"IDFDocumentV{tag}"
+    if map_name not in module.classes and map_name not in module.typed_dicts:
+        problems.append(f"{'.'.join(map(str, ver))}: no {map_name}")
+        return
+    entries = _map_entries(module, map_name, problems)
+    if not is_latest and not module.classes[map_name].closed:
+        # Open, a map lacking a type the latest release has is not assignable to AnyIDFDocument.
+        problems.append(f"{map_name}: not closed")
+    if set(entries) != set(schema.object_types):
+        missing = sorted(set(schema.object_types) - set(entries))
+        extra = sorted(set(entries) - set(schema.object_types))
+        problems.append(f"{map_name}: missing types {missing}, extra types {extra}")
+    classes = {obj_type: _collection_class(annotation) for obj_type, annotation in entries.items()}
+    for obj_type in schema.object_types:
+        if obj_type in classes:
+            _check_class(module, classes[obj_type], ver, obj_type, problems)
+    if doc_name not in module.classes:
+        problems.append(f"{'.'.join(map(str, ver))}: no {doc_name}")
+        return
+    if not is_latest:
+        expected_accessors = {
+            name: f"IDFCollection[{classes[obj_type]}]"
+            for name, obj_type in _build_resolver(schema).accessors().items()
+        }
+        if _properties(module, doc_name) != expected_accessors:
+            problems.append(f"{doc_name}: attribute accessors differ from the version's")
 
 
 def _check_any_document(module: _Module, versions: tuple[Version, ...], problems: list[str]) -> None:
@@ -269,12 +278,17 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
 
     schemas = [get_schema(ver) for ver in versions]
     common = _intersection([set(s.object_types) for s in schemas])
+    latest = set(schemas[-1].object_types)
     entries = _map_entries(module, "_CommonTypeMap", problems)
-    if set(entries) != common:
-        problems.append("AnyIDFDocument: its types are not exactly those every version has")
+    if set(entries) != latest:
+        problems.append("AnyIDFDocument: its types are not exactly those of the latest release")
     for obj_type, annotation in entries.items():
-        # ReadOnly[IDFCollection[X]]
-        cls = _collection_class(_collection_class(annotation))
+        # ReadOnly[IDFCollection[X]], wrapped in NotRequired[...] for a type some version lacks
+        optional = annotation.startswith("NotRequired[")
+        if optional == (obj_type in common):
+            state = "optional" if optional else "required"
+            problems.append(f"AnyIDFDocument[{obj_type!r}]: {state}, but every version has it: {obj_type in common}")
+        cls = _collection_class(_collection_class(_collection_class(annotation) if optional else annotation))
         decls = [_field_decls(s, obj_type) for s in schemas if obj_type in s.object_types]
         shared = _intersection([set(d) for d in decls])
         actual = {k: v for k, v in _fields(module, cls).items() if k not in _group_names(module, cls)}

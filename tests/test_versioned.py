@@ -138,6 +138,15 @@ class TestCommittedStubs:
                 "def spaces(self) -> IDFCollection[_g.Zone]",
                 "accessors",
             ),
+            # A version's map left open, so a document of that version is not assignable to AnyIDFDocument.
+            (2, r"(?m)^    closed=True,\n", "", "not closed"),
+            # A type some version lacks, made a required key of AnyIDFDocument.
+            (
+                0,
+                r"NotRequired\[ReadOnly\[IDFCollection\[_SpaceBase\]\]\]",
+                "ReadOnly[IDFCollection[_SpaceBase]]",
+                "required",
+            ),
             # A type every version has, dropped from AnyIDFDocument.
             (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n', "", "AnyIDFDocument"),
         ],

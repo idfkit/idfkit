@@ -77,7 +77,10 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     latest_only(legacy)  # pyright: ignore[reportArgumentType]  (a 9.4 document is not a latest one)
     print(legacy.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (no Space before 9.6)
     # Through AnyIDFDocument, only what every version has.
-    any_doc["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (not in every version)
+    # A type some version lacks is a key that may be missing: reported, and still typed. Were the
+    # result Unknown, strict mode would also report it here (reportUnknownVariableType), unignored.
+    space = any_doc["Space"]  # pyright: ignore[reportTypedDictNotRequiredAccess]  (not in every version)
+    print(space)
     print(any_doc.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (not in every version)
     any_doc["People"]["Office"].update(zone_or_zonelist_name="Office")  # pyright: ignore[reportCallIssue]  (renamed in 9.6)
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "Plutonium"  # pyright: ignore[reportAttributeAccessIssue]  (no version)

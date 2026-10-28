@@ -942,8 +942,9 @@ def _apply_air_boundaries(doc: AnyIDFDocument, created: list[IDFObject]) -> None
     already exist, then assigns it to all ``Surface``-boundary walls.
     """
     air_name = "Air Boundary"
-    # Construction:AirBoundary exists from EnergyPlus 9.2 on, so it is not a key of AnyIDFDocument;
-    # for an older model the add below raises UnknownObjectTypeError, as it always has.
+    # Construction:AirBoundary exists from EnergyPlus 9.2 on, so through AnyIDFDocument it is a key
+    # that may be missing; for an older model the add below raises UnknownObjectTypeError, as it
+    # always has.
     if not list(doc.get_collection("Construction:AirBoundary")):
         doc.add("Construction:AirBoundary", air_name, validate=False)
 

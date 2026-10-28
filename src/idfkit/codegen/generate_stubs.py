@@ -889,19 +889,21 @@ def _common_object_types() -> list[str]:
 
 
 def _generate_common_type_map() -> list[str]:
-    """Generate the map behind :class:`AnyIDFDocument`: every type present in all versions.
+    """Generate the map behind ``IDFDocumentAllVersions``, the version-agnostic half of ``AnyIDFDocument``.
 
-    Each entry is ``ReadOnly[IDFCollection[<the type as every version has it>]]``. Read-only entries
-    are covariant, and so is ``IDFCollection``, so the map of every version-specific document is
-    assignable to it: one annotation accepts a document of any version, and code written against it
-    sees exactly the fields it can rely on in all of them. A type that some version lacks cannot appear, because a document
-    of that version would then be missing a required key.
+    A type every version has is a required entry; a type of the latest release that some version
+    lacks is a ``NotRequired`` one, which is what it is: reading it is reported as access that may
+    fail at run time ("... is not a required key ..."), and the result keeps its type rather than
+    becoming ``Unknown``. Each entry is ``ReadOnly[IDFCollection[<the type as every version that has
+    it declares it>]]``. Read-only entries are covariant, and so is ``IDFCollection``, so every
+    version's map is assignable to this one; a version that lacks a type can be, because its map is
+    closed (PEP 728), which promises it holds no key it does not declare.
     """
+    common = set(_common_object_types())
     lines = ['_CommonTypeMap = TypedDict("_CommonTypeMap", {']
-    lines.extend(
-        f'    "{obj_type}": ReadOnly[IDFCollection[{_shared_class_name(obj_type)}]],'
-        for obj_type in _common_object_types()
-    )
+    for obj_type in get_schema(SUPPORTED.latest).object_types:
+        entry = f"ReadOnly[IDFCollection[{_shared_class_name(obj_type)}]]"
+        lines.append(f'    "{obj_type}": {entry if obj_type in common else f"NotRequired[{entry}]"},')
     lines.append("}, total=True)")
     return lines
 
@@ -1031,9 +1033,9 @@ def generate_versioned_pyi() -> str:
         "from __future__ import annotations",
         "",
         "from collections.abc import Mapping",
-        "from typing import Any, Literal, TypedDict, TypeVar",
+        "from typing import Any, Literal, TypeVar",
         "",
-        "from typing_extensions import Unpack",
+        "from typing_extensions import TypedDict, Unpack",
         "",
         "from . import _generated_types as _g",
         "from .document import AnyIDFDocument as AnyIDFDocument",
@@ -1115,7 +1117,9 @@ def generate_versioned_pyi() -> str:
         tag = _version_tag(ver)
         maps = [_span_name("_Types", span) for span in type_spans if span[0] <= ver <= span[1]]
         mixins = [_span_name("_Accessors", span) for span in accessor_spans if span[0] <= ver <= span[1]]
-        parts.append(f"class _ObjectTypeMapV{tag}({', '.join(maps)}): ...")
+        # Closed: the map holds no key it does not declare, so a version lacking an object type is
+        # still assignable to AnyIDFDocument, where that type is an entry that is not required.
+        parts.append(f"class _ObjectTypeMapV{tag}({', '.join(maps)}, closed=True): ...")
         parts.append("")
         bases = ", ".join([f"_ObjectTypeMapV{tag}", *mixins, "_IDFDocumentMethods[Strict]"])
         parts.append(f"class {_document_class_name(ver)}({bases}):  # type: ignore[misc]")
@@ -1248,7 +1252,7 @@ def _generate_types_module() -> str:
     parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import ReadOnly, Unpack")
+    parts.append("from typing_extensions import NotRequired, ReadOnly, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")

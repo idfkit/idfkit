@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Literal, TypedDict
 
-from typing_extensions import ReadOnly, Unpack
+from typing_extensions import NotRequired, ReadOnly, Unpack
 
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 
@@ -59250,6 +59250,7 @@ _CommonTypeMap = TypedDict(
     {
         "Version": ReadOnly[IDFCollection[Version]],
         "SimulationControl": ReadOnly[IDFCollection[_SimulationControlBase]],
+        "PerformancePrecisionTradeoffs": NotRequired[ReadOnly[IDFCollection[_PerformancePrecisionTradeoffsBase]]],
         "Building": ReadOnly[IDFCollection[_BuildingBase]],
         "ShadowCalculation": ReadOnly[IDFCollection[_ShadowCalculationBase]],
         "SurfaceConvectionAlgorithm:Inside": ReadOnly[IDFCollection[SurfaceConvectionAlgorithmInside]],
@@ -59306,6 +59307,8 @@ _CommonTypeMap = TypedDict(
         "Schedule:Year": ReadOnly[IDFCollection[_ScheduleYearBase]],
         "Schedule:Compact": ReadOnly[IDFCollection[ScheduleCompact]],
         "Schedule:Constant": ReadOnly[IDFCollection[ScheduleConstant]],
+        "Schedule:Year:Rules": NotRequired[ReadOnly[IDFCollection[ScheduleYearRules]]],
+        "Schedule:Week:Rule": NotRequired[ReadOnly[IDFCollection[ScheduleWeekRule]]],
         "Schedule:File:Shading": ReadOnly[IDFCollection[ScheduleFileShading]],
         "Schedule:File": ReadOnly[IDFCollection[_ScheduleFileBase]],
         "Material": ReadOnly[IDFCollection[_MaterialBase]],
@@ -59342,6 +59345,9 @@ _CommonTypeMap = TypedDict(
         "MaterialProperty:VariableThermalConductivity": ReadOnly[
             IDFCollection[_MaterialPropertyVariableThermalConductivityBase]
         ],
+        "MaterialProperty:VariableAbsorptance": NotRequired[
+            ReadOnly[IDFCollection[_MaterialPropertyVariableAbsorptanceBase]]
+        ],
         "MaterialProperty:HeatAndMoistureTransfer:Settings": ReadOnly[
             IDFCollection[MaterialPropertyHeatAndMoistureTransferSettings]
         ],
@@ -59364,12 +59370,22 @@ _CommonTypeMap = TypedDict(
         "Construction": ReadOnly[IDFCollection[Construction]],
         "Construction:CfactorUndergroundWall": ReadOnly[IDFCollection[ConstructionCfactorUndergroundWall]],
         "Construction:FfactorGroundFloor": ReadOnly[IDFCollection[ConstructionFfactorGroundFloor]],
+        "ConstructionProperty:InternalHeatSource": NotRequired[
+            ReadOnly[IDFCollection[_ConstructionPropertyInternalHeatSourceBase]]
+        ],
+        "Construction:AirBoundary": NotRequired[ReadOnly[IDFCollection[_ConstructionAirBoundaryBase]]],
         "WindowThermalModel:Params": ReadOnly[IDFCollection[WindowThermalModelParams]],
+        "WindowsCalculationEngine": NotRequired[ReadOnly[IDFCollection[WindowsCalculationEngine]]],
         "Construction:ComplexFenestrationState": ReadOnly[IDFCollection[_ConstructionComplexFenestrationStateBase]],
         "Construction:WindowEquivalentLayer": ReadOnly[IDFCollection[ConstructionWindowEquivalentLayer]],
         "Construction:WindowDataFile": ReadOnly[IDFCollection[ConstructionWindowDataFile]],
+        "ConstructionAssignmentSet": NotRequired[ReadOnly[IDFCollection[ConstructionAssignmentSet]]],
+        "SurfaceConstructionAssignments": NotRequired[ReadOnly[IDFCollection[SurfaceConstructionAssignments]]],
+        "SubSurfaceConstructionAssignments": NotRequired[ReadOnly[IDFCollection[SubSurfaceConstructionAssignments]]],
         "GlobalGeometryRules": ReadOnly[IDFCollection[_GlobalGeometryRulesBase]],
         "GeometryTransform": ReadOnly[IDFCollection[GeometryTransform]],
+        "Space": NotRequired[ReadOnly[IDFCollection[_SpaceBase]]],
+        "SpaceList": NotRequired[ReadOnly[IDFCollection[SpaceList]]],
         "Zone": ReadOnly[IDFCollection[_ZoneBase]],
         "ZoneList": ReadOnly[IDFCollection[ZoneList]],
         "ZoneGroup": ReadOnly[IDFCollection[_ZoneGroupBase]],
@@ -59394,6 +59410,7 @@ _CommonTypeMap = TypedDict(
         "Window:Interzone": ReadOnly[IDFCollection[WindowInterzone]],
         "Door:Interzone": ReadOnly[IDFCollection[DoorInterzone]],
         "GlazedDoor:Interzone": ReadOnly[IDFCollection[GlazedDoorInterzone]],
+        "WindowShadingControl": NotRequired[ReadOnly[IDFCollection[_WindowShadingControlBase]]],
         "WindowProperty:FrameAndDivider": ReadOnly[IDFCollection[_WindowPropertyFrameAndDividerBase]],
         "WindowProperty:AirflowControl": ReadOnly[IDFCollection[WindowPropertyAirflowControl]],
         "WindowProperty:StormWindow": ReadOnly[IDFCollection[_WindowPropertyStormWindowBase]],
@@ -59449,12 +59466,20 @@ _CommonTypeMap = TypedDict(
             IDFCollection[SurfacePropertyExteriorNaturalVentedCavity]
         ],
         "SurfaceProperty:SolarIncidentInside": ReadOnly[IDFCollection[SurfacePropertySolarIncidentInside]],
+        "SurfaceProperty:IncidentSolarMultiplier": NotRequired[
+            ReadOnly[IDFCollection[SurfacePropertyIncidentSolarMultiplier]]
+        ],
         "SurfaceProperty:LocalEnvironment": ReadOnly[IDFCollection[_SurfacePropertyLocalEnvironmentBase]],
         "ZoneProperty:LocalEnvironment": ReadOnly[IDFCollection[ZonePropertyLocalEnvironment]],
         "SurfaceProperty:SurroundingSurfaces": ReadOnly[IDFCollection[_SurfacePropertySurroundingSurfacesBase]],
+        "SurfaceProperty:GroundSurfaces": NotRequired[ReadOnly[IDFCollection[SurfacePropertyGroundSurfaces]]],
         "ComplexFenestrationProperty:SolarAbsorbedLayers": ReadOnly[
             IDFCollection[ComplexFenestrationPropertySolarAbsorbedLayers]
         ],
+        "ZoneProperty:UserViewFactors:BySurfaceName": NotRequired[
+            ReadOnly[IDFCollection[ZonePropertyUserViewFactorsBySurfaceName]]
+        ],
+        "ZoneMRTCalculation": NotRequired[ReadOnly[IDFCollection[ZoneMRTCalculation]]],
         "GroundHeatTransfer:Control": ReadOnly[IDFCollection[GroundHeatTransferControl]],
         "GroundHeatTransfer:Slab:Materials": ReadOnly[IDFCollection[GroundHeatTransferSlabMaterials]],
         "GroundHeatTransfer:Slab:MatlProps": ReadOnly[IDFCollection[GroundHeatTransferSlabMatlProps]],
@@ -59519,14 +59544,35 @@ _CommonTypeMap = TypedDict(
         ],
         "RoomAirSettings:AirflowNetwork": ReadOnly[IDFCollection[RoomAirSettingsAirflowNetwork]],
         "People": ReadOnly[IDFCollection[_PeopleBase]],
+        "People:Instance": NotRequired[ReadOnly[IDFCollection[PeopleInstance]]],
+        "People:Definition": NotRequired[ReadOnly[IDFCollection[PeopleDefinition]]],
         "ComfortViewFactorAngles": ReadOnly[IDFCollection[_ComfortViewFactorAnglesBase]],
         "Lights": ReadOnly[IDFCollection[_LightsBase]],
+        "Lights:Instance": NotRequired[ReadOnly[IDFCollection[LightsInstance]]],
+        "Lights:Definition": NotRequired[ReadOnly[IDFCollection[LightsDefinition]]],
         "ElectricEquipment": ReadOnly[IDFCollection[_ElectricEquipmentBase]],
+        "ElectricEquipment:Instance": NotRequired[ReadOnly[IDFCollection[ElectricEquipmentInstance]]],
+        "ElectricEquipment:Definition": NotRequired[ReadOnly[IDFCollection[ElectricEquipmentDefinition]]],
         "GasEquipment": ReadOnly[IDFCollection[_GasEquipmentBase]],
+        "GasEquipment:Instance": NotRequired[ReadOnly[IDFCollection[GasEquipmentInstance]]],
+        "GasEquipment:Definition": NotRequired[ReadOnly[IDFCollection[GasEquipmentDefinition]]],
         "HotWaterEquipment": ReadOnly[IDFCollection[_HotWaterEquipmentBase]],
+        "HotWaterEquipment:Instance": NotRequired[ReadOnly[IDFCollection[HotWaterEquipmentInstance]]],
+        "HotWaterEquipment:Definition": NotRequired[ReadOnly[IDFCollection[HotWaterEquipmentDefinition]]],
         "SteamEquipment": ReadOnly[IDFCollection[_SteamEquipmentBase]],
+        "SteamEquipment:Instance": NotRequired[ReadOnly[IDFCollection[SteamEquipmentInstance]]],
+        "SteamEquipment:Definition": NotRequired[ReadOnly[IDFCollection[SteamEquipmentDefinition]]],
         "OtherEquipment": ReadOnly[IDFCollection[_OtherEquipmentBase]],
+        "OtherEquipment:Instance": NotRequired[ReadOnly[IDFCollection[OtherEquipmentInstance]]],
+        "OtherEquipment:Definition": NotRequired[ReadOnly[IDFCollection[OtherEquipmentDefinition]]],
+        "IndoorLivingWall": NotRequired[ReadOnly[IDFCollection[_IndoorLivingWallBase]]],
         "ElectricEquipment:ITE:AirCooled": ReadOnly[IDFCollection[_ElectricEquipmentITEAirCooledBase]],
+        "ElectricEquipment:ITE:AirCooled:Instance": NotRequired[
+            ReadOnly[IDFCollection[ElectricEquipmentITEAirCooledInstance]]
+        ],
+        "ElectricEquipment:ITE:AirCooled:Definition": NotRequired[
+            ReadOnly[IDFCollection[ElectricEquipmentITEAirCooledDefinition]]
+        ],
         "ZoneBaseboard:OutdoorTemperatureControlled": ReadOnly[
             IDFCollection[_ZoneBaseboardOutdoorTemperatureControlledBase]
         ],
@@ -59574,6 +59620,7 @@ _CommonTypeMap = TypedDict(
         "ZoneCrossMixing": ReadOnly[IDFCollection[_ZoneCrossMixingBase]],
         "ZoneRefrigerationDoorMixing": ReadOnly[IDFCollection[_ZoneRefrigerationDoorMixingBase]],
         "ZoneEarthtube": ReadOnly[IDFCollection[_ZoneEarthtubeBase]],
+        "ZoneEarthtube:Parameters": NotRequired[ReadOnly[IDFCollection[ZoneEarthtubeParameters]]],
         "ZoneCoolTower:Shower": ReadOnly[IDFCollection[_ZoneCoolTowerShowerBase]],
         "ZoneThermalChimney": ReadOnly[IDFCollection[_ZoneThermalChimneyBase]],
         "AirflowNetwork:SimulationControl": ReadOnly[IDFCollection[_AirflowNetworkSimulationControlBase]],
@@ -59585,6 +59632,9 @@ _CommonTypeMap = TypedDict(
         "AirflowNetwork:MultiZone:Surface:Crack": ReadOnly[IDFCollection[AirflowNetworkMultiZoneSurfaceCrack]],
         "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea": ReadOnly[
             IDFCollection[AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea]
+        ],
+        "AirflowNetwork:MultiZone:SpecifiedFlowRate": NotRequired[
+            ReadOnly[IDFCollection[AirflowNetworkMultiZoneSpecifiedFlowRate]]
         ],
         "AirflowNetwork:MultiZone:Component:DetailedOpening": ReadOnly[
             IDFCollection[_AirflowNetworkMultiZoneComponentDetailedOpeningBase]
@@ -59639,9 +59689,15 @@ _CommonTypeMap = TypedDict(
         "AirflowNetwork:Distribution:DuctViewFactors": ReadOnly[
             IDFCollection[_AirflowNetworkDistributionDuctViewFactorsBase]
         ],
+        "AirflowNetwork:Distribution:DuctSizing": NotRequired[
+            ReadOnly[IDFCollection[AirflowNetworkDistributionDuctSizing]]
+        ],
         "AirflowNetwork:OccupantVentilationControl": ReadOnly[IDFCollection[AirflowNetworkOccupantVentilationControl]],
         "AirflowNetwork:IntraZone:Node": ReadOnly[IDFCollection[AirflowNetworkIntraZoneNode]],
         "AirflowNetwork:IntraZone:Linkage": ReadOnly[IDFCollection[AirflowNetworkIntraZoneLinkage]],
+        "Duct:Loss:Conduction": NotRequired[ReadOnly[IDFCollection[DuctLossConduction]]],
+        "Duct:Loss:Leakage": NotRequired[ReadOnly[IDFCollection[DuctLossLeakage]]],
+        "Duct:Loss:MakeupAir": NotRequired[ReadOnly[IDFCollection[DuctLossMakeupAir]]],
         "Exterior:Lights": ReadOnly[IDFCollection[ExteriorLights]],
         "Exterior:FuelEquipment": ReadOnly[IDFCollection[_ExteriorFuelEquipmentBase]],
         "Exterior:WaterEquipment": ReadOnly[IDFCollection[ExteriorWaterEquipment]],
@@ -59680,6 +59736,9 @@ _CommonTypeMap = TypedDict(
         "HVACTemplate:Plant:Boiler:ObjectReference": ReadOnly[IDFCollection[HVACTemplatePlantBoilerObjectReference]],
         "HVACTemplate:Plant:MixedWaterLoop": ReadOnly[IDFCollection[HVACTemplatePlantMixedWaterLoop]],
         "DesignSpecification:OutdoorAir": ReadOnly[IDFCollection[_DesignSpecificationOutdoorAirBase]],
+        "DesignSpecification:OutdoorAir:SpaceList": NotRequired[
+            ReadOnly[IDFCollection[DesignSpecificationOutdoorAirSpaceList]]
+        ],
         "DesignSpecification:ZoneAirDistribution": ReadOnly[IDFCollection[DesignSpecificationZoneAirDistribution]],
         "Sizing:Parameters": ReadOnly[IDFCollection[_SizingParametersBase]],
         "Sizing:Zone": ReadOnly[IDFCollection[_SizingZoneBase]],
@@ -59737,8 +59796,14 @@ _CommonTypeMap = TypedDict(
         "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow": ReadOnly[
             IDFCollection[_ZoneHVACTerminalUnitVariableRefrigerantFlowBase]
         ],
+        "ZoneHVAC:Baseboard:RadiantConvective:Water:Design": NotRequired[
+            ReadOnly[IDFCollection[ZoneHVACBaseboardRadiantConvectiveWaterDesign]]
+        ],
         "ZoneHVAC:Baseboard:RadiantConvective:Water": ReadOnly[
             IDFCollection[_ZoneHVACBaseboardRadiantConvectiveWaterBase]
+        ],
+        "ZoneHVAC:Baseboard:RadiantConvective:Steam:Design": NotRequired[
+            ReadOnly[IDFCollection[ZoneHVACBaseboardRadiantConvectiveSteamDesign]]
         ],
         "ZoneHVAC:Baseboard:RadiantConvective:Steam": ReadOnly[
             IDFCollection[_ZoneHVACBaseboardRadiantConvectiveSteamBase]
@@ -59754,8 +59819,14 @@ _CommonTypeMap = TypedDict(
         "ZoneHVAC:LowTemperatureRadiant:VariableFlow": ReadOnly[
             IDFCollection[_ZoneHVACLowTemperatureRadiantVariableFlowBase]
         ],
+        "ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design": NotRequired[
+            ReadOnly[IDFCollection[ZoneHVACLowTemperatureRadiantVariableFlowDesign]]
+        ],
         "ZoneHVAC:LowTemperatureRadiant:ConstantFlow": ReadOnly[
             IDFCollection[_ZoneHVACLowTemperatureRadiantConstantFlowBase]
+        ],
+        "ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design": NotRequired[
+            ReadOnly[IDFCollection[ZoneHVACLowTemperatureRadiantConstantFlowDesign]]
         ],
         "ZoneHVAC:LowTemperatureRadiant:Electric": ReadOnly[IDFCollection[_ZoneHVACLowTemperatureRadiantElectricBase]],
         "ZoneHVAC:LowTemperatureRadiant:SurfaceGroup": ReadOnly[
@@ -59799,8 +59870,13 @@ _CommonTypeMap = TypedDict(
         "AirTerminal:DualDuct:VAV": ReadOnly[IDFCollection[_AirTerminalDualDuctVAVBase]],
         "AirTerminal:DualDuct:VAV:OutdoorAir": ReadOnly[IDFCollection[AirTerminalDualDuctVAVOutdoorAir]],
         "ZoneHVAC:AirDistributionUnit": ReadOnly[IDFCollection[ZoneHVACAirDistributionUnit]],
+        "ZoneHVAC:ExhaustControl": NotRequired[ReadOnly[IDFCollection[ZoneHVACExhaustControl]]],
         "ZoneHVAC:EquipmentList": ReadOnly[IDFCollection[_ZoneHVACEquipmentListBase]],
         "ZoneHVAC:EquipmentConnections": ReadOnly[IDFCollection[ZoneHVACEquipmentConnections]],
+        "SpaceHVAC:EquipmentConnections": NotRequired[ReadOnly[IDFCollection[SpaceHVACEquipmentConnections]]],
+        "SpaceHVAC:ZoneEquipmentSplitter": NotRequired[ReadOnly[IDFCollection[SpaceHVACZoneEquipmentSplitter]]],
+        "SpaceHVAC:ZoneEquipmentMixer": NotRequired[ReadOnly[IDFCollection[SpaceHVACZoneEquipmentMixer]]],
+        "SpaceHVAC:ZoneReturnMixer": NotRequired[ReadOnly[IDFCollection[SpaceHVACZoneReturnMixer]]],
         "Fan:SystemModel": ReadOnly[IDFCollection[_FanSystemModelBase]],
         "Fan:ConstantVolume": ReadOnly[IDFCollection[FanConstantVolume]],
         "Fan:VariableVolume": ReadOnly[IDFCollection[FanVariableVolume]],
@@ -59810,6 +59886,16 @@ _CommonTypeMap = TypedDict(
         "Fan:ComponentModel": ReadOnly[IDFCollection[FanComponentModel]],
         "Coil:Cooling:Water": ReadOnly[IDFCollection[CoilCoolingWater]],
         "Coil:Cooling:Water:DetailedGeometry": ReadOnly[IDFCollection[_CoilCoolingWaterDetailedGeometryBase]],
+        "CoilSystem:Cooling:Water": NotRequired[ReadOnly[IDFCollection[CoilSystemCoolingWater]]],
+        "Coil:Cooling:DX": NotRequired[ReadOnly[IDFCollection[CoilCoolingDX]]],
+        "Coil:Cooling:DX:CurveFit:Performance": NotRequired[
+            ReadOnly[IDFCollection[_CoilCoolingDXCurveFitPerformanceBase]]
+        ],
+        "Coil:Cooling:DX:CurveFit:OperatingMode": NotRequired[
+            ReadOnly[IDFCollection[_CoilCoolingDXCurveFitOperatingModeBase]]
+        ],
+        "Coil:Cooling:DX:CurveFit:Speed": NotRequired[ReadOnly[IDFCollection[_CoilCoolingDXCurveFitSpeedBase]]],
+        "Coil:DX:ASHRAE205:Performance": NotRequired[ReadOnly[IDFCollection[CoilDXASHRAE205Performance]]],
         "Coil:Cooling:DX:SingleSpeed": ReadOnly[IDFCollection[_CoilCoolingDXSingleSpeedBase]],
         "Coil:Cooling:DX:TwoSpeed": ReadOnly[IDFCollection[_CoilCoolingDXTwoSpeedBase]],
         "Coil:Cooling:DX:MultiSpeed": ReadOnly[IDFCollection[_CoilCoolingDXMultiSpeedBase]],
@@ -59927,6 +60013,12 @@ _CommonTypeMap = TypedDict(
         "AirLoopHVAC:ZoneMixer": ReadOnly[IDFCollection[AirLoopHVACZoneMixer]],
         "AirLoopHVAC:ReturnPlenum": ReadOnly[IDFCollection[AirLoopHVACReturnPlenum]],
         "AirLoopHVAC:ReturnPath": ReadOnly[IDFCollection[AirLoopHVACReturnPath]],
+        "AirLoopHVAC:ExhaustSystem": NotRequired[ReadOnly[IDFCollection[AirLoopHVACExhaustSystem]]],
+        "AirLoopHVAC:DedicatedOutdoorAirSystem": NotRequired[
+            ReadOnly[IDFCollection[_AirLoopHVACDedicatedOutdoorAirSystemBase]]
+        ],
+        "AirLoopHVAC:Mixer": NotRequired[ReadOnly[IDFCollection[AirLoopHVACMixer]]],
+        "AirLoopHVAC:Splitter": NotRequired[ReadOnly[IDFCollection[AirLoopHVACSplitter]]],
         "Branch": ReadOnly[IDFCollection[_BranchBase]],
         "BranchList": ReadOnly[IDFCollection[BranchList]],
         "Connector:Splitter": ReadOnly[IDFCollection[ConnectorSplitter]],
@@ -59959,6 +60051,9 @@ _CommonTypeMap = TypedDict(
         "SolarCollectorPerformance:PhotovoltaicThermal:Simple": ReadOnly[
             IDFCollection[SolarCollectorPerformancePhotovoltaicThermalSimple]
         ],
+        "SolarCollectorPerformance:PhotovoltaicThermal:BIPVT": NotRequired[
+            ReadOnly[IDFCollection[SolarCollectorPerformancePhotovoltaicThermalBIPVT]]
+        ],
         "SolarCollector:IntegralCollectorStorage": ReadOnly[IDFCollection[SolarCollectorIntegralCollectorStorage]],
         "SolarCollectorPerformance:IntegralCollectorStorage": ReadOnly[
             IDFCollection[_SolarCollectorPerformanceIntegralCollectorStorageBase]
@@ -59969,6 +60064,7 @@ _CommonTypeMap = TypedDict(
         ],
         "Boiler:HotWater": ReadOnly[IDFCollection[_BoilerHotWaterBase]],
         "Boiler:Steam": ReadOnly[IDFCollection[_BoilerSteamBase]],
+        "Chiller:Electric:ASHRAE205": NotRequired[ReadOnly[IDFCollection[ChillerElectricASHRAE205]]],
         "Chiller:Electric:EIR": ReadOnly[IDFCollection[_ChillerElectricEIRBase]],
         "Chiller:Electric:ReformulatedEIR": ReadOnly[IDFCollection[_ChillerElectricReformulatedEIRBase]],
         "Chiller:Electric": ReadOnly[IDFCollection[_ChillerElectricBase]],
@@ -59979,6 +60075,15 @@ _CommonTypeMap = TypedDict(
         "Chiller:CombustionTurbine": ReadOnly[IDFCollection[_ChillerCombustionTurbineBase]],
         "ChillerHeater:Absorption:DirectFired": ReadOnly[IDFCollection[_ChillerHeaterAbsorptionDirectFiredBase]],
         "ChillerHeater:Absorption:DoubleEffect": ReadOnly[IDFCollection[ChillerHeaterAbsorptionDoubleEffect]],
+        "HeatPump:PlantLoop:EIR:Cooling": NotRequired[ReadOnly[IDFCollection[_HeatPumpPlantLoopEIRCoolingBase]]],
+        "HeatPump:PlantLoop:EIR:Heating": NotRequired[ReadOnly[IDFCollection[_HeatPumpPlantLoopEIRHeatingBase]]],
+        "HeatPump:AirToWater:FuelFired:Heating": NotRequired[
+            ReadOnly[IDFCollection[_HeatPumpAirToWaterFuelFiredHeatingBase]]
+        ],
+        "HeatPump:AirToWater:FuelFired:Cooling": NotRequired[
+            ReadOnly[IDFCollection[_HeatPumpAirToWaterFuelFiredCoolingBase]]
+        ],
+        "HeatPump:AirToWater": NotRequired[ReadOnly[IDFCollection[HeatPumpAirToWater]]],
         "HeatPump:WaterToWater:EquationFit:Heating": ReadOnly[
             IDFCollection[_HeatPumpWaterToWaterEquationFitHeatingBase]
         ],
@@ -59992,6 +60097,8 @@ _CommonTypeMap = TypedDict(
             IDFCollection[HeatPumpWaterToWaterParameterEstimationHeating]
         ],
         "DistrictCooling": ReadOnly[IDFCollection[DistrictCooling]],
+        "DistrictHeating:Water": NotRequired[ReadOnly[IDFCollection[DistrictHeatingWater]]],
+        "DistrictHeating:Steam": NotRequired[ReadOnly[IDFCollection[DistrictHeatingSteam]]],
         "PlantComponent:TemperatureSource": ReadOnly[IDFCollection[PlantComponentTemperatureSource]],
         "CentralHeatPumpSystem": ReadOnly[IDFCollection[_CentralHeatPumpSystemBase]],
         "ChillerHeaterPerformance:Electric:EIR": ReadOnly[IDFCollection[_ChillerHeaterPerformanceElectricEIRBase]],
@@ -60006,6 +60113,9 @@ _CommonTypeMap = TypedDict(
         "FluidCooler:SingleSpeed": ReadOnly[IDFCollection[FluidCoolerSingleSpeed]],
         "FluidCooler:TwoSpeed": ReadOnly[IDFCollection[FluidCoolerTwoSpeed]],
         "GroundHeatExchanger:System": ReadOnly[IDFCollection[_GroundHeatExchangerSystemBase]],
+        "GroundHeatExchanger:Vertical:Sizing:Rectangle": NotRequired[
+            ReadOnly[IDFCollection[GroundHeatExchangerVerticalSizingRectangle]]
+        ],
         "GroundHeatExchanger:Vertical:Properties": ReadOnly[IDFCollection[GroundHeatExchangerVerticalProperties]],
         "GroundHeatExchanger:Vertical:Array": ReadOnly[IDFCollection[_GroundHeatExchangerVerticalArrayBase]],
         "GroundHeatExchanger:Vertical:Single": ReadOnly[IDFCollection[GroundHeatExchangerVerticalSingle]],
@@ -60024,6 +60134,9 @@ _CommonTypeMap = TypedDict(
         "ThermalStorage:Ice:Detailed": ReadOnly[IDFCollection[_ThermalStorageIceDetailedBase]],
         "ThermalStorage:ChilledWater:Mixed": ReadOnly[IDFCollection[ThermalStorageChilledWaterMixed]],
         "ThermalStorage:ChilledWater:Stratified": ReadOnly[IDFCollection[_ThermalStorageChilledWaterStratifiedBase]],
+        "ThermalStorage:HotWater:Stratified": NotRequired[ReadOnly[IDFCollection[ThermalStorageHotWaterStratified]]],
+        "ThermalStorage:PCM": NotRequired[ReadOnly[IDFCollection[ThermalStoragePCM]]],
+        "ThermalStorage:Sizing": NotRequired[ReadOnly[IDFCollection[ThermalStorageSizing]]],
         "PlantLoop": ReadOnly[IDFCollection[PlantLoop]],
         "CondenserLoop": ReadOnly[IDFCollection[CondenserLoop]],
         "PlantEquipmentList": ReadOnly[IDFCollection[_PlantEquipmentListBase]],
@@ -60049,6 +60162,9 @@ _CommonTypeMap = TypedDict(
         ],
         "PlantEquipmentOperation:OutdoorDewpointDifference": ReadOnly[
             IDFCollection[PlantEquipmentOperationOutdoorDewpointDifference]
+        ],
+        "PlantEquipmentOperation:ChillerHeaterChangeover": NotRequired[
+            ReadOnly[IDFCollection[PlantEquipmentOperationChillerHeaterChangeover]]
         ],
         "PlantEquipmentOperationSchemes": ReadOnly[IDFCollection[_PlantEquipmentOperationSchemesBase]],
         "CondenserEquipmentOperationSchemes": ReadOnly[IDFCollection[CondenserEquipmentOperationSchemes]],
@@ -60170,6 +60286,12 @@ _CommonTypeMap = TypedDict(
             IDFCollection[SetpointManagerReturnTemperatureChilledWater]
         ],
         "SetpointManager:ReturnTemperature:HotWater": ReadOnly[IDFCollection[SetpointManagerReturnTemperatureHotWater]],
+        "SetpointManager:SystemNodeReset:Temperature": NotRequired[
+            ReadOnly[IDFCollection[SetpointManagerSystemNodeResetTemperature]]
+        ],
+        "SetpointManager:SystemNodeReset:Humidity": NotRequired[
+            ReadOnly[IDFCollection[SetpointManagerSystemNodeResetHumidity]]
+        ],
         "Refrigeration:Case": ReadOnly[IDFCollection[RefrigerationCase]],
         "Refrigeration:CompressorRack": ReadOnly[IDFCollection[RefrigerationCompressorRack]],
         "Refrigeration:CaseAndWalkInList": ReadOnly[IDFCollection[RefrigerationCaseAndWalkInList]],
@@ -60228,6 +60350,9 @@ _CommonTypeMap = TypedDict(
         "ElectricLoadCenter:Inverter:LookUpTable": ReadOnly[IDFCollection[ElectricLoadCenterInverterLookUpTable]],
         "ElectricLoadCenter:Storage:Simple": ReadOnly[IDFCollection[ElectricLoadCenterStorageSimple]],
         "ElectricLoadCenter:Storage:Battery": ReadOnly[IDFCollection[_ElectricLoadCenterStorageBatteryBase]],
+        "ElectricLoadCenter:Storage:LiIonNMCBattery": NotRequired[
+            ReadOnly[IDFCollection[_ElectricLoadCenterStorageLiIonNMCBatteryBase]]
+        ],
         "ElectricLoadCenter:Transformer": ReadOnly[IDFCollection[ElectricLoadCenterTransformer]],
         "ElectricLoadCenter:Distribution": ReadOnly[IDFCollection[ElectricLoadCenterDistribution]],
         "ElectricLoadCenter:Storage:Converter": ReadOnly[IDFCollection[ElectricLoadCenterStorageConverter]],
@@ -60266,6 +60391,7 @@ _CommonTypeMap = TypedDict(
         "HybridModel:Zone": ReadOnly[IDFCollection[_HybridModelZoneBase]],
         "Curve:Linear": ReadOnly[IDFCollection[CurveLinear]],
         "Curve:QuadLinear": ReadOnly[IDFCollection[CurveQuadLinear]],
+        "Curve:QuintLinear": NotRequired[ReadOnly[IDFCollection[CurveQuintLinear]]],
         "Curve:Quadratic": ReadOnly[IDFCollection[CurveQuadratic]],
         "Curve:Cubic": ReadOnly[IDFCollection[CurveCubic]],
         "Curve:Quartic": ReadOnly[IDFCollection[CurveQuartic]],
@@ -60284,6 +60410,9 @@ _CommonTypeMap = TypedDict(
         "Curve:ExponentialDecay": ReadOnly[IDFCollection[CurveExponentialDecay]],
         "Curve:DoubleExponentialDecay": ReadOnly[IDFCollection[_CurveDoubleExponentialDecayBase]],
         "Curve:ChillerPartLoadWithLift": ReadOnly[IDFCollection[CurveChillerPartLoadWithLift]],
+        "Table:IndependentVariable": NotRequired[ReadOnly[IDFCollection[_TableIndependentVariableBase]]],
+        "Table:IndependentVariableList": NotRequired[ReadOnly[IDFCollection[TableIndependentVariableList]]],
+        "Table:Lookup": NotRequired[ReadOnly[IDFCollection[_TableLookupBase]]],
         "FluidProperties:Name": ReadOnly[IDFCollection[FluidPropertiesName]],
         "FluidProperties:GlycolConcentration": ReadOnly[IDFCollection[FluidPropertiesGlycolConcentration]],
         "FluidProperties:Temperatures": ReadOnly[IDFCollection[FluidPropertiesTemperatures]],
@@ -60321,8 +60450,10 @@ _CommonTypeMap = TypedDict(
         "Output:Table:TimeBins": ReadOnly[IDFCollection[_OutputTableTimeBinsBase]],
         "Output:Table:Monthly": ReadOnly[IDFCollection[_OutputTableMonthlyBase]],
         "Output:Table:Annual": ReadOnly[IDFCollection[_OutputTableAnnualBase]],
+        "Output:Table:ReportPeriod": NotRequired[ReadOnly[IDFCollection[_OutputTableReportPeriodBase]]],
         "OutputControl:Table:Style": ReadOnly[IDFCollection[_OutputControlTableStyleBase]],
         "OutputControl:ReportingTolerances": ReadOnly[IDFCollection[OutputControlReportingTolerances]],
+        "OutputControl:ResilienceSummaries": NotRequired[ReadOnly[IDFCollection[OutputControlResilienceSummaries]]],
         "Output:Variable": ReadOnly[IDFCollection[OutputVariable]],
         "Output:Meter": ReadOnly[IDFCollection[_OutputMeterBase]],
         "Output:Meter:MeterFileOnly": ReadOnly[IDFCollection[OutputMeterMeterFileOnly]],
@@ -60330,6 +60461,9 @@ _CommonTypeMap = TypedDict(
         "Output:Meter:Cumulative:MeterFileOnly": ReadOnly[IDFCollection[OutputMeterCumulativeMeterFileOnly]],
         "Meter:Custom": ReadOnly[IDFCollection[_MeterCustomBase]],
         "Meter:CustomDecrement": ReadOnly[IDFCollection[_MeterCustomDecrementBase]],
+        "OutputControl:Files": NotRequired[ReadOnly[IDFCollection[_OutputControlFilesBase]]],
+        "OutputControl:Timestamp": NotRequired[ReadOnly[IDFCollection[OutputControlTimestamp]]],
+        "Output:JSON": NotRequired[ReadOnly[IDFCollection[_OutputJSONBase]]],
         "Output:SQLite": ReadOnly[IDFCollection[_OutputSQLiteBase]],
         "Output:EnvironmentalImpactFactors": ReadOnly[IDFCollection[OutputEnvironmentalImpactFactors]],
         "EnvironmentalImpactFactors": ReadOnly[IDFCollection[_EnvironmentalImpactFactorsBase]],
@@ -60337,6 +60471,11 @@ _CommonTypeMap = TypedDict(
         "Output:Diagnostics": ReadOnly[IDFCollection[_OutputDiagnosticsBase]],
         "Output:DebuggingData": ReadOnly[IDFCollection[_OutputDebuggingDataBase]],
         "Output:PreprocessorMessage": ReadOnly[IDFCollection[OutputPreprocessorMessage]],
+        "PythonPlugin:SearchPaths": NotRequired[ReadOnly[IDFCollection[_PythonPluginSearchPathsBase]]],
+        "PythonPlugin:Instance": NotRequired[ReadOnly[IDFCollection[PythonPluginInstance]]],
+        "PythonPlugin:Variables": NotRequired[ReadOnly[IDFCollection[_PythonPluginVariablesBase]]],
+        "PythonPlugin:TrendVariable": NotRequired[ReadOnly[IDFCollection[_PythonPluginTrendVariableBase]]],
+        "PythonPlugin:OutputVariable": NotRequired[ReadOnly[IDFCollection[_PythonPluginOutputVariableBase]]],
     },
     total=True,
 )
