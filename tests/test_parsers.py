@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from pathlib import Path
 
 import pytest
@@ -692,6 +693,132 @@ Building,
         parser.parse()
 
         assert len(parser.diagnostics) == first
+
+
+class TestUnterminatedObject:
+    """A file that ends inside its last object, with no closing ``;`` (idfkit#187).
+
+    The object pattern only matches text that reaches a semicolon, so the tail used to be dropped
+    without a word. It is now the same finding on both paths: raised in strict mode, returned and
+    logged otherwise, as ``ParseError`` at the line the object starts on.
+    """
+
+    TRUNCATED = "Version,\n  26.1;\n\nBuilding,\n  Conformance,\n  0;\n\nGlobalGeometryRules,\n  UpperLeft\n"
+
+    @staticmethod
+    def _write(tmp_path: Path, body: str) -> Path:
+        path = tmp_path / "unterminated.idf"
+        path.write_text(body, encoding="latin-1")
+        return path
+
+    def test_strict_parse_raises(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, self.TRUNCATED)
+
+        with pytest.raises(IDFParseError, match="Unterminated object") as caught:
+            parse_idf(path)
+
+        (diagnostic,) = caught.value.diagnostics
+        assert diagnostic.code == "ParseError"
+        assert diagnostic.line == 8
+        assert diagnostic.column == 1
+        assert diagnostic.obj_type == "GlobalGeometryRules"
+        assert 'missing ";"' in diagnostic.message
+
+    def test_returning_path_reports_and_keeps_the_rest(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        path = self._write(tmp_path, self.TRUNCATED)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            result = load_idf_with_diagnostics(str(path))
+
+        assert len(result.document["Building"]) == 1
+        assert "GlobalGeometryRules" not in result.document
+        assert [(d.code, d.line, d.obj_type) for d in result.diagnostics] == [("ParseError", 8, "GlobalGeometryRules")]
+        assert any("unterminated" in r.getMessage().lower() for r in caplog.records)
+
+    def test_issue_example(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone, Z1, 0")
+
+        with pytest.raises(IDFParseError) as caught:
+            parse_idf(path)
+
+        assert caught.value.diagnostics[0].obj_type == "Zone"
+        assert caught.value.diagnostics[0].line == 2
+
+    def test_tail_without_a_comma_has_no_type(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone\n")
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert [(d.line, d.obj_type) for d in result.diagnostics] == [(2, None)]
+
+    @pytest.mark.parametrize(
+        "tail",
+        ["", "\n", "   \n\t\n", "\n! a closing comment, with; punctuation\n", "\n!- no newline at end", "\x1a"],
+    )
+    def test_blank_or_comment_tail_is_not_an_error(self, tmp_path: Path, tail: str) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone, Z1;" + tail)
+
+        doc = parse_idf(path)
+
+        assert len(doc["Zone"]) == 1
+
+    def test_long_tail_does_not_backtrack(self, tmp_path: Path) -> None:
+        """The old pattern backtracked exponentially: thirty characters took over one hundred seconds."""
+        body = "Version, 24.1;\nZone,\n  Z1,\n" + "  0.0,\n" * 2000 + "  autocalculate\n"
+        path = self._write(tmp_path, body)
+
+        start = time.perf_counter()
+        result = load_idf_with_diagnostics(str(path))
+
+        assert time.perf_counter() - start < 5
+        assert [d.obj_type for d in result.diagnostics] == ["Zone"]
+
+    def test_object_patterns_do_not_backtrack_on_a_tail(self) -> None:
+        """The patterns themselves, not just the bounded scan in front of them, are linear per attempt."""
+        from idfkit.idf_parser import _CST_OBJECT_RE, _OBJECT_PATTERN
+
+        tail = "Zone,\n" + "  a,\n" * 200
+        start = time.perf_counter()
+
+        assert _OBJECT_PATTERN.match(tail.encode()) is None
+        assert _CST_OBJECT_RE.match(tail) is None
+        assert time.perf_counter() - start < 5
+
+    def test_preserve_formatting_reports_the_tail(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone,\n" + "  a,\n" * 50)
+
+        start = time.perf_counter()
+        result = load_idf_with_diagnostics(str(path), preserve_formatting=True)
+
+        assert time.perf_counter() - start < 5
+        # The tail cannot be linked to a parsed object, so the formatting tree is discarded too.
+        assert result.diagnostics[0].obj_type == "Zone"
+        assert "Unterminated" in result.diagnostics[0].message
+
+    def test_iter_idf_objects_skips_the_tail(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        path = self._write(tmp_path, self.TRUNCATED)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.idf_parser"):
+            types = [obj_type for obj_type, _, _ in iter_idf_objects(path)]
+
+        assert types == ["Version", "Building"]
+        assert any("unterminated" in r.getMessage().lower() for r in caplog.records)
+
+    def test_tail_cut_inside_a_multibyte_character(self, tmp_path: Path) -> None:
+        path = tmp_path / "cut.idf"
+        path.write_bytes(b"Version, 24.1;\nZone, Z\xc3")
+
+        with pytest.raises(IDFParseError) as caught:
+            parse_idf(path, encoding="utf-8")
+
+        assert caught.value.diagnostics[0].obj_type == "Zone"
+
+    def test_tail_type_is_read_like_an_object_type(self, tmp_path: Path) -> None:
+        path = self._write(tmp_path, "Version, 24.1;\nZone\n  Z1\n  , 0\n")
+
+        result = load_idf_with_diagnostics(str(path))
+
+        assert [(d.line, d.obj_type) for d in result.diagnostics] == [(2, None)]
 
 
 class TestInvalidFieldDiagnostic:
