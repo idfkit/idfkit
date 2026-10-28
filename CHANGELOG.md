@@ -32,8 +32,22 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
 - `IDFObject.update` sets several fields in one call, given as a mapping, keyword arguments, or both; where both name the same field, the keyword wins, as with `dict.update`. The call is all or nothing: every entry is examined before any is applied, and if one is refused, no field changes. An entry is refused when its name is not a field of the type, when it is `name` (use `IDFDocument.rename`), when it is a legacy flat extensible name such as `vertex_3_x_coordinate`, or when it gives the extensible wrapper key a value single assignment rejects: something other than a list, or a list holding an item that is not a dict or group, or a group with an unknown field. Unknown names are refused whenever the object has a schema field order, including in a document opened with `strict=False`, where single assignment stores them; an object constructed detached without one accepts any name, as single assignment does. Accepted entries are applied by ordinary attribute assignment, so reference and change tracking are those of consecutive assignments. The method returns `None`; the TypeScript `IdfObject.update` returns the object, a difference recorded in the naming register. The generated stubs type `update` per object type, so a type checker reports a misspelled field name or a wrongly typed value given as a keyword; the positional mapping is typed `Mapping[str, Any] | None`, as at run time, so that a mapping built at run time is accepted. ([#235](https://github.com/idfkit/idfkit/issues/235))
 - `InvalidFieldError` accepts an optional keyword-only `refused`, the entries of a refused `update` group, and then lists every one in its message and in its `refused` attribute, a tuple of `idfkit.exceptions.RefusedEntry`. Without it, every message is unchanged.
 
+- **`GeocodingError` gained `kind` and `status`.** `kind` is `"not-found"`,
+  `"unreachable"`, `"http"` or `"invalid-response"`, and `status` holds the HTTP
+  code when `kind` is `"http"`, so a caller can tell a place name that matches
+  nothing from a service that could not be reached without matching message
+  text. `geocode` and `detect_location` set both on every error they raise. An
+  HTTP error from Nominatim or ipapi.co, previously reported only as "Failed to
+  geocode", now names its status. `@idfkit/weather` carries the same fields
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
+
 ### Changed
 
+- `idfkit tmy --near ADDRESS` now exits `1` (no matches) instead of `3`
+  (network failure) when the address resolves to no place. Exit `3` remains for
+  a geocoder that could not be reached, answered with an HTTP error, or returned
+  an unreadable body
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
 - **Breaking:** `polygon_difference_2d` raises `ValueError` when the difference has a hole (the subtracted polygon lies strictly inside) or falls into several pieces, and names `polygon_difference_parts_2d` as the replacement. It used to return a single "bridge/slit" ring for these cases, which had the wrong area or coincident vertices. The subtracted polygon no longer has to lie inside the outer one, and either winding is accepted. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 
 ### Deprecated

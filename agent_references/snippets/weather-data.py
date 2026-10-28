@@ -60,6 +60,23 @@ results = index.nearest(*geocode("350 Fifth Avenue, New York, NY"))
 # --8<-- [end:search-address]
 
 
+# --8<-- [start:geocode-errors]
+from idfkit.weather import GeocodingError, geocode
+
+
+def locate(query: str) -> tuple[float, float] | str:
+    try:
+        return geocode(query)
+    except GeocodingError as exc:
+        if exc.kind == "not-found":  # Nominatim answered: no such place
+            return f"No place called {query!r} was found."
+        # "unreachable", "http" (exc.status holds the code), or "invalid-response"
+        return "The place-name service could not be reached; try again shortly."
+
+
+# --8<-- [end:geocode-errors]
+
+
 # --8<-- [start:search-coords]
 hits = index.nearest(41.978, -87.904, limit=10)
 # --8<-- [end:search-coords]

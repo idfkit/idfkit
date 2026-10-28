@@ -68,6 +68,24 @@ results = index.nearest(*geocode("350 Fifth Avenue, New York, NY"))
 
 `geocode` uses Nominatim (OpenStreetMap) — no API key, but rate-limited to 1 req/second. For batch geocoding, sleep between calls or pre-compute.
 
+`geocode` and `detect_location` raise `GeocodingError` on failure. Branch on `exc.kind`, never on the message: `"not-found"` (the service answered, no such place; retrying will not help), `"unreachable"`, `"http"` (with `exc.status`), or `"invalid-response"`.
+
+```python
+from idfkit.weather import GeocodingError, geocode
+
+
+def locate(query: str) -> tuple[float, float] | str:
+    try:
+        return geocode(query)
+    except GeocodingError as exc:
+        if exc.kind == "not-found":  # Nominatim answered: no such place
+            return f"No place called {query!r} was found."
+        # "unreachable", "http" (exc.status holds the code), or "invalid-response"
+        return "The place-name service could not be reached; try again shortly."
+
+
+```
+
 ### By coordinates
 
 ```python
