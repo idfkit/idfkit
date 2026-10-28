@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, ClassVar, Final, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
 
 from .exceptions import SchemaNotFoundError
 from .versions import (
@@ -26,6 +26,11 @@ from .versions import (
     find_closest_version,
     version_dirname,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from ._accessors import AccessorResolver
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +183,8 @@ class EpJSONSchema:
     """
 
     __slots__ = (
+        "__weakref__",
+        "_accessor_resolver",
         "_object_lists",
         "_parsing_cache",
         "_properties",
@@ -194,6 +201,7 @@ class EpJSONSchema:
     _object_lists: dict[str, set[str]]
     _parsing_cache: dict[str, ParsingCache]
     _upper_to_canonical: dict[str, str]
+    _accessor_resolver: AccessorResolver | None
 
     def __init__(self, version: tuple[int, int, int], schema_data: dict[str, Any]) -> None:
         self.version = version
@@ -202,6 +210,9 @@ class EpJSONSchema:
 
         # Case-insensitive lookup: UPPER → canonical type name
         self._upper_to_canonical: dict[str, str] = {k.upper(): k for k in self._properties}
+
+        # Built on first attribute-style access; see accessor_resolver()
+        self._accessor_resolver = None
 
         # Build reference indexes
         self._reference_lists: dict[str, list[str]] = {}
@@ -234,9 +245,10 @@ class EpJSONSchema:
             name: getattr(self, name)
             for klass in reversed(type(self).__mro__)
             for name in klass.__dict__.get("__slots__", ())
-            if name != "_parsing_cache"
+            if name not in ("__weakref__", "_parsing_cache", "_accessor_resolver")
         }
         state["_parsing_cache"] = {}
+        state["_accessor_resolver"] = None
         return (_rebuild_schema, (type(self), state))
 
     def __deepcopy__(self, memo: dict[int, Any]) -> EpJSONSchema:
@@ -663,6 +675,22 @@ class EpJSONSchema:
             True
         """
         return list(self._properties.keys())
+
+    def accessor_resolver(self, build: Callable[[EpJSONSchema], AccessorResolver]) -> AccessorResolver:
+        """Return this schema's attribute resolver, building it on first use.
+
+        The resolver lives on the schema so it is released with it: dropping a
+        schema from the manager's cache frees its resolver too. ``build`` is
+        passed in so this module needs no runtime import of the accessor code.
+
+        The slot is read with a default because a schema unpickled from state
+        written before the slot existed does not have it set.
+        """
+        resolver: AccessorResolver | None = getattr(self, "_accessor_resolver", None)
+        if resolver is None:
+            resolver = build(self)
+            self._accessor_resolver = resolver
+        return resolver
 
     def __contains__(self, obj_type: str) -> bool:
         """Check if an object type exists in the schema."""
