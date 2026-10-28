@@ -37,16 +37,39 @@ from idfkit import (
     footprint_rectangle,
     footprint_l_shape,
     footprint_u_shape,
-    footprint_courtyard,
 )
 
 rect = footprint_rectangle(width=50, depth=30)
 ell = footprint_l_shape(width=40, depth=20, wing_width=20, wing_depth=15)
 u = footprint_u_shape(width=40, depth=30, courtyard_width=15, courtyard_depth=10)
-courtyard = footprint_courtyard(outer_width=40, outer_depth=30, inner_width=15, inner_depth=10)
 ```
 
 Or pass any CCW `list[tuple[float, float]]` you generate yourself.
+
+## Courtyards (footprints with holes)
+
+EnergyPlus surfaces cannot have holes, so a footprint with a courtyard has to become several simple pieces. Use `create_courtyard_block` from `idfkit.zoning`: it subtracts the courtyard polygons from the outer footprint with `polygon_difference_parts_2d`, makes one zone per piece per story (`"<name> Part <k>"`, largest first), and builds the pieces as `CUSTOM` zones of one block, so the walls along the cuts are interior `Surface` walls paired between the pieces' zones, not exterior walls. Courtyards may also touch or cross the outer edge (a notch). `footprint_courtyard_parts` returns the two hole-free halves of a centred rectangular courtyard if you want the polygons themselves:
+
+```python
+from idfkit.zoning import create_courtyard_block, footprint_courtyard_parts
+
+# One call: the footprint minus the courtyard(s), split into hole-free pieces,
+# one zone per piece per story, cut walls between pieces paired as interior walls.
+create_courtyard_block(
+    doc,
+    "Office",
+    footprint_rectangle(50, 40),
+    [footprint_rectangle(20, 10, origin=(15, 15))],
+    floor_to_floor=3.5,
+    num_stories=3,
+)
+# Zones: "Office Story 1 Part 1", "Office Story 1 Part 2", ...
+
+# Just the pieces (two U-shaped halves), e.g. to inspect or zone them yourself
+halves = footprint_courtyard_parts(outer_width=50, outer_depth=40, inner_width=20, inner_depth=10)
+```
+
+Each piece is concave, so there is no `zoning=` argument: every piece is one zone per story. For a finer split, compute the pieces yourself and pass them (or your own subdivision of them) as `custom_zones` to `create_block` with `ZoningScheme.CUSTOM`; walls whose edges match in reverse become interior walls.
 
 ## Zoning schemes
 
@@ -175,6 +198,23 @@ new_a, new_b = split_horizontal_surface(
 )
 ```
 
+The remainder is always EnergyPlus-safe: no holes and no zero-width slits. When the region sits strictly inside the surface, the remainder would be a frame with a hole, so it is cut into hole-free pieces. The original surface keeps the largest piece, and each other piece becomes a new `"<name> Remainder"` surface that copies its construction, zone and boundary conditions. To get those surfaces back, or to split under several adjacent regions at once (as `link_blocks` does for every floor resting on one roof), use `split_horizontal_surface_by_regions`:
+
+```python
+from idfkit.geometry_builders import split_horizontal_surface_by_regions
+
+region_surfaces, remaining_surfaces = split_horizontal_surface_by_regions(
+    doc,
+    surface,
+    regions=[
+        [(10, 5), (15, 5), (15, 15), (10, 15)],
+        [(15, 5), (20, 5), (20, 15), (15, 15)],
+    ],
+)
+# region_surfaces: one new surface per region, in order
+# remaining_surfaces: the original surface first, then any extra remainder pieces
+```
+
 ## Common mistakes
 
 !!! failure "passing a clockwise footprint"
@@ -208,6 +248,23 @@ new_a, new_b = split_horizontal_surface(
     ```
 
 See [hvac-templates.md](hvac-templates.md).
+
+!!! failure "the deprecated `footprint_courtyard` slit polygon"
+
+    ```python
+    fp = footprint_courtyard(50, 40, 20, 10)  # DeprecationWarning
+    create_block(doc, "Office", fp, floor_to_floor=3.5)
+    # The ring repeats a vertex and runs out and back along a zero-width slit:
+    # two overlapping exterior walls and a self-touching floor. EnergyPlus fails.
+    ```
+
+!!! success "`create_courtyard_block`"
+
+    ```python
+    create_courtyard_block(
+        doc, "Office", footprint_rectangle(50, 40), [footprint_rectangle(20, 10, origin=(15, 15))], floor_to_floor=3.5
+    )
+    ```
 
 !!! failure "forgetting `link_blocks` between setbacks"
 

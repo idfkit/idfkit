@@ -63,6 +63,19 @@ except IDFParseError as e:
         print(d.line, d.column, d.message)
 ```
 
+## Blank fields are unset
+
+A blank IDF field (`, ,`) is an unset field. It is not stored in `obj.data`, it is not written to epJSON, and it reads as `None`, the same as a field cut off by an early semicolon. An explicit `0` is a value and is kept. Assigning `None` or `""` to a field clears it the same way. Writing the document back to IDF and reading it again gives an equal model.
+
+```python
+# Zone, Office, 0, 0, 0, 0, , , ;  -- type, multiplier and ceiling height left blank
+zone = doc["Zone"]["Office"]
+zone.ceiling_height  # None, exactly as if the semicolon had come earlier
+"ceiling_height" in zone.data  # False: a blank field is not stored
+if zone.ceiling_height is None:
+    zone.ceiling_height = "Autocalculate"
+```
+
 ## Version handling
 
 Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.2 — see `idfkit.ENERGYPLUS_VERSIONS`).
@@ -160,6 +173,20 @@ docs = [IDFParser(Path(p), schema=schema).parse() for p in input_paths]
     if report.success and report.migrated_model is not None:
         doc = report.migrated_model
         save_idf(doc, "legacy_v25.idf")
+    ```
+
+!!! failure "testing a blank field against the empty string"
+
+    ```python
+    if zone.multiplier == "":                  # never true: a blank field reads as None
+        zone.multiplier = 1
+    ```
+
+!!! success "test for None"
+
+    ```python
+    if zone.multiplier is None:  # blank or never written: both read as None
+        ...
     ```
 
 !!! failure "forgetting `preserve_formatting` for the writer side"

@@ -11,6 +11,7 @@ Covers:
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from dataclasses import field as dc_field
 from pathlib import Path
@@ -25,7 +26,7 @@ from idfkit.idf_parser import (  # pyright: ignore[reportPrivateUsage]
     parse_idf,
 )
 from idfkit.schema import get_schema
-from idfkit.writers import save_idf, write_idf
+from idfkit.writers import save_idf, write_epjson, write_idf
 
 # ---------------------------------------------------------------------------
 # Shared helpers for coverage gap tests
@@ -848,3 +849,127 @@ Zone, ZoneB, 0, 0, 0, 0, 1, 1;
         assert node_a.obj.name == "ZoneA"
         assert node_b.obj is not None
         assert node_b.obj.name == "ZoneB"
+
+
+class TestBlankFieldsAreUnset:
+    """A blank field is absent from the model, as both writers already treat it (idfkit#183)."""
+
+    _ZONES = """\
+Version, 24.1;
+
+Zone,
+  Truncated Zone,
+  0.0,
+  1.0,
+  2.0,
+  3.0;
+
+Zone,
+  Blank Zone,
+  0.0,
+  1.0,
+  2.0,
+  3.0,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ;
+
+Zone,
+  Gap Zone,
+  ,
+  0,
+  -0.0,
+  0.0E+0,
+  ,
+  2;
+"""
+
+    @pytest.fixture
+    def zones_idf(self, tmp_path: Path) -> Path:
+        filepath = tmp_path / "zones.idf"
+        filepath.write_text(self._ZONES, encoding="latin-1")
+        return filepath
+
+    def test_trailing_blanks_are_not_stored(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf)
+        truncated = doc["Zone"]["Truncated Zone"]
+        blank = doc["Zone"]["Blank Zone"]
+        assert blank.to_dict() == truncated.to_dict() | {"name": "Blank Zone"}
+        assert "type" not in blank.data
+        assert "ceiling_height" not in blank.data
+
+    def test_interior_blank_is_not_stored_and_zero_is_kept(self, zones_idf: Path) -> None:
+        gap = parse_idf(zones_idf)["Zone"]["Gap Zone"]
+        assert list(gap.data) == ["x_origin", "y_origin", "z_origin", "multiplier"]
+        assert gap.x_origin == 0
+        assert gap.y_origin == 0
+        assert gap.z_origin == 0
+        assert gap.multiplier == 2
+
+    def test_blank_field_reads_as_never_given(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf)
+        blank = doc["Zone"]["Blank Zone"]
+        truncated = doc["Zone"]["Truncated Zone"]
+        # strict=True is the default: a known schema field that is unset reads as None, never raises.
+        assert blank.ceiling_height is None
+        assert blank.ceiling_height == truncated.ceiling_height
+        assert blank["Ceiling_Height"] is None
+        assert blank[6] is None
+        assert blank.get("ceiling_height", "autocalculate") == "autocalculate"
+        # eppy-compat positional view: the unset slots read as None in both spellings.
+        assert blank.fieldvalues[1:] == truncated.fieldvalues[1:]
+
+    def test_write_idf_reparse_equals_original(self, zones_idf: Path, tmp_path: Path) -> None:
+        doc1 = parse_idf(zones_idf)
+        output_path = tmp_path / "roundtrip.idf"
+        save_idf(doc1, output_path)
+        doc2 = parse_idf(output_path)
+        for obj in doc1["Zone"]:
+            assert doc2["Zone"][obj.name].to_dict() == obj.to_dict()
+            assert list(doc2["Zone"][obj.name].data) == list(obj.data)
+
+    def test_gap_is_written_positionally(self, zones_idf: Path) -> None:
+        text = write_idf(parse_idf(zones_idf), output_type="compressed")
+        assert "Zone,Gap Zone,,0,0,0,,2;" in text
+
+    def test_epjson_matches_the_model(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf)
+        zones = json.loads(write_epjson(doc))["Zone"]
+        for obj in doc["Zone"]:
+            assert zones[obj.name] == obj.data
+
+    def test_preserving_write_keeps_the_blank_commas_of_an_edited_object(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf, preserve_formatting=True)
+        doc["Zone"]["Blank Zone"].x_origin = 5.0
+        text = write_idf(doc, preserve_formatting=True)
+        body = text.split("Blank Zone", 1)[1].split(";", 1)[0]
+        assert body.count(",") == 12
+
+    def test_reassigning_a_blank_field_is_not_an_edit(self, zones_idf: Path) -> None:
+        doc = parse_idf(zones_idf, preserve_formatting=True)
+        before = write_idf(doc, preserve_formatting=True)
+        zone = doc["Zone"]["Blank Zone"]
+        version = zone.mutation_version
+        zone.ceiling_height = zone.ceiling_height
+        zone["Volume"] = ""
+        assert zone.mutation_version == version
+        assert "ceiling_height" not in zone.data
+        assert "volume" not in zone.data
+        assert write_idf(doc, preserve_formatting=True) == before
+
+    def test_assigning_a_blank_clears_the_field(self, zones_idf: Path, tmp_path: Path) -> None:
+        doc = parse_idf(zones_idf)
+        gap = doc["Zone"]["Gap Zone"]
+        gap["Multiplier"] = ""
+        gap["X_Origin"] = None
+        assert "multiplier" not in gap.data
+        assert "x_origin" not in gap.data
+        output_path = tmp_path / "cleared.idf"
+        save_idf(doc, output_path)
+        reparsed = parse_idf(output_path)["Zone"]["Gap Zone"]
+        assert reparsed.to_dict() == gap.to_dict()

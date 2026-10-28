@@ -48,6 +48,14 @@ Drop to `strict=False` only as a tolerant fallback for legacy or noisy files:
 --8<-- "agent_references/snippets/parsing-idf-epjson.py:strict-parsing"
 ```
 
+## Blank fields are unset
+
+A blank IDF field (`, ,`) is an unset field. It is not stored in `obj.data`, it is not written to epJSON, and it reads as `None`, the same as a field cut off by an early semicolon. An explicit `0` is a value and is kept. Assigning `None` or `""` to a field clears it the same way. Writing the document back to IDF and reading it again gives an equal model.
+
+```python
+--8<-- "agent_references/snippets/parsing-idf-epjson.py:blank-fields"
+```
+
 ## Version handling
 
 Every document is tied to a specific EnergyPlus version. The parser reads the `Version` object and picks the matching bundled schema (8.9 through 26.2 — see `idfkit.ENERGYPLUS_VERSIONS`).
@@ -122,6 +130,19 @@ For batch workflows, preload the schema once and pass it to every `IDFParser` so
 
     ```python
     --8<-- "agent_references/snippets/parsing-idf-epjson.py:mistake-version-good"
+    ```
+
+!!! failure "testing a blank field against the empty string"
+
+    ```python
+    if zone.multiplier == "":                  # never true: a blank field reads as None
+        zone.multiplier = 1
+    ```
+
+!!! success "test for None"
+
+    ```python
+    --8<-- "agent_references/snippets/parsing-idf-epjson.py:mistake-blank-good"
     ```
 
 !!! failure "forgetting `preserve_formatting` for the writer side"

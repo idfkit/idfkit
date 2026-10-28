@@ -83,7 +83,7 @@ For higher-level ceiling↔floor helpers, see [geometry-builders-and-zoning.md](
 
 ## 2D polygon utilities
 
-For computing footprint overlaps or differences (e.g. courtyard cut-outs):
+For computing footprint overlaps or differences (e.g. corner cut-outs):
 
 ```python
 --8<-- "agent_references/snippets/geometry-and-surfaces.py:polygon-2d"
@@ -91,7 +91,34 @@ For computing footprint overlaps or differences (e.g. courtyard cut-outs):
 
 These take 2D `(x, y)` tuples (not `Vector3D`) because the typical use is on building footprints in plan view.
 
+`polygon_difference_2d` returns one clean, counter-clockwise, simple polygon with no duplicate or coincident vertices, ready for `create_block`. The subtracted polygon may cross the outer boundary, sit flush with a corner, or extend outside it. A single ring cannot describe a result with a hole (the subtracted polygon strictly inside) or a result in several pieces, so `polygon_difference_2d` raises `ValueError` for those. Use `polygon_difference_parts_2d` from `idfkit.geometry` there. It subtracts any number of polygons and returns hole-free pieces, largest first, each one a valid EnergyPlus surface outline or `create_block` footprint. Building each piece with its own `create_block` call leaves the walls along the cuts as exterior walls; `create_courtyard_block` (in `idfkit.zoning`) builds the pieces as zones of one block so those walls are paired interior walls:
+
+```python
+--8<-- "agent_references/snippets/geometry-and-surfaces.py:polygon-difference-parts"
+```
+
+To cut a concave outline into triangles (for a mesh, or for area-weighted sampling), use `triangulate_2d` from `idfkit.geometry`. It returns index triples into the input, in the input's winding, and it handles keyhole outlines whose bridge vertices are doubled:
+
+```python
+--8<-- "agent_references/snippets/geometry-and-surfaces.py:triangulate-2d"
+```
+
 ## Common mistakes
+
+!!! failure "stitching a hole into one polygon with a slit"
+
+    ```python
+    # Joining the outer ring and the hole ring with a zero-width "bridge" edge
+    # gives coincident vertices, so create_block makes degenerate surfaces and EnergyPlus fatals.
+    slit = [*outer, outer[0], hole[0], *reversed(hole), hole[0]]
+    create_block(doc, "Block", slit, floor_to_floor=3.5)
+    ```
+
+!!! success "split it into hole-free pieces in one block"
+
+    ```python
+    --8<-- "agent_references/snippets/geometry-and-surfaces.py:mistake-hole-good"
+    ```
 
 !!! failure "manually summing vertex coordinates"
 

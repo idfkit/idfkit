@@ -400,13 +400,41 @@ def _generate_object_class(
             lines.append("")
         return lines
 
+    update_fields: list[tuple[str, str]] = []
     if field_names:
-        _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+        update_fields = _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
 
     # Add the canonical wrapper attribute typed as ExtensibleList[<GroupCls>].
     if group_cls_name and wrapper_key:
         lines.append(f"{body_indent}{wrapper_key}: ExtensibleList[{group_cls_name}]")
+        update_fields.append((wrapper_key, "list[Any]"))
 
+    lines.extend(_generate_update(cls_name, update_fields, indent))
+    return lines
+
+
+def _generate_update(cls_name: str, fields: list[tuple[str, str]], indent: str) -> list[str]:
+    """Type ``update`` on *cls_name* with a private ``TypedDict`` of its fields.
+
+    The ``TypedDict`` types the keywords (through ``Unpack``), so a type checker reports an unknown
+    field name or a wrongly typed value given as a keyword. ``name`` is left out because ``update``
+    refuses it. The positional mapping stays ``Mapping[str, Any] | None``, as at run time: a
+    ``TypedDict`` there would reject a mapping built at run time, ``None``, and the spaced field
+    names single assignment accepts, all of which the method accepts. The override narrows
+    ``IDFObject.update``'s ``**kwargs: Any``, which mypy reports; pyright does not.
+    """
+    fields_cls = f"_{cls_name}Fields"
+    lines = [
+        "",
+        f"{indent}    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[{fields_cls}]) "
+        "-> None: ...  # type: ignore[override]",
+        "",
+        f"{indent}class {fields_cls}(TypedDict, total=False):",
+    ]
+    entries = [(name, py_type) for name, py_type in fields if name != "name"]
+    if not entries:
+        lines[-1] += " ..."
+    lines.extend(f"{indent}    {name}: {py_type}" for name, py_type in entries)
     return lines
 
 
@@ -426,10 +454,11 @@ def _generate_fields(
     indent: str,
     obj_since: tuple[int, int, int] | None,
     field_since: dict[tuple[str, str], tuple[int, int, int]] | None,
-) -> None:
-    """Append typed field declarations to *lines*."""
+) -> list[tuple[str, str]]:
+    """Append typed field declarations to *lines*; return each declared field with its value type."""
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    declared: list[tuple[str, str]] = []
 
     for field_name in field_names:
         if not field_name.isidentifier():
@@ -441,6 +470,7 @@ def _generate_fields(
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
         lines.append(f"{indent}{field_name}: {py_type} | None")
+        declared.append((field_name, f"{py_type} | None"))
 
         # Determine field "Since:" — only if the field appeared after the type itself
         fld_since: tuple[int, int, int] | None = None
@@ -452,6 +482,7 @@ def _generate_fields(
         docstring = _field_docstring(field_schema, since_version=fld_since)
         if docstring:
             lines.append(f'{indent}"""{docstring}"""')
+    return declared
 
 
 # ---- TypedDict mapping generation ------------------------------------------
@@ -483,20 +514,6 @@ def _generate_object_type_map(
     return lines
 
 
-_RESERVED_ATTRS = frozenset({
-    "version",
-    "filepath",
-    "strict",
-    "schema",
-    "collections",
-    "references",
-    "copy",
-    "keys",
-    "values",
-    "items",
-})
-
-
 def _generate_attr_properties(
     python_to_idf: dict[str, str],
     schema: EpJSONSchema,
@@ -504,15 +521,21 @@ def _generate_attr_properties(
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
-    These correspond to the ``_PYTHON_TO_IDF`` mapping in document.py.
-    Skips names that conflict with real instance attributes or methods.
+    These are the names the attribute resolver accepts as canonical: one
+    ``snake_case`` plural per object type, plus the shorthands in
+    ``_PYTHON_TO_IDF``.
+    Skips every name that is a real member of ``IDFDocument``. That is the same
+    set the attribute resolver treats as reserved, so the stub and the runtime
+    cannot disagree about which of the two a name reaches.
 
     Each property gets a docstring derived from the EnergyPlus schema memo for
     the underlying object type, so IDEs surface a description on hover.
     """
+    from idfkit.document import _RESERVED  # pyright: ignore[reportPrivateUsage]
+
     lines: list[str] = []
     for py_name, idf_type in python_to_idf.items():
-        if py_name in _RESERVED_ATTRS:
+        if py_name in _RESERVED:
             continue
         cls_name = _to_class_name(idf_type)
         memo = schema.get_object_memo(idf_type)
@@ -558,7 +581,10 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("")
     parts.append("from __future__ import annotations")
     parts.append("")
+    parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
+    parts.append("")
+    parts.append("from typing_extensions import Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")
@@ -605,7 +631,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     schema = get_schema(ver)
 
     import idfkit.document as _document_mod
-    from idfkit.document import _PYTHON_TO_IDF  # pyright: ignore[reportPrivateUsage]
+    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
 
     # Resolve document.py via the imported module rather than this file's
     # location, so test fixtures that patch __file__ on the codegen module
@@ -628,6 +654,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("from pathlib import Path")
     lines.append("from typing import Any, Generic, TypeVar")
     lines.append("")
+    lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
     lines.append("from ._generated_types import _ObjectTypeMap")
@@ -646,6 +673,9 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
     lines.append("_PYTHON_TO_IDF: dict[str, str]")
     lines.append("_IDF_TO_PYTHON: dict[str, str]")
+    lines.append("_RESERVED: frozenset[str]")
+    lines.append("")
+    lines.append("def _build_resolver(schema: EpJSONSchema) -> AccessorResolver: ...")
     lines.append("")
 
     # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
@@ -781,8 +811,8 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     emit("def copy(self) -> IDFDocument[Strict]", "IDFDocument.copy")
     lines.append("")
 
-    # Attribute accessor properties (zones, materials, ...) with memo docstrings
-    lines.extend(_generate_attr_properties(_PYTHON_TO_IDF, schema, indent="    "))
+    # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
+    lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
     lines.append("")
 
     return "\n".join(lines)

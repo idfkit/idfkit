@@ -710,3 +710,104 @@ class TestWeatherAdmission:
         mock_run.assert_called_once()
         mock_preprocess.assert_not_called()
         assert result.success
+
+
+# ---------------------------------------------------------------------------
+# simulate() with a cache and files the model names (#216)
+# ---------------------------------------------------------------------------
+
+
+def _schedule_file_model(file_name: str) -> Any:
+    model = new_document()
+    model.add("Schedule:File", "Staged", file_name=file_name, column_number=1, rows_to_skip_at_top=0, validate=False)
+    return model
+
+
+class TestSimulateCacheCoversExternalFiles:
+    """The key hashes every file the model names, so a changed input is a miss and a restored one a hit."""
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_staged_file_in_output_dir(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        run_dir = tmp_path / "run"
+        (run_dir / "data").mkdir(parents=True)
+        csv = run_dir / "data" / "hourly.csv"
+        model = _schedule_file_model("data/hourly.csv")
+
+        def run() -> Path:
+            return simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache).run_dir
+
+        csv.write_text("0.5\n")
+        first = run()
+        assert first == run_dir.resolve()
+        assert run().parent == tmp_path / "cache"  # unchanged CSV: hit
+        csv.write_text("1.0\n")
+        assert run() == run_dir.resolve()  # changed CSV: miss
+        csv.write_text("0.5\n")
+        assert run().parent == tmp_path / "cache"  # restored CSV: hit on the first entry
+        assert mock_run.call_count == 2
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_file_outside_output_dir(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        csv = tmp_path / "inputs" / "occ.csv"
+        csv.parent.mkdir()
+        model = _schedule_file_model(str(csv))
+
+        csv.write_text("1\n")
+        simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        assert mock_run.call_count == 1
+        csv.write_text("2\n")
+        simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        assert mock_run.call_count == 2
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_python_plugin_is_never_cached(
+        self,
+        mock_run: MagicMock,
+        mock_config: EnergyPlusConfig,
+        weather_file: Path,
+        tmp_path: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        model = new_document()
+        model.add("PythonPlugin:Instance", "Plugin", python_module_name="plugin", plugin_class_name="P", validate=False)
+
+        with caplog.at_level(logging.WARNING, logger="idfkit.simulation.cache"):
+            simulate(model, weather_file, energyplus=mock_config, cache=cache)
+            simulate(model, weather_file, energyplus=mock_config, cache=cache)
+        assert mock_run.call_count == 2
+        assert not (tmp_path / "cache").exists()
+        assert "Not using the simulation cache" in caplog.text
+        assert "PythonPlugin:Instance" in caplog.text
+
+    @patch("idfkit.simulation.runner.subprocess.run")
+    def test_reused_output_dir_still_hits(
+        self, mock_run: MagicMock, mock_config: EnergyPlusConfig, weather_file: Path, tmp_path: Path
+    ) -> None:
+        from idfkit.simulation.cache import SimulationCache
+
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+        cache = SimulationCache(cache_dir=tmp_path / "cache")
+        run_dir = tmp_path / "run"
+        model = new_document()
+        simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir)  # leftovers, no cache
+        (run_dir / "notes.txt").write_text("unrelated\n")
+        simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
+        simulate(model, weather_file, energyplus=mock_config, output_dir=run_dir, cache=cache)
+        assert mock_run.call_count == 2

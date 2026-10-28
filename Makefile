@@ -89,7 +89,7 @@ check: check-stubs check-conformance-level check-epw-sentinels check-doc-locatio
 	@echo "🚀 Linting code: Running pre-commit"
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running pyright"
-	@uv run pyright src/ agent_references/snippets
+	@uv run pyright src/ agent_references/snippets tests/type_checks
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@uv run deptry src
 

@@ -19,10 +19,12 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from ..geometry import Polygon3D, Vector3D
+from ..geometry import Polygon3D, Vector3D, is_convex_2d, triangulate_2d
 from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from ..document import IDFDocument
 
 
@@ -168,19 +170,40 @@ def _surfaces(doc: IDFDocument, zones: list[str] | None = None) -> list[Resolved
 # ---------------------------------------------------------------------------
 
 
-def _triangulate_polygon(num_vertices: int, offset: int) -> tuple[list[int], list[int], list[int]]:
-    """Fan triangulation for convex polygons.
+def _project_to_plane(vertices: Sequence[Vector3D]) -> list[tuple[float, float]]:
+    """Project vertices to 2D by dropping the axis the polygon's normal points along most.
 
-    Returns (i, j, k) lists of vertex indices for Mesh3d.
+    The projection keeps the polygon simple, which is all ear clipping needs; it does not
+    keep lengths, so the result is for deciding which triangles to cut and nothing else.
     """
-    i_list: list[int] = []
-    j_list: list[int] = []
-    k_list: list[int] = []
-    for n in range(1, num_vertices - 1):
-        i_list.append(offset)
-        j_list.append(offset + n)
-        k_list.append(offset + n + 1)
-    return i_list, j_list, k_list
+    normal = Polygon3D(list(vertices)).normal
+    ax, ay, az = abs(normal.x), abs(normal.y), abs(normal.z)
+    if az >= ax and az >= ay:
+        return [(v.x, v.y) for v in vertices]
+    if ay >= ax:
+        return [(v.z, v.x) for v in vertices]
+    return [(v.y, v.z) for v in vertices]
+
+
+def _triangulate_polygon(vertices: Sequence[Vector3D], offset: int) -> tuple[list[int], list[int], list[int]]:
+    """Triangulate a planar polygon, concave or convex, for Mesh3d.
+
+    A convex polygon is fanned from its first vertex. A concave one (an L-shaped floor, say)
+    would be fanned across its own notch, so it is ear-clipped on its projection to its plane.
+
+    Returns (i, j, k) lists of vertex indices for Mesh3d, each shifted by ``offset``.
+    """
+    num_vertices = len(vertices)
+    pts = _project_to_plane(vertices) if num_vertices > 3 else []
+    if num_vertices <= 3 or is_convex_2d(pts):
+        triangles = [(0, n, n + 1) for n in range(1, num_vertices - 1)]
+    else:
+        triangles = triangulate_2d(pts)
+    return (
+        [offset + t[0] for t in triangles],
+        [offset + t[1] for t in triangles],
+        [offset + t[2] for t in triangles],
+    )
 
 
 def _polygon_edges(polygon: Polygon3D) -> tuple[list[float | None], list[float | None], list[float | None]]:
@@ -303,7 +326,7 @@ def _build_mesh_traces(
                 all_y.append(v.y)
                 all_z.append(v.z)
 
-            i_list, j_list, k_list = _triangulate_polygon(poly.num_vertices, offset)
+            i_list, j_list, k_list = _triangulate_polygon(poly.vertices, offset)
             all_i.extend(i_list)
             all_j.extend(j_list)
             all_k.extend(k_list)

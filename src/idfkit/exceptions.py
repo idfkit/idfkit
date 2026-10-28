@@ -163,6 +163,28 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
         super().__init__(msg)
 
 
+@dataclass(frozen=True, slots=True)
+class RefusedEntry:
+    """One entry of an ``IDFObject.update`` group that will not be applied.
+
+    ``reason`` is ``"unknown"`` (not a field of the type), ``"name"`` (renaming has its own
+    operation), ``"legacy-flat"`` (an eppy-style flat extensible name) or ``"wrapper-value"``
+    (the extensible wrapper key given a value single assignment rejects: not a list, or a list
+    with an item that is not a dict or group, or a group with an unknown field).
+    """
+
+    name: str
+    reason: Literal["unknown", "name", "legacy-flat", "wrapper-value"]
+    detail: str
+
+
+def format_refused(obj_type: str, refused: Sequence[RefusedEntry]) -> str:
+    """Message for an ``IDFObject.update`` group that was refused: the type, then one line per entry."""
+    lines = [f"Update of object type '{obj_type}' refused; no field was changed:"]
+    lines.extend(f"  - {entry.name}: {entry.reason} ({entry.detail})" for entry in refused)
+    return "\n".join(lines)
+
+
 class InvalidFieldError(IdfKitError, AttributeError):
     """Raised when an invalid field is accessed or set.
 
@@ -178,13 +200,20 @@ class InvalidFieldError(IdfKitError, AttributeError):
         available_fields: list[str] | None = None,
         version: tuple[int, int, int] | None = None,
         extensible_fields: frozenset[str] | None = None,
+        *,
+        refused: Sequence[RefusedEntry] | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
         self.available_fields = available_fields
         self.version = version
         self.extensible_fields = extensible_fields
-        msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
+        self.refused = tuple(refused) if refused else ()
+        msg = (
+            format_refused(obj_type, refused)
+            if refused
+            else f"Invalid field '{field_name}' for object type '{obj_type}'"
+        )
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:
