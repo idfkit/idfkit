@@ -221,7 +221,7 @@ class ParseResult:
     two reads the same two names in the same order.
     """
 
-    document: AnyIDFDocument
+    document: IDFDocument
     diagnostics: tuple[ParseDiagnostic, ...]
 
 

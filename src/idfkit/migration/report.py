@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..document import AnyIDFDocument
+    from ..document import IDFDocument
 
 
 def _empty_count_delta() -> dict[str, int]:
@@ -106,7 +106,7 @@ class MigrationReport:
             steps ran (source == target).
     """
 
-    migrated_model: AnyIDFDocument | None
+    migrated_model: IDFDocument | None
     source_version: tuple[int, int, int]
     target_version: tuple[int, int, int]
     requested_target: tuple[int, int, int]
