@@ -34,6 +34,7 @@ def _build_resolver(schema: EpJSONSchema) -> AccessorResolver: ...
 
 class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
     filepath: Path | None
+    _count_at_read: int | None
 
     @property
     def version(self) -> tuple[int, int, int]:
@@ -157,37 +158,6 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Same lookup as ``model[obj_type]``, including the case-insensitive
         match and the refusal to store anything on a miss.
-        """
-    def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
-        """Get collection by Python-style attribute name.
-
-        Every object type in the document's schema is reachable this way as its
-        ``snake_case`` plural (``model.air_loop_hvacs``), which the stub types as
-        ``IDFCollection`` of the generated class. Hand-written shorthands in
-        ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
-        ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
-        their meaning where one coincides with a derived name. The raw type name, with
-        ``_`` in place of ``:`` and in any case (``model.Site_Location``,
-        ``model.ZONE``), resolves as it did before derived names existed.
-
-        Without a schema loaded, only the hand-written shorthands and a
-        case-insensitive match against existing collections are available.
-
-        Examples:
-            Use attribute names for object types:
-
-            >>> from idfkit import new_document
-            >>> model = new_document()
-            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
-            Zone('Perimeter_ZN_1')
-            >>> len(model.zones)
-            1
-            >>> model.zones[0].name
-            'Perimeter_ZN_1'
-
-        Raises:
-            AttributeError: If the name resolves to no object type.  When the
-                schema has a close match the message names it.
         """
     def __contains__(self, obj_type: str) -> bool:  # type: ignore[override]
         """Check if document has objects of a type.
@@ -570,6 +540,38 @@ class IDFDocument(_ObjectTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[
                 :class:`~idfkit.exceptions.InvalidFieldError` instead of returning ``None``.  This
                 is useful during migration from eppy to catch field-name
                 typos early.  This value is immutable after construction.
+        """
+
+    def __getattr__(self, name: str) -> IDFCollection[IDFObject]:
+        """Get collection by Python-style attribute name.
+
+        Every object type in the document's schema is reachable this way as its
+        ``snake_case`` plural (``model.air_loop_hvacs``), which the stub types as
+        ``IDFCollection`` of the generated class. Hand-written shorthands in
+        ``_PYTHON_TO_IDF`` (e.g. ``building_surfaces`` -> ``BuildingSurface:Detailed``,
+        ``ideal_loads`` -> ``ZoneHVAC:IdealLoadsAirSystem``) also resolve, and keep
+        their meaning where one coincides with a derived name. The raw type name, with
+        ``_`` in place of ``:`` and in any case (``model.Site_Location``,
+        ``model.ZONE``), resolves as it did before derived names existed.
+
+        Without a schema loaded, only the hand-written shorthands and a
+        case-insensitive match against existing collections are available.
+
+        Examples:
+            Use attribute names for object types:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Perimeter_ZN_1")  # doctest: +ELLIPSIS
+            Zone('Perimeter_ZN_1')
+            >>> len(model.zones)
+            1
+            >>> model.zones[0].name
+            'Perimeter_ZN_1'
+
+        Raises:
+            AttributeError: If the name resolves to no object type.  When the
+                schema has a close match the message names it.
         """
 
     @property
@@ -3623,8 +3625,15 @@ class IDFDocument(_ObjectTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[
     def zones(self) -> IDFCollection[Zone]:
         """All ``Zone`` objects in the document. Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will ..."""
 
-class _AnyVersionDocument(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]
-    """What every supported EnergyPlus version's document has; see ``AnyIDFDocument``."""
+class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]
+    """A document as every supported EnergyPlus version has it.
+
+    Indexing it, or reaching an accessor, with an object type that some supported version lacks is a
+    type error, as is a field some version lacks through ``update``. Annotate with ``AnyIDFDocument``,
+    the union of this and ``IDFDocument``, rather than with this class: a latest-release document then
+    matches ``IDFDocument`` directly. Narrow a document to its release with
+    ``idfkit.versioned.as_version`` to reach what only that release has.
+    """
 
     @property
     def air_conditioner_variable_refrigerant_flow_fluid_temperature_control_hrs(
@@ -5643,7 +5652,7 @@ class _AnyVersionDocument(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type:
     @property
     def zones(self) -> IDFCollection[_ZoneBase]: ...
 
-AnyIDFDocument: TypeAlias = IDFDocument[Strict] | _AnyVersionDocument[Strict]
+AnyIDFDocument: TypeAlias = IDFDocument[Strict] | IDFDocumentAllVersions[Strict]
 """A document of any supported EnergyPlus version.
 
 :class:`IDFDocument`, typed for the latest release, and every older release's type in

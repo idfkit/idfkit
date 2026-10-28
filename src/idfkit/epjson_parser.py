@@ -188,7 +188,7 @@ class EpJSONParser:
             # How many there were, so that a removal is visible to the writer.
             # The sentinel above only marks the objects that are still here, and
             # a removed one is not among them to ask.
-            doc._count_at_read = len(doc)  # pyright: ignore[reportAttributeAccessIssue]
+            doc._count_at_read = len(doc)
 
         elapsed = time.perf_counter() - t0
         logger.info("Parsed %d objects from %s in %.3fs", len(doc), self._filepath, elapsed)

@@ -28,7 +28,10 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
   types present in all of them, each field typed to admit every release's values. idfkit's own
   functions were retyped to take it, so `save_idf`, `simulate`, the geometry and zoning helpers
   and the rest accept a document typed for any release; `expand_objects` and the ground
-  heat-transfer preprocessors return the type they were given
+  heat-transfer preprocessors return the type they were given. An object type or accessor that
+  some release lacks is reported against the type that lacks it, for example
+  `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`, or through `AnyIDFDocument`,
+  `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`
   ([#194](https://github.com/idfkit/idfkit/issues/194)).
 - **Every object type in a document's schema became reachable as a typed attribute
   on `IDFDocument`, not only the hand-written shorthands.** Each type has one

@@ -1458,3 +1458,7 @@ class AnyIDFDocument(IDFDocument[Strict], metaclass=DocumentTypeMeta):
     """
 
     _energyplus_version = None
+
+
+# The version-agnostic member of AnyIDFDocument in document.pyi; at run time the same stand-in.
+IDFDocumentAllVersions = AnyIDFDocument

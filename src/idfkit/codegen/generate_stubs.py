@@ -1307,7 +1307,14 @@ present in all of them, each typed as all of them declare it, so a field whose c
 between releases reads as the union of them and a field some release lacks is not offered.
 """
 
-_ANY_VERSION_DOCUMENT_DOC = """What every supported EnergyPlus version's document has; see ``AnyIDFDocument``."""
+_ANY_VERSION_DOCUMENT_DOC = """A document as every supported EnergyPlus version has it.
+
+Indexing it, or reaching an accessor, with an object type that some supported version lacks is a
+type error, as is a field some version lacks through ``update``. Annotate with ``AnyIDFDocument``,
+the union of this and ``IDFDocument``, rather than with this class: a latest-release document then
+matches ``IDFDocument`` directly. Narrow a document to its release with
+``idfkit.versioned.as_version`` to reach what only that release has.
+"""
 
 
 def _generate_any_accessors() -> list[str]:
@@ -1396,6 +1403,9 @@ def _generate_document_module() -> str:
     # version's, and AnyIDFDocument -- shares them while carrying its own TypedDict map.
     lines.append("class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):")
     lines.append("    filepath: Path | None")
+    # Read by the writers and set by the epJSON parser; declared so it has its real type, since no
+    # __getattr__ on this base answers undeclared names.
+    lines.append("    _count_at_read: int | None")
     lines.append("")
 
     def emit(
@@ -1436,7 +1446,6 @@ def _generate_document_module() -> str:
 
     # Collection access
     emit("def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]", "IDFDocument.get_collection")
-    emit("def __getattr__(self, name: str) -> IDFCollection[IDFObject]", "IDFDocument.__getattr__")
     emit(
         "def __contains__(self, obj_type: str) -> bool",
         "IDFDocument.__contains__",
@@ -1529,6 +1538,18 @@ def _generate_document_module() -> str:
         lines.append("    ) -> None: ...")
     lines.append("")
 
+    # The untyped fallback for the raw spellings (doc.Site_Location) is IDFDocument's alone. On the
+    # shared methods base it would also answer, silently and untyped, every accessor that a
+    # version-specific document type or IDFDocumentAllVersions leaves out because that type is
+    # missing from the version, where at run time the access raises.
+    _emit_method(
+        lines,
+        "def __getattr__(self, name: str) -> IDFCollection[IDFObject]",
+        docs.get("IDFDocument.__getattr__"),
+        indent="    ",
+    )
+    lines.append("")
+
     # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
     lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
     lines.append("")
@@ -1537,12 +1558,15 @@ def _generate_document_module() -> str:
     # key by key and pyright does not remember the outcome, so an annotation of the version-agnostic
     # class alone would cost every call that passes a latest-release document ~800 comparisons.
     # Through the union, such a document matches IDFDocument directly.
-    lines.append("class _AnyVersionDocument(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]")
+    # Its name is what a type checker prints when code reaches for an object type or an accessor some
+    # supported version lacks ("... is not a defined key in IDFDocumentAllVersions[bool]"), so it
+    # says what the type is rather than being private.
+    lines.append("class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]")
     lines.extend(_format_docstring_for_stub(_ANY_VERSION_DOCUMENT_DOC, "    "))
     lines.append("")
     lines.extend(_generate_any_accessors())
     lines.append("")
-    lines.append("AnyIDFDocument: TypeAlias = IDFDocument[Strict] | _AnyVersionDocument[Strict]")
+    lines.append("AnyIDFDocument: TypeAlias = IDFDocument[Strict] | IDFDocumentAllVersions[Strict]")
     lines.extend(_format_docstring_for_stub(_ANY_DOCUMENT_DOC, ""))
     lines.append("")
 

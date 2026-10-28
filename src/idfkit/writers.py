@@ -334,10 +334,7 @@ def write_epjson(
     # the other side, since a new object carries no sentinel and fails
     # `all_clean` anyway.
     if use_preserve and doc.raw_text is not None:
-        # `# pyright: ignore` for the same reason `epjson_parser` needs one when it sets this:
-        # the generated stub answers every name it does not declare with a collection, and it
-        # declares no internal attribute, so reading one types as `IDFCollection` here.
-        count_at_read = cast("int | None", doc._count_at_read)
+        count_at_read = doc._count_at_read
         unchanged = count_at_read == len(doc) and all(obj.source_text is not None for obj in doc.all_objects)
         if unchanged:
             logger.debug("Serialized epJSON (%d objects, lossless) to string", len(doc))
