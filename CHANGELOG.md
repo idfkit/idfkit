@@ -38,7 +38,11 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   nothing from a service that could not be reached without matching message
   text. `geocode` and `detect_location` set both on every error they raise. An
   HTTP error from Nominatim or ipapi.co, previously reported only as "Failed to
-  geocode", now names its status. `@idfkit/weather` carries the same fields
+  geocode", now names its status. An ipapi.co payload that reports a rate limit
+  is `"http"` with `status` `429`, and a truncated response body is
+  `"unreachable"` rather than escaping as `http.client.IncompleteRead`.
+  Coordinates that are blank, boolean or not finite are `"invalid-response"`.
+  `@idfkit/weather` carries the same fields
   ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
 
 ### Changed

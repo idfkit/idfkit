@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import http.client
 import json
+import math
+import re
 import threading
 import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 from urllib.error import HTTPError
 
 if TYPE_CHECKING:
@@ -71,6 +74,28 @@ class GeocodingError(Exception):
         super().__init__(message)
         self.kind: _GeocodingErrorKind = kind
         self.status: int | None = status
+
+
+def _coordinate(value: object) -> float:
+    """Read a coordinate from a JSON field: a number or a numeric string, finite.
+
+    Raises:
+        TypeError: For ``None``, a bool, or any other non-numeric JSON value.
+        ValueError: For a string that is not a number, or a non-finite value.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        msg = f"not a coordinate: {value!r}"
+        raise TypeError(msg)
+    result = float(value)
+    if not math.isfinite(result):
+        msg = f"not a finite coordinate: {value!r}"
+        raise ValueError(msg)
+    return result
+
+
+# ipapi.co reports a rate limit or an exhausted quota in the same payload shape
+# as a reserved address. Only the latter means a retry will not help.
+_IPAPI_RATE_LIMITED = re.compile(r"rate ?limit|quota", re.IGNORECASE)
 
 
 class RateLimiter:
@@ -168,7 +193,7 @@ def geocode(address: str) -> tuple[float, float]:
     except HTTPError as exc:
         msg = f"Failed to geocode address {address}: {exc.code} {exc.reason}"
         raise GeocodingError(msg, kind="http", status=exc.code) from exc
-    except OSError as exc:  # URLError, TimeoutError, connection resets
+    except (OSError, http.client.HTTPException) as exc:  # URLError, timeouts, resets, truncated bodies
         msg = f"Failed to geocode address: {address}"
         raise GeocodingError(msg, kind="unreachable") from exc
 
@@ -183,8 +208,9 @@ def geocode(address: str) -> tuple[float, float]:
     if not data:
         msg = f"No results found for address: {address}"
         raise GeocodingError(msg, kind="not-found")
+    first = cast("Mapping[str, object]", data[0])
     try:
-        return float(data[0]["lat"]), float(data[0]["lon"])  # pyright: ignore[reportUnknownArgumentType]
+        return _coordinate(first["lat"]), _coordinate(first["lon"])
     except (KeyError, TypeError, ValueError) as exc:
         msg = f"Failed to geocode address: {address}"
         raise GeocodingError(msg, kind="invalid-response") from exc
@@ -290,7 +316,8 @@ def detect_location(
         GeocodingError: If the IP cannot be located. Its ``kind`` reads as for
             [geocode][idfkit.weather.geocode.geocode]; ``"not-found"`` means
             ipapi.co answered with an error payload, such as for a reserved
-            address.
+            address. An error payload that reports a rate limit or an
+            exhausted quota is ``"http"`` with ``status`` ``429`` instead.
 
     Note:
         Calling this function sends your public IP address to ipapi.co
@@ -313,7 +340,7 @@ def detect_location(
     except HTTPError as exc:
         msg = f"Failed to detect location from IP: {exc.code} {exc.reason}"
         raise GeocodingError(msg, kind="http", status=exc.code) from exc
-    except OSError as exc:  # URLError, TimeoutError, connection resets
+    except (OSError, http.client.HTTPException) as exc:  # URLError, timeouts, resets, truncated bodies
         msg = f"Failed to detect location from IP: {exc}"
         raise GeocodingError(msg, kind="unreachable") from exc
 
@@ -321,6 +348,9 @@ def detect_location(
         data: Mapping[str, object] = json.loads(body)
         if data.get("error"):
             reason = data.get("reason") or data.get("message") or "unknown error"
+            if _IPAPI_RATE_LIMITED.search(f"{reason} {data.get('message') or ''}"):
+                msg = f"ipapi.co rate-limited this request: {reason}"
+                raise GeocodingError(msg, kind="http", status=429)
             msg = f"ipapi.co could not locate this IP: {reason}"
             raise GeocodingError(msg, kind="not-found")
         lat = data.get("latitude")
@@ -328,7 +358,7 @@ def detect_location(
         if lat is None or lon is None:
             msg = "ipapi.co response missing latitude/longitude"
             raise GeocodingError(msg, kind="invalid-response")
-        coords = (float(lat), float(lon))  # pyright: ignore[reportArgumentType]
+        coords = (_coordinate(lat), _coordinate(lon))
     except (ValueError, KeyError, TypeError, AttributeError) as exc:
         msg = f"Failed to detect location from IP: {exc}"
         raise GeocodingError(msg, kind="invalid-response") from exc
