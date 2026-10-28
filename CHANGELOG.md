@@ -11,6 +11,19 @@ This release moves to `conformance-2026.20`. Through `conformance-2026.19`, the 
 
 ### Added
 
+- **Every object type in a document's schema became reachable as a typed attribute
+  on `IDFDocument`, not only the hand-written shorthands.** Each type has one
+  `snake_case` plural, declared in `document.pyi`: `doc.air_loop_hvacs` is
+  `IDFCollection[AirLoopHVAC]`, and `doc.coil_cooling_dx_single_speeds` and
+  `doc.zone_hvac_equipment_connections` resolve likewise. Names are derived from
+  the schema by rule, with a short override table for the types the rule splits
+  badly (`Output:SQLite` is `doc.output_sqlite`), and a test fails when a new
+  release adds an acronym that has not been reviewed. Existing shorthands kept
+  their meaning, and the spellings that resolved before, such as
+  `doc.Site_Location` and `doc.ZONE`, still resolve. A failed lookup names the
+  closest matches and their object types; the message is built only when read, so
+  `hasattr()` and `getattr(doc, name, default)` stay fast
+  ([#202](https://github.com/idfkit/idfkit/pull/202)).
 - `idfkit.geometry.polygon_difference_parts_2d(outer, *inners)` subtracts one or more polygons and returns hole-free, non-overlapping, counter-clockwise pieces, largest first, that together cover the difference. A result with a hole is cut by a vertical line through each hole. Every piece is a valid EnergyPlus surface outline or `create_block` footprint. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 - `idfkit.geometry.triangulate_2d(poly)` ear-clips a convex or concave 2D polygon into triangles, returned as index triples into the input in its own winding. It tolerates collinear and duplicate vertices, keyhole outlines with doubled bridge vertices and polygons pinched at a vertex, and it still uses every vertex of a self-intersecting polygon. The 3D viewers and `intersect_and_match` now share it. ([#246](https://github.com/idfkit/idfkit/pull/246))
 - `idfkit.geometry_builders.split_horizontal_surface_by_regions(doc, surface, regions)` splits a horizontal surface under several regions in one step and returns `(region_surfaces, remaining_surfaces)`. `link_blocks` now uses it for each roof, so adjacent floors resting on one roof are subtracted together. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))

@@ -494,6 +494,21 @@ class TestGenerateAttrProperties:
         assert "def version" not in text
         assert "def zones" in text
 
+    def test_skips_every_real_member_of_the_document(self) -> None:
+        """The skip set is the document's own reserved set, not a second hand-written list.
+
+        Covers members the old list never named, such as ``add`` and ``all_objects``,
+        so a shorthand colliding with any future member is skipped here exactly as the
+        resolver drops it at runtime.
+        """
+        from idfkit.document import _RESERVED  # pyright: ignore[reportPrivateUsage]
+        from idfkit.schema import get_schema
+
+        schema = get_schema((24, 1, 0))
+        assert {"add", "all_objects", "version"} <= _RESERVED
+        lines = _generate_attr_properties(dict.fromkeys(_RESERVED, "Zone"), schema)
+        assert lines == []
+
 
 class TestBuildVersionAvailability:
     def test_returns_type_and_field_since(self) -> None:

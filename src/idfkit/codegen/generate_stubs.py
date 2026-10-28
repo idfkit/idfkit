@@ -514,20 +514,6 @@ def _generate_object_type_map(
     return lines
 
 
-_RESERVED_ATTRS = frozenset({
-    "version",
-    "filepath",
-    "strict",
-    "schema",
-    "collections",
-    "references",
-    "copy",
-    "keys",
-    "values",
-    "items",
-})
-
-
 def _generate_attr_properties(
     python_to_idf: dict[str, str],
     schema: EpJSONSchema,
@@ -535,15 +521,21 @@ def _generate_attr_properties(
 ) -> list[str]:
     """Generate typed ``@property`` accessors for IDFDocument.
 
-    These correspond to the ``_PYTHON_TO_IDF`` mapping in document.py.
-    Skips names that conflict with real instance attributes or methods.
+    These are the names the attribute resolver accepts as canonical: one
+    ``snake_case`` plural per object type, plus the shorthands in
+    ``_PYTHON_TO_IDF``.
+    Skips every name that is a real member of ``IDFDocument``. That is the same
+    set the attribute resolver treats as reserved, so the stub and the runtime
+    cannot disagree about which of the two a name reaches.
 
     Each property gets a docstring derived from the EnergyPlus schema memo for
     the underlying object type, so IDEs surface a description on hover.
     """
+    from idfkit.document import _RESERVED  # pyright: ignore[reportPrivateUsage]
+
     lines: list[str] = []
     for py_name, idf_type in python_to_idf.items():
-        if py_name in _RESERVED_ATTRS:
+        if py_name in _RESERVED:
             continue
         cls_name = _to_class_name(idf_type)
         memo = schema.get_object_memo(idf_type)
@@ -639,7 +631,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     schema = get_schema(ver)
 
     import idfkit.document as _document_mod
-    from idfkit.document import _PYTHON_TO_IDF  # pyright: ignore[reportPrivateUsage]
+    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
 
     # Resolve document.py via the imported module rather than this file's
     # location, so test fixtures that patch __file__ on the codegen module
@@ -662,6 +654,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("from pathlib import Path")
     lines.append("from typing import Any, Generic, TypeVar")
     lines.append("")
+    lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
     lines.append("from ._generated_types import _ObjectTypeMap")
@@ -680,6 +673,9 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
     lines.append("_PYTHON_TO_IDF: dict[str, str]")
     lines.append("_IDF_TO_PYTHON: dict[str, str]")
+    lines.append("_RESERVED: frozenset[str]")
+    lines.append("")
+    lines.append("def _build_resolver(schema: EpJSONSchema) -> AccessorResolver: ...")
     lines.append("")
 
     # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
@@ -815,8 +811,8 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     emit("def copy(self) -> IDFDocument[Strict]", "IDFDocument.copy")
     lines.append("")
 
-    # Attribute accessor properties (zones, materials, ...) with memo docstrings
-    lines.extend(_generate_attr_properties(_PYTHON_TO_IDF, schema, indent="    "))
+    # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
+    lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
     lines.append("")
 
     return "\n".join(lines)
