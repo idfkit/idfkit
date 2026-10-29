@@ -62,6 +62,51 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  tests-free-threaded:
+    # The suite on free-threaded CPython with the GIL off. The core is pure Python and declares
+    # the Free Threading classifier on the strength of this job, and tests/test_thread_safety.py
+    # reproduces races only here: on a GIL build most of them cannot happen.
+    name: "tests (3.14t, GIL off)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.14t"
+
+      # A `3.14t` request that resolved to a GIL build would pass every test below while proving
+      # nothing, so fail loudly first. The import check runs WITHOUT PYTHON_GIL=0: an interpreter
+      # re-enables the GIL when it imports an extension module that does not declare support, and
+      # that override would hide such a module. idfkit and all of its sub-packages must keep it
+      # off on their own.
+      - name: Check the interpreter is free-threaded and idfkit keeps the GIL off
+        run: |
+          uv run python - <<'EOF'
+          import importlib, pkgutil, sys, sysconfig
+          assert sysconfig.get_config_var("Py_GIL_DISABLED"), f"not a free-threaded build: {sys.version}"
+          import idfkit
+          # walk_packages yields each package before importing it, so the import below is the first and
+          # raises on any failure: no `onerror` is needed for a broken package to fail this step.
+          for mod in pkgutil.walk_packages(idfkit.__path__, "idfkit."):
+              if ".codegen" not in mod.name:
+                  importlib.import_module(mod.name)
+          assert not sys._is_gil_enabled(), "importing idfkit re-enabled the GIL"
+          print(sys.version, "- GIL off after importing every idfkit module")
+          EOF
+
+      # PYTHON_GIL=0 because the locked pandas (2.3) re-enables the GIL at import; pandas 3 does
+      # not. The override keeps the whole run, the pandas tests included, genuinely GIL-free.
+      - name: Run tests
+        env:
+          PYTHON_GIL: "0"
+        run: uv run python -m pytest -W error::DeprecationWarning
+
   example-sweep:
     # Read every EnergyPlus example file, for every version idfkit bundles a schema for.
     #

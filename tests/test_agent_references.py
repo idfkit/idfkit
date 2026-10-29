@@ -50,9 +50,9 @@ def _source_to_bundle(source: Path) -> Path:
 def test_source_templates_exist() -> None:
     sources = _baked_sources()
     assert sources, "no agent-reference source templates found"
-    # SKILL.md + 16 topic references. index.md is not here: it is the site's landing page
+    # SKILL.md + 17 topic references. index.md is not here: it is the site's landing page
     # for the skill and was never baked, so it stayed with the site.
-    assert len(sources) == 17, f"expected 17 source templates, found {len(sources)}"
+    assert len(sources) == 18, f"expected 18 source templates, found {len(sources)}"
 
 
 def test_bundle_in_sync_with_source() -> None:
