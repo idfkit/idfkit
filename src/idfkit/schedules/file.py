@@ -59,10 +59,14 @@ class ScheduleFileCache:
         file_path = self._resolve_path(obj, base_path)
         cache_key = self._make_cache_key(obj, file_path)
 
-        if cache_key not in self._cache:
-            self._cache[cache_key] = _read_schedule_file(obj, fs, file_path)
+        # Held in a local rather than read back from the dict: another thread may clear or
+        # invalidate between the store and the read, which would turn a hit into a KeyError.
+        values = self._cache.get(cache_key)
+        if values is None:
+            values = _read_schedule_file(obj, fs, file_path)
+            self._cache[cache_key] = values
 
-        return self._cache[cache_key]
+        return values
 
     @staticmethod
     def _make_cache_key(obj: IDFObject, file_path: Path) -> str:
@@ -114,9 +118,11 @@ class ScheduleFileCache:
                 (regardless of column / separator settings) are removed.
         """
         prefix = str(path) + "|"
-        keys_to_remove = [k for k in self._cache if k.startswith(prefix)]
+        # Iterate a snapshot and tolerate keys already gone: another thread may be inserting,
+        # clearing or invalidating the same entries.
+        keys_to_remove = [k for k in list(self._cache) if k.startswith(prefix)]
         for k in keys_to_remove:
-            del self._cache[k]
+            self._cache.pop(k, None)
 
 
 # Global cache instance

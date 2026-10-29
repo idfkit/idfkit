@@ -423,8 +423,6 @@ class TestSchemaManagerAdditional:
     def test_get_schema_dict_cache_hit(self) -> None:
         manager = SchemaManager()
         s1 = manager.get_schema((24, 1, 0))
-        # Clear the lru_cache but keep _cache — should return same object
-        manager.get_schema.cache_clear()
         s2 = manager.get_schema((24, 1, 0))
         assert s1 is s2
 

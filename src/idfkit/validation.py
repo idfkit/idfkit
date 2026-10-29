@@ -857,7 +857,9 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
     """Return the compiled rules for *obj_type*, or None if the schema does not know it."""
     by_type = _OBJECT_RULES.get(schema.version)
     if by_type is None:
-        by_type = _OBJECT_RULES[schema.version] = {}
+        # ``setdefault`` rather than a plain store, so threads validating at once share one table
+        # instead of each overwriting the last one's.
+        by_type = _OBJECT_RULES.setdefault(schema.version, {})
 
     rules = by_type.get(obj_type)
     if rules is not None:
