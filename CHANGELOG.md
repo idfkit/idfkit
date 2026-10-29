@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Threads asking for the same schema version at the same moment each loaded and built their own copy, so a cold start with 16 threads read the schema file 16 times and handed out 16 different `EpJSONSchema` instances. All but one were then pickled by content instead of by version. The manager now loads each version once and gives every thread the same instance, and on a free-threaded build the first calls to `get_schema_manager()` no longer create several managers ([386b8af](https://github.com/idfkit/idfkit/commit/386b8af)).
-- `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran ([386b8af](https://github.com/idfkit/idfkit/commit/386b8af)).
+- `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran. A read still in flight when another thread called `invalidate` or `clear` also cached what it had read before the call, which silently undid the invalidation; such a read is now returned but not cached ([386b8af](https://github.com/idfkit/idfkit/commit/386b8af), [d969944](https://github.com/idfkit/idfkit/commit/d969944)).
 
 ## [1.2.0] - 2026-10-28
 
