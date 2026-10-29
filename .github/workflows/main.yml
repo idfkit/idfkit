@@ -91,6 +91,8 @@ jobs:
           import importlib, pkgutil, sys, sysconfig
           assert sysconfig.get_config_var("Py_GIL_DISABLED"), f"not a free-threaded build: {sys.version}"
           import idfkit
+          # walk_packages yields each package before importing it, so the import below is the first and
+          # raises on any failure: no `onerror` is needed for a broken package to fail this step.
           for mod in pkgutil.walk_packages(idfkit.__path__, "idfkit."):
               if ".codegen" not in mod.name:
                   importlib.import_module(mod.name)

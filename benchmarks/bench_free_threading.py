@@ -12,9 +12,10 @@ Run it once per interpreter and compare::
     PYTHON_GIL=0 uv run --python 3.14t python benchmarks/bench_free_threading.py --json ft-on.json
     python benchmarks/bench_free_threading.py --report ft-off.json ft-on.json
 
-``--report`` prints, per workload, the single-thread time on each interpreter (the cost
-free-threading charges a program that never starts a thread) and the speedup at each worker
-count, both against the GIL build's single-thread time and against the same build's own.
+``--report`` prints, per workload, the single-thread cost of the free-threaded interpreter (what
+free-threading charges a program that never starts a thread) and its speedup at each worker count
+against the GIL build's single-thread time. Each run itself prints the speedup against its own
+single-thread time.
 """
 
 from __future__ import annotations
@@ -36,7 +37,6 @@ JOBS = 16
 REPEATS = 3
 ESO_FIXTURE = Path(__file__).parent.parent / "tests" / "fixtures" / "simulation" / "sample.eso"
 COMPACT_FIELDS = [
-    "Fraction",
     "Through: 6/30",
     "For: Weekdays",
     "Until: 08:00",
@@ -88,7 +88,13 @@ def _workloads(idf_path: str) -> dict[str, Callable[[], object]]:
 
     def schedule() -> object:
         own = model.copy()
-        own.add("Schedule:Compact", "Occ", validate=False, data=[{"field": f} for f in COMPACT_FIELDS])
+        own.add(
+            "Schedule:Compact",
+            "Occ",
+            validate=False,
+            schedule_type_limits_name="Fraction",
+            data=[{"field": f} for f in COMPACT_FIELDS],
+        )
         return values(own["Schedule:Compact"]["Occ"], timestep=4)
 
     def eso() -> object:

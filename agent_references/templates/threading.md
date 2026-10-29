@@ -57,7 +57,7 @@ Only on a free-threaded build with the GIL off. On a regular build, CPU-bound id
 | schedule evaluation (with a `doc.copy()`) | 0.77x | 1.4x |
 | `validate_document` (with a `doc.copy()`) | 0.72x | 1.0x |
 
-Two things follow. The free-threaded build costs 15–40% on a single thread, so it only pays at two or more busy threads. And most workloads scale well short of linearly, because every thread reads the same schema-derived tables, and on 3.14 concurrent reads of a shared object contend on its reference count. Parsing scales best.
+Two things follow. The free-threaded build costs 15–40% on a single thread for everything here but ESO parsing, so it only pays at two or more busy threads. And most workloads scale well short of linearly, because every thread reads the same schema-derived tables, and on 3.14 concurrent reads of a shared object contend on its reference count. Parsing scales best.
 
 For CPU-bound batch work on a regular build, use processes. Documents pickle cheaply, because the schema travels by version, not by content:
 

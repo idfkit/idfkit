@@ -5,7 +5,10 @@ Handles Schedule:File objects which read values from external CSV files.
 
 from __future__ import annotations
 
+import os
+import threading
 import warnings
+import weakref
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -29,6 +32,44 @@ _SEPARATORS = {
 }
 
 
+class _CacheLock:
+    """The lock of one :class:`ScheduleFileCache`.
+
+    A forked child gets it back unheld, and so does a copied or unpickled cache: a lock cannot be
+    pickled, and a copy needs a lock of its own.
+    """
+
+    __slots__ = ("__weakref__", "lock")
+
+    def __init__(self) -> None:
+        self.lock = threading.Lock()
+        _live_cache_locks.add(self)
+
+    def __reduce__(self) -> tuple[type[_CacheLock], tuple[()]]:
+        """Pickle and copy as a fresh, unheld lock."""
+        return (_CacheLock, ())
+
+    def reset(self) -> None:
+        """Replace the lock. Only for a forked child, where it may be held by a thread the child lacks."""
+        self.lock = threading.Lock()
+
+
+# Every cache lock alive in this process. A child forked while some thread held one inherits it
+# still held, by a thread the child does not have, so the child's first store, clear or
+# invalidation on that cache would wait forever. ``_reset_locks_after_fork`` hands out fresh ones.
+_live_cache_locks: weakref.WeakSet[_CacheLock] = weakref.WeakSet()
+
+
+def _reset_locks_after_fork() -> None:
+    """Replace, in a forked child, every cache lock the parent may have held at the moment of the fork."""
+    for cache_lock in _live_cache_locks:
+        cache_lock.reset()
+
+
+if hasattr(os, "register_at_fork"):  # POSIX only; Windows has no fork
+    os.register_at_fork(after_in_child=_reset_locks_after_fork)
+
+
 class ScheduleFileCache:
     """Cache for Schedule:File CSV data.
 
@@ -39,6 +80,11 @@ class ScheduleFileCache:
     def __init__(self) -> None:
         """Initialize an empty cache."""
         self._cache: dict[str, list[float]] = {}
+        # Bumped by `clear` and `invalidate`. A read that began before either must not store what it
+        # read: the file may have been rewritten in between, and storing would undo the
+        # invalidation. The lock makes "check the generation, then store" one step against them.
+        self._generation = 0
+        self._lock = _CacheLock()
 
     def get_values(
         self,
@@ -63,8 +109,11 @@ class ScheduleFileCache:
         # invalidate between the store and the read, which would turn a hit into a KeyError.
         values = self._cache.get(cache_key)
         if values is None:
+            generation = self._generation
             values = _read_schedule_file(obj, fs, file_path)
-            self._cache[cache_key] = values
+            with self._lock.lock:
+                if generation == self._generation:
+                    self._cache[cache_key] = values
 
         return values
 
@@ -108,7 +157,9 @@ class ScheduleFileCache:
 
     def clear(self) -> None:
         """Clear the cache."""
-        self._cache.clear()
+        with self._lock.lock:
+            self._generation += 1
+            self._cache.clear()
 
     def invalidate(self, path: str | Path) -> None:
         """Invalidate all cache entries whose key starts with *path*.
@@ -118,11 +169,11 @@ class ScheduleFileCache:
                 (regardless of column / separator settings) are removed.
         """
         prefix = str(path) + "|"
-        # Iterate a snapshot and tolerate keys already gone: another thread may be inserting,
-        # clearing or invalidating the same entries.
-        keys_to_remove = [k for k in list(self._cache) if k.startswith(prefix)]
-        for k in keys_to_remove:
-            self._cache.pop(k, None)
+        # Every store and removal holds the lock, so the dict cannot change under this iteration.
+        with self._lock.lock:
+            self._generation += 1
+            for k in [k for k in self._cache if k.startswith(prefix)]:
+                del self._cache[k]
 
 
 # Global cache instance

@@ -81,15 +81,17 @@ Only on a free-threaded build with the GIL off. On a regular build, CPU-bound id
 | schedule evaluation (with a `doc.copy()`) | 0.77x | 1.4x |
 | `validate_document` (with a `doc.copy()`) | 0.72x | 1.0x |
 
-Two things follow. The free-threaded build costs 15–40% on a single thread, so it only pays at two or more busy threads. And most workloads scale well short of linearly, because every thread reads the same schema-derived tables, and on 3.14 concurrent reads of a shared object contend on its reference count. Parsing scales best.
+Two things follow. The free-threaded build costs 15–40% on a single thread for everything here but ESO parsing, so it only pays at two or more busy threads. And most workloads scale well short of linearly, because every thread reads the same schema-derived tables, and on 3.14 concurrent reads of a shared object contend on its reference count. Parsing scales best.
 
 For CPU-bound batch work on a regular build, use processes. Documents pickle cheaply, because the schema travels by version, not by content:
 
 ```python
 # On a GIL build, CPU-bound work parallelises across processes instead. Documents pickle, and the
-# schema travels by version, so handing one to a worker is cheap.
-with ProcessPoolExecutor() as pool:
-    docs = list(pool.map(load_idf, paths))
+# schema travels by version, so handing one to a worker is cheap. The guard is required: workers
+# started by spawn (Windows, macOS) or forkserver (Linux, from 3.14) re-import the main module.
+if __name__ == "__main__":
+    with ProcessPoolExecutor() as pool:
+        docs = list(pool.map(load_idf, paths))
 ```
 
 ## Optional extras on free-threaded builds

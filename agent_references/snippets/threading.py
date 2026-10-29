@@ -58,7 +58,9 @@ with ThreadPoolExecutor() as pool:
 
 # --8<-- [start:processes]
 # On a GIL build, CPU-bound work parallelises across processes instead. Documents pickle, and the
-# schema travels by version, so handing one to a worker is cheap.
-with ProcessPoolExecutor() as pool:
-    docs = list(pool.map(load_idf, paths))
+# schema travels by version, so handing one to a worker is cheap. The guard is required: workers
+# started by spawn (Windows, macOS) or forkserver (Linux, from 3.14) re-import the main module.
+if __name__ == "__main__":
+    with ProcessPoolExecutor() as pool:
+        docs = list(pool.map(load_idf, paths))
 # --8<-- [end:processes]
