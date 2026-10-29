@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([a392da4](https://github.com/idfkit/idfkit/commit/a392da4)).
+- Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([9494679](https://github.com/idfkit/idfkit/commit/9494679)).
+
+### Fixed
+
+- Threads asking for the same schema version at the same moment each loaded and built their own copy, so a cold start with 16 threads read the schema file 16 times and handed out 16 different `EpJSONSchema` instances. All but one were then pickled by content instead of by version. The manager now loads each version once and gives every thread the same instance, and on a free-threaded build the first calls to `get_schema_manager()` no longer create several managers ([386b8af](https://github.com/idfkit/idfkit/commit/386b8af)).
+- `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran ([386b8af](https://github.com/idfkit/idfkit/commit/386b8af)).
 
 ## [1.2.0] - 2026-10-28
 
