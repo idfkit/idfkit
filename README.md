@@ -1,9 +1,18 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/idfkit/idfkit-brand/releases/download/identity-2026.1/mark-on-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/idfkit/idfkit-brand/releases/download/identity-2026.1/mark-on-light.svg">
+    <img alt="idfkit" width="72" src="https://github.com/idfkit/idfkit-brand/releases/download/identity-2026.1/tile.svg">
+  </picture>
+</p>
+
 # idfkit
 
-[![Release](https://img.shields.io/github/v/release/idfkit/idfkit)](https://github.com/idfkit/idfkit/releases)
-[![Build status](https://img.shields.io/github/actions/workflow/status/idfkit/idfkit/main.yml?branch=main)](https://github.com/idfkit/idfkit/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/idfkit/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/idfkit/idfkit)
-[![License](https://img.shields.io/github/license/idfkit/idfkit)](https://github.com/idfkit/idfkit/blob/main/LICENSE)
+An EnergyPlus IDF and epJSON toolkit for Python, with no third-party dependencies.
+
+[idfkit](https://idfkit.com) · [Developers](https://developers.idfkit.com) · [EnergyPlus docs](https://docs.idfkit.com) · [Envelop](https://app.idfkit.com) · [MCP](https://mcp.idfkit.com) · [Shoebox](https://shoebox.idfkit.com) · [GitHub](https://github.com/idfkit)
+
+[![Release](https://img.shields.io/github/v/release/idfkit/idfkit)](https://github.com/idfkit/idfkit/releases) [![Build status](https://img.shields.io/github/actions/workflow/status/idfkit/idfkit/main.yml?branch=main)](https://github.com/idfkit/idfkit/actions/workflows/main.yml?query=branch%3Amain) [![codecov](https://codecov.io/gh/idfkit/idfkit/branch/main/graph/badge.svg)](https://codecov.io/gh/idfkit/idfkit) [![License](https://img.shields.io/github/license/idfkit/idfkit)](https://github.com/idfkit/idfkit/blob/main/LICENSE) [![Capability parity](https://img.shields.io/badge/capability-parity-informational)](https://developers.idfkit.com/explanation/parity/)
 
 **A fast, modern EnergyPlus IDF/epJSON toolkit for Python.**
 

@@ -1,0 +1,12 @@
+name: Identity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  identity:
+    uses: idfkit/idfkit-brand/.github/workflows/check-touchpoint.yml@identity-2026.1
+    with:
+      identity_level: identity-2026.1
