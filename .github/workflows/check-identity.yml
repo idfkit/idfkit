@@ -7,6 +7,6 @@ on:
 
 jobs:
   identity:
-    uses: idfkit/idfkit-brand/.github/workflows/check-touchpoint.yml@identity-2026.2
+    uses: idfkit/idfkit-brand/.github/workflows/check-touchpoint.yml@identity-2026.3
     with:
-      identity_level: identity-2026.2
+      identity_level: identity-2026.3
