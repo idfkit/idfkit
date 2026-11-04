@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- The README opens with the idfkit identity header at `identity-2026.4`: the mark, the
+- The README opens with the idfkit identity header at `identity-2026.5`: the mark, the
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
