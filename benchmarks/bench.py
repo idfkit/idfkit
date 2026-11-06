@@ -29,6 +29,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -616,15 +617,50 @@ def _format_time(seconds: float) -> str:
 
 _README_PATH = Path(__file__).parent.parent / "README.md"
 
-# Regex for the Performance paragraph in README.md.  Captures the two
-# dynamic values: total objects and speedup multiplier.
+# Regex for the Performance paragraph in README.md.  Matches the whole
+# sentence from its fixed opening to its fixed closing, so the generated
+# middle (object count and one ratio per competitor) can change shape.
 _PERF_RE = re.compile(
-    r"(idfkit is designed from the ground up for speed\. On a \*\*)"
-    r"[\d,]+-object"
-    r"( IDF\*\*,\s*\nlooking up a single object by name is \*\*over )"
-    r"\d+"
-    r"(x faster\*\*)"
+    r"idfkit is designed from the ground up for speed\. On a \*\*.*?"
+    r"thanks to O\(1\) dict-based indexing:",
+    re.DOTALL,
 )
+
+
+def _round_down_2sf(value: float) -> int:
+    """Round a ratio down to two significant figures (e.g. 1414.2 -> 1400, 50.8 -> 50)."""
+    if value < 10:
+        return int(value)
+    magnitude = 10 ** (len(str(int(value))) - 2)
+    return int(value // magnitude) * magnitude
+
+
+def _tool_label(tool_name: str) -> str:
+    """Single-line tool name (chart labels carry a line break)."""
+    return tool_name.replace("\n", "")
+
+
+def _hero_speedups(data: dict[str, Any]) -> list[tuple[str, int]]:
+    """Return (tool, rounded-down ratio) for each competitor that ran HERO_OPERATION."""
+    idfkit_t = data[TOOL_IDFKIT][HERO_OPERATION]["min"]
+    speedups: list[tuple[str, int]] = []
+    for tool_name, tool_data in data.items():
+        if tool_name in ("metadata", TOOL_IDFKIT) or HERO_OPERATION not in tool_data:
+            continue
+        ratio = tool_data[HERO_OPERATION]["min"] / idfkit_t if idfkit_t > 0 else 0.0
+        speedups.append((_tool_label(tool_name), _round_down_2sf(ratio)))
+    return speedups
+
+
+def _perf_sentence(total_objects: int, speedups: list[tuple[str, int]]) -> str:
+    """Build the README Performance sentence with one ratio per competitor."""
+    clauses = [f"**over {ratio:,}x** faster than {tool}" for tool, ratio in speedups]
+    joined = ", ".join(clauses[:-1]) + ", and " + clauses[-1] if len(clauses) > 1 else "".join(clauses)
+    return (
+        f"idfkit is designed from the ground up for speed. On a **{total_objects:,}-object IDF**,\n"
+        f"looking up a single object by name is {joined}\n"
+        "thanks to O(1) dict-based indexing:"
+    )
 
 
 def update_readme(results_path: Path = RESULTS_FILE) -> None:
@@ -632,37 +668,18 @@ def update_readme(results_path: Path = RESULTS_FILE) -> None:
     with open(results_path) as f:
         data = json.load(f)
 
-    metadata = data["metadata"]
-    total_objects = metadata["total_objects"]
-
-    # Compute hero speedup (slowest competitor vs idfkit on HERO_OPERATION)
-    idfkit_t = data[TOOL_IDFKIT][HERO_OPERATION]["min"]
-    slowest = max(
-        tool_data[HERO_OPERATION]["min"]
-        for tool_name, tool_data in data.items()
-        if tool_name != "metadata" and tool_name != TOOL_IDFKIT and HERO_OPERATION in tool_data
-    )
-    raw_speedup = slowest / idfkit_t if idfkit_t > 0 else 0
-    # Round down to a clean number for readability (e.g. 4261 → 4,000)
-    if raw_speedup >= 1000:
-        speedup = int(raw_speedup / 1000) * 1000
-    elif raw_speedup >= 100:
-        speedup = int(raw_speedup / 100) * 100
-    elif raw_speedup >= 10:
-        speedup = int(raw_speedup / 10) * 10
-    else:
-        speedup = int(raw_speedup)
+    total_objects = data["metadata"]["total_objects"]
+    speedups = _hero_speedups(data)
+    sentence = _perf_sentence(total_objects, speedups)
 
     # --- README.md ---
     if _README_PATH.exists():
         readme = _README_PATH.read_text()
-        new_readme = _PERF_RE.sub(
-            rf"\g<1>{total_objects:,}-object\g<2>{speedup}\g<3>",
-            readme,
-        )
+        new_readme = _PERF_RE.sub(lambda _m: sentence, readme, count=1)
         if new_readme != readme:
             _README_PATH.write_text(new_readme)
-            print(f"README.md updated: {total_objects:,} objects, {speedup}x speedup")
+            summary = ", ".join(f"{tool} {ratio:,}x" for tool, ratio in speedups)
+            print(f"README.md updated: {total_objects:,} objects; {summary}")
         else:
             print("README.md already up to date")
 

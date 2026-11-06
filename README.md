@@ -23,9 +23,9 @@ An EnergyPlus IDF and epJSON toolkit for Python, with no third-party dependencie
 >
 > Code that still calls `write_*` with a path fails without naming the cause:
 > `write_epjson(doc, path)` raises `TypeError: can't multiply sequence by
-> non-int of type 'PosixPath'`, and `write_idf(doc, path)` writes nothing,
-> leaving an empty file that surfaces later as
-> `Could not detect EnergyPlus version in file`.
+> non-int of type 'PosixPath'`, and `write_idf(doc, path)` takes the path as
+> its `output_type` argument, returns the IDF text, and writes no file, so the
+> failure surfaces only when the file is next read.
 >
 > Search for `write_idf(` and `write_epjson(` called with two positional
 > arguments, or run a type checker, which rejects both. Full notes are in the
@@ -75,7 +75,7 @@ formats.
 ## Performance
 
 idfkit is designed from the ground up for speed. On a **1,700-object IDF**,
-looking up a single object by name is **over 3000x faster** than eppy and opyplus
+looking up a single object by name is **over 890x** faster than eppy, **over 1,400x** faster than opyplus, and **over 50x** faster than energyplus-idd-idf-utilities
 thanks to O(1) dict-based indexing:
 
 <picture>
@@ -86,6 +86,7 @@ thanks to O(1) dict-based indexing:
 
 See [full benchmark results](https://developers.idfkit.com/benchmarks/)
 for all six operations (load, get by type, get by name, add, modify, write) across four tools.
+energyplus-idd-idf-utilities is measured on four of them (load, get by type, get by name, write).
 
 ## Installation
 
@@ -105,13 +106,16 @@ uv add idfkit
 
 | Extra | Install command | What it adds |
 |-------|----------------|--------------|
-| `weather` | `pip install idfkit[weather]` | Refresh weather station indexes from source (openpyxl) |
-| `dataframes` | `pip install idfkit[dataframes]` | DataFrame result conversion (pandas) |
+| `sim` | `pip install idfkit[sim]` | Nothing; simulation requires no extra packages |
+| `pandas` | `pip install idfkit[pandas]` | DataFrame result conversion (pandas) |
+| `dataframes` | `pip install idfkit[dataframes]` | Alias of `pandas` |
 | `s3` | `pip install idfkit[s3]` | S3 cloud storage backend (boto3) |
+| `async-s3` | `pip install idfkit[async-s3]` | Asynchronous S3 storage backend (aiobotocore) |
+| `cloud` | `pip install idfkit[cloud]` | Alias of `s3` |
 | `plot` | `pip install idfkit[plot]` | Matplotlib plotting |
 | `plotly` | `pip install idfkit[plotly]` | Plotly interactive charts |
 | `progress` | `pip install idfkit[progress]` | tqdm progress bars for simulations |
-| `all` | `pip install idfkit[all]` | Everything above |
+| `all` | `pip install idfkit[all]` | pandas, matplotlib, plotly, boto3, aiobotocore, and tqdm |
 
 ## Quick Example
 
@@ -136,9 +140,11 @@ for obj in doc.get_referencing("Office"):
 save_idf(doc, "out.idf")
 ```
 
-> **Note:** `load_idf()` defaults to strict parsing (`strict=True`) and raises
-> `IDFParseError` on malformed objects. Use `strict=False` only as a tolerant
-> migration/compatibility fallback for legacy or noisy files.
+> **Note:** `load_idf()` defaults to strict parsing (`strict_parsing=True`) and
+> raises `IDFParseError` on malformed objects. Use `strict_parsing=False` only as a
+> tolerant migration/compatibility fallback for legacy or noisy files. The separate
+> `strict` argument (default `True`) makes reading or setting an unknown field name
+> on an object raise `InvalidFieldError` instead of returning `None`.
 
 ### Creating a model from scratch
 
@@ -198,10 +204,12 @@ The two share a vocabulary and are held to a
 that proves they read and write the same files the same way.
 
 They are not equivalent, and this page will not imply that they are. All
-thirteen first-tier capabilities exist in both: parsing, the object model,
+fourteen first-tier capabilities exist in both: parsing, the object model,
 references, writers, schema access, validation, introspection, documentation
 addresses, generated object types, parse diagnostics, the weather station index,
-weather file retrieval, and geocoding. Almost everything else on this page is
+weather file retrieval, geocoding, and the conformance declaration. Three of them
+are recorded as partial on one side: generated object types in Python, and the
+weather station index and weather file retrieval in JavaScript. Almost everything else on this page is
 Python-only today, including running EnergyPlus locally, reading simulation
 results, geometry authoring, zoning, schedules, thermal properties, and
 migration. Some of that is a port not yet done; some of it, such as driving a
@@ -255,7 +263,6 @@ baked into that exact version.
 make install    # Install dependencies and pre-commit hooks
 make check      # Run linting, formatting, and type checks
 make test       # Run tests with coverage
-make docs       # Serve documentation locally
 ```
 
 ## Contributing
