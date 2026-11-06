@@ -652,13 +652,20 @@ def _hero_speedups(data: dict[str, Any]) -> list[tuple[str, int]]:
     return speedups
 
 
-def _perf_sentence(total_objects: int, speedups: list[tuple[str, int]]) -> str:
+def _measured_on(metadata: dict[str, Any]) -> str:
+    """Describe where the numbers were measured, from the results metadata."""
+    platform_name = metadata.get("platform", "unknown platform")
+    runs = int(metadata.get("runs_aggregated", 1))
+    return f"{platform_name}, median of {runs} runs" if runs > 1 else f"{platform_name}, single run"
+
+
+def _perf_sentence(total_objects: int, speedups: list[tuple[str, int]], measured_on: str) -> str:
     """Build the README Performance sentence with one ratio per competitor."""
     clauses = [f"**over {ratio:,}x** faster than {tool}" for tool, ratio in speedups]
     joined = ", ".join(clauses[:-1]) + ", and " + clauses[-1] if len(clauses) > 1 else "".join(clauses)
     return (
-        f"idfkit is designed from the ground up for speed. On a **{total_objects:,}-object IDF**,\n"
-        f"looking up a single object by name is {joined}\n"
+        f"idfkit is designed from the ground up for speed. On a **{total_objects:,}-object IDF**\n"
+        f"({measured_on}), looking up a single object by name is {joined}\n"
         "thanks to O(1) dict-based indexing:"
     )
 
@@ -670,7 +677,7 @@ def update_readme(results_path: Path = RESULTS_FILE) -> None:
 
     total_objects = data["metadata"]["total_objects"]
     speedups = _hero_speedups(data)
-    sentence = _perf_sentence(total_objects, speedups)
+    sentence = _perf_sentence(total_objects, speedups, _measured_on(data["metadata"]))
 
     # --- README.md ---
     if _README_PATH.exists():

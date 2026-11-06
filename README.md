@@ -74,8 +74,8 @@ formats.
 
 ## Performance
 
-idfkit is designed from the ground up for speed. On a **1,700-object IDF**,
-looking up a single object by name is **over 890x** faster than eppy, **over 1,400x** faster than opyplus, and **over 50x** faster than energyplus-idd-idf-utilities
+idfkit is designed from the ground up for speed. On a **1,700-object IDF**
+(Darwin arm64, median of 5 runs), looking up a single object by name is **over 2,000x** faster than eppy, **over 3,500x** faster than opyplus, and **over 130x** faster than energyplus-idd-idf-utilities
 thanks to O(1) dict-based indexing:
 
 <picture>
