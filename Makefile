@@ -99,7 +99,7 @@ test: ## Test the code with pytest
 	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
 .PHONY: weather-index
-weather-index: ## Rebuild the bundled weather station index (requires network + openpyxl)
+weather-index: ## Rebuild the bundled weather station index (requires network; standard library only)
 	@echo "🚀 Building weather station index"
 	@uv run python scripts/build_weather_index.py
 

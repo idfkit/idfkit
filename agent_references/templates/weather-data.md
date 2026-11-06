@@ -109,7 +109,7 @@ The bundled index ages well — TMYx datasets don't change often. To refresh fro
 --8<-- "agent_references/snippets/weather-data.py:refresh"
 ```
 
-`refresh()` requires `idfkit[weather]` for the openpyxl extra (TMYx publishes the catalogue as `.xlsx`).
+`refresh()` re-downloads the regional KML index files from climate.onebuilding.org and parses them with the Python standard library; it needs network access and no extra.
 
 ## Common mistakes
 
