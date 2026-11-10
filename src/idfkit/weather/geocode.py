@@ -6,7 +6,6 @@ import http.client
 import json
 import math
 import re
-import threading
 import time
 import urllib.parse
 import urllib.request
@@ -14,6 +13,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, cast
 from urllib.error import HTTPError
+
+from .._forksafe import ForkSafeLock
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -108,7 +109,9 @@ class RateLimiter:
     __slots__ = ("_last_request_time", "_lock", "_min_interval")
 
     def __init__(self, min_interval: float = 1.0) -> None:
-        self._lock = threading.Lock()
+        # Fork-safe: it is held across a sleep of up to a second, and a child forked meanwhile
+        # would otherwise inherit it held by a thread the child does not have, and hang.
+        self._lock = ForkSafeLock()
         self._last_request_time: float = 0.0
         self._min_interval = min_interval
 
@@ -117,7 +120,7 @@ class RateLimiter:
 
         This method is thread-safe. Concurrent calls will be serialized.
         """
-        with self._lock:
+        with self._lock.lock:
             elapsed = time.monotonic() - self._last_request_time
             if elapsed < self._min_interval:
                 time.sleep(self._min_interval - elapsed)
@@ -126,7 +129,7 @@ class RateLimiter:
 
     def reset(self) -> None:
         """Reset the rate limiter state (useful for testing)."""
-        with self._lock:
+        with self._lock.lock:
             self._last_request_time = 0.0
 
 

@@ -68,6 +68,9 @@ jobs:
     # reproduces races only here: on a GIL build most of them cannot happen.
     name: "tests (3.14t, GIL off)"
     runs-on: ubuntu-latest
+    # A lock regression shows up as a deadlock. The race tests fail on their own deadline, but this
+    # caps whatever they miss well short of GitHub's six-hour default.
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash

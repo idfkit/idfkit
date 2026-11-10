@@ -5,14 +5,12 @@ Handles Schedule:File objects which read values from external CSV files.
 
 from __future__ import annotations
 
-import os
-import threading
 import warnings
-import weakref
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
+from idfkit._forksafe import ForkSafeLock
 from idfkit.schedules.types import Interpolation
 from idfkit.simulation.fs import FileSystem, LocalFileSystem
 
@@ -32,44 +30,6 @@ _SEPARATORS = {
 }
 
 
-class _CacheLock:
-    """The lock of one :class:`ScheduleFileCache`.
-
-    A forked child gets it back unheld, and so does a copied or unpickled cache: a lock cannot be
-    pickled, and a copy needs a lock of its own.
-    """
-
-    __slots__ = ("__weakref__", "lock")
-
-    def __init__(self) -> None:
-        self.lock = threading.Lock()
-        _live_cache_locks.add(self)
-
-    def __reduce__(self) -> tuple[type[_CacheLock], tuple[()]]:
-        """Pickle and copy as a fresh, unheld lock."""
-        return (_CacheLock, ())
-
-    def reset(self) -> None:
-        """Replace the lock. Only for a forked child, where it may be held by a thread the child lacks."""
-        self.lock = threading.Lock()
-
-
-# Every cache lock alive in this process. A child forked while some thread held one inherits it
-# still held, by a thread the child does not have, so the child's first store, clear or
-# invalidation on that cache would wait forever. ``_reset_locks_after_fork`` hands out fresh ones.
-_live_cache_locks: weakref.WeakSet[_CacheLock] = weakref.WeakSet()
-
-
-def _reset_locks_after_fork() -> None:
-    """Replace, in a forked child, every cache lock the parent may have held at the moment of the fork."""
-    for cache_lock in _live_cache_locks:
-        cache_lock.reset()
-
-
-if hasattr(os, "register_at_fork"):  # POSIX only; Windows has no fork
-    os.register_at_fork(after_in_child=_reset_locks_after_fork)
-
-
 class ScheduleFileCache:
     """Cache for Schedule:File CSV data.
 
@@ -80,11 +40,36 @@ class ScheduleFileCache:
     def __init__(self) -> None:
         """Initialize an empty cache."""
         self._cache: dict[str, list[float]] = {}
-        # Bumped by `clear` and `invalidate`. A read that began before either must not store what it
-        # read: the file may have been rewritten in between, and storing would undo the
-        # invalidation. The lock makes "check the generation, then store" one step against them.
+        # A read that began before a `clear`, or before an `invalidate` of its file, must not store
+        # what it read: the file may have been rewritten in between, and storing would undo the
+        # invalidation. `clear` bumps `_generation`; `invalidate` bumps its path's entry in
+        # `_path_generations`, so invalidating one file leaves reads of other files cacheable.
+        # The lock makes "check the generations, then store" one step against both.
         self._generation = 0
-        self._lock = _CacheLock()
+        self._path_generations: dict[str, int] = {}
+        self._lock = ForkSafeLock()
+
+    def __getstate__(self) -> dict[str, object]:
+        """Copy and pickle a consistent snapshot, taken under the lock, without the lock itself."""
+        with self._lock.lock:
+            return {
+                "_cache": dict(self._cache),
+                "_generation": self._generation,
+                "_path_generations": dict(self._path_generations),
+            }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore a snapshot with a lock of its own; state pickled by idfkit 1.2.0 holds only ``_cache``."""
+        self._cache = cast("dict[str, list[float]]", state.get("_cache", {}))
+        self._generation = cast("int", state.get("_generation", 0))
+        self._path_generations = cast("dict[str, int]", state.get("_path_generations", {}))
+        self._lock = ForkSafeLock()
+
+    def __copy__(self) -> ScheduleFileCache:
+        """A copy is an independent cache holding the same entries, never an alias of this one's state."""
+        new = ScheduleFileCache.__new__(ScheduleFileCache)
+        new.__setstate__(self.__getstate__())
+        return new
 
     def get_values(
         self,
@@ -109,10 +94,12 @@ class ScheduleFileCache:
         # invalidate between the store and the read, which would turn a hit into a KeyError.
         values = self._cache.get(cache_key)
         if values is None:
+            path_key = str(file_path)
             generation = self._generation
+            path_generation = self._path_generations.get(path_key, 0)
             values = _read_schedule_file(obj, fs, file_path)
             with self._lock.lock:
-                if generation == self._generation:
+                if generation == self._generation and path_generation == self._path_generations.get(path_key, 0):
                     self._cache[cache_key] = values
 
         return values
@@ -158,8 +145,10 @@ class ScheduleFileCache:
     def clear(self) -> None:
         """Clear the cache."""
         with self._lock.lock:
+            # A fresh dict swapped in by one store, not cleared in place, so a child forked mid-call
+            # sees the whole cache or none of it.
+            self._cache = {}
             self._generation += 1
-            self._cache.clear()
 
     def invalidate(self, path: str | Path) -> None:
         """Invalidate all cache entries whose key starts with *path*.
@@ -168,12 +157,14 @@ class ScheduleFileCache:
             path: File path to invalidate.  All entries for this file
                 (regardless of column / separator settings) are removed.
         """
-        prefix = str(path) + "|"
+        path_key = str(path)
+        prefix = path_key + "|"
         # Every store and removal holds the lock, so the dict cannot change under this iteration.
         with self._lock.lock:
-            self._generation += 1
-            for k in [k for k in self._cache if k.startswith(prefix)]:
-                del self._cache[k]
+            # Built aside and swapped in by one store, so a child forked mid-call never inherits a
+            # half-invalidated cache that nothing would finish invalidating.
+            self._cache = {k: v for k, v in self._cache.items() if not k.startswith(prefix)}
+            self._path_generations[path_key] = self._path_generations.get(path_key, 0) + 1
 
 
 # Global cache instance

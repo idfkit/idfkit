@@ -27,7 +27,6 @@ import threading
 import time
 import warnings
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -49,15 +48,58 @@ T = TypeVar("T")
 
 
 def _all_at_once(fn: Callable[[int], T], threads: int = THREADS) -> list[T]:
-    """Run ``fn(i)`` on *threads* threads released together by a barrier; re-raise any failure."""
+    """Run ``fn(i)`` on *threads* threads released together by a barrier; re-raise any failure.
+
+    The threads are daemons joined with a deadline, so a deadlock fails the test after ``TIMEOUT``
+    instead of hanging the run.
+    """
     barrier = threading.Barrier(threads, timeout=TIMEOUT)
+    results: dict[int, T] = {}
+    errors: list[BaseException] = []
 
-    def run(i: int) -> T:
-        barrier.wait()
-        return fn(i)
+    def run(i: int) -> None:
+        try:
+            barrier.wait()
+            results[i] = fn(i)
+        except BaseException as exc:
+            errors.append(exc)
 
-    with ThreadPoolExecutor(max_workers=threads) as pool:
-        return list(pool.map(run, range(threads)))
+    workers = [threading.Thread(target=run, args=(i,), daemon=True) for i in range(threads)]
+    for worker in workers:
+        worker.start()
+    deadline = time.monotonic() + TIMEOUT
+    for worker in workers:
+        worker.join(max(0.0, deadline - time.monotonic()))
+    if any(worker.is_alive() for worker in workers):
+        pytest.fail(f"a thread was still running after {TIMEOUT} s: deadlock?")
+    if errors:
+        raise errors[0]
+    return [results[i] for i in range(threads)]
+
+
+def _in_background(fn: Callable[[], T]) -> Callable[[], T]:
+    """Start ``fn`` on a daemon thread; the returned callable waits up to ``TIMEOUT`` for its result."""
+    outcome: list[T] = []
+    errors: list[BaseException] = []
+
+    def run() -> None:
+        try:
+            outcome.append(fn())
+        except BaseException as exc:
+            errors.append(exc)
+
+    worker = threading.Thread(target=run, daemon=True)
+    worker.start()
+
+    def result() -> T:
+        worker.join(TIMEOUT)
+        if worker.is_alive():
+            pytest.fail(f"the background call was still running after {TIMEOUT} s: deadlock?")
+        if errors:
+            raise errors[0]
+        return outcome[0]
+
+    return result
 
 
 def _in_forked_child(check: Callable[[], bool], waiting_for: str) -> None:
@@ -227,13 +269,12 @@ class TestScheduleFileCache:
         fs: FileSystem = schedule_file.LocalFileSystem()
         obj: Any = _FakeScheduleFile(0)
 
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            in_flight = pool.submit(cache.get_values, obj, fs)
-            assert reading.wait(TIMEOUT)
-            file_contents[:] = [2.0]
-            drop(cache)
-            release.set()
-            assert in_flight.result(TIMEOUT) == [1.0]
+        in_flight = _in_background(lambda: cache.get_values(obj, fs))
+        assert reading.wait(TIMEOUT)
+        file_contents[:] = [2.0]
+        drop(cache)
+        release.set()
+        assert in_flight() == [1.0]
 
         reading.clear()
         assert cache.get_values(obj, fs) == [2.0]
@@ -364,3 +405,174 @@ class TestDocumentContract:
         assert all(all(pc is not None for pc in r) for r in results)
         # Whoever lost a race got an equal value, and the cache now hands out one per type.
         assert [fresh.get_parsing_cache(t) for t in types] == results[0]
+
+
+class TestCopiesAndInvalidation:
+    """Copying, pickling and invalidating a cache that other threads are using."""
+
+    def test_a_shallow_copy_is_an_independent_cache(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # A shallow copy used to share the dict and the lock but not the generation, so an
+        # invalidation through one let a stale read through the other store into the shared dict.
+        monkeypatch.setattr(schedule_file, "_read_schedule_file", _one_value)
+        cache = ScheduleFileCache()
+        fs: FileSystem = schedule_file.LocalFileSystem()
+        obj: Any = _FakeScheduleFile(0)
+        cache.get_values(obj, fs)
+
+        alias = copy.copy(cache)
+        cache.clear()
+
+        assert alias.get_values(obj, fs) == [1.0]
+        assert alias._cache  # pyright: ignore[reportPrivateUsage]
+        assert not cache._cache  # pyright: ignore[reportPrivateUsage]
+        assert alias._lock is not cache._lock  # pyright: ignore[reportPrivateUsage]
+
+    def test_deep_copies_and_pickles_survive_concurrent_stores(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # deepcopy used to walk the live dict without the lock and raise "dictionary changed size".
+        monkeypatch.setattr(schedule_file, "_read_schedule_file", _one_value)
+        cache = ScheduleFileCache()
+        fs: FileSystem = schedule_file.LocalFileSystem()
+
+        def work(i: int) -> None:
+            for k in range(1500):
+                if i % 2:
+                    obj: Any = _FakeScheduleFile(k * THREADS + i)
+                    cache.get_values(obj, fs)
+                    if k % 50 == 0:
+                        cache.clear()
+                elif i % 4:
+                    copy.deepcopy(cache)
+                else:
+                    pickle.loads(pickle.dumps(cache))  # noqa: S301
+
+        _all_at_once(work)
+
+    def test_state_pickled_by_1_2_0_still_works(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # idfkit 1.2.0 pickled a cache as its `_cache` dict alone.
+        monkeypatch.setattr(schedule_file, "_read_schedule_file", _one_value)
+        old = ScheduleFileCache.__new__(ScheduleFileCache)
+        old.__setstate__({"_cache": {}})
+        fs: FileSystem = schedule_file.LocalFileSystem()
+        obj: Any = _FakeScheduleFile(0)
+
+        assert old.get_values(obj, fs) == [1.0]
+        old.invalidate("/data/file0.csv")
+        old.clear()
+
+        manager = SchemaManager.__new__(SchemaManager)
+        fresh = SchemaManager()
+        manager.__setstate__({k: v for k, v in fresh.__dict__.items() if k in ("_bundled_dir", "_cache_dir", "_cache")})
+        assert manager.get_schema((24, 1, 0)).version == (24, 1, 0)
+
+    def test_invalidating_one_file_leaves_reads_of_others_cacheable(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # One generation for the whole cache used to discard every read in flight whenever any
+        # file was invalidated, so a steady stream of invalidations stopped the cache caching.
+        reading = threading.Event()
+        release = threading.Event()
+        reads: list[Path] = []
+
+        def slow_read(obj: object, fs: object, path: Path) -> list[float]:
+            reads.append(path)
+            reading.set()
+            release.wait(TIMEOUT)
+            return [1.0]
+
+        monkeypatch.setattr(schedule_file, "_read_schedule_file", slow_read)
+        cache = ScheduleFileCache()
+        fs: FileSystem = schedule_file.LocalFileSystem()
+        obj: Any = _FakeScheduleFile(1)  # /data/file1.csv
+
+        in_flight = _in_background(lambda: cache.get_values(obj, fs))
+        assert reading.wait(TIMEOUT)
+        cache.invalidate("/data/file0.csv")
+        release.set()
+        assert in_flight() == [1.0]
+
+        assert cache.get_values(obj, fs) == [1.0]
+        assert len(reads) == 1, "the read of an unrelated file was not cached"
+
+    def test_invalidate_swaps_the_dict_in_one_store(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # A child forked mid-invalidate inherits whichever dict was in place: never one with some
+        # of the file's entries gone and the rest left behind for nothing to remove.
+        monkeypatch.setattr(schedule_file, "_read_schedule_file", _one_value)
+        cache = ScheduleFileCache()
+        fs: FileSystem = schedule_file.LocalFileSystem()
+        for i in range(16):
+            obj: Any = _FakeScheduleFile(i)
+            cache.get_values(obj, fs)
+        before = cache._cache  # pyright: ignore[reportPrivateUsage]
+
+        cache.invalidate("/data/file0.csv")
+
+        assert cache._cache is not before  # pyright: ignore[reportPrivateUsage]
+        assert len(before) == 16
+        assert not [k for k in cache._cache if k.startswith("/data/file0.csv|")]  # pyright: ignore[reportPrivateUsage]
+
+
+class TestSchemaManagerClearAndReentry:
+    def test_a_load_in_flight_during_clear_cache_is_not_cached(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # The load that straddles the clear returns its schema but must not publish it: a request
+        # made after the clear used to wait on that load and be handed the pre-clear instance.
+        loading = threading.Event()
+        release = threading.Event()
+        real_load = schema_module.load_schema_json
+        calls: list[Path] = []
+
+        def held_load(path: Path) -> dict[str, Any]:
+            calls.append(path)
+            if len(calls) == 1:
+                loading.set()
+                release.wait(TIMEOUT)
+            return real_load(path)
+
+        monkeypatch.setattr(schema_module, "load_schema_json", held_load)
+        manager = SchemaManager()
+
+        first = _in_background(lambda: manager.get_schema((24, 1, 0)))
+        assert loading.wait(TIMEOUT)
+        manager.clear_cache()
+        release.set()
+        old = first()
+
+        new = manager.get_schema((24, 1, 0))
+        assert new is not old
+        assert len(calls) == 2
+        assert manager.owns(new)
+
+    def test_a_load_that_asks_for_its_own_version_again_does_not_deadlock(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # A logging handler (or any code the load runs) asking for the version being loaded used to
+        # block forever on the non-reentrant load lock.
+        real_load = schema_module.load_schema_json
+        manager = SchemaManager()
+        depth: list[int] = []
+
+        def reentrant_load(path: Path) -> dict[str, Any]:
+            depth.append(1)
+            if len(depth) == 1:
+                manager.get_schema((24, 1, 0))
+            return real_load(path)
+
+        monkeypatch.setattr(schema_module, "load_schema_json", reentrant_load)
+
+        assert _in_background(lambda: manager.get_schema((24, 1, 0)))().version == (24, 1, 0)
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="forks the test process")
+def test_a_child_forked_while_the_geocoder_paces_a_request_can_geocode() -> None:
+    # The rate limiter holds its lock across a sleep of up to a second, the widest window of all.
+    from idfkit.weather.geocode import RateLimiter
+
+    limiter = RateLimiter(min_interval=60.0)
+    limiter.wait()  # the next wait sleeps for a minute, holding the lock
+    pacing = threading.Thread(target=limiter.wait, daemon=True)
+    pacing.start()
+    deadline = time.monotonic() + TIMEOUT
+    while not limiter._lock.lock.locked() and time.monotonic() < deadline:  # pyright: ignore[reportPrivateUsage]
+        time.sleep(0.01)
+
+    def child() -> bool:
+        return limiter._lock.lock.acquire(timeout=5)  # pyright: ignore[reportPrivateUsage]
+
+    _in_forked_child(child, "the geocoder's rate-limit lock")

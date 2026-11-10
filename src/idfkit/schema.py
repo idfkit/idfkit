@@ -12,15 +12,14 @@ import gzip
 import json
 import logging
 import os
-import threading
 import time
-import weakref
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
 
+from ._forksafe import ForkSafeLock
 from .exceptions import SchemaNotFoundError
 from .versions import (
     ENERGYPLUS_VERSIONS,
@@ -715,39 +714,6 @@ def load_schema_json(path: Path) -> dict[str, Any]:
         return json.load(f)
 
 
-class _VersionLocks:
-    """One lock per schema version, for :meth:`SchemaManager.get_schema`.
-
-    A miss loads once however many threads ask at the same time, while two different versions
-    still load in parallel.
-    """
-
-    __slots__ = ("__weakref__", "_locks")
-
-    def __init__(self) -> None:
-        self._locks: dict[tuple[int, int, int], threading.Lock] = {}
-        _live_version_locks.add(self)
-
-    def __reduce__(self) -> tuple[type[_VersionLocks], tuple[()]]:
-        """Pickle and copy as a fresh table: a lock cannot be pickled, and a copy needs locks of its own."""
-        return (_VersionLocks, ())
-
-    def lock_for(self, version: tuple[int, int, int]) -> threading.Lock:
-        """The lock for *version*, created on first request."""
-        # ``dict.setdefault`` is atomic, with or without the GIL, so the table itself needs no lock.
-        return self._locks.setdefault(version, threading.Lock())
-
-    def reset(self) -> None:
-        """Forget every lock. Only for a forked child, where any of them may be held by a lost thread."""
-        self._locks = {}
-
-
-# Every lock table alive in this process. A child forked while some thread held a load lock
-# inherits that lock still held, by a thread the child does not have, so the child's first request
-# for that version would wait forever. ``_reset_locks_after_fork`` hands every table fresh locks.
-_live_version_locks: weakref.WeakSet[_VersionLocks] = weakref.WeakSet()
-
-
 class SchemaManager:
     """
     Manages loading and caching of EpJSON schemas for different versions.
@@ -794,7 +760,32 @@ class SchemaManager:
         self._bundled_dir = bundled_schema_dir
         self._cache_dir = cache_dir
         self._cache: dict[tuple[int, int, int], EpJSONSchema] = {}
-        self._load_locks = _VersionLocks()
+        self._init_locks()
+
+    def _init_locks(self) -> None:
+        """Give this manager fresh locks and a fresh generation: at construction, copy and unpickle."""
+        # One load lock per version: a miss loads once however many threads ask at the same time,
+        # while two different versions still load in parallel. Reentrant, because the load runs
+        # logging handlers, and one that asks for the same version again must not deadlock.
+        self._load_locks: dict[tuple[int, int, int], ForkSafeLock] = {}
+        # Bumped by `clear_cache`, under `_publish_lock`. A load that began before a clear must not
+        # publish what it read: the clear would be undone, and a request made after the clear would
+        # be handed the pre-clear schema.
+        self._generation = 0
+        self._publish_lock = ForkSafeLock()
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Copy and pickle the paths and a snapshot of the cache, not the locks."""
+        state = dict(self.__dict__)
+        state["_cache"] = dict(self._cache)
+        for name in ("_load_locks", "_generation", "_publish_lock"):
+            state.pop(name, None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore with locks of its own; state pickled by idfkit 1.2.0 has none to drop."""
+        self.__dict__.update(state)
+        self._init_locks()
 
     @property
     def bundled_dir(self) -> Path:
@@ -829,14 +820,20 @@ class SchemaManager:
         # Without this, threads that miss at the same time each load and build their own copy, and
         # each walks away with a different instance: the one-schema-per-version invariant breaks,
         # and pickling (see ``owns``) sends all but the last-cached by content.
-        with self._load_locks.lock_for(version):
+        # ``dict.setdefault`` is atomic, with or without the GIL, so the lock table needs no lock.
+        with self._load_locks.setdefault(version, ForkSafeLock(reentrant=True)).lock:
             cached = self._cache.get(version)
             if cached is not None:
                 return cached
-            return self._load_schema(version)
+            generation = self._generation
+            schema = self._load_schema(version)
+            with self._publish_lock.lock:
+                if generation == self._generation:
+                    self._cache[version] = schema
+            return schema
 
     def _load_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
-        """Load *version* from disk and cache it. The caller holds that version's load lock."""
+        """Load *version* from disk. The caller holds that version's load lock and publishes the result."""
         t0 = time.perf_counter()
 
         # Try exact version first
@@ -860,7 +857,6 @@ class SchemaManager:
         data = load_schema_json(schema_path)
 
         schema = EpJSONSchema(version, data)
-        self._cache[version] = schema
 
         elapsed = time.perf_counter() - t0
         logger.info(
@@ -1024,8 +1020,14 @@ class SchemaManager:
         return self._cache.get(schema.version) is schema
 
     def clear_cache(self) -> None:
-        """Clear the schema cache."""
-        self._cache.clear()
+        """Clear the schema cache.
+
+        A load still in flight when this is called returns its schema to its caller but does not
+        cache it, so every request made after the call loads afresh.
+        """
+        with self._publish_lock.lock:
+            self._generation += 1
+            self._cache.clear()
 
     def get_supported_versions(self) -> list[tuple[int, int, int]]:
         """Get list of all EnergyPlus versions that idfkit supports.
@@ -1038,7 +1040,7 @@ class SchemaManager:
 
 # Global schema manager instance
 _schema_manager: SchemaManager | None = None
-_schema_manager_lock = threading.Lock()
+_schema_manager_lock = ForkSafeLock()
 
 
 def get_schema_manager() -> SchemaManager:
@@ -1048,23 +1050,11 @@ def get_schema_manager() -> SchemaManager:
     if manager is None:
         # Checked again under the lock: without it, threads racing the first call on a
         # free-threaded build each create a manager, and each manager loads its own schemas.
-        with _schema_manager_lock:
+        with _schema_manager_lock.lock:
             if _schema_manager is None:
                 _schema_manager = SchemaManager()
             manager = _schema_manager
     return manager
-
-
-def _reset_locks_after_fork() -> None:
-    """Replace, in a forked child, every lock the parent may have held at the moment of the fork."""
-    global _schema_manager_lock
-    _schema_manager_lock = threading.Lock()
-    for locks in _live_version_locks:
-        locks.reset()
-
-
-if hasattr(os, "register_at_fork"):  # POSIX only; Windows has no fork
-    os.register_at_fork(after_in_child=_reset_locks_after_fork)
 
 
 def _rebuild_schema(cls: type[EpJSONSchema], state: dict[str, Any]) -> EpJSONSchema:

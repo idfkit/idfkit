@@ -42,5 +42,5 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 - `IDFObject` field names use Python-style snake_case (`zone.x_origin`, not `zone["X Origin"]`). The schema's IDD field names map to attribute names automatically.
 - Renaming an object via `obj.name = "new"` propagates through the reference graph automatically. **Editing a node-name string elsewhere does not** — see [reference-tracking.md](references/reference-tracking.md).
 - `HVACTemplate:*` objects must be expanded before EnergyPlus can simulate them. Either call `doc.expand(...)` explicitly, or pass `expand_objects=True` to `simulate(...)`. See [hvac-templates.md](references/hvac-templates.md).
-- One document must not be mutated from several threads at once; nothing raises, the model just goes inconsistent. Reading it from many threads, and separate documents per thread, are safe. See [threading.md](references/threading.md).
+- One document must not be mutated from several threads at once: it may raise, or silently go inconsistent. Reading it from many threads, and separate documents per thread, are safe. See [threading.md](references/threading.md).
 - Simulations need EnergyPlus installed on the host. idfkit discovers it via `$ENERGYPLUS_DIR`, `$PATH`, or standard install locations. See [simulation-execution.md](references/simulation-execution.md).

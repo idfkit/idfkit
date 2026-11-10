@@ -15,8 +15,9 @@ idfkit is pure Python with no C extensions, and it is tested on free-threaded CP
 | The schema manager, `get_schema(...)`, and the schema it returns | Yes. A version requested by many threads at once loads once, and every thread gets the same instance. |
 | Separate documents, one per thread | Yes. They share nothing but the read-only schema. |
 | One document, only read (attribute reads, `write_idf`, `validate_document`, `doc.copy()`, `get_referencing`, schedule evaluation) | Yes, as long as no thread mutates it at the same time. |
-| One document, mutated (`add`, `removeidfobject`, `rename`, field assignment) by several threads, or by one while others read | **No.** Nothing raises; the model silently ends up inconsistent (lost objects, dangling references, a reference graph out of step with the fields). Give each thread a `doc.copy()`, or guard every access with your own lock. |
-| `simulate_batch` / `async_simulate_batch` | Yes. Each job copies its model before changing anything, and the simulation cache commits each entry with an atomic rename. |
+| One document, mutated (`add`, `removeidfobject`, `rename`, field assignment) by several threads, or by one while others read | **No.** Sometimes it raises (`RuntimeError: dictionary changed size during iteration` from a reader, `KeyError` from the reference graph); often it raises nothing and the model silently ends up inconsistent (lost objects, dangling references, a reference graph out of step with the fields). Neither outcome is a signal you can rely on. Give each thread a `doc.copy()`, or guard every access with your own lock. |
+| `simulate_batch` / `async_simulate_batch` | Yes. Each job copies its model when it starts and works only on that copy, and the simulation cache commits each entry with an atomic rename. Leave the jobs' models unedited until the batch returns: a job that has not started yet copies whatever its model holds by then. |
+| `WeatherDownloader.download` for the same station from several threads or processes at once | **No.** It writes the downloaded archive and the extracted files in place, so a concurrent caller can read a truncated file. Download each station once, then fan out. |
 
 ## Separate documents in parallel
 

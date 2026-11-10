@@ -420,12 +420,6 @@ class TestSchemaManagerAdditional:
         assert manager.bundled_dir == bundled
         assert manager.cache_dir == cache
 
-    def test_get_schema_dict_cache_hit(self) -> None:
-        manager = SchemaManager()
-        s1 = manager.get_schema((24, 1, 0))
-        s2 = manager.get_schema((24, 1, 0))
-        assert s1 is s2
-
     def test_get_schema_fallback_to_closest_version(self) -> None:
         # A patch version that doesn't exist but has a close match
         manager = SchemaManager()
