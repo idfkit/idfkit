@@ -51,7 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reports 25 nodes on 11 of them, T003 one node, and the others nothing. A finding
   that relies on a rule EnergyPlus never reported is never an error. A clean result does not
   mean a model simulates. On a 6,876-object model the view and its checks take 27 ms, 11% of
-  loading it. Earlier EnergyPlus versions are not measured yet, so no severity is capped.
+  loading it. The 685 EnergyPlus 9.6.0 and 734 EnergyPlus 23.2.0 example files were measured too:
+  T010 and T011 report nothing on either, so no severity is capped for those versions.
   ([#263](https://github.com/idfkit/idfkit/pull/263), [78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
 - `HVACTopology.loops()`, `memberships(obj)`, `chain(loop, side)` and `zones_served(air_loop)`
   answer which loop a component is on and what a loop holds. `loops()` lists every `AirLoopHVAC`,
