@@ -21,11 +21,11 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
-from .objects import IDFCollection, IDFObject
+from .objects import IDFCollection, IDFObject, refuse_unknown_fields_for_add
 from .references import ReferenceGraph
-from .validation import unknown_fields, validate_object
+from .validation import validate_object
 from .versions import LATEST_VERSION
 
 logger = logging.getLogger(__name__)
@@ -677,23 +677,6 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         duplicate_name = existing.name if existing and existing.name else existing_type
         raise DuplicateObjectError(obj_type, duplicate_name)
 
-    def _reject_unknown_fields(self, obj_type: str, field_data: dict[str, Any], pc: ParsingCache | None) -> None:
-        """Raise ``InvalidFieldError`` for the first key of *field_data* the schema does not name."""
-        schema = self._schema
-        if schema is None:
-            return
-        unknown = unknown_fields(schema, obj_type, field_data)
-        if not unknown:
-            return
-        raise InvalidFieldError(
-            obj_type,
-            unknown[0],
-            # The name is the ``name`` argument, not a key of ``fields``.
-            available_fields=[f for f in schema.get_all_field_names(obj_type) if f != "name"],
-            version=self.version,
-            extensible_fields=frozenset(pc.ext_field_names) if pc and pc.ext_field_names else None,
-        )
-
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
         if self._schema is None:
@@ -736,7 +719,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 Raises ValidationFailedError if validation fails. Set to False for
                 bulk operations where performance matters: values, required fields
                 and ranges are then not checked, but a key the schema does not name
-                still raises InvalidFieldError.
+                still raises InvalidFieldError, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -750,7 +733,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
             InvalidFieldError: If ``validate=False`` and a key is not a field of
-                the object type (the name goes in ``name``, not in ``fields``)
+                the object type, naming every such key (the name goes in ``name``,
+                not in ``fields``)
+            TypeError: If the extensible wrapper value is not a list of groups,
+                or a group has a key the group does not name (in either mode,
+                as ``IDFObject.update`` refuses it)
 
         Examples:
             >>> from idfkit import new_document
@@ -808,12 +795,6 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
 
-            # validate=True reports unknown keys (W003) with every other finding below. Skipping
-            # validation must not let one through either: it would be stored, then dropped by
-            # write_idf() and written as an unknown property by write_epjson().
-            if not validate:
-                self._reject_unknown_fields(resolved_obj_type, field_data, pc)
-
             if obj_schema.get("maxProperties") == 1:
                 self._reject_second_singleton(resolved_obj_type)
 
@@ -838,6 +819,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             wrapper_key=parsing_cache.ext_wrapper_key if parsing_cache else None,
             ext_inner_names=tuple(parsing_cache.ext_inner_props.keys()) if parsing_cache else (),
         )
+
+        # A key the type does not name would be stored, then dropped by write_idf() and written as
+        # an unknown property by write_epjson(). validate=True reports such keys (W003) with every
+        # other finding below; skipping validation must not let one through either.
+        if parsing_cache is not None:
+            refuse_unknown_fields_for_add(obj, parsing_cache, check_names=not validate)
 
         # Validate if requested
         if validate and self._schema:

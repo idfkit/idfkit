@@ -118,6 +118,9 @@ class ParsingCache:
     ext_field_names: tuple[str, ...]
     ext_wrapper_key: str | None
     ext_inner_props: Mapping[str, dict[str, Any]]
+    #: Every key the type's epJSON properties name: the fixed fields plus the extensible wrapper
+    #: key, never ``name``. The same set validation reports ``W003`` against.
+    known_keys: frozenset[str] = frozenset()
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
     choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
@@ -554,6 +557,7 @@ class EpJSONSchema:
             ext_field_names=tuple(ext_field_names_list),
             ext_wrapper_key=ext_wrapper_key,
             ext_inner_props=MappingProxyType(ext_inner_props),
+            known_keys=frozenset(name for name, spec in props.items() if spec),
             choice_spellings=_spelling_tables(props),
             ext_choice_spellings=_spelling_tables(ext_inner_props),
         )

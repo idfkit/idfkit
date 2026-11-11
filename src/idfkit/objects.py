@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Callable, Iterator, Mapping
 from copy import deepcopy
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
@@ -28,6 +28,7 @@ __all__ = [
 
 if TYPE_CHECKING:
     from .document import IDFDocument
+    from .schema import ParsingCache
 
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
@@ -1026,20 +1027,28 @@ class IDFObject(EppyObjectMixin):
             return RefusedEntry(key, "unknown", f"not a field of {self._type}")
         return None
 
-    def _refuse(self, refused: list[RefusedEntry]) -> None:
-        """Raise the error for a refused :meth:`update` group, before anything is written."""
+    def _refuse(self, refused: list[RefusedEntry], operation: Literal["update", "add"] = "update") -> None:
+        """Raise the error for a refused :meth:`update` group or ``add()`` call, before anything is written."""
         named = [entry for entry in refused if entry.reason != "wrapper-value"]
         if not named:
-            raise TypeError(format_refused(self._type, refused))
+            raise TypeError(format_refused(self._type, refused, operation))
         doc = self._document
         field_order = self._field_order
+        available: list[str] | None = None
+        if field_order is not None:
+            # The legacy field order omits the wrapper key, the spelling the groups must use.
+            wrapper_key = self._wrapper_key
+            available = list(field_order)
+            if wrapper_key is not None and wrapper_key not in available:
+                available.append(wrapper_key)
         raise InvalidFieldError(
             self._type,
             named[0].name,
-            available_fields=list(field_order) if field_order is not None else None,
+            available_fields=available,
             version=object.__getattribute__(doc, "version") if doc is not None else None,
             extensible_fields=self._extensibles,
             refused=refused,
+            operation=operation,
         )
 
     def copy(self) -> IDFObject:
@@ -1116,6 +1125,53 @@ class IDFObject(EppyObjectMixin):
 
 
 _T = TypeVar("_T", bound=IDFObject)
+
+
+def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_names: bool) -> None:
+    """Refuse what ``IDFDocument.add`` must not store, as :meth:`IDFObject.update` refuses it.
+
+    Runs on the new object before it joins the document, so a refusal leaves nothing behind.
+
+    Args:
+        obj: The object ``add()`` built, not yet in any collection.
+        pc: Its type's parsing cache.
+        check_names: Whether to refuse keys the type does not name. ``add(validate=True)`` reports
+            those as ``W003`` instead; the extensible wrapper value is checked either way, since
+            validation does not look inside its groups.
+
+    Raises:
+        InvalidFieldError: A key is not a field of the type, is ``name`` (which belongs in the
+            ``name`` argument), or is not spelled as the field (``"X Origin"`` for ``x_origin``).
+        TypeError: The only problem is the wrapper value: not a list, an item that is not a dict
+            or group, or a group with a key the group does not name.
+    """
+    data = obj.data
+    wrapper_key = pc.ext_wrapper_key
+    refused: list[RefusedEntry] = []
+    known = pc.known_keys
+    # Fast path: every key known. The refusal tests below run only when one is not.
+    if check_names and not data.keys() <= known:
+        for key, value in data.items():
+            if key == wrapper_key or key in known:
+                continue
+            python_key = to_python_name(key)
+            if key.lower() == "name" or python_key == "name":
+                refused.append(RefusedEntry(key, "name", "pass the object's name as add()'s name argument"))
+            elif (entry := obj._examine(key, value)) is not None:  # pyright: ignore[reportPrivateUsage]
+                refused.append(entry)
+            elif python_key != key:
+                # update() resolves display spellings such as "X Origin"; add() stores keys as given.
+                refused.append(RefusedEntry(key, "unknown", f"spell it {python_key!r}"))
+    if wrapper_key is not None and wrapper_key in data:
+        groups = data[wrapper_key]
+        inner = pc.ext_inner_props.keys()
+        plain = type(groups) is list and all(
+            type(group) is dict and group.keys() <= inner for group in cast("list[Any]", groups)
+        )
+        if not plain and (entry := obj._examine(wrapper_key, groups)) is not None:  # pyright: ignore[reportPrivateUsage]
+            refused.append(entry)
+    if refused:
+        obj._refuse(refused, "add")  # pyright: ignore[reportPrivateUsage]
 
 
 class IDFCollection(Generic[_T]):

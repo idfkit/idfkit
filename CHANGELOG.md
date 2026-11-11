@@ -15,27 +15,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** `IDFDocument.add()` refuses a key that is not a field of the object type even
-  with `validate=False`, raising `InvalidFieldError`. `validate=False` used to skip every check,
-  so the key was stored, then silently dropped by `write_idf()` and written as an unknown
-  property by `write_epjson()`. It still skips value, required-field and range checks. The
-  object's name belongs in the `name` argument, not in `fields`, and
-  `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate` fields, not a
-  `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- **Breaking:** `IDFDocument.add()` refused a key that is not a field of the object type even
+  with `validate=False`, raising `InvalidFieldError` that names every such key, whatever its
+  value. `validate=False` used to skip schema validation entirely, so the key was stored, then
+  silently dropped by `write_idf()` and written as an unknown property by `write_epjson()`. It
+  still skips value, required-field and range checks. The object's name belongs in the `name`
+  argument, not in `fields`; display spellings such as `"X Origin"` are refused with the field
+  to use instead; and `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate`
+  fields, not a `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- **Breaking:** `IDFDocument.add()` checked the extensible groups it was given in either
+  validate mode, as `IDFObject.update()` already did, and raised `TypeError` for a group key the
+  group does not name (`reports=[{"report_nme": ...}]`) or a wrapper value that is not a list of
+  groups (a string, a list of strings or tuples, or another object's live `vertices` view).
+  Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
+  values or crashed. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
 
 ### Fixed
 
-- Validation reports unknown fields (`W003`) on extensible object types too. They used to be
-  exempt, so `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the
-  default `validate=True` and stored a key that `write_idf()` silently dropped and
-  `write_epjson()` emitted as an unknown property. Such a call now raises
-  `ValidationFailedError`, as an unknown field on a non-extensible type already did; the
-  wrapper list (`reports=[...]`) and the deprecated flat spellings (`report_name`,
-  `report_name_2`) are still accepted. `validate_document()` reports the same keys on objects
-  loaded from epJSON. ([459258f](https://github.com/idfkit/idfkit/commit/459258f))
-- `prep_outputs()` requests the `AllSummary` tabular report again. It passed `report_1`, a
-  spelling `Output:Table:SummaryReports` does not have, so the request never reached the IDF.
-  ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- **Breaking:** Validation reported unknown fields (`W003`) on extensible object types too, and
+  on unknown fields with a blank value. Extensible types used to be exempt, so
+  `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the default
+  `validate=True` and stored a key that `write_idf()` silently dropped and `write_epjson()`
+  emitted as an unknown property. Such a call now raises `ValidationFailedError`, as an unknown
+  field on a non-extensible type already did; the wrapper list (`reports=[...]`) and the
+  deprecated flat spellings (`report_name`, `report_name_2`) are still accepted.
+  `validate_document()` reports the same keys on objects loaded from epJSON.
+  ([459258f](https://github.com/idfkit/idfkit/commit/459258f))
+- `prep_outputs()` requested the `AllSummary` tabular report, which it never had. It passed
+  `report_1`, a spelling `Output:Table:SummaryReports` does not have, so `write_idf()` wrote the object with
+  no fields and no terminator, and EnergyPlus read the next object into it and stopped with a
+  fatal error. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
 
 ## [1.2.0] - 2026-10-28
 
