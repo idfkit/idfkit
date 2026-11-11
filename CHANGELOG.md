@@ -17,15 +17,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
   swallowed the object after it, and EnergyPlus read that object's type name and values as fields
-  of the empty one. This happened to a nameless type whose only fields are a repeated group
+  of the empty one. This happened to a nameless type with no fixed fields
   (`Output:Table:SummaryReports`, `Output:Diagnostics`, `OutdoorAir:NodeList`,
-  `EnergyManagementSystem:GlobalVariable` and the `GroundHeatTransfer` face types) when it held
+  `EnergyManagementSystem:GlobalVariable` and the six `GroundHeatTransfer` face types) when it held
   no groups. It affected the standard and `nocomment` output types, `doc.copy()`, and objects
   added to a document loaded with `preserve_formatting=True`. Such an object is now written with
-  one blank field, `Output:Diagnostics,;`. EnergyPlus reads this form as an empty object, and it
-  does not accept `Output:Diagnostics;`. The IDF parser now reads that blank field back for a type
-  with no fields at all, such as `GroundHeatTransfer:Slab:XFACE`, where it used to reject it as
-  an extra value. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772))
+  one blank field, `Output:Diagnostics,;`, which keeps the next object intact. IDF has no spelling
+  that EnergyPlus reads as one of these objects with nothing in it: `Output:Diagnostics;` swallows
+  the next object too, and EnergyPlus reads `Output:Diagnostics,;` as one blank group. That gives a
+  warning for `Output:Diagnostics` and a Severe error for `Output:Table:SummaryReports`, and
+  EnergyPlus refuses the input for `OutdoorAir:NodeList` and
+  `EnergyManagementSystem:GlobalVariable`. Remove such an object, or write the model as epJSON, to
+  keep it empty. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- Strict IDF parsing no longer rejects blank fields past the last field of a type without
+  repeated groups, such as `Timestep,4,,;` or `GroundHeatTransfer:Slab:XFACE,;`; EnergyPlus accepts
+  them too. A non-blank extra value is still an error, and the error counts only the values up to
+  the last non-blank one. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- `write_idf` dropped the name and every field of an object whose type was spelled in a different
+  case from the schema, such as one added with `addidfobject(IDFObject(obj_type="TIMESTEP", ...))`,
+  and of an object of a type the schema does not know. Both are now written with their values.
+  ([0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
 - `idfkit.simulation.prep_outputs` now requests the `AllSummary` reports. It passed
   `report_1="AllSummary"`, which is not a valid name for the `reports` group, so the value was
   dropped and `Output:Table:SummaryReports` was written empty.
