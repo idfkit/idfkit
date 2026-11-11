@@ -1,0 +1,1005 @@
+{
+  "description": "100 result links from the paired fixtures, drawn by source and rule (seed 14) and checked by hand against the IDF. Each entry is the raw key, the context the linker saw, and the object it must link to with the confidence it must report. SC-004: no link labelled exact may be wrong.",
+  "links": [
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "sizing",
+      "raw": "CENTRAL BOILER",
+      "hint": "Boiler:HotWater",
+      "object_type": "Boiler:HotWater",
+      "name": "Central Boiler",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "sizing",
+      "raw": "TOP WEST BASEBOARD",
+      "hint": "ZONEHVAC:BASEBOARD:CONVECTIVE:ELECTRIC",
+      "object_type": "ZoneHVAC:Baseboard:Convective:Electric",
+      "name": "Top West Baseboard",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "sizing",
+      "raw": "ZN_1_FLR_1_SEC_2:SYS",
+      "hint": "AirLoopHVAC",
+      "object_type": "AirLoopHVAC",
+      "name": "ZN_1_FLR_1_SEC_2:Sys",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "sizing",
+      "raw": "CONTROLLERZN_1_FLR_1_SEC_3:SYS_OA",
+      "hint": "Controller:OutdoorAir",
+      "object_type": "Controller:OutdoorAir",
+      "name": "ControllerZN_1_FLR_1_SEC_3:Sys_OA",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "sizing",
+      "raw": "TOP EAST WINDOW AC",
+      "hint": "ZoneHVAC:WindowAirConditioner",
+      "object_type": "ZoneHVAC:WindowAirConditioner",
+      "name": "Top East Window AC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "sizing",
+      "raw": "GND WEST WINDOW AC",
+      "hint": "ZoneHVAC:WindowAirConditioner",
+      "object_type": "ZoneHVAC:WindowAirConditioner",
+      "name": "Gnd West Window AC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "sizing",
+      "raw": "AHU 5 DXAC HEAT PUMP",
+      "hint": "AirLoopHVAC:UnitaryHeatPump:WaterToAir",
+      "object_type": "AirLoopHVAC:UnitaryHeatPump:WaterToAir",
+      "name": "AHU 5 DXAC Heat Pump",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "CORNER_CLASS_1_POD_1 DUAL DUCT BOX COMPONENT",
+      "hint": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "object_type": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "name": "Corner_Class_1_Pod_1 Dual Duct Box Component",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "sizing",
+      "raw": "CONTROLLERZN_1_FLR_1_SEC_2:SYS_OA",
+      "hint": "Controller:OutdoorAir",
+      "object_type": "Controller:OutdoorAir",
+      "name": "ControllerZN_1_FLR_1_SEC_2:Sys_OA",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "sizing",
+      "raw": "HEAT PUMP DX SUPP HEATING COIL AHU5",
+      "hint": "Coil:Heating:Fuel",
+      "object_type": "Coil:Heating:Fuel",
+      "name": "Heat Pump DX Supp Heating Coil AHU5",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "MULT_CLASS_1_POD_1 DUAL DUCT BOX COMPONENT",
+      "hint": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "object_type": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "name": "Mult_Class_1_Pod_1 Dual Duct Box Component",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "sizing",
+      "raw": "ZN_1_FLR_1_SEC_1:SYS FAN",
+      "hint": "Fan:ConstantVolume",
+      "object_type": "Fan:ConstantVolume",
+      "name": "ZN_1_FLR_1_SEC_1:Sys Fan",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "sizing",
+      "raw": "OA COOLING COIL 1",
+      "hint": "Coil:Cooling:Water",
+      "object_type": "Coil:Cooling:Water",
+      "name": "OA Cooling Coil 1",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "sizing",
+      "raw": "TOP EAST OA DX COIL",
+      "hint": "Coil:Cooling:DX:SingleSpeed",
+      "object_type": "Coil:Cooling:DX:SingleSpeed",
+      "name": "Top East OA DX Coil",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "DUALDUCT_OTHER_OA_CONTROLLER",
+      "hint": "Controller:OutdoorAir",
+      "object_type": "Controller:OutdoorAir",
+      "name": "DUALDUCT_OTHER_OA_Controller",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "MULT_CLASS_1_POD_1 FAN COIL COOL COIL",
+      "hint": "Coil:Cooling:Water",
+      "object_type": "Coil:Cooling:Water",
+      "name": "Mult_Class_1_Pod_1 Fan Coil Cool Coil",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "DUALDUCT_OTHER_RC_FAN",
+      "hint": "Fan:VariableVolume",
+      "object_type": "Fan:VariableVolume",
+      "name": "DUALDUCT_OTHER_RC_Fan",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "sizing",
+      "raw": "ZN_1_FLR_1_SEC_3 DIRECT AIR",
+      "hint": "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+      "object_type": "AirTerminal:SingleDuct:ConstantVolume:NoReheat",
+      "name": "ZN_1_FLR_1_SEC_3 Direct Air",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "BATHROOMS BASEBOARD HEATER",
+      "hint": "ZoneHVAC:Baseboard:Convective:Water",
+      "object_type": "ZoneHVAC:Baseboard:Convective:Water",
+      "name": "Bathrooms Baseboard Heater",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "sizing",
+      "raw": "BATHROOMS DUAL DUCT BOX COMPONENT",
+      "hint": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "object_type": "AirTerminal:DualDuct:VAV:OutdoorAir",
+      "name": "Bathrooms Dual Duct Box Component",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "sizing",
+      "raw": "VAV SYS 1",
+      "hint": "AirLoopHVAC",
+      "object_type": "HVACTemplate:System:VAV",
+      "name": "VAV Sys 1",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "sizing",
+      "raw": "MAIN BOILER",
+      "hint": "Boiler:HotWater",
+      "object_type": "HVACTemplate:Plant:Boiler",
+      "name": "Main Boiler",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "sizing",
+      "raw": "MAIN TOWER",
+      "hint": "CoolingTower:SingleSpeed",
+      "object_type": "HVACTemplate:Plant:Tower",
+      "name": "Main Tower",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "sizing",
+      "raw": "MAIN CHILLER",
+      "hint": "Chiller:Electric:EIR",
+      "object_type": "HVACTemplate:Plant:Chiller",
+      "name": "Main Chiller",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "MEDIA_CENTER",
+      "hint": "Zone Mean Air Temperature",
+      "object_type": "Zone",
+      "name": "Media_Center",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "MULT_CLASS_1_POD_1_WALL_1_WINDOW_20",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "FenestrationSurface:Detailed",
+      "name": "Mult_Class_1_Pod_1_Wall_1_window_20",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "MULT_CLASS_2_POD_1",
+      "hint": "Zone Air System Sensible Heating Energy",
+      "object_type": "Zone",
+      "name": "Mult_Class_2_Pod_1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "timeseries",
+      "raw": "ZN_1_FLR_1_SEC_2_INTERNALMASS_1",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "InternalMass",
+      "name": "ZN_1_FLR_1_SEC_2_InternalMass_1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "timeseries",
+      "raw": "ZN_1_FLR_1_SEC_2_FLOOR",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "ZN_1_FLR_1_SEC_2_Floor",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "timeseries",
+      "raw": "GND WEST W WALL WINDOWS",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "FenestrationSurface:Detailed",
+      "name": "Gnd West W Wall Windows",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "timeseries",
+      "raw": "WALL-1PF",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "WALL-1PF",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "timeseries",
+      "raw": "C2-1",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "C2-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "timeseries",
+      "raw": "MID WEST ZONE",
+      "hint": "Zone Mean Air Temperature",
+      "object_type": "Zone",
+      "name": "Mid West Zone",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "timeseries",
+      "raw": "PVT:ZN_1_FLR_1_SEC_3_CEILING",
+      "hint": "Generator Produced Thermal Rate",
+      "object_type": "SolarCollector:FlatPlate:PhotovoltaicThermal",
+      "name": "PVT:ZN_1_FLR_1_SEC_3_Ceiling",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "timeseries",
+      "raw": "ZN_1_FLR_1_SEC_4:SYSHEATC",
+      "hint": "Heating Coil Heating Energy",
+      "object_type": "Coil:Heating:Electric",
+      "name": "ZN_1_FLR_1_SEC_4:SysHeatC",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "MULT_CLASS_2_POD_1_FLOOR",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "Mult_Class_2_Pod_1_Floor",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "timeseries",
+      "raw": "WB-1",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "FenestrationSurface:Detailed",
+      "name": "WB-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "1ZoneEvapCooler",
+      "source": "timeseries",
+      "raw": "RELIEF AIR OUTLET NODE",
+      "hint": "System Node Temperature",
+      "object_type": "Node",
+      "name": "Relief Air Outlet Node",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "timeseries",
+      "raw": "ZN_1_FLR_1_SEC_5",
+      "hint": "Zone Mean Air Temperature",
+      "object_type": "Zone",
+      "name": "ZN_1_FLR_1_SEC_5",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "timeseries",
+      "raw": "MAIN COOLING COIL 1 WATER INLET NODE",
+      "hint": "System Node Temperature",
+      "object_type": "Node",
+      "name": "Main Cooling Coil 1 Water Inlet Node",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAutoDXVAV",
+      "source": "timeseries",
+      "raw": "SPACE2-1",
+      "hint": "Zone Air System Sensible Heating Energy",
+      "object_type": "Zone",
+      "name": "SPACE2-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "timeseries",
+      "raw": "MID WEST RELIEF NODE",
+      "hint": "System Node Temperature",
+      "object_type": "Node",
+      "name": "Mid West Relief Node",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "OFFICES_WALL_3_WINDOW_8",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "FenestrationSurface:Detailed",
+      "name": "Offices_Wall_3_Window_8",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "timeseries",
+      "raw": "C2-1",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "C2-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "timeseries",
+      "raw": "SPACE4-1 OUT NODE",
+      "hint": "System Node Temperature",
+      "object_type": "Node",
+      "name": "SPACE4-1 Out Node",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "MULT_CLASS_2_POD_1_WALL_3",
+      "hint": "Surface Inside Face Temperature",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "Mult_Class_2_Pod_1_Wall_3",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "timeseries",
+      "raw": "CENTRAL BOILER OUTLET NODE",
+      "hint": "System Node Temperature",
+      "object_type": "Node",
+      "name": "Central Boiler Outlet Node",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "CORRIDOR_POD_1 FAN COIL",
+      "hint": "Fan Coil Heating Rate",
+      "object_type": "ZoneHVAC:FourPipeFanCoil",
+      "name": "Corridor_Pod_1 Fan Coil",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "SimHVAC",
+      "hint": "HVAC System Solver Iteration Count",
+      "object_type": "Aggregate",
+      "name": "SimHVAC",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "timeseries",
+      "raw": "Environment",
+      "hint": "Site Outdoor Air Drybulb Temperature",
+      "object_type": "Aggregate",
+      "name": "Environment",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "timeseries",
+      "raw": "SimHVAC",
+      "hint": "Air System Solver Iteration Count",
+      "object_type": "Aggregate",
+      "name": "SimHVAC",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "TOP WEST ZONE",
+      "hint": "Peak Cooling Sensible Heat Gain Components",
+      "object_type": "Zone",
+      "name": "Top West Zone",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "tabular",
+      "raw": "HTG-SETP-SCH",
+      "hint": "Schedules-SetPoints (Schedule Type=Temperature)",
+      "object_type": "Schedule:Compact",
+      "name": "Htg-SetP-Sch",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_5_WALL_3",
+      "hint": "Opaque Interior",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "ZN_1_FLR_1_SEC_5_Wall_3",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_3",
+      "hint": "Peak Cooling Sensible Heat Gain Components",
+      "object_type": "Zone",
+      "name": "ZN_1_FLR_1_SEC_3",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "5ZoneAutoDXVAV",
+      "source": "tabular",
+      "raw": "SPACE5-1",
+      "hint": "Hours of Safety for Cold Events",
+      "object_type": "Zone",
+      "name": "SPACE5-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "TOP CENTER ZONE",
+      "hint": "Zone Sensible Heating",
+      "object_type": "Zone",
+      "name": "Top Center Zone",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "MID CENTER ZONE",
+      "hint": "Time Setpoint Not Met",
+      "object_type": "Zone",
+      "name": "Mid Center Zone",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_1_WALL_2",
+      "hint": "Opaque Interior",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "ZN_1_FLR_1_SEC_1_Wall_2",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_5",
+      "hint": "Discomfort-weighted Exceedance OccupiedHours",
+      "object_type": "Zone",
+      "name": "ZN_1_FLR_1_SEC_5",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "DUALDUCT_OTHER_OA_FAN",
+      "hint": "Fan Power Fractions",
+      "object_type": "Fan:VariableVolume",
+      "name": "DUALDUCT_OTHER_OA_Fan",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "tabular",
+      "raw": "SPACE4-1",
+      "hint": "Humidex OccupantHours",
+      "object_type": "Zone",
+      "name": "SPACE4-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "tabular",
+      "raw": "PLENUMHTG-SETP-SCH",
+      "hint": "Schedules-SetPoints (Schedule Type=Temperature)",
+      "object_type": "Schedule:Compact",
+      "name": "PlenumHtg-SetP-Sch",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "tabular",
+      "raw": "SPACE5-1",
+      "hint": "Total Outdoor Air by Zone",
+      "object_type": "Zone",
+      "name": "SPACE5-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "GND CENTER ZONE",
+      "hint": "Heat Index Hours",
+      "object_type": "Zone",
+      "name": "Gnd Center Zone",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_3",
+      "hint": "Thermostat Schedules",
+      "object_type": "Zone",
+      "name": "ZN_1_FLR_1_SEC_3",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "tabular",
+      "raw": "F5-1",
+      "hint": "Opaque Exterior",
+      "object_type": "BuildingSurface:Detailed",
+      "name": "F5-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "MAIN_CORRIDOR",
+      "hint": "Heat Index OccupantHours",
+      "object_type": "Zone",
+      "name": "Main_Corridor",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "tabular",
+      "raw": "PLENUM-1",
+      "hint": "Hours of Safety for Cold Events",
+      "object_type": "Zone",
+      "name": "PLENUM-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "tabular",
+      "raw": "ZN_1_FLR_1_SEC_1",
+      "hint": "Humidex Hours",
+      "object_type": "Zone",
+      "name": "ZN_1_FLR_1_SEC_1",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "tabular",
+      "raw": "SPACE1-1",
+      "hint": "Time Not Comfortable Based on Simple ASHRAE 55-2004",
+      "object_type": "Zone",
+      "name": "SPACE1-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "tabular",
+      "raw": "SPACE2-1",
+      "hint": "Mechanical Ventilation Parameters by Zone",
+      "object_type": "Zone",
+      "name": "SPACE2-1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "MULT_CLASS_2_POD_1",
+      "hint": "Humidex OccupiedHours",
+      "object_type": "Zone",
+      "name": "Mult_Class_2_Pod_1",
+      "rule": "typed",
+      "confidence": "typed"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "CHICAGO OHARE INTL AP ANN CLG 1% CONDNS DB=>MWB",
+      "hint": "SizingPeriod:DesignDay",
+      "object_type": "SizingPeriod:DesignDay",
+      "name": "Chicago Ohare Intl Ap Ann Clg 1% Condns DB=>MWB",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "5ZoneWaterLoopHeatPump",
+      "source": "tabular",
+      "raw": "CHICAGO_IL_USA ANNUAL HEATING 99% DESIGN CONDITIONS DB",
+      "hint": "SizingPeriod:DesignDay",
+      "object_type": "SizingPeriod:DesignDay",
+      "name": "CHICAGO_IL_USA Annual Heating 99% Design Conditions DB",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "1ZoneUncontrolled",
+      "source": "tabular",
+      "raw": "DENVER CENTENNIAL  GOLDEN   N ANN CLG 1% CONDNS DB=>MWB",
+      "hint": "SizingPeriod:DesignDay",
+      "object_type": "SizingPeriod:DesignDay",
+      "name": "Denver Centennial  Golden   N Ann Clg 1% Condns DB=>MWB",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "PlantLoopChainCooling",
+      "source": "tabular",
+      "raw": "CHICAGO ANN HTG 99% CONDNS DB",
+      "hint": "SizingPeriod:DesignDay",
+      "object_type": "SizingPeriod:DesignDay",
+      "name": "CHICAGO Ann Htg 99% Condns DB",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "1ZoneUncontrolled",
+      "source": "tabular",
+      "raw": "DENVER CENTENNIAL  GOLDEN   N ANN HTG 99% CONDNS DB",
+      "hint": "SizingPeriod:DesignDay",
+      "object_type": "SizingPeriod:DesignDay",
+      "name": "Denver Centennial  Golden   N Ann Htg 99% Condns DB",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "Mir-MULT_CLASS_1_POD_1_WALL_1:SHADING_SOUTH_7",
+      "hint": "Surfaces (Walls, Roofs, etc) that may be Shadowed by Other Surfaces",
+      "object_type": "Shading:Zone:Detailed",
+      "name": "Mult_Class_1_Pod_1_Wall_1:shading_south_7",
+      "rule": "mirrored_shading",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "Mir-CORNER_CLASS_1_POD_1_WALL_1:SHADING_SOUTH_2",
+      "hint": "Surfaces (Walls, Roofs, etc) that may be Shadowed by Other Surfaces",
+      "object_type": "Shading:Zone:Detailed",
+      "name": "Corner_Class_1_Pod_1_Wall_1:shading_south_2",
+      "rule": "mirrored_shading",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "tabular",
+      "raw": "Mir-SOUTH DOOR OVERHANG",
+      "hint": "Surfaces (Walls, Roofs, etc) that may be Shadowed by Other Surfaces",
+      "object_type": "Shading:Zone:Detailed",
+      "name": "South Door Overhang",
+      "rule": "mirrored_shading",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "DOASDualDuctSchool",
+      "source": "tabular",
+      "raw": "Mir-CORNER_CLASS_1_POD_1_WALL_1:SHADING_SOUTH_5",
+      "hint": "Surfaces (Walls, Roofs, etc) that may be Shadowed by Other Surfaces",
+      "object_type": "Shading:Zone:Detailed",
+      "name": "Corner_Class_1_Pod_1_Wall_1:shading_south_5",
+      "rule": "mirrored_shading",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "TOP WEST ZONE OFFICE BUILDINGS",
+      "hint": "Interior Lighting",
+      "object_type": "Lights",
+      "name": "Office Buildings",
+      "rule": "zonelist_composite",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "GND CENTER ZONE OFFICE BUILDINGS",
+      "hint": "Interior Lighting",
+      "object_type": "Lights",
+      "name": "Office Buildings",
+      "rule": "zonelist_composite",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "MID EAST ZONE OFFICE BUILDINGS",
+      "hint": "Interior Lighting",
+      "object_type": "Lights",
+      "name": "Office Buildings",
+      "rule": "zonelist_composite",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "MID CENTER ZONE OFFICE BUILDINGS",
+      "hint": "Interior Lighting",
+      "object_type": "Lights",
+      "name": "Office Buildings",
+      "rule": "zonelist_composite",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "TOP EAST ZONE OFFICE BUILDINGS",
+      "hint": "Interior Lighting",
+      "object_type": "Lights",
+      "name": "Office Buildings",
+      "rule": "zonelist_composite",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "1ZoneUncontrolled",
+      "source": "tabular",
+      "raw": "Sum",
+      "hint": "Humidex Hours",
+      "object_type": "Aggregate",
+      "name": "Sum",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "tabular",
+      "raw": "Max",
+      "hint": "Humidex OccupiedHours",
+      "object_type": "Aggregate",
+      "name": "Max",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "tabular",
+      "raw": "Average",
+      "hint": "Heat Index OccupiedHours",
+      "object_type": "Aggregate",
+      "name": "Average",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "5ZoneAirCooled",
+      "source": "tabular",
+      "raw": "Min",
+      "hint": "Heat Index OccupiedHours",
+      "object_type": "Aggregate",
+      "name": "Min",
+      "rule": "aggregate",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "message",
+      "raw": "TOP CENTER OA DX COIL",
+      "hint": "Coil:Cooling:DX:SingleSpeed",
+      "object_type": "Coil:Cooling:DX:SingleSpeed",
+      "name": "Top Center OA DX Coil",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "message",
+      "raw": "MID CENTER WINDOW AC",
+      "hint": "ZoneHVAC:WindowAirConditioner",
+      "object_type": "ZoneHVAC:WindowAirConditioner",
+      "name": "Mid Center Window AC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "message",
+      "raw": "TOP EAST OA DX COIL",
+      "hint": "Coil:Cooling:DX:SingleSpeed",
+      "object_type": "Coil:Cooling:DX:SingleSpeed",
+      "name": "Top East OA DX Coil",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "message",
+      "raw": "MID EAST WINDOW AC",
+      "hint": "ZoneHVAC:WindowAirConditioner",
+      "object_type": "ZoneHVAC:WindowAirConditioner",
+      "name": "Mid East Window AC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "MultiStory",
+      "source": "message",
+      "raw": "TOP WEST WINDOW AC",
+      "hint": "ZoneHVAC:WindowAirConditioner",
+      "object_type": "ZoneHVAC:WindowAirConditioner",
+      "name": "Top West Window AC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "message",
+      "raw": "ZN_1_FLR_1_SEC_4:SYSCOOLC",
+      "hint": "CoilSystem:Cooling:DX",
+      "object_type": "CoilSystem:Cooling:DX",
+      "name": "ZN_1_FLR_1_SEC_4:SysCoolC",
+      "rule": "exact",
+      "confidence": "exact"
+    },
+    {
+      "fixture": "HVACTemplate-5ZoneVAVWaterCooled",
+      "source": "message",
+      "raw": "VAV SYS 1",
+      "hint": "AirLoop",
+      "object_type": "HVACTemplate:System:VAV",
+      "name": "VAV Sys 1",
+      "rule": "typed",
+      "confidence": "convention"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "message",
+      "raw": "ZN_1_FLR_1_SEC_5SHW_DEFAULT",
+      "hint": "",
+      "object_type": "WaterUse:Connections",
+      "name": "ZN_1_FLR_1_SEC_5SHW_DEFAULT",
+      "rule": "typed",
+      "confidence": "weak"
+    },
+    {
+      "fixture": "ShopWithSimplePVT",
+      "source": "message",
+      "raw": "ZN_1_FLR_1_SEC_1SHW_DEFAULT",
+      "hint": "",
+      "object_type": "WaterUse:Connections",
+      "name": "ZN_1_FLR_1_SEC_1SHW_DEFAULT",
+      "rule": "typed",
+      "confidence": "weak"
+    }
+  ]
+}

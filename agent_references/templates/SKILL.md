@@ -23,7 +23,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Check how HVAC nodes connect; trace flow up or downstream; find which loop a component sits on; rename a node | [hvac-topology.md](references/hvac-topology.md) |
 | Walk references and HVAC node connections together around an object; export the model as a graph for networkx or d3 | [model-graph.md](references/model-graph.md) |
 | Run EnergyPlus simulations (sync, async, batch) | [simulation-execution.md](references/simulation-execution.md) |
-| Parse SQL / CSV / ESO / MTR / ERR simulation output | [result-parsing.md](references/result-parsing.md) |
+| Parse SQL / CSV / ESO / MTR / ERR simulation output; link results and warnings to model objects (`ResultIndex`) | [result-parsing.md](references/result-parsing.md) |
 | Find a weather station, download EPW/DDY, inject design days | [weather-data.md](references/weather-data.md) |
 | Evaluate `Schedule:*` objects to time series | [schedule-evaluation.md](references/schedule-evaluation.md) |
 | Compute R-value, U-value, SHGC, gas mixture properties | [thermal-properties.md](references/thermal-properties.md) |

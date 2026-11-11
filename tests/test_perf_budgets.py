@@ -32,6 +32,12 @@ Baselines, all on the vendored reference model ``benchmarks/fixtures/HospitalLow
   200 nodes from a zone and from a water heating coil, with the topology cached.
 - :data:`NODE_LINK_BASELINE_S`, 1 s, and :data:`NODE_LINK_MEMORY_BASELINE_B`, 50 MB:
   ``to_node_link()`` of the ``model`` and ``topology`` layers.
+- :data:`RESULT_INDEX_BUILD_BASELINE_S`, 0.050 s: ``ResultIndex.build`` on the largest paired fixture,
+  ``tests/fixtures/simulation/linked/DOASDualDuctSchool`` (the reference model has no simulation
+  output), with the topology built and the SQLite file open. Measured 0.043 to 0.047 s when added.
+  It never reads ``ReportData``, so its cost does not grow with the run's timeseries.
+- :data:`RESULT_INDEX_QUERY_BASELINE_S`, 0.010 s: ``ResultIndex.for_object`` on the same index, for a
+  zone and a coil. Measured under 1 ms when added.
 
 Adding a budget: state its baseline as a module constant next to the others, list it above, and
 add a test that compares a measurement against ``CI_ALLOWANCE * baseline``. Use the
@@ -280,3 +286,41 @@ def test_node_link_memory_within_budget(reference_model_file: Path) -> None:
     data, peak = peak_memory(lambda: graph.to_node_link(layers=GRAPH_LAYERS))
     assert data["nodes"], "premise: the export is not empty"
     assert peak <= NODE_LINK_MEMORY_BASELINE_B, f"to_node_link(model, topology) peaked at {peak / 1e6:.1f} MB"
+
+
+RESULT_INDEX_BUILD_BASELINE_S = 0.050
+"""``ResultIndex.build`` on the largest paired fixture, seconds (contract, R-21)."""
+
+RESULT_INDEX_QUERY_BASELINE_S = 0.010
+"""``ResultIndex.for_object`` on the same index, seconds (contract, R-21)."""
+
+
+def test_result_index_within_budget() -> None:
+    from itertools import count
+
+    from benchmarks.bench_result_index import linked_run
+    from idfkit.simulation import ResultIndex
+
+    idf, result = linked_run()
+    doc = load_idf(str(idf))
+    HVACTopology.from_document(doc)
+    assert result.sql is not None
+    runs = count()
+
+    def build() -> ResultIndex:
+        return ResultIndex.build(doc, result, run_revision=doc.revision, run_model_hash=str(next(runs)))
+
+    index = build()
+    assert index.coverage.resolved, "premise: the fixture links"
+    budget = CI_ALLOWANCE * RESULT_INDEX_BUILD_BASELINE_S
+    elapsed = best_of(build, RUNS)
+    assert elapsed <= budget, f"ResultIndex.build took {elapsed * 1000:.1f} ms; budget {budget * 1000:.0f} ms"
+
+    query_budget = CI_ALLOWANCE * RESULT_INDEX_QUERY_BASELINE_S
+    coil = next(iter(doc["Coil:Cooling:Water"]))
+    for key in (ObjectKey("Zone", "Offices"), ObjectKey(coil.obj_type, coil.name)):
+        assert index.for_object(key).facts, f"premise: {key} has facts"
+        elapsed = best_of(lambda key=key: index.for_object(key), RUNS)
+        assert elapsed <= query_budget, (
+            f"for_object({key}) took {elapsed * 1000:.2f} ms; budget {query_budget * 1000:.0f} ms"
+        )
