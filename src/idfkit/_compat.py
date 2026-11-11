@@ -226,7 +226,7 @@ class EppyDocumentMixin:
                 self._compute_ref_fields(self._schema, obj.obj_type),
             )
 
-        self._collection_for_write(obj.obj_type).add(obj)
+        self._collection_for_write(obj.obj_type)._insert(obj)  # pyright: ignore[reportPrivateUsage]
         self._index_object_references(obj)
         return obj
 

@@ -5,8 +5,9 @@ exactly one document revision. The cache lives on the document itself, in its ``
 it dies with the document: there is no global registry and no ``id(doc)`` keying that a recycled
 id could confuse (research R-06, R-21).
 
-Every mutation path of the document bumps :attr:`IDFDocument.revision
-<idfkit.document.IDFDocument.revision>` exactly once. A view stored at revision *r* is returned while
+Every mutation path of the document moves :attr:`IDFDocument.revision
+<idfkit.document.IDFDocument.revision>` forward (an extensible-list assignment by one per group;
+a write into ``obj.data`` not at all). A view stored at revision *r* is returned while
 the document is still at *r* and rebuilt on the first ask after any change. Rebuilding costs a few
 percent of loading the model, which is why the views are rebuilt instead of maintained
 incrementally.

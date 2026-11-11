@@ -207,11 +207,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
     @property
     def revision(self) -> int:
-        """Monotonic; bumped by add, removeidfobject, field assignment, rename, rename_node.
+        """Monotonic; moved by adding, removing, renaming and field assignment.
 
-        Every change to the document's objects bumps it exactly once, and reading never does. Two
-        equal values mean the document has not changed in between, which is what derived views
-        such as the HVAC topology use to decide whether a cached copy is still valid.
+        Every change to the document's objects moves it forward, through the document or through
+        one of its collections, and reading never does. One change can move it by more than one:
+        assigning an extensible list counts each group. Two equal values mean the document has not
+        changed in between, which is what derived views such as the HVAC topology use to decide
+        whether a cached copy is still valid. Writing into ``obj.data`` directly, a plain dict,
+        bypasses it; assign the field instead.
 
         Examples:
             >>> from idfkit import new_document
@@ -409,7 +412,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if collection is not None:
             return collection
 
-        created: IDFCollection[IDFObject] = IDFCollection(canonical)
+        created: IDFCollection[IDFObject] = IDFCollection(canonical, self)  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
         self._collections[canonical] = created
         return created
 
@@ -899,7 +902,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 raise ValidationFailedError(errors)
 
         # Add to collection (the write path: this may create the collection)
-        self._collection_for_write(resolved_obj_type).add(obj)
+        self._collection_for_write(resolved_obj_type)._insert(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Index references
         self._index_object_references(obj)
@@ -941,7 +944,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         # under the schema's spelling, so a mis-cased ``obj.obj_type`` would
         # look in a collection that does not exist and leave the object in the
         # document while reporting it removed.
-        self._lookup_collection(obj_type).remove(obj)
+        self._lookup_collection(obj_type)._discard(obj)  # pyright: ignore[reportPrivateUsage]
 
         # Remove from reference graph
         self._references.unregister(obj)

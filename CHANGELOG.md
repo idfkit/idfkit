@@ -80,6 +80,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `add()` and `remove()` on a document's collection (`doc["Zone"].remove(zone)`,
+  `doc.idfobjects["Zone"].remove(zone)`) only changed the collection: the reference graph kept the
+  removed object, `get_referencing()` still returned it, and `revision` did not move, so a cached
+  `HVACTopology` kept listing it. They now go through `addidfobject()` and `removeidfobject()`.
+  A collection returned for a type the document does not hold is still detached.
+  ([#263](https://github.com/idfkit/idfkit/pull/263))
 - `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
   a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
   `['reporting_frequency']`. It now drops the first field only for a named type. As a result

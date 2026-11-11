@@ -76,11 +76,14 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         """
     @property
     def revision(self) -> int:
-        """Monotonic; bumped by add, removeidfobject, field assignment, rename, rename_node.
+        """Monotonic; moved by adding, removing, renaming and field assignment.
 
-        Every change to the document's objects bumps it exactly once, and reading never does. Two
-        equal values mean the document has not changed in between, which is what derived views
-        such as the HVAC topology use to decide whether a cached copy is still valid.
+        Every change to the document's objects moves it forward, through the document or through
+        one of its collections, and reading never does. One change can move it by more than one:
+        assigning an extensible list counts each group. Two equal values mean the document has not
+        changed in between, which is what derived views such as the HVAC topology use to decide
+        whether a cached copy is still valid. Writing into ``obj.data`` directly, a plain dict,
+        bypasses it; assign the field instead.
 
         Examples:
             >>> from idfkit import new_document
