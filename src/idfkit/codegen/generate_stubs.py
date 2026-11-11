@@ -662,6 +662,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     # regenerates and diffs. An import emitted out of order is reordered on the way in and never
     # matches on the way back, which fails the gate everywhere except the machine that committed it.
     lines.append("from .cst import DocumentCST, SourceSpan")
+    lines.append("from .hvac.types import NodeRenameResult")
     lines.append("from .introspection import ObjectDescription")
     lines.append("from .objects import IDFCollection, IDFObject")
     lines.append("from .references import ReferenceGraph")
@@ -772,6 +773,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     )
     emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
     emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
+    emit("def rename_node(self, old: str, new: str) -> NodeRenameResult", "IDFDocument.rename_node")
     emit("def rename(self, obj_type: str, old_name: str, new_name: str) -> None", "IDFDocument.rename")
     emit(
         "def notify_name_change(self, obj: IDFObject, old_name: str, new_name: str) -> None",

@@ -10,7 +10,11 @@ measured table in ``_version_caps.py``.
 |---|---|---|
 | T010 | A branch's listed nodes differ from the component's own ports | see ``QUALIFIED`` |
 | T011 | Consecutive branch components are not connected | see ``QUALIFIED`` |
-| T030 | Node used on only one side of a flow, with no boundary explaining it | warning |
+| T001 | A component inlet nothing supplies, not a loop inlet and not outdoor air | warning |
+| T002 | A zone inlet nothing supplies | warning |
+| T003 | A zone exhaust nothing draws from | warning |
+| T004 | A setpoint, sensor or actuator node no component carries flow through | warning |
+| T030 | An outlet a branch carries that nothing takes | warning |
 | T090 | Object type with node fields but no connection rule | info |
 | T091 | Template system present; topology not covered | info |
 """
@@ -22,7 +26,7 @@ from typing import TYPE_CHECKING, Final, Literal
 
 from idfkit._graph_common import ObjectKey
 from idfkit.hvac._version_caps import MEASURED_VERSIONS, VERSION_CAPS
-from idfkit.hvac.topology import CONNECTIONS, CONSUMES, PRODUCES, PROVENANCES, UNCLASSIFIED, HVACTopology
+from idfkit.hvac.topology import CONNECTIONS, CONSUMES, CONTROLS, PRODUCES, PROVENANCES, UNCLASSIFIED, HVACTopology
 from idfkit.hvac.types import ConnectionType, Provenance, Severity, TopologyFinding
 
 if TYPE_CHECKING:
@@ -306,40 +310,57 @@ def _sides(index: TopologyIndex, uses: list[Use]) -> tuple[list[Use], list[Use]]
     return (producers or parent_producers, consumers or parent_consumers)
 
 
+_ZONE_INLET = CONNECTIONS.index(ConnectionType.ZONE_INLET)
+_ZONE_EXHAUST = CONNECTIONS.index(ConnectionType.ZONE_EXHAUST)
+
+
+def _finding(index: TopologyIndex, code: str, nid: int, uses: list[Use], text: str) -> TopologyFinding:
+    provs: list[Provenance] = [PROVENANCES[p] for u in uses if (p := index.meta[u[1]][3]) is not None]
+    node = index.node_name[nid]
+    return TopologyFinding(
+        code=code,
+        severity="warning",
+        objects=tuple(dict.fromkeys(index.obj_key[u[0]] for u in uses)),
+        message=f"Node '{node}' {text}",
+        provenance=_weakest(provs),
+        node=node,
+    )
+
+
 def _one_sided_nodes(index: TopologyIndex) -> Iterator[TopologyFinding]:
-    """T030, following EnergyPlus's own rule: an inlet needs a source. An outlet that nothing takes
-    is legal (exhaust fans, air-cooled condensers and relief streams vent outdoors), so it is
-    reported only on a stream a branch carries, where the next component should take it."""
+    """T001, T002, T003, T030 and T004, one finding per node, following EnergyPlus's own rule: an
+    inlet needs a source.
+
+    - T001: a component inlet nothing supplies, not a loop's own inlet and not outdoor air.
+    - T002: a zone inlet nothing supplies.
+    - T003: a zone exhaust nothing draws from.
+    - T030: an outlet a branch carries that nothing takes. Elsewhere an outlet nothing takes is
+      legal (exhaust fans, air-cooled condensers and relief streams vent outdoors); an unused zone
+      return is legal too.
+    - T004: a node only setpoint managers, sensors, controllers or actuators name.
+    """
     if any(part.kind == "hvac_template" for part in index.coverage.uncovered):
         return  # template systems have no nodes yet, so a missing side is expected (T091 says so)
     carried = _branch_streams(index)
     for nid, uses in enumerate(index.uses):
         if nid in index.loop_nodes:
             continue  # loops join their own inlets and outlets
+        if uses and all(u[2] in CONTROLS for u in uses):
+            yield _finding(index, "T004", nid, uses, "is set or sensed, but no component carries flow through it")
+            continue
         sides = _sides(index, uses)
         if sides is None:
             continue
         producers, consumers = sides
         if bool(producers) == bool(consumers):
             continue
-        if producers:
-            if any(u[2] in _ZONE_SIDE for u in producers):
-                continue  # an unused zone return is valid; an unused zone exhaust is T003's
-            if not any((u[0], u[3]) in carried for u in producers):
-                continue
-        one_side = producers or consumers
-        provs: list[Provenance] = [PROVENANCES[p] for u in one_side if (p := index.meta[u[1]][3]) is not None]
-        objects = tuple(dict.fromkeys(index.obj_key[u[0]] for u in one_side))
-        node = index.node_name[nid]
-        side = "leaves a component on a branch but nothing takes it" if producers else "nothing supplies it"
-        yield TopologyFinding(
-            code="T030",
-            severity="warning",
-            objects=objects,
-            message=f"Node '{node}' {side}, and no boundary explains it",
-            provenance=_weakest(provs),
-            node=node,
-        )
+        if consumers:
+            zone = any(u[2] == _ZONE_INLET for u in consumers)
+            yield _finding(index, "T002" if zone else "T001", nid, consumers, "is an inlet nothing supplies")
+        elif any(u[2] == _ZONE_EXHAUST for u in producers):
+            yield _finding(index, "T003", nid, producers, "is a zone exhaust nothing draws from")
+        elif not any(u[2] in _ZONE_SIDE for u in producers) and any((u[0], u[3]) in carried for u in producers):
+            yield _finding(index, "T030", nid, producers, "leaves a component on a branch but nothing takes it")
 
 
 # --------------------------------------------------------------------------------------------- #

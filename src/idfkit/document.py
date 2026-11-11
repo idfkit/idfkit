@@ -41,6 +41,7 @@ else:
     Strict = TypeVar("Strict", bound=bool, covariant=True)
 
 if TYPE_CHECKING:
+    from .hvac.types import NodeRenameResult
     from .schema import EpJSONSchema, ParsingCache
     from .simulation.config import EnergyPlusConfig
     from .writers import FieldComments
@@ -963,6 +964,45 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         self._revision += 1
         logger.debug("Removed %s '%s'", obj_type, obj.name)
+
+    def rename_node(self, old: str, new: str) -> NodeRenameResult:
+        """Rename a node everywhere it is used, in one step.
+
+        Node names are strings, not references, so :meth:`rename` never reaches them. This rewrites
+        every node field naming *old* (found through :class:`~idfkit.hvac.HVACTopology`, so fields
+        with no connection rule are included) and every ``NodeList`` entry naming it. A field that
+        names a ``NodeList`` keeps naming the list. Each write goes through the normal field write,
+        so the revision moves and cached views are rebuilt. If any write fails, the writes already
+        made are undone and the error is raised.
+
+        Output variable keys and other free-text fields that happen to spell the node are not
+        node fields and are left alone.
+
+        Args:
+            old: The node to rename, matched case-insensitively.
+            new: The new name.
+
+        Returns:
+            What changed: fields and ``NodeList`` entries rewritten, and each changed object once.
+
+        Raises:
+            KeyError: If no field names *old*.
+            ValueError: If *new* is empty, equal to *old*, or already a node of the model (two
+                nodes are never merged).
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> doc = new_document()
+            >>> _ = doc.add("Fan:ConstantVolume", "Fan", air_inlet_node_name="Mixed Air",
+            ...             air_outlet_node_name="Supply Air", validate=False)
+            >>> doc.rename_node("Supply Air", "AHU Supply").fields_updated
+            1
+            >>> doc["Fan:ConstantVolume"]["Fan"].air_outlet_node_name
+            'AHU Supply'
+        """
+        from .hvac._rename import rename_node
+
+        return rename_node(self, old, new)
 
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
         """

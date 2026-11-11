@@ -1,6 +1,7 @@
 """The HVAC topology view on real and minimal models: roles, flow, walks and caching.
 
-The second half covers the connection checks (T010, T011, T030, T090, T091).
+The second half covers the connection checks (T001-T004, T010, T011, T030, T090, T091) and the loop
+queries (memberships, chain, zones served).
 """
 
 from __future__ import annotations
@@ -10,7 +11,15 @@ from pathlib import Path
 import pytest
 
 from idfkit import IDFDocument, load_idf, new_document
-from idfkit.hvac import ComponentCategory, ConnectionType, Fluid, HVACTopology, ObjectKey, check_topology
+from idfkit.hvac import (
+    ComponentCategory,
+    ConnectionType,
+    Fluid,
+    HVACTopology,
+    LoopMembership,
+    ObjectKey,
+    check_topology,
+)
 
 LINKED = Path(__file__).parent / "fixtures" / "simulation" / "linked"
 
@@ -249,7 +258,7 @@ def test_outdoor_air_nodes_are_boundaries(five_zone: IDFDocument) -> None:
 
 
 # --------------------------------------------------------------------------------------------- #
-# Connection checks (T010, T011, T030, T090, T091)
+# Connection checks (T001-T004, T010, T011, T030, T090, T091)
 # --------------------------------------------------------------------------------------------- #
 
 
@@ -317,22 +326,12 @@ def test_an_exhaust_fan_venting_outdoors_is_not_reported() -> None:
     assert [f for f in check_topology(doc) if f.code == "T030"] == []
 
 
-def test_an_inlet_nothing_supplies_is_t030() -> None:
-    doc = new_document()
-    doc.add(
-        "Coil:Heating:Electric", "Heater", air_inlet_node_name="Nowhere", air_outlet_node_name="Out", validate=False
-    )
-    (t030,) = [f for f in check_topology(doc) if f.code == "T030"]
-    assert t030.node == "Nowhere"
-    assert t030.severity == "warning"
-
-
 def test_templates_give_t091_and_no_missing_node_findings() -> None:
     doc = load_idf(str(LINKED / "HVACTemplate-5ZoneVAVWaterCooled.idf"))
     findings = check_topology(doc)
     assert [f.code for f in findings if f.code == "T091"] == ["T091"]
     assert next(f for f in findings if f.code == "T091").severity == "info"
-    assert [f for f in findings if f.code == "T030"] == []
+    assert [f for f in findings if f.code in {"T001", "T002", "T003", "T004", "T030"}] == []
 
 
 def test_a_type_without_rules_is_t090_info() -> None:
@@ -394,3 +393,265 @@ def test_version_caps_lower_errors_on_measured_earlier_versions(
     assert checks.cap_severity(error, (22, 1, 0)).severity == "warning"  # nearest at or below: 9.6
     assert checks.cap_severity(error, (23, 2, 0)) == error  # 23.2 measured clean for T010
     assert checks.cap_severity(error, (26, 2, 0)) == error  # 26.2 is never capped
+
+
+# --------------------------------------------------------------------------------------------- #
+# Loop membership, loops, chains and zones served
+# --------------------------------------------------------------------------------------------- #
+
+
+def test_a_water_coil_sits_on_its_air_loop_supply_and_its_plant_demand(five_zone: IDFDocument) -> None:
+    coil = five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"]
+    assert HVACTopology.from_document(five_zone).memberships(coil) == [
+        LoopMembership(
+            loop=ObjectKey("AirLoopHVAC", "VAV Sys 1"),
+            kind="air",
+            side="supply",
+            branch=ObjectKey("Branch", "VAV Sys 1 Main Branch"),
+            position=1,
+            stream=1,
+        ),
+        LoopMembership(
+            loop=ObjectKey("PlantLoop", "Chilled Water Loop"),
+            kind="plant",
+            side="demand",
+            branch=ObjectKey("Branch", "Cooling Coil Branch"),
+            position=0,
+            stream=2,
+        ),
+    ]
+
+
+def test_a_reheat_coil_sits_on_the_air_loop_demand_side_off_any_branch(five_zone: IDFDocument) -> None:
+    coil = five_zone["Coil:Heating:Water"]["SPACE1-1 Zone Coil"]
+    assert HVACTopology.from_document(five_zone).memberships(coil) == [
+        LoopMembership(ObjectKey("AirLoopHVAC", "VAV Sys 1"), "air", "demand", None, None, 1),
+        LoopMembership(
+            ObjectKey("PlantLoop", "Hot Water Loop"),
+            "plant",
+            "demand",
+            ObjectKey("Branch", "SPACE1-1 Reheat Branch"),
+            0,
+            2,
+        ),
+    ]
+
+
+def test_an_air_cooled_chiller_sits_only_on_its_chilled_water_supply(five_zone: IDFDocument) -> None:
+    chiller = five_zone["Chiller:Electric"]["Central Chiller"]
+    assert HVACTopology.from_document(five_zone).memberships(chiller) == [
+        LoopMembership(
+            ObjectKey("PlantLoop", "Chilled Water Loop"),
+            "plant",
+            "supply",
+            ObjectKey("Branch", "Central Chiller Branch"),
+            0,
+            1,
+        ),
+    ]
+
+
+def test_air_loop_demand_components_have_no_branch(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    demand = LoopMembership(ObjectKey("AirLoopHVAC", "VAV Sys 1"), "air", "demand", None, None, 1)
+    for obj in (
+        five_zone["AirLoopHVAC:ZoneSplitter"]["Zone Supply Air Splitter 1"],
+        five_zone["AirLoopHVAC:ReturnPlenum"]["Return-Plenum-1"],
+        five_zone["AirTerminal:SingleDuct:VAV:Reheat"]["SPACE1-1 VAV Reheat"],
+        five_zone["ZoneHVAC:AirDistributionUnit"]["SPACE1-1 ATU"],
+    ):
+        assert demand in topo.memberships(obj), obj.name
+
+
+def test_listed_zone_equipment_belongs_to_its_equipment_connections(five_zone: IDFDocument) -> None:
+    adu = five_zone["ZoneHVAC:AirDistributionUnit"]["SPACE1-1 ATU"]
+    (zone_eq,) = [m for m in HVACTopology.from_document(five_zone).memberships(adu) if m.kind == "zone_equipment"]
+    assert zone_eq.loop == ObjectKey("ZoneHVAC:EquipmentConnections", "SPACE1-1")
+    assert (zone_eq.side, zone_eq.branch, zone_eq.position) == (None, None, None)
+
+
+def test_a_component_on_no_loop_has_no_memberships() -> None:
+    doc = new_document()
+    doc.add("Fan:ConstantVolume", "Loose Fan", air_inlet_node_name="A", air_outlet_node_name="B", validate=False)
+    assert HVACTopology.from_document(doc).memberships(doc["Fan:ConstantVolume"]["Loose Fan"]) == []
+
+
+def test_memberships_are_stable_across_calls(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    coil = five_zone["Coil:Heating:Water"]["Main Heating Coil 1"]
+    first = topo.memberships(coil)
+    assert first
+    assert topo.memberships(coil) == first
+
+
+def test_loops_lists_every_air_plant_and_condenser_loop(five_zone: IDFDocument) -> None:
+    loops = HVACTopology.from_document(five_zone).loops()
+    assert {(o.obj_type, o.name) for o in loops} == {
+        ("AirLoopHVAC", "VAV Sys 1"),
+        ("PlantLoop", "Hot Water Loop"),
+        ("PlantLoop", "Chilled Water Loop"),
+    }
+    assert loops[0].obj_type == "AirLoopHVAC"
+
+
+def test_a_plant_chain_is_one_list_per_branch_in_branch_list_order(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    loop = five_zone["PlantLoop"]["Chilled Water Loop"]
+    supply = [[o.name for o in branch] for branch in topo.chain(loop, "supply")]
+    assert supply == [["CW Circ Pump"], ["Central Chiller"], ["Supply Side Bypass"], ["Supply Side Outlet Pipe"]]
+    demand = [[o.name for o in branch] for branch in topo.chain(loop, "demand")]
+    assert demand == [
+        ["Cooling Demand Side Inlet Pipe"],
+        ["Main Cooling Coil 1"],
+        ["OA Cooling Coil 1"],
+        ["Cooling Demand Side Bypass"],
+        ["CW Demand Side Outlet Pipe"],
+    ]
+
+
+def test_an_air_loop_supply_chain_lists_its_branch_components_in_order(five_zone: IDFDocument) -> None:
+    loop = five_zone["AirLoopHVAC"]["VAV Sys 1"]
+    (branch,) = HVACTopology.from_document(five_zone).chain(loop, "supply")
+    assert [o.name for o in branch] == ["OA Sys 1", "Main Cooling Coil 1", "Main Heating Coil 1", "Supply Fan 1"]
+
+
+def test_an_air_loop_demand_chain_is_one_path_per_zone_then_the_return(five_zone: IDFDocument) -> None:
+    loop = five_zone["AirLoopHVAC"]["VAV Sys 1"]
+    *supply, back = HVACTopology.from_document(five_zone).chain(loop, "demand")
+    assert len(supply) == 5
+    assert all(path[0].obj_type == "AirLoopHVAC:ZoneSplitter" for path in supply)
+    assert [[o.obj_type for o in path[1:]] for path in supply] == [
+        ["AirTerminal:SingleDuct:VAV:Reheat", "Coil:Heating:Water"]
+    ] * 5
+    assert [o.name for o in back] == ["Return-Plenum-1"]
+
+
+def test_chain_rejects_an_unknown_side_and_a_non_loop(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    with pytest.raises(ValueError, match="side"):
+        topo.chain(five_zone["PlantLoop"]["Hot Water Loop"], "middle")  # pyright: ignore[reportArgumentType]
+    with pytest.raises(ValueError):
+        topo.chain(five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"], "supply")
+
+
+def test_zones_served_are_the_supplied_zones_not_the_return_plenum(five_zone: IDFDocument) -> None:
+    served = HVACTopology.from_document(five_zone).zones_served(five_zone["AirLoopHVAC"]["VAV Sys 1"])
+    assert {o.name for o in served} == {f"SPACE{i}-1" for i in range(1, 6)}
+    assert all(o.obj_type == "Zone" for o in served)
+
+
+def test_a_dual_duct_loop_serves_zones(dual_duct: IDFDocument) -> None:
+    served = HVACTopology.from_document(dual_duct).zones_served(dual_duct["AirLoopHVAC"]["DUALDUCT_OTHER"])
+    assert served
+    assert all(o.obj_type == "Zone" for o in served)
+
+
+# --------------------------------------------------------------------------------------------- #
+# Dangling-node checks (T001, T002, T003, T004)
+# --------------------------------------------------------------------------------------------- #
+
+DANGLING = {"T001", "T002", "T003", "T004"}
+
+
+def _zone_with_inlet(doc: IDFDocument, inlet: str) -> None:
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        zone_name="Office",
+        zone_air_inlet_node_or_nodelist_name=inlet,
+        zone_air_node_name="Office Air",
+        validate=False,
+    )
+
+
+def _heater(doc: IDFDocument, inlet: str) -> None:
+    doc.add(
+        "Coil:Heating:Electric", "Heater", air_inlet_node_name=inlet, air_outlet_node_name="Heater Out", validate=False
+    )
+    _zone_with_inlet(doc, "Heater Out")
+
+
+def test_a_component_inlet_nothing_supplies_is_t001() -> None:
+    doc = new_document()
+    _heater(doc, "Nowhere")
+    (t001,) = [f for f in check_topology(doc) if f.code == "T001"]
+    assert t001.node == "Nowhere"
+    assert t001.objects == (ObjectKey("Coil:Heating:Electric", "Heater"),)
+    assert t001.severity == "warning"
+
+
+def test_a_dangling_component_inlet_is_not_also_t030() -> None:
+    doc = new_document()
+    _heater(doc, "Nowhere")
+    assert [f for f in check_topology(doc) if f.code == "T030"] == []
+
+
+def test_a_zone_inlet_nothing_supplies_is_t002() -> None:
+    doc = new_document()
+    _zone_with_inlet(doc, "Office Inlet")
+    findings = check_topology(doc)
+    (t002,) = [f for f in findings if f.code == "T002"]
+    assert t002.node == "Office Inlet"
+    assert t002.severity == "warning"
+    assert [f for f in findings if f.code in {"T001", "T030"}] == []
+
+
+def test_a_zone_exhaust_nothing_draws_from_is_t003() -> None:
+    doc = new_document()
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        zone_name="Office",
+        zone_air_exhaust_node_or_nodelist_name="Office Exhaust",
+        zone_air_node_name="Office Air",
+        validate=False,
+    )
+    (t003,) = [f for f in check_topology(doc) if f.code == "T003"]
+    assert t003.node == "Office Exhaust"
+    assert t003.severity == "warning"
+
+
+def test_a_node_only_a_setpoint_manager_names_is_t004() -> None:
+    doc = new_document()
+    doc.add(
+        "SetpointManager:Scheduled",
+        "Lonely Manager",
+        control_variable="Temperature",
+        schedule_name="Always",
+        setpoint_node_or_nodelist_name="Lonely Node",
+        validate=False,
+    )
+    (t004,) = [f for f in check_topology(doc) if f.code == "T004"]
+    assert t004.node == "Lonely Node"
+    assert t004.objects == (ObjectKey("SetpointManager:Scheduled", "Lonely Manager"),)
+    assert t004.severity == "warning"
+
+
+def test_an_outdoor_air_node_inlet_is_not_t001() -> None:
+    doc = new_document()
+    doc.add("OutdoorAir:Node", "OA In", validate=False)
+    _heater(doc, "OA In")
+    assert [f for f in check_topology(doc) if f.code == "T001"] == []
+
+
+def test_an_outdoor_air_nodelist_inlet_is_not_t001() -> None:
+    doc = new_document()
+    doc.add("OutdoorAir:NodeList", nodes=[{"node_or_nodelist_name": "OA In"}], validate=False)
+    _heater(doc, "OA In")
+    assert [f for f in check_topology(doc) if f.code == "T001"] == []
+
+
+def test_a_loop_inlet_node_is_not_t001() -> None:
+    doc = new_document()
+    doc.add(
+        "AirLoopHVAC",
+        "Sys",
+        supply_side_inlet_node_name="Sys In",
+        supply_side_outlet_node_names="Heater Out",
+        validate=False,
+    )
+    _heater(doc, "Sys In")
+    assert [f for f in check_topology(doc) if f.code == "T001"] == []
+
+
+def test_unmodified_models_have_no_dangling_nodes(five_zone: IDFDocument, dual_duct: IDFDocument) -> None:
+    for doc in (five_zone, dual_duct):
+        assert [f for f in HVACTopology.from_document(doc).check() if f.code in DANGLING] == []

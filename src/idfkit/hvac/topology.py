@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Collection, Iterable, Mapping
-from typing import TYPE_CHECKING, Any, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, cast
 
 from idfkit._derived import get_or_build
 from idfkit._graph_common import MAX_EXAMPLES, Coverage, ObjectKey, UncoveredPart
@@ -30,6 +30,9 @@ from idfkit.hvac.types import (
     FlowEdge,
     FlowEdgeKind,
     Fluid,
+    LoopKind,
+    LoopMembership,
+    LoopSide,
     NodeUse,
     Provenance,
     TopologyFinding,
@@ -87,6 +90,27 @@ STRUCTURAL_TYPES = frozenset({"NodeList"})
 """Node-bearing types that only list nodes for other objects; they have no connection of their own."""
 
 EMS_RULE = "ems_key"
+
+LOOP_SIDES: dict[str, tuple[LoopKind, tuple[tuple[LoopSide, str], ...]]] = {
+    "AIRLOOPHVAC": ("air", (("supply", "branch_list_name"),)),
+    "PLANTLOOP": ("plant", (("supply", "plant_side_branch_list_name"), ("demand", "demand_side_branch_list_name"))),
+    "CONDENSERLOOP": (
+        "condenser",
+        (("supply", "condenser_side_branch_list_name"), ("demand", "condenser_demand_side_branch_list_name")),
+    ),
+}
+"""Loop types, their kind, and the field naming each side's ``BranchList``. An air loop's demand side
+has no branches: it is the air path from its demand inlets to the zones and back."""
+
+LOOP_ORDER = ("AirLoopHVAC", "PlantLoop", "CondenserLoop")
+
+_NOT_MEMBERS = frozenset({
+    "BRANCH",
+    "NODELIST",
+    *LOOP_SIDES,
+    *(t.upper() for t in ("Connector:Splitter", "Connector:Mixer")),
+})
+"""Node-bearing types that list or join a loop's nodes but are not components on it."""
 
 # --------------------------------------------------------------------------------------------- #
 # Per-type plans, compiled once per schema version.
@@ -230,6 +254,7 @@ class HVACTopology:
 
     __slots__ = (
         "_built_at",
+        "_chains",
         "_coverage",
         "_doc",
         "_edge_fluid",
@@ -237,6 +262,7 @@ class HVACTopology:
         "_ems_unresolved",
         "_findings",
         "_in_adj",
+        "_memberships",
         "_meta",
         "_node_edges",
         "_node_id",
@@ -273,6 +299,8 @@ class HVACTopology:
         self._ems_unresolved: list[ObjectKey] = []
         self._coverage = Coverage.of(())
         self._findings: list[TopologyFinding] | None = None
+        self._memberships: dict[int, list[LoopMembership]] | None = None
+        self._chains: dict[tuple[int, LoopSide], list[list[IDFObject]]] = {}
         self._build()
 
     @classmethod
@@ -891,6 +919,323 @@ class HVACTopology:
             for eid in adj[oid]:
                 take(eid, depth + 1)
         return [self._edge(e) for e in found]
+
+    # ----------------------------------------------------------------------------------------- #
+    # Loops: memberships, chains, zones served
+    # ----------------------------------------------------------------------------------------- #
+
+    def loops(self) -> list[IDFObject]:
+        """Every ``AirLoopHVAC``, ``PlantLoop`` and ``CondenserLoop``, air loops first, each in model order."""
+        doc = self._doc
+        return [loop for t in LOOP_ORDER if t in doc for loop in doc.get_collection(t)]
+
+    def _loop_oid(self, loop: IDFObject) -> int:
+        oid = self._oid(loop)
+        if oid is None or loop.obj_type.upper() not in LOOP_SIDES:
+            msg = f"{loop.obj_type} {loop.name!r} is not an AirLoopHVAC, PlantLoop or CondenserLoop of this model"
+            raise ValueError(msg)
+        return oid
+
+    def _branches(self, loop: IDFObject, list_field: str) -> list[IDFObject]:
+        """The branches a loop's ``BranchList`` names, in list order."""
+        doc = self._doc
+        list_name = loop.data.get(list_field)
+        if not isinstance(list_name, str) or "BranchList" not in doc or "Branch" not in doc:
+            return []
+        branch_list = doc.get_collection("BranchList").get(list_name)
+        if branch_list is None:
+            return []
+        branches = doc.get_collection("Branch")
+        found = (branches.get(str(i.get("branch_name", "") or "")) for i in branch_list.extensible_items("branches"))
+        return [b for b in found if b is not None]
+
+    def _branch_components(self, branch: IDFObject) -> list[tuple[IDFObject | None, int | None, int]]:
+        """``(object, object id, stream)`` for each component a branch lists, in order, so positions
+        count every listed component. The object is ``None`` when the model lacks it; the id is
+        ``None`` for a component with no node fields of its own (an outdoor-air system). The stream
+        is the component's stream whose inlet the branch names."""
+        doc = self._doc
+        out: list[tuple[IDFObject | None, int | None, int]] = []
+        for item in branch.extensible_items("components"):
+            obj_type = str(item.get("component_object_type", "") or "")
+            name = str(item.get("component_name", "") or "")
+            oid = self._obj_lookup.get((obj_type.upper(), name.upper()))
+            if oid is None:
+                obj = doc.get_collection(obj_type).get(name) if obj_type in doc else None
+                out.append((obj, None, 1))
+                continue
+            inlet = self._node_id.get(str(item.get("component_inlet_node_name", "") or "").upper())
+            streams = [u[3] for u in self._obj_uses[oid] if u[0] == inlet and u[2] in CONSUMES]
+            if not streams:
+                streams = [u[3] for u in self._obj_uses[oid]] or [1]
+            out.append((self._obj[oid], oid, min(streams)))
+        return out
+
+    def _loop_nodes(self, loop: IDFObject, field: str) -> list[int]:
+        value = loop.data.get(field)
+        if not isinstance(value, str) or not value:
+            return []
+        return [
+            self._node_id[n.upper()]
+            for n in self._nodelists().get(value.upper(), (value,))
+            if n.upper() in self._node_id
+        ]
+
+    def _air_side(self, loop: IDFObject, side: LoopSide) -> tuple[set[int], set[int]]:
+        """The air path of one side of an air loop: ``(object ids, node ids)``.
+
+        The supply side runs from the supply inlet to the supply outlets, the demand side from the
+        demand inlets to the zones and from the zones to the demand outlet. A walk never crosses a
+        loop's own junction (supply outlet to demand inlet, demand outlet to supply inlet), never
+        follows a water edge, and stops at a zone.
+        """
+        if side == "supply":
+            forward = self._loop_nodes(loop, "supply_side_inlet_node_name")
+            backward = self._loop_nodes(loop, "supply_side_outlet_node_names")
+            stop = {*self._loop_nodes(loop, "demand_side_inlet_node_names"), *forward}
+        else:
+            forward = self._loop_nodes(loop, "demand_side_inlet_node_names")
+            backward = self._loop_nodes(loop, "demand_side_outlet_node_name")
+            stop = {*self._loop_nodes(loop, "supply_side_inlet_node_name"), *forward}
+        objects: set[int] = set()
+        nodes: set[int] = {*forward, *backward}
+        self._side_walk(forward, stop, objects, nodes, downstream=True)
+        self._side_walk(backward, stop, objects, nodes, downstream=False)
+        # Parents (terminal units, distribution units, unitary systems) hold the path's nodes too.
+        for nid in list(nodes):
+            for oid, _, conn, _, _ in self._uses[nid]:
+                if conn not in CONTROLS and self._obj[oid].obj_type.upper() not in ZONE_TYPES:
+                    objects.add(oid)
+        return objects, nodes
+
+    def _side_walk(
+        self, starts: list[int], stop: set[int], objects: set[int], nodes: set[int], *, downstream: bool
+    ) -> None:
+        """Walk air edges from the nodes *starts*, adding what is reached to *objects* and *nodes*,
+        never through a node of *stop* and never past a zone."""
+        air = (_F[Fluid.AIR], _F[Fluid.UNKNOWN])
+        adj = self._out_adj if downstream else self._in_adj
+        queue: deque[int] = deque()
+        for nid in starts:
+            producers, consumers = self._flow_ends(nid)
+            for oid in consumers if downstream else producers:
+                if oid not in objects and self._obj[oid].obj_type.upper() not in ZONE_TYPES:
+                    objects.add(oid)
+                    queue.append(oid)
+        while queue:
+            oid = queue.popleft()
+            for eid in adj[oid]:
+                src, dst, nid, _ = self._edges[eid]
+                if nid in stop or self._fluid_of(eid) not in air:
+                    continue
+                nodes.add(nid)
+                end = dst if downstream else src
+                if end not in objects and self._obj[end].obj_type.upper() not in ZONE_TYPES:
+                    objects.add(end)
+                    queue.append(end)
+
+    def _build_memberships(self) -> dict[int, list[LoopMembership]]:
+        found: dict[int, list[LoopMembership]] = {}
+        seen: set[tuple[int, int, LoopSide | None]] = set()
+
+        def add(oid: int, membership: LoopMembership, loop_oid: int) -> None:
+            if (oid, loop_oid, membership.side) in seen:
+                return
+            seen.add((oid, loop_oid, membership.side))
+            found.setdefault(oid, []).append(membership)
+
+        for loop in self.loops():
+            loop_oid = self._oid(loop)
+            if loop_oid is None:
+                continue
+            key = self._obj_key[loop_oid]
+            for oid, membership in self._branch_memberships(loop, key):
+                add(oid, membership, loop_oid)
+            if loop.obj_type.upper() == "AIRLOOPHVAC":
+                for oid, membership in self._air_memberships(loop, key):
+                    add(oid, membership, loop_oid)
+        self._add_zone_equipment(found)
+        for memberships in found.values():
+            memberships.sort(key=lambda m: (m.stream, m.loop.name.upper(), m.side or ""))
+        return found
+
+    def _branch_memberships(self, loop: IDFObject, key: ObjectKey) -> Iterable[tuple[int, LoopMembership]]:
+        """Memberships of the components a loop's branches list, with branch and position."""
+        kind, sides = LOOP_SIDES[loop.obj_type.upper()]
+        for side, list_field in sides:
+            for branch in self._branches(loop, list_field):
+                branch_key = ObjectKey(branch.obj_type, branch.name)
+                for position, (_, oid, stream) in enumerate(self._branch_components(branch)):
+                    if oid is not None:
+                        yield oid, LoopMembership(key, kind, side, branch_key, position, stream)
+
+    def _air_memberships(self, loop: IDFObject, key: ObjectKey) -> Iterable[tuple[int, LoopMembership]]:
+        """Memberships on an air loop's path for components no branch lists."""
+        for side in ("supply", "demand"):
+            objects, nodes = self._air_side(loop, side)
+            for oid in sorted(objects):
+                if self._obj[oid].obj_type.upper() in _NOT_MEMBERS:
+                    continue
+                streams = [u[3] for u in self._obj_uses[oid] if u[0] in nodes] or [1]
+                yield oid, LoopMembership(key, "air", side, None, None, min(streams))
+
+    def _add_zone_equipment(self, found: dict[int, list[LoopMembership]]) -> None:
+        doc = self._doc
+        if "ZoneHVAC:EquipmentList" not in doc:
+            return
+        lists = doc.get_collection("ZoneHVAC:EquipmentList")
+        for oid, obj in enumerate(self._obj):
+            if obj.obj_type.upper() not in ZONE_TYPES:
+                continue
+            equipment = lists.get(str(obj.data.get("zone_conditioning_equipment_list_name", "") or ""))
+            if equipment is None:
+                continue
+            for item in equipment.extensible_items("equipment"):
+                obj_type = str(item.get("zone_equipment_object_type", "") or "").upper()
+                member = self._obj_lookup.get((obj_type, str(item.get("zone_equipment_name", "") or "").upper()))
+                if member is None:
+                    continue
+                streams = [u[3] for u in self._obj_uses[member]] or [1]
+                membership = LoopMembership(self._obj_key[oid], "zone_equipment", None, None, None, min(streams))
+                found.setdefault(member, []).append(membership)
+
+    def memberships(self, obj: IDFObject) -> list[LoopMembership]:
+        """Every loop *obj* sits on, and where (FR-011).
+
+        A component listed on a branch reports that branch and its 0-based position. A component on
+        an air loop's path but on no branch (an outdoor-air mixer, a terminal unit, the coil inside
+        it, a zone splitter) reports the side with no branch. Equipment in a zone's equipment list
+        reports a ``zone_equipment`` membership keyed by the ``ZoneHVAC:EquipmentConnections``. A
+        water coil is on an air loop and on the demand side of a water loop, so it reports both.
+
+        Args:
+            obj: Any object of the document.
+
+        Returns:
+            The memberships, ordered by stream, then loop name. Empty for an object on no loop.
+        """
+        if self._memberships is None:
+            self._memberships = self._build_memberships()
+        oid = self._oid(obj)
+        return list(self._memberships.get(oid, [])) if oid is not None else []
+
+    def chain(self, loop: IDFObject, side: Literal["supply", "demand"]) -> list[list[IDFObject]]:
+        """One side of a loop, in flow order.
+
+        Plant and condenser loops, and an air loop's supply side, give one list per branch of the
+        side's ``BranchList``, in list order, each its components in listed order. An air loop's
+        demand side gives one list per path from a demand inlet to a zone, then one per path from a
+        zone to the demand outlet; the zones themselves are not listed.
+
+        Args:
+            loop: An ``AirLoopHVAC``, ``PlantLoop`` or ``CondenserLoop`` of the document.
+            side: ``"supply"`` or ``"demand"``.
+
+        Returns:
+            The paths, each a list of components in flow order.
+
+        Raises:
+            ValueError: If *loop* is not a loop of this document or *side* is not a side.
+        """
+        if side not in ("supply", "demand"):
+            msg = f"side must be 'supply' or 'demand', got {side!r}"
+            raise ValueError(msg)
+        loop_oid = self._loop_oid(loop)
+        paths = self._chains.get((loop_oid, side))
+        if paths is None:
+            kind, sides = LOOP_SIDES[loop.obj_type.upper()]
+            if kind == "air" and side == "demand":
+                paths = [[self._obj[oid] for oid in path] for path in self._air_demand_paths(loop)]
+            else:
+                list_field = dict(sides)[side] if kind != "air" else sides[0][1]
+                paths = [
+                    [obj for obj, _, _ in self._branch_components(b) if obj is not None]
+                    for b in self._branches(loop, list_field)
+                ]
+            self._chains[(loop_oid, side)] = paths
+        return [list(path) for path in paths]
+
+    def _air_demand_paths(self, loop: IDFObject) -> list[list[int]]:
+        objects, _ = self._air_side(loop, "demand")
+        supply = self._paths(self._loop_nodes(loop, "demand_side_inlet_node_names"), objects, downstream=True)
+        back = self._paths(self._loop_nodes(loop, "demand_side_outlet_node_name"), objects, downstream=False)
+        return supply + [path[::-1] for path in back]
+
+    def _paths(self, starts: list[int], allowed: set[int], *, downstream: bool) -> list[list[int]]:
+        """Every simple path of non-parent components from the nodes *starts*, through *allowed*
+        objects, to a zone or a dead end."""
+        adj = self._out_adj if downstream else self._in_adj
+        paths: list[list[int]] = []
+        stack: list[list[int]] = []
+        for nid in starts:
+            producers, consumers = self._flow_ends(nid)
+            stack.extend([oid] for oid in (consumers if downstream else producers) if oid in allowed)
+        while stack:
+            path = stack.pop()
+            following: list[int] = []
+            for eid in adj[path[-1]]:
+                end = self._edges[eid][1 if downstream else 0]
+                if end in allowed and end not in path and end not in following:
+                    following.append(end)
+            if not following:
+                paths.append(path)
+            stack.extend([*path, end] for end in reversed(following))
+        return paths
+
+    def zones_served(self, air_loop: IDFObject) -> list[IDFObject]:
+        """The zones (or spaces) an air loop supplies: those its demand side reaches, in model order.
+
+        Args:
+            air_loop: An ``AirLoopHVAC`` of the document.
+
+        Returns:
+            The ``Zone`` (or ``Space``) objects.
+
+        Raises:
+            ValueError: If *air_loop* is not an air loop of this document.
+        """
+        self._loop_oid(air_loop)
+        if air_loop.obj_type.upper() != "AIRLOOPHVAC":
+            msg = f"{air_loop.obj_type} {air_loop.name!r} is not an AirLoopHVAC"
+            raise ValueError(msg)
+        served: set[tuple[str, str]] = set()
+        for nid in self._loop_nodes(air_loop, "demand_side_inlet_node_names"):
+            for oid in self._reach_zones(nid):
+                key = self._vertex_key(oid)
+                served.add((key.object_type, key.name.upper()))
+        doc = self._doc
+        return [
+            zone
+            for zone_type in ("Zone", "Space")
+            if zone_type in doc
+            for zone in doc.get_collection(zone_type)
+            if (zone_type, zone.name.upper()) in served
+        ]
+
+    def _reach_zones(self, nid: int) -> list[int]:
+        """Zone vertices reached downstream on air from a node, never crossing into a return path."""
+        _, consumers = self._flow_ends(nid)
+        air = _F[Fluid.AIR]
+        seen = set(consumers)
+        queue = deque(consumers)
+        zones: list[int] = []
+        while queue:
+            oid = queue.popleft()
+            if self._obj[oid].obj_type.upper() in ZONE_TYPES:
+                zones.append(oid)
+                continue
+            for eid in self._out_adj[oid]:
+                end = self._edges[eid][1]
+                if end not in seen and self._fluid_of(eid) in (air, _F[Fluid.UNKNOWN]):
+                    seen.add(end)
+                    queue.append(end)
+        return zones
+
+    def _node_fields(self, node: str) -> list[tuple[IDFObject, NodeUse]]:
+        """Every use of *node* with the object itself, for ``IDFDocument.rename_node``, which writes
+        the fields. Raises ``KeyError`` if no field names *node*."""
+        nid = self._nid(node)
+        return [(self._obj[use[0]], self._node_use(nid, use)) for use in self._uses[nid]]
 
     def check(self) -> list[TopologyFinding]:
         """Run the static connection checks; computed once per view.
