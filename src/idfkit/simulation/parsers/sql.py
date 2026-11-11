@@ -162,6 +162,86 @@ class EnvironmentInfo:
     environment_type: int
 
 
+ErrorSeverity = Literal["info", "warning", "severe", "fatal"]
+"""Severity of an EnergyPlus message, as recorded in the SQL ``Errors`` table."""
+
+# EnergyPlus writes ``Errors.ErrorType`` as -1 (ShowMessage), 0 (warning), 1 (severe) or 2 (fatal).
+_ERROR_SEVERITY: dict[int, ErrorSeverity] = {-1: "info", 0: "warning", 1: "severe", 2: "fatal"}
+
+
+def _severity_from_code(code: object) -> ErrorSeverity:
+    """Map an ``Errors.ErrorType`` code to a severity.
+
+    Codes outside the four EnergyPlus writes are clamped: below -1 reads as ``"info"`` and above 2
+    as ``"fatal"``, so an unexpected code never hides a message.
+    """
+    value = int(code) if isinstance(code, (int, float)) else 0
+    if value in _ERROR_SEVERITY:
+        return _ERROR_SEVERITY[value]
+    return "info" if value < 0 else "fatal"
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentSize:
+    """One row of the EnergyPlus ``ComponentSizes`` table.
+
+    Attributes:
+        index: The ``ComponentSizesIndex`` of the row, stable within one database.
+        component_type: The component's object type as EnergyPlus reports it, in upper case
+            (e.g. ``"COIL:HEATING:ELECTRIC"``).
+        component_name: The component's name, in upper case.
+        description: What was sized (e.g. ``"Design Size Nominal Capacity"``).
+        value: The sized value, or ``None`` when EnergyPlus recorded none.
+        units: The value's units, as given in the table (e.g. ``"W"``).
+    """
+
+    index: int
+    component_type: str
+    component_name: str
+    description: str
+    value: float | None
+    units: str
+
+
+@dataclass(frozen=True, slots=True)
+class SQLErrorRow:
+    """One message from the EnergyPlus ``Errors`` table.
+
+    Attributes:
+        severity: ``"info"``, ``"warning"``, ``"severe"`` or ``"fatal"``, from ``ErrorType``.
+        message: The message text, including any continuation lines EnergyPlus appended.
+        count: How many times EnergyPlus reported it (``Count``). Recurring messages carry their total.
+    """
+
+    severity: ErrorSeverity
+    message: str
+    count: int
+
+
+@dataclass(frozen=True, slots=True)
+class ZoneRow:
+    """One zone from the EnergyPlus ``Zones`` table.
+
+    Attributes:
+        index: The ``ZoneIndex`` of the zone.
+        name: The zone name, in upper case as EnergyPlus reports it.
+        multiplier: The zone's own ``Multiplier``.
+        list_multiplier: The multiplier inherited from a ``ZoneGroup`` (``ListMultiplier``).
+    """
+
+    index: int
+    name: str
+    multiplier: int
+    list_multiplier: int
+
+
+def _as_int(value: object, default: int = 1) -> int:
+    """Read an integer-valued SQL cell that EnergyPlus may store as REAL or leave NULL."""
+    if isinstance(value, (int, float)):
+        return round(value)
+    return default
+
+
 # EnergyPlus EnvironmentType values in the EnvironmentPeriods table.
 _SIZING_ENV_TYPES = (1, 2)  # DesignDay, DesignRunPeriod
 _ANNUAL_ENV_TYPE = 3  # WeatherFileRunPeriod
@@ -197,6 +277,9 @@ class SQLResult:
         self._owns_file = _owns_file
         self._closed = False
         self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
+        # ``mode=ro`` refuses writes to the file; ``query_only`` also refuses them on any schema the
+        # connection could reach (temp tables, attached databases), so no reader can modify a result.
+        self._conn.execute("PRAGMA query_only = ON")
 
     def close(self) -> None:
         """Close the database connection.
@@ -516,6 +599,93 @@ class SQLResult:
         """
         ts = self.get_timeseries(variable_name, key_value, frequency, environment)
         return ts.to_dataframe()
+
+    def component_sizes(self) -> list[ComponentSize]:
+        """List every row of the ``ComponentSizes`` table, in table order.
+
+        Returns:
+            One [ComponentSize][idfkit.simulation.parsers.sql.ComponentSize] per sized value. Empty when
+            the run sized nothing.
+        """
+        cur = self._conn.cursor()
+        cur.execute(
+            "SELECT ComponentSizesIndex, CompType, CompName, Description, Value, Units "
+            "FROM ComponentSizes ORDER BY ComponentSizesIndex"
+        )
+        return [
+            ComponentSize(
+                index=int(row[0]),
+                component_type=str(row[1] or ""),
+                component_name=str(row[2] or ""),
+                description=str(row[3] or ""),
+                value=float(row[4]) if row[4] is not None else None,
+                units=str(row[5] or ""),
+            )
+            for row in cur.fetchall()
+        ]
+
+    def errors(self) -> list[SQLErrorRow]:
+        """List every message of the ``Errors`` table, in the order EnergyPlus reported them.
+
+        Returns:
+            One [SQLErrorRow][idfkit.simulation.parsers.sql.SQLErrorRow] per message, with its severity
+            and occurrence count.
+        """
+        cur = self._conn.cursor()
+        cur.execute("SELECT ErrorType, ErrorMessage, Count FROM Errors ORDER BY ErrorIndex")
+        return [
+            SQLErrorRow(
+                severity=_severity_from_code(row[0]),
+                message=str(row[1] or ""),
+                count=_as_int(row[2], default=0),
+            )
+            for row in cur.fetchall()
+        ]
+
+    def zones(self) -> list[ZoneRow]:
+        """List every zone of the ``Zones`` table with its multipliers, in zone order.
+
+        Returns:
+            One [ZoneRow][idfkit.simulation.parsers.sql.ZoneRow] per zone.
+        """
+        cur = self._conn.cursor()
+        cur.execute("SELECT ZoneIndex, ZoneName, Multiplier, ListMultiplier FROM Zones ORDER BY ZoneIndex")
+        return [
+            ZoneRow(
+                index=int(row[0]),
+                name=str(row[1] or ""),
+                multiplier=_as_int(row[2]),
+                list_multiplier=_as_int(row[3]),
+            )
+            for row in cur.fetchall()
+        ]
+
+    def report_keys(self) -> list[VariableInfo]:
+        """List the keys of every reported variable and meter, without reading any values.
+
+        Reads the ``ReportDataDictionary`` table only and never ``ReportData``, so its cost does not
+        grow with the length of the run or the number of time steps.
+
+        Returns:
+            One [VariableInfo][idfkit.simulation.parsers.sql.VariableInfo] per dictionary entry, in
+            dictionary order.
+        """
+        cur = self._conn.cursor()
+        cur.execute(
+            "SELECT Name, KeyValue, ReportingFrequency, Units, IsMeter, Type "
+            "FROM ReportDataDictionary ORDER BY ReportDataDictionaryIndex"
+        )
+        return [
+            VariableInfo(
+                name=str(row[0]),
+                key_value=str(row[1] or ""),
+                frequency=FREQUENCY_MAP.get(str(row[2]), str(row[2])),
+                units=str(row[3] or ""),
+                is_meter=bool(row[4]),
+                variable_type=str(row[5]) if row[5] else "",
+            )
+            for row in cur.fetchall()
+        ]
 
     def query(self, sql: str, parameters: tuple[object, ...] = ()) -> list[tuple[object, ...]]:
         """Execute a raw SQL query.

@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The README opens with the idfkit identity header at `identity-2026.5`: the mark, the
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
+- `IDFDocument.revision`, a counter bumped exactly once by every change to a document's objects
+  (add, remove, field write, rename, extensible-group edit) and never by a read. Derived views such
+  as the coming HVAC topology use it to know when a cached copy is stale.
+- `SQLResult.component_sizes()`, `errors()`, `zones()` and `report_keys()` read the sizing rows,
+  the simulation messages with their counts, the zones with their multipliers and the output
+  variable keys from EnergyPlus's SQLite output, one query per table. `report_keys()` never reads
+  the timeseries table. `SQLResult` now also sets `PRAGMA query_only`.
 
 ### Changed
 
