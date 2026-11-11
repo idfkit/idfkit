@@ -352,3 +352,24 @@ class TestIDFDocumentDescribe:
         model = IDFDocument(version=(24, 1, 0))
         with pytest.raises(ValueError, match="No schema loaded"):
             model.describe("Zone")
+
+
+class TestDescribeNamelessType:
+    """A type without a Name field keeps its first field, and says it has no name."""
+
+    def test_output_meter_lists_key_name(self, schema: EpJSONSchema) -> None:
+        desc = describe_object_type(schema, "Output:Meter")
+        assert desc.has_name is False
+        assert [f.name for f in desc.fields] == ["key_name", "reporting_frequency"]
+
+    def test_named_type_still_drops_name(self, schema: EpJSONSchema) -> None:
+        desc = describe_object_type(schema, "Material")
+        assert desc.has_name is True
+        assert "name" not in [f.name for f in desc.fields]
+
+    def test_get_field_names_keeps_the_first_field_of_a_nameless_type(self, schema: EpJSONSchema) -> None:
+        assert schema.get_field_names("Output:Meter") == ["key_name", "reporting_frequency"]
+        assert schema.get_field_names("Timestep") == ["number_of_timesteps_per_hour"]
+        pc = schema.get_parsing_cache("Output:Meter")
+        assert pc is not None
+        assert pc.field_names == ("key_name", "reporting_frequency")

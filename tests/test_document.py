@@ -1241,3 +1241,82 @@ class TestIDFDocumentPickleAndDeepcopy:
             [sys.executable, "-c", script], input=pickle.dumps(simple_doc), capture_output=True, check=True
         )
         assert result.stdout.decode().strip() == f"{len(simple_doc)} {simple_doc.version} True"
+
+
+# ---------------------------------------------------------------------------
+# Names on types without a Name field
+# ---------------------------------------------------------------------------
+
+# (type, first field, value): Output:Meter's first field is required, Output:SQLite's is optional.
+_NAMELESS_CASES = [
+    ("Output:Meter", "key_name", "Electricity:Facility"),
+    ("Output:SQLite", "option_type", "SimpleAndTabular"),
+]
+
+
+class TestNameOnNamelessType:
+    """A name given to a type with no Name field would be dropped on write; it is refused."""
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_add_refuses_a_name(self, obj_type: str, first_field: str, value: str, validate: bool) -> None:
+        doc = new_document()
+        with pytest.raises(InvalidFieldError, match=f'{first_field}="{value}"') as excinfo:
+            doc.add(obj_type, value, validate=validate)
+        assert f"{obj_type} has no Name field" in str(excinfo.value)
+        assert obj_type not in doc
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    def test_add_with_the_first_field_writes_it(self, obj_type: str, first_field: str, value: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, fields={first_field: value})
+        assert obj.name == ""
+        assert obj.data[first_field] == value
+        assert value in write_idf(doc)
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    def test_add_accepts_an_empty_name(self, obj_type: str, first_field: str, value: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, "", fields={first_field: value})
+        assert obj.name == ""
+        doc.removeidfobject(obj)
+        obj = doc.add(obj_type, None, fields={first_field: value})  # type: ignore[arg-type]
+        assert obj.name is None or obj.name == ""
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    @pytest.mark.parametrize("attr", ["name", "Name"])
+    def test_name_assignment_is_refused(self, obj_type: str, first_field: str, value: str, attr: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, fields={first_field: value})
+        with pytest.raises(InvalidFieldError, match=f'{first_field}="Other"'):
+            setattr(obj, attr, "Other")
+        assert obj.name == ""
+        obj.name = ""  # clearing a name that is already empty is not a change
+
+    def test_eppy_paths_refuse_a_name(self) -> None:
+        doc = new_document()
+        with pytest.raises(InvalidFieldError):
+            doc.newidfobject("Output:Meter", Name="Electricity:Facility")
+        meter = doc.newidfobject("Output:Meter", key_name="Electricity:Facility")
+        with pytest.raises(InvalidFieldError):
+            doc.copyidfobject(meter, new_name="Gas:Facility")
+        detached = meter.copy()
+        object.__setattr__(detached, "_name", "Gas:Facility")
+        with pytest.raises(InvalidFieldError):
+            doc.addidfobject(detached)
+        assert len(doc["Output:Meter"]) == 1
+
+    def test_loading_nameless_objects_still_works(self, tmp_path: Path) -> None:
+        idf = tmp_path / "m.idf"
+        idf.write_text(
+            "Version, 24.1;\nOutput:Meter, Electricity:Facility, Hourly;\nOutput:SQLite, SimpleAndTabular;\n"
+            "Timestep, 4;\n"
+        )
+        doc = load_idf(str(idf))
+        meter = doc["Output:Meter"].first()
+        assert meter is not None
+        assert meter.name == ""
+        assert meter.key_name == "Electricity:Facility"
+        sqlite = doc["Output:SQLite"].first()
+        assert sqlite is not None
+        assert sqlite.option_type == "SimpleAndTabular"

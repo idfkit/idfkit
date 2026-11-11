@@ -209,7 +209,7 @@ class TestEnsureSqlOutput:
 
     def test_no_duplicate(self) -> None:
         doc = new_document()
-        doc.add("Output:SQLite", "SimpleAndTabular")
+        doc.add("Output:SQLite", option_type="SimpleAndTabular")
         _ensure_sql_output(doc)
         assert len(doc["Output:SQLite"]) == 1
 

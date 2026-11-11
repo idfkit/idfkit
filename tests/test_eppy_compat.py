@@ -1085,7 +1085,7 @@ class TestSetWWR:
         # Add AirflowNetwork object referencing the old fenestration
         afn = doc.add(
             "AirflowNetwork:MultiZone:Surface",
-            "AFN_SouthGlz",
+            "",
             {"surface_name": "SouthWall_Glz0"},
             validate=False,
         )
