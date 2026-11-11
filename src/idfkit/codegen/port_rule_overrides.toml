@@ -1,0 +1,589 @@
+# Reviewed resolutions for idfkit.codegen.generate_port_rules (research R-04, step 5).
+#
+# The generator reads EnergyPlus's own node connection report and fails while any of three kinds
+# of item is unreviewed. Each entry below is one review, with its reason:
+#
+#   [[rule]]       Replaces every generated rule for (object_type, field). Used where a field's role
+#                  differs between models: a value predicate (`when = [field, value]`, compared
+#                  case-insensitively, a blank field taking its schema default) or a role that
+#                  depends on the surrounding parent. `provenance` stays `eplus_examples` only for
+#                  variants EnergyPlus reported; a variant inferred by analogy is `hand_written`.
+#   [[accept]]     Accepts the role EnergyPlus reported where the field's name suggests another.
+#                  EnergyPlus decides; naming is only the cross-check.
+#   [[ambiguous]]  An object used the same node in several fields, so the rows could not be told
+#                  apart. Any of those fields EnergyPlus never reported unambiguously keeps a
+#                  `hand_written` rule from its name.
+#
+# Reviewed against the EnergyPlus 26.2 example files.
+
+# ------------------------------------------------------------------------------------------------
+# Value predicates: an air-cooled or evaporatively cooled condenser takes outdoor air at its inlet.
+# ------------------------------------------------------------------------------------------------
+
+[[rule]]
+object_type = "AirConditioner:VariableRefrigerantFlow"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "AirCooled"]
+connection = "OutsideAir"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for air-cooled condensers."
+
+[[rule]]
+object_type = "AirConditioner:VariableRefrigerantFlow"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "EvaporativelyCooled"]
+connection = "OutsideAir"
+stream = 1
+fluid = "Air"
+provenance = "hand_written"
+reason = "No example uses it; EnergyPlus treats evaporatively cooled condensers like air-cooled ones."
+
+[[rule]]
+object_type = "AirConditioner:VariableRefrigerantFlow"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "WaterCooled"]
+connection = "Inlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "A water-cooled condenser is a plant demand component on stream 2."
+
+[[rule]]
+object_type = "Chiller:ConstantCOP"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "AirCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for air-cooled condensers."
+
+[[rule]]
+object_type = "Chiller:ConstantCOP"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "EvaporativelyCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for evaporatively cooled condensers."
+
+[[rule]]
+object_type = "Chiller:ConstantCOP"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "WaterCooled"]
+connection = "Inlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "A water-cooled condenser is on the condenser loop's demand side."
+
+[[rule]]
+object_type = "Chiller:Electric"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "AirCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for air-cooled condensers."
+
+[[rule]]
+object_type = "Chiller:Electric"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "EvaporativelyCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "hand_written"
+reason = "No example uses it; Chiller:ConstantCOP and Chiller:Electric:EIR report OutsideAir for it."
+
+[[rule]]
+object_type = "Chiller:Electric"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "WaterCooled"]
+connection = "Inlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "A water-cooled condenser is on the condenser loop's demand side."
+
+[[rule]]
+object_type = "Chiller:Electric:EIR"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "AirCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for air-cooled condensers."
+
+[[rule]]
+object_type = "Chiller:Electric:EIR"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "EvaporativelyCooled"]
+connection = "OutsideAir"
+stream = 2
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "EnergyPlus reports an OutsideAir reference for evaporatively cooled condensers."
+
+[[rule]]
+object_type = "Chiller:Electric:EIR"
+field = "condenser_inlet_node_name"
+when = ["condenser_type", "WaterCooled"]
+connection = "Inlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "A water-cooled condenser is on the condenser loop's demand side."
+
+# ------------------------------------------------------------------------------------------------
+# Roles that depend on the surrounding parent, resolved to the component's own role.
+# ------------------------------------------------------------------------------------------------
+
+[[rule]]
+object_type = "Coil:Cooling:DX:VariableSpeed"
+field = "indoor_air_inlet_node_name"
+connection = "Inlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:Cooling:DX:VariableSpeed"
+field = "indoor_air_outlet_node_name"
+connection = "Outlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:Heating:DX:VariableSpeed"
+field = "indoor_air_inlet_node_name"
+connection = "Inlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:Heating:DX:VariableSpeed"
+field = "indoor_air_outlet_node_name"
+connection = "Outlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed"
+field = "condenser_water_inlet_node_name"
+connection = "Inlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed"
+field = "condenser_water_outlet_node_name"
+connection = "Outlet"
+stream = 2
+fluid = "Water"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed"
+field = "evaporator_air_inlet_node_name"
+connection = "Inlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed"
+field = "evaporator_air_outlet_node_name"
+connection = "Outlet"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "Internal only inside CoilSystem:IntegratedHeatPump:AirSource, which registers the outer connection itself."
+
+[[rule]]
+object_type = "Dehumidifier:Desiccant:System"
+field = "sensor_node_name"
+connection = "Sensor"
+stream = 1
+fluid = "Air"
+provenance = "eplus_examples"
+reason = "When the sensor sits on the process outlet, EnergyPlus also lists that node as the parent's Outlet; the field is the sensor."
+
+[[rule]]
+object_type = "OutdoorAir:NodeList"
+field = "nodes.node_or_nodelist_name"
+connection = "OutsideAir"
+stream = 1
+fluid = "Air"
+accepts_nodelist = true
+provenance = "eplus_examples"
+reason = "EnergyPlus numbers the streams of an outdoor air node list by entry; every entry is an outdoor air boundary."
+
+[[rule]]
+object_type = "WaterHeater:HeatPump:PumpedCondenser"
+field = "air_inlet_node_name"
+connection = "Inlet"
+stream = 1
+fluid = "Air"
+is_parent = true
+provenance = "eplus_examples"
+reason = "A parent use, so it adds no flow edge; EnergyPlus lists it as an Outlet only with a scheduled compressor location, where the field is unused."
+
+# ------------------------------------------------------------------------------------------------
+# Same node in two fields of one object.
+# ------------------------------------------------------------------------------------------------
+
+[[ambiguous]]
+object_type = "Chiller:Electric:ASHRAE205"
+fields = ["oil_cooler_outlet_node_name", "auxiliary_inlet_node_name"]
+reason = "The only example chains the oil cooler outlet into the auxiliary inlet."
+
+[[ambiguous]]
+object_type = "Chiller:Electric:EIR"
+fields = ["heat_recovery_outlet_node_name", "heat_recovery_leaving_temperature_setpoint_node_name"]
+reason = "The setpoint is read on the heat recovery outlet itself."
+
+[[ambiguous]]
+object_type = "Coil:Heating:Steam"
+fields = ["air_outlet_node_name", "temperature_setpoint_node_name"]
+reason = "The setpoint is read on the coil's own air outlet."
+
+[[ambiguous]]
+object_type = "EvaporativeCooler:Direct:ResearchSpecial"
+fields = ["air_outlet_node_name", "sensor_node_name"]
+reason = "The sensor sits on the cooler's own air outlet."
+
+[[ambiguous]]
+object_type = "PlantEquipmentOperation:ComponentSetpoint"
+fields = ["setpoint_2_node_name", "demand_calculation_3_node_name"]
+reason = "One example reuses a node across two equipment entries."
+
+[[ambiguous]]
+object_type = "SetpointManager:MixedAir"
+fields = ["fan_outlet_node_name", "cooling_coil_inlet_node_name"]
+reason = "The fan blows directly into the cooling coil, so its outlet is the coil's inlet."
+
+[[ambiguous]]
+object_type = "SetpointManager:OutdoorAirPretreat"
+fields = ["reference_setpoint_node_name", "mixed_air_stream_node_name"]
+reason = "The reference setpoint is the mixed air node itself."
+
+# ------------------------------------------------------------------------------------------------
+# Naming cross-check: the role EnergyPlus reports is accepted over the field's name.
+# ------------------------------------------------------------------------------------------------
+
+[[accept]]
+object_type = "AirLoopHVAC:ReturnPlenum"
+field = "induced_air_outlet_node_or_nodelist_name"
+connection = "Inlet"
+reason = "EnergyPlus registers the plenum's induced-air nodes, drawn by induction terminals, with connection type Inlet."
+
+[[accept]]
+object_type = "AirLoopHVAC:UnitarySystem"
+field = "outdoor_dry_bulb_temperature_sensor_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers the outdoor dry-bulb sensor node as an Inlet of the unit; it must be an outdoor air node."
+
+[[accept]]
+object_type = "Coil:Heating:Electric"
+field = "temperature_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "Coil:Heating:Fuel"
+field = "temperature_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "CondenserLoop"
+field = "condenser_loop_temperature_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "Controller:OutdoorAir"
+field = "relief_air_outlet_node_name"
+connection = "Actuator"
+reason = "The controller sets the flow at this node; EnergyPlus registers it as an Actuator."
+
+[[accept]]
+object_type = "EvaporativeCooler:Indirect:ResearchSpecial"
+field = "relief_air_inlet_node_name"
+connection = "Inlet"
+reason = "The relief air stream enters the component at this node, so EnergyPlus registers an Inlet."
+
+[[accept]]
+object_type = "HeatExchanger:FluidToFluid"
+field = "component_override_loop_demand_side_inlet_node_name"
+connection = "Actuator"
+reason = "The controller sets the flow at this node; EnergyPlus registers it as an Actuator."
+
+[[accept]]
+object_type = "HeatExchanger:FluidToFluid"
+field = "component_override_loop_supply_side_inlet_node_name"
+connection = "Actuator"
+reason = "The controller sets the flow at this node; EnergyPlus registers it as an Actuator."
+
+[[accept]]
+object_type = "HeatExchanger:FluidToFluid"
+field = "heat_exchanger_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "OutdoorAir:Mixer"
+field = "outdoor_air_stream_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers this node as an ordinary Inlet; the node itself is declared outdoor air by an OutdoorAir:Node or OutdoorAir:NodeList entry, which carries the OutsideAir role."
+
+[[accept]]
+object_type = "PlantEquipmentOperation:ComponentSetpoint"
+field = "setpoint_1_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "PlantEquipmentOperation:ComponentSetpoint"
+field = "setpoint_2_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "PlantEquipmentOperation:ComponentSetpoint"
+field = "setpoint_3_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "PlantEquipmentOperation:ThermalEnergyStorage"
+field = "component_1_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "PlantEquipmentOperation:ThermalEnergyStorage"
+field = "component_2_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "PlantLoop"
+field = "loop_temperature_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "SetpointManager:MixedAir"
+field = "cooling_coil_outlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:MixedAir"
+field = "fan_inlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:MixedAir"
+field = "fan_outlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:MixedAir"
+field = "reference_setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "SetpointManager:OutdoorAirPretreat"
+field = "outdoor_air_stream_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:ReturnTemperature:ChilledWater"
+field = "plant_loop_supply_inlet_node"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:ReturnTemperature:ChilledWater"
+field = "plant_loop_supply_outlet_node"
+connection = "Setpoint"
+reason = "The setpoint manager writes its setpoint to this node; EnergyPlus registers it as a Setpoint."
+
+[[accept]]
+object_type = "SetpointManager:ReturnTemperature:HotWater"
+field = "plant_loop_supply_inlet_node"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:ReturnTemperature:HotWater"
+field = "plant_loop_supply_outlet_node"
+connection = "Setpoint"
+reason = "The setpoint manager writes its setpoint to this node; EnergyPlus registers it as a Setpoint."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Cooling"
+field = "zone_inlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Cooling"
+field = "zone_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Heating"
+field = "zone_inlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Heating"
+field = "zone_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Reheat"
+field = "zone_inlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SetpointManager:SingleZone:Reheat"
+field = "zone_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SolarCollector:UnglazedTranspired"
+field = "setpoint_node_name"
+connection = "Sensor"
+reason = "The object reads the setpoint another object places on this node; EnergyPlus registers the read as a Sensor."
+
+[[accept]]
+object_type = "SolarCollector:UnglazedTranspired"
+field = "zone_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "SpaceHVAC:ZoneEquipmentMixer"
+field = "zone_equipment_inlet_node_name"
+connection = "Outlet"
+reason = "The name describes the zone equipment's side; from this splitter's or mixer's side the flow runs the other way, as EnergyPlus registers it."
+
+[[accept]]
+object_type = "SpaceHVAC:ZoneEquipmentSplitter"
+field = "zone_equipment_outlet_node_name"
+connection = "Inlet"
+reason = "The name describes the zone equipment's side; from this splitter's or mixer's side the flow runs the other way, as EnergyPlus registers it."
+
+[[accept]]
+object_type = "SurfaceProperty:LocalEnvironment"
+field = "outdoor_air_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers this node as an ordinary Inlet; the node itself is declared outdoor air by an OutdoorAir:Node or OutdoorAir:NodeList entry, which carries the OutsideAir role."
+
+[[accept]]
+object_type = "TemperingValve"
+field = "pump_outlet_node_name"
+connection = "Sensor"
+reason = "The object only reads conditions at this node; EnergyPlus registers it as a Sensor, not a flow use."
+
+[[accept]]
+object_type = "WaterHeater:Stratified"
+field = "ambient_temperature_outdoor_air_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers this node as an ordinary Inlet; the node itself is declared outdoor air by an OutdoorAir:Node or OutdoorAir:NodeList entry, which carries the OutsideAir role."
+
+[[accept]]
+object_type = "ZoneHVAC:EvaporativeCoolerUnit"
+field = "zone_relief_air_node_name"
+connection = "Inlet"
+reason = "The relief air stream enters the component at this node, so EnergyPlus registers an Inlet."
+
+[[accept]]
+object_type = "ZoneHVAC:IdealLoadsAirSystem"
+field = "outdoor_air_inlet_node_name"
+connection = "Outlet"
+reason = "EnergyPlus registers this node as an Outlet of ZoneHVAC:IdealLoadsAirSystem; the field name describes the zone side."
+
+[[accept]]
+object_type = "ZoneHVAC:IdealLoadsAirSystem"
+field = "zone_exhaust_air_node_name"
+connection = "Outlet"
+reason = "EnergyPlus registers this node as an Outlet of ZoneHVAC:IdealLoadsAirSystem; the field name describes the zone side."
+
+[[accept]]
+object_type = "ZoneHVAC:VentilatedSlab"
+field = "cold_water_inlet_node_name"
+connection = "Actuator"
+reason = "The controller sets the flow at this node; EnergyPlus registers it as an Actuator."
+
+[[accept]]
+object_type = "ZoneHVAC:VentilatedSlab"
+field = "hot_water_or_steam_inlet_node_name"
+connection = "Actuator"
+reason = "The controller sets the flow at this node; EnergyPlus registers it as an Actuator."
+
+[[accept]]
+object_type = "ZoneHVAC:WaterToAirHeatPump"
+field = "outdoor_dry_bulb_temperature_sensor_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers the outdoor dry-bulb sensor node as an Inlet of the unit; it must be an outdoor air node."
+
+[[accept]]
+object_type = "ZoneProperty:LocalEnvironment"
+field = "outdoor_air_node_name"
+connection = "Inlet"
+reason = "EnergyPlus registers this node as an ordinary Inlet; the node itself is declared outdoor air by an OutdoorAir:Node or OutdoorAir:NodeList entry, which carries the OutsideAir role."
+
+# ------------------------------------------------------------------------------------------------
+# Types no example file and no appended test model exercises.
+# ------------------------------------------------------------------------------------------------
+
+[[rule]]
+object_type = "SpaceHVAC:ZoneReturnMixer"
+field = "zone_return_air_node_name"
+connection = "Outlet"
+stream = 1
+fluid = "Air"
+is_parent = true
+provenance = "hand_written"
+reason = "Mirrors SpaceHVAC:ZoneEquipmentMixer, which EnergyPlus reports: the mixed stream leaves to the zone return node. A test model needs spaces with their own return nodes, which no example has."
+
+[[rule]]
+object_type = "SpaceHVAC:ZoneReturnMixer"
+field = "spaces.space_return_air_node_name"
+connection = "Inlet"
+stream = 1
+fluid = "Air"
+is_parent = true
+provenance = "hand_written"
+reason = "Mirrors SpaceHVAC:ZoneEquipmentMixer, which EnergyPlus reports: each space return node enters the mixer."

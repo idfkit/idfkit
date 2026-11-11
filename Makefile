@@ -53,6 +53,13 @@ check-doc-locations: ## Verify doc_locations.json is up-to-date (requires idfkit
 		echo "⏭️  Skipping doc_locations check (../idfkit-docs/dist not found)"; \
 	fi
 
+.PHONY: check-node-fields
+check-node-fields: ## Verify the generated HVAC node-field table matches the bundled schemas
+	@echo "🚀 Checking the HVAC node-field table"
+	@uv run python -m idfkit.codegen.generate_node_fields
+	@git diff --exit-code src/idfkit/hvac/_node_fields.py || \
+		(echo "❌ src/idfkit/hvac/_node_fields.py is stale. Run: uv run python -m idfkit.codegen.generate_node_fields" && exit 1)
+
 .PHONY: check-baker
 check-baker: ## Verify bundled agent references match their source templates + snippets
 	@echo "🚀 Checking agent reference bundle consistency"
@@ -83,7 +90,7 @@ check-parity: ## Check the parity ledger against the exported capability set
 # sibling clone; it never masks a verdict, and CI never takes it, because the naming and parity
 # jobs in .github/workflows/conformance.yml check the corpus out themselves and block on the result.
 .PHONY: check
-check: check-stubs check-conformance-level check-epw-sentinels check-doc-locations check-baker check-naming check-parity ## Run code quality tools.
+check: check-stubs check-conformance-level check-epw-sentinels check-doc-locations check-node-fields check-baker check-naming check-parity ## Run code quality tools.
 	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
 	@uv lock --locked
 	@echo "🚀 Linting code: Running pre-commit"
