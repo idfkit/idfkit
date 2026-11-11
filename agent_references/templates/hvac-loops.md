@@ -68,13 +68,13 @@ Validation checks that every branch name in the splitter/mixer exists as a `Bran
 
 EnergyPlus loops are wired by string-typed *node names*, not by object references. A coil declares `air_inlet_node_name` and `air_outlet_node_name`; the adjacent branch component declares the same node names on its own side. **idfkit's schema-driven validation enforces that node names are real strings, not that two objects share the right one.**
 
-The safety net is `get_referencing` plus a final `validate_document` call. There's no idfkit feature that "wires" two nodes for you — that's still your responsibility.
+Nothing wires two nodes for you, but `idfkit.hvac` checks them: `HVACTopology` reads every node field with the role EnergyPlus gives it, and `check_topology(doc)` reports a branch listing a node its component does not have (`T010`), consecutive branch components that do not connect (`T011`) and inlets nothing supplies (`T030`). See [hvac-topology.md](hvac-topology.md).
 
 ```python
 --8<-- "agent_references/snippets/hvac-loops.py:link-node-names"
 ```
 
-If the strings don't match exactly (case-sensitive), the loop is broken. EnergyPlus will only tell you at simulation time. **Always lint with `validate_document` and a `get_referencing` spot-check before simulating.**
+If the strings don't match, the loop is broken, and schema validation will not tell you. **Run `validate_document` and `check_topology` before simulating.**
 
 ## Common mistakes
 
@@ -85,7 +85,7 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     # fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
     ```
 
-!!! success "set both ends, or rename the coil"
+!!! success "set both ends, then check the connection"
 
     ```python
     --8<-- "agent_references/snippets/hvac-loops.py:mistake-node-good"
@@ -111,7 +111,7 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     # A typo in a node name passes validation but breaks the loop.
     ```
 
-!!! success "also walk the graph manually for critical loops"
+!!! success "run the topology checks"
 
     ```python
     --8<-- "agent_references/snippets/hvac-loops.py:mistake-walk-good"
@@ -120,6 +120,7 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.
-- [reference-tracking.md](reference-tracking.md) — the workhorse for navigating and renaming loop graphs.
+- [hvac-topology.md](hvac-topology.md) — the node graph: who connects to a node, flow walks, connection checks.
+- [reference-tracking.md](reference-tracking.md) — navigating and renaming the objects a loop references.
 - [schema-and-validation.md](schema-and-validation.md) — `E004` errors are dangling node-name references.
 - I/O Reference (via `idfkit-mcp` search_docs or the docs site): `AirLoopHVAC`, `PlantLoop`, `CondenserLoop`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, setpoint managers, controllers.

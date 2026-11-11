@@ -96,9 +96,13 @@ fan = doc.add(
 
 
 # --8<-- [start:mistake-node-good]
+from idfkit.hvac import HVACTopology
+
 coil.air_outlet_node_name = "AHU-1 Coil Out"
 fan.air_inlet_node_name = "AHU-1 Coil Out"
-# Note: node names are strings, not references — both must be updated.
+# Node names are strings, not references: both ends must change. Then confirm they meet:
+topo = HVACTopology.from_document(doc)
+assert [o.name for o in topo.consumers("AHU-1 Coil Out")] == [fan.name]
 # --8<-- [end:mistake-node-good]
 
 
@@ -109,11 +113,10 @@ coil.name = "New Coil Name"
 
 
 # --8<-- [start:mistake-walk-good]
-# Sanity-check that every coil has a paired adjacent branch component
-for coil in doc.get_collection("Coil:Cooling:Water"):
-    inlet = coil.air_inlet_node_name
-    outlet = coil.air_outlet_node_name
-    upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-    downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-    assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+from idfkit.hvac import check_topology
+
+findings = check_topology(doc)  # T010/T011 branch mismatches, T030 inlets nothing supplies
+for finding in findings:
+    print(finding.code, finding.severity, finding.message)
+assert not [f for f in findings if f.severity == "error"], "broken loop connections"
 # --8<-- [end:mistake-walk-good]

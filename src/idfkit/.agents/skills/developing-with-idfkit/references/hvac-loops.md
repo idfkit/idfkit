@@ -102,7 +102,7 @@ Validation checks that every branch name in the splitter/mixer exists as a `Bran
 
 EnergyPlus loops are wired by string-typed *node names*, not by object references. A coil declares `air_inlet_node_name` and `air_outlet_node_name`; the adjacent branch component declares the same node names on its own side. **idfkit's schema-driven validation enforces that node names are real strings, not that two objects share the right one.**
 
-The safety net is `get_referencing` plus a final `validate_document` call. There's no idfkit feature that "wires" two nodes for you — that's still your responsibility.
+Nothing wires two nodes for you, but `idfkit.hvac` checks them: `HVACTopology` reads every node field with the role EnergyPlus gives it, and `check_topology(doc)` reports a branch listing a node its component does not have (`T010`), consecutive branch components that do not connect (`T011`) and inlets nothing supplies (`T030`). See [hvac-topology.md](hvac-topology.md).
 
 ```python
 # Coil names node A and node B
@@ -126,7 +126,7 @@ fan = doc.add(
 )
 ```
 
-If the strings don't match exactly (case-sensitive), the loop is broken. EnergyPlus will only tell you at simulation time. **Always lint with `validate_document` and a `get_referencing` spot-check before simulating.**
+If the strings don't match, the loop is broken, and schema validation will not tell you. **Run `validate_document` and `check_topology` before simulating.**
 
 ## Common mistakes
 
@@ -137,12 +137,16 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     # fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
     ```
 
-!!! success "set both ends, or rename the coil"
+!!! success "set both ends, then check the connection"
 
     ```python
+    from idfkit.hvac import HVACTopology
+
     coil.air_outlet_node_name = "AHU-1 Coil Out"
     fan.air_inlet_node_name = "AHU-1 Coil Out"
-    # Note: node names are strings, not references — both must be updated.
+    # Node names are strings, not references: both ends must change. Then confirm they meet:
+    topo = HVACTopology.from_document(doc)
+    assert [o.name for o in topo.consumers("AHU-1 Coil Out")] == [fan.name]
     ```
 
 !!! failure "renaming a coil via `_data["name"]`"
@@ -166,21 +170,21 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     # A typo in a node name passes validation but breaks the loop.
     ```
 
-!!! success "also walk the graph manually for critical loops"
+!!! success "run the topology checks"
 
     ```python
-    # Sanity-check that every coil has a paired adjacent branch component
-    for coil in doc.get_collection("Coil:Cooling:Water"):
-        inlet = coil.air_inlet_node_name
-        outlet = coil.air_outlet_node_name
-        upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-        downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-        assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+    from idfkit.hvac import check_topology
+
+    findings = check_topology(doc)  # T010/T011 branch mismatches, T030 inlets nothing supplies
+    for finding in findings:
+        print(finding.code, finding.severity, finding.message)
+    assert not [f for f in findings if f.severity == "error"], "broken loop connections"
     ```
 
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.
-- [reference-tracking.md](reference-tracking.md) — the workhorse for navigating and renaming loop graphs.
+- [hvac-topology.md](hvac-topology.md) — the node graph: who connects to a node, flow walks, connection checks.
+- [reference-tracking.md](reference-tracking.md) — navigating and renaming the objects a loop references.
 - [schema-and-validation.md](schema-and-validation.md) — `E004` errors are dangling node-name references.
 - I/O Reference (via `idfkit-mcp` search_docs or the docs site): `AirLoopHVAC`, `PlantLoop`, `CondenserLoop`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, setpoint managers, controllers.

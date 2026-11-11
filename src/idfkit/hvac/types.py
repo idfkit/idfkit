@@ -94,7 +94,8 @@ class NodeUse:
         field: The Python field name. An extensible sub-field is ``group.field``.
         connection: The connection type, or ``None`` when no rule classifies the field.
         stream: The fluid stream number, pairing an inlet with an outlet of the same fluid.
-        fluid: The fluid the rule records for this use.
+        fluid: The fluid on the node. For a parent object or a control use, which can sit on air or
+            water, it is the fluid the components moving flow through the node give it.
         is_parent: True for a parent object, whose nodes repeat its children's and add no flow edge.
         via_nodelist: The ``NodeList`` name when the field names a list that contains the node.
         rule: ``"ems_key"`` for an EMS sensor or actuator use, ``None`` for a port rule.

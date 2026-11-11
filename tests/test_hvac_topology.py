@@ -159,6 +159,39 @@ def test_a_nodelist_start_walks_from_every_listed_node(dual_duct: IDFDocument) -
         topo.downstream("No Such Node", hops=1)
 
 
+def test_branches_and_controls_report_the_fluid_of_the_node_they_sit_on(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    air = {u.object.object_type: u.fluid for u in topo.uses("Main Cooling Coil 1 Outlet Node")}
+    assert air["Branch"] is Fluid.AIR  # the Branch rule's commonest observation is water
+    for node, fluid in (("VAV Sys 1 Outlet Node", Fluid.AIR), ("HW Supply Outlet Node", Fluid.WATER)):
+        (setpoint,) = [u for u in topo.controls(node) if u.object.object_type == "SetpointManager:Scheduled"]
+        assert setpoint.fluid is fluid
+
+
+PLANT_SOURCES = (ComponentCategory.BOILER, ComponentCategory.CHILLER)
+
+
+def test_a_water_walk_from_a_coil_inlet_reaches_only_its_own_plant(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    coil = dual_duct["Coil:Heating:Water"]["Corner_Class_1_Pod_1 Fan Coil Heat Coil"]
+    inlet = coil.water_inlet_node_name
+    assert inlet is not None
+    edges = topo.upstream(inlet, hops=12, categories=PLANT_SOURCES, fluid=Fluid.WATER)
+    assert {e.source.object_type for e in edges} == {"Boiler:HotWater"}
+    assert all(e.fluid is Fluid.WATER for e in topo.upstream(inlet, hops=12, fluid=Fluid.WATER))
+
+
+def test_a_fluid_filter_stops_the_walk_crossing_streams_at_a_coil(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    coil = dual_duct["Coil:Heating:Water"]["Corner_Class_1_Pod_1 Fan Coil Heat Coil"]
+    every = {e.source.object_type for e in topo.upstream(coil, hops=30, categories=PLANT_SOURCES)}
+    assert "Chiller:Electric:EIR" in every  # the air stream leads to the cooling coil, then its plant
+    water = topo.upstream(coil, hops=30, categories=PLANT_SOURCES, fluid=Fluid.WATER)
+    assert {e.source.object_type for e in water} == {"Boiler:HotWater"}
+    air = topo.upstream(coil, hops=3, fluid=Fluid.AIR)
+    assert air and all(e.fluid is Fluid.AIR for e in air)
+
+
 def test_an_outlet_typo_leaves_a_one_sided_node(five_zone: IDFDocument) -> None:
     coil = five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"]
     coil.air_outlet_node_name = "TYPO NODE"
@@ -204,7 +237,7 @@ def test_value_predicates_choose_the_role(condenser_type: str | None, expected: 
     fields: dict[str, str] = {"condenser_inlet_node_name": "Cond In", "condenser_outlet_node_name": "Cond Out"}
     if condenser_type is not None:
         fields["condenser_type"] = condenser_type
-    doc.add("Chiller:Electric:EIR", "Chiller", validate=False, **fields)
+    doc.add("Chiller:Electric:EIR", "Chiller", dict(fields), validate=False)
     (use,) = HVACTopology.from_document(doc).uses("Cond In")
     assert use.connection is expected  # a blank condenser type takes the schema default, WaterCooled
 

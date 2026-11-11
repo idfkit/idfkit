@@ -231,6 +231,7 @@ class HVACTopology:
     __slots__ = (
         "_coverage",
         "_doc",
+        "_edge_fluid",
         "_edges",
         "_ems_unresolved",
         "_findings",
@@ -263,6 +264,7 @@ class HVACTopology:
         self._obj_uses: list[list[_Use]] = []
         self._meta: list[_Meta] = []
         self._edges: list[_Edge] = []
+        self._edge_fluid: list[int] | None = None
         self._out_adj: list[list[int]] = []
         self._in_adj: list[list[int]] = []
         self._node_edges: list[list[int]] = []
@@ -652,6 +654,12 @@ class HVACTopology:
     def _node_use(self, nid: int, use: _Use) -> NodeUse:
         oid, mid, conn, stream, via = use
         field, fluid, is_parent, prov, tag = self._meta[mid]
+        if is_parent or conn in CONTROLS:
+            # A branch or a setpoint manager can sit on air or water; the components moving
+            # fluid through the node say which, not the rule's most common observation.
+            carried = self._carried_fluid(nid)
+            if carried != _F[Fluid.UNKNOWN]:
+                fluid = carried
         return NodeUse(
             node=self._node_name[nid],
             object=self._obj_key[oid],
@@ -666,18 +674,40 @@ class HVACTopology:
             provenance=PROVENANCES[prov] if prov is not None else None,
         )
 
-    def _edge(self, eid: int) -> FlowEdge:
-        src, dst, nid, kind = self._edges[eid]
-        fluid = Fluid.UNKNOWN
+    def _carried_fluid(self, nid: int) -> int:
+        """The fluid the components producing or consuming flow at a node give it."""
+        unknown = _F[Fluid.UNKNOWN]
+        for _, mid, conn, _, _ in self._uses[nid]:
+            meta = self._meta[mid]
+            if not meta[2] and (conn in PRODUCES or conn in CONSUMES) and meta[1] != unknown:
+                return meta[1]
+        return unknown
+
+    def _fluid_of(self, eid: int) -> int:
+        """The fluid an edge carries: the producer's port first, then the consumer's."""
+        if self._edge_fluid is None:
+            self._edge_fluid = [-1] * len(self._edges)
+        cached = self._edge_fluid[eid]
+        if cached >= 0:
+            return cached
+        src, dst, nid, _ = self._edges[eid]
+        unknown = _F[Fluid.UNKNOWN]
+        fluid = unknown
         for oid, mid, conn, _, _ in self._uses[nid]:
             if oid == src and conn in PRODUCES:
-                fluid = FLUIDS[self._meta[mid][1]]
+                fluid = self._meta[mid][1]
                 break
-        if fluid is Fluid.UNKNOWN:
+        if fluid == unknown:
             for oid, mid, conn, _, _ in self._uses[nid]:
                 if oid == dst and conn in CONSUMES:
-                    fluid = FLUIDS[self._meta[mid][1]]
+                    fluid = self._meta[mid][1]
                     break
+        self._edge_fluid[eid] = fluid
+        return fluid
+
+    def _edge(self, eid: int) -> FlowEdge:
+        src, dst, nid, kind = self._edges[eid]
+        fluid = FLUIDS[self._fluid_of(eid)]
         return FlowEdge(self._vertex_key(src), self._vertex_key(dst), self._node_name[nid], fluid, EDGE_KINDS[kind])
 
     def _vertex_key(self, oid: int) -> ObjectKey:
@@ -747,6 +777,7 @@ class HVACTopology:
         *,
         hops: int = 2,
         categories: Collection[ComponentCategory] | None = None,
+        fluid: Fluid | None = None,
     ) -> list[FlowEdge]:
         """The flow edges reached going downstream from a component or a node, breadth first.
 
@@ -754,10 +785,13 @@ class HVACTopology:
             start: A component; a ``Zone`` or ``Space`` (walked as its equipment connections); a
                 node name; or a ``NodeList`` name, which starts from every node it lists. The walk
                 follows every stream of each component it passes, so it can cross from air to water
-                at a coil.
+                at a coil, unless *fluid* keeps it on one.
             hops: The most edges walked from the start. ``0`` returns nothing.
             categories: When given, keep only edges whose downstream end is a component of one of
                 these categories. The walk still passes through components of other categories.
+            fluid: When given, walk only edges carrying this fluid: edges of other fluids are
+                neither returned nor followed, so a walk from a coil's water side stays on its
+                plant loop. ``None`` follows every stream.
 
         Returns:
             The edges in breadth-first order.
@@ -767,7 +801,7 @@ class HVACTopology:
                 or an object with no connections in this view.
             ValueError: If *hops* is negative.
         """
-        return self._walk(start, hops, categories, downstream=True)
+        return self._walk(start, hops, categories, fluid, downstream=True)
 
     def upstream(
         self,
@@ -775,6 +809,7 @@ class HVACTopology:
         *,
         hops: int = 2,
         categories: Collection[ComponentCategory] | None = None,
+        fluid: Fluid | None = None,
     ) -> list[FlowEdge]:
         """The flow edges reached going upstream from a component or a node, breadth first.
 
@@ -782,10 +817,13 @@ class HVACTopology:
             start: A component; a ``Zone`` or ``Space`` (walked as its equipment connections); a
                 node name; or a ``NodeList`` name, which starts from every node it lists. The walk
                 follows every stream of each component it passes, so it can cross from air to water
-                at a coil.
+                at a coil, unless *fluid* keeps it on one.
             hops: The most edges walked from the start. ``0`` returns nothing.
             categories: When given, keep only edges whose upstream end is a component of one of
                 these categories. The walk still passes through components of other categories.
+            fluid: When given, walk only edges carrying this fluid: edges of other fluids are
+                neither returned nor followed, so a walk from a coil's water side stays on its
+                plant loop. ``None`` follows every stream.
 
         Returns:
             The edges in breadth-first order.
@@ -795,13 +833,14 @@ class HVACTopology:
                 or an object with no connections in this view.
             ValueError: If *hops* is negative.
         """
-        return self._walk(start, hops, categories, downstream=False)
+        return self._walk(start, hops, categories, fluid, downstream=False)
 
     def _walk(  # noqa: C901
         self,
         start: IDFObject | str,
         hops: int,
         categories: Collection[ComponentCategory] | None,
+        fluid: Fluid | None,
         *,
         downstream: bool,
     ) -> list[FlowEdge]:
@@ -809,6 +848,7 @@ class HVACTopology:
             msg = f"hops must not be negative, got {hops}"
             raise ValueError(msg)
         keep = frozenset(categories) if categories is not None else None
+        only = _F[fluid] if fluid is not None else None
         adj = self._out_adj if downstream else self._in_adj
         far = 1 if downstream else 0
         found: list[int] = []
@@ -820,6 +860,8 @@ class HVACTopology:
             if eid in seen_edges:
                 return
             seen_edges.add(eid)
+            if only is not None and self._fluid_of(eid) != only:
+                return
             end = self._edges[eid][far]
             if keep is None or self._obj_cat[end] in keep:
                 found.append(eid)
