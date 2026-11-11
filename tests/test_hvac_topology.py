@@ -360,6 +360,17 @@ def test_hand_written_rules_never_yield_an_error() -> None:
     assert qualified_severity("T010", "eplus_examples") == "error"
 
 
+def test_a_held_view_refuses_to_check_a_document_that_changed(five_zone: IDFDocument) -> None:
+    checked = HVACTopology.from_document(five_zone)
+    findings = checked.check()
+    held = HVACTopology(five_zone)
+    five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"].air_outlet_node_name = "TYPO NODE"
+    with pytest.raises(RuntimeError, match="from_document"):
+        held.check()
+    assert checked.check() == findings  # computed before the edit: one revision, still returned
+    assert any(f.code == "T010" for f in HVACTopology.from_document(five_zone).check())
+
+
 def test_the_check_result_is_cached_with_the_view(five_zone: IDFDocument) -> None:
     topo = HVACTopology.from_document(five_zone)
     assert topo.check() == topo.check()

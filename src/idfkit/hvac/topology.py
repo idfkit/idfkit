@@ -229,6 +229,7 @@ class HVACTopology:
     """
 
     __slots__ = (
+        "_built_at",
         "_coverage",
         "_doc",
         "_edge_fluid",
@@ -253,6 +254,7 @@ class HVACTopology:
     def __init__(self, doc: IDFDocument) -> None:
         """Build the view of *doc*. Prefer :meth:`from_document`, which caches it."""
         self._doc = doc
+        self._built_at = doc.revision
         self._node_id: dict[str, int] = {}
         self._node_name: list[str] = []
         self._uses: list[list[_Use]] = []
@@ -899,8 +901,19 @@ class HVACTopology:
 
         Returns:
             The findings, branch checks first.
+
+        Raises:
+            RuntimeError: If the document changed after this view was built and the checks have not
+                run yet. They read the document's branches, so they would mix two revisions; get a
+                fresh view with :meth:`from_document`.
         """
         if self._findings is None:
+            if self._doc.revision != self._built_at:
+                msg = (
+                    "The document changed after this HVACTopology was built; call "
+                    "HVACTopology.from_document(doc) again before check()."
+                )
+                raise RuntimeError(msg)
             from idfkit.hvac._index import TopologyIndex
             from idfkit.hvac.checks import run_checks
 
