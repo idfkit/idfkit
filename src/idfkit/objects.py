@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
+from .schema import trailing_underscore_aliases
 
 __all__ = [
     "ExtensibleGroup",
@@ -423,21 +424,6 @@ def to_python_name(idf_name: str) -> str:
     return _FIELD_NAME_PATTERN.sub("_", idf_name.lower()).strip("_")
 
 
-def resolve_trailing_underscore_keys(data: dict[str, Any], field_names: Sequence[str]) -> dict[str, Any]:
-    """Rename keys of *data* that name a trailing-underscore field without its underscore.
-
-    ``cond_flag_is_the_basement_conditioned`` becomes ``cond_flag_is_the_basement_conditioned_``
-    when the latter is one of *field_names* and the former is not. A key whose underscored form
-    is also given is left as it is, so the conflict is reported as an unknown field rather than
-    settled silently. Returns *data* itself when nothing is renamed.
-    """
-    fields = frozenset(field_names)
-    renames = {key: key + "_" for key in data if key not in fields and key + "_" in fields and key + "_" not in data}
-    if not renames:
-        return data
-    return {renames.get(key, key): value for key, value in data.items()}
-
-
 def to_idf_name(python_name: str) -> str:
     """Convert Python name back to IDF-style name.
 
@@ -488,10 +474,12 @@ class IDFObject(EppyObjectMixin):
         _schema: Optional schema dict for validation
         _document: Reference to parent document (for reference resolution)
         _field_order: Ordered list of field names from schema
+        _aliases: Spellings of trailing-underscore fields to their keys (shared per type)
     """
 
     __slots__ = (
         "__weakref__",
+        "_aliases",
         "_data",
         "_document",
         "_ext_inner_names",
@@ -518,6 +506,7 @@ class IDFObject(EppyObjectMixin):
     _ext_inner_names: tuple[str, ...]
     _extensibles: frozenset[str]
     _version: int
+    _aliases: Mapping[str, str]
 
     def __init__(
         self,
@@ -532,6 +521,7 @@ class IDFObject(EppyObjectMixin):
         extensibles: frozenset[str] | None = None,
         wrapper_key: str | None = None,
         ext_inner_names: tuple[str, ...] = (),
+        aliases: Mapping[str, str] | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
@@ -557,6 +547,23 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_version", 0)
         object.__setattr__(self, "_wrapper_key", wrapper_key)
         object.__setattr__(self, "_ext_inner_names", ext_inner_names)
+        # The document passes its schema's per-type map; anything else derives it once here.
+        if aliases is None:
+            aliases = trailing_underscore_aliases(field_order) if field_order else {}
+        object.__setattr__(self, "_aliases", aliases)
+
+    def __setstate__(self, state: Any) -> None:
+        """Restore a pickled or deep-copied object.
+
+        An object pickled before ``_aliases`` existed has no such slot in its state; it gets
+        the map from its field order, as a constructed object without ``aliases`` does.
+        """
+        slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
+        for key, value in slots.items():
+            object.__setattr__(self, key, value)
+        if "_aliases" not in slots:
+            field_order = cast("list[str] | None", slots.get("_field_order"))
+            object.__setattr__(self, "_aliases", trailing_underscore_aliases(field_order) if field_order else {})
 
     @property
     def obj_type(self) -> str:
@@ -612,23 +619,21 @@ class IDFObject(EppyObjectMixin):
     def _field_key(self, key: str) -> str:
         """Resolve an attribute or :meth:`update` key to the data key it names.
 
-        Normally this is :func:`to_python_name`. Some epJSON properties end in ``_``
-        because the IDD field name ends in punctuation (``"COND: Flag: Is the basement
-        conditioned?"`` is ``cond_flag_is_the_basement_conditioned_``). Such a field is
-        reached by its exact key and by the spelling without the underscore, which is what
-        :func:`to_python_name` makes of either; both resolve to the schema's key, so the
-        value is stored and written under the name EnergyPlus reads.
+        Normally this is :func:`to_python_name`. A field whose epJSON key ends in ``_``
+        (``cond_flag_is_the_basement_conditioned_``) is reached by that key and by the spelling
+        without the underscore, which is what :func:`to_python_name` makes of either; both
+        resolve to the key, so the value is stored and written under the name EnergyPlus reads.
+        The lookup is in a per-type map that is empty for nearly every type
+        (:func:`~idfkit.schema.trailing_underscore_aliases`).
         """
+        aliases = self._aliases
+        if not aliases:
+            return to_python_name(key)
+        exact = aliases.get(key)
+        if exact is not None:
+            return exact
         python_key = to_python_name(key)
-        if python_key in self._data:
-            return python_key
-        field_order = self._field_order
-        if field_order is None or python_key in field_order:
-            return python_key
-        trailing = python_key + "_"
-        if trailing in field_order:
-            return trailing
-        return python_key
+        return aliases.get(python_key, python_key)
 
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check whether *python_key* is a valid field name for this object.
@@ -1092,6 +1097,7 @@ class IDFObject(EppyObjectMixin):
             extensibles=self._extensibles,
             wrapper_key=self._wrapper_key,
             ext_inner_names=self._ext_inner_names,
+            aliases=self._aliases,
         )
 
     def __dir__(self) -> list[str]:
