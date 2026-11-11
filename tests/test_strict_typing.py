@@ -64,7 +64,7 @@ class TestIDFDocumentStrict:
         copy = doc.copy()
         zone = copy["Zone"]["Office"]
         with pytest.raises(AttributeError):
-            _ = zone.nonexistent_field_xyz  # pyright: ignore[reportArgumentType, reportUnknownMemberType, reportUnknownVariableType]
+            _ = zone.nonexistent_field_xyz  # pyright: ignore[reportArgumentType]
 
 
 class TestIDFCollectionGeneric:
