@@ -21,11 +21,11 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
-from .validation import validate_object
+from .validation import unknown_fields, validate_object
 from .versions import LATEST_VERSION
 
 logger = logging.getLogger(__name__)
@@ -668,6 +668,32 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data[wrapper_key] = [flat_groups[i] for i in sorted(flat_groups)]
         return field_data
 
+    def _reject_second_singleton(self, obj_type: str) -> None:
+        """Raise ``DuplicateObjectError`` if the singleton *obj_type* (``maxProperties == 1``) exists."""
+        existing_type = self._find_existing_collection_type(obj_type)
+        if existing_type is None:
+            return
+        existing = self._collections[existing_type].first()
+        duplicate_name = existing.name if existing and existing.name else existing_type
+        raise DuplicateObjectError(obj_type, duplicate_name)
+
+    def _reject_unknown_fields(self, obj_type: str, field_data: dict[str, Any], pc: ParsingCache | None) -> None:
+        """Raise ``InvalidFieldError`` for the first key of *field_data* the schema does not name."""
+        schema = self._schema
+        if schema is None:
+            return
+        unknown = unknown_fields(schema, obj_type, field_data)
+        if not unknown:
+            return
+        raise InvalidFieldError(
+            obj_type,
+            unknown[0],
+            # The name is the ``name`` argument, not a key of ``fields``.
+            available_fields=[f for f in schema.get_all_field_names(obj_type) if f != "name"],
+            version=self.version,
+            extensible_fields=frozenset(pc.ext_field_names) if pc and pc.ext_field_names else None,
+        )
+
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
         if self._schema is None:
@@ -708,7 +734,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
-                bulk operations where performance matters.
+                bulk operations where performance matters: values, required fields
+                and ranges are then not checked, but a key the schema does not name
+                still raises InvalidFieldError.
             **kwargs: Additional field values
 
         Returns:
@@ -721,6 +749,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
+            InvalidFieldError: If ``validate=False`` and a key is not a field of
+                the object type (the name goes in ``name``, not in ``fields``)
 
         Examples:
             >>> from idfkit import new_document
@@ -778,13 +808,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
 
-            # Enforce singleton object types (schema marker: maxProperties == 1).
+            # validate=True reports unknown keys (W003) with every other finding below. Skipping
+            # validation must not let one through either: it would be stored, then dropped by
+            # write_idf() and written as an unknown property by write_epjson().
+            if not validate:
+                self._reject_unknown_fields(resolved_obj_type, field_data, pc)
+
             if obj_schema.get("maxProperties") == 1:
-                existing_type = self._find_existing_collection_type(resolved_obj_type)
-                if existing_type is not None:
-                    existing = self._collections[existing_type].first()
-                    duplicate_name = existing.name if existing and existing.name else existing_type
-                    raise DuplicateObjectError(resolved_obj_type, duplicate_name)
+                self._reject_second_singleton(resolved_obj_type)
 
             if self._schema.has_name(resolved_obj_type):
                 field_order = self._schema.get_field_names(resolved_obj_type)

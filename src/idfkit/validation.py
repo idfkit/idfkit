@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping
 
     from .document import IDFDocument
     from .objects import IDFObject
@@ -270,6 +270,22 @@ def validate_object(
         check_ranges=check_ranges,
         check_unknown=check_unknown,
     )
+
+
+def unknown_fields(schema: EpJSONSchema, obj_type: str, data: Mapping[str, Any]) -> list[str]:
+    """Return the keys of *data* that *obj_type*'s schema does not name, in input order.
+
+    These are the keys :func:`validate_object` reports as ``W003``. On an extensible type the
+    wrapper key (``reports``, ``vertices``, ...) is a known field; any flat spelling left in
+    *data* is not, since :meth:`IDFDocument.add` folds the valid ones into the wrapper first.
+    Blank values (``None`` or ``""``) are skipped, as ``W003`` skips them. An object type the
+    schema does not know yields an empty list.
+    """
+    rules = _object_rules(schema, obj_type)
+    if rules is None:
+        return []
+    fields = rules.fields
+    return [key for key, value in data.items() if key not in fields and value is not None and value != ""]
 
 
 def _validate_object(  # noqa: C901

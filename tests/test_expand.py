@@ -272,7 +272,7 @@ class TestNeedsExpansion:
 
     def test_ignores_ground_heat_transfer(self) -> None:
         doc = new_document(version=(24, 1, 0))
-        doc.add("GroundHeatTransfer:Control", "", {"name": "test", "run_basement_preprocessor": "No"}, validate=False)
+        doc.add("GroundHeatTransfer:Control", "test", {"run_basement_preprocessor": "No"}, validate=False)
         assert _needs_expansion(doc) is False
 
     def test_false_for_plain_model(self) -> None:

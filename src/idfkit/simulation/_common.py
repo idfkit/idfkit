@@ -313,7 +313,7 @@ def prep_outputs(model: IDFDocument) -> None:
     ensure_sql_output(model)
 
     if "Output:Table:SummaryReports" not in model:
-        model.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+        model.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=False)
 
     if "Output:VariableDictionary" not in model:
         model.add("Output:VariableDictionary", "", key_field="Regular", validate=False)

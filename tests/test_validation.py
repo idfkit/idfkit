@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import ClassVar
 from unittest.mock import patch
 
 import pytest
 
-from idfkit import IDFDocument, new_document
+from idfkit import IDFDocument, load_epjson, new_document
 from idfkit.exceptions import ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
@@ -363,10 +365,16 @@ class TestAddRejectsUnknownExtensibleSpelling:
             )
         assert _unknown_fields(exc_info.value) == ["bogus_field"]
 
-    def test_validate_document_reports_unknown_extensible_key(self) -> None:
-        doc = new_document(version=(24, 1, 0))
-        doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
-        result = validate_document(doc)
+    def test_validate_document_reports_unknown_extensible_key(self, tmp_path: Path) -> None:
+        """A file can still carry such a key, since loading does not reject it; validation reports it."""
+        path = tmp_path / "model.epJSON"
+        path.write_text(
+            json.dumps({
+                "Version": {"Version 1": {"version_identifier": "24.1"}},
+                "Output:Table:SummaryReports": {"Output:Table:SummaryReports 1": {"report_1": "AllSummary"}},
+            })
+        )
+        result = validate_document(load_epjson(path))
         assert any(w.code == "W003" and w.field == "report_1" for w in result.warnings)
 
     def test_unknown_field_skipped_when_check_unknown_false(self) -> None:
