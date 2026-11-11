@@ -631,6 +631,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data = drop_blank_group_slots(field_data, pc.ext_wrapper_key)
 
         ext_set = frozenset(pc.ext_field_names)
+        fixed = frozenset(pc.all_field_names)
         wrapper_key = pc.ext_wrapper_key
         wrapper_present = wrapper_key in field_data
 
@@ -640,7 +641,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for key, value in field_data.items():
             if key == wrapper_key:
                 continue
-            base, idx = parse_extensible_index(key, ext_set)
+            base, idx = parse_extensible_index(key, ext_set, fixed)
             if base is not None:
                 if not is_blank_slot(value):
                     flat_groups.setdefault(idx, {})[base] = value
