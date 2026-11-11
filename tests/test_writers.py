@@ -6,7 +6,7 @@ import json
 import logging
 import warnings
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 import pytest
 
@@ -15,6 +15,7 @@ from idfkit.epjson_parser import parse_epjson  # pyright: ignore[reportPrivateUs
 from idfkit.writers import (
     EpJSONWriter,
     IDFWriter,
+    OutputType,
     _resolve_version_identifier,  # pyright: ignore[reportPrivateUsage]
     _write_idf_lossless,  # pyright: ignore[reportPrivateUsage]
     convert_epjson_to_idf,
@@ -1111,43 +1112,46 @@ class TestVersionFirstControl:
             assert sorted(reparsed.collections) == sorted(model.collections)
 
 
-def _field_less_types() -> list[str]:
-    """Nameless types with no fixed fields: when they hold no extensible groups, nothing is left to write."""
-    from idfkit.schema import get_schema
+# Nameless types with no fixed fields: with no groups, nothing is left to write.
+FIELD_LESS_TYPES = (
+    "EnergyManagementSystem:GlobalVariable",
+    "GroundHeatTransfer:Basement:XFACE",
+    "GroundHeatTransfer:Basement:YFACE",
+    "GroundHeatTransfer:Basement:ZFACE",
+    "GroundHeatTransfer:Slab:XFACE",
+    "GroundHeatTransfer:Slab:YFACE",
+    "GroundHeatTransfer:Slab:ZFACE",
+    "OutdoorAir:NodeList",
+    "Output:Diagnostics",
+    "Output:Table:SummaryReports",
+)
 
-    schema = get_schema((24, 1, 0))
-    return [t for t in schema.object_types if not schema.has_name(t) and not schema.get_all_field_names(t)]
+
+def _object_counts(doc: IDFDocument) -> dict[str, int]:
+    return {obj_type: len(collection) for obj_type, collection in doc.collections.items() if len(collection)}
 
 
 class TestIDFWriterObjectWithNoFields:
     """An object with nothing to write still ends with its own terminator.
 
-    A nameless type whose only fields are an extensible group (``Output:Diagnostics``,
-    ``Output:Table:SummaryReports``, ``OutdoorAir:NodeList`` ...) has no values at all when it holds
-    no groups. The writer emitted just ``Output:Table:SummaryReports,`` with no ``;``, so the object
-    swallowed the next one: EnergyPlus read the following ``Output:Variable``'s type name and values
-    as report names and stopped with Severe errors.
+    A nameless type with no fixed fields (``Output:Diagnostics``, ``Output:Table:SummaryReports``,
+    ``OutdoorAir:NodeList`` ...) has no values at all when it holds no groups. The writer emitted just
+    ``Output:Table:SummaryReports,`` with no ``;``, so the object swallowed the next one: EnergyPlus
+    read the following ``Output:Variable``'s type name and values as report names and stopped with
+    Severe errors.
 
-    ``Type;`` is not an answer either. EnergyPlus's IDF parser does not accept it and reads on into
-    the next object exactly as it does with the missing terminator; ``Type,;``, one blank field, is
-    the spelling it reads as an empty object.
+    It is written ``Type,;``, one blank field. ``Type;`` would not do: EnergyPlus reads on into the
+    next object exactly as it does with the missing terminator. EnergyPlus reads ``Type,;`` as one
+    blank group rather than as an object with nothing in it, which IDF cannot express, but the object
+    after it is intact.
     """
 
-    def test_the_affected_types_are_the_ones_this_is_about(self) -> None:
-        affected = _field_less_types()
-        assert "Output:Table:SummaryReports" in affected
-        assert "Output:Diagnostics" in affected
+    def test_the_list_is_every_field_less_type(self) -> None:
+        from idfkit.schema import get_schema
 
-    @pytest.mark.parametrize("output_type", ["standard", "nocomment", "compressed"])
-    def test_empty_object_is_terminated(self, output_type: Any) -> None:
-        doc = new_document(version=(24, 1, 0))
-        doc.add("Output:Table:SummaryReports", "")
-        doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
-
-        output = write_idf(doc, output_type=output_type)
-
-        body = output.split("Output:Table:SummaryReports,", 1)[1].split("Output:Variable", 1)[0]
-        assert ";" in body, f"no terminator before the next object:\n{output}"
+        schema = get_schema((24, 1, 0))
+        derived = {t for t in schema.object_types if not schema.has_name(t) and not schema.get_all_field_names(t)}
+        assert derived == set(FIELD_LESS_TYPES)
 
     def test_standard_output_is_one_blank_field(self) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -1157,9 +1161,19 @@ class TestIDFWriterObjectWithNoFields:
 
         assert "Output:Diagnostics,\n  ;                          !- Key\n" in output
 
-    @pytest.mark.parametrize("obj_type", _field_less_types())
-    @pytest.mark.parametrize("output_type", ["standard", "nocomment", "compressed"])
-    def test_round_trip_keeps_the_next_object(self, tmp_path: Path, obj_type: str, output_type: Any) -> None:
+    def test_a_blank_with_no_label_has_no_comment(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:XFACE", "", validate=False)
+
+        output = write_idf(doc)
+
+        assert "GroundHeatTransfer:Slab:XFACE,\n  ;\n" in output
+
+    @pytest.mark.parametrize("obj_type", FIELD_LESS_TYPES)
+    @pytest.mark.parametrize("output_type", get_args(OutputType))
+    def test_round_trip_keeps_every_object(self, tmp_path: Path, obj_type: str, output_type: OutputType) -> None:
+        # Compares every collection, not only the object added after the empty one: in sorted output
+        # the object after an empty EnergyManagementSystem:GlobalVariable is GlobalGeometryRules.
         doc = new_document(version=(24, 1, 0))
         doc.add(obj_type, "", validate=False)
         doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
@@ -1168,29 +1182,59 @@ class TestIDFWriterObjectWithNoFields:
 
         roundtrip = parse_idf(path)
 
-        assert len(roundtrip[obj_type]) == 1
-        assert roundtrip[obj_type].first() is not None
-        assert len(roundtrip["Output:Variable"]) == 1
-
-    def test_copy_writes_the_terminator(self) -> None:
-        doc = new_document(version=(24, 1, 0))
-        doc.add("Output:Table:SummaryReports", "")
-        doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
-
-        output = write_idf(doc.copy())
-
-        assert "Output:Table:SummaryReports,\n  ;" in output
+        assert _object_counts(roundtrip) == _object_counts(doc)
 
     def test_preserving_path_terminates_an_added_empty_object(self, tmp_path: Path) -> None:
         source = tmp_path / "source.idf"
-        source.write_text("Version,24.1;\n\nOutput:Variable,*,Site Outdoor Air Drybulb Temperature,Hourly;\n")
+        source.write_text("Version,24.1;\n\nTimestep,4;\n")
         doc = parse_idf(source, preserve_formatting=True)
         doc.add("Output:Table:SummaryReports", "")
-        doc.add("Output:Variable", "", key_value="Zone 1", variable_name="Zone Mean Air Temperature")
+        # A new type after the empty one, so there is an object for it to swallow.
+        doc.add("Output:VariableDictionary", "", key_field="Regular")
+        output = write_idf(doc)
+        assert output.index("Output:Table:SummaryReports") < output.index("Output:VariableDictionary")
+        path = tmp_path / "model.idf"
+        path.write_text(output, encoding="latin-1")
+
+        roundtrip = parse_idf(path, strict_parsing=False)
+
+        assert _object_counts(roundtrip) == _object_counts(doc)
+
+    def test_a_mis_cased_type_keeps_its_fields(self, tmp_path: Path) -> None:
+        # The writer looked the raw spelling up exactly, found no fields, and wrote ``TIMESTEP,;``.
+        from idfkit.objects import IDFObject
+
+        doc = new_document(version=(24, 1, 0))
+        doc.addidfobject(IDFObject(obj_type="TIMESTEP", name="", data={"number_of_timesteps_per_hour": 4}))
+        doc.addidfobject(IDFObject(obj_type="ZONE", name="Office", data={"x_origin": 5.0}))
         path = tmp_path / "model.idf"
         save_idf(doc, path)
 
         roundtrip = parse_idf(path)
 
-        assert len(roundtrip["Output:Table:SummaryReports"]) == 1
-        assert len(roundtrip["Output:Variable"]) == 2
+        assert roundtrip["Timestep"].first().number_of_timesteps_per_hour == 4  # type: ignore[union-attr]
+        assert roundtrip["Zone"]["Office"].x_origin == 5.0
+
+
+class TestIDFParserBlankOverflow:
+    """Trailing blanks past a non-extensible type's last field are unset, not extra values."""
+
+    @pytest.mark.parametrize(
+        "text", ["Timestep,4,,;", "GroundHeatTransfer:Slab:XFACE,;", "GroundHeatTransfer:Slab:XFACE,,,;"]
+    )
+    def test_strict_parsing_accepts_blank_overflow(self, tmp_path: Path, text: str) -> None:
+        path = tmp_path / "model.idf"
+        path.write_text(f"Version,24.1;\n{text}\n")
+
+        doc = parse_idf(path)
+
+        assert len(doc[text.split(",", 1)[0]]) == 1
+
+    def test_the_error_counts_only_the_extra_values(self, tmp_path: Path) -> None:
+        from idfkit.exceptions import IDFParseError
+
+        path = tmp_path / "model.idf"
+        path.write_text("Version,24.1;\nTimestep,4,5,,;\n")
+
+        with pytest.raises(IDFParseError, match=r"1 extra field\(s\) .*expected at most 1, got 2"):
+            parse_idf(path)

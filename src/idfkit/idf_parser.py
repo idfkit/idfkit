@@ -739,31 +739,28 @@ class IDFParser:
                 if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
                     invalid.append((i, field_name, value))
 
-        # Blank overflow is unset, like any other blank field, and is not an extra value. It is how
-        # an object with nothing in it is written, ``GroundHeatTransfer:Slab:XFACE,;``, the one
-        # spelling EnergyPlus reads as an empty object; refusing it refused idfkit's own output.
-        if (
-            not pc.extensible
-            and len(remaining_fields) > num_named
-            and self._strict_parsing
-            and any(remaining_fields[num_named:])
-        ):
-            overflow = len(remaining_fields) - num_named
-            msg = (
-                f"Object has {overflow} extra field(s) but type is not extensible "
-                f"(expected at most {num_named}, got {len(remaining_fields)})"
-            )
-            raise ValueError(msg)
-
-        if pc.extensible and num_named < len(remaining_fields):
+        if len(remaining_fields) > num_named:
             extra = remaining_fields[num_named:]
-            self._append_extensible_fields(
-                data=data,
-                extra=extra,
-                field_names=field_names,
-                field_types=field_types,
-                pc=pc,
-            )
+            if pc.extensible:
+                self._append_extensible_fields(
+                    data=data,
+                    extra=extra,
+                    field_names=field_names,
+                    field_types=field_types,
+                    pc=pc,
+                )
+            elif self._strict_parsing and any(extra):
+                # Trailing blanks past the last field are unset, like any other blank field, and are
+                # not extra values: EnergyPlus accepts ``Timestep,4,,;`` and refuses ``Timestep,4,5;``.
+                # It is also how idfkit writes an object with nothing in it to keep its terminator,
+                # ``GroundHeatTransfer:Slab:XFACE,;``. Only the values up to the last non-blank one
+                # are counted as extra.
+                overflow = len(extra) - next(i for i, value in enumerate(reversed(extra)) if value)
+                msg = (
+                    f"Object has {overflow} extra field(s) but type is not extensible "
+                    f"(expected at most {num_named}, got {num_named + overflow})"
+                )
+                raise ValueError(msg)
 
         return data
 
