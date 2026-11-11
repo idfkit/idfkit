@@ -33,8 +33,10 @@ if TYPE_CHECKING:
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 
-# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate"
-_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
+# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate".
+# Group numbers are 1-based ASCII without leading zeros: "_0_" names no group.
+_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_([1-9][0-9]*)_(.+)$")
+_GROUP_NUMBER_PATTERN = re.compile(r"[1-9][0-9]*")
 
 
 def parse_extensible_index(
@@ -52,6 +54,9 @@ def parse_extensible_index(
     ``MaterialProperty:GlazingSpectralData`` has fixed ``wavelength_1`` beside an extensible
     ``wavelength``, and ``Site:SpectrumData`` has a fixed ``wavelength`` of the same name as one.
 
+    Group numbers start at 1. A ``0`` (``vertex_0_x_coordinate``), a leading zero or a non-ASCII
+    digit names no group, so such a name is not extensible either.
+
     Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
     """
     if field_name in fixed:
@@ -60,11 +65,10 @@ def parse_extensible_index(
         return field_name, 1
 
     last_underscore = field_name.rfind("_")
-    if last_underscore > 0 and field_name[last_underscore + 1 :].isdigit():
+    if last_underscore > 0 and _GROUP_NUMBER_PATTERN.fullmatch(field_name, last_underscore + 1):
         base = field_name[:last_underscore]
-        num = int(field_name[last_underscore + 1 :])
         if base in extensibles:
-            return base, num
+            return base, int(field_name[last_underscore + 1 :])
 
     m = _EXTENSIBLE_NUMBER_PATTERN.match(field_name)
     if m:
@@ -639,6 +643,16 @@ class IDFObject(EppyObjectMixin):
             return trailing
         return python_key
 
+    def _flat_extensible(self, python_key: str) -> tuple[str | None, int]:
+        """Classify *python_key* as a legacy flat extensible spelling, never one of the fixed fields.
+
+        Without a field order (an object built by hand), the schema's legacy field list stands in.
+        """
+        fixed: Container[str] | None = self._field_order
+        if fixed is None:
+            fixed = cast("list[str]", (self._schema or {}).get("legacy_idd", {}).get("fields", ()))
+        return parse_extensible_index(python_key, self._extensibles, fixed)
+
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check whether *python_key* is a valid field name for this object.
 
@@ -710,7 +724,7 @@ class IDFObject(EppyObjectMixin):
         # warning. Scheduled for removal in a future release.
         extensibles = self._extensibles
         if extensibles:
-            base, group_idx = parse_extensible_index(python_key, extensibles, self._field_order or ())
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None and wrapper_key is not None:
                 items_any: Any = data.get(wrapper_key)
                 if isinstance(items_any, list):
@@ -773,7 +787,7 @@ class IDFObject(EppyObjectMixin):
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
         # wrapper slot with a deprecation warning.
         if self._extensibles:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles, self._field_order or ())
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None and self._wrapper_key is not None:
                 warnings.warn(
                     f"{key!r} flat-extensible assignment is deprecated; "
@@ -1063,7 +1077,7 @@ class IDFObject(EppyObjectMixin):
                 return RefusedEntry(key, "wrapper-value", str(exc))
             return None
         if self._extensibles and wrapper_key is not None:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles, self._field_order or ())
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None:
                 return RefusedEntry(key, "legacy-flat", f"use {wrapper_key}[{group_idx - 1}].{base}")
         field_order = self._field_order
