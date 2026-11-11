@@ -43,6 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stored the value in a group, attribute reads of an unset field returned a group's value, and
   `update()` refused the field as a legacy flat name.
   ([cee2d7c](https://github.com/idfkit/idfkit/commit/cee2d7c))
+- Assigning or `update()`-ing a field whose epJSON name ends in `_` raised `InvalidFieldError`,
+  because the trailing underscore was stripped into a name the type does not have. 24 such
+  fields exist across the bundled schemas, among them
+  `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`,
+  `GroundHeatTransfer:Basement:ManualGrid.nx_number_of_cells_in_the_x_direction_20_` and
+  `SizingPeriod:DesignDay.ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`; `add()`
+  already accepted them. `update()` also refused `Output:Table:ReportPeriod.name_` as the
+  object's name. The eppy-style dotted `IDFDocument.update()` had the same fault.
+  ([a520960](https://github.com/idfkit/idfkit/commit/a520960))
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
   swallowed the object after it, and EnergyPlus read that object's type name and values as fields
   of the empty one. This happened to a nameless type with no fixed fields
