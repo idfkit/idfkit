@@ -8,12 +8,888 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Literal, TypeVar, overload
+
+from typing_extensions import Unpack
 
 from ._accessors import AccessorResolver
 from ._compat import EppyDocumentMixin
 from ._generated_types import *  # noqa: F403
-from ._generated_types import _ObjectTypeMap
+from ._generated_types import (
+    _AirConditionerVariableRefrigerantFlowFields,
+    _AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields,
+    _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields,
+    _AirLoopHVACControllerListFields,
+    _AirLoopHVACDedicatedOutdoorAirSystemFields,
+    _AirLoopHVACExhaustSystemFields,
+    _AirLoopHVACFields,
+    _AirLoopHVACMixerFields,
+    _AirLoopHVACOutdoorAirSystemEquipmentListFields,
+    _AirLoopHVACOutdoorAirSystemFields,
+    _AirLoopHVACReturnPathFields,
+    _AirLoopHVACReturnPlenumFields,
+    _AirLoopHVACSplitterFields,
+    _AirLoopHVACSupplyPathFields,
+    _AirLoopHVACSupplyPlenumFields,
+    _AirLoopHVACUnitaryFurnaceHeatCoolFields,
+    _AirLoopHVACUnitaryFurnaceHeatOnlyFields,
+    _AirLoopHVACUnitaryHeatCoolFields,
+    _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields,
+    _AirLoopHVACUnitaryHeatOnlyFields,
+    _AirLoopHVACUnitaryHeatPumpAirToAirFields,
+    _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields,
+    _AirLoopHVACUnitaryHeatPumpWaterToAirFields,
+    _AirLoopHVACUnitarySystemFields,
+    _AirLoopHVACZoneMixerFields,
+    _AirLoopHVACZoneSplitterFields,
+    _AirTerminalDualDuctConstantVolumeFields,
+    _AirTerminalDualDuctVAVFields,
+    _AirTerminalDualDuctVAVOutdoorAirFields,
+    _AirTerminalSingleDuctConstantVolumeCooledBeamFields,
+    _AirTerminalSingleDuctConstantVolumeFourPipeBeamFields,
+    _AirTerminalSingleDuctConstantVolumeFourPipeInductionFields,
+    _AirTerminalSingleDuctConstantVolumeNoReheatFields,
+    _AirTerminalSingleDuctConstantVolumeReheatFields,
+    _AirTerminalSingleDuctMixerFields,
+    _AirTerminalSingleDuctParallelPIUReheatFields,
+    _AirTerminalSingleDuctSeriesPIUReheatFields,
+    _AirTerminalSingleDuctUserDefinedFields,
+    _AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields,
+    _AirTerminalSingleDuctVAVHeatAndCoolReheatFields,
+    _AirTerminalSingleDuctVAVNoReheatFields,
+    _AirTerminalSingleDuctVAVReheatFields,
+    _AirTerminalSingleDuctVAVReheatVariableSpeedFanFields,
+    _AirflowNetworkDistributionComponentCoilFields,
+    _AirflowNetworkDistributionComponentConstantPressureDropFields,
+    _AirflowNetworkDistributionComponentDuctFields,
+    _AirflowNetworkDistributionComponentFanFields,
+    _AirflowNetworkDistributionComponentHeatExchangerFields,
+    _AirflowNetworkDistributionComponentLeakFields,
+    _AirflowNetworkDistributionComponentLeakageRatioFields,
+    _AirflowNetworkDistributionComponentOutdoorAirFlowFields,
+    _AirflowNetworkDistributionComponentReliefAirFlowFields,
+    _AirflowNetworkDistributionComponentTerminalUnitFields,
+    _AirflowNetworkDistributionDuctSizingFields,
+    _AirflowNetworkDistributionDuctViewFactorsFields,
+    _AirflowNetworkDistributionLinkageFields,
+    _AirflowNetworkDistributionNodeFields,
+    _AirflowNetworkIntraZoneLinkageFields,
+    _AirflowNetworkIntraZoneNodeFields,
+    _AirflowNetworkMultiZoneComponentDetailedOpeningFields,
+    _AirflowNetworkMultiZoneComponentHorizontalOpeningFields,
+    _AirflowNetworkMultiZoneComponentSimpleOpeningFields,
+    _AirflowNetworkMultiZoneComponentZoneExhaustFanFields,
+    _AirflowNetworkMultiZoneExternalNodeFields,
+    _AirflowNetworkMultiZoneReferenceCrackConditionsFields,
+    _AirflowNetworkMultiZoneSpecifiedFlowRateFields,
+    _AirflowNetworkMultiZoneSurfaceCrackFields,
+    _AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields,
+    _AirflowNetworkMultiZoneSurfaceFields,
+    _AirflowNetworkMultiZoneWindPressureCoefficientArrayFields,
+    _AirflowNetworkMultiZoneWindPressureCoefficientValuesFields,
+    _AirflowNetworkMultiZoneZoneFields,
+    _AirflowNetworkOccupantVentilationControlFields,
+    _AirflowNetworkSimulationControlFields,
+    _AirflowNetworkZoneControlPressureControllerFields,
+    _AvailabilityManagerAssignmentListFields,
+    _AvailabilityManagerDifferentialThermostatFields,
+    _AvailabilityManagerHighTemperatureTurnOffFields,
+    _AvailabilityManagerHighTemperatureTurnOnFields,
+    _AvailabilityManagerHybridVentilationFields,
+    _AvailabilityManagerLowTemperatureTurnOffFields,
+    _AvailabilityManagerLowTemperatureTurnOnFields,
+    _AvailabilityManagerNightCycleFields,
+    _AvailabilityManagerNightVentilationFields,
+    _AvailabilityManagerOptimumStartFields,
+    _AvailabilityManagerScheduledFields,
+    _AvailabilityManagerScheduledOffFields,
+    _AvailabilityManagerScheduledOnFields,
+    _BoilerHotWaterFields,
+    _BoilerSteamFields,
+    _BranchFields,
+    _BranchListFields,
+    _BuildingFields,
+    _BuildingSurfaceDetailedFields,
+    _CeilingAdiabaticFields,
+    _CeilingInterzoneFields,
+    _CentralHeatPumpSystemFields,
+    _ChillerAbsorptionFields,
+    _ChillerAbsorptionIndirectFields,
+    _ChillerCombustionTurbineFields,
+    _ChillerConstantCOPFields,
+    _ChillerElectricASHRAE205Fields,
+    _ChillerElectricEIRFields,
+    _ChillerElectricFields,
+    _ChillerElectricReformulatedEIRFields,
+    _ChillerEngineDrivenFields,
+    _ChillerHeaterAbsorptionDirectFiredFields,
+    _ChillerHeaterAbsorptionDoubleEffectFields,
+    _ChillerHeaterPerformanceElectricEIRFields,
+    _CoilCoolingDXCurveFitOperatingModeFields,
+    _CoilCoolingDXCurveFitPerformanceFields,
+    _CoilCoolingDXCurveFitSpeedFields,
+    _CoilCoolingDXFields,
+    _CoilCoolingDXMultiSpeedFields,
+    _CoilCoolingDXSingleSpeedFields,
+    _CoilCoolingDXSingleSpeedThermalStorageFields,
+    _CoilCoolingDXTwoSpeedFields,
+    _CoilCoolingDXTwoStageWithHumidityControlModeFields,
+    _CoilCoolingDXVariableRefrigerantFlowFields,
+    _CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields,
+    _CoilCoolingDXVariableSpeedFields,
+    _CoilCoolingWaterDetailedGeometryFields,
+    _CoilCoolingWaterFields,
+    _CoilCoolingWaterToAirHeatPumpEquationFitFields,
+    _CoilCoolingWaterToAirHeatPumpParameterEstimationFields,
+    _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields,
+    _CoilDXASHRAE205PerformanceFields,
+    _CoilHeatingDXMultiSpeedFields,
+    _CoilHeatingDXSingleSpeedFields,
+    _CoilHeatingDXVariableRefrigerantFlowFields,
+    _CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields,
+    _CoilHeatingDXVariableSpeedFields,
+    _CoilHeatingDesuperheaterFields,
+    _CoilHeatingElectricFields,
+    _CoilHeatingElectricMultiStageFields,
+    _CoilHeatingFuelFields,
+    _CoilHeatingGasMultiStageFields,
+    _CoilHeatingSteamFields,
+    _CoilHeatingWaterFields,
+    _CoilHeatingWaterToAirHeatPumpEquationFitFields,
+    _CoilHeatingWaterToAirHeatPumpParameterEstimationFields,
+    _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields,
+    _CoilPerformanceDXCoolingFields,
+    _CoilSystemCoolingDXFields,
+    _CoilSystemCoolingDXHeatExchangerAssistedFields,
+    _CoilSystemCoolingWaterFields,
+    _CoilSystemCoolingWaterHeatExchangerAssistedFields,
+    _CoilSystemHeatingDXFields,
+    _CoilSystemIntegratedHeatPumpAirSourceFields,
+    _CoilUserDefinedFields,
+    _CoilWaterHeatingAirToWaterHeatPumpPumpedFields,
+    _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields,
+    _CoilWaterHeatingAirToWaterHeatPumpWrappedFields,
+    _CoilWaterHeatingDesuperheaterFields,
+    _ComfortViewFactorAnglesFields,
+    _ComplexFenestrationPropertySolarAbsorbedLayersFields,
+    _ComplianceBuildingFields,
+    _ComponentCostAdjustmentsFields,
+    _ComponentCostLineItemFields,
+    _ComponentCostReferenceFields,
+    _CondenserEquipmentListFields,
+    _CondenserEquipmentOperationSchemesFields,
+    _CondenserLoopFields,
+    _ConnectorListFields,
+    _ConnectorMixerFields,
+    _ConnectorSplitterFields,
+    _ConstructionAirBoundaryFields,
+    _ConstructionAssignmentSetFields,
+    _ConstructionCfactorUndergroundWallFields,
+    _ConstructionComplexFenestrationStateFields,
+    _ConstructionFfactorGroundFloorFields,
+    _ConstructionFields,
+    _ConstructionPropertyInternalHeatSourceFields,
+    _ConstructionWindowDataFileFields,
+    _ConstructionWindowEquivalentLayerFields,
+    _ControllerMechanicalVentilationFields,
+    _ControllerOutdoorAirFields,
+    _ControllerWaterCoilFields,
+    _ConvergenceLimitsFields,
+    _CoolingTowerPerformanceCoolToolsFields,
+    _CoolingTowerPerformanceYorkCalcFields,
+    _CoolingTowerSingleSpeedFields,
+    _CoolingTowerTwoSpeedFields,
+    _CoolingTowerVariableSpeedFields,
+    _CoolingTowerVariableSpeedMerkelFields,
+    _CurrencyTypeFields,
+    _CurveBicubicFields,
+    _CurveBiquadraticFields,
+    _CurveChillerPartLoadWithLiftFields,
+    _CurveCubicFields,
+    _CurveCubicLinearFields,
+    _CurveDoubleExponentialDecayFields,
+    _CurveExponentFields,
+    _CurveExponentialDecayFields,
+    _CurveExponentialSkewNormalFields,
+    _CurveFanPressureRiseFields,
+    _CurveFunctionalPressureDropFields,
+    _CurveLinearFields,
+    _CurveQuadLinearFields,
+    _CurveQuadraticFields,
+    _CurveQuadraticLinearFields,
+    _CurveQuarticFields,
+    _CurveQuintLinearFields,
+    _CurveRectangularHyperbola1Fields,
+    _CurveRectangularHyperbola2Fields,
+    _CurveSigmoidFields,
+    _CurveTriquadraticFields,
+    _DaylightingControlsFields,
+    _DaylightingDELightComplexFenestrationFields,
+    _DaylightingDeviceLightWellFields,
+    _DaylightingDeviceShelfFields,
+    _DaylightingDeviceTubularFields,
+    _DaylightingReferencePointFields,
+    _DehumidifierDesiccantNoFansFields,
+    _DehumidifierDesiccantSystemFields,
+    _DemandManagerAssignmentListFields,
+    _DemandManagerElectricEquipmentFields,
+    _DemandManagerExteriorLightsFields,
+    _DemandManagerLightsFields,
+    _DemandManagerThermostatsFields,
+    _DemandManagerVentilationFields,
+    _DesignSpecificationAirTerminalSizingFields,
+    _DesignSpecificationOutdoorAirFields,
+    _DesignSpecificationOutdoorAirSpaceListFields,
+    _DesignSpecificationZoneAirDistributionFields,
+    _DesignSpecificationZoneHVACSizingFields,
+    _DistrictCoolingFields,
+    _DistrictHeatingSteamFields,
+    _DistrictHeatingWaterFields,
+    _DoorFields,
+    _DoorInterzoneFields,
+    _DuctFields,
+    _DuctLossConductionFields,
+    _DuctLossLeakageFields,
+    _DuctLossMakeupAirFields,
+    _ElectricEquipmentDefinitionFields,
+    _ElectricEquipmentFields,
+    _ElectricEquipmentITEAirCooledDefinitionFields,
+    _ElectricEquipmentITEAirCooledFields,
+    _ElectricEquipmentITEAirCooledInstanceFields,
+    _ElectricEquipmentInstanceFields,
+    _ElectricLoadCenterDistributionFields,
+    _ElectricLoadCenterGeneratorsFields,
+    _ElectricLoadCenterInverterFunctionOfPowerFields,
+    _ElectricLoadCenterInverterLookUpTableFields,
+    _ElectricLoadCenterInverterPVWattsFields,
+    _ElectricLoadCenterInverterSimpleFields,
+    _ElectricLoadCenterStorageBatteryFields,
+    _ElectricLoadCenterStorageConverterFields,
+    _ElectricLoadCenterStorageLiIonNMCBatteryFields,
+    _ElectricLoadCenterStorageSimpleFields,
+    _ElectricLoadCenterTransformerFields,
+    _EnergyManagementSystemActuatorFields,
+    _EnergyManagementSystemConstructionIndexVariableFields,
+    _EnergyManagementSystemCurveOrTableIndexVariableFields,
+    _EnergyManagementSystemGlobalVariableFields,
+    _EnergyManagementSystemInternalVariableFields,
+    _EnergyManagementSystemMeteredOutputVariableFields,
+    _EnergyManagementSystemOutputVariableFields,
+    _EnergyManagementSystemProgramCallingManagerFields,
+    _EnergyManagementSystemProgramFields,
+    _EnergyManagementSystemSensorFields,
+    _EnergyManagementSystemSubroutineFields,
+    _EnergyManagementSystemTrendVariableFields,
+    _EnvironmentalImpactFactorsFields,
+    _EvaporativeCoolerDirectCelDekPadFields,
+    _EvaporativeCoolerDirectResearchSpecialFields,
+    _EvaporativeCoolerIndirectCelDekPadFields,
+    _EvaporativeCoolerIndirectResearchSpecialFields,
+    _EvaporativeCoolerIndirectWetCoilFields,
+    _EvaporativeFluidCoolerSingleSpeedFields,
+    _EvaporativeFluidCoolerTwoSpeedFields,
+    _ExteriorFuelEquipmentFields,
+    _ExteriorLightsFields,
+    _ExteriorWaterEquipmentFields,
+    _ExternalInterfaceActuatorFields,
+    _ExternalInterfaceFields,
+    _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields,
+    _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields,
+    _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields,
+    _ExternalInterfaceFunctionalMockupUnitExportToVariableFields,
+    _ExternalInterfaceFunctionalMockupUnitImportFields,
+    _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields,
+    _ExternalInterfaceFunctionalMockupUnitImportToActuatorFields,
+    _ExternalInterfaceFunctionalMockupUnitImportToScheduleFields,
+    _ExternalInterfaceFunctionalMockupUnitImportToVariableFields,
+    _ExternalInterfaceScheduleFields,
+    _ExternalInterfaceVariableFields,
+    _FanComponentModelFields,
+    _FanConstantVolumeFields,
+    _FanOnOffFields,
+    _FanPerformanceNightVentilationFields,
+    _FanSystemModelFields,
+    _FanVariableVolumeFields,
+    _FanZoneExhaustFields,
+    _FaultModelEnthalpySensorOffsetOutdoorAirFields,
+    _FaultModelEnthalpySensorOffsetReturnAirFields,
+    _FaultModelFoulingAirFilterFields,
+    _FaultModelFoulingBoilerFields,
+    _FaultModelFoulingChillerFields,
+    _FaultModelFoulingCoilFields,
+    _FaultModelFoulingCoolingTowerFields,
+    _FaultModelFoulingEvaporativeCoolerFields,
+    _FaultModelHumidistatOffsetFields,
+    _FaultModelHumiditySensorOffsetOutdoorAirFields,
+    _FaultModelTemperatureSensorOffsetChillerSupplyWaterFields,
+    _FaultModelTemperatureSensorOffsetCoilSupplyAirFields,
+    _FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields,
+    _FaultModelTemperatureSensorOffsetOutdoorAirFields,
+    _FaultModelTemperatureSensorOffsetReturnAirFields,
+    _FaultModelThermostatOffsetFields,
+    _FenestrationSurfaceDetailedFields,
+    _FloorAdiabaticFields,
+    _FloorDetailedFields,
+    _FloorGroundContactFields,
+    _FloorInterzoneFields,
+    _FluidCoolerSingleSpeedFields,
+    _FluidCoolerTwoSpeedFields,
+    _FluidPropertiesConcentrationFields,
+    _FluidPropertiesGlycolConcentrationFields,
+    _FluidPropertiesNameFields,
+    _FluidPropertiesSaturatedFields,
+    _FluidPropertiesSuperheatedFields,
+    _FluidPropertiesTemperaturesFields,
+    _FoundationKivaFields,
+    _FoundationKivaSettingsFields,
+    _FuelFactorsFields,
+    _GasEquipmentDefinitionFields,
+    _GasEquipmentFields,
+    _GasEquipmentInstanceFields,
+    _GeneratorCombustionTurbineFields,
+    _GeneratorFuelCellAirSupplyFields,
+    _GeneratorFuelCellAuxiliaryHeaterFields,
+    _GeneratorFuelCellElectricalStorageFields,
+    _GeneratorFuelCellExhaustGasToWaterHeatExchangerFields,
+    _GeneratorFuelCellFields,
+    _GeneratorFuelCellInverterFields,
+    _GeneratorFuelCellPowerModuleFields,
+    _GeneratorFuelCellStackCoolerFields,
+    _GeneratorFuelCellWaterSupplyFields,
+    _GeneratorFuelSupplyFields,
+    _GeneratorInternalCombustionEngineFields,
+    _GeneratorMicroCHPFields,
+    _GeneratorMicroCHPNonNormalizedParametersFields,
+    _GeneratorMicroTurbineFields,
+    _GeneratorPVWattsFields,
+    _GeneratorPhotovoltaicFields,
+    _GeneratorWindTurbineFields,
+    _GeometryTransformFields,
+    _GlazedDoorFields,
+    _GlazedDoorInterzoneFields,
+    _GlobalGeometryRulesFields,
+    _GroundHeatExchangerHorizontalTrenchFields,
+    _GroundHeatExchangerPondFields,
+    _GroundHeatExchangerResponseFactorsFields,
+    _GroundHeatExchangerSlinkyFields,
+    _GroundHeatExchangerSurfaceFields,
+    _GroundHeatExchangerSystemFields,
+    _GroundHeatExchangerVerticalArrayFields,
+    _GroundHeatExchangerVerticalPropertiesFields,
+    _GroundHeatExchangerVerticalSingleFields,
+    _GroundHeatExchangerVerticalSizingRectangleFields,
+    _GroundHeatTransferBasementAutoGridFields,
+    _GroundHeatTransferBasementBldgDataFields,
+    _GroundHeatTransferBasementComBldgFields,
+    _GroundHeatTransferBasementEquivAutoGridFields,
+    _GroundHeatTransferBasementEquivSlabFields,
+    _GroundHeatTransferBasementInsulationFields,
+    _GroundHeatTransferBasementInteriorFields,
+    _GroundHeatTransferBasementManualGridFields,
+    _GroundHeatTransferBasementMatlPropsFields,
+    _GroundHeatTransferBasementSimParametersFields,
+    _GroundHeatTransferBasementSurfacePropsFields,
+    _GroundHeatTransferControlFields,
+    _GroundHeatTransferSlabAutoGridFields,
+    _GroundHeatTransferSlabBldgPropsFields,
+    _GroundHeatTransferSlabBoundCondsFields,
+    _GroundHeatTransferSlabEquivalentSlabFields,
+    _GroundHeatTransferSlabInsulationFields,
+    _GroundHeatTransferSlabManualGridFields,
+    _GroundHeatTransferSlabMaterialsFields,
+    _GroundHeatTransferSlabMatlPropsFields,
+    _HVACSystemRootFindingAlgorithmFields,
+    _HVACTemplatePlantBoilerFields,
+    _HVACTemplatePlantBoilerObjectReferenceFields,
+    _HVACTemplatePlantChilledWaterLoopFields,
+    _HVACTemplatePlantChillerFields,
+    _HVACTemplatePlantChillerObjectReferenceFields,
+    _HVACTemplatePlantHotWaterLoopFields,
+    _HVACTemplatePlantMixedWaterLoopFields,
+    _HVACTemplatePlantTowerFields,
+    _HVACTemplatePlantTowerObjectReferenceFields,
+    _HVACTemplateSystemConstantVolumeFields,
+    _HVACTemplateSystemDedicatedOutdoorAirFields,
+    _HVACTemplateSystemDualDuctFields,
+    _HVACTemplateSystemPackagedVAVFields,
+    _HVACTemplateSystemUnitaryFields,
+    _HVACTemplateSystemUnitaryHeatPumpAirToAirFields,
+    _HVACTemplateSystemUnitarySystemFields,
+    _HVACTemplateSystemVAVFields,
+    _HVACTemplateSystemVRFFields,
+    _HVACTemplateThermostatFields,
+    _HVACTemplateZoneBaseboardHeatFields,
+    _HVACTemplateZoneConstantVolumeFields,
+    _HVACTemplateZoneDualDuctFields,
+    _HVACTemplateZoneFanCoilFields,
+    _HVACTemplateZoneIdealLoadsAirSystemFields,
+    _HVACTemplateZonePTACFields,
+    _HVACTemplateZonePTHPFields,
+    _HVACTemplateZoneUnitaryFields,
+    _HVACTemplateZoneVAVFanPoweredFields,
+    _HVACTemplateZoneVAVFields,
+    _HVACTemplateZoneVAVHeatAndCoolFields,
+    _HVACTemplateZoneVRFFields,
+    _HVACTemplateZoneWaterToAirHeatPumpFields,
+    _HeaderedPumpsConstantSpeedFields,
+    _HeaderedPumpsVariableSpeedFields,
+    _HeatBalanceAlgorithmFields,
+    _HeatBalanceSettingsConductionFiniteDifferenceFields,
+    _HeatExchangerAirToAirFlatPlateFields,
+    _HeatExchangerAirToAirSensibleAndLatentFields,
+    _HeatExchangerDesiccantBalancedFlowFields,
+    _HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields,
+    _HeatExchangerFluidToFluidFields,
+    _HeatPumpAirToWaterFields,
+    _HeatPumpAirToWaterFuelFiredCoolingFields,
+    _HeatPumpAirToWaterFuelFiredHeatingFields,
+    _HeatPumpPlantLoopEIRCoolingFields,
+    _HeatPumpPlantLoopEIRHeatingFields,
+    _HeatPumpWaterToWaterEquationFitCoolingFields,
+    _HeatPumpWaterToWaterEquationFitHeatingFields,
+    _HeatPumpWaterToWaterParameterEstimationCoolingFields,
+    _HeatPumpWaterToWaterParameterEstimationHeatingFields,
+    _HotWaterEquipmentDefinitionFields,
+    _HotWaterEquipmentFields,
+    _HotWaterEquipmentInstanceFields,
+    _HumidifierSteamElectricFields,
+    _HumidifierSteamGasFields,
+    _HybridModelZoneFields,
+    _IndoorLivingWallFields,
+    _InternalMassFields,
+    _LifeCycleCostNonrecurringCostFields,
+    _LifeCycleCostParametersFields,
+    _LifeCycleCostRecurringCostsFields,
+    _LifeCycleCostUseAdjustmentFields,
+    _LifeCycleCostUsePriceEscalationFields,
+    _LightsDefinitionFields,
+    _LightsFields,
+    _LightsInstanceFields,
+    _LoadProfilePlantFields,
+    _MaterialAirGapFields,
+    _MaterialFields,
+    _MaterialNoMassFields,
+    _MaterialPropertyGlazingSpectralDataFields,
+    _MaterialPropertyHeatAndMoistureTransferDiffusionFields,
+    _MaterialPropertyHeatAndMoistureTransferRedistributionFields,
+    _MaterialPropertyHeatAndMoistureTransferSettingsFields,
+    _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields,
+    _MaterialPropertyHeatAndMoistureTransferSuctionFields,
+    _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields,
+    _MaterialPropertyMoisturePenetrationDepthSettingsFields,
+    _MaterialPropertyPhaseChangeFields,
+    _MaterialPropertyPhaseChangeHysteresisFields,
+    _MaterialPropertyVariableAbsorptanceFields,
+    _MaterialPropertyVariableThermalConductivityFields,
+    _MaterialRoofVegetationFields,
+    _MatrixTwoDimensionFields,
+    _MeterCustomDecrementFields,
+    _MeterCustomFields,
+    _NodeListFields,
+    _ObjectTypeMap,
+    _OtherEquipmentDefinitionFields,
+    _OtherEquipmentFields,
+    _OtherEquipmentInstanceFields,
+    _OutdoorAirMixerFields,
+    _OutdoorAirNodeFields,
+    _OutdoorAirNodeListFields,
+    _OutputConstructionsFields,
+    _OutputControlFilesFields,
+    _OutputControlIlluminanceMapStyleFields,
+    _OutputControlReportingTolerancesFields,
+    _OutputControlResilienceSummariesFields,
+    _OutputControlSizingStyleFields,
+    _OutputControlSurfaceColorSchemeFields,
+    _OutputControlTableStyleFields,
+    _OutputControlTimestampFields,
+    _OutputDaylightFactorsFields,
+    _OutputDebuggingDataFields,
+    _OutputDiagnosticsFields,
+    _OutputEnergyManagementSystemFields,
+    _OutputEnvironmentalImpactFactorsFields,
+    _OutputIlluminanceMapFields,
+    _OutputJSONFields,
+    _OutputMeterCumulativeFields,
+    _OutputMeterCumulativeMeterFileOnlyFields,
+    _OutputMeterFields,
+    _OutputMeterMeterFileOnlyFields,
+    _OutputPreprocessorMessageFields,
+    _OutputSQLiteFields,
+    _OutputSchedulesFields,
+    _OutputSurfacesDrawingFields,
+    _OutputSurfacesListFields,
+    _OutputTableAnnualFields,
+    _OutputTableMonthlyFields,
+    _OutputTableSummaryReportsFields,
+    _OutputTableTimeBinsFields,
+    _OutputVariableDictionaryFields,
+    _OutputVariableFields,
+    _ParametricFileNameSuffixFields,
+    _ParametricLogicFields,
+    _ParametricRunControlFields,
+    _ParametricSetValueForRunFields,
+    _PeopleDefinitionFields,
+    _PeopleFields,
+    _PeopleInstanceFields,
+    _PerformancePrecisionTradeoffsFields,
+    _PhotovoltaicPerformanceEquivalentOneDiodeFields,
+    _PhotovoltaicPerformanceSandiaFields,
+    _PhotovoltaicPerformanceSimpleFields,
+    _PipeAdiabaticFields,
+    _PipeAdiabaticSteamFields,
+    _PipeIndoorFields,
+    _PipeOutdoorFields,
+    _PipeUndergroundFields,
+    _PipingSystemUndergroundDomainFields,
+    _PipingSystemUndergroundPipeCircuitFields,
+    _PipingSystemUndergroundPipeSegmentFields,
+    _PlantComponentTemperatureSourceFields,
+    _PlantComponentUserDefinedFields,
+    _PlantEquipmentListFields,
+    _PlantEquipmentOperationChillerHeaterChangeoverFields,
+    _PlantEquipmentOperationComponentSetpointFields,
+    _PlantEquipmentOperationCoolingLoadFields,
+    _PlantEquipmentOperationHeatingLoadFields,
+    _PlantEquipmentOperationOutdoorDewpointDifferenceFields,
+    _PlantEquipmentOperationOutdoorDewpointFields,
+    _PlantEquipmentOperationOutdoorDryBulbDifferenceFields,
+    _PlantEquipmentOperationOutdoorDryBulbFields,
+    _PlantEquipmentOperationOutdoorRelativeHumidityFields,
+    _PlantEquipmentOperationOutdoorWetBulbDifferenceFields,
+    _PlantEquipmentOperationOutdoorWetBulbFields,
+    _PlantEquipmentOperationSchemesFields,
+    _PlantEquipmentOperationThermalEnergyStorageFields,
+    _PlantEquipmentOperationUncontrolledFields,
+    _PlantEquipmentOperationUserDefinedFields,
+    _PlantLoopFields,
+    _PumpConstantSpeedFields,
+    _PumpVariableSpeedCondensateFields,
+    _PumpVariableSpeedFields,
+    _PythonPluginInstanceFields,
+    _PythonPluginOutputVariableFields,
+    _PythonPluginSearchPathsFields,
+    _PythonPluginTrendVariableFields,
+    _PythonPluginVariablesFields,
+    _RefrigerationAirChillerFields,
+    _RefrigerationCaseAndWalkInListFields,
+    _RefrigerationCaseFields,
+    _RefrigerationCompressorFields,
+    _RefrigerationCompressorListFields,
+    _RefrigerationCompressorRackFields,
+    _RefrigerationCondenserAirCooledFields,
+    _RefrigerationCondenserCascadeFields,
+    _RefrigerationCondenserEvaporativeCooledFields,
+    _RefrigerationCondenserWaterCooledFields,
+    _RefrigerationGasCoolerAirCooledFields,
+    _RefrigerationSecondarySystemFields,
+    _RefrigerationSubcoolerFields,
+    _RefrigerationSystemFields,
+    _RefrigerationTranscriticalSystemFields,
+    _RefrigerationTransferLoadListFields,
+    _RefrigerationWalkInFields,
+    _RoofCeilingDetailedFields,
+    _RoofFields,
+    _RoofIrrigationFields,
+    _RoomAirModelTypeFields,
+    _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields,
+    _RoomAirNodeAirflowNetworkFields,
+    _RoomAirNodeAirflowNetworkHVACEquipmentFields,
+    _RoomAirNodeAirflowNetworkInternalGainsFields,
+    _RoomAirNodeFields,
+    _RoomAirSettingsAirflowNetworkFields,
+    _RoomAirSettingsCrossVentilationFields,
+    _RoomAirSettingsOneNodeDisplacementVentilationFields,
+    _RoomAirSettingsThreeNodeDisplacementVentilationFields,
+    _RoomAirSettingsUnderFloorAirDistributionExteriorFields,
+    _RoomAirSettingsUnderFloorAirDistributionInteriorFields,
+    _RoomAirTemperaturePatternConstantGradientFields,
+    _RoomAirTemperaturePatternNondimensionalHeightFields,
+    _RoomAirTemperaturePatternSurfaceMappingFields,
+    _RoomAirTemperaturePatternTwoGradientFields,
+    _RoomAirTemperaturePatternUserDefinedFields,
+    _RunPeriodControlDaylightSavingTimeFields,
+    _RunPeriodControlSpecialDaysFields,
+    _RunPeriodFields,
+    _ScheduleCompactFields,
+    _ScheduleConstantFields,
+    _ScheduleDayHourlyFields,
+    _ScheduleDayIntervalFields,
+    _ScheduleDayListFields,
+    _ScheduleFileFields,
+    _ScheduleFileShadingFields,
+    _ScheduleTypeLimitsFields,
+    _ScheduleWeekCompactFields,
+    _ScheduleWeekDailyFields,
+    _ScheduleWeekRuleFields,
+    _ScheduleYearFields,
+    _ScheduleYearRulesFields,
+    _SetpointManagerColdestFields,
+    _SetpointManagerCondenserEnteringResetFields,
+    _SetpointManagerCondenserEnteringResetIdealFields,
+    _SetpointManagerFollowGroundTemperatureFields,
+    _SetpointManagerFollowOutdoorAirTemperatureFields,
+    _SetpointManagerFollowSystemNodeTemperatureFields,
+    _SetpointManagerMixedAirFields,
+    _SetpointManagerMultiZoneCoolingAverageFields,
+    _SetpointManagerMultiZoneHeatingAverageFields,
+    _SetpointManagerMultiZoneHumidityMaximumFields,
+    _SetpointManagerMultiZoneHumidityMinimumFields,
+    _SetpointManagerMultiZoneMaximumHumidityAverageFields,
+    _SetpointManagerMultiZoneMinimumHumidityAverageFields,
+    _SetpointManagerOutdoorAirPretreatFields,
+    _SetpointManagerOutdoorAirResetFields,
+    _SetpointManagerReturnAirBypassFlowFields,
+    _SetpointManagerReturnTemperatureChilledWaterFields,
+    _SetpointManagerReturnTemperatureHotWaterFields,
+    _SetpointManagerScheduledDualSetpointFields,
+    _SetpointManagerScheduledFields,
+    _SetpointManagerSingleZoneCoolingFields,
+    _SetpointManagerSingleZoneHeatingFields,
+    _SetpointManagerSingleZoneHumidityMaximumFields,
+    _SetpointManagerSingleZoneHumidityMinimumFields,
+    _SetpointManagerSingleZoneOneStageCoolingFields,
+    _SetpointManagerSingleZoneOneStageHeatingFields,
+    _SetpointManagerSingleZoneReheatFields,
+    _SetpointManagerSystemNodeResetHumidityFields,
+    _SetpointManagerSystemNodeResetTemperatureFields,
+    _SetpointManagerWarmestFields,
+    _SetpointManagerWarmestTemperatureFlowFields,
+    _ShadingBuildingDetailedFields,
+    _ShadingBuildingFields,
+    _ShadingFinFields,
+    _ShadingFinProjectionFields,
+    _ShadingOverhangFields,
+    _ShadingOverhangProjectionFields,
+    _ShadingPropertyReflectanceFields,
+    _ShadingSiteDetailedFields,
+    _ShadingSiteFields,
+    _ShadingZoneDetailedFields,
+    _ShadowCalculationFields,
+    _SimulationControlFields,
+    _SiteGroundDomainBasementFields,
+    _SiteGroundDomainSlabFields,
+    _SiteGroundReflectanceFields,
+    _SiteGroundReflectanceSnowModifierFields,
+    _SiteGroundTemperatureBuildingSurfaceFields,
+    _SiteGroundTemperatureDeepFields,
+    _SiteGroundTemperatureFCfactorMethodFields,
+    _SiteGroundTemperatureShallowFields,
+    _SiteGroundTemperatureUndisturbedFiniteDifferenceFields,
+    _SiteGroundTemperatureUndisturbedKusudaAchenbachFields,
+    _SiteGroundTemperatureUndisturbedXingFields,
+    _SiteHeightVariationFields,
+    _SiteLocationFields,
+    _SitePrecipitationFields,
+    _SiteSolarAndVisibleSpectrumFields,
+    _SiteSpectrumDataFields,
+    _SiteVariableLocationFields,
+    _SiteWaterMainsTemperatureFields,
+    _SiteWeatherStationFields,
+    _SizingParametersFields,
+    _SizingPeriodDesignDayFields,
+    _SizingPeriodWeatherFileConditionTypeFields,
+    _SizingPeriodWeatherFileDaysFields,
+    _SizingPlantFields,
+    _SizingSystemFields,
+    _SizingZoneFields,
+    _SolarCollectorFlatPlatePhotovoltaicThermalFields,
+    _SolarCollectorFlatPlateWaterFields,
+    _SolarCollectorIntegralCollectorStorageFields,
+    _SolarCollectorPerformanceFlatPlateFields,
+    _SolarCollectorPerformanceIntegralCollectorStorageFields,
+    _SolarCollectorPerformancePhotovoltaicThermalBIPVTFields,
+    _SolarCollectorPerformancePhotovoltaicThermalSimpleFields,
+    _SolarCollectorUnglazedTranspiredFields,
+    _SolarCollectorUnglazedTranspiredMultisystemFields,
+    _SpaceFields,
+    _SpaceHVACEquipmentConnectionsFields,
+    _SpaceHVACZoneEquipmentMixerFields,
+    _SpaceHVACZoneEquipmentSplitterFields,
+    _SpaceHVACZoneReturnMixerFields,
+    _SpaceListFields,
+    _SteamEquipmentDefinitionFields,
+    _SteamEquipmentFields,
+    _SteamEquipmentInstanceFields,
+    _SubSurfaceConstructionAssignmentsFields,
+    _SurfaceConstructionAssignmentsFields,
+    _SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields,
+    _SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields,
+    _SurfaceContaminantSourceAndSinkGenericPressureDrivenFields,
+    _SurfaceControlMovableInsulationFields,
+    _SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields,
+    _SurfaceConvectionAlgorithmInsideFields,
+    _SurfaceConvectionAlgorithmInsideUserCurveFields,
+    _SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields,
+    _SurfaceConvectionAlgorithmOutsideFields,
+    _SurfaceConvectionAlgorithmOutsideUserCurveFields,
+    _SurfacePropertiesVaporCoefficientsFields,
+    _SurfacePropertyConvectionCoefficientsFields,
+    _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields,
+    _SurfacePropertyExposedFoundationPerimeterFields,
+    _SurfacePropertyExteriorNaturalVentedCavityFields,
+    _SurfacePropertyGroundSurfacesFields,
+    _SurfacePropertyHeatBalanceSourceTermFields,
+    _SurfacePropertyHeatTransferAlgorithmConstructionFields,
+    _SurfacePropertyHeatTransferAlgorithmFields,
+    _SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields,
+    _SurfacePropertyHeatTransferAlgorithmSurfaceListFields,
+    _SurfacePropertyIncidentSolarMultiplierFields,
+    _SurfacePropertyLocalEnvironmentFields,
+    _SurfacePropertyOtherSideCoefficientsFields,
+    _SurfacePropertyOtherSideConditionsModelFields,
+    _SurfacePropertySolarIncidentInsideFields,
+    _SurfacePropertySurroundingSurfacesFields,
+    _SurfacePropertyUnderwaterFields,
+    _SwimmingPoolIndoorFields,
+    _TableIndependentVariableFields,
+    _TableIndependentVariableListFields,
+    _TableLookupFields,
+    _TemperingValveFields,
+    _ThermalStorageChilledWaterMixedFields,
+    _ThermalStorageChilledWaterStratifiedFields,
+    _ThermalStorageHotWaterStratifiedFields,
+    _ThermalStorageIceDetailedFields,
+    _ThermalStorageIceSimpleFields,
+    _ThermalStoragePCMFields,
+    _ThermalStorageSizingFields,
+    _ThermostatSetpointDualSetpointFields,
+    _ThermostatSetpointSingleCoolingFields,
+    _ThermostatSetpointSingleHeatingFields,
+    _ThermostatSetpointSingleHeatingOrCoolingFields,
+    _ThermostatSetpointThermalComfortFangerDualSetpointFields,
+    _ThermostatSetpointThermalComfortFangerSingleCoolingFields,
+    _ThermostatSetpointThermalComfortFangerSingleHeatingFields,
+    _ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields,
+    _TimestepFields,
+    _UnitarySystemPerformanceMultispeedFields,
+    _UtilityCostChargeBlockFields,
+    _UtilityCostChargeSimpleFields,
+    _UtilityCostComputationFields,
+    _UtilityCostQualifyFields,
+    _UtilityCostRatchetFields,
+    _UtilityCostTariffFields,
+    _UtilityCostVariableFields,
+    _VersionFields,
+    _WallAdiabaticFields,
+    _WallDetailedFields,
+    _WallExteriorFields,
+    _WallInterzoneFields,
+    _WallUndergroundFields,
+    _WaterHeaterHeatPumpPumpedCondenserFields,
+    _WaterHeaterHeatPumpWrappedCondenserFields,
+    _WaterHeaterMixedFields,
+    _WaterHeaterSizingFields,
+    _WaterHeaterStratifiedFields,
+    _WaterUseConnectionsFields,
+    _WaterUseEquipmentFields,
+    _WaterUseRainCollectorFields,
+    _WaterUseStorageFields,
+    _WaterUseWellFields,
+    _WeatherPropertySkyTemperatureFields,
+    _WindowFields,
+    _WindowGapDeflectionStateFields,
+    _WindowGapSupportPillarFields,
+    _WindowInterzoneFields,
+    _WindowMaterialBlindEquivalentLayerFields,
+    _WindowMaterialBlindFields,
+    _WindowMaterialComplexShadeFields,
+    _WindowMaterialDrapeEquivalentLayerFields,
+    _WindowMaterialGapEquivalentLayerFields,
+    _WindowMaterialGapFields,
+    _WindowMaterialGasFields,
+    _WindowMaterialGasMixtureFields,
+    _WindowMaterialGlazingEquivalentLayerFields,
+    _WindowMaterialGlazingFields,
+    _WindowMaterialGlazingGroupThermochromicFields,
+    _WindowMaterialGlazingRefractionExtinctionMethodFields,
+    _WindowMaterialScreenEquivalentLayerFields,
+    _WindowMaterialScreenFields,
+    _WindowMaterialShadeEquivalentLayerFields,
+    _WindowMaterialShadeFields,
+    _WindowMaterialSimpleGlazingSystemFields,
+    _WindowPropertyAirflowControlFields,
+    _WindowPropertyFrameAndDividerFields,
+    _WindowPropertyStormWindowFields,
+    _WindowShadingControlFields,
+    _WindowThermalModelParamsFields,
+    _WindowsCalculationEngineFields,
+    _ZoneAirBalanceOutdoorAirFields,
+    _ZoneAirContaminantBalanceFields,
+    _ZoneAirHeatBalanceAlgorithmFields,
+    _ZoneAirMassFlowConservationFields,
+    _ZoneBaseboardOutdoorTemperatureControlledFields,
+    _ZoneCapacitanceMultiplierResearchSpecialFields,
+    _ZoneContaminantSourceAndSinkCarbonDioxideFields,
+    _ZoneContaminantSourceAndSinkGenericConstantFields,
+    _ZoneContaminantSourceAndSinkGenericCutoffModelFields,
+    _ZoneContaminantSourceAndSinkGenericDecaySourceFields,
+    _ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields,
+    _ZoneControlContaminantControllerFields,
+    _ZoneControlHumidistatFields,
+    _ZoneControlThermostatFields,
+    _ZoneControlThermostatOperativeTemperatureFields,
+    _ZoneControlThermostatStagedDualSetpointFields,
+    _ZoneControlThermostatTemperatureAndHumidityFields,
+    _ZoneControlThermostatThermalComfortFields,
+    _ZoneCoolTowerShowerFields,
+    _ZoneCrossMixingFields,
+    _ZoneEarthtubeFields,
+    _ZoneEarthtubeParametersFields,
+    _ZoneFields,
+    _ZoneGroupFields,
+    _ZoneHVACAirDistributionUnitFields,
+    _ZoneHVACBaseboardConvectiveElectricFields,
+    _ZoneHVACBaseboardConvectiveWaterFields,
+    _ZoneHVACBaseboardRadiantConvectiveElectricFields,
+    _ZoneHVACBaseboardRadiantConvectiveSteamDesignFields,
+    _ZoneHVACBaseboardRadiantConvectiveSteamFields,
+    _ZoneHVACBaseboardRadiantConvectiveWaterDesignFields,
+    _ZoneHVACBaseboardRadiantConvectiveWaterFields,
+    _ZoneHVACCoolingPanelRadiantConvectiveWaterFields,
+    _ZoneHVACDehumidifierDXFields,
+    _ZoneHVACEnergyRecoveryVentilatorControllerFields,
+    _ZoneHVACEnergyRecoveryVentilatorFields,
+    _ZoneHVACEquipmentConnectionsFields,
+    _ZoneHVACEquipmentListFields,
+    _ZoneHVACEvaporativeCoolerUnitFields,
+    _ZoneHVACExhaustControlFields,
+    _ZoneHVACForcedAirUserDefinedFields,
+    _ZoneHVACFourPipeFanCoilFields,
+    _ZoneHVACHighTemperatureRadiantFields,
+    _ZoneHVACHybridUnitaryHVACFields,
+    _ZoneHVACIdealLoadsAirSystemFields,
+    _ZoneHVACLowTemperatureRadiantConstantFlowDesignFields,
+    _ZoneHVACLowTemperatureRadiantConstantFlowFields,
+    _ZoneHVACLowTemperatureRadiantElectricFields,
+    _ZoneHVACLowTemperatureRadiantSurfaceGroupFields,
+    _ZoneHVACLowTemperatureRadiantVariableFlowDesignFields,
+    _ZoneHVACLowTemperatureRadiantVariableFlowFields,
+    _ZoneHVACOutdoorAirUnitEquipmentListFields,
+    _ZoneHVACOutdoorAirUnitFields,
+    _ZoneHVACPackagedTerminalAirConditionerFields,
+    _ZoneHVACPackagedTerminalHeatPumpFields,
+    _ZoneHVACRefrigerationChillerSetFields,
+    _ZoneHVACTerminalUnitVariableRefrigerantFlowFields,
+    _ZoneHVACUnitHeaterFields,
+    _ZoneHVACUnitVentilatorFields,
+    _ZoneHVACVentilatedSlabFields,
+    _ZoneHVACVentilatedSlabSlabGroupFields,
+    _ZoneHVACWaterToAirHeatPumpFields,
+    _ZoneHVACWindowAirConditionerFields,
+    _ZoneInfiltrationDesignFlowRateFields,
+    _ZoneInfiltrationEffectiveLeakageAreaFields,
+    _ZoneInfiltrationFlowCoefficientFields,
+    _ZoneListFields,
+    _ZoneMRTCalculationFields,
+    _ZoneMixingFields,
+    _ZonePropertyLocalEnvironmentFields,
+    _ZonePropertyUserViewFactorsBySurfaceNameFields,
+    _ZoneRefrigerationDoorMixingFields,
+    _ZoneTerminalUnitListFields,
+    _ZoneThermalChimneyFields,
+    _ZoneVentilationDesignFlowRateFields,
+    _ZoneVentilationWindandStackOpenAreaFields,
+)
 from .cst import DocumentCST, SourceSpan
 from .introspection import ObjectDescription
 from .objects import IDFCollection, IDFObject
@@ -316,6 +1192,8568 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
             True
         """
 
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Version"],
+        fields: _VersionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_VersionFields],
+    ) -> Version: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SimulationControl"],
+        fields: _SimulationControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SimulationControlFields],
+    ) -> SimulationControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PerformancePrecisionTradeoffs"],
+        fields: _PerformancePrecisionTradeoffsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PerformancePrecisionTradeoffsFields],
+    ) -> PerformancePrecisionTradeoffs: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Building"],
+        name: str = ...,
+        fields: _BuildingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BuildingFields],
+    ) -> Building: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ShadowCalculation"],
+        fields: _ShadowCalculationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadowCalculationFields],
+    ) -> ShadowCalculation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Inside"],
+        fields: _SurfaceConvectionAlgorithmInsideFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideFields],
+    ) -> SurfaceConvectionAlgorithmInside: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Outside"],
+        fields: _SurfaceConvectionAlgorithmOutsideFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideFields],
+    ) -> SurfaceConvectionAlgorithmOutside: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatBalanceAlgorithm"],
+        fields: _HeatBalanceAlgorithmFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatBalanceAlgorithmFields],
+    ) -> HeatBalanceAlgorithm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatBalanceSettings:ConductionFiniteDifference"],
+        fields: _HeatBalanceSettingsConductionFiniteDifferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatBalanceSettingsConductionFiniteDifferenceFields],
+    ) -> HeatBalanceSettingsConductionFiniteDifference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneAirHeatBalanceAlgorithm"],
+        fields: _ZoneAirHeatBalanceAlgorithmFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneAirHeatBalanceAlgorithmFields],
+    ) -> ZoneAirHeatBalanceAlgorithm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneAirContaminantBalance"],
+        fields: _ZoneAirContaminantBalanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneAirContaminantBalanceFields],
+    ) -> ZoneAirContaminantBalance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneAirMassFlowConservation"],
+        fields: _ZoneAirMassFlowConservationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneAirMassFlowConservationFields],
+    ) -> ZoneAirMassFlowConservation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneCapacitanceMultiplier:ResearchSpecial"],
+        name: str = ...,
+        fields: _ZoneCapacitanceMultiplierResearchSpecialFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneCapacitanceMultiplierResearchSpecialFields],
+    ) -> ZoneCapacitanceMultiplierResearchSpecial: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Timestep"],
+        fields: _TimestepFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_TimestepFields],
+    ) -> Timestep: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ConvergenceLimits"],
+        fields: _ConvergenceLimitsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConvergenceLimitsFields],
+    ) -> ConvergenceLimits: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACSystemRootFindingAlgorithm"],
+        fields: _HVACSystemRootFindingAlgorithmFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACSystemRootFindingAlgorithmFields],
+    ) -> HVACSystemRootFindingAlgorithm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Compliance:Building"],
+        fields: _ComplianceBuildingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComplianceBuildingFields],
+    ) -> ComplianceBuilding: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:Location"],
+        name: str = ...,
+        fields: _SiteLocationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteLocationFields],
+    ) -> SiteLocation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:VariableLocation"],
+        name: str = ...,
+        fields: _SiteVariableLocationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteVariableLocationFields],
+    ) -> SiteVariableLocation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SizingPeriod:DesignDay"],
+        name: str = ...,
+        fields: _SizingPeriodDesignDayFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingPeriodDesignDayFields],
+    ) -> SizingPeriodDesignDay: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SizingPeriod:WeatherFileDays"],
+        name: str = ...,
+        fields: _SizingPeriodWeatherFileDaysFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingPeriodWeatherFileDaysFields],
+    ) -> SizingPeriodWeatherFileDays: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SizingPeriod:WeatherFileConditionType"],
+        name: str = ...,
+        fields: _SizingPeriodWeatherFileConditionTypeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingPeriodWeatherFileConditionTypeFields],
+    ) -> SizingPeriodWeatherFileConditionType: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RunPeriod"],
+        name: str = ...,
+        fields: _RunPeriodFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RunPeriodFields],
+    ) -> RunPeriod: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RunPeriodControl:SpecialDays"],
+        name: str = ...,
+        fields: _RunPeriodControlSpecialDaysFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RunPeriodControlSpecialDaysFields],
+    ) -> RunPeriodControlSpecialDays: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RunPeriodControl:DaylightSavingTime"],
+        fields: _RunPeriodControlDaylightSavingTimeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RunPeriodControlDaylightSavingTimeFields],
+    ) -> RunPeriodControlDaylightSavingTime: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WeatherProperty:SkyTemperature"],
+        name: str = ...,
+        fields: _WeatherPropertySkyTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WeatherPropertySkyTemperatureFields],
+    ) -> WeatherPropertySkyTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:WeatherStation"],
+        fields: _SiteWeatherStationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteWeatherStationFields],
+    ) -> SiteWeatherStation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:HeightVariation"],
+        fields: _SiteHeightVariationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteHeightVariationFields],
+    ) -> SiteHeightVariation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:BuildingSurface"],
+        fields: _SiteGroundTemperatureBuildingSurfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureBuildingSurfaceFields],
+    ) -> SiteGroundTemperatureBuildingSurface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:FCfactorMethod"],
+        fields: _SiteGroundTemperatureFCfactorMethodFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureFCfactorMethodFields],
+    ) -> SiteGroundTemperatureFCfactorMethod: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:Shallow"],
+        fields: _SiteGroundTemperatureShallowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureShallowFields],
+    ) -> SiteGroundTemperatureShallow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:Deep"],
+        fields: _SiteGroundTemperatureDeepFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureDeepFields],
+    ) -> SiteGroundTemperatureDeep: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:Undisturbed:FiniteDifference"],
+        name: str = ...,
+        fields: _SiteGroundTemperatureUndisturbedFiniteDifferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureUndisturbedFiniteDifferenceFields],
+    ) -> SiteGroundTemperatureUndisturbedFiniteDifference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:Undisturbed:KusudaAchenbach"],
+        name: str = ...,
+        fields: _SiteGroundTemperatureUndisturbedKusudaAchenbachFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureUndisturbedKusudaAchenbachFields],
+    ) -> SiteGroundTemperatureUndisturbedKusudaAchenbach: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundTemperature:Undisturbed:Xing"],
+        name: str = ...,
+        fields: _SiteGroundTemperatureUndisturbedXingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundTemperatureUndisturbedXingFields],
+    ) -> SiteGroundTemperatureUndisturbedXing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundDomain:Slab"],
+        name: str = ...,
+        fields: _SiteGroundDomainSlabFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundDomainSlabFields],
+    ) -> SiteGroundDomainSlab: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundDomain:Basement"],
+        name: str = ...,
+        fields: _SiteGroundDomainBasementFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundDomainBasementFields],
+    ) -> SiteGroundDomainBasement: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundReflectance"],
+        fields: _SiteGroundReflectanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundReflectanceFields],
+    ) -> SiteGroundReflectance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:GroundReflectance:SnowModifier"],
+        fields: _SiteGroundReflectanceSnowModifierFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteGroundReflectanceSnowModifierFields],
+    ) -> SiteGroundReflectanceSnowModifier: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:WaterMainsTemperature"],
+        fields: _SiteWaterMainsTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteWaterMainsTemperatureFields],
+    ) -> SiteWaterMainsTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:Precipitation"],
+        fields: _SitePrecipitationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SitePrecipitationFields],
+    ) -> SitePrecipitation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoofIrrigation"],
+        fields: _RoofIrrigationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoofIrrigationFields],
+    ) -> RoofIrrigation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:SolarAndVisibleSpectrum"],
+        name: str = ...,
+        fields: _SiteSolarAndVisibleSpectrumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteSolarAndVisibleSpectrumFields],
+    ) -> SiteSolarAndVisibleSpectrum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Site:SpectrumData"],
+        name: str = ...,
+        fields: _SiteSpectrumDataFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SiteSpectrumDataFields],
+    ) -> SiteSpectrumData: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ScheduleTypeLimits"],
+        name: str = ...,
+        fields: _ScheduleTypeLimitsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleTypeLimitsFields],
+    ) -> ScheduleTypeLimits: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Day:Hourly"],
+        name: str = ...,
+        fields: _ScheduleDayHourlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleDayHourlyFields],
+    ) -> ScheduleDayHourly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Day:Interval"],
+        name: str = ...,
+        fields: _ScheduleDayIntervalFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleDayIntervalFields],
+    ) -> ScheduleDayInterval: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Day:List"],
+        name: str = ...,
+        fields: _ScheduleDayListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleDayListFields],
+    ) -> ScheduleDayList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Week:Daily"],
+        name: str = ...,
+        fields: _ScheduleWeekDailyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleWeekDailyFields],
+    ) -> ScheduleWeekDaily: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Week:Compact"],
+        name: str = ...,
+        fields: _ScheduleWeekCompactFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleWeekCompactFields],
+    ) -> ScheduleWeekCompact: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Year"],
+        name: str = ...,
+        fields: _ScheduleYearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleYearFields],
+    ) -> ScheduleYear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Compact"],
+        name: str = ...,
+        fields: _ScheduleCompactFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleCompactFields],
+    ) -> ScheduleCompact: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Constant"],
+        name: str = ...,
+        fields: _ScheduleConstantFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleConstantFields],
+    ) -> ScheduleConstant: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Year:Rules"],
+        name: str = ...,
+        fields: _ScheduleYearRulesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleYearRulesFields],
+    ) -> ScheduleYearRules: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:Week:Rule"],
+        name: str = ...,
+        fields: _ScheduleWeekRuleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleWeekRuleFields],
+    ) -> ScheduleWeekRule: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:File:Shading"],
+        fields: _ScheduleFileShadingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleFileShadingFields],
+    ) -> ScheduleFileShading: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Schedule:File"],
+        name: str = ...,
+        fields: _ScheduleFileFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ScheduleFileFields],
+    ) -> ScheduleFile: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Material"],
+        name: str = ...,
+        fields: _MaterialFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialFields],
+    ) -> Material: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Material:NoMass"],
+        name: str = ...,
+        fields: _MaterialNoMassFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialNoMassFields],
+    ) -> MaterialNoMass: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Material:AirGap"],
+        name: str = ...,
+        fields: _MaterialAirGapFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialAirGapFields],
+    ) -> MaterialAirGap: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Material:RoofVegetation"],
+        name: str = ...,
+        fields: _MaterialRoofVegetationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialRoofVegetationFields],
+    ) -> MaterialRoofVegetation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:SimpleGlazingSystem"],
+        name: str = ...,
+        fields: _WindowMaterialSimpleGlazingSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialSimpleGlazingSystemFields],
+    ) -> WindowMaterialSimpleGlazingSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Glazing"],
+        name: str = ...,
+        fields: _WindowMaterialGlazingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGlazingFields],
+    ) -> WindowMaterialGlazing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:GlazingGroup:Thermochromic"],
+        name: str = ...,
+        fields: _WindowMaterialGlazingGroupThermochromicFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGlazingGroupThermochromicFields],
+    ) -> WindowMaterialGlazingGroupThermochromic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Glazing:RefractionExtinctionMethod"],
+        name: str = ...,
+        fields: _WindowMaterialGlazingRefractionExtinctionMethodFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGlazingRefractionExtinctionMethodFields],
+    ) -> WindowMaterialGlazingRefractionExtinctionMethod: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Gas"],
+        name: str = ...,
+        fields: _WindowMaterialGasFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGasFields],
+    ) -> WindowMaterialGas: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowGap:SupportPillar"],
+        name: str = ...,
+        fields: _WindowGapSupportPillarFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowGapSupportPillarFields],
+    ) -> WindowGapSupportPillar: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowGap:DeflectionState"],
+        name: str = ...,
+        fields: _WindowGapDeflectionStateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowGapDeflectionStateFields],
+    ) -> WindowGapDeflectionState: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:GasMixture"],
+        name: str = ...,
+        fields: _WindowMaterialGasMixtureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGasMixtureFields],
+    ) -> WindowMaterialGasMixture: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Gap"],
+        name: str = ...,
+        fields: _WindowMaterialGapFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGapFields],
+    ) -> WindowMaterialGap: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Shade"],
+        name: str = ...,
+        fields: _WindowMaterialShadeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialShadeFields],
+    ) -> WindowMaterialShade: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:ComplexShade"],
+        name: str = ...,
+        fields: _WindowMaterialComplexShadeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialComplexShadeFields],
+    ) -> WindowMaterialComplexShade: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Blind"],
+        name: str = ...,
+        fields: _WindowMaterialBlindFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialBlindFields],
+    ) -> WindowMaterialBlind: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Screen"],
+        name: str = ...,
+        fields: _WindowMaterialScreenFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialScreenFields],
+    ) -> WindowMaterialScreen: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Shade:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialShadeEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialShadeEquivalentLayerFields],
+    ) -> WindowMaterialShadeEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Drape:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialDrapeEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialDrapeEquivalentLayerFields],
+    ) -> WindowMaterialDrapeEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Blind:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialBlindEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialBlindEquivalentLayerFields],
+    ) -> WindowMaterialBlindEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Screen:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialScreenEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialScreenEquivalentLayerFields],
+    ) -> WindowMaterialScreenEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Glazing:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialGlazingEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayerFields],
+    ) -> WindowMaterialGlazingEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowMaterial:Gap:EquivalentLayer"],
+        name: str = ...,
+        fields: _WindowMaterialGapEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowMaterialGapEquivalentLayerFields],
+    ) -> WindowMaterialGapEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:MoisturePenetrationDepth:Settings"],
+        name: str = ...,
+        fields: _MaterialPropertyMoisturePenetrationDepthSettingsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyMoisturePenetrationDepthSettingsFields],
+    ) -> MaterialPropertyMoisturePenetrationDepthSettings: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:PhaseChange"],
+        name: str = ...,
+        fields: _MaterialPropertyPhaseChangeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyPhaseChangeFields],
+    ) -> MaterialPropertyPhaseChange: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:PhaseChangeHysteresis"],
+        name: str = ...,
+        fields: _MaterialPropertyPhaseChangeHysteresisFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyPhaseChangeHysteresisFields],
+    ) -> MaterialPropertyPhaseChangeHysteresis: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:VariableThermalConductivity"],
+        name: str = ...,
+        fields: _MaterialPropertyVariableThermalConductivityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyVariableThermalConductivityFields],
+    ) -> MaterialPropertyVariableThermalConductivity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:VariableAbsorptance"],
+        name: str = ...,
+        fields: _MaterialPropertyVariableAbsorptanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyVariableAbsorptanceFields],
+    ) -> MaterialPropertyVariableAbsorptance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:Settings"],
+        fields: _MaterialPropertyHeatAndMoistureTransferSettingsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSettingsFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferSettings: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm"],
+        fields: _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferSorptionIsotherm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:Suction"],
+        fields: _MaterialPropertyHeatAndMoistureTransferSuctionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferSuctionFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferSuction: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:Redistribution"],
+        fields: _MaterialPropertyHeatAndMoistureTransferRedistributionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferRedistributionFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferRedistribution: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:Diffusion"],
+        fields: _MaterialPropertyHeatAndMoistureTransferDiffusionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferDiffusionFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferDiffusion: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity"],
+        fields: _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyHeatAndMoistureTransferThermalConductivityFields],
+    ) -> MaterialPropertyHeatAndMoistureTransferThermalConductivity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["MaterialProperty:GlazingSpectralData"],
+        name: str = ...,
+        fields: _MaterialPropertyGlazingSpectralDataFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MaterialPropertyGlazingSpectralDataFields],
+    ) -> MaterialPropertyGlazingSpectralData: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction"],
+        name: str = ...,
+        fields: _ConstructionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionFields],
+    ) -> Construction: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:CfactorUndergroundWall"],
+        name: str = ...,
+        fields: _ConstructionCfactorUndergroundWallFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionCfactorUndergroundWallFields],
+    ) -> ConstructionCfactorUndergroundWall: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:FfactorGroundFloor"],
+        name: str = ...,
+        fields: _ConstructionFfactorGroundFloorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionFfactorGroundFloorFields],
+    ) -> ConstructionFfactorGroundFloor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ConstructionProperty:InternalHeatSource"],
+        name: str = ...,
+        fields: _ConstructionPropertyInternalHeatSourceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionPropertyInternalHeatSourceFields],
+    ) -> ConstructionPropertyInternalHeatSource: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:AirBoundary"],
+        name: str = ...,
+        fields: _ConstructionAirBoundaryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionAirBoundaryFields],
+    ) -> ConstructionAirBoundary: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowThermalModel:Params"],
+        name: str = ...,
+        fields: _WindowThermalModelParamsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowThermalModelParamsFields],
+    ) -> WindowThermalModelParams: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowsCalculationEngine"],
+        fields: _WindowsCalculationEngineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowsCalculationEngineFields],
+    ) -> WindowsCalculationEngine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:ComplexFenestrationState"],
+        name: str = ...,
+        fields: _ConstructionComplexFenestrationStateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionComplexFenestrationStateFields],
+    ) -> ConstructionComplexFenestrationState: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:WindowEquivalentLayer"],
+        name: str = ...,
+        fields: _ConstructionWindowEquivalentLayerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionWindowEquivalentLayerFields],
+    ) -> ConstructionWindowEquivalentLayer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Construction:WindowDataFile"],
+        name: str = ...,
+        fields: _ConstructionWindowDataFileFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionWindowDataFileFields],
+    ) -> ConstructionWindowDataFile: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ConstructionAssignmentSet"],
+        name: str = ...,
+        fields: _ConstructionAssignmentSetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConstructionAssignmentSetFields],
+    ) -> ConstructionAssignmentSet: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConstructionAssignments"],
+        name: str = ...,
+        fields: _SurfaceConstructionAssignmentsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConstructionAssignmentsFields],
+    ) -> SurfaceConstructionAssignments: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SubSurfaceConstructionAssignments"],
+        name: str = ...,
+        fields: _SubSurfaceConstructionAssignmentsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SubSurfaceConstructionAssignmentsFields],
+    ) -> SubSurfaceConstructionAssignments: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GlobalGeometryRules"],
+        fields: _GlobalGeometryRulesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GlobalGeometryRulesFields],
+    ) -> GlobalGeometryRules: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GeometryTransform"],
+        fields: _GeometryTransformFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeometryTransformFields],
+    ) -> GeometryTransform: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Space"],
+        name: str = ...,
+        fields: _SpaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceFields],
+    ) -> Space: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SpaceList"],
+        name: str = ...,
+        fields: _SpaceListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceListFields],
+    ) -> SpaceList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Zone"],
+        name: str = ...,
+        fields: _ZoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneFields],
+    ) -> Zone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneList"],
+        name: str = ...,
+        fields: _ZoneListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneListFields],
+    ) -> ZoneList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneGroup"],
+        name: str = ...,
+        fields: _ZoneGroupFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneGroupFields],
+    ) -> ZoneGroup: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["BuildingSurface:Detailed"],
+        name: str = ...,
+        fields: _BuildingSurfaceDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BuildingSurfaceDetailedFields],
+    ) -> BuildingSurfaceDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Wall:Detailed"],
+        name: str = ...,
+        fields: _WallDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WallDetailedFields],
+    ) -> WallDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoofCeiling:Detailed"],
+        name: str = ...,
+        fields: _RoofCeilingDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoofCeilingDetailedFields],
+    ) -> RoofCeilingDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Floor:Detailed"],
+        name: str = ...,
+        fields: _FloorDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FloorDetailedFields],
+    ) -> FloorDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Wall:Exterior"],
+        name: str = ...,
+        fields: _WallExteriorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WallExteriorFields],
+    ) -> WallExterior: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Wall:Adiabatic"],
+        name: str = ...,
+        fields: _WallAdiabaticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WallAdiabaticFields],
+    ) -> WallAdiabatic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Wall:Underground"],
+        name: str = ...,
+        fields: _WallUndergroundFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WallUndergroundFields],
+    ) -> WallUnderground: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Wall:Interzone"],
+        name: str = ...,
+        fields: _WallInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WallInterzoneFields],
+    ) -> WallInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Roof"],
+        name: str = ...,
+        fields: _RoofFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoofFields],
+    ) -> Roof: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Ceiling:Adiabatic"],
+        name: str = ...,
+        fields: _CeilingAdiabaticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CeilingAdiabaticFields],
+    ) -> CeilingAdiabatic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Ceiling:Interzone"],
+        name: str = ...,
+        fields: _CeilingInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CeilingInterzoneFields],
+    ) -> CeilingInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Floor:GroundContact"],
+        name: str = ...,
+        fields: _FloorGroundContactFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FloorGroundContactFields],
+    ) -> FloorGroundContact: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Floor:Adiabatic"],
+        name: str = ...,
+        fields: _FloorAdiabaticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FloorAdiabaticFields],
+    ) -> FloorAdiabatic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Floor:Interzone"],
+        name: str = ...,
+        fields: _FloorInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FloorInterzoneFields],
+    ) -> FloorInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FenestrationSurface:Detailed"],
+        name: str = ...,
+        fields: _FenestrationSurfaceDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FenestrationSurfaceDetailedFields],
+    ) -> FenestrationSurfaceDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Window"],
+        name: str = ...,
+        fields: _WindowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowFields],
+    ) -> Window: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Door"],
+        name: str = ...,
+        fields: _DoorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DoorFields],
+    ) -> Door: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GlazedDoor"],
+        name: str = ...,
+        fields: _GlazedDoorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GlazedDoorFields],
+    ) -> GlazedDoor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Window:Interzone"],
+        name: str = ...,
+        fields: _WindowInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowInterzoneFields],
+    ) -> WindowInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Door:Interzone"],
+        name: str = ...,
+        fields: _DoorInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DoorInterzoneFields],
+    ) -> DoorInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GlazedDoor:Interzone"],
+        name: str = ...,
+        fields: _GlazedDoorInterzoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GlazedDoorInterzoneFields],
+    ) -> GlazedDoorInterzone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowShadingControl"],
+        name: str = ...,
+        fields: _WindowShadingControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowShadingControlFields],
+    ) -> WindowShadingControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowProperty:FrameAndDivider"],
+        name: str = ...,
+        fields: _WindowPropertyFrameAndDividerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowPropertyFrameAndDividerFields],
+    ) -> WindowPropertyFrameAndDivider: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowProperty:AirflowControl"],
+        name: str = ...,
+        fields: _WindowPropertyAirflowControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowPropertyAirflowControlFields],
+    ) -> WindowPropertyAirflowControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WindowProperty:StormWindow"],
+        fields: _WindowPropertyStormWindowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WindowPropertyStormWindowFields],
+    ) -> WindowPropertyStormWindow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["InternalMass"],
+        name: str = ...,
+        fields: _InternalMassFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_InternalMassFields],
+    ) -> InternalMass: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Site"],
+        name: str = ...,
+        fields: _ShadingSiteFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingSiteFields],
+    ) -> ShadingSite: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Building"],
+        name: str = ...,
+        fields: _ShadingBuildingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingBuildingFields],
+    ) -> ShadingBuilding: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Site:Detailed"],
+        name: str = ...,
+        fields: _ShadingSiteDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingSiteDetailedFields],
+    ) -> ShadingSiteDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Building:Detailed"],
+        name: str = ...,
+        fields: _ShadingBuildingDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingBuildingDetailedFields],
+    ) -> ShadingBuildingDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Overhang"],
+        name: str = ...,
+        fields: _ShadingOverhangFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingOverhangFields],
+    ) -> ShadingOverhang: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Overhang:Projection"],
+        name: str = ...,
+        fields: _ShadingOverhangProjectionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingOverhangProjectionFields],
+    ) -> ShadingOverhangProjection: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Fin"],
+        name: str = ...,
+        fields: _ShadingFinFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingFinFields],
+    ) -> ShadingFin: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Fin:Projection"],
+        name: str = ...,
+        fields: _ShadingFinProjectionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingFinProjectionFields],
+    ) -> ShadingFinProjection: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Shading:Zone:Detailed"],
+        name: str = ...,
+        fields: _ShadingZoneDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingZoneDetailedFields],
+    ) -> ShadingZoneDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ShadingProperty:Reflectance"],
+        fields: _ShadingPropertyReflectanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ShadingPropertyReflectanceFields],
+    ) -> ShadingPropertyReflectance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:HeatTransferAlgorithm"],
+        fields: _SurfacePropertyHeatTransferAlgorithmFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmFields],
+    ) -> SurfacePropertyHeatTransferAlgorithm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:HeatTransferAlgorithm:MultipleSurface"],
+        name: str = ...,
+        fields: _SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields],
+    ) -> SurfacePropertyHeatTransferAlgorithmMultipleSurface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:HeatTransferAlgorithm:SurfaceList"],
+        name: str = ...,
+        fields: _SurfacePropertyHeatTransferAlgorithmSurfaceListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmSurfaceListFields],
+    ) -> SurfacePropertyHeatTransferAlgorithmSurfaceList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:HeatTransferAlgorithm:Construction"],
+        name: str = ...,
+        fields: _SurfacePropertyHeatTransferAlgorithmConstructionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyHeatTransferAlgorithmConstructionFields],
+    ) -> SurfacePropertyHeatTransferAlgorithmConstruction: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:HeatBalanceSourceTerm"],
+        fields: _SurfacePropertyHeatBalanceSourceTermFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyHeatBalanceSourceTermFields],
+    ) -> SurfacePropertyHeatBalanceSourceTerm: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceControl:MovableInsulation"],
+        fields: _SurfaceControlMovableInsulationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceControlMovableInsulationFields],
+    ) -> SurfaceControlMovableInsulation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:OtherSideCoefficients"],
+        name: str = ...,
+        fields: _SurfacePropertyOtherSideCoefficientsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyOtherSideCoefficientsFields],
+    ) -> SurfacePropertyOtherSideCoefficients: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:OtherSideConditionsModel"],
+        name: str = ...,
+        fields: _SurfacePropertyOtherSideConditionsModelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyOtherSideConditionsModelFields],
+    ) -> SurfacePropertyOtherSideConditionsModel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:Underwater"],
+        name: str = ...,
+        fields: _SurfacePropertyUnderwaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyUnderwaterFields],
+    ) -> SurfacePropertyUnderwater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Foundation:Kiva"],
+        name: str = ...,
+        fields: _FoundationKivaFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FoundationKivaFields],
+    ) -> FoundationKiva: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Foundation:Kiva:Settings"],
+        fields: _FoundationKivaSettingsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FoundationKivaSettingsFields],
+    ) -> FoundationKivaSettings: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:ExposedFoundationPerimeter"],
+        fields: _SurfacePropertyExposedFoundationPerimeterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyExposedFoundationPerimeterFields],
+    ) -> SurfacePropertyExposedFoundationPerimeter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Inside:AdaptiveModelSelections"],
+        name: str = ...,
+        fields: _SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields],
+    ) -> SurfaceConvectionAlgorithmInsideAdaptiveModelSelections: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Outside:AdaptiveModelSelections"],
+        name: str = ...,
+        fields: _SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields],
+    ) -> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Inside:UserCurve"],
+        name: str = ...,
+        fields: _SurfaceConvectionAlgorithmInsideUserCurveFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideUserCurveFields],
+    ) -> SurfaceConvectionAlgorithmInsideUserCurve: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceConvectionAlgorithm:Outside:UserCurve"],
+        name: str = ...,
+        fields: _SurfaceConvectionAlgorithmOutsideUserCurveFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideUserCurveFields],
+    ) -> SurfaceConvectionAlgorithmOutsideUserCurve: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:ConvectionCoefficients"],
+        fields: _SurfacePropertyConvectionCoefficientsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsFields],
+    ) -> SurfacePropertyConvectionCoefficients: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:ConvectionCoefficients:MultipleSurface"],
+        fields: _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyConvectionCoefficientsMultipleSurfaceFields],
+    ) -> SurfacePropertyConvectionCoefficientsMultipleSurface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperties:VaporCoefficients"],
+        fields: _SurfacePropertiesVaporCoefficientsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertiesVaporCoefficientsFields],
+    ) -> SurfacePropertiesVaporCoefficients: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:ExteriorNaturalVentedCavity"],
+        name: str = ...,
+        fields: _SurfacePropertyExteriorNaturalVentedCavityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyExteriorNaturalVentedCavityFields],
+    ) -> SurfacePropertyExteriorNaturalVentedCavity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:SolarIncidentInside"],
+        name: str = ...,
+        fields: _SurfacePropertySolarIncidentInsideFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertySolarIncidentInsideFields],
+    ) -> SurfacePropertySolarIncidentInside: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:IncidentSolarMultiplier"],
+        fields: _SurfacePropertyIncidentSolarMultiplierFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyIncidentSolarMultiplierFields],
+    ) -> SurfacePropertyIncidentSolarMultiplier: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:LocalEnvironment"],
+        name: str = ...,
+        fields: _SurfacePropertyLocalEnvironmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyLocalEnvironmentFields],
+    ) -> SurfacePropertyLocalEnvironment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneProperty:LocalEnvironment"],
+        name: str = ...,
+        fields: _ZonePropertyLocalEnvironmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZonePropertyLocalEnvironmentFields],
+    ) -> ZonePropertyLocalEnvironment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:SurroundingSurfaces"],
+        name: str = ...,
+        fields: _SurfacePropertySurroundingSurfacesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertySurroundingSurfacesFields],
+    ) -> SurfacePropertySurroundingSurfaces: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceProperty:GroundSurfaces"],
+        name: str = ...,
+        fields: _SurfacePropertyGroundSurfacesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfacePropertyGroundSurfacesFields],
+    ) -> SurfacePropertyGroundSurfaces: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ComplexFenestrationProperty:SolarAbsorbedLayers"],
+        name: str = ...,
+        fields: _ComplexFenestrationPropertySolarAbsorbedLayersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComplexFenestrationPropertySolarAbsorbedLayersFields],
+    ) -> ComplexFenestrationPropertySolarAbsorbedLayers: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneProperty:UserViewFactors:BySurfaceName"],
+        fields: _ZonePropertyUserViewFactorsBySurfaceNameFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceNameFields],
+    ) -> ZonePropertyUserViewFactorsBySurfaceName: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneMRTCalculation"],
+        fields: _ZoneMRTCalculationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneMRTCalculationFields],
+    ) -> ZoneMRTCalculation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Control"],
+        name: str = ...,
+        fields: _GroundHeatTransferControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferControlFields],
+    ) -> GroundHeatTransferControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:Materials"],
+        fields: _GroundHeatTransferSlabMaterialsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabMaterialsFields],
+    ) -> GroundHeatTransferSlabMaterials: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:MatlProps"],
+        fields: _GroundHeatTransferSlabMatlPropsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabMatlPropsFields],
+    ) -> GroundHeatTransferSlabMatlProps: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:BoundConds"],
+        fields: _GroundHeatTransferSlabBoundCondsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields],
+    ) -> GroundHeatTransferSlabBoundConds: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:BldgProps"],
+        fields: _GroundHeatTransferSlabBldgPropsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabBldgPropsFields],
+    ) -> GroundHeatTransferSlabBldgProps: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:Insulation"],
+        fields: _GroundHeatTransferSlabInsulationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabInsulationFields],
+    ) -> GroundHeatTransferSlabInsulation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:EquivalentSlab"],
+        fields: _GroundHeatTransferSlabEquivalentSlabFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabEquivalentSlabFields],
+    ) -> GroundHeatTransferSlabEquivalentSlab: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:AutoGrid"],
+        fields: _GroundHeatTransferSlabAutoGridFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabAutoGridFields],
+    ) -> GroundHeatTransferSlabAutoGrid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Slab:ManualGrid"],
+        fields: _GroundHeatTransferSlabManualGridFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferSlabManualGridFields],
+    ) -> GroundHeatTransferSlabManualGrid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:SimParameters"],
+        fields: _GroundHeatTransferBasementSimParametersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementSimParametersFields],
+    ) -> GroundHeatTransferBasementSimParameters: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:MatlProps"],
+        fields: _GroundHeatTransferBasementMatlPropsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementMatlPropsFields],
+    ) -> GroundHeatTransferBasementMatlProps: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:Insulation"],
+        fields: _GroundHeatTransferBasementInsulationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields],
+    ) -> GroundHeatTransferBasementInsulation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:SurfaceProps"],
+        fields: _GroundHeatTransferBasementSurfacePropsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields],
+    ) -> GroundHeatTransferBasementSurfaceProps: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:BldgData"],
+        fields: _GroundHeatTransferBasementBldgDataFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementBldgDataFields],
+    ) -> GroundHeatTransferBasementBldgData: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:Interior"],
+        fields: _GroundHeatTransferBasementInteriorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields],
+    ) -> GroundHeatTransferBasementInterior: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:ComBldg"],
+        fields: _GroundHeatTransferBasementComBldgFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementComBldgFields],
+    ) -> GroundHeatTransferBasementComBldg: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:EquivSlab"],
+        fields: _GroundHeatTransferBasementEquivSlabFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementEquivSlabFields],
+    ) -> GroundHeatTransferBasementEquivSlab: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:EquivAutoGrid"],
+        fields: _GroundHeatTransferBasementEquivAutoGridFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementEquivAutoGridFields],
+    ) -> GroundHeatTransferBasementEquivAutoGrid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:AutoGrid"],
+        fields: _GroundHeatTransferBasementAutoGridFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields],
+    ) -> GroundHeatTransferBasementAutoGrid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatTransfer:Basement:ManualGrid"],
+        fields: _GroundHeatTransferBasementManualGridFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields],
+    ) -> GroundHeatTransferBasementManualGrid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirModelType"],
+        name: str = ...,
+        fields: _RoomAirModelTypeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirModelTypeFields],
+    ) -> RoomAirModelType: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:TemperaturePattern:UserDefined"],
+        name: str = ...,
+        fields: _RoomAirTemperaturePatternUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirTemperaturePatternUserDefinedFields],
+    ) -> RoomAirTemperaturePatternUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:TemperaturePattern:ConstantGradient"],
+        fields: _RoomAirTemperaturePatternConstantGradientFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirTemperaturePatternConstantGradientFields],
+    ) -> RoomAirTemperaturePatternConstantGradient: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:TemperaturePattern:TwoGradient"],
+        fields: _RoomAirTemperaturePatternTwoGradientFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirTemperaturePatternTwoGradientFields],
+    ) -> RoomAirTemperaturePatternTwoGradient: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:TemperaturePattern:NondimensionalHeight"],
+        name: str = ...,
+        fields: _RoomAirTemperaturePatternNondimensionalHeightFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeightFields],
+    ) -> RoomAirTemperaturePatternNondimensionalHeight: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:TemperaturePattern:SurfaceMapping"],
+        name: str = ...,
+        fields: _RoomAirTemperaturePatternSurfaceMappingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirTemperaturePatternSurfaceMappingFields],
+    ) -> RoomAirTemperaturePatternSurfaceMapping: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:Node"],
+        name: str = ...,
+        fields: _RoomAirNodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirNodeFields],
+    ) -> RoomAirNode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:OneNodeDisplacementVentilation"],
+        fields: _RoomAirSettingsOneNodeDisplacementVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsOneNodeDisplacementVentilationFields],
+    ) -> RoomAirSettingsOneNodeDisplacementVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:ThreeNodeDisplacementVentilation"],
+        fields: _RoomAirSettingsThreeNodeDisplacementVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsThreeNodeDisplacementVentilationFields],
+    ) -> RoomAirSettingsThreeNodeDisplacementVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:CrossVentilation"],
+        fields: _RoomAirSettingsCrossVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsCrossVentilationFields],
+    ) -> RoomAirSettingsCrossVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:UnderFloorAirDistributionInterior"],
+        fields: _RoomAirSettingsUnderFloorAirDistributionInteriorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionInteriorFields],
+    ) -> RoomAirSettingsUnderFloorAirDistributionInterior: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:UnderFloorAirDistributionExterior"],
+        fields: _RoomAirSettingsUnderFloorAirDistributionExteriorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsUnderFloorAirDistributionExteriorFields],
+    ) -> RoomAirSettingsUnderFloorAirDistributionExterior: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:Node:AirflowNetwork"],
+        name: str = ...,
+        fields: _RoomAirNodeAirflowNetworkFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirNodeAirflowNetworkFields],
+    ) -> RoomAirNodeAirflowNetwork: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:Node:AirflowNetwork:AdjacentSurfaceList"],
+        name: str = ...,
+        fields: _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirNodeAirflowNetworkAdjacentSurfaceListFields],
+    ) -> RoomAirNodeAirflowNetworkAdjacentSurfaceList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:Node:AirflowNetwork:InternalGains"],
+        name: str = ...,
+        fields: _RoomAirNodeAirflowNetworkInternalGainsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGainsFields],
+    ) -> RoomAirNodeAirflowNetworkInternalGains: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAir:Node:AirflowNetwork:HVACEquipment"],
+        name: str = ...,
+        fields: _RoomAirNodeAirflowNetworkHVACEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirNodeAirflowNetworkHVACEquipmentFields],
+    ) -> RoomAirNodeAirflowNetworkHVACEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["RoomAirSettings:AirflowNetwork"],
+        name: str = ...,
+        fields: _RoomAirSettingsAirflowNetworkFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RoomAirSettingsAirflowNetworkFields],
+    ) -> RoomAirSettingsAirflowNetwork: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["People"],
+        name: str = ...,
+        fields: _PeopleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PeopleFields],
+    ) -> People: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["People:Instance"],
+        name: str = ...,
+        fields: _PeopleInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PeopleInstanceFields],
+    ) -> PeopleInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["People:Definition"],
+        name: str = ...,
+        fields: _PeopleDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PeopleDefinitionFields],
+    ) -> PeopleDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ComfortViewFactorAngles"],
+        name: str = ...,
+        fields: _ComfortViewFactorAnglesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComfortViewFactorAnglesFields],
+    ) -> ComfortViewFactorAngles: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Lights"],
+        name: str = ...,
+        fields: _LightsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LightsFields],
+    ) -> Lights: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Lights:Instance"],
+        name: str = ...,
+        fields: _LightsInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LightsInstanceFields],
+    ) -> LightsInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Lights:Definition"],
+        name: str = ...,
+        fields: _LightsDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LightsDefinitionFields],
+    ) -> LightsDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment"],
+        name: str = ...,
+        fields: _ElectricEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentFields],
+    ) -> ElectricEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment:Instance"],
+        name: str = ...,
+        fields: _ElectricEquipmentInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentInstanceFields],
+    ) -> ElectricEquipmentInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment:Definition"],
+        name: str = ...,
+        fields: _ElectricEquipmentDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentDefinitionFields],
+    ) -> ElectricEquipmentDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GasEquipment"],
+        name: str = ...,
+        fields: _GasEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GasEquipmentFields],
+    ) -> GasEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GasEquipment:Instance"],
+        name: str = ...,
+        fields: _GasEquipmentInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GasEquipmentInstanceFields],
+    ) -> GasEquipmentInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GasEquipment:Definition"],
+        name: str = ...,
+        fields: _GasEquipmentDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GasEquipmentDefinitionFields],
+    ) -> GasEquipmentDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HotWaterEquipment"],
+        name: str = ...,
+        fields: _HotWaterEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HotWaterEquipmentFields],
+    ) -> HotWaterEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HotWaterEquipment:Instance"],
+        name: str = ...,
+        fields: _HotWaterEquipmentInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HotWaterEquipmentInstanceFields],
+    ) -> HotWaterEquipmentInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HotWaterEquipment:Definition"],
+        name: str = ...,
+        fields: _HotWaterEquipmentDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HotWaterEquipmentDefinitionFields],
+    ) -> HotWaterEquipmentDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SteamEquipment"],
+        name: str = ...,
+        fields: _SteamEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SteamEquipmentFields],
+    ) -> SteamEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SteamEquipment:Instance"],
+        name: str = ...,
+        fields: _SteamEquipmentInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SteamEquipmentInstanceFields],
+    ) -> SteamEquipmentInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SteamEquipment:Definition"],
+        name: str = ...,
+        fields: _SteamEquipmentDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SteamEquipmentDefinitionFields],
+    ) -> SteamEquipmentDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OtherEquipment"],
+        name: str = ...,
+        fields: _OtherEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OtherEquipmentFields],
+    ) -> OtherEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OtherEquipment:Instance"],
+        name: str = ...,
+        fields: _OtherEquipmentInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OtherEquipmentInstanceFields],
+    ) -> OtherEquipmentInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OtherEquipment:Definition"],
+        name: str = ...,
+        fields: _OtherEquipmentDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OtherEquipmentDefinitionFields],
+    ) -> OtherEquipmentDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["IndoorLivingWall"],
+        name: str = ...,
+        fields: _IndoorLivingWallFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_IndoorLivingWallFields],
+    ) -> IndoorLivingWall: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment:ITE:AirCooled"],
+        name: str = ...,
+        fields: _ElectricEquipmentITEAirCooledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentITEAirCooledFields],
+    ) -> ElectricEquipmentITEAirCooled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment:ITE:AirCooled:Instance"],
+        name: str = ...,
+        fields: _ElectricEquipmentITEAirCooledInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentITEAirCooledInstanceFields],
+    ) -> ElectricEquipmentITEAirCooledInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricEquipment:ITE:AirCooled:Definition"],
+        name: str = ...,
+        fields: _ElectricEquipmentITEAirCooledDefinitionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricEquipmentITEAirCooledDefinitionFields],
+    ) -> ElectricEquipmentITEAirCooledDefinition: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneBaseboard:OutdoorTemperatureControlled"],
+        name: str = ...,
+        fields: _ZoneBaseboardOutdoorTemperatureControlledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneBaseboardOutdoorTemperatureControlledFields],
+    ) -> ZoneBaseboardOutdoorTemperatureControlled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SwimmingPool:Indoor"],
+        name: str = ...,
+        fields: _SwimmingPoolIndoorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SwimmingPoolIndoorFields],
+    ) -> SwimmingPoolIndoor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneContaminantSourceAndSink:CarbonDioxide"],
+        name: str = ...,
+        fields: _ZoneContaminantSourceAndSinkCarbonDioxideFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneContaminantSourceAndSinkCarbonDioxideFields],
+    ) -> ZoneContaminantSourceAndSinkCarbonDioxide: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneContaminantSourceAndSink:Generic:Constant"],
+        name: str = ...,
+        fields: _ZoneContaminantSourceAndSinkGenericConstantFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericConstantFields],
+    ) -> ZoneContaminantSourceAndSinkGenericConstant: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceContaminantSourceAndSink:Generic:PressureDriven"],
+        name: str = ...,
+        fields: _SurfaceContaminantSourceAndSinkGenericPressureDrivenFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericPressureDrivenFields],
+    ) -> SurfaceContaminantSourceAndSinkGenericPressureDriven: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneContaminantSourceAndSink:Generic:CutoffModel"],
+        name: str = ...,
+        fields: _ZoneContaminantSourceAndSinkGenericCutoffModelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericCutoffModelFields],
+    ) -> ZoneContaminantSourceAndSinkGenericCutoffModel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneContaminantSourceAndSink:Generic:DecaySource"],
+        name: str = ...,
+        fields: _ZoneContaminantSourceAndSinkGenericDecaySourceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDecaySourceFields],
+    ) -> ZoneContaminantSourceAndSinkGenericDecaySource: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion"],
+        name: str = ...,
+        fields: _SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields],
+    ) -> SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SurfaceContaminantSourceAndSink:Generic:DepositionVelocitySink"],
+        name: str = ...,
+        fields: _SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields],
+    ) -> SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneContaminantSourceAndSink:Generic:DepositionRateSink"],
+        name: str = ...,
+        fields: _ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneContaminantSourceAndSinkGenericDepositionRateSinkFields],
+    ) -> ZoneContaminantSourceAndSinkGenericDepositionRateSink: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Daylighting:Controls"],
+        name: str = ...,
+        fields: _DaylightingControlsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingControlsFields],
+    ) -> DaylightingControls: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Daylighting:ReferencePoint"],
+        name: str = ...,
+        fields: _DaylightingReferencePointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingReferencePointFields],
+    ) -> DaylightingReferencePoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Daylighting:DELight:ComplexFenestration"],
+        name: str = ...,
+        fields: _DaylightingDELightComplexFenestrationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingDELightComplexFenestrationFields],
+    ) -> DaylightingDELightComplexFenestration: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DaylightingDevice:Tubular"],
+        name: str = ...,
+        fields: _DaylightingDeviceTubularFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingDeviceTubularFields],
+    ) -> DaylightingDeviceTubular: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DaylightingDevice:Shelf"],
+        name: str = ...,
+        fields: _DaylightingDeviceShelfFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingDeviceShelfFields],
+    ) -> DaylightingDeviceShelf: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DaylightingDevice:LightWell"],
+        fields: _DaylightingDeviceLightWellFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DaylightingDeviceLightWellFields],
+    ) -> DaylightingDeviceLightWell: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:DaylightFactors"],
+        fields: _OutputDaylightFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputDaylightFactorsFields],
+    ) -> OutputDaylightFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:IlluminanceMap"],
+        name: str = ...,
+        fields: _OutputIlluminanceMapFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputIlluminanceMapFields],
+    ) -> OutputIlluminanceMap: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:IlluminanceMap:Style"],
+        fields: _OutputControlIlluminanceMapStyleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlIlluminanceMapStyleFields],
+    ) -> OutputControlIlluminanceMapStyle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneInfiltration:DesignFlowRate"],
+        name: str = ...,
+        fields: _ZoneInfiltrationDesignFlowRateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneInfiltrationDesignFlowRateFields],
+    ) -> ZoneInfiltrationDesignFlowRate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneInfiltration:EffectiveLeakageArea"],
+        name: str = ...,
+        fields: _ZoneInfiltrationEffectiveLeakageAreaFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneInfiltrationEffectiveLeakageAreaFields],
+    ) -> ZoneInfiltrationEffectiveLeakageArea: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneInfiltration:FlowCoefficient"],
+        name: str = ...,
+        fields: _ZoneInfiltrationFlowCoefficientFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneInfiltrationFlowCoefficientFields],
+    ) -> ZoneInfiltrationFlowCoefficient: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneVentilation:DesignFlowRate"],
+        name: str = ...,
+        fields: _ZoneVentilationDesignFlowRateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneVentilationDesignFlowRateFields],
+    ) -> ZoneVentilationDesignFlowRate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneVentilation:WindandStackOpenArea"],
+        name: str = ...,
+        fields: _ZoneVentilationWindandStackOpenAreaFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneVentilationWindandStackOpenAreaFields],
+    ) -> ZoneVentilationWindandStackOpenArea: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneAirBalance:OutdoorAir"],
+        name: str = ...,
+        fields: _ZoneAirBalanceOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneAirBalanceOutdoorAirFields],
+    ) -> ZoneAirBalanceOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneMixing"],
+        name: str = ...,
+        fields: _ZoneMixingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneMixingFields],
+    ) -> ZoneMixing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneCrossMixing"],
+        name: str = ...,
+        fields: _ZoneCrossMixingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneCrossMixingFields],
+    ) -> ZoneCrossMixing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneRefrigerationDoorMixing"],
+        name: str = ...,
+        fields: _ZoneRefrigerationDoorMixingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneRefrigerationDoorMixingFields],
+    ) -> ZoneRefrigerationDoorMixing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneEarthtube"],
+        fields: _ZoneEarthtubeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneEarthtubeFields],
+    ) -> ZoneEarthtube: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneEarthtube:Parameters"],
+        fields: _ZoneEarthtubeParametersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneEarthtubeParametersFields],
+    ) -> ZoneEarthtubeParameters: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneCoolTower:Shower"],
+        name: str = ...,
+        fields: _ZoneCoolTowerShowerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneCoolTowerShowerFields],
+    ) -> ZoneCoolTowerShower: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneThermalChimney"],
+        name: str = ...,
+        fields: _ZoneThermalChimneyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneThermalChimneyFields],
+    ) -> ZoneThermalChimney: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:SimulationControl"],
+        name: str = ...,
+        fields: _AirflowNetworkSimulationControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkSimulationControlFields],
+    ) -> AirflowNetworkSimulationControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Zone"],
+        fields: _AirflowNetworkMultiZoneZoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneZoneFields],
+    ) -> AirflowNetworkMultiZoneZone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Surface"],
+        fields: _AirflowNetworkMultiZoneSurfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceFields],
+    ) -> AirflowNetworkMultiZoneSurface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:ReferenceCrackConditions"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneReferenceCrackConditionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneReferenceCrackConditionsFields],
+    ) -> AirflowNetworkMultiZoneReferenceCrackConditions: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Surface:Crack"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneSurfaceCrackFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceCrackFields],
+    ) -> AirflowNetworkMultiZoneSurfaceCrack: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields],
+    ) -> AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:SpecifiedFlowRate"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneSpecifiedFlowRateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneSpecifiedFlowRateFields],
+    ) -> AirflowNetworkMultiZoneSpecifiedFlowRate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Component:DetailedOpening"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneComponentDetailedOpeningFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneComponentDetailedOpeningFields],
+    ) -> AirflowNetworkMultiZoneComponentDetailedOpening: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Component:SimpleOpening"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneComponentSimpleOpeningFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneComponentSimpleOpeningFields],
+    ) -> AirflowNetworkMultiZoneComponentSimpleOpening: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Component:HorizontalOpening"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneComponentHorizontalOpeningFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneComponentHorizontalOpeningFields],
+    ) -> AirflowNetworkMultiZoneComponentHorizontalOpening: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:Component:ZoneExhaustFan"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneComponentZoneExhaustFanFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneComponentZoneExhaustFanFields],
+    ) -> AirflowNetworkMultiZoneComponentZoneExhaustFan: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:ExternalNode"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneExternalNodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneExternalNodeFields],
+    ) -> AirflowNetworkMultiZoneExternalNode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:WindPressureCoefficientArray"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneWindPressureCoefficientArrayFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientArrayFields],
+    ) -> AirflowNetworkMultiZoneWindPressureCoefficientArray: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:MultiZone:WindPressureCoefficientValues"],
+        name: str = ...,
+        fields: _AirflowNetworkMultiZoneWindPressureCoefficientValuesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkMultiZoneWindPressureCoefficientValuesFields],
+    ) -> AirflowNetworkMultiZoneWindPressureCoefficientValues: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:ZoneControl:PressureController"],
+        name: str = ...,
+        fields: _AirflowNetworkZoneControlPressureControllerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkZoneControlPressureControllerFields],
+    ) -> AirflowNetworkZoneControlPressureController: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Node"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionNodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionNodeFields],
+    ) -> AirflowNetworkDistributionNode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:Leak"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentLeakFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakFields],
+    ) -> AirflowNetworkDistributionComponentLeak: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:LeakageRatio"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentLeakageRatioFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentLeakageRatioFields],
+    ) -> AirflowNetworkDistributionComponentLeakageRatio: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:Duct"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentDuctFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentDuctFields],
+    ) -> AirflowNetworkDistributionComponentDuct: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:Fan"],
+        fields: _AirflowNetworkDistributionComponentFanFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentFanFields],
+    ) -> AirflowNetworkDistributionComponentFan: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:Coil"],
+        fields: _AirflowNetworkDistributionComponentCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentCoilFields],
+    ) -> AirflowNetworkDistributionComponentCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:HeatExchanger"],
+        fields: _AirflowNetworkDistributionComponentHeatExchangerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentHeatExchangerFields],
+    ) -> AirflowNetworkDistributionComponentHeatExchanger: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:TerminalUnit"],
+        fields: _AirflowNetworkDistributionComponentTerminalUnitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentTerminalUnitFields],
+    ) -> AirflowNetworkDistributionComponentTerminalUnit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:ConstantPressureDrop"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentConstantPressureDropFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentConstantPressureDropFields],
+    ) -> AirflowNetworkDistributionComponentConstantPressureDrop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:OutdoorAirFlow"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentOutdoorAirFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentOutdoorAirFlowFields],
+    ) -> AirflowNetworkDistributionComponentOutdoorAirFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Component:ReliefAirFlow"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionComponentReliefAirFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionComponentReliefAirFlowFields],
+    ) -> AirflowNetworkDistributionComponentReliefAirFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:Linkage"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionLinkageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionLinkageFields],
+    ) -> AirflowNetworkDistributionLinkage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:DuctViewFactors"],
+        fields: _AirflowNetworkDistributionDuctViewFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionDuctViewFactorsFields],
+    ) -> AirflowNetworkDistributionDuctViewFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:Distribution:DuctSizing"],
+        name: str = ...,
+        fields: _AirflowNetworkDistributionDuctSizingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkDistributionDuctSizingFields],
+    ) -> AirflowNetworkDistributionDuctSizing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:OccupantVentilationControl"],
+        name: str = ...,
+        fields: _AirflowNetworkOccupantVentilationControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkOccupantVentilationControlFields],
+    ) -> AirflowNetworkOccupantVentilationControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:IntraZone:Node"],
+        name: str = ...,
+        fields: _AirflowNetworkIntraZoneNodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkIntraZoneNodeFields],
+    ) -> AirflowNetworkIntraZoneNode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirflowNetwork:IntraZone:Linkage"],
+        name: str = ...,
+        fields: _AirflowNetworkIntraZoneLinkageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirflowNetworkIntraZoneLinkageFields],
+    ) -> AirflowNetworkIntraZoneLinkage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Duct:Loss:Conduction"],
+        name: str = ...,
+        fields: _DuctLossConductionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DuctLossConductionFields],
+    ) -> DuctLossConduction: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Duct:Loss:Leakage"],
+        name: str = ...,
+        fields: _DuctLossLeakageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DuctLossLeakageFields],
+    ) -> DuctLossLeakage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Duct:Loss:MakeupAir"],
+        name: str = ...,
+        fields: _DuctLossMakeupAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DuctLossMakeupAirFields],
+    ) -> DuctLossMakeupAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Exterior:Lights"],
+        name: str = ...,
+        fields: _ExteriorLightsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExteriorLightsFields],
+    ) -> ExteriorLights: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Exterior:FuelEquipment"],
+        name: str = ...,
+        fields: _ExteriorFuelEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExteriorFuelEquipmentFields],
+    ) -> ExteriorFuelEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Exterior:WaterEquipment"],
+        name: str = ...,
+        fields: _ExteriorWaterEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExteriorWaterEquipmentFields],
+    ) -> ExteriorWaterEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Thermostat"],
+        name: str = ...,
+        fields: _HVACTemplateThermostatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateThermostatFields],
+    ) -> HVACTemplateThermostat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:IdealLoadsAirSystem"],
+        fields: _HVACTemplateZoneIdealLoadsAirSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneIdealLoadsAirSystemFields],
+    ) -> HVACTemplateZoneIdealLoadsAirSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:BaseboardHeat"],
+        fields: _HVACTemplateZoneBaseboardHeatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneBaseboardHeatFields],
+    ) -> HVACTemplateZoneBaseboardHeat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:FanCoil"],
+        fields: _HVACTemplateZoneFanCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneFanCoilFields],
+    ) -> HVACTemplateZoneFanCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:PTAC"],
+        fields: _HVACTemplateZonePTACFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZonePTACFields],
+    ) -> HVACTemplateZonePTAC: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:PTHP"],
+        fields: _HVACTemplateZonePTHPFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZonePTHPFields],
+    ) -> HVACTemplateZonePTHP: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:WaterToAirHeatPump"],
+        fields: _HVACTemplateZoneWaterToAirHeatPumpFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneWaterToAirHeatPumpFields],
+    ) -> HVACTemplateZoneWaterToAirHeatPump: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:VRF"],
+        fields: _HVACTemplateZoneVRFFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneVRFFields],
+    ) -> HVACTemplateZoneVRF: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:Unitary"],
+        fields: _HVACTemplateZoneUnitaryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneUnitaryFields],
+    ) -> HVACTemplateZoneUnitary: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:VAV"],
+        fields: _HVACTemplateZoneVAVFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneVAVFields],
+    ) -> HVACTemplateZoneVAV: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:VAV:FanPowered"],
+        fields: _HVACTemplateZoneVAVFanPoweredFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneVAVFanPoweredFields],
+    ) -> HVACTemplateZoneVAVFanPowered: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:VAV:HeatAndCool"],
+        fields: _HVACTemplateZoneVAVHeatAndCoolFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneVAVHeatAndCoolFields],
+    ) -> HVACTemplateZoneVAVHeatAndCool: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:ConstantVolume"],
+        fields: _HVACTemplateZoneConstantVolumeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneConstantVolumeFields],
+    ) -> HVACTemplateZoneConstantVolume: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Zone:DualDuct"],
+        fields: _HVACTemplateZoneDualDuctFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateZoneDualDuctFields],
+    ) -> HVACTemplateZoneDualDuct: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:VRF"],
+        name: str = ...,
+        fields: _HVACTemplateSystemVRFFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemVRFFields],
+    ) -> HVACTemplateSystemVRF: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:Unitary"],
+        name: str = ...,
+        fields: _HVACTemplateSystemUnitaryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemUnitaryFields],
+    ) -> HVACTemplateSystemUnitary: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:UnitaryHeatPump:AirToAir"],
+        name: str = ...,
+        fields: _HVACTemplateSystemUnitaryHeatPumpAirToAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemUnitaryHeatPumpAirToAirFields],
+    ) -> HVACTemplateSystemUnitaryHeatPumpAirToAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:UnitarySystem"],
+        name: str = ...,
+        fields: _HVACTemplateSystemUnitarySystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemUnitarySystemFields],
+    ) -> HVACTemplateSystemUnitarySystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:VAV"],
+        name: str = ...,
+        fields: _HVACTemplateSystemVAVFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemVAVFields],
+    ) -> HVACTemplateSystemVAV: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:PackagedVAV"],
+        name: str = ...,
+        fields: _HVACTemplateSystemPackagedVAVFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemPackagedVAVFields],
+    ) -> HVACTemplateSystemPackagedVAV: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:ConstantVolume"],
+        name: str = ...,
+        fields: _HVACTemplateSystemConstantVolumeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemConstantVolumeFields],
+    ) -> HVACTemplateSystemConstantVolume: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:DualDuct"],
+        name: str = ...,
+        fields: _HVACTemplateSystemDualDuctFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemDualDuctFields],
+    ) -> HVACTemplateSystemDualDuct: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:System:DedicatedOutdoorAir"],
+        name: str = ...,
+        fields: _HVACTemplateSystemDedicatedOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplateSystemDedicatedOutdoorAirFields],
+    ) -> HVACTemplateSystemDedicatedOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:ChilledWaterLoop"],
+        name: str = ...,
+        fields: _HVACTemplatePlantChilledWaterLoopFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantChilledWaterLoopFields],
+    ) -> HVACTemplatePlantChilledWaterLoop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Chiller"],
+        name: str = ...,
+        fields: _HVACTemplatePlantChillerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantChillerFields],
+    ) -> HVACTemplatePlantChiller: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Chiller:ObjectReference"],
+        name: str = ...,
+        fields: _HVACTemplatePlantChillerObjectReferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantChillerObjectReferenceFields],
+    ) -> HVACTemplatePlantChillerObjectReference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Tower"],
+        name: str = ...,
+        fields: _HVACTemplatePlantTowerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantTowerFields],
+    ) -> HVACTemplatePlantTower: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Tower:ObjectReference"],
+        name: str = ...,
+        fields: _HVACTemplatePlantTowerObjectReferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantTowerObjectReferenceFields],
+    ) -> HVACTemplatePlantTowerObjectReference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:HotWaterLoop"],
+        name: str = ...,
+        fields: _HVACTemplatePlantHotWaterLoopFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantHotWaterLoopFields],
+    ) -> HVACTemplatePlantHotWaterLoop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Boiler"],
+        name: str = ...,
+        fields: _HVACTemplatePlantBoilerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantBoilerFields],
+    ) -> HVACTemplatePlantBoiler: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:Boiler:ObjectReference"],
+        name: str = ...,
+        fields: _HVACTemplatePlantBoilerObjectReferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantBoilerObjectReferenceFields],
+    ) -> HVACTemplatePlantBoilerObjectReference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HVACTemplate:Plant:MixedWaterLoop"],
+        name: str = ...,
+        fields: _HVACTemplatePlantMixedWaterLoopFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HVACTemplatePlantMixedWaterLoopFields],
+    ) -> HVACTemplatePlantMixedWaterLoop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DesignSpecification:OutdoorAir"],
+        name: str = ...,
+        fields: _DesignSpecificationOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DesignSpecificationOutdoorAirFields],
+    ) -> DesignSpecificationOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DesignSpecification:OutdoorAir:SpaceList"],
+        name: str = ...,
+        fields: _DesignSpecificationOutdoorAirSpaceListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DesignSpecificationOutdoorAirSpaceListFields],
+    ) -> DesignSpecificationOutdoorAirSpaceList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DesignSpecification:ZoneAirDistribution"],
+        name: str = ...,
+        fields: _DesignSpecificationZoneAirDistributionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DesignSpecificationZoneAirDistributionFields],
+    ) -> DesignSpecificationZoneAirDistribution: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Sizing:Parameters"],
+        fields: _SizingParametersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingParametersFields],
+    ) -> SizingParameters: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Sizing:Zone"],
+        fields: _SizingZoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingZoneFields],
+    ) -> SizingZone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DesignSpecification:ZoneHVAC:Sizing"],
+        name: str = ...,
+        fields: _DesignSpecificationZoneHVACSizingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DesignSpecificationZoneHVACSizingFields],
+    ) -> DesignSpecificationZoneHVACSizing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DesignSpecification:AirTerminal:Sizing"],
+        name: str = ...,
+        fields: _DesignSpecificationAirTerminalSizingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DesignSpecificationAirTerminalSizingFields],
+    ) -> DesignSpecificationAirTerminalSizing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Sizing:System"],
+        fields: _SizingSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingSystemFields],
+    ) -> SizingSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Sizing:Plant"],
+        fields: _SizingPlantFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SizingPlantFields],
+    ) -> SizingPlant: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:Sizing:Style"],
+        fields: _OutputControlSizingStyleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlSizingStyleFields],
+    ) -> OutputControlSizingStyle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Humidistat"],
+        name: str = ...,
+        fields: _ZoneControlHumidistatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlHumidistatFields],
+    ) -> ZoneControlHumidistat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Thermostat"],
+        name: str = ...,
+        fields: _ZoneControlThermostatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlThermostatFields],
+    ) -> ZoneControlThermostat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Thermostat:OperativeTemperature"],
+        fields: _ZoneControlThermostatOperativeTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlThermostatOperativeTemperatureFields],
+    ) -> ZoneControlThermostatOperativeTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Thermostat:ThermalComfort"],
+        name: str = ...,
+        fields: _ZoneControlThermostatThermalComfortFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlThermostatThermalComfortFields],
+    ) -> ZoneControlThermostatThermalComfort: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Thermostat:TemperatureAndHumidity"],
+        fields: _ZoneControlThermostatTemperatureAndHumidityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlThermostatTemperatureAndHumidityFields],
+    ) -> ZoneControlThermostatTemperatureAndHumidity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:SingleHeating"],
+        name: str = ...,
+        fields: _ThermostatSetpointSingleHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointSingleHeatingFields],
+    ) -> ThermostatSetpointSingleHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:SingleCooling"],
+        name: str = ...,
+        fields: _ThermostatSetpointSingleCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointSingleCoolingFields],
+    ) -> ThermostatSetpointSingleCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:SingleHeatingOrCooling"],
+        name: str = ...,
+        fields: _ThermostatSetpointSingleHeatingOrCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointSingleHeatingOrCoolingFields],
+    ) -> ThermostatSetpointSingleHeatingOrCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:DualSetpoint"],
+        name: str = ...,
+        fields: _ThermostatSetpointDualSetpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointDualSetpointFields],
+    ) -> ThermostatSetpointDualSetpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:ThermalComfort:Fanger:SingleHeating"],
+        name: str = ...,
+        fields: _ThermostatSetpointThermalComfortFangerSingleHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingFields],
+    ) -> ThermostatSetpointThermalComfortFangerSingleHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:ThermalComfort:Fanger:SingleCooling"],
+        name: str = ...,
+        fields: _ThermostatSetpointThermalComfortFangerSingleCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleCoolingFields],
+    ) -> ThermostatSetpointThermalComfortFangerSingleCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling"],
+        name: str = ...,
+        fields: _ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields],
+    ) -> ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint"],
+        name: str = ...,
+        fields: _ThermostatSetpointThermalComfortFangerDualSetpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermostatSetpointThermalComfortFangerDualSetpointFields],
+    ) -> ThermostatSetpointThermalComfortFangerDualSetpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:Thermostat:StagedDualSetpoint"],
+        name: str = ...,
+        fields: _ZoneControlThermostatStagedDualSetpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlThermostatStagedDualSetpointFields],
+    ) -> ZoneControlThermostatStagedDualSetpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneControl:ContaminantController"],
+        name: str = ...,
+        fields: _ZoneControlContaminantControllerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneControlContaminantControllerFields],
+    ) -> ZoneControlContaminantController: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:IdealLoadsAirSystem"],
+        name: str = ...,
+        fields: _ZoneHVACIdealLoadsAirSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACIdealLoadsAirSystemFields],
+    ) -> ZoneHVACIdealLoadsAirSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:FourPipeFanCoil"],
+        name: str = ...,
+        fields: _ZoneHVACFourPipeFanCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACFourPipeFanCoilFields],
+    ) -> ZoneHVACFourPipeFanCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:WindowAirConditioner"],
+        name: str = ...,
+        fields: _ZoneHVACWindowAirConditionerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACWindowAirConditionerFields],
+    ) -> ZoneHVACWindowAirConditioner: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:PackagedTerminalAirConditioner"],
+        name: str = ...,
+        fields: _ZoneHVACPackagedTerminalAirConditionerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACPackagedTerminalAirConditionerFields],
+    ) -> ZoneHVACPackagedTerminalAirConditioner: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:PackagedTerminalHeatPump"],
+        name: str = ...,
+        fields: _ZoneHVACPackagedTerminalHeatPumpFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACPackagedTerminalHeatPumpFields],
+    ) -> ZoneHVACPackagedTerminalHeatPump: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:WaterToAirHeatPump"],
+        name: str = ...,
+        fields: _ZoneHVACWaterToAirHeatPumpFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACWaterToAirHeatPumpFields],
+    ) -> ZoneHVACWaterToAirHeatPump: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Dehumidifier:DX"],
+        name: str = ...,
+        fields: _ZoneHVACDehumidifierDXFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACDehumidifierDXFields],
+    ) -> ZoneHVACDehumidifierDX: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:EnergyRecoveryVentilator"],
+        name: str = ...,
+        fields: _ZoneHVACEnergyRecoveryVentilatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorFields],
+    ) -> ZoneHVACEnergyRecoveryVentilator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:EnergyRecoveryVentilator:Controller"],
+        name: str = ...,
+        fields: _ZoneHVACEnergyRecoveryVentilatorControllerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACEnergyRecoveryVentilatorControllerFields],
+    ) -> ZoneHVACEnergyRecoveryVentilatorController: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:UnitVentilator"],
+        name: str = ...,
+        fields: _ZoneHVACUnitVentilatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACUnitVentilatorFields],
+    ) -> ZoneHVACUnitVentilator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:UnitHeater"],
+        name: str = ...,
+        fields: _ZoneHVACUnitHeaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACUnitHeaterFields],
+    ) -> ZoneHVACUnitHeater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:EvaporativeCoolerUnit"],
+        name: str = ...,
+        fields: _ZoneHVACEvaporativeCoolerUnitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACEvaporativeCoolerUnitFields],
+    ) -> ZoneHVACEvaporativeCoolerUnit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:HybridUnitaryHVAC"],
+        name: str = ...,
+        fields: _ZoneHVACHybridUnitaryHVACFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACHybridUnitaryHVACFields],
+    ) -> ZoneHVACHybridUnitaryHVAC: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:OutdoorAirUnit"],
+        name: str = ...,
+        fields: _ZoneHVACOutdoorAirUnitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACOutdoorAirUnitFields],
+    ) -> ZoneHVACOutdoorAirUnit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:OutdoorAirUnit:EquipmentList"],
+        name: str = ...,
+        fields: _ZoneHVACOutdoorAirUnitEquipmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACOutdoorAirUnitEquipmentListFields],
+    ) -> ZoneHVACOutdoorAirUnitEquipmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:TerminalUnit:VariableRefrigerantFlow"],
+        name: str = ...,
+        fields: _ZoneHVACTerminalUnitVariableRefrigerantFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACTerminalUnitVariableRefrigerantFlowFields],
+    ) -> ZoneHVACTerminalUnitVariableRefrigerantFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Water:Design"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardRadiantConvectiveWaterDesignFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterDesignFields],
+    ) -> ZoneHVACBaseboardRadiantConvectiveWaterDesign: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Water"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardRadiantConvectiveWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveWaterFields],
+    ) -> ZoneHVACBaseboardRadiantConvectiveWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Steam:Design"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardRadiantConvectiveSteamDesignFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamDesignFields],
+    ) -> ZoneHVACBaseboardRadiantConvectiveSteamDesign: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Steam"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardRadiantConvectiveSteamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveSteamFields],
+    ) -> ZoneHVACBaseboardRadiantConvectiveSteam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:RadiantConvective:Electric"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardRadiantConvectiveElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardRadiantConvectiveElectricFields],
+    ) -> ZoneHVACBaseboardRadiantConvectiveElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:CoolingPanel:RadiantConvective:Water"],
+        name: str = ...,
+        fields: _ZoneHVACCoolingPanelRadiantConvectiveWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACCoolingPanelRadiantConvectiveWaterFields],
+    ) -> ZoneHVACCoolingPanelRadiantConvectiveWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:Convective:Water"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardConvectiveWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardConvectiveWaterFields],
+    ) -> ZoneHVACBaseboardConvectiveWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:Baseboard:Convective:Electric"],
+        name: str = ...,
+        fields: _ZoneHVACBaseboardConvectiveElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACBaseboardConvectiveElectricFields],
+    ) -> ZoneHVACBaseboardConvectiveElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:VariableFlow"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantVariableFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowFields],
+    ) -> ZoneHVACLowTemperatureRadiantVariableFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantVariableFlowDesignFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantVariableFlowDesignFields],
+    ) -> ZoneHVACLowTemperatureRadiantVariableFlowDesign: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:ConstantFlow"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantConstantFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowFields],
+    ) -> ZoneHVACLowTemperatureRadiantConstantFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantConstantFlowDesignFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantConstantFlowDesignFields],
+    ) -> ZoneHVACLowTemperatureRadiantConstantFlowDesign: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:Electric"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantElectricFields],
+    ) -> ZoneHVACLowTemperatureRadiantElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:LowTemperatureRadiant:SurfaceGroup"],
+        name: str = ...,
+        fields: _ZoneHVACLowTemperatureRadiantSurfaceGroupFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACLowTemperatureRadiantSurfaceGroupFields],
+    ) -> ZoneHVACLowTemperatureRadiantSurfaceGroup: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:HighTemperatureRadiant"],
+        name: str = ...,
+        fields: _ZoneHVACHighTemperatureRadiantFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACHighTemperatureRadiantFields],
+    ) -> ZoneHVACHighTemperatureRadiant: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:VentilatedSlab"],
+        name: str = ...,
+        fields: _ZoneHVACVentilatedSlabFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACVentilatedSlabFields],
+    ) -> ZoneHVACVentilatedSlab: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:VentilatedSlab:SlabGroup"],
+        name: str = ...,
+        fields: _ZoneHVACVentilatedSlabSlabGroupFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroupFields],
+    ) -> ZoneHVACVentilatedSlabSlabGroup: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ConstantVolume:Reheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctConstantVolumeReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeReheatFields],
+    ) -> AirTerminalSingleDuctConstantVolumeReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ConstantVolume:NoReheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctConstantVolumeNoReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeNoReheatFields],
+    ) -> AirTerminalSingleDuctConstantVolumeNoReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:VAV:NoReheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctVAVNoReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctVAVNoReheatFields],
+    ) -> AirTerminalSingleDuctVAVNoReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:VAV:Reheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctVAVReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatFields],
+    ) -> AirTerminalSingleDuctVAVReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctVAVReheatVariableSpeedFanFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctVAVReheatVariableSpeedFanFields],
+    ) -> AirTerminalSingleDuctVAVReheatVariableSpeedFan: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolNoReheatFields],
+    ) -> AirTerminalSingleDuctVAVHeatAndCoolNoReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctVAVHeatAndCoolReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctVAVHeatAndCoolReheatFields],
+    ) -> AirTerminalSingleDuctVAVHeatAndCoolReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:SeriesPIU:Reheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctSeriesPIUReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctSeriesPIUReheatFields],
+    ) -> AirTerminalSingleDuctSeriesPIUReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ParallelPIU:Reheat"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctParallelPIUReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctParallelPIUReheatFields],
+    ) -> AirTerminalSingleDuctParallelPIUReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctConstantVolumeFourPipeInductionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeInductionFields],
+    ) -> AirTerminalSingleDuctConstantVolumeFourPipeInduction: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctConstantVolumeFourPipeBeamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeFourPipeBeamFields],
+    ) -> AirTerminalSingleDuctConstantVolumeFourPipeBeam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:ConstantVolume:CooledBeam"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctConstantVolumeCooledBeamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctConstantVolumeCooledBeamFields],
+    ) -> AirTerminalSingleDuctConstantVolumeCooledBeam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:Mixer"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctMixerFields],
+    ) -> AirTerminalSingleDuctMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:DualDuct:ConstantVolume"],
+        name: str = ...,
+        fields: _AirTerminalDualDuctConstantVolumeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalDualDuctConstantVolumeFields],
+    ) -> AirTerminalDualDuctConstantVolume: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:DualDuct:VAV"],
+        name: str = ...,
+        fields: _AirTerminalDualDuctVAVFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalDualDuctVAVFields],
+    ) -> AirTerminalDualDuctVAV: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:DualDuct:VAV:OutdoorAir"],
+        name: str = ...,
+        fields: _AirTerminalDualDuctVAVOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalDualDuctVAVOutdoorAirFields],
+    ) -> AirTerminalDualDuctVAVOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:AirDistributionUnit"],
+        name: str = ...,
+        fields: _ZoneHVACAirDistributionUnitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACAirDistributionUnitFields],
+    ) -> ZoneHVACAirDistributionUnit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:ExhaustControl"],
+        name: str = ...,
+        fields: _ZoneHVACExhaustControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACExhaustControlFields],
+    ) -> ZoneHVACExhaustControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:EquipmentList"],
+        name: str = ...,
+        fields: _ZoneHVACEquipmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACEquipmentListFields],
+    ) -> ZoneHVACEquipmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:EquipmentConnections"],
+        fields: _ZoneHVACEquipmentConnectionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACEquipmentConnectionsFields],
+    ) -> ZoneHVACEquipmentConnections: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SpaceHVAC:EquipmentConnections"],
+        fields: _SpaceHVACEquipmentConnectionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceHVACEquipmentConnectionsFields],
+    ) -> SpaceHVACEquipmentConnections: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SpaceHVAC:ZoneEquipmentSplitter"],
+        name: str = ...,
+        fields: _SpaceHVACZoneEquipmentSplitterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceHVACZoneEquipmentSplitterFields],
+    ) -> SpaceHVACZoneEquipmentSplitter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SpaceHVAC:ZoneEquipmentMixer"],
+        name: str = ...,
+        fields: _SpaceHVACZoneEquipmentMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceHVACZoneEquipmentMixerFields],
+    ) -> SpaceHVACZoneEquipmentMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SpaceHVAC:ZoneReturnMixer"],
+        name: str = ...,
+        fields: _SpaceHVACZoneReturnMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SpaceHVACZoneReturnMixerFields],
+    ) -> SpaceHVACZoneReturnMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:SystemModel"],
+        name: str = ...,
+        fields: _FanSystemModelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanSystemModelFields],
+    ) -> FanSystemModel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:ConstantVolume"],
+        name: str = ...,
+        fields: _FanConstantVolumeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanConstantVolumeFields],
+    ) -> FanConstantVolume: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:VariableVolume"],
+        name: str = ...,
+        fields: _FanVariableVolumeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanVariableVolumeFields],
+    ) -> FanVariableVolume: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:OnOff"],
+        name: str = ...,
+        fields: _FanOnOffFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanOnOffFields],
+    ) -> FanOnOff: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:ZoneExhaust"],
+        name: str = ...,
+        fields: _FanZoneExhaustFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanZoneExhaustFields],
+    ) -> FanZoneExhaust: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FanPerformance:NightVentilation"],
+        fields: _FanPerformanceNightVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanPerformanceNightVentilationFields],
+    ) -> FanPerformanceNightVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Fan:ComponentModel"],
+        name: str = ...,
+        fields: _FanComponentModelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FanComponentModelFields],
+    ) -> FanComponentModel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:Water"],
+        name: str = ...,
+        fields: _CoilCoolingWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingWaterFields],
+    ) -> CoilCoolingWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:Water:DetailedGeometry"],
+        name: str = ...,
+        fields: _CoilCoolingWaterDetailedGeometryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingWaterDetailedGeometryFields],
+    ) -> CoilCoolingWaterDetailedGeometry: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:Cooling:Water"],
+        name: str = ...,
+        fields: _CoilSystemCoolingWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemCoolingWaterFields],
+    ) -> CoilSystemCoolingWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX"],
+        name: str = ...,
+        fields: _CoilCoolingDXFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXFields],
+    ) -> CoilCoolingDX: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:CurveFit:Performance"],
+        name: str = ...,
+        fields: _CoilCoolingDXCurveFitPerformanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXCurveFitPerformanceFields],
+    ) -> CoilCoolingDXCurveFitPerformance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:CurveFit:OperatingMode"],
+        name: str = ...,
+        fields: _CoilCoolingDXCurveFitOperatingModeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXCurveFitOperatingModeFields],
+    ) -> CoilCoolingDXCurveFitOperatingMode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:CurveFit:Speed"],
+        name: str = ...,
+        fields: _CoilCoolingDXCurveFitSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXCurveFitSpeedFields],
+    ) -> CoilCoolingDXCurveFitSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:DX:ASHRAE205:Performance"],
+        name: str = ...,
+        fields: _CoilDXASHRAE205PerformanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilDXASHRAE205PerformanceFields],
+    ) -> CoilDXASHRAE205Performance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:SingleSpeed"],
+        name: str = ...,
+        fields: _CoilCoolingDXSingleSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXSingleSpeedFields],
+    ) -> CoilCoolingDXSingleSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:TwoSpeed"],
+        name: str = ...,
+        fields: _CoilCoolingDXTwoSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXTwoSpeedFields],
+    ) -> CoilCoolingDXTwoSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:MultiSpeed"],
+        name: str = ...,
+        fields: _CoilCoolingDXMultiSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXMultiSpeedFields],
+    ) -> CoilCoolingDXMultiSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:VariableSpeed"],
+        name: str = ...,
+        fields: _CoilCoolingDXVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXVariableSpeedFields],
+    ) -> CoilCoolingDXVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:TwoStageWithHumidityControlMode"],
+        name: str = ...,
+        fields: _CoilCoolingDXTwoStageWithHumidityControlModeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXTwoStageWithHumidityControlModeFields],
+    ) -> CoilCoolingDXTwoStageWithHumidityControlMode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilPerformance:DX:Cooling"],
+        name: str = ...,
+        fields: _CoilPerformanceDXCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilPerformanceDXCoolingFields],
+    ) -> CoilPerformanceDXCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:VariableRefrigerantFlow"],
+        name: str = ...,
+        fields: _CoilCoolingDXVariableRefrigerantFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFields],
+    ) -> CoilCoolingDXVariableRefrigerantFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:DX:VariableRefrigerantFlow"],
+        name: str = ...,
+        fields: _CoilHeatingDXVariableRefrigerantFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFields],
+    ) -> CoilHeatingDXVariableRefrigerantFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl"],
+        name: str = ...,
+        fields: _CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields],
+    ) -> CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl"],
+        name: str = ...,
+        fields: _CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields],
+    ) -> CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Water"],
+        name: str = ...,
+        fields: _CoilHeatingWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingWaterFields],
+    ) -> CoilHeatingWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Steam"],
+        name: str = ...,
+        fields: _CoilHeatingSteamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingSteamFields],
+    ) -> CoilHeatingSteam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Electric"],
+        name: str = ...,
+        fields: _CoilHeatingElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingElectricFields],
+    ) -> CoilHeatingElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Electric:MultiStage"],
+        name: str = ...,
+        fields: _CoilHeatingElectricMultiStageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingElectricMultiStageFields],
+    ) -> CoilHeatingElectricMultiStage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Fuel"],
+        name: str = ...,
+        fields: _CoilHeatingFuelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingFuelFields],
+    ) -> CoilHeatingFuel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Gas:MultiStage"],
+        name: str = ...,
+        fields: _CoilHeatingGasMultiStageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingGasMultiStageFields],
+    ) -> CoilHeatingGasMultiStage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:Desuperheater"],
+        name: str = ...,
+        fields: _CoilHeatingDesuperheaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDesuperheaterFields],
+    ) -> CoilHeatingDesuperheater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:DX:SingleSpeed"],
+        name: str = ...,
+        fields: _CoilHeatingDXSingleSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDXSingleSpeedFields],
+    ) -> CoilHeatingDXSingleSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:DX:MultiSpeed"],
+        name: str = ...,
+        fields: _CoilHeatingDXMultiSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDXMultiSpeedFields],
+    ) -> CoilHeatingDXMultiSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:DX:VariableSpeed"],
+        name: str = ...,
+        fields: _CoilHeatingDXVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingDXVariableSpeedFields],
+    ) -> CoilHeatingDXVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:WaterToAirHeatPump:ParameterEstimation"],
+        name: str = ...,
+        fields: _CoilCoolingWaterToAirHeatPumpParameterEstimationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpParameterEstimationFields],
+    ) -> CoilCoolingWaterToAirHeatPumpParameterEstimation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:WaterToAirHeatPump:ParameterEstimation"],
+        name: str = ...,
+        fields: _CoilHeatingWaterToAirHeatPumpParameterEstimationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpParameterEstimationFields],
+    ) -> CoilHeatingWaterToAirHeatPumpParameterEstimation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:WaterToAirHeatPump:EquationFit"],
+        name: str = ...,
+        fields: _CoilCoolingWaterToAirHeatPumpEquationFitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpEquationFitFields],
+    ) -> CoilCoolingWaterToAirHeatPumpEquationFit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit"],
+        name: str = ...,
+        fields: _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitFields],
+    ) -> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:WaterToAirHeatPump:EquationFit"],
+        name: str = ...,
+        fields: _CoilHeatingWaterToAirHeatPumpEquationFitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpEquationFitFields],
+    ) -> CoilHeatingWaterToAirHeatPumpEquationFit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit"],
+        name: str = ...,
+        fields: _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitFields],
+    ) -> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:WaterHeating:AirToWaterHeatPump:Pumped"],
+        name: str = ...,
+        fields: _CoilWaterHeatingAirToWaterHeatPumpPumpedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpPumpedFields],
+    ) -> CoilWaterHeatingAirToWaterHeatPumpPumped: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:WaterHeating:AirToWaterHeatPump:Wrapped"],
+        name: str = ...,
+        fields: _CoilWaterHeatingAirToWaterHeatPumpWrappedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpWrappedFields],
+    ) -> CoilWaterHeatingAirToWaterHeatPumpWrapped: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed"],
+        name: str = ...,
+        fields: _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilWaterHeatingAirToWaterHeatPumpVariableSpeedFields],
+    ) -> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:WaterHeating:Desuperheater"],
+        name: str = ...,
+        fields: _CoilWaterHeatingDesuperheaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilWaterHeatingDesuperheaterFields],
+    ) -> CoilWaterHeatingDesuperheater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:Cooling:DX"],
+        name: str = ...,
+        fields: _CoilSystemCoolingDXFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemCoolingDXFields],
+    ) -> CoilSystemCoolingDX: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:Heating:DX"],
+        name: str = ...,
+        fields: _CoilSystemHeatingDXFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemHeatingDXFields],
+    ) -> CoilSystemHeatingDX: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:Cooling:Water:HeatExchangerAssisted"],
+        name: str = ...,
+        fields: _CoilSystemCoolingWaterHeatExchangerAssistedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemCoolingWaterHeatExchangerAssistedFields],
+    ) -> CoilSystemCoolingWaterHeatExchangerAssisted: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:Cooling:DX:HeatExchangerAssisted"],
+        name: str = ...,
+        fields: _CoilSystemCoolingDXHeatExchangerAssistedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemCoolingDXHeatExchangerAssistedFields],
+    ) -> CoilSystemCoolingDXHeatExchangerAssisted: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoilSystem:IntegratedHeatPump:AirSource"],
+        name: str = ...,
+        fields: _CoilSystemIntegratedHeatPumpAirSourceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilSystemIntegratedHeatPumpAirSourceFields],
+    ) -> CoilSystemIntegratedHeatPumpAirSource: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:Cooling:DX:SingleSpeed:ThermalStorage"],
+        name: str = ...,
+        fields: _CoilCoolingDXSingleSpeedThermalStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilCoolingDXSingleSpeedThermalStorageFields],
+    ) -> CoilCoolingDXSingleSpeedThermalStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeCooler:Direct:CelDekPad"],
+        name: str = ...,
+        fields: _EvaporativeCoolerDirectCelDekPadFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeCoolerDirectCelDekPadFields],
+    ) -> EvaporativeCoolerDirectCelDekPad: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeCooler:Indirect:CelDekPad"],
+        name: str = ...,
+        fields: _EvaporativeCoolerIndirectCelDekPadFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeCoolerIndirectCelDekPadFields],
+    ) -> EvaporativeCoolerIndirectCelDekPad: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeCooler:Indirect:WetCoil"],
+        name: str = ...,
+        fields: _EvaporativeCoolerIndirectWetCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeCoolerIndirectWetCoilFields],
+    ) -> EvaporativeCoolerIndirectWetCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeCooler:Indirect:ResearchSpecial"],
+        name: str = ...,
+        fields: _EvaporativeCoolerIndirectResearchSpecialFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeCoolerIndirectResearchSpecialFields],
+    ) -> EvaporativeCoolerIndirectResearchSpecial: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeCooler:Direct:ResearchSpecial"],
+        name: str = ...,
+        fields: _EvaporativeCoolerDirectResearchSpecialFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeCoolerDirectResearchSpecialFields],
+    ) -> EvaporativeCoolerDirectResearchSpecial: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Humidifier:Steam:Electric"],
+        name: str = ...,
+        fields: _HumidifierSteamElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HumidifierSteamElectricFields],
+    ) -> HumidifierSteamElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Humidifier:Steam:Gas"],
+        name: str = ...,
+        fields: _HumidifierSteamGasFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HumidifierSteamGasFields],
+    ) -> HumidifierSteamGas: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Dehumidifier:Desiccant:NoFans"],
+        name: str = ...,
+        fields: _DehumidifierDesiccantNoFansFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DehumidifierDesiccantNoFansFields],
+    ) -> DehumidifierDesiccantNoFans: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Dehumidifier:Desiccant:System"],
+        name: str = ...,
+        fields: _DehumidifierDesiccantSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DehumidifierDesiccantSystemFields],
+    ) -> DehumidifierDesiccantSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatExchanger:AirToAir:FlatPlate"],
+        name: str = ...,
+        fields: _HeatExchangerAirToAirFlatPlateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatExchangerAirToAirFlatPlateFields],
+    ) -> HeatExchangerAirToAirFlatPlate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatExchanger:AirToAir:SensibleAndLatent"],
+        name: str = ...,
+        fields: _HeatExchangerAirToAirSensibleAndLatentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatExchangerAirToAirSensibleAndLatentFields],
+    ) -> HeatExchangerAirToAirSensibleAndLatent: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow"],
+        name: str = ...,
+        fields: _HeatExchangerDesiccantBalancedFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowFields],
+    ) -> HeatExchangerDesiccantBalancedFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1"],
+        name: str = ...,
+        fields: _HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatExchangerDesiccantBalancedFlowPerformanceDataType1Fields],
+    ) -> HeatExchangerDesiccantBalancedFlowPerformanceDataType1: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitarySystem"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitarySystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitarySystemFields],
+    ) -> AirLoopHVACUnitarySystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UnitarySystemPerformance:Multispeed"],
+        name: str = ...,
+        fields: _UnitarySystemPerformanceMultispeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UnitarySystemPerformanceMultispeedFields],
+    ) -> UnitarySystemPerformanceMultispeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:Unitary:Furnace:HeatOnly"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryFurnaceHeatOnlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatOnlyFields],
+    ) -> AirLoopHVACUnitaryFurnaceHeatOnly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:Unitary:Furnace:HeatCool"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryFurnaceHeatCoolFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryFurnaceHeatCoolFields],
+    ) -> AirLoopHVACUnitaryFurnaceHeatCool: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatOnly"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatOnlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatOnlyFields],
+    ) -> AirLoopHVACUnitaryHeatOnly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatCool"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatCoolFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolFields],
+    ) -> AirLoopHVACUnitaryHeatCool: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatPump:AirToAir"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatPumpAirToAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirFields],
+    ) -> AirLoopHVACUnitaryHeatPumpAirToAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatPump:WaterToAir"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatPumpWaterToAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpWaterToAirFields],
+    ) -> AirLoopHVACUnitaryHeatPumpWaterToAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassFields],
+    ) -> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed"],
+        name: str = ...,
+        fields: _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedFields],
+    ) -> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirConditioner:VariableRefrigerantFlow"],
+        name: str = ...,
+        fields: _AirConditionerVariableRefrigerantFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFields],
+    ) -> AirConditionerVariableRefrigerantFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl"],
+        fields: _AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields],
+    ) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR"],
+        name: str = ...,
+        fields: _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields],
+    ) -> AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneTerminalUnitList"],
+        fields: _ZoneTerminalUnitListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneTerminalUnitListFields],
+    ) -> ZoneTerminalUnitList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Controller:WaterCoil"],
+        name: str = ...,
+        fields: _ControllerWaterCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ControllerWaterCoilFields],
+    ) -> ControllerWaterCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Controller:OutdoorAir"],
+        name: str = ...,
+        fields: _ControllerOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ControllerOutdoorAirFields],
+    ) -> ControllerOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Controller:MechanicalVentilation"],
+        name: str = ...,
+        fields: _ControllerMechanicalVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ControllerMechanicalVentilationFields],
+    ) -> ControllerMechanicalVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ControllerList"],
+        name: str = ...,
+        fields: _AirLoopHVACControllerListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACControllerListFields],
+    ) -> AirLoopHVACControllerList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC"],
+        name: str = ...,
+        fields: _AirLoopHVACFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACFields],
+    ) -> AirLoopHVAC: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:OutdoorAirSystem:EquipmentList"],
+        name: str = ...,
+        fields: _AirLoopHVACOutdoorAirSystemEquipmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemEquipmentListFields],
+    ) -> AirLoopHVACOutdoorAirSystemEquipmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:OutdoorAirSystem"],
+        name: str = ...,
+        fields: _AirLoopHVACOutdoorAirSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACOutdoorAirSystemFields],
+    ) -> AirLoopHVACOutdoorAirSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutdoorAir:Mixer"],
+        name: str = ...,
+        fields: _OutdoorAirMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutdoorAirMixerFields],
+    ) -> OutdoorAirMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ZoneSplitter"],
+        name: str = ...,
+        fields: _AirLoopHVACZoneSplitterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACZoneSplitterFields],
+    ) -> AirLoopHVACZoneSplitter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:SupplyPlenum"],
+        name: str = ...,
+        fields: _AirLoopHVACSupplyPlenumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACSupplyPlenumFields],
+    ) -> AirLoopHVACSupplyPlenum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:SupplyPath"],
+        name: str = ...,
+        fields: _AirLoopHVACSupplyPathFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACSupplyPathFields],
+    ) -> AirLoopHVACSupplyPath: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ZoneMixer"],
+        name: str = ...,
+        fields: _AirLoopHVACZoneMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACZoneMixerFields],
+    ) -> AirLoopHVACZoneMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ReturnPlenum"],
+        name: str = ...,
+        fields: _AirLoopHVACReturnPlenumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACReturnPlenumFields],
+    ) -> AirLoopHVACReturnPlenum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ReturnPath"],
+        name: str = ...,
+        fields: _AirLoopHVACReturnPathFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACReturnPathFields],
+    ) -> AirLoopHVACReturnPath: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:ExhaustSystem"],
+        name: str = ...,
+        fields: _AirLoopHVACExhaustSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACExhaustSystemFields],
+    ) -> AirLoopHVACExhaustSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:DedicatedOutdoorAirSystem"],
+        name: str = ...,
+        fields: _AirLoopHVACDedicatedOutdoorAirSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACDedicatedOutdoorAirSystemFields],
+    ) -> AirLoopHVACDedicatedOutdoorAirSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:Mixer"],
+        name: str = ...,
+        fields: _AirLoopHVACMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACMixerFields],
+    ) -> AirLoopHVACMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirLoopHVAC:Splitter"],
+        name: str = ...,
+        fields: _AirLoopHVACSplitterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirLoopHVACSplitterFields],
+    ) -> AirLoopHVACSplitter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Branch"],
+        name: str = ...,
+        fields: _BranchFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BranchFields],
+    ) -> Branch: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["BranchList"],
+        name: str = ...,
+        fields: _BranchListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BranchListFields],
+    ) -> BranchList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Connector:Splitter"],
+        name: str = ...,
+        fields: _ConnectorSplitterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConnectorSplitterFields],
+    ) -> ConnectorSplitter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Connector:Mixer"],
+        name: str = ...,
+        fields: _ConnectorMixerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConnectorMixerFields],
+    ) -> ConnectorMixer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ConnectorList"],
+        name: str = ...,
+        fields: _ConnectorListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ConnectorListFields],
+    ) -> ConnectorList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["NodeList"],
+        name: str = ...,
+        fields: _NodeListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_NodeListFields],
+    ) -> NodeList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutdoorAir:Node"],
+        name: str = ...,
+        fields: _OutdoorAirNodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutdoorAirNodeFields],
+    ) -> OutdoorAirNode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutdoorAir:NodeList"],
+        fields: _OutdoorAirNodeListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutdoorAirNodeListFields],
+    ) -> OutdoorAirNodeList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pipe:Adiabatic"],
+        name: str = ...,
+        fields: _PipeAdiabaticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipeAdiabaticFields],
+    ) -> PipeAdiabatic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pipe:Adiabatic:Steam"],
+        name: str = ...,
+        fields: _PipeAdiabaticSteamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipeAdiabaticSteamFields],
+    ) -> PipeAdiabaticSteam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pipe:Indoor"],
+        name: str = ...,
+        fields: _PipeIndoorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipeIndoorFields],
+    ) -> PipeIndoor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pipe:Outdoor"],
+        name: str = ...,
+        fields: _PipeOutdoorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipeOutdoorFields],
+    ) -> PipeOutdoor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pipe:Underground"],
+        name: str = ...,
+        fields: _PipeUndergroundFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipeUndergroundFields],
+    ) -> PipeUnderground: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PipingSystem:Underground:Domain"],
+        name: str = ...,
+        fields: _PipingSystemUndergroundDomainFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipingSystemUndergroundDomainFields],
+    ) -> PipingSystemUndergroundDomain: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PipingSystem:Underground:PipeCircuit"],
+        name: str = ...,
+        fields: _PipingSystemUndergroundPipeCircuitFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipingSystemUndergroundPipeCircuitFields],
+    ) -> PipingSystemUndergroundPipeCircuit: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PipingSystem:Underground:PipeSegment"],
+        name: str = ...,
+        fields: _PipingSystemUndergroundPipeSegmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PipingSystemUndergroundPipeSegmentFields],
+    ) -> PipingSystemUndergroundPipeSegment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Duct"],
+        name: str = ...,
+        fields: _DuctFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DuctFields],
+    ) -> Duct: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pump:VariableSpeed"],
+        name: str = ...,
+        fields: _PumpVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PumpVariableSpeedFields],
+    ) -> PumpVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pump:ConstantSpeed"],
+        name: str = ...,
+        fields: _PumpConstantSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PumpConstantSpeedFields],
+    ) -> PumpConstantSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Pump:VariableSpeed:Condensate"],
+        name: str = ...,
+        fields: _PumpVariableSpeedCondensateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PumpVariableSpeedCondensateFields],
+    ) -> PumpVariableSpeedCondensate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeaderedPumps:ConstantSpeed"],
+        name: str = ...,
+        fields: _HeaderedPumpsConstantSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeaderedPumpsConstantSpeedFields],
+    ) -> HeaderedPumpsConstantSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeaderedPumps:VariableSpeed"],
+        name: str = ...,
+        fields: _HeaderedPumpsVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeaderedPumpsVariableSpeedFields],
+    ) -> HeaderedPumpsVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["TemperingValve"],
+        name: str = ...,
+        fields: _TemperingValveFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_TemperingValveFields],
+    ) -> TemperingValve: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LoadProfile:Plant"],
+        name: str = ...,
+        fields: _LoadProfilePlantFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LoadProfilePlantFields],
+    ) -> LoadProfilePlant: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollectorPerformance:FlatPlate"],
+        name: str = ...,
+        fields: _SolarCollectorPerformanceFlatPlateFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorPerformanceFlatPlateFields],
+    ) -> SolarCollectorPerformanceFlatPlate: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollector:FlatPlate:Water"],
+        name: str = ...,
+        fields: _SolarCollectorFlatPlateWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorFlatPlateWaterFields],
+    ) -> SolarCollectorFlatPlateWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollector:FlatPlate:PhotovoltaicThermal"],
+        name: str = ...,
+        fields: _SolarCollectorFlatPlatePhotovoltaicThermalFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorFlatPlatePhotovoltaicThermalFields],
+    ) -> SolarCollectorFlatPlatePhotovoltaicThermal: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollectorPerformance:PhotovoltaicThermal:Simple"],
+        name: str = ...,
+        fields: _SolarCollectorPerformancePhotovoltaicThermalSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalSimpleFields],
+    ) -> SolarCollectorPerformancePhotovoltaicThermalSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollectorPerformance:PhotovoltaicThermal:BIPVT"],
+        name: str = ...,
+        fields: _SolarCollectorPerformancePhotovoltaicThermalBIPVTFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorPerformancePhotovoltaicThermalBIPVTFields],
+    ) -> SolarCollectorPerformancePhotovoltaicThermalBIPVT: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollector:IntegralCollectorStorage"],
+        name: str = ...,
+        fields: _SolarCollectorIntegralCollectorStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorIntegralCollectorStorageFields],
+    ) -> SolarCollectorIntegralCollectorStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollectorPerformance:IntegralCollectorStorage"],
+        name: str = ...,
+        fields: _SolarCollectorPerformanceIntegralCollectorStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorPerformanceIntegralCollectorStorageFields],
+    ) -> SolarCollectorPerformanceIntegralCollectorStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollector:UnglazedTranspired"],
+        name: str = ...,
+        fields: _SolarCollectorUnglazedTranspiredFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorUnglazedTranspiredFields],
+    ) -> SolarCollectorUnglazedTranspired: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SolarCollector:UnglazedTranspired:Multisystem"],
+        fields: _SolarCollectorUnglazedTranspiredMultisystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SolarCollectorUnglazedTranspiredMultisystemFields],
+    ) -> SolarCollectorUnglazedTranspiredMultisystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Boiler:HotWater"],
+        name: str = ...,
+        fields: _BoilerHotWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BoilerHotWaterFields],
+    ) -> BoilerHotWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Boiler:Steam"],
+        name: str = ...,
+        fields: _BoilerSteamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_BoilerSteamFields],
+    ) -> BoilerSteam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Electric:ASHRAE205"],
+        name: str = ...,
+        fields: _ChillerElectricASHRAE205Fields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerElectricASHRAE205Fields],
+    ) -> ChillerElectricASHRAE205: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Electric:EIR"],
+        name: str = ...,
+        fields: _ChillerElectricEIRFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerElectricEIRFields],
+    ) -> ChillerElectricEIR: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Electric:ReformulatedEIR"],
+        name: str = ...,
+        fields: _ChillerElectricReformulatedEIRFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerElectricReformulatedEIRFields],
+    ) -> ChillerElectricReformulatedEIR: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Electric"],
+        name: str = ...,
+        fields: _ChillerElectricFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerElectricFields],
+    ) -> ChillerElectric: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Absorption:Indirect"],
+        name: str = ...,
+        fields: _ChillerAbsorptionIndirectFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerAbsorptionIndirectFields],
+    ) -> ChillerAbsorptionIndirect: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:Absorption"],
+        name: str = ...,
+        fields: _ChillerAbsorptionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerAbsorptionFields],
+    ) -> ChillerAbsorption: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:ConstantCOP"],
+        name: str = ...,
+        fields: _ChillerConstantCOPFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerConstantCOPFields],
+    ) -> ChillerConstantCOP: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:EngineDriven"],
+        name: str = ...,
+        fields: _ChillerEngineDrivenFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerEngineDrivenFields],
+    ) -> ChillerEngineDriven: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Chiller:CombustionTurbine"],
+        name: str = ...,
+        fields: _ChillerCombustionTurbineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerCombustionTurbineFields],
+    ) -> ChillerCombustionTurbine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ChillerHeater:Absorption:DirectFired"],
+        name: str = ...,
+        fields: _ChillerHeaterAbsorptionDirectFiredFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerHeaterAbsorptionDirectFiredFields],
+    ) -> ChillerHeaterAbsorptionDirectFired: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ChillerHeater:Absorption:DoubleEffect"],
+        name: str = ...,
+        fields: _ChillerHeaterAbsorptionDoubleEffectFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerHeaterAbsorptionDoubleEffectFields],
+    ) -> ChillerHeaterAbsorptionDoubleEffect: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:PlantLoop:EIR:Cooling"],
+        name: str = ...,
+        fields: _HeatPumpPlantLoopEIRCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpPlantLoopEIRCoolingFields],
+    ) -> HeatPumpPlantLoopEIRCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:PlantLoop:EIR:Heating"],
+        name: str = ...,
+        fields: _HeatPumpPlantLoopEIRHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpPlantLoopEIRHeatingFields],
+    ) -> HeatPumpPlantLoopEIRHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:AirToWater:FuelFired:Heating"],
+        name: str = ...,
+        fields: _HeatPumpAirToWaterFuelFiredHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredHeatingFields],
+    ) -> HeatPumpAirToWaterFuelFiredHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:AirToWater:FuelFired:Cooling"],
+        name: str = ...,
+        fields: _HeatPumpAirToWaterFuelFiredCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpAirToWaterFuelFiredCoolingFields],
+    ) -> HeatPumpAirToWaterFuelFiredCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:AirToWater"],
+        name: str = ...,
+        fields: _HeatPumpAirToWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpAirToWaterFields],
+    ) -> HeatPumpAirToWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:WaterToWater:EquationFit:Heating"],
+        name: str = ...,
+        fields: _HeatPumpWaterToWaterEquationFitHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitHeatingFields],
+    ) -> HeatPumpWaterToWaterEquationFitHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:WaterToWater:EquationFit:Cooling"],
+        name: str = ...,
+        fields: _HeatPumpWaterToWaterEquationFitCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpWaterToWaterEquationFitCoolingFields],
+    ) -> HeatPumpWaterToWaterEquationFitCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:WaterToWater:ParameterEstimation:Cooling"],
+        name: str = ...,
+        fields: _HeatPumpWaterToWaterParameterEstimationCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationCoolingFields],
+    ) -> HeatPumpWaterToWaterParameterEstimationCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatPump:WaterToWater:ParameterEstimation:Heating"],
+        name: str = ...,
+        fields: _HeatPumpWaterToWaterParameterEstimationHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatPumpWaterToWaterParameterEstimationHeatingFields],
+    ) -> HeatPumpWaterToWaterParameterEstimationHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DistrictCooling"],
+        name: str = ...,
+        fields: _DistrictCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DistrictCoolingFields],
+    ) -> DistrictCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DistrictHeating:Water"],
+        name: str = ...,
+        fields: _DistrictHeatingWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DistrictHeatingWaterFields],
+    ) -> DistrictHeatingWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DistrictHeating:Steam"],
+        name: str = ...,
+        fields: _DistrictHeatingSteamFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DistrictHeatingSteamFields],
+    ) -> DistrictHeatingSteam: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantComponent:TemperatureSource"],
+        name: str = ...,
+        fields: _PlantComponentTemperatureSourceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantComponentTemperatureSourceFields],
+    ) -> PlantComponentTemperatureSource: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CentralHeatPumpSystem"],
+        name: str = ...,
+        fields: _CentralHeatPumpSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CentralHeatPumpSystemFields],
+    ) -> CentralHeatPumpSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ChillerHeaterPerformance:Electric:EIR"],
+        name: str = ...,
+        fields: _ChillerHeaterPerformanceElectricEIRFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ChillerHeaterPerformanceElectricEIRFields],
+    ) -> ChillerHeaterPerformanceElectricEIR: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTower:SingleSpeed"],
+        name: str = ...,
+        fields: _CoolingTowerSingleSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerSingleSpeedFields],
+    ) -> CoolingTowerSingleSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTower:TwoSpeed"],
+        name: str = ...,
+        fields: _CoolingTowerTwoSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerTwoSpeedFields],
+    ) -> CoolingTowerTwoSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTower:VariableSpeed:Merkel"],
+        name: str = ...,
+        fields: _CoolingTowerVariableSpeedMerkelFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerVariableSpeedMerkelFields],
+    ) -> CoolingTowerVariableSpeedMerkel: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTower:VariableSpeed"],
+        name: str = ...,
+        fields: _CoolingTowerVariableSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerVariableSpeedFields],
+    ) -> CoolingTowerVariableSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTowerPerformance:CoolTools"],
+        name: str = ...,
+        fields: _CoolingTowerPerformanceCoolToolsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerPerformanceCoolToolsFields],
+    ) -> CoolingTowerPerformanceCoolTools: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CoolingTowerPerformance:YorkCalc"],
+        name: str = ...,
+        fields: _CoolingTowerPerformanceYorkCalcFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoolingTowerPerformanceYorkCalcFields],
+    ) -> CoolingTowerPerformanceYorkCalc: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeFluidCooler:SingleSpeed"],
+        name: str = ...,
+        fields: _EvaporativeFluidCoolerSingleSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeFluidCoolerSingleSpeedFields],
+    ) -> EvaporativeFluidCoolerSingleSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EvaporativeFluidCooler:TwoSpeed"],
+        name: str = ...,
+        fields: _EvaporativeFluidCoolerTwoSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EvaporativeFluidCoolerTwoSpeedFields],
+    ) -> EvaporativeFluidCoolerTwoSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidCooler:SingleSpeed"],
+        name: str = ...,
+        fields: _FluidCoolerSingleSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidCoolerSingleSpeedFields],
+    ) -> FluidCoolerSingleSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidCooler:TwoSpeed"],
+        name: str = ...,
+        fields: _FluidCoolerTwoSpeedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidCoolerTwoSpeedFields],
+    ) -> FluidCoolerTwoSpeed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:System"],
+        name: str = ...,
+        fields: _GroundHeatExchangerSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerSystemFields],
+    ) -> GroundHeatExchangerSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Vertical:Sizing:Rectangle"],
+        name: str = ...,
+        fields: _GroundHeatExchangerVerticalSizingRectangleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerVerticalSizingRectangleFields],
+    ) -> GroundHeatExchangerVerticalSizingRectangle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Vertical:Properties"],
+        name: str = ...,
+        fields: _GroundHeatExchangerVerticalPropertiesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerVerticalPropertiesFields],
+    ) -> GroundHeatExchangerVerticalProperties: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Vertical:Array"],
+        name: str = ...,
+        fields: _GroundHeatExchangerVerticalArrayFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerVerticalArrayFields],
+    ) -> GroundHeatExchangerVerticalArray: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Vertical:Single"],
+        name: str = ...,
+        fields: _GroundHeatExchangerVerticalSingleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerVerticalSingleFields],
+    ) -> GroundHeatExchangerVerticalSingle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:ResponseFactors"],
+        name: str = ...,
+        fields: _GroundHeatExchangerResponseFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerResponseFactorsFields],
+    ) -> GroundHeatExchangerResponseFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Pond"],
+        name: str = ...,
+        fields: _GroundHeatExchangerPondFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerPondFields],
+    ) -> GroundHeatExchangerPond: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Surface"],
+        name: str = ...,
+        fields: _GroundHeatExchangerSurfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerSurfaceFields],
+    ) -> GroundHeatExchangerSurface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:HorizontalTrench"],
+        name: str = ...,
+        fields: _GroundHeatExchangerHorizontalTrenchFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerHorizontalTrenchFields],
+    ) -> GroundHeatExchangerHorizontalTrench: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["GroundHeatExchanger:Slinky"],
+        name: str = ...,
+        fields: _GroundHeatExchangerSlinkyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GroundHeatExchangerSlinkyFields],
+    ) -> GroundHeatExchangerSlinky: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HeatExchanger:FluidToFluid"],
+        name: str = ...,
+        fields: _HeatExchangerFluidToFluidFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HeatExchangerFluidToFluidFields],
+    ) -> HeatExchangerFluidToFluid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterHeater:Mixed"],
+        name: str = ...,
+        fields: _WaterHeaterMixedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterHeaterMixedFields],
+    ) -> WaterHeaterMixed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterHeater:Stratified"],
+        name: str = ...,
+        fields: _WaterHeaterStratifiedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterHeaterStratifiedFields],
+    ) -> WaterHeaterStratified: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterHeater:Sizing"],
+        fields: _WaterHeaterSizingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterHeaterSizingFields],
+    ) -> WaterHeaterSizing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterHeater:HeatPump:PumpedCondenser"],
+        name: str = ...,
+        fields: _WaterHeaterHeatPumpPumpedCondenserFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterHeaterHeatPumpPumpedCondenserFields],
+    ) -> WaterHeaterHeatPumpPumpedCondenser: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterHeater:HeatPump:WrappedCondenser"],
+        name: str = ...,
+        fields: _WaterHeaterHeatPumpWrappedCondenserFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterHeaterHeatPumpWrappedCondenserFields],
+    ) -> WaterHeaterHeatPumpWrappedCondenser: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:Ice:Simple"],
+        name: str = ...,
+        fields: _ThermalStorageIceSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageIceSimpleFields],
+    ) -> ThermalStorageIceSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:Ice:Detailed"],
+        name: str = ...,
+        fields: _ThermalStorageIceDetailedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageIceDetailedFields],
+    ) -> ThermalStorageIceDetailed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:ChilledWater:Mixed"],
+        name: str = ...,
+        fields: _ThermalStorageChilledWaterMixedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageChilledWaterMixedFields],
+    ) -> ThermalStorageChilledWaterMixed: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:ChilledWater:Stratified"],
+        name: str = ...,
+        fields: _ThermalStorageChilledWaterStratifiedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageChilledWaterStratifiedFields],
+    ) -> ThermalStorageChilledWaterStratified: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:HotWater:Stratified"],
+        name: str = ...,
+        fields: _ThermalStorageHotWaterStratifiedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageHotWaterStratifiedFields],
+    ) -> ThermalStorageHotWaterStratified: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:PCM"],
+        name: str = ...,
+        fields: _ThermalStoragePCMFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStoragePCMFields],
+    ) -> ThermalStoragePCM: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ThermalStorage:Sizing"],
+        name: str = ...,
+        fields: _ThermalStorageSizingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ThermalStorageSizingFields],
+    ) -> ThermalStorageSizing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantLoop"],
+        name: str = ...,
+        fields: _PlantLoopFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantLoopFields],
+    ) -> PlantLoop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CondenserLoop"],
+        name: str = ...,
+        fields: _CondenserLoopFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CondenserLoopFields],
+    ) -> CondenserLoop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentList"],
+        name: str = ...,
+        fields: _PlantEquipmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentListFields],
+    ) -> PlantEquipmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CondenserEquipmentList"],
+        name: str = ...,
+        fields: _CondenserEquipmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CondenserEquipmentListFields],
+    ) -> CondenserEquipmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:Uncontrolled"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationUncontrolledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationUncontrolledFields],
+    ) -> PlantEquipmentOperationUncontrolled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:CoolingLoad"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationCoolingLoadFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationCoolingLoadFields],
+    ) -> PlantEquipmentOperationCoolingLoad: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:HeatingLoad"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationHeatingLoadFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationHeatingLoadFields],
+    ) -> PlantEquipmentOperationHeatingLoad: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorDryBulb"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorDryBulbFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbFields],
+    ) -> PlantEquipmentOperationOutdoorDryBulb: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorWetBulb"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorWetBulbFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbFields],
+    ) -> PlantEquipmentOperationOutdoorWetBulb: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorRelativeHumidity"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorRelativeHumidityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorRelativeHumidityFields],
+    ) -> PlantEquipmentOperationOutdoorRelativeHumidity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorDewpoint"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorDewpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointFields],
+    ) -> PlantEquipmentOperationOutdoorDewpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:ComponentSetpoint"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationComponentSetpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationComponentSetpointFields],
+    ) -> PlantEquipmentOperationComponentSetpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:ThermalEnergyStorage"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationThermalEnergyStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationThermalEnergyStorageFields],
+    ) -> PlantEquipmentOperationThermalEnergyStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorDryBulbDifference"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorDryBulbDifferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDryBulbDifferenceFields],
+    ) -> PlantEquipmentOperationOutdoorDryBulbDifference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorWetBulbDifference"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorWetBulbDifferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorWetBulbDifferenceFields],
+    ) -> PlantEquipmentOperationOutdoorWetBulbDifference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:OutdoorDewpointDifference"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationOutdoorDewpointDifferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationOutdoorDewpointDifferenceFields],
+    ) -> PlantEquipmentOperationOutdoorDewpointDifference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:ChillerHeaterChangeover"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationChillerHeaterChangeoverFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationChillerHeaterChangeoverFields],
+    ) -> PlantEquipmentOperationChillerHeaterChangeover: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperationSchemes"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationSchemesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationSchemesFields],
+    ) -> PlantEquipmentOperationSchemes: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CondenserEquipmentOperationSchemes"],
+        name: str = ...,
+        fields: _CondenserEquipmentOperationSchemesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CondenserEquipmentOperationSchemesFields],
+    ) -> CondenserEquipmentOperationSchemes: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:Sensor"],
+        name: str = ...,
+        fields: _EnergyManagementSystemSensorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemSensorFields],
+    ) -> EnergyManagementSystemSensor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:Actuator"],
+        name: str = ...,
+        fields: _EnergyManagementSystemActuatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemActuatorFields],
+    ) -> EnergyManagementSystemActuator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:ProgramCallingManager"],
+        name: str = ...,
+        fields: _EnergyManagementSystemProgramCallingManagerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemProgramCallingManagerFields],
+    ) -> EnergyManagementSystemProgramCallingManager: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:Program"],
+        name: str = ...,
+        fields: _EnergyManagementSystemProgramFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemProgramFields],
+    ) -> EnergyManagementSystemProgram: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:Subroutine"],
+        name: str = ...,
+        fields: _EnergyManagementSystemSubroutineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemSubroutineFields],
+    ) -> EnergyManagementSystemSubroutine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:GlobalVariable"],
+        fields: _EnergyManagementSystemGlobalVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemGlobalVariableFields],
+    ) -> EnergyManagementSystemGlobalVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:OutputVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemOutputVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemOutputVariableFields],
+    ) -> EnergyManagementSystemOutputVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:MeteredOutputVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemMeteredOutputVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemMeteredOutputVariableFields],
+    ) -> EnergyManagementSystemMeteredOutputVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:TrendVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemTrendVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemTrendVariableFields],
+    ) -> EnergyManagementSystemTrendVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:InternalVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemInternalVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemInternalVariableFields],
+    ) -> EnergyManagementSystemInternalVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:CurveOrTableIndexVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemCurveOrTableIndexVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemCurveOrTableIndexVariableFields],
+    ) -> EnergyManagementSystemCurveOrTableIndexVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnergyManagementSystem:ConstructionIndexVariable"],
+        name: str = ...,
+        fields: _EnergyManagementSystemConstructionIndexVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnergyManagementSystemConstructionIndexVariableFields],
+    ) -> EnergyManagementSystemConstructionIndexVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface"],
+        fields: _ExternalInterfaceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFields],
+    ) -> ExternalInterface: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:Schedule"],
+        name: str = ...,
+        fields: _ExternalInterfaceScheduleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceScheduleFields],
+    ) -> ExternalInterfaceSchedule: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:Variable"],
+        name: str = ...,
+        fields: _ExternalInterfaceVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceVariableFields],
+    ) -> ExternalInterfaceVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:Actuator"],
+        name: str = ...,
+        fields: _ExternalInterfaceActuatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceActuatorFields],
+    ) -> ExternalInterfaceActuator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitImport"],
+        fields: _ExternalInterfaceFunctionalMockupUnitImportFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitImport: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitImport:From:Variable"],
+        fields: _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportFromVariableFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitImportFromVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitImport:To:Schedule"],
+        name: str = ...,
+        fields: _ExternalInterfaceFunctionalMockupUnitImportToScheduleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToScheduleFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitImportToSchedule: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitImport:To:Actuator"],
+        name: str = ...,
+        fields: _ExternalInterfaceFunctionalMockupUnitImportToActuatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToActuatorFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitImportToActuator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitImport:To:Variable"],
+        name: str = ...,
+        fields: _ExternalInterfaceFunctionalMockupUnitImportToVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitImportToVariableFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitImportToVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:From:Variable"],
+        fields: _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportFromVariableFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitExportFromVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Schedule"],
+        fields: _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToScheduleFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitExportToSchedule: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Actuator"],
+        name: str = ...,
+        fields: _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToActuatorFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitExportToActuator: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ExternalInterface:FunctionalMockupUnitExport:To:Variable"],
+        name: str = ...,
+        fields: _ExternalInterfaceFunctionalMockupUnitExportToVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ExternalInterfaceFunctionalMockupUnitExportToVariableFields],
+    ) -> ExternalInterfaceFunctionalMockupUnitExportToVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:ForcedAir:UserDefined"],
+        name: str = ...,
+        fields: _ZoneHVACForcedAirUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACForcedAirUserDefinedFields],
+    ) -> ZoneHVACForcedAirUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AirTerminal:SingleDuct:UserDefined"],
+        name: str = ...,
+        fields: _AirTerminalSingleDuctUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AirTerminalSingleDuctUserDefinedFields],
+    ) -> AirTerminalSingleDuctUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Coil:UserDefined"],
+        name: str = ...,
+        fields: _CoilUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CoilUserDefinedFields],
+    ) -> CoilUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantComponent:UserDefined"],
+        name: str = ...,
+        fields: _PlantComponentUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantComponentUserDefinedFields],
+    ) -> PlantComponentUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PlantEquipmentOperation:UserDefined"],
+        name: str = ...,
+        fields: _PlantEquipmentOperationUserDefinedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PlantEquipmentOperationUserDefinedFields],
+    ) -> PlantEquipmentOperationUserDefined: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:Scheduled"],
+        name: str = ...,
+        fields: _AvailabilityManagerScheduledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerScheduledFields],
+    ) -> AvailabilityManagerScheduled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:ScheduledOn"],
+        name: str = ...,
+        fields: _AvailabilityManagerScheduledOnFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerScheduledOnFields],
+    ) -> AvailabilityManagerScheduledOn: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:ScheduledOff"],
+        name: str = ...,
+        fields: _AvailabilityManagerScheduledOffFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerScheduledOffFields],
+    ) -> AvailabilityManagerScheduledOff: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:OptimumStart"],
+        name: str = ...,
+        fields: _AvailabilityManagerOptimumStartFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerOptimumStartFields],
+    ) -> AvailabilityManagerOptimumStart: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:NightCycle"],
+        name: str = ...,
+        fields: _AvailabilityManagerNightCycleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerNightCycleFields],
+    ) -> AvailabilityManagerNightCycle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:DifferentialThermostat"],
+        name: str = ...,
+        fields: _AvailabilityManagerDifferentialThermostatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerDifferentialThermostatFields],
+    ) -> AvailabilityManagerDifferentialThermostat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:HighTemperatureTurnOff"],
+        name: str = ...,
+        fields: _AvailabilityManagerHighTemperatureTurnOffFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOffFields],
+    ) -> AvailabilityManagerHighTemperatureTurnOff: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:HighTemperatureTurnOn"],
+        name: str = ...,
+        fields: _AvailabilityManagerHighTemperatureTurnOnFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerHighTemperatureTurnOnFields],
+    ) -> AvailabilityManagerHighTemperatureTurnOn: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:LowTemperatureTurnOff"],
+        name: str = ...,
+        fields: _AvailabilityManagerLowTemperatureTurnOffFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOffFields],
+    ) -> AvailabilityManagerLowTemperatureTurnOff: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:LowTemperatureTurnOn"],
+        name: str = ...,
+        fields: _AvailabilityManagerLowTemperatureTurnOnFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerLowTemperatureTurnOnFields],
+    ) -> AvailabilityManagerLowTemperatureTurnOn: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:NightVentilation"],
+        name: str = ...,
+        fields: _AvailabilityManagerNightVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerNightVentilationFields],
+    ) -> AvailabilityManagerNightVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManager:HybridVentilation"],
+        name: str = ...,
+        fields: _AvailabilityManagerHybridVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerHybridVentilationFields],
+    ) -> AvailabilityManagerHybridVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["AvailabilityManagerAssignmentList"],
+        name: str = ...,
+        fields: _AvailabilityManagerAssignmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_AvailabilityManagerAssignmentListFields],
+    ) -> AvailabilityManagerAssignmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:Scheduled"],
+        name: str = ...,
+        fields: _SetpointManagerScheduledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerScheduledFields],
+    ) -> SetpointManagerScheduled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:Scheduled:DualSetpoint"],
+        name: str = ...,
+        fields: _SetpointManagerScheduledDualSetpointFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerScheduledDualSetpointFields],
+    ) -> SetpointManagerScheduledDualSetpoint: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:OutdoorAirReset"],
+        name: str = ...,
+        fields: _SetpointManagerOutdoorAirResetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerOutdoorAirResetFields],
+    ) -> SetpointManagerOutdoorAirReset: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:Reheat"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneReheatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneReheatFields],
+    ) -> SetpointManagerSingleZoneReheat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:Heating"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneHeatingFields],
+    ) -> SetpointManagerSingleZoneHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:Cooling"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneCoolingFields],
+    ) -> SetpointManagerSingleZoneCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:Humidity:Minimum"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneHumidityMinimumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMinimumFields],
+    ) -> SetpointManagerSingleZoneHumidityMinimum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:Humidity:Maximum"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneHumidityMaximumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneHumidityMaximumFields],
+    ) -> SetpointManagerSingleZoneHumidityMaximum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MixedAir"],
+        name: str = ...,
+        fields: _SetpointManagerMixedAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMixedAirFields],
+    ) -> SetpointManagerMixedAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:OutdoorAirPretreat"],
+        name: str = ...,
+        fields: _SetpointManagerOutdoorAirPretreatFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerOutdoorAirPretreatFields],
+    ) -> SetpointManagerOutdoorAirPretreat: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:Warmest"],
+        name: str = ...,
+        fields: _SetpointManagerWarmestFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerWarmestFields],
+    ) -> SetpointManagerWarmest: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:Coldest"],
+        name: str = ...,
+        fields: _SetpointManagerColdestFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerColdestFields],
+    ) -> SetpointManagerColdest: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:ReturnAirBypassFlow"],
+        name: str = ...,
+        fields: _SetpointManagerReturnAirBypassFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerReturnAirBypassFlowFields],
+    ) -> SetpointManagerReturnAirBypassFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:WarmestTemperatureFlow"],
+        name: str = ...,
+        fields: _SetpointManagerWarmestTemperatureFlowFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerWarmestTemperatureFlowFields],
+    ) -> SetpointManagerWarmestTemperatureFlow: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:Heating:Average"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneHeatingAverageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneHeatingAverageFields],
+    ) -> SetpointManagerMultiZoneHeatingAverage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:Cooling:Average"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneCoolingAverageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneCoolingAverageFields],
+    ) -> SetpointManagerMultiZoneCoolingAverage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:MinimumHumidity:Average"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneMinimumHumidityAverageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneMinimumHumidityAverageFields],
+    ) -> SetpointManagerMultiZoneMinimumHumidityAverage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:MaximumHumidity:Average"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneMaximumHumidityAverageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneMaximumHumidityAverageFields],
+    ) -> SetpointManagerMultiZoneMaximumHumidityAverage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:Humidity:Minimum"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneHumidityMinimumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMinimumFields],
+    ) -> SetpointManagerMultiZoneHumidityMinimum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:MultiZone:Humidity:Maximum"],
+        name: str = ...,
+        fields: _SetpointManagerMultiZoneHumidityMaximumFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerMultiZoneHumidityMaximumFields],
+    ) -> SetpointManagerMultiZoneHumidityMaximum: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:FollowOutdoorAirTemperature"],
+        name: str = ...,
+        fields: _SetpointManagerFollowOutdoorAirTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerFollowOutdoorAirTemperatureFields],
+    ) -> SetpointManagerFollowOutdoorAirTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:FollowSystemNodeTemperature"],
+        name: str = ...,
+        fields: _SetpointManagerFollowSystemNodeTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerFollowSystemNodeTemperatureFields],
+    ) -> SetpointManagerFollowSystemNodeTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:FollowGroundTemperature"],
+        name: str = ...,
+        fields: _SetpointManagerFollowGroundTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerFollowGroundTemperatureFields],
+    ) -> SetpointManagerFollowGroundTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:CondenserEnteringReset"],
+        name: str = ...,
+        fields: _SetpointManagerCondenserEnteringResetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerCondenserEnteringResetFields],
+    ) -> SetpointManagerCondenserEnteringReset: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:CondenserEnteringReset:Ideal"],
+        name: str = ...,
+        fields: _SetpointManagerCondenserEnteringResetIdealFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerCondenserEnteringResetIdealFields],
+    ) -> SetpointManagerCondenserEnteringResetIdeal: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:OneStageCooling"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneOneStageCoolingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneOneStageCoolingFields],
+    ) -> SetpointManagerSingleZoneOneStageCooling: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SingleZone:OneStageHeating"],
+        name: str = ...,
+        fields: _SetpointManagerSingleZoneOneStageHeatingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSingleZoneOneStageHeatingFields],
+    ) -> SetpointManagerSingleZoneOneStageHeating: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:ReturnTemperature:ChilledWater"],
+        name: str = ...,
+        fields: _SetpointManagerReturnTemperatureChilledWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerReturnTemperatureChilledWaterFields],
+    ) -> SetpointManagerReturnTemperatureChilledWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:ReturnTemperature:HotWater"],
+        name: str = ...,
+        fields: _SetpointManagerReturnTemperatureHotWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerReturnTemperatureHotWaterFields],
+    ) -> SetpointManagerReturnTemperatureHotWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SystemNodeReset:Temperature"],
+        name: str = ...,
+        fields: _SetpointManagerSystemNodeResetTemperatureFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSystemNodeResetTemperatureFields],
+    ) -> SetpointManagerSystemNodeResetTemperature: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["SetpointManager:SystemNodeReset:Humidity"],
+        name: str = ...,
+        fields: _SetpointManagerSystemNodeResetHumidityFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_SetpointManagerSystemNodeResetHumidityFields],
+    ) -> SetpointManagerSystemNodeResetHumidity: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Case"],
+        name: str = ...,
+        fields: _RefrigerationCaseFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCaseFields],
+    ) -> RefrigerationCase: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:CompressorRack"],
+        name: str = ...,
+        fields: _RefrigerationCompressorRackFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCompressorRackFields],
+    ) -> RefrigerationCompressorRack: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:CaseAndWalkInList"],
+        name: str = ...,
+        fields: _RefrigerationCaseAndWalkInListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCaseAndWalkInListFields],
+    ) -> RefrigerationCaseAndWalkInList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Condenser:AirCooled"],
+        name: str = ...,
+        fields: _RefrigerationCondenserAirCooledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCondenserAirCooledFields],
+    ) -> RefrigerationCondenserAirCooled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Condenser:EvaporativeCooled"],
+        name: str = ...,
+        fields: _RefrigerationCondenserEvaporativeCooledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCondenserEvaporativeCooledFields],
+    ) -> RefrigerationCondenserEvaporativeCooled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Condenser:WaterCooled"],
+        name: str = ...,
+        fields: _RefrigerationCondenserWaterCooledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCondenserWaterCooledFields],
+    ) -> RefrigerationCondenserWaterCooled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Condenser:Cascade"],
+        name: str = ...,
+        fields: _RefrigerationCondenserCascadeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCondenserCascadeFields],
+    ) -> RefrigerationCondenserCascade: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:GasCooler:AirCooled"],
+        name: str = ...,
+        fields: _RefrigerationGasCoolerAirCooledFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationGasCoolerAirCooledFields],
+    ) -> RefrigerationGasCoolerAirCooled: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:TransferLoadList"],
+        name: str = ...,
+        fields: _RefrigerationTransferLoadListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationTransferLoadListFields],
+    ) -> RefrigerationTransferLoadList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Subcooler"],
+        name: str = ...,
+        fields: _RefrigerationSubcoolerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationSubcoolerFields],
+    ) -> RefrigerationSubcooler: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:Compressor"],
+        name: str = ...,
+        fields: _RefrigerationCompressorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCompressorFields],
+    ) -> RefrigerationCompressor: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:CompressorList"],
+        name: str = ...,
+        fields: _RefrigerationCompressorListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationCompressorListFields],
+    ) -> RefrigerationCompressorList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:System"],
+        name: str = ...,
+        fields: _RefrigerationSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationSystemFields],
+    ) -> RefrigerationSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:TranscriticalSystem"],
+        name: str = ...,
+        fields: _RefrigerationTranscriticalSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationTranscriticalSystemFields],
+    ) -> RefrigerationTranscriticalSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:SecondarySystem"],
+        name: str = ...,
+        fields: _RefrigerationSecondarySystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationSecondarySystemFields],
+    ) -> RefrigerationSecondarySystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:WalkIn"],
+        name: str = ...,
+        fields: _RefrigerationWalkInFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationWalkInFields],
+    ) -> RefrigerationWalkIn: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Refrigeration:AirChiller"],
+        name: str = ...,
+        fields: _RefrigerationAirChillerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_RefrigerationAirChillerFields],
+    ) -> RefrigerationAirChiller: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ZoneHVAC:RefrigerationChillerSet"],
+        name: str = ...,
+        fields: _ZoneHVACRefrigerationChillerSetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ZoneHVACRefrigerationChillerSetFields],
+    ) -> ZoneHVACRefrigerationChillerSet: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManagerAssignmentList"],
+        name: str = ...,
+        fields: _DemandManagerAssignmentListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerAssignmentListFields],
+    ) -> DemandManagerAssignmentList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManager:ExteriorLights"],
+        name: str = ...,
+        fields: _DemandManagerExteriorLightsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerExteriorLightsFields],
+    ) -> DemandManagerExteriorLights: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManager:Lights"],
+        name: str = ...,
+        fields: _DemandManagerLightsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerLightsFields],
+    ) -> DemandManagerLights: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManager:ElectricEquipment"],
+        name: str = ...,
+        fields: _DemandManagerElectricEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerElectricEquipmentFields],
+    ) -> DemandManagerElectricEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManager:Thermostats"],
+        name: str = ...,
+        fields: _DemandManagerThermostatsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerThermostatsFields],
+    ) -> DemandManagerThermostats: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["DemandManager:Ventilation"],
+        name: str = ...,
+        fields: _DemandManagerVentilationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_DemandManagerVentilationFields],
+    ) -> DemandManagerVentilation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:InternalCombustionEngine"],
+        name: str = ...,
+        fields: _GeneratorInternalCombustionEngineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorInternalCombustionEngineFields],
+    ) -> GeneratorInternalCombustionEngine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:CombustionTurbine"],
+        name: str = ...,
+        fields: _GeneratorCombustionTurbineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorCombustionTurbineFields],
+    ) -> GeneratorCombustionTurbine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:MicroTurbine"],
+        name: str = ...,
+        fields: _GeneratorMicroTurbineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorMicroTurbineFields],
+    ) -> GeneratorMicroTurbine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:Photovoltaic"],
+        name: str = ...,
+        fields: _GeneratorPhotovoltaicFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorPhotovoltaicFields],
+    ) -> GeneratorPhotovoltaic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PhotovoltaicPerformance:Simple"],
+        name: str = ...,
+        fields: _PhotovoltaicPerformanceSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PhotovoltaicPerformanceSimpleFields],
+    ) -> PhotovoltaicPerformanceSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PhotovoltaicPerformance:EquivalentOne-Diode"],
+        name: str = ...,
+        fields: _PhotovoltaicPerformanceEquivalentOneDiodeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PhotovoltaicPerformanceEquivalentOneDiodeFields],
+    ) -> PhotovoltaicPerformanceEquivalentOneDiode: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PhotovoltaicPerformance:Sandia"],
+        name: str = ...,
+        fields: _PhotovoltaicPerformanceSandiaFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PhotovoltaicPerformanceSandiaFields],
+    ) -> PhotovoltaicPerformanceSandia: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:PVWatts"],
+        name: str = ...,
+        fields: _GeneratorPVWattsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorPVWattsFields],
+    ) -> GeneratorPVWatts: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Inverter:PVWatts"],
+        name: str = ...,
+        fields: _ElectricLoadCenterInverterPVWattsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterInverterPVWattsFields],
+    ) -> ElectricLoadCenterInverterPVWatts: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell"],
+        name: str = ...,
+        fields: _GeneratorFuelCellFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellFields],
+    ) -> GeneratorFuelCell: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:PowerModule"],
+        name: str = ...,
+        fields: _GeneratorFuelCellPowerModuleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellPowerModuleFields],
+    ) -> GeneratorFuelCellPowerModule: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:AirSupply"],
+        name: str = ...,
+        fields: _GeneratorFuelCellAirSupplyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellAirSupplyFields],
+    ) -> GeneratorFuelCellAirSupply: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:WaterSupply"],
+        name: str = ...,
+        fields: _GeneratorFuelCellWaterSupplyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellWaterSupplyFields],
+    ) -> GeneratorFuelCellWaterSupply: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:AuxiliaryHeater"],
+        name: str = ...,
+        fields: _GeneratorFuelCellAuxiliaryHeaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellAuxiliaryHeaterFields],
+    ) -> GeneratorFuelCellAuxiliaryHeater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:ExhaustGasToWaterHeatExchanger"],
+        name: str = ...,
+        fields: _GeneratorFuelCellExhaustGasToWaterHeatExchangerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellExhaustGasToWaterHeatExchangerFields],
+    ) -> GeneratorFuelCellExhaustGasToWaterHeatExchanger: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:ElectricalStorage"],
+        name: str = ...,
+        fields: _GeneratorFuelCellElectricalStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellElectricalStorageFields],
+    ) -> GeneratorFuelCellElectricalStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:Inverter"],
+        name: str = ...,
+        fields: _GeneratorFuelCellInverterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellInverterFields],
+    ) -> GeneratorFuelCellInverter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelCell:StackCooler"],
+        name: str = ...,
+        fields: _GeneratorFuelCellStackCoolerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelCellStackCoolerFields],
+    ) -> GeneratorFuelCellStackCooler: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:MicroCHP"],
+        name: str = ...,
+        fields: _GeneratorMicroCHPFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorMicroCHPFields],
+    ) -> GeneratorMicroCHP: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:MicroCHP:NonNormalizedParameters"],
+        name: str = ...,
+        fields: _GeneratorMicroCHPNonNormalizedParametersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorMicroCHPNonNormalizedParametersFields],
+    ) -> GeneratorMicroCHPNonNormalizedParameters: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:FuelSupply"],
+        name: str = ...,
+        fields: _GeneratorFuelSupplyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorFuelSupplyFields],
+    ) -> GeneratorFuelSupply: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Generator:WindTurbine"],
+        name: str = ...,
+        fields: _GeneratorWindTurbineFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_GeneratorWindTurbineFields],
+    ) -> GeneratorWindTurbine: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Generators"],
+        name: str = ...,
+        fields: _ElectricLoadCenterGeneratorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterGeneratorsFields],
+    ) -> ElectricLoadCenterGenerators: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Inverter:Simple"],
+        name: str = ...,
+        fields: _ElectricLoadCenterInverterSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterInverterSimpleFields],
+    ) -> ElectricLoadCenterInverterSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Inverter:FunctionOfPower"],
+        name: str = ...,
+        fields: _ElectricLoadCenterInverterFunctionOfPowerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterInverterFunctionOfPowerFields],
+    ) -> ElectricLoadCenterInverterFunctionOfPower: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Inverter:LookUpTable"],
+        name: str = ...,
+        fields: _ElectricLoadCenterInverterLookUpTableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterInverterLookUpTableFields],
+    ) -> ElectricLoadCenterInverterLookUpTable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Storage:Simple"],
+        name: str = ...,
+        fields: _ElectricLoadCenterStorageSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterStorageSimpleFields],
+    ) -> ElectricLoadCenterStorageSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Storage:Battery"],
+        name: str = ...,
+        fields: _ElectricLoadCenterStorageBatteryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterStorageBatteryFields],
+    ) -> ElectricLoadCenterStorageBattery: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Storage:LiIonNMCBattery"],
+        name: str = ...,
+        fields: _ElectricLoadCenterStorageLiIonNMCBatteryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterStorageLiIonNMCBatteryFields],
+    ) -> ElectricLoadCenterStorageLiIonNMCBattery: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Transformer"],
+        name: str = ...,
+        fields: _ElectricLoadCenterTransformerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterTransformerFields],
+    ) -> ElectricLoadCenterTransformer: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Distribution"],
+        name: str = ...,
+        fields: _ElectricLoadCenterDistributionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterDistributionFields],
+    ) -> ElectricLoadCenterDistribution: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ElectricLoadCenter:Storage:Converter"],
+        name: str = ...,
+        fields: _ElectricLoadCenterStorageConverterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ElectricLoadCenterStorageConverterFields],
+    ) -> ElectricLoadCenterStorageConverter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterUse:Equipment"],
+        name: str = ...,
+        fields: _WaterUseEquipmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterUseEquipmentFields],
+    ) -> WaterUseEquipment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterUse:Connections"],
+        name: str = ...,
+        fields: _WaterUseConnectionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterUseConnectionsFields],
+    ) -> WaterUseConnections: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterUse:Storage"],
+        name: str = ...,
+        fields: _WaterUseStorageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterUseStorageFields],
+    ) -> WaterUseStorage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterUse:Well"],
+        name: str = ...,
+        fields: _WaterUseWellFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterUseWellFields],
+    ) -> WaterUseWell: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["WaterUse:RainCollector"],
+        name: str = ...,
+        fields: _WaterUseRainCollectorFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_WaterUseRainCollectorFields],
+    ) -> WaterUseRainCollector: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:TemperatureSensorOffset:OutdoorAir"],
+        name: str = ...,
+        fields: _FaultModelTemperatureSensorOffsetOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelTemperatureSensorOffsetOutdoorAirFields],
+    ) -> FaultModelTemperatureSensorOffsetOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:HumiditySensorOffset:OutdoorAir"],
+        name: str = ...,
+        fields: _FaultModelHumiditySensorOffsetOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelHumiditySensorOffsetOutdoorAirFields],
+    ) -> FaultModelHumiditySensorOffsetOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:EnthalpySensorOffset:OutdoorAir"],
+        name: str = ...,
+        fields: _FaultModelEnthalpySensorOffsetOutdoorAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelEnthalpySensorOffsetOutdoorAirFields],
+    ) -> FaultModelEnthalpySensorOffsetOutdoorAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:TemperatureSensorOffset:ReturnAir"],
+        name: str = ...,
+        fields: _FaultModelTemperatureSensorOffsetReturnAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelTemperatureSensorOffsetReturnAirFields],
+    ) -> FaultModelTemperatureSensorOffsetReturnAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:EnthalpySensorOffset:ReturnAir"],
+        name: str = ...,
+        fields: _FaultModelEnthalpySensorOffsetReturnAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelEnthalpySensorOffsetReturnAirFields],
+    ) -> FaultModelEnthalpySensorOffsetReturnAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:TemperatureSensorOffset:ChillerSupplyWater"],
+        name: str = ...,
+        fields: _FaultModelTemperatureSensorOffsetChillerSupplyWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelTemperatureSensorOffsetChillerSupplyWaterFields],
+    ) -> FaultModelTemperatureSensorOffsetChillerSupplyWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:TemperatureSensorOffset:CoilSupplyAir"],
+        name: str = ...,
+        fields: _FaultModelTemperatureSensorOffsetCoilSupplyAirFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCoilSupplyAirFields],
+    ) -> FaultModelTemperatureSensorOffsetCoilSupplyAir: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:TemperatureSensorOffset:CondenserSupplyWater"],
+        name: str = ...,
+        fields: _FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields],
+    ) -> FaultModelTemperatureSensorOffsetCondenserSupplyWater: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:ThermostatOffset"],
+        name: str = ...,
+        fields: _FaultModelThermostatOffsetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelThermostatOffsetFields],
+    ) -> FaultModelThermostatOffset: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:HumidistatOffset"],
+        name: str = ...,
+        fields: _FaultModelHumidistatOffsetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelHumidistatOffsetFields],
+    ) -> FaultModelHumidistatOffset: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:AirFilter"],
+        name: str = ...,
+        fields: _FaultModelFoulingAirFilterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingAirFilterFields],
+    ) -> FaultModelFoulingAirFilter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:Boiler"],
+        name: str = ...,
+        fields: _FaultModelFoulingBoilerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingBoilerFields],
+    ) -> FaultModelFoulingBoiler: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:EvaporativeCooler"],
+        name: str = ...,
+        fields: _FaultModelFoulingEvaporativeCoolerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingEvaporativeCoolerFields],
+    ) -> FaultModelFoulingEvaporativeCooler: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:Chiller"],
+        name: str = ...,
+        fields: _FaultModelFoulingChillerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingChillerFields],
+    ) -> FaultModelFoulingChiller: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:CoolingTower"],
+        name: str = ...,
+        fields: _FaultModelFoulingCoolingTowerFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingCoolingTowerFields],
+    ) -> FaultModelFoulingCoolingTower: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FaultModel:Fouling:Coil"],
+        name: str = ...,
+        fields: _FaultModelFoulingCoilFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FaultModelFoulingCoilFields],
+    ) -> FaultModelFoulingCoil: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Matrix:TwoDimension"],
+        name: str = ...,
+        fields: _MatrixTwoDimensionFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MatrixTwoDimensionFields],
+    ) -> MatrixTwoDimension: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["HybridModel:Zone"],
+        name: str = ...,
+        fields: _HybridModelZoneFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_HybridModelZoneFields],
+    ) -> HybridModelZone: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Linear"],
+        name: str = ...,
+        fields: _CurveLinearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveLinearFields],
+    ) -> CurveLinear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:QuadLinear"],
+        name: str = ...,
+        fields: _CurveQuadLinearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveQuadLinearFields],
+    ) -> CurveQuadLinear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:QuintLinear"],
+        name: str = ...,
+        fields: _CurveQuintLinearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveQuintLinearFields],
+    ) -> CurveQuintLinear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Quadratic"],
+        name: str = ...,
+        fields: _CurveQuadraticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveQuadraticFields],
+    ) -> CurveQuadratic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Cubic"],
+        name: str = ...,
+        fields: _CurveCubicFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveCubicFields],
+    ) -> CurveCubic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Quartic"],
+        name: str = ...,
+        fields: _CurveQuarticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveQuarticFields],
+    ) -> CurveQuartic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Exponent"],
+        name: str = ...,
+        fields: _CurveExponentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveExponentFields],
+    ) -> CurveExponent: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Bicubic"],
+        name: str = ...,
+        fields: _CurveBicubicFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveBicubicFields],
+    ) -> CurveBicubic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Biquadratic"],
+        name: str = ...,
+        fields: _CurveBiquadraticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveBiquadraticFields],
+    ) -> CurveBiquadratic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:QuadraticLinear"],
+        name: str = ...,
+        fields: _CurveQuadraticLinearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveQuadraticLinearFields],
+    ) -> CurveQuadraticLinear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:CubicLinear"],
+        name: str = ...,
+        fields: _CurveCubicLinearFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveCubicLinearFields],
+    ) -> CurveCubicLinear: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Triquadratic"],
+        name: str = ...,
+        fields: _CurveTriquadraticFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveTriquadraticFields],
+    ) -> CurveTriquadratic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Functional:PressureDrop"],
+        name: str = ...,
+        fields: _CurveFunctionalPressureDropFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveFunctionalPressureDropFields],
+    ) -> CurveFunctionalPressureDrop: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:FanPressureRise"],
+        name: str = ...,
+        fields: _CurveFanPressureRiseFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveFanPressureRiseFields],
+    ) -> CurveFanPressureRise: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:ExponentialSkewNormal"],
+        name: str = ...,
+        fields: _CurveExponentialSkewNormalFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveExponentialSkewNormalFields],
+    ) -> CurveExponentialSkewNormal: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:Sigmoid"],
+        name: str = ...,
+        fields: _CurveSigmoidFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveSigmoidFields],
+    ) -> CurveSigmoid: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:RectangularHyperbola1"],
+        name: str = ...,
+        fields: _CurveRectangularHyperbola1Fields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveRectangularHyperbola1Fields],
+    ) -> CurveRectangularHyperbola1: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:RectangularHyperbola2"],
+        name: str = ...,
+        fields: _CurveRectangularHyperbola2Fields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveRectangularHyperbola2Fields],
+    ) -> CurveRectangularHyperbola2: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:ExponentialDecay"],
+        name: str = ...,
+        fields: _CurveExponentialDecayFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveExponentialDecayFields],
+    ) -> CurveExponentialDecay: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:DoubleExponentialDecay"],
+        name: str = ...,
+        fields: _CurveDoubleExponentialDecayFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveDoubleExponentialDecayFields],
+    ) -> CurveDoubleExponentialDecay: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Curve:ChillerPartLoadWithLift"],
+        name: str = ...,
+        fields: _CurveChillerPartLoadWithLiftFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurveChillerPartLoadWithLiftFields],
+    ) -> CurveChillerPartLoadWithLift: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Table:IndependentVariable"],
+        name: str = ...,
+        fields: _TableIndependentVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_TableIndependentVariableFields],
+    ) -> TableIndependentVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Table:IndependentVariableList"],
+        name: str = ...,
+        fields: _TableIndependentVariableListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_TableIndependentVariableListFields],
+    ) -> TableIndependentVariableList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Table:Lookup"],
+        name: str = ...,
+        fields: _TableLookupFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_TableLookupFields],
+    ) -> TableLookup: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:Name"],
+        fields: _FluidPropertiesNameFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesNameFields],
+    ) -> FluidPropertiesName: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:GlycolConcentration"],
+        name: str = ...,
+        fields: _FluidPropertiesGlycolConcentrationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesGlycolConcentrationFields],
+    ) -> FluidPropertiesGlycolConcentration: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:Temperatures"],
+        name: str = ...,
+        fields: _FluidPropertiesTemperaturesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesTemperaturesFields],
+    ) -> FluidPropertiesTemperatures: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:Saturated"],
+        fields: _FluidPropertiesSaturatedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesSaturatedFields],
+    ) -> FluidPropertiesSaturated: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:Superheated"],
+        fields: _FluidPropertiesSuperheatedFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesSuperheatedFields],
+    ) -> FluidPropertiesSuperheated: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FluidProperties:Concentration"],
+        fields: _FluidPropertiesConcentrationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FluidPropertiesConcentrationFields],
+    ) -> FluidPropertiesConcentration: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["CurrencyType"],
+        fields: _CurrencyTypeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_CurrencyTypeFields],
+    ) -> CurrencyType: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ComponentCost:Adjustments"],
+        fields: _ComponentCostAdjustmentsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComponentCostAdjustmentsFields],
+    ) -> ComponentCostAdjustments: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ComponentCost:Reference"],
+        fields: _ComponentCostReferenceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComponentCostReferenceFields],
+    ) -> ComponentCostReference: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["ComponentCost:LineItem"],
+        name: str = ...,
+        fields: _ComponentCostLineItemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ComponentCostLineItemFields],
+    ) -> ComponentCostLineItem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Tariff"],
+        name: str = ...,
+        fields: _UtilityCostTariffFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostTariffFields],
+    ) -> UtilityCostTariff: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Qualify"],
+        fields: _UtilityCostQualifyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostQualifyFields],
+    ) -> UtilityCostQualify: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Charge:Simple"],
+        fields: _UtilityCostChargeSimpleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostChargeSimpleFields],
+    ) -> UtilityCostChargeSimple: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Charge:Block"],
+        fields: _UtilityCostChargeBlockFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostChargeBlockFields],
+    ) -> UtilityCostChargeBlock: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Ratchet"],
+        name: str = ...,
+        fields: _UtilityCostRatchetFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostRatchetFields],
+    ) -> UtilityCostRatchet: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Variable"],
+        name: str = ...,
+        fields: _UtilityCostVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostVariableFields],
+    ) -> UtilityCostVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["UtilityCost:Computation"],
+        name: str = ...,
+        fields: _UtilityCostComputationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_UtilityCostComputationFields],
+    ) -> UtilityCostComputation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LifeCycleCost:Parameters"],
+        name: str = ...,
+        fields: _LifeCycleCostParametersFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LifeCycleCostParametersFields],
+    ) -> LifeCycleCostParameters: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LifeCycleCost:RecurringCosts"],
+        name: str = ...,
+        fields: _LifeCycleCostRecurringCostsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LifeCycleCostRecurringCostsFields],
+    ) -> LifeCycleCostRecurringCosts: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LifeCycleCost:NonrecurringCost"],
+        name: str = ...,
+        fields: _LifeCycleCostNonrecurringCostFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LifeCycleCostNonrecurringCostFields],
+    ) -> LifeCycleCostNonrecurringCost: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LifeCycleCost:UsePriceEscalation"],
+        fields: _LifeCycleCostUsePriceEscalationFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LifeCycleCostUsePriceEscalationFields],
+    ) -> LifeCycleCostUsePriceEscalation: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["LifeCycleCost:UseAdjustment"],
+        name: str = ...,
+        fields: _LifeCycleCostUseAdjustmentFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_LifeCycleCostUseAdjustmentFields],
+    ) -> LifeCycleCostUseAdjustment: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Parametric:SetValueForRun"],
+        name: str = ...,
+        fields: _ParametricSetValueForRunFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ParametricSetValueForRunFields],
+    ) -> ParametricSetValueForRun: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Parametric:Logic"],
+        name: str = ...,
+        fields: _ParametricLogicFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ParametricLogicFields],
+    ) -> ParametricLogic: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Parametric:RunControl"],
+        name: str = ...,
+        fields: _ParametricRunControlFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ParametricRunControlFields],
+    ) -> ParametricRunControl: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Parametric:FileNameSuffix"],
+        name: str = ...,
+        fields: _ParametricFileNameSuffixFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_ParametricFileNameSuffixFields],
+    ) -> ParametricFileNameSuffix: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:VariableDictionary"],
+        fields: _OutputVariableDictionaryFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputVariableDictionaryFields],
+    ) -> OutputVariableDictionary: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Surfaces:List"],
+        fields: _OutputSurfacesListFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputSurfacesListFields],
+    ) -> OutputSurfacesList: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Surfaces:Drawing"],
+        fields: _OutputSurfacesDrawingFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputSurfacesDrawingFields],
+    ) -> OutputSurfacesDrawing: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Schedules"],
+        fields: _OutputSchedulesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputSchedulesFields],
+    ) -> OutputSchedules: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Constructions"],
+        fields: _OutputConstructionsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputConstructionsFields],
+    ) -> OutputConstructions: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:EnergyManagementSystem"],
+        fields: _OutputEnergyManagementSystemFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputEnergyManagementSystemFields],
+    ) -> OutputEnergyManagementSystem: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:SurfaceColorScheme"],
+        name: str = ...,
+        fields: _OutputControlSurfaceColorSchemeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlSurfaceColorSchemeFields],
+    ) -> OutputControlSurfaceColorScheme: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Table:SummaryReports"],
+        fields: _OutputTableSummaryReportsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputTableSummaryReportsFields],
+    ) -> OutputTableSummaryReports: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Table:TimeBins"],
+        fields: _OutputTableTimeBinsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputTableTimeBinsFields],
+    ) -> OutputTableTimeBins: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Table:Monthly"],
+        name: str = ...,
+        fields: _OutputTableMonthlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputTableMonthlyFields],
+    ) -> OutputTableMonthly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Table:Annual"],
+        name: str = ...,
+        fields: _OutputTableAnnualFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputTableAnnualFields],
+    ) -> OutputTableAnnual: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:Table:Style"],
+        fields: _OutputControlTableStyleFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlTableStyleFields],
+    ) -> OutputControlTableStyle: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:ReportingTolerances"],
+        fields: _OutputControlReportingTolerancesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlReportingTolerancesFields],
+    ) -> OutputControlReportingTolerances: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:ResilienceSummaries"],
+        fields: _OutputControlResilienceSummariesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlResilienceSummariesFields],
+    ) -> OutputControlResilienceSummaries: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Variable"],
+        fields: _OutputVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputVariableFields],
+    ) -> OutputVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Meter"],
+        fields: _OutputMeterFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputMeterFields],
+    ) -> OutputMeter: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Meter:MeterFileOnly"],
+        fields: _OutputMeterMeterFileOnlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputMeterMeterFileOnlyFields],
+    ) -> OutputMeterMeterFileOnly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Meter:Cumulative"],
+        fields: _OutputMeterCumulativeFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputMeterCumulativeFields],
+    ) -> OutputMeterCumulative: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Meter:Cumulative:MeterFileOnly"],
+        fields: _OutputMeterCumulativeMeterFileOnlyFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputMeterCumulativeMeterFileOnlyFields],
+    ) -> OutputMeterCumulativeMeterFileOnly: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Meter:Custom"],
+        name: str = ...,
+        fields: _MeterCustomFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MeterCustomFields],
+    ) -> MeterCustom: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Meter:CustomDecrement"],
+        name: str = ...,
+        fields: _MeterCustomDecrementFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_MeterCustomDecrementFields],
+    ) -> MeterCustomDecrement: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:Files"],
+        fields: _OutputControlFilesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlFilesFields],
+    ) -> OutputControlFiles: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["OutputControl:Timestamp"],
+        fields: _OutputControlTimestampFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputControlTimestampFields],
+    ) -> OutputControlTimestamp: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:JSON"],
+        fields: _OutputJSONFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputJSONFields],
+    ) -> OutputJSON: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:SQLite"],
+        fields: _OutputSQLiteFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputSQLiteFields],
+    ) -> OutputSQLite: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:EnvironmentalImpactFactors"],
+        fields: _OutputEnvironmentalImpactFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputEnvironmentalImpactFactorsFields],
+    ) -> OutputEnvironmentalImpactFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["EnvironmentalImpactFactors"],
+        fields: _EnvironmentalImpactFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_EnvironmentalImpactFactorsFields],
+    ) -> EnvironmentalImpactFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["FuelFactors"],
+        fields: _FuelFactorsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_FuelFactorsFields],
+    ) -> FuelFactors: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:Diagnostics"],
+        fields: _OutputDiagnosticsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputDiagnosticsFields],
+    ) -> OutputDiagnostics: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:DebuggingData"],
+        fields: _OutputDebuggingDataFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputDebuggingDataFields],
+    ) -> OutputDebuggingData: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["Output:PreprocessorMessage"],
+        fields: _OutputPreprocessorMessageFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_OutputPreprocessorMessageFields],
+    ) -> OutputPreprocessorMessage: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PythonPlugin:SearchPaths"],
+        name: str = ...,
+        fields: _PythonPluginSearchPathsFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PythonPluginSearchPathsFields],
+    ) -> PythonPluginSearchPaths: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PythonPlugin:Instance"],
+        name: str = ...,
+        fields: _PythonPluginInstanceFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PythonPluginInstanceFields],
+    ) -> PythonPluginInstance: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PythonPlugin:Variables"],
+        name: str = ...,
+        fields: _PythonPluginVariablesFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PythonPluginVariablesFields],
+    ) -> PythonPluginVariables: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PythonPlugin:TrendVariable"],
+        name: str = ...,
+        fields: _PythonPluginTrendVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PythonPluginTrendVariableFields],
+    ) -> PythonPluginTrendVariable: ...
+    @overload
+    def add(
+        self,
+        obj_type: Literal["PythonPlugin:OutputVariable"],
+        name: str = ...,
+        fields: _PythonPluginOutputVariableFields | None = ...,
+        *,
+        validate: bool = ...,
+        **kwargs: Unpack[_PythonPluginOutputVariableFields],
+    ) -> PythonPluginOutputVariable: ...
+    @overload
     def add(
         self,
         obj_type: str,

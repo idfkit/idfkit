@@ -615,6 +615,60 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     return "\n".join(parts)
 
 
+def _types_with_version_dependent_name() -> frozenset[str]:
+    """Object types that have a Name field in some bundled versions and not in others.
+
+    The stub describes one schema, but a document can be on any bundled version. A per-type
+    ``add()`` overload built from the latest schema would type a name as allowed (or forbidden)
+    for a document on a version where the opposite holds: ``Output:Table:ReportPeriod`` has no
+    Name field up to 25.1 and has one from 25.2. Such types get no per-type overload and fall
+    through to the ``str`` one, which matches every call; the run-time check decides. Computed
+    from every bundled schema, so a type that changes in a future release is caught here too.
+    """
+    seen: dict[str, set[bool]] = {}
+    for ver in ENERGYPLUS_VERSIONS:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            seen.setdefault(obj_type, set()).add(schema.has_name(obj_type))
+    return frozenset(obj_type for obj_type, kinds in seen.items() if len(kinds) > 1)
+
+
+def _has_fields_typeddict(schema: EpJSONSchema, obj_type: str) -> bool:
+    """Whether ``_generate_object_class`` emits a ``_<Cls>Fields`` ``TypedDict`` for *obj_type*."""
+    if schema.get_field_names(obj_type):
+        return True
+    pc = schema.get_parsing_cache(obj_type)
+    return pc is not None and pc.ext_wrapper_key is not None and bool(pc.ext_inner_props)
+
+
+def _add_overloads(schema: EpJSONSchema) -> tuple[list[str], list[str]]:
+    """Per-type ``add()`` overloads, and the ``_<Cls>Fields`` names they import.
+
+    A type with a Name field keeps ``name: str`` as the second positional parameter. A type
+    without one has no ``name`` parameter, so its first field goes in by keyword
+    (``add("Output:Meter", key_name=...)``). Each overload returns the generated class and types
+    the keywords and the ``fields`` mapping with the type's ``TypedDict``. A call that matches none
+    of them (a type known only at run time, a ``dict[str, Any]`` of fields, a name on a nameless
+    type) falls through to the ``str`` overload emitted after them, which returns ``IDFObject``.
+    """
+    unstable = _types_with_version_dependent_name()
+    lines: list[str] = []
+    imports: list[str] = []
+    for obj_type in schema.object_types:
+        if obj_type in unstable or not _has_fields_typeddict(schema, obj_type):
+            continue
+        cls_name = _to_class_name(obj_type)
+        fields_cls = f"_{cls_name}Fields"
+        imports.append(fields_cls)
+        name_param = "name: str = ..., " if schema.has_name(obj_type) else ""
+        lines.append("    @overload")
+        lines.append(
+            f'    def add(self, obj_type: Literal["{obj_type}"], {name_param}fields: {fields_cls} | None = ..., '
+            f"*, validate: bool = ..., **kwargs: Unpack[{fields_cls}]) -> {cls_name}: ..."
+        )
+    return lines, sorted(imports)
+
+
 def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     """Generate ``document.pyi`` — a type stub for ``document.py``.
 
@@ -652,12 +706,17 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
     lines.append("from collections.abc import Iterator")
     lines.append("from pathlib import Path")
-    lines.append("from typing import Any, Generic, TypeVar")
+    lines.append("from typing import Any, Generic, Literal, TypeVar, overload")
+    lines.append("")
+    lines.append("from typing_extensions import Unpack")
     lines.append("")
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
-    lines.append("from ._generated_types import _ObjectTypeMap")
+    add_overload_lines, add_overload_imports = _add_overloads(schema)
+    lines.append("from ._generated_types import (")
+    lines.extend(f"    {name}," for name in sorted(["_ObjectTypeMap", *add_overload_imports]))
+    lines.append(")")
     # Alphabetical, because the formatter that runs after this sorts them and the stub gate then
     # regenerates and diffs. An import emitted out of order is reordered on the way in and never
     # matches on the way back, which fails the gate everywhere except the machine that committed it.
@@ -763,11 +822,13 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     emit("def describe(self, obj_type: str) -> ObjectDescription", "IDFDocument.describe")
     lines.append("")
 
-    # Object manipulation
+    # Object manipulation: one typed overload per object type, then the untyped fallback
+    lines.extend(add_overload_lines)
     emit(
         "def add(self, obj_type: str, name: str = ..., fields: dict[str, Any] | None = ..., "
         "*, validate: bool = ..., **kwargs: Any) -> IDFObject",
         "IDFDocument.add",
+        decorators=("@overload",),
     )
     emit("def addidfobject(self, obj: IDFObject) -> IDFObject", "IDFDocument.addidfobject")
     emit("def removeidfobject(self, obj: IDFObject) -> None", "IDFDocument.removeidfobject")
