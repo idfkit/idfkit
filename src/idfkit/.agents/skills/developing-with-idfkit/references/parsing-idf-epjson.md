@@ -39,14 +39,15 @@ print(len(doc), "objects")
 doc = load_idf("building.idf")  # strict=True by default
 zone = doc["Zone"]["Office"]
 zone.x_origin  # OK
-zone.x_orign  # raises InvalidFieldError; a type checker flags it too  # pyright: ignore[reportArgumentType]
+zone.x_orign  # raises InvalidFieldError, and pyright reports it before the code runs
 ```
 
 Drop to `strict=False` only as a tolerant fallback for legacy or noisy files:
 
 ```python
 doc = load_idf("legacy.idf", strict=False)
-zone.x_orign  # returns None, no error at run time  # pyright: ignore[reportArgumentType]
+zone = doc["Zone"]["Office"]
+zone.x_orign  # returns None at run time; pyright still reports the name
 ```
 
 ## Strict parsing (the default)

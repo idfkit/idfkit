@@ -32,16 +32,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** for type checking only, a type checker now reports an undeclared field name on a
-  typed object, for reading and for assigning. `material.thermal_resistance = 1.0` on a `Material`
-  taken from `doc["Material"]`, or `print(material.bogus)`, used to type-check clean because the
-  catch-all `__getattr__` and `__setattr__` of `IDFObject` accepted any name. The same holds for the
-  groups of an extensible type, such as `surface.vertices[0]`. Typed objects declare snake_case
-  names only, so an eppy-style capitalised spelling such as `material.Thickness = 0.2` is now
-  reported too, although it still works at run time: use `material.thickness`. Objects from the
-  eppy API (`doc.idfobjects[...]`, `newidfobject()`, `getobject()`) and other plain `IDFObject`s,
-  such as those from `doc.add()` or `doc.get_collection()`, stay permissive, and item access
-  (`obj[field_name]`) still takes a name known only at run time. Declared fields, `name` and
+- **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
+  error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
+  `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
+  `__setattr__` of `IDFObject` accepted any name. pyright reports the name whether it is read or
+  assigned; mypy reports an assignment, and types a read as `object`, so it reports any use that
+  needs a more specific type.
+  The same holds for the groups of an extensible type, such as `surface.vertices[0]`. Typed objects
+  declare snake_case names only, so an eppy-style capitalised spelling such as
+  `material.Thickness = 0.2` is now reported too, although it still works at run time: use
+  `material.thickness`. The typed classes describe EnergyPlus 26.2, so a field name that only exists
+  in an earlier version, such as `Lights.watts_per_zone_floor_area` up to 23.2, is reported as well;
+  on such a model, reach it with item access (`lights["watts_per_zone_floor_area"]`) or `getattr`.
+  Objects from the eppy API (`doc.idfobjects[...]`, `newidfobject()`, `getobject()`) and other plain
+  `IDFObject`s, such as those from `doc.add()` or `doc.get_collection()`, stay permissive. Declared
+  fields, `name`, the spellings of trailing-underscore fields with and without the underscore, and
   wrong-type errors behave as before. Run-time behaviour is unchanged. ([#272](https://github.com/idfkit/idfkit/pull/272))
 
 - **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a

@@ -535,10 +535,13 @@ class TestGenerateStubs:
         assert "class Zone(_TypedIDFObject):" in content
         # The stub-only bases switch off the catch-all attribute access with a Never name.
         assert "class _TypedIDFObject(IDFObject):" in content
-        assert "def __getattr__(self, key: Never) -> Never: ..." in content
+        assert "def __getattr__(self, key: Never) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
         assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
         assert "from typing_extensions import Never, Unpack" in content
+        # A trailing-underscore field is declared under both spellings the runtime accepts.
+        assert "    cond_flag_is_the_basement_conditioned_: " in content
+        assert "    cond_flag_is_the_basement_conditioned: " in content
         assert "_ObjectTypeMap" in content
         assert "from __future__ import annotations" in content
         # Validate that the output is syntactically valid Python

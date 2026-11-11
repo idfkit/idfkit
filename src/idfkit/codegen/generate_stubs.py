@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from idfkit.schema import EpJSONSchema, get_schema
+from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
 
 # ---- helpers ---------------------------------------------------------------
@@ -232,9 +232,12 @@ def _field_docstring(
 # Every typed class derives from one of these stub-only bases instead of IDFObject / ExtensibleGroup.
 # The runtime ``__getattr__``/``__setattr__`` take any ``str`` and return ``Any``, so a type checker
 # would resolve any undeclared name through them and accept ``material.thermal_resistance = 1.0`` on
-# a type that has no such field. Re-declaring both with a ``Never`` name makes every undeclared name
-# a type error, for reading and for assigning, while declared fields still resolve to their annotated
-# types (attribute lookup only falls back to ``__getattr__`` for names the class does not declare).
+# a type that has no such field. Re-declaring both with a ``Never`` name turns that off: pyright
+# reports every undeclared name, read or assigned, and mypy reports every undeclared assignment.
+# Declared fields still resolve to their annotated types, because attribute lookup only falls back
+# to ``__getattr__`` for names the class does not declare. ``__getattr__`` returns ``object``, not
+# ``Never``: mypy does not check the name argument, and a ``Never`` read would fit anywhere and make
+# mypy treat the code after ``obj.typo()`` as unreachable, while ``object`` makes it report each use.
 # Plain ``IDFObject`` keeps the permissive signatures, so ``IDFCollection[IDFObject]`` is unaffected.
 # ``typing.Never`` is 3.11+, hence ``typing_extensions``; the import only exists in the stub, which
 # the type checker reads from its bundled typeshed, so it adds no runtime dependency.
@@ -248,13 +251,13 @@ def _generate_typed_bases() -> list[str]:
         f"class {_TYPED_OBJECT_BASE}(IDFObject):",
         '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
         "",
-        "    def __getattr__(self, key: Never) -> Never: ...",
+        "    def __getattr__(self, key: Never) -> object: ...",
         "    def __setattr__(self, key: Never, value: Never) -> None: ...",
         "",
         f"class {_TYPED_GROUP_BASE}(ExtensibleGroup):",
         '    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""',
         "",
-        "    def __getattr__(self, name: Never) -> Never: ...",
+        "    def __getattr__(self, name: Never) -> object: ...",
         "    def __setattr__(self, name: Never, value: Never) -> None: ...",
         "",
     ]
@@ -512,6 +515,32 @@ def _generate_fields(
         docstring = _field_docstring(field_schema, since_version=fld_since)
         if docstring:
             lines.append(f'{indent}"""{docstring}"""')
+
+    declared.extend(_generate_field_aliases(lines, field_names, dict(declared), indent))
+    return declared
+
+
+def _generate_field_aliases(
+    lines: list[str], field_names: list[str], typed: dict[str, str], indent: str
+) -> list[tuple[str, str]]:
+    """Declare the spelling without the trailing underscore of each field whose key ends in ``_``.
+
+    The runtime reaches such a field by both spellings (``IDFObject._field_key``), so the typed
+    class declares both, or it would reject the one without the underscore. Emitted in field
+    order, because the alias map's own order is not stable between runs.
+    """
+    alias_of = {
+        key: alias
+        for alias, key in trailing_underscore_aliases(field_names).items()
+        if alias != key and alias.isidentifier() and alias not in typed
+    }
+    declared: list[tuple[str, str]] = []
+    for key in field_names:
+        alias = alias_of.get(key)
+        if alias is not None and key in typed:
+            lines.append(f"{indent}{alias}: {typed[key]}")
+            lines.append(f'{indent}"""Alias of :attr:`{key}`, the same field without the trailing underscore."""')
+            declared.append((alias, typed[key]))
     return declared
 
 

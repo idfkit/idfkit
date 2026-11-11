@@ -42,7 +42,12 @@ def correct_access(doc: IDFDocument[Any]) -> None:
     # The eppy API returns plain IDFObject, so eppy-style capitalised names stay permissive there.
     for eppy_material in doc.idfobjects["MATERIAL"]:
         eppy_material.Thickness = 0.2
-    # Item access takes a name known only at run time.
+    # A field whose key ends in an underscore is also declared without it, as the runtime accepts.
+    interior = doc["GroundHeatTransfer:Basement:Interior"]["Interior"]
+    interior.cond_flag_is_the_basement_conditioned_ = "TRUE"
+    interior.cond_flag_is_the_basement_conditioned = "TRUE"
+    # Item access and getattr take a name known only at run time.
+    print(getattr(doc["Material"]["Concrete"], "thermal_resistance", None))
     field_name = "x_origin"
     doc["Zone"]["Office"][field_name] = 1.0
 
@@ -50,8 +55,11 @@ def correct_access(doc: IDFDocument[Any]) -> None:
 def seeded_errors(doc: IDFDocument[Any]) -> None:
     material = doc["Material"]["Concrete"]
     material.Thermal_Resistance = 1.0  # pyright: ignore[reportArgumentType]  (undeclared name, assigned)
-    print(material.bogus)  # pyright: ignore[reportArgumentType, reportUnknownMemberType, reportUnknownArgumentType]  (undeclared name, read)
+    print(material.bogus)  # pyright: ignore[reportArgumentType]  (undeclared name, read)
+    conductivity: float = material.conductivty  # pyright: ignore[reportArgumentType, reportAssignmentType]  (typo, read as object)
+    print(conductivity)
     material.Thickness = 0.2  # pyright: ignore[reportArgumentType]  (typed objects declare snake_case only)
     material.thickness = "abc"  # pyright: ignore[reportAttributeAccessIssue]  (declared field, wrong type)
     vertex = doc["BuildingSurface:Detailed"]["Wall"].vertices[0]
     vertex.bogus = 1.0  # pyright: ignore[reportArgumentType]  (undeclared name on a typed group)
+    print(vertex.bogus)  # pyright: ignore[reportArgumentType]  (undeclared name read on a typed group)

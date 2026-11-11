@@ -16,13 +16,13 @@ from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 class _TypedIDFObject(IDFObject):
     """Stub-only base: an undeclared field name is a type error on a typed object."""
 
-    def __getattr__(self, key: Never) -> Never: ...
+    def __getattr__(self, key: Never) -> object: ...
     def __setattr__(self, key: Never, value: Never) -> None: ...
 
 class _TypedExtensibleGroup(ExtensibleGroup):
     """Stub-only base: an undeclared field name is a type error on a typed extensible group."""
 
-    def __getattr__(self, name: Never) -> Never: ...
+    def __getattr__(self, name: Never) -> object: ...
     def __setattr__(self, name: Never, value: Never) -> None: ...
 
 # =========================================================================
@@ -590,6 +590,10 @@ class SizingPeriodDesignDay(_TypedIDFObject):
     """If used this design day will be run with a custom limit on the maximum number of days that are repeated for warmup. L...; Since: 9.3.0"""
     begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
     """If used this can control if you want the thermal history to be reset at the beginning of the design day. When using a...; Default: FullResetAtBeginEnvironment; Since: 9.3.0"""
+    ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None
+    """Alias of :attr:`ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`, the same field without the trailing underscore."""
+    ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
+    """Alias of :attr:`ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPeriodDesignDayFields]
@@ -655,6 +659,8 @@ class _SizingPeriodDesignDayFields(TypedDict, total=False):
     sky_clearness: float | None
     maximum_number_warmup_days: int | None
     begin_environment_reset_mode: Literal["", "FullResetAtBeginEnvironment", "SuppressAllBeginEnvironmentResets"] | None
+    ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None
+    ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
 
 class SizingPeriodWeatherFileDays(_TypedIDFObject):
     """Use a weather file period for design sizing calculations."""
@@ -2454,6 +2460,8 @@ class WindowMaterialGap(_TypedIDFObject):
     """If left blank, it will be considered that gap is not deflected"""
     support_pillar: str | None
     """If left blank, it will be considered that gap does not have support pillars"""
+    gas_or_gas_mixture: str | None
+    """Alias of :attr:`gas_or_gas_mixture_`, the same field without the trailing underscore."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapFields]) -> None: ...  # type: ignore[override]
 
@@ -2463,6 +2471,7 @@ class _WindowMaterialGapFields(TypedDict, total=False):
     pressure: float | None
     deflection_state: str | None
     support_pillar: str | None
+    gas_or_gas_mixture: str | None
 
 class WindowMaterialShade(_TypedIDFObject):
     """Specifies the properties of window shade materials. Reflectance and emissivity properties are assumed to be the same ..."""
@@ -2998,6 +3007,8 @@ class WindowMaterialGlazingEquivalentLayer(_TypedIDFObject):
     """The back side long-wave hemispherical emissivity of the glazing.; [dimensionless]; Default: 0.84; Range: > 0.0, < 1.0"""
     thermal_resistance: float | None
     """This is the R-Value in SI for the glass. The default value is an approximation for a single layer of glass at 1/4' in...; [m2-K/W]; Default: 0.158; Range: > 0.0; Since: 9.2.0"""
+    infrared_transmittance_applies_to_front_and_back: float | None
+    """Alias of :attr:`infrared_transmittance_applies_to_front_and_back_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGlazingEquivalentLayerFields]
@@ -3032,6 +3043,7 @@ class _WindowMaterialGlazingEquivalentLayerFields(TypedDict, total=False):
     front_side_infrared_emissivity: float | None
     back_side_infrared_emissivity: float | None
     thermal_resistance: float | None
+    infrared_transmittance_applies_to_front_and_back: float | None
 
 class WindowMaterialGapEquivalentLayer(_TypedIDFObject):
     """Gas material properties that are used in Windows Equivalent Layer References only WindowMaterial:Gas properties"""
@@ -8941,6 +8953,8 @@ class GroundHeatTransferSlabBoundConds(_TypedIDFObject):
     """This field flags the use of a user specified heat transfer coefficient on the ground surface. This condition is used ..."""
     userh_user_specified_ground_surface_heat_transfer_coefficient: float | None
     """Used only if USRHflag is TRUE and the heat transfer coefficient value is specified in this field.; [W/m2-K]"""
+    usrhflag_is_the_ground_surface_h_specified_by_the_user: Literal["FALSE", "TRUE"] | None
+    """Alias of :attr:`usrhflag_is_the_ground_surface_h_specified_by_the_user_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields]
@@ -8952,6 +8966,7 @@ class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
     tdeepin: float | None
     usrhflag_is_the_ground_surface_h_specified_by_the_user_: Literal["FALSE", "TRUE"] | None
     userh_user_specified_ground_surface_heat_transfer_coefficient: float | None
+    usrhflag_is_the_ground_surface_h_specified_by_the_user: Literal["FALSE", "TRUE"] | None
 
 class GroundHeatTransferSlabBldgProps(_TypedIDFObject):
     """Object provides information about the building and its operating conditions Monthly Average Temperature SetPoint fiel..."""
@@ -9127,6 +9142,8 @@ class GroundHeatTransferBasementSimParameters(_TypedIDFObject):
     """0<F<1.0, typically 0.1 (0.3 for high k soil - saturated sand is about 2.6 w/m-K); Range: > 0.0, <= 1.0"""
     iyrs_maximum_number_of_yearly_iterations_: float | None
     """typically 15-30]; Default: 15.0; Range: >= 0.0"""
+    iyrs_maximum_number_of_yearly_iterations: float | None
+    """Alias of :attr:`iyrs_maximum_number_of_yearly_iterations_`, the same field without the trailing underscore."""
 
     def update(
         self,
@@ -9138,6 +9155,7 @@ class GroundHeatTransferBasementSimParameters(_TypedIDFObject):
 class _GroundHeatTransferBasementSimParametersFields(TypedDict, total=False):
     f_multiplier_for_the_adi_solution: float | None
     iyrs_maximum_number_of_yearly_iterations_: float | None
+    iyrs_maximum_number_of_yearly_iterations: float | None
 
 class GroundHeatTransferBasementMatlProps(_TypedIDFObject):
     """Specifies the material properties for the Basement preprocessor ground heat transfer simulation. Only the Foundation ..."""
@@ -9213,6 +9231,8 @@ class GroundHeatTransferBasementInsulation(_TypedIDFObject):
     """[m2-K/W]; Range: > 0.0"""
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
     """True for full insulation False for insulation half way down side wall from grade line"""
+    insfull_flag_is_the_wall_fully_insulated: Literal["FALSE", "TRUE"] | None
+    """Alias of :attr:`insfull_flag_is_the_wall_fully_insulated_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields]
@@ -9221,6 +9241,7 @@ class GroundHeatTransferBasementInsulation(_TypedIDFObject):
 class _GroundHeatTransferBasementInsulationFields(TypedDict, total=False):
     rext_r_value_of_any_exterior_insulation: float | None
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
+    insfull_flag_is_the_wall_fully_insulated: Literal["FALSE", "TRUE"] | None
 
 class GroundHeatTransferBasementSurfaceProps(_TypedIDFObject):
     """Specifies the soil surface properties for the Basement preprocessor ground heat transfer simulation."""
@@ -9239,6 +9260,8 @@ class GroundHeatTransferBasementSurfaceProps(_TypedIDFObject):
     """[cm]; Default: 0.25; Range: >= 0.0"""
     pet_flag_potential_evapotranspiration_on_: Literal["", "FALSE", "TRUE"] | None
     """Typically, PET is False; Default: FALSE"""
+    pet_flag_potential_evapotranspiration_on: Literal["", "FALSE", "TRUE"] | None
+    """Alias of :attr:`pet_flag_potential_evapotranspiration_on_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields]
@@ -9252,6 +9275,7 @@ class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
     veght_surface_roughness_no_snow_conditions: float | None
     veght_surface_roughness_snow_conditions: float | None
     pet_flag_potential_evapotranspiration_on_: Literal["", "FALSE", "TRUE"] | None
+    pet_flag_potential_evapotranspiration_on: Literal["", "FALSE", "TRUE"] | None
 
 class GroundHeatTransferBasementBldgData(_TypedIDFObject):
     """Specifies the surface and gravel thicknesses used for the Basement preprocessor ground heat transfer simulation."""
@@ -9295,6 +9319,8 @@ class GroundHeatTransferBasementInterior(_TypedIDFObject):
     """[W/m2-K]; Default: 9.26; Range: > 0.0"""
     hin_horizontal_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     """[W/m2-K]; Default: 8.29; Range: > 0.0"""
+    cond_flag_is_the_basement_conditioned: Literal["", "FALSE", "TRUE"] | None
+    """Alias of :attr:`cond_flag_is_the_basement_conditioned_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields]
@@ -9308,6 +9334,7 @@ class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
     hin_downward_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     hin_upward_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     hin_horizontal_combined_convection_and_radiation_heat_transfer_coefficient: float | None
+    cond_flag_is_the_basement_conditioned: Literal["", "FALSE", "TRUE"] | None
 
 class GroundHeatTransferBasementComBldg(_TypedIDFObject):
     """ComBldg contains the monthly average temperatures (C) and possibility of daily variation amplitude"""
@@ -9411,6 +9438,8 @@ class GroundHeatTransferBasementAutoGrid(_TypedIDFObject):
     """[m]; Default: 0.1"""
     basedepth_depth_of_the_basement_wall_below_grade: float | None
     """[m]; Default: 2.0; Range: >= 0.0"""
+    clearance_distance_from_outside_of_wall_to_edge: float | None
+    """Alias of :attr:`clearance_distance_from_outside_of_wall_to_edge_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields]
@@ -9423,6 +9452,7 @@ class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
     concagheight_height_of_the_foundation_wall_above_grade: float | None
     slabdepth_thickness_of_the_floor_slab: float | None
     basedepth_depth_of_the_basement_wall_below_grade: float | None
+    clearance_distance_from_outside_of_wall_to_edge: float | None
 
 class GroundHeatTransferBasementManualGrid(_TypedIDFObject):
     """Manual Grid only necessary using manual gridding (not recommended)"""
@@ -9438,6 +9468,20 @@ class GroundHeatTransferBasementManualGrid(_TypedIDFObject):
     ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float | None
     jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float | None
     kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float | None
+    nx_number_of_cells_in_the_x_direction_20: float | None
+    """Alias of :attr:`nx_number_of_cells_in_the_x_direction_20_`, the same field without the trailing underscore."""
+    ny_number_of_cells_in_the_y_direction_20: float | None
+    """Alias of :attr:`ny_number_of_cells_in_the_y_direction_20_`, the same field without the trailing underscore."""
+    nzag_number_of_cells_in_the_z_direction_above_grade_4_always: float | None
+    """Alias of :attr:`nzag_number_of_cells_in_the_z_direction_above_grade_4_always_`, the same field without the trailing underscore."""
+    nzbg_number_of_cells_in_z_direction_below_grade_10_35: float | None
+    """Alias of :attr:`nzbg_number_of_cells_in_z_direction_below_grade_10_35_`, the same field without the trailing underscore."""
+    ibase_x_direction_cell_indicator_of_slab_edge_5_20: float | None
+    """Alias of :attr:`ibase_x_direction_cell_indicator_of_slab_edge_5_20_`, the same field without the trailing underscore."""
+    jbase_y_direction_cell_indicator_of_slab_edge_5_20: float | None
+    """Alias of :attr:`jbase_y_direction_cell_indicator_of_slab_edge_5_20_`, the same field without the trailing underscore."""
+    kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20: float | None
+    """Alias of :attr:`kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields]
@@ -9451,6 +9495,13 @@ class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
     ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float | None
     jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float | None
     kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float | None
+    nx_number_of_cells_in_the_x_direction_20: float | None
+    ny_number_of_cells_in_the_y_direction_20: float | None
+    nzag_number_of_cells_in_the_z_direction_above_grade_4_always: float | None
+    nzbg_number_of_cells_in_z_direction_below_grade_10_35: float | None
+    ibase_x_direction_cell_indicator_of_slab_edge_5_20: float | None
+    jbase_y_direction_cell_indicator_of_slab_edge_5_20: float | None
+    kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20: float | None
 
 class GroundHeatTransferBasementXFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m"""
@@ -13092,6 +13143,8 @@ class AirflowNetworkMultiZoneComponentDetailedOpening(_TypedIDFObject):
     """The Height Factor is the opening height divided by the window or door height.; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
     start_height_factor_for_opening_factor_4: float | None
     """The Start Height Factor is the Start Height divided by the window or door height. Start Height is the distance betwee...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
+    type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None
+    """Alias of :attr:`type_of_rectangular_large_vertical_opening_lvo_`, the same field without the trailing underscore."""
 
     def update(
         self,
@@ -13126,6 +13179,7 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningFields(TypedDict, total=Fa
     width_factor_for_opening_factor_4: float | None
     height_factor_for_opening_factor_4: float | None
     start_height_factor_for_opening_factor_4: float | None
+    type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None
 
 class AirflowNetworkMultiZoneComponentSimpleOpening(_TypedIDFObject):
     """This object specifies the properties of air flow through windows and doors (window, door and glass door heat transfer..."""
@@ -45761,6 +45815,8 @@ class PhotovoltaicPerformanceSandia(_TypedIDFObject):
     """[dimensionless]"""
     sandia_database_parameter_c7: float | None
     """(non-dimensional); [dimensionless]"""
+    sandia_database_parameter_delta_tc: float | None
+    """Alias of :attr:`sandia_database_parameter_delta_tc_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_PhotovoltaicPerformanceSandiaFields]
@@ -45806,6 +45862,7 @@ class _PhotovoltaicPerformanceSandiaFields(TypedDict, total=False):
     sandia_database_parameter_ixx0: float | None
     sandia_database_parameter_c6: float | None
     sandia_database_parameter_c7: float | None
+    sandia_database_parameter_delta_tc: float | None
 
 class GeneratorPVWatts(_TypedIDFObject):
     """Describes a simple set of inputs for an array of photovoltaic (PV) modules as described in the PVWatts software. A se..."""
