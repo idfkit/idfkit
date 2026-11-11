@@ -351,6 +351,8 @@ class EppyDocumentMixin:
             >>> model.getobject("Material", "Insulation").thickness
             0.1
         """
+        from .objects import to_python_name
+
         for dotted_key, value in updates.items():
             parts = dotted_key.split(".", 2)
             if len(parts) != 3:
@@ -361,8 +363,10 @@ class EppyDocumentMixin:
             if obj is None:
                 msg = f"No {obj_type} named '{obj_name}'"
                 raise KeyError(msg)
-            # setattr normalizes the name itself, and keeps a field whose schema name ends in "_".
-            setattr(obj, field_name, value)
+            # A schema key is kept as given: to_python_name would turn ReportPeriod's name_ field into
+            # its name. Anything else is normalized, which keeps private slots out of reach.
+            field_order = obj.field_order or ()
+            setattr(obj, field_name if field_name in field_order else to_python_name(field_name), value)
 
     # -- Surfaces (common access pattern) ------------------------------------
 
