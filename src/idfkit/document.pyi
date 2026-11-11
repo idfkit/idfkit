@@ -329,8 +329,10 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
 
         Args:
             obj_type: Object type (e.g., "Zone")
-            name: Object name (optional for object types without a name field,
-                such as Timestep, SimulationControl, GlobalGeometryRules)
+            name: The object's name. Must be empty ("" or omitted) for types without
+                a Name field, such as Output:Meter, Output:SQLite, Timestep or
+                SimulationControl; their first field is a normal field, passed by its
+                schema name (key_name=..., option_type=...).
             fields: Field values as a dict, useful when field names are
                 computed dynamically. Equivalent to passing the same keys
                 as ``**kwargs``; merged before ``kwargs`` so explicit
@@ -354,7 +356,9 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
                 required fields, invalid values)
             InvalidFieldError: If ``validate=False`` and a key is not a field of
                 the object type, naming every such key (the name goes in ``name``,
-                not in ``fields``)
+                not in ``fields``); or, in either mode, if ``name`` is not empty and
+                the type has no Name field (the message names the field to use
+                instead, e.g. ``key_name`` for Output:Meter)
             TypeError: If the extensible wrapper value is not a list of groups,
                 or a group has a key the group does not name (in either mode,
                 as ``IDFObject.update`` refuses it)

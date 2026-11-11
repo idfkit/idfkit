@@ -53,7 +53,7 @@ def model_with_hvac_template() -> IDFDocument:
     doc.add("Zone", "Office", {"x_origin": 0.0, "y_origin": 0.0, "z_origin": 0.0})
     doc.add(
         "HVACTemplate:Zone:IdealLoadsAirSystem",
-        "Office Ideal Loads",
+        "",
         {"zone_name": "Office"},
         validate=False,
     )
@@ -371,7 +371,7 @@ class TestNeedsGroundHeatPreprocessing:
 
     def test_false_for_hvac_template_only(self) -> None:
         doc = new_document(version=(24, 1, 0))
-        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "Test", {"zone_name": "Office"}, validate=False)
+        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "", {"zone_name": "Office"}, validate=False)
         assert needs_ground_heat_preprocessing(doc) is False
 
     def test_false_after_every_object_is_removed(self) -> None:
@@ -1127,7 +1127,7 @@ class TestRunPreprocessing:
     def test_expand_objects_only_when_no_ght_inputs(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         """When model has HVACTemplate but no GHT objects, only ExpandObjects runs."""
         doc = new_document(version=(24, 1, 0))
-        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "Test", {"zone_name": "Office"}, validate=False)
+        doc.add("HVACTemplate:Zone:IdealLoadsAirSystem", "", {"zone_name": "Office"}, validate=False)
         doc.add("Zone", "Office", {"x_origin": 0.0})
 
         epw = tmp_path / "weather.epw"
