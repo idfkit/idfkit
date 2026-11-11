@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
+### Fixed
+
+- Validation reports unknown fields (`W003`) on extensible object types too. They used to be
+  exempt, so `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the
+  default `validate=True` and stored a key that `write_idf()` silently dropped and
+  `write_epjson()` emitted as an unknown property. Such a call now raises
+  `ValidationFailedError`, as an unknown field on a non-extensible type already did; the
+  wrapper list (`reports=[...]`) and the deprecated flat spellings (`report_name`,
+  `report_name_2`) are still accepted. `validate_document()` reports the same keys on objects
+  added with `validate=False` or loaded from epJSON.
+  ([459258f](https://github.com/idfkit/idfkit/commit/459258f))
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.

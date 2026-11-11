@@ -369,7 +369,6 @@ class TestAddRejectsUnknownExtensibleSpelling:
         result = validate_document(doc)
         assert any(w.code == "W003" and w.field == "report_1" for w in result.warnings)
 
-
     def test_unknown_field_skipped_when_check_unknown_false(self) -> None:
         schema = get_schema((24, 1, 0))
         obj = IDFObject(obj_type="Zone", name="Z1", data={"not_a_real_field": "value"})
