@@ -33,20 +33,20 @@ print(len(doc), "objects")
 
 ## Strict mode (the default)
 
-`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site.
+`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site. On a typed object (`doc["Zone"][...]`) pyright reports an undeclared field name before the code runs, for reading and for assigning.
 
 ```python
 doc = load_idf("building.idf")  # strict=True by default
 zone = doc["Zone"]["Office"]
 zone.x_origin  # OK
-zone.x_orign  # raises InvalidFieldError
+zone.x_orign  # raises InvalidFieldError; a type checker flags it too  # pyright: ignore[reportArgumentType]
 ```
 
 Drop to `strict=False` only as a tolerant fallback for legacy or noisy files:
 
 ```python
 doc = load_idf("legacy.idf", strict=False)
-zone.x_orign  # returns None, no error
+zone.x_orign  # returns None, no error at run time  # pyright: ignore[reportArgumentType]
 ```
 
 ## Strict parsing (the default)

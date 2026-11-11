@@ -1,0 +1,53 @@
+"""Type-check fixture for field access on typed objects (never called; checked by ``make check``).
+
+A typed object (``doc["Material"][...]``) declares its fields, and an undeclared name is a type
+error for reading and for assigning. Plain ``IDFObject`` stays permissive. Each seeded error below
+carries a ``pyright: ignore`` naming the rule it must trigger, and this file turns on
+``reportUnnecessaryTypeIgnoreComment``: if a seeded error stops being reported, the ignore becomes
+unnecessary and the check fails, so the fixture proves the errors are caught.
+"""
+
+# pyright: strict, reportUnnecessaryTypeIgnoreComment=true
+
+from __future__ import annotations
+
+from typing import Any
+
+from idfkit import IDFDocument
+from idfkit.objects import IDFObject
+
+
+def correct_access(doc: IDFDocument[Any]) -> None:
+    for material in doc["Material"]:
+        material.thickness = 0.2
+        material.roughness = "MediumRough"
+        material.name = "Concrete"
+        thickness: float | None = material.thickness
+        name: str = material.name
+        print(thickness, name)
+    surface = doc["BuildingSurface:Detailed"]["Wall"]
+    surface.vertices[0].vertex_x_coordinate = 1.0
+    x: float | None = surface.vertices[0].vertex_x_coordinate
+    print(x)
+    # The first field of a nameless type is a declared field, not a name.
+    timestep = doc["Timestep"].first()
+    if timestep is not None:
+        timestep.number_of_timesteps_per_hour = 6
+    # Plain IDFObject is untyped and stays permissive.
+    plain: IDFObject = doc.get_collection("Material")["Concrete"]
+    plain.thermal_resistance = 1.0
+    print(plain.anything)
+    for obj in doc.get_collection("Zone"):
+        print(obj.whatever)
+    # Item access takes a name known only at run time.
+    field_name = "x_origin"
+    doc["Zone"]["Office"][field_name] = 1.0
+
+
+def seeded_errors(doc: IDFDocument[Any]) -> None:
+    material = doc["Material"]["Concrete"]
+    material.Thermal_Resistance = 1.0  # pyright: ignore[reportArgumentType]  (undeclared name, assigned)
+    print(material.bogus)  # pyright: ignore[reportArgumentType, reportUnknownMemberType, reportUnknownArgumentType]  (undeclared name, read)
+    material.thickness = "abc"  # pyright: ignore[reportAttributeAccessIssue]  (declared field, wrong type)
+    vertex = doc["BuildingSurface:Detailed"]["Wall"].vertices[0]
+    vertex.bogus = 1.0  # pyright: ignore[reportArgumentType]  (undeclared name on a typed group)
