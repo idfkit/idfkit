@@ -18,8 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `OutputVariableIndex.add_all_to_model` stored each meter name in the `key_name` field of the
   `Output:Meter` objects it adds. It used to pass the name as the object name, which
   `Output:Meter` does not have, so both writers dropped it: `write_idf` emitted
-  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`
+  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`.
+  The added meters now have an empty name, like meters loaded from a file, so
+  `doc["Output:Meter"]["<meter>"]` no longer finds them, and calling `add_all_to_model` twice
+  adds each meter twice instead of raising `DuplicateObjectError`
   ([d214b51](https://github.com/idfkit/idfkit/commit/d214b51)).
+- `IDFCollection.remove` (and so `IDFDocument.removeidfobject`) removed the first object equal
+  to the one passed instead of that object. Two objects of a type with no Name field are equal
+  when their fields match, so removing one `Output:Meter` could remove another and leave the
+  one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
 
 ## [1.2.0] - 2026-10-28
 
