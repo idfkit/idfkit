@@ -13,6 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
+### Fixed
+
+- `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
+  swallowed the object after it, and EnergyPlus read that object's type name and values as fields
+  of the empty one. This happened to a nameless type whose only fields are a repeated group
+  (`Output:Table:SummaryReports`, `Output:Diagnostics`, `OutdoorAir:NodeList`,
+  `EnergyManagementSystem:GlobalVariable` and the `GroundHeatTransfer` face types) when it held
+  no groups. It affected the standard and `nocomment` output types, `doc.copy()`, and objects
+  added to a document loaded with `preserve_formatting=True`. Such an object is now written with
+  one blank field, `Output:Diagnostics,;`. EnergyPlus reads this form as an empty object, and it
+  does not accept `Output:Diagnostics;`. The IDF parser now reads that blank field back for a type
+  with no fields at all, such as `GroundHeatTransfer:Slab:XFACE`, where it used to reject it as
+  an extra value. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772))
+- `idfkit.simulation.prep_outputs` now requests the `AllSummary` reports. It passed
+  `report_1="AllSummary"`, which is not a valid name for the `reports` group, so the value was
+  dropped and `Output:Table:SummaryReports` was written empty.
+  ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f))
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
