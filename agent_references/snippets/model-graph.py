@@ -23,6 +23,29 @@ if graph.coverage.partial:  # same Coverage as HVACTopology: templates, EMS prog
 # --8<-- [end:build-view]
 
 
+# --8<-- [start:results-layer]
+from idfkit.graph import ModelGraph, ObjectKey
+from idfkit.simulation import ResultIndex, SimulationResult
+
+result = SimulationResult.from_directory("run")  # a finished run with Output:SQLite, or simulate(doc, weather)
+index = ResultIndex.build(doc, result, run_revision=doc.revision, run_model_hash="")
+graph = ModelGraph(doc, results=index)
+print(graph.layers, graph.results_state)  # ['model', 'topology', 'results'] fresh
+
+air_loop = ObjectKey("AirLoopHVAC", "VAV Sys 1")
+sub = graph.neighbourhood(air_loop, hops=1, node_kinds=["object", "result_fact", "message"])
+for node in sub.nodes:
+    if node.kind == "message":
+        print(node.id, "|", node.label)  # message:sizing.system_flow_ratio:0 | warning sizing.system_flow_ratio
+facts = [node for node in sub.nodes if node.kind == "result_fact"]
+print(facts[0].id)  # fact:AIRLOOPHVAC:VAV SYS 1:ComponentSizes#66
+for edge in sub.edges:
+    if edge.kind == "result_link" and edge.source == facts[0].id:
+        print(edge.target, dict(edge.attrs))  # object:AIRLOOPHVAC:VAV SYS 1 {'confidence': 'exact', 'rule': 'exact'}
+graph = ModelGraph(doc)  # the sections below use the model and topology layers only
+# --8<-- [end:results-layer]
+
+
 # --8<-- [start:neighbourhood]
 from idfkit.graph import ModelGraph, ObjectKey
 

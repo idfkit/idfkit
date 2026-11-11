@@ -11,6 +11,7 @@ import pytest
 from idfkit import IDFDocument, load_idf, new_document
 from idfkit.graph import EdgeKind, GraphEdge, ModelGraph, NodeKind, ObjectKey, Subgraph
 from idfkit.hvac import ComponentCategory, HVACTopology
+from idfkit.simulation import ResultIndex, SimulationResult
 
 LINKED = Path(__file__).parent / "fixtures" / "simulation" / "linked"
 
@@ -607,3 +608,103 @@ def test_category_filter_applies_before_max_nodes(five_zone: IDFDocument) -> Non
     assert filtered.nodes[1].attrs["category"] == "heating_coil"
     assert filtered.truncated is True
     assert filtered.omitted_nodes >= 1
+
+
+# ------------------------------------------------------------------------------- results layer
+
+
+def _linked(tmp_path: Path, fixture: str = "MultiStory") -> tuple[IDFDocument, ResultIndex]:
+    import shutil
+
+    linked = Path(__file__).parent / "fixtures" / "simulation" / "linked"
+    shutil.copy(linked / f"{fixture}.sql", tmp_path / "eplusout.sql")
+    doc = load_idf(linked / f"{fixture}.idf")
+    run = SimulationResult(run_dir=tmp_path, success=True, exit_code=0, stdout="", stderr="", runtime_seconds=0.0)
+    return doc, ResultIndex.build(doc, run, run_revision=doc.revision, run_model_hash="h")
+
+
+DX_COIL = ObjectKey("Coil:Cooling:DX:SingleSpeed", "Top East OA DX Coil")
+
+
+def test_results_layer_is_present_with_a_result_index(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    graph = ModelGraph(doc, results=index)
+    assert graph.layers == ["model", "topology", "results"]
+    assert graph.unavailable == {}
+    assert graph.results_state == "fresh"
+    without = ModelGraph(doc)
+    assert "results" not in without.layers
+    assert "results" in without.unavailable
+    assert without.results_state is None
+
+
+def test_results_nodes_join_their_object_by_result_link(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    sub = ModelGraph(doc, results=index).neighbourhood(DX_COIL, hops=1, max_nodes=500)
+    start = sub.start
+    facts = [n for n in sub.nodes if n.kind == "result_fact"]
+    messages = [n for n in sub.nodes if n.kind == "message"]
+    assert facts
+    assert messages
+    assert all(n.layer == "results" and n.key == DX_COIL for n in facts)
+    assert all(n.id.startswith("fact:COIL:COOLING:DX:SINGLESPEED:TOP EAST OA DX COIL:") for n in facts)
+    assert {n.attrs["message_kind"] for n in messages} == {"dxcoil.low_outlet_temp"}
+    links = [e for e in sub.edges if e.kind == "result_link"]
+    assert links
+    assert all(e.layer == "results" and e.target == start for e in links)
+    assert {e.attrs["confidence"] for e in links} <= {"exact", "typed", "convention", "weak"}
+    assert sub.results_state == "fresh"
+    assert all(n.attrs["stale"] is False for n in facts + messages)
+
+
+def test_result_nodes_walk_back_to_their_owner(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    graph = ModelGraph(doc, results=index)
+    sub = graph.neighbourhood(DX_COIL, hops=2, max_nodes=2000, node_kinds=["object", "message"])
+    message_ids = {n.id for n in sub.nodes if n.kind == "message"}
+    assert message_ids
+    assert {e.source for e in sub.edges if e.kind == "result_link"} == message_ids
+
+
+def test_stale_results_are_walked_and_marked(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    next(iter(doc["Zone"])).multiplier = 3
+    graph = ModelGraph(doc, results=index)
+    assert graph.results_state == "stale"
+    sub = graph.neighbourhood(DX_COIL, hops=1, max_nodes=500)
+    results = [n for n in sub.nodes if n.layer == "results"]
+    assert results
+    assert all(n.attrs["stale"] is True for n in results)
+    assert sub.results_state == "stale"
+
+
+def test_results_kinds_can_be_filtered_out(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    graph = ModelGraph(doc, results=index)
+    sub = graph.neighbourhood(DX_COIL, hops=1, edge_kinds=["reference", "flow", "control", "membership"])
+    assert all(n.layer != "results" for n in sub.nodes)
+    sub = graph.neighbourhood(DX_COIL, hops=1, node_kinds=["object", "node"])
+    assert all(n.layer != "results" for n in sub.nodes)
+
+
+def test_node_link_export_carries_the_results_layer(tmp_path: Path) -> None:
+    doc, index = _linked(tmp_path)
+    data = ModelGraph(doc, results=index).to_node_link()
+    graph = data["graph"]
+    assert isinstance(graph, dict)
+    assert graph["layers"] == ["model", "topology", "results"]
+    assert graph["unavailable"] == {}
+    assert graph["results_state"] == "fresh"
+    nodes = data["nodes"]
+    edges = data["edges"]
+    assert isinstance(nodes, list)
+    assert isinstance(edges, list)
+    kinds = {n["kind"] for n in nodes if isinstance(n, dict)}
+    assert {"result_fact", "message"} <= kinds
+    fact = next(n for n in nodes if isinstance(n, dict) and n["kind"] == "result_fact")
+    assert {"object_type", "name", "metric", "value", "units", "source", "where", "multiplier", "stale"} <= set(fact)
+    ids = {n["id"] for n in nodes if isinstance(n, dict)}
+    links = [e for e in edges if isinstance(e, dict) and e["kind"] == "result_link"]
+    assert links
+    assert all(e["source"] in ids and e["target"] in ids for e in links)
+    assert all({"confidence", "rule"} <= set(e) for e in links)

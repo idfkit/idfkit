@@ -1,9 +1,9 @@
-"""The combined, read-only view over the model and topology layers (research R-23)."""
+"""The combined, read-only view over the model, topology and results layers (research R-23)."""
 
 from __future__ import annotations
 
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from idfkit._graph_common import Coverage, ObjectKey
 from idfkit.graph._walk import Walker, walk
@@ -12,6 +12,7 @@ from idfkit.hvac import ComponentCategory, HVACTopology
 
 if TYPE_CHECKING:
     from idfkit.document import IDFDocument
+    from idfkit.simulation.linking import ResultIndex
 
 __all__ = ["ModelGraph"]
 
@@ -30,8 +31,11 @@ class ModelGraph:
 
     The vocabulary is fixed: ``object`` nodes (layer ``model``) joined by ``reference`` edges, and
     ``node`` nodes (layer ``topology``) joined to objects by ``flow``, ``control`` and
-    ``membership`` edges. The ``results`` layer is not available yet and is listed in
-    :attr:`unavailable`. Code that reads kinds must ignore kinds it does not know.
+    ``membership`` edges. Given a :class:`~idfkit.simulation.ResultIndex`, the ``results`` layer adds
+    ``result_fact`` and ``message`` nodes joined to the objects and nodes they concern by
+    ``result_link`` edges; without one it is listed in :attr:`unavailable`. Results that no longer
+    match the document are still walked and marked ``stale``. Code that reads kinds must ignore kinds
+    it does not know.
 
     Examples:
         >>> from idfkit import new_document
@@ -50,21 +54,34 @@ class ModelGraph:
         ('node:MIXED AIR', 'object:FAN:CONSTANTVOLUME:FAN')
     """
 
-    __slots__ = ("_doc",)
+    __slots__ = ("_doc", "_results")
 
-    def __init__(self, doc: IDFDocument[Any]) -> None:
-        """Store *doc*. No layer is built until a walk or an export asks for it."""
+    def __init__(self, doc: IDFDocument[Any], *, results: ResultIndex | None = None) -> None:
+        """Store *doc* and *results*. No layer is built until a walk or an export asks for it.
+
+        Args:
+            doc: The model.
+            results: A run's results linked to *doc*, for the ``results`` layer.
+        """
         self._doc = doc
+        self._results = results
 
     @property
     def layers(self) -> list[Layer]:
-        """The layers present in the view: ``model`` and ``topology``."""
-        return list(PRESENT)
+        """The layers present in the view: ``model``, ``topology`` and, given results, ``results``."""
+        return [*PRESENT, "results"] if self._results is not None else list(PRESENT)
 
     @property
     def unavailable(self) -> dict[Layer, str]:
         """Each layer missing from the view, and why."""
-        return {"results": NO_RESULTS}
+        return {} if self._results is not None else {"results": NO_RESULTS}
+
+    @property
+    def results_state(self) -> Literal["fresh", "stale"] | None:
+        """``"fresh"`` or ``"stale"`` for the results layer (FR-026), ``None`` without one."""
+        if self._results is None:
+            return None
+        return "fresh" if self._results.is_fresh(self._doc) else "stale"
 
     @property
     def coverage(self) -> Coverage:
@@ -77,7 +94,7 @@ class ModelGraph:
         Raises:
             KeyError: If the object or node is not in the model.
         """
-        vid, _ = Walker(self._doc).start(target)
+        vid, _ = Walker(self._doc, results=self._results).start(target)
         return vid
 
     def neighbourhood(
@@ -125,7 +142,7 @@ class ModelGraph:
         categories: Collection[ComponentCategory | str] | None,
         max_nodes: int | None,
     ) -> Subgraph:
-        walker = Walker(self._doc, node_kinds=node_kinds, edge_kinds=edge_kinds)
+        walker = Walker(self._doc, node_kinds=node_kinds, edge_kinds=edge_kinds, results=self._results)
         wanted = None if categories is None else {getattr(c, "value", c) for c in categories}
         found = walk(walker, start, hops=hops, categories=wanted, max_nodes=max_nodes)
         return Subgraph(
@@ -138,7 +155,7 @@ class ModelGraph:
             truncated=found.truncated,
             omitted_nodes=found.omitted,
             frontier=found.frontier,
-            results_state=None,
+            results_state=self.results_state,
         )
 
     def to_node_link(
@@ -169,5 +186,11 @@ class ModelGraph:
         from idfkit.graph.node_link import build_node_link
 
         return build_node_link(
-            self._doc, layers=layers, node_kinds=node_kinds, edge_kinds=edge_kinds, start=start, hops=hops
+            self._doc,
+            layers=layers,
+            node_kinds=node_kinds,
+            edge_kinds=edge_kinds,
+            start=start,
+            hops=hops,
+            results=self._results,
         )

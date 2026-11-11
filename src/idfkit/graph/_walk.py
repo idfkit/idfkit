@@ -1,4 +1,4 @@
-"""Walk-time adapters over the model and topology layers.
+"""Walk-time adapters over the model, topology and results layers.
 
 Nothing here is stored between calls: a walker is made for one walk or one export, answers "the
 neighbours of this graph node" from each layer's own index, and builds dataclasses only for what it
@@ -19,6 +19,7 @@ from idfkit.hvac import ConnectionType, Fluid, HVACTopology, LoopMembership, Nod
 if TYPE_CHECKING:
     from idfkit.document import IDFDocument
     from idfkit.objects import IDFObject
+    from idfkit.simulation.linking import LinkedMessage, ResultFact, ResultIndex
 
 NODE_KINDS: tuple[NodeKind, ...] = tuple(NODE_LAYER)
 EDGE_KINDS: tuple[EdgeKind, ...] = tuple(EDGE_LAYER)
@@ -34,8 +35,23 @@ _LOOP_HOLDERS = frozenset({
 })
 """Types a membership edge can enter: the loops, and the equipment connections of zone equipment."""
 
-Payload: TypeAlias = "IDFObject | str"
-"""What a graph node of the model or topology layer stands for: an object, or a node name."""
+
+class FactItem(NamedTuple):
+    """A ``result_fact`` graph node: one fact and the object or node it belongs to."""
+
+    owner: ObjectKey
+    fact: ResultFact
+
+
+class MessageItem(NamedTuple):
+    """A ``message`` graph node: one message and its position in the run."""
+
+    position: int
+    message: LinkedMessage
+
+
+Payload: TypeAlias = "IDFObject | str | FactItem | MessageItem"
+"""What a graph node stands for: an object, a node name, a result fact or a message."""
 
 
 class RawEdge(NamedTuple):
@@ -59,7 +75,7 @@ def known(values: Collection[str] | None, vocabulary: tuple[str, ...]) -> frozen
 
 
 class Walker:
-    """Answers neighbour queries over the model and topology layers of one document revision."""
+    """Answers neighbour queries over the model, topology and results layers of one document revision."""
 
     __slots__ = (
         "_by_display",
@@ -68,8 +84,11 @@ class Walker:
         "_edge_kinds",
         "_found",
         "_ids",
+        "_messages_of",
         "_node_kinds",
         "_refs",
+        "_results",
+        "_stale",
         "_targets",
         "_topo",
     )
@@ -80,8 +99,12 @@ class Walker:
         *,
         node_kinds: Collection[str] | None = None,
         edge_kinds: Collection[str] | None = None,
+        results: ResultIndex | None = None,
     ) -> None:
         self._doc = doc
+        self._results = results
+        self._stale = results is not None and not results.is_fresh(doc)
+        self._messages_of: dict[ObjectKey, list[int]] | None = None
         self._topo = HVACTopology.from_document(doc)
         self._refs = doc.references
         self._node_kinds = known(node_kinds, NODE_KINDS)
@@ -95,6 +118,10 @@ class Walker:
     @property
     def topology(self) -> HVACTopology:
         return self._topo
+
+    @property
+    def results(self) -> ResultIndex | None:
+        return self._results
 
     @property
     def document(self) -> IDFDocument[Any]:
@@ -165,9 +192,19 @@ class Walker:
     # ------------------------------------------------------------------------------------------ #
 
     def kind_of(self, payload: Payload) -> NodeKind:
-        return "node" if isinstance(payload, str) else "object"
+        if isinstance(payload, str):
+            return "node"
+        if isinstance(payload, FactItem):
+            return "result_fact"
+        if isinstance(payload, MessageItem):
+            return "message"
+        return "object"
 
     def graph_node(self, vid: str, payload: Payload) -> GraphNode:
+        if isinstance(payload, FactItem):
+            return self._fact_node(vid, payload)
+        if isinstance(payload, MessageItem):
+            return self._message_node(vid, payload)
         if isinstance(payload, str):
             return GraphNode(
                 vid, "node", "topology", None, payload, f'Node "{payload}"', {"fluid": self._fluid(payload)}
@@ -178,7 +215,35 @@ class Walker:
         return GraphNode(vid, "object", "model", key, None, f'{payload.obj_type} "{name}"', attrs)
 
     def category(self, payload: Payload) -> str | None:
-        return None if isinstance(payload, str) else category_of(payload.obj_type).value
+        if isinstance(payload, (str, FactItem, MessageItem)):
+            return None
+        return category_of(payload.obj_type).value
+
+    def _fact_node(self, vid: str, item: FactItem) -> GraphNode:
+        fact = item.fact
+        units = f" {fact.units}" if fact.units else ""
+        attrs: dict[str, Scalar] = {
+            "metric": fact.metric,
+            "value": fact.value,
+            "units": fact.units,
+            "source": fact.source,
+            "where": fact.where,
+            "multiplier": fact.multiplier,
+            "stale": self._stale,
+        }
+        return GraphNode(vid, "result_fact", "results", item.owner, None, f"{fact.metric} = {fact.value}{units}", attrs)
+
+    def _message_node(self, vid: str, item: MessageItem) -> GraphNode:
+        message = item.message
+        attrs: dict[str, Scalar] = {
+            "severity": message.severity,
+            "message_kind": message.kind,
+            "text": message.text,
+            "occurrences": message.occurrences,
+            "first_seen": message.first_seen,
+            "stale": self._stale,
+        }
+        return GraphNode(vid, "message", "results", None, None, f"{message.severity} {message.kind}", attrs)
 
     def _fluid(self, name: str) -> str:
         for use in self._topo.uses(name):
@@ -192,8 +257,12 @@ class Walker:
 
     def neighbours(self, vid: str, payload: Payload) -> Iterator[tuple[RawEdge, str, Payload]]:
         """Every edge at *vid*, either direction, with the graph node at its other end."""
+        if isinstance(payload, (FactItem, MessageItem)):
+            yield from self._result_owners(vid, payload)
+            return
         if isinstance(payload, str):
             yield from self._node_neighbours(vid, payload)
+            yield from self._results_at(vid, ObjectKey("Node", payload))
             return
         if "reference" in self._edge_kinds and "object" in self._node_kinds:
             yield from self._references_out(vid, payload)
@@ -203,6 +272,7 @@ class Walker:
             yield from self._memberships(vid, payload)
             if payload.obj_type.upper() in _LOOP_HOLDERS:
                 yield from self._members(vid, payload)
+        yield from self._results_at(vid, ObjectKey(payload.obj_type, display_name(payload)))
 
     def out_edges(self, vid: str, payload: IDFObject) -> Iterator[tuple[RawEdge, str, Payload]]:
         """The edges an object contributes once to a whole-model export: those it is the owner of."""
@@ -313,6 +383,88 @@ class Walker:
         for member, membership in self._topo._members_of(key):  # pyright: ignore[reportPrivateUsage]
             mid = self.object_id(member)
             yield _membership_edge(mid, vid, membership), mid, member
+
+    # ------------------------------------------------------------------------------------------ #
+    # Results
+    # ------------------------------------------------------------------------------------------ #
+
+    def fact_id(self, owner: ObjectKey, fact: ResultFact) -> str:
+        """``fact:<TYPE>:<NAME>:<where>``: stable for the same model and the same report location."""
+        return f"fact:{owner.object_type.upper()}:{owner.name.upper()}:{fact.where}"
+
+    @staticmethod
+    def message_id(index: int, message: LinkedMessage) -> str:
+        """``message:<kind>:<index>``, the message's position in the run's ``Errors`` order."""
+        return f"message:{message.kind}:{index}"
+
+    def _messages_naming(self, key: ObjectKey) -> list[int]:
+        if self._results is None:
+            return []
+        if self._messages_of is None:
+            index: dict[ObjectKey, list[int]] = {}
+            for position, message in enumerate(self._results.messages):
+                for link in message.objects:
+                    if link.key is not None:
+                        index.setdefault(link.key, []).append(position)
+            self._messages_of = index
+        return self._messages_of.get(key, [])
+
+    def _link_attrs(self, key: ObjectKey) -> dict[str, Scalar]:
+        link = self._results.link(key) if self._results is not None else None
+        if link is None:
+            return {"confidence": None, "rule": None}
+        return {"confidence": link.confidence, "rule": link.rule}
+
+    def _results_at(self, vid: str, key: ObjectKey) -> Iterator[tuple[RawEdge, str, Payload]]:
+        """The facts and messages linked to the object or node *key*, each joined by a ``result_link``."""
+        results = self._results
+        if results is None or "result_link" not in self._edge_kinds:
+            return
+        if "result_fact" in self._node_kinds:
+            attrs = self._link_attrs(key)
+            for fact in results.facts(key):
+                fid = self.fact_id(key, fact)
+                yield RawEdge(fid, vid, "result_link", "result_link", attrs), fid, FactItem(key, fact)
+        if "message" in self._node_kinds:
+            for position in self._messages_naming(key):
+                message = results.messages[position]
+                mid = self.message_id(position, message)
+                link = next((ln for ln in message.objects if ln.key == key), None)
+                attrs: dict[str, Scalar] = {
+                    "confidence": link.confidence if link is not None else None,
+                    "rule": link.rule if link is not None else None,
+                }
+                yield RawEdge(mid, vid, "result_link", "result_link", attrs), mid, MessageItem(position, message)
+
+    def _result_owners(self, vid: str, item: FactItem | MessageItem) -> Iterator[tuple[RawEdge, str, Payload]]:
+        """The objects and nodes a fact or message is linked to."""
+        if "result_link" not in self._edge_kinds:
+            return
+        owners: list[tuple[ObjectKey, dict[str, Scalar]]]
+        if isinstance(item, FactItem):
+            owners = [(item.owner, self._link_attrs(item.owner))]
+        else:
+            owners = [
+                (ln.key, {"confidence": ln.confidence, "rule": ln.rule})
+                for ln in item.message.objects
+                if ln.key is not None
+            ]
+        for owner, attrs in owners:
+            target = self._owner(owner)
+            if target is not None:
+                yield RawEdge(vid, target[0], "result_link", "result_link", attrs), target[0], target[1]
+
+    def _owner(self, key: ObjectKey) -> tuple[str, Payload] | None:
+        if key.object_type.upper() == "NODE":
+            if "node" not in self._node_kinds:
+                return None
+            uses = self._topo.uses(key.name)
+            name = uses[0].node if uses else key.name
+            return node_id(name), name
+        if "object" not in self._node_kinds:
+            return None
+        obj = self.find(key)
+        return (self.object_id(obj), obj) if obj is not None else None
 
 
 def _membership_edge(member: str, loop: str, membership: LoopMembership) -> RawEdge:

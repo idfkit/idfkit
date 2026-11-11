@@ -629,6 +629,7 @@ _FactRow = tuple[ResultSource, str, float | str | None, str | None, str]
 class _Tally:
     resolved: int = 0
     resolved_by: dict[str, int] = field(default_factory=dict[str, int])
+    links: dict[ObjectKey, Resolution] = field(default_factory=dict[ObjectKey, Resolution])
     unresolved: list[tuple[ResultItemSource, str]] = field(default_factory=list[tuple["ResultItemSource", str]])
 
 
@@ -800,6 +801,10 @@ class ResultIndex:
             for source, metric, value, units, where in self._facts.get(key, ())
         )
 
+    def link(self, key: ObjectKey) -> Resolution | None:
+        """How the results of one object were linked to it: the first link that named it, or ``None``."""
+        return self._tally.links.get(key)
+
     def variables(self, key: ObjectKey) -> tuple[str, ...]:
         """The output variables recorded for one key, sorted, without their values."""
         return tuple(sorted(set(self._series.get(key, ()))))
@@ -926,6 +931,7 @@ def _record(tally: _Tally, source: ResultItemSource, raw: str, found: Resolution
         return None
     tally.resolved += 1
     tally.resolved_by[source] = tally.resolved_by.get(source, 0) + 1
+    tally.links.setdefault(found.key, found)
     return found.key
 
 

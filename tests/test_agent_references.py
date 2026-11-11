@@ -89,11 +89,14 @@ def test_model_graph_standalone_script_runs(
 ) -> None:
     """The model-graph snippet runs as a plain script on a real HVAC model.
 
-    It is the User Story 7 check: findings, a node trace, a neighbourhood walk and an export,
-    using only public names. The model is copied so the export lands in a temporary folder.
+    It is the User Story 7 check: findings, a node trace, a neighbourhood walk, the results layer
+    and an export, using only public names. The model and its run's SQLite output are copied so the
+    export lands in a temporary folder.
     """
     model = _REPO_ROOT / "tests" / "fixtures" / "simulation" / "linked" / "5ZoneAirCooled.idf"
     shutil.copy(model, tmp_path / "5ZoneAirCooled.idf")
+    (tmp_path / "run").mkdir()
+    shutil.copy(model.with_suffix(".sql"), tmp_path / "run" / "eplusout.sql")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["model-graph.py"])
     runpy.run_path(str(_REPO_ROOT / "agent_references" / "snippets" / "model-graph.py"), run_name="__main__")

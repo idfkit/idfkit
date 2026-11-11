@@ -16,7 +16,7 @@ The view adds no domain logic and copies no data: each walk asks the reference g
 --8<-- "agent_references/snippets/model-graph.py:build-view"
 ```
 
-`ModelGraph(doc)` takes the document only. **The `results` layer is not available yet**: there is no way to pass simulation results in, so `graph.layers` is always `["model", "topology"]` and `graph.unavailable` is `{"results": "no ResultIndex was passed in"}`. The `result_fact`, `message` and `result_link` kinds are reserved for it and never appear today.
+`ModelGraph(doc)` has the `model` and `topology` layers. The `results` layer appears only when a run's linked results are passed in with `ModelGraph(doc, results=index)` (see [Results layer](#results-layer)); without them `graph.unavailable` is `{"results": "no ResultIndex was passed in"}` and no `result_fact`, `message` or `result_link` appears.
 
 ## Vocabulary
 
@@ -28,8 +28,11 @@ The view adds no domain logic and copies no data: each walk asks the reference g
 | edge `flow` | `topology` | A component takes flow from (`node -> object`) or puts flow into (`object -> node`) a node. `attrs`: `field`, `connection_type`, `fluid`, `provenance`, and `via_nodelist` when named through a `NodeList` |
 | edge `control` | `topology` | A sensor, actuator or setpoint use of a node (`object -> node`). `attrs`: `field`, `connection_type`, `provenance`; EMS uses add `rule: "ems_key"`, `confidence: "convention"` |
 | edge `membership` | `topology` | A component sits on a loop, or zone equipment on its `ZoneHVAC:EquipmentConnections` (`object -> loop`). `attrs`: `loop_kind`, `side`, `branch`, `position` |
+| node `result_fact` | `results` | One value a run reported for an object or node. `key` is the owner; `attrs`: `metric`, `value`, `units`, `source`, `where`, `multiplier`, `stale` |
+| node `message` | `results` | One warning, severe or fatal message. `attrs`: `severity`, `message_kind`, `text`, `occurrences`, `first_seen`, `stale` |
+| edge `result_link` | `results` | A fact or message is linked to an object or node (`result -> object`). `attrs`: `confidence`, `rule` of the link |
 
-Graph node ids are `object:<TYPE>:<NAME>` and `node:<NAME>`, upper-cased, so equal ids mean equal identity. `graph.node_id(target)` gives the id of an `ObjectKey` or a node name. Edge `key` is unique between the same two endpoints, such as `reference:zone_name` or `flow:air_outlet_node_name`. The vocabulary may grow in a minor release: code that reads kinds must ignore kinds it does not know.
+Graph node ids are `object:<TYPE>:<NAME>` and `node:<NAME>`, upper-cased (results add `fact:<TYPE>:<NAME>:<where>` and `message:<kind>:<index>`), so equal ids mean equal identity. `graph.node_id(target)` gives the id of an `ObjectKey` or a node name. Edge `key` is unique between the same two endpoints, such as `reference:zone_name` or `flow:air_outlet_node_name`. The vocabulary may grow in a minor release: code that reads kinds must ignore kinds it does not know.
 
 ## Core API
 
@@ -77,7 +80,7 @@ Graph node ids are `object:<TYPE>:<NAME>` and `node:<NAME>`, upper-cased, so equ
 --8<-- "agent_references/snippets/model-graph.py:export"
 ```
 
-The top level is `directed: true`, `multigraph: true`, `graph`, `nodes` and `edges`. `graph` carries `format` (`"idfkit-model-graph"`), `format_version`, `idfkit_version`, `energyplus_version`, `layers`, `unavailable`, `coverage`, `scope` (the `start`, `hops` and kind filters used) and `results_state` (always `None` today). Each node and edge flattens its `attrs`; an object node's key is split into `object_type` and `name`. With no `start`, the export is the whole model; `start` and `hops` must be given together (`ValueError` otherwise) and export the neighbourhood with no node bound.
+The top level is `directed: true`, `multigraph: true`, `graph`, `nodes` and `edges`. `graph` carries `format` (`"idfkit-model-graph"`), `format_version`, `idfkit_version`, `energyplus_version`, `layers`, `unavailable`, `coverage`, `scope` (the `start`, `hops` and kind filters used) and `results_state` (`"fresh"` or `"stale"` with a results layer, else `None`). Each node and edge flattens its `attrs`; an object node's key is split into `object_type` and `name`. With no `start`, the export is the whole model; `start` and `hops` must be given together (`ValueError` otherwise) and export the neighbourhood with no node bound.
 
 The edge list is under `"edges"`, not `"links"`:
 
@@ -95,6 +98,14 @@ assert g.is_directed() and g.is_multigraph()
 assert g.number_of_nodes() == len(data["nodes"]) and g.number_of_edges() == len(data["edges"])
 ```
 
+
+## Results layer
+
+```python
+--8<-- "agent_references/snippets/model-graph.py:results-layer"
+```
+
+Build the `ResultIndex` right after the run (see `result-parsing.md`) and pass it in. Each fact and message joins the object or node it is linked to by a `result_link` edge carrying the link's `confidence` and `rule`. An object can carry well over a hundred facts, so filter by kind or keep `max_nodes` bounded. When the document has changed since the run, `graph.results_state` is `"stale"` and every result node has `stale: True`: the results are still walked, never hidden. For one object's results in full (messages deduplicated by kind, available variables), `index.for_object(key)` is the direct call.
 ## A standalone script
 
 Everything above in one script that uses only names from `idfkit`, `idfkit.hvac` and `idfkit.graph` `__all__`: list connection findings, trace a node, walk a coil's neighbourhood, export it.

@@ -9,18 +9,19 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 from idfkit._graph_common import Coverage, ObjectKey
-from idfkit.graph._walk import Walker, known, walk
+from idfkit.graph._walk import FactItem, MessageItem, RawEdge, Walker, known, walk
 from idfkit.graph.types import EDGE_LAYER, NODE_LAYER, EdgeKind, GraphEdge, GraphNode, JSONValue, Layer, NodeKind
 from idfkit.graph.view import NO_RESULTS, PRESENT
 
 if TYPE_CHECKING:
     from idfkit.document import IDFDocument
     from idfkit.graph.view import ModelGraph
+    from idfkit.simulation.linking import ResultIndex
 
 __all__ = ["NODE_LINK_FORMAT_VERSION", "save_node_link", "write_node_link"]
 
@@ -82,6 +83,7 @@ def build_node_link(
     edge_kinds: Collection[str] | None,
     start: ObjectKey | str | None,
     hops: int | None,
+    results: ResultIndex | None = None,
 ) -> dict[str, JSONValue]:
     """Build the node-link data for ``ModelGraph.to_node_link``."""
     if (start is None) != (hops is None):
@@ -91,13 +93,14 @@ def build_node_link(
         msg = f"hops must be 0 or more, got {hops}"
         raise ValueError(msg)
     asked = known(layers, ALL_LAYERS)
-    present = [layer for layer in PRESENT if layer in asked]
-    unavailable: dict[str, JSONValue] = {"results": NO_RESULTS} if "results" in asked else {}
+    available = (*PRESENT, "results") if results is not None else PRESENT
+    present = [layer for layer in available if layer in asked]
+    unavailable: dict[str, JSONValue] = {"results": NO_RESULTS} if "results" in asked and results is None else {}
     wanted_nodes = known(node_kinds, tuple(NODE_LAYER))
     wanted_edges = known(edge_kinds, tuple(EDGE_LAYER))
     nk = [k for k, layer in NODE_LAYER.items() if k in wanted_nodes and layer in present]
     ek = [k for k, layer in EDGE_LAYER.items() if k in wanted_edges and layer in present]
-    walker = Walker(doc, node_kinds=nk, edge_kinds=ek)
+    walker = Walker(doc, node_kinds=nk, edge_kinds=ek, results=results if "results" in present else None)
 
     start_id: str | None = None
     if start is not None and hops is not None:
@@ -116,7 +119,7 @@ def build_node_link(
         "unavailable": unavailable,
         "coverage": _coverage(walker.topology.coverage),
         "scope": _scope(start_id, hops, node_kinds, edge_kinds),
-        "results_state": None,
+        "results_state": _results_state(doc, results) if "results" in present else None,
     }
     return {
         "directed": True,
@@ -156,14 +159,51 @@ def _everything(walker: Walker, node_kinds: Collection[str]) -> tuple[list[Graph
             vid = f"node:{name.upper()}"
             if vid not in nodes:
                 nodes[vid] = walker.graph_node(vid, name)
+    result_items = _add_results(walker, nodes, node_kinds)
     for obj in doc_objects:
-        for e, _, _ in walker.out_edges(walker.object_id(obj), obj):
-            if e.source in nodes and e.target in nodes:
-                raw.setdefault(
-                    (e.source, e.target, e.key),
-                    GraphEdge(e.source, e.target, e.kind, EDGE_LAYER[e.kind], e.key, e.attrs),
-                )
+        _keep_edges(raw, nodes, walker.out_edges(walker.object_id(obj), obj))
+    for vid, item in result_items.items():
+        _keep_edges(raw, nodes, walker.neighbours(vid, item))
     return list(nodes.values()), list(raw.values())
+
+
+def _keep_edges(
+    raw: dict[tuple[str, str, str], GraphEdge], nodes: dict[str, GraphNode], found: Iterable[tuple[RawEdge, str, Any]]
+) -> None:
+    """Keep each edge between two exported nodes once."""
+    for e, _, _ in found:
+        if e.source in nodes and e.target in nodes:
+            raw.setdefault(
+                (e.source, e.target, e.key),
+                GraphEdge(e.source, e.target, e.kind, EDGE_LAYER[e.kind], e.key, e.attrs),
+            )
+
+
+def _add_results(
+    walker: Walker, nodes: dict[str, GraphNode], node_kinds: Collection[str]
+) -> dict[str, FactItem | MessageItem]:
+    """Add every fact and message of the results layer, after the objects and nodes, in run order."""
+    items: dict[str, FactItem | MessageItem] = {}
+    results = walker.results
+    if results is None:
+        return items
+    if "result_fact" in node_kinds:
+        for key in sorted(results.keys, key=lambda k: (k.object_type.upper(), k.name.upper())):
+            for fact in results.facts(key):
+                items.setdefault(walker.fact_id(key, fact), FactItem(key, fact))
+    if "message" in node_kinds:
+        for position, message in enumerate(results.messages):
+            if message.objects:
+                items.setdefault(walker.message_id(position, message), MessageItem(position, message))
+    for vid, item in items.items():
+        nodes.setdefault(vid, walker.graph_node(vid, item))
+    return items
+
+
+def _results_state(doc: IDFDocument[Any], results: ResultIndex | None) -> JSONValue:
+    if results is None:
+        return None
+    return "fresh" if results.is_fresh(doc) else "stale"
 
 
 def _node(node: GraphNode) -> dict[str, JSONValue]:
