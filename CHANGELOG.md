@@ -80,8 +80,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whether the bound cut the walk (`truncated`), how many nodes it left out (`omitted_nodes`) and the
   returned nodes to continue from (`frontier`). `to_node_link()`, `write_node_link()` and
   `save_node_link()` export node-link JSON, format version 1, with the edge list under `"edges"`,
-  which networkx 3.6 or later reads with `node_link_graph(data)`. The results layer is not
-  available yet: it is listed in `unavailable`. ([09d5777](https://github.com/idfkit/idfkit/commit/09d5777))
+  which networkx 3.6 or later reads with `node_link_graph(data)`. Passed a run's
+  `ResultIndex` (`ModelGraph(doc, results=index)`), the view adds the results layer: `result_fact`
+  and `message` nodes joined to their objects and nodes by `result_link` edges with the link's
+  confidence and rule, marked `stale` when the document has changed since the run; without one the
+  layer is listed in `unavailable`. ([09d5777](https://github.com/idfkit/idfkit/commit/09d5777),
+  [b40d0ac](https://github.com/idfkit/idfkit/commit/b40d0ac))
+- `idfkit.simulation.ResultIndex`, in the new module `idfkit.simulation.linking`, links what a run
+  wrote to its SQLite output to the objects and nodes of the document that was simulated: component
+  sizing rows, timeseries output keys (the `ReportData` values are never read), the object rows of
+  tabular reports, and every warning, severe and fatal message. Each key goes through an ordered
+  chain of rules, and the first that answers wins: `exact` (type and name), `typed` (the name, with
+  the type taken from the context), `zonelist_composite`, `space_to_zone`, `mirrored_shading`,
+  `aggregate`, `ideal_loads_suffix`, `ems_key` and `substring`. Each link is a `Resolution` that
+  records the rule and a confidence (`exact`, `typed`, `convention` or `weak`); a substring match is
+  always `weak`. Items no rule answers are listed in `unresolved`, never dropped, and counted in
+  `coverage`. Zone facts carry the zone multiplier, so a total built from zone rows can apply it.
+  `for_object()` returns an `ObjectResults` with an object's facts (`ResultFact`), its messages
+  merged by kind (`LinkedMessage`), its recorded variables and its neighbours one hop away
+  (`ObjectNeighbour`); `objects_with()` ranks objects by one metric; `is_fresh()` says whether the
+  document still matches the run. `ResultIndex`, `Resolution`, `ResultFact`, `LinkedMessage`,
+  `ObjectResults` and `ObjectNeighbour` are exported from `idfkit.simulation`, with `ObjectKey`,
+  `Coverage` and `UncoveredPart`. ([#263](https://github.com/idfkit/idfkit/pull/263), [5d54502](https://github.com/idfkit/idfkit/commit/5d54502))
+- `idfkit.simulation.parsers.err_catalog`, a catalogue of 21 common EnergyPlus message kinds
+  (`MESSAGE_KINDS`). Each `MessageKind` has a stable dotted id such as `dxcoil.low_outlet_temp`, a
+  one-sentence hint at the likely causes, the neighbouring object types worth inspecting and the
+  result symptoms it can explain. `classify_message()` returns the kind a message matches, or
+  `None`, and the `(type, name)` pairs the message names. Every kind is tested against real
+  EnergyPlus output. `MessageKind`, `MESSAGE_KINDS` and `classify_message` are exported from
+  `idfkit.simulation`. ([#263](https://github.com/idfkit/idfkit/pull/263))
 
 ### Changed
 
