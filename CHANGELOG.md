@@ -71,6 +71,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   made are undone. It refuses a new name that is already a node of the model, so two nodes are
   never merged, leaves output variable keys and other free text alone, and returns a
   `NodeRenameResult`. ([78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
+- `idfkit.graph`, a new subpackage with `ModelGraph`, one read-only view over the reference graph
+  and the HVAC topology. Objects are `object` nodes joined by `reference` edges; fluid nodes are
+  `node` nodes, joined to objects by `flow`, `control` and `membership` edges. Constructing a
+  `ModelGraph` does no work: each walk asks the reference graph and the cached `HVACTopology` for
+  neighbours, so the view is never stale. `neighbourhood()` walks breadth first from an object or a
+  node, bounded by hops, a node count, node and edge kinds and component categories, and reports
+  whether the bound cut the walk (`truncated`), how many nodes it left out (`omitted_nodes`) and the
+  returned nodes to continue from (`frontier`). `to_node_link()`, `write_node_link()` and
+  `save_node_link()` export node-link JSON, format version 1, with the edge list under `"edges"`,
+  which networkx 3.6 or later reads with `node_link_graph(data)`. The results layer is not
+  available yet: it is listed in `unavailable`. ([09d5777](https://github.com/idfkit/idfkit/commit/09d5777))
 
 ### Changed
 
