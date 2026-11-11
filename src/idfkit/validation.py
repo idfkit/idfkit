@@ -325,8 +325,9 @@ def _validate_object(  # noqa: C901
 
         rule = field_rules.get(field_name)
         if rule is None:
-            # Unknown field - could be extensible or error
-            if check_unknown and not rules.extensible:
+            # Unknown field. Valid flat extensible spellings were folded into the wrapper key
+            # by add(), and the wrapper key is a known field, so anything left is unknown.
+            if check_unknown:
                 errors.append(
                     ValidationError(
                         severity=Severity.WARNING,

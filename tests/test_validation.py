@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import ClassVar
 from unittest.mock import patch
 
+import pytest
+
 from idfkit import IDFDocument, new_document
+from idfkit.exceptions import ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import (
@@ -282,16 +285,90 @@ class TestValidateObjectUnknownField:
         errors = _validate_object(obj, schema, check_unknown=True)
         assert any(e.code == "W003" for e in errors)
 
-    def test_unknown_field_on_extensible_no_w003(self) -> None:
+    def test_unknown_field_on_extensible_produces_w003(self) -> None:
+        """An extensible type has no licence for keys its schema does not name."""
         schema = get_schema((24, 1, 0))
-        # BuildingSurface:Detailed is extensible; extra vertex fields should not warn
+        obj = IDFObject(obj_type="Output:Table:SummaryReports", name="", data={"report_1": "AllSummary"})
+        errors = _validate_object(obj, schema, check_unknown=True)
+        assert [(e.code, e.field) for e in errors] == [("W003", "report_1")]
+
+    def test_extensible_wrapper_key_is_not_unknown(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(
+            obj_type="Output:Table:SummaryReports",
+            name="",
+            data={"reports": [{"report_name": "AllSummary"}]},
+        )
+        errors = _validate_object(obj, schema, check_unknown=True)
+        assert not any(e.code == "W003" for e in errors)
+
+    def test_unknown_field_on_extensible_surface_produces_w003(self) -> None:
+        schema = get_schema((24, 1, 0))
         obj = IDFObject(
             obj_type="BuildingSurface:Detailed",
             name="Wall1",
             data={"vertex_999_x_coordinate": 1.0},
         )
         errors = _validate_object(obj, schema, check_unknown=True)
+        assert any(e.code == "W003" and e.field == "vertex_999_x_coordinate" for e in errors)
+
+    def test_unknown_field_on_extensible_skipped_when_check_unknown_false(self) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type="Output:Table:SummaryReports", name="", data={"report_1": "AllSummary"})
+        errors = _validate_object(obj, schema, check_unknown=False)
         assert not any(e.code == "W003" for e in errors)
+
+
+def _unknown_fields(exc: ValidationFailedError) -> list[str | None]:
+    return [e.field for e in exc.errors if isinstance(e, ValidationError) and e.code == "W003"]
+
+
+class TestAddRejectsUnknownExtensibleSpelling:
+    """``add()`` validates by default, so an unknown key on an extensible type must fail there."""
+
+    def test_add_rejects_nonexistent_flat_spelling(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(ValidationFailedError) as exc_info:
+            doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")
+        assert _unknown_fields(exc_info.value) == ["report_1"]
+        assert len(doc["Output:Table:SummaryReports"]) == 0
+
+    def test_add_accepts_wrapper_list(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        obj = doc.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}])
+        assert obj.data == {"reports": [{"report_name": "AllSummary"}]}
+
+    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
+    def test_add_accepts_valid_flat_spelling(self) -> None:
+        """The deprecated flat spellings are folded into the wrapper before validation runs."""
+        doc = new_document(version=(24, 1, 0))
+        obj = doc.add(
+            "Output:Table:SummaryReports",
+            "",
+            report_name="AllSummary",
+            report_name_2="ZoneComponentLoadSummary",
+        )
+        assert obj.data == {
+            "reports": [{"report_name": "AllSummary"}, {"report_name": "ZoneComponentLoadSummary"}],
+        }
+
+    def test_add_rejects_unknown_key_beside_wrapper(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        with pytest.raises(ValidationFailedError) as exc_info:
+            doc.add(
+                "Output:Table:SummaryReports",
+                "",
+                reports=[{"report_name": "AllSummary"}],
+                bogus_field="x",
+            )
+        assert _unknown_fields(exc_info.value) == ["bogus_field"]
+
+    def test_validate_document_reports_unknown_extensible_key(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+        result = validate_document(doc)
+        assert any(w.code == "W003" and w.field == "report_1" for w in result.warnings)
+
 
     def test_unknown_field_skipped_when_check_unknown_false(self) -> None:
         schema = get_schema((24, 1, 0))
