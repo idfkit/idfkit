@@ -32,7 +32,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 
 - **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
 - **Python 3.10+** syntax: `tuple[int, int, int]`, `from __future__ import annotations` in real code.
-- **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback.
+- **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback; it relaxes attribute reads and writes, not `add()` or `update()`, which refuse unknown keys in every mode.
 - **EnergyPlus version is part of every document**: `doc.version` is a `tuple[int, int, int]`. The latest supported version is exposed as `idfkit.LATEST_VERSION`.
 - **Code snippets in references are mined from `agent_references/snippets/`** — they are linted with `ruff` and type-checked with `pyright`, so they run as-is.
 
