@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
+### Fixed
+
+- `OutputVariableIndex.add_all_to_model` stored each meter name in the `key_name` field of the
+  `Output:Meter` objects it adds. It used to pass the name as the object name, which
+  `Output:Meter` does not have, so both writers dropped it: `write_idf` emitted
+  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`
+  ([d214b51](https://github.com/idfkit/idfkit/commit/d214b51)).
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
