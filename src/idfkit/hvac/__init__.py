@@ -8,7 +8,7 @@ The connection roles are read from EnergyPlus's own node connection report (``ep
 the 26.2 example files, with the provenance of every rule recorded. Categories come from the object
 type alone, never from names.
 
-Example:
+Examples:
     >>> from idfkit import new_document
     >>> from idfkit.hvac import HVACTopology
     >>> doc = new_document()
