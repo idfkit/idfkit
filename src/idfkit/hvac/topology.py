@@ -266,6 +266,7 @@ class HVACTopology:
         "_meta",
         "_node_edges",
         "_node_id",
+        "_node_lists",
         "_node_name",
         "_obj",
         "_obj_cat",
@@ -300,6 +301,7 @@ class HVACTopology:
         self._coverage = Coverage.of(())
         self._findings: list[TopologyFinding] | None = None
         self._memberships: dict[int, list[LoopMembership]] | None = None
+        self._node_lists: dict[str, tuple[str, ...]] | None = None
         self._chains: dict[tuple[int, LoopSide], list[list[IDFObject]]] = {}
         self._build()
 
@@ -399,11 +401,15 @@ class HVACTopology:
         self._coverage = self._make_coverage(unclassified, ems_programs)
 
     def _nodelists(self) -> dict[str, tuple[str, ...]]:
+        """Upper-cased ``NodeList`` name to its node names, read once per view."""
+        if self._node_lists is not None:
+            return self._node_lists
         lists: dict[str, tuple[str, ...]] = {}
         if "NodeList" in self._doc:
             for nl in self._doc.get_collection("NodeList"):
                 names = [str(i.get("node_name", "")) for i in nl.extensible_items("nodes")]
                 lists[nl.name.upper()] = tuple(n for n in names if n)
+        self._node_lists = lists
         return lists
 
     def _place(

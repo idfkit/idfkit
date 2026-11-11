@@ -1002,7 +1002,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         from .hvac._rename import rename_node
 
-        return rename_node(self, old, new)
+        return rename_node(self, old, new)  # type: ignore[reportArgumentType]  # .pyi uses covariant Strict
 
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
         """

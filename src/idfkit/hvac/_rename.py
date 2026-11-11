@@ -24,7 +24,7 @@ def _matches(value: object, old: str) -> bool:
     return isinstance(value, str) and value.upper() == old
 
 
-def _field_writes(doc: IDFDocument, obj: IDFObject, field: str, old: str, new: str) -> list[_Write]:
+def _field_writes(doc: IDFDocument[Any], obj: IDFObject, field: str, old: str, new: str) -> list[_Write]:
     """The writes that point one node field of *obj* (top level or ``group.key``) at *new*."""
     if "." not in field:
         original = obj.data.get(field)
@@ -80,7 +80,7 @@ def _apply(writes: list[_Write]) -> None:
         raise
 
 
-def rename_node(doc: IDFDocument, old: str, new: str) -> NodeRenameResult:
+def rename_node(doc: IDFDocument[Any], old: str, new: str) -> NodeRenameResult:
     """See :meth:`IDFDocument.rename_node`."""
     topo = HVACTopology.from_document(doc)
     uses = topo._node_fields(old)  # pyright: ignore[reportPrivateUsage]  # KeyError when no field names it

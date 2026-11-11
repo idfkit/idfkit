@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from idfkit import IDFDocument, IDFObject
-from idfkit.hvac import FlowEdge, HVACTopology, NodeUse, TopologyFinding
+from idfkit.hvac import FlowEdge, HVACTopology, LoopMembership, NodeUse, TopologyFinding
 
 doc: IDFDocument = ...  # type: ignore[assignment]
 coil: IDFObject = ...  # type: ignore[assignment]
@@ -9,6 +9,9 @@ topo: HVACTopology = ...  # type: ignore[assignment]
 use: NodeUse = ...  # type: ignore[assignment]
 edge: FlowEdge = ...  # type: ignore[assignment]
 finding: TopologyFinding = ...  # type: ignore[assignment]
+membership: LoopMembership = ...  # type: ignore[assignment]
+loop: IDFObject = ...  # type: ignore[assignment]
+path: list[IDFObject] = ...  # type: ignore[assignment]
 
 # --8<-- [start:build-view]
 from idfkit import load_idf
@@ -85,3 +88,60 @@ fans_downstream = topo.downstream(coil, hops=4, categories=[ComponentCategory.FA
 # A walk can start from a component, a Zone or Space, a node name, or a NodeList name.
 from_zone = topo.upstream(doc["Zone"]["SPACE1-1"], hops=2)
 # --8<-- [end:category-filter]
+
+
+# --8<-- [start:memberships]
+coil = doc["Coil:Cooling:Water"]["Main Cooling Coil 1"]
+for membership in topo.memberships(coil):
+    branch = membership.branch.name if membership.branch else None
+    print(membership.loop.name, membership.kind, membership.side, branch, membership.position)
+# VAV Sys 1           air    supply  VAV Sys 1 Main Branch  1
+# Chilled Water Loop  plant  demand  Cooling Coil Branch    0
+
+# Which plant serves this coil? Read the water-side membership, no walk needed.
+plants = [m.loop.name for m in topo.memberships(coil) if m.kind in ("plant", "condenser")]
+
+# A terminal's reheat coil is on the air loop's demand path but on no branch of it.
+reheat = doc["Coil:Heating:Water"]["SPACE1-1 Zone Coil"]
+on_air = [m for m in topo.memberships(reheat) if m.kind == "air"]
+assert on_air[0].side == "demand" and on_air[0].branch is None and on_air[0].position is None
+# --8<-- [end:memberships]
+
+
+# --8<-- [start:chain]
+for loop in topo.loops():  # air loops first, then plant, then condenser loops
+    print(loop.obj_type, loop.name)
+
+air_loop = doc["AirLoopHVAC"]["VAV Sys 1"]
+for path in topo.chain(air_loop, "supply"):  # one list per branch, in BranchList order
+    print([o.name for o in path])
+# ['OA Sys 1', 'Main Cooling Coil 1', 'Main Heating Coil 1', 'Supply Fan 1']
+
+for path in topo.chain(air_loop, "demand"):  # one path per zone from the splitter, then the return paths
+    print([o.name for o in path])
+# ['Zone Supply Air Splitter 1', 'SPACE1-1 VAV Reheat', 'SPACE1-1 Zone Coil']
+# ... one per zone ...
+# ['Return-Plenum-1']
+
+print([z.name for z in topo.zones_served(air_loop)])
+# ['SPACE1-1', 'SPACE2-1', 'SPACE3-1', 'SPACE4-1', 'SPACE5-1']
+
+chilled_water = doc["PlantLoop"]["Chilled Water Loop"]
+demand_branches = topo.chain(chilled_water, "demand")  # one list per demand branch, bypass included
+# --8<-- [end:chain]
+
+
+# --8<-- [start:rename-node]
+old, new = "Main Cooling Coil 1 Outlet Node", "AHU Cooling Coil Outlet"
+result = doc.rename_node(old, new)
+print(result.fields_updated)  # 6: both coils, two Branch fields, the controller sensor, a NodeList entry
+print([key.name for key in result.objects])
+
+# Output:Variable key values are free text, not node fields: rename_node leaves them alone.
+for var in doc["Output:Variable"]:
+    if var.key_value.upper() == old.upper():
+        var.key_value = new
+
+topo = HVACTopology.from_document(doc)  # the edit made the old view stale
+assert [o.name for o in topo.consumers(new)] == ["Main Heating Coil 1"]
+# --8<-- [end:rename-node]
