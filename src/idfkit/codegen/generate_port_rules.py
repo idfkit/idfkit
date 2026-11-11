@@ -52,8 +52,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, NamedTuple, cast
 
-import tomllib
-
 from idfkit.hvac._node_fields import NODE_FIELDS
 from idfkit.hvac.types import ConnectionType, Fluid, Provenance
 
@@ -509,6 +507,9 @@ class Review:
 def _load_overrides(path: Path) -> tuple[dict[tuple[str, str], list[Rule]], set[tuple[str, str, str]]]:
     if not path.exists():
         return {}, set()
+    # Imported here: tomllib is Python 3.11+, and this module is collected for doctests on 3.10.
+    import tomllib
+
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     rules: dict[tuple[str, str], list[Rule]] = defaultdict(list)
     for entry in cast("list[dict[str, Any]]", data.get("rule", [])):

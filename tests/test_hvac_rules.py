@@ -10,7 +10,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-import tomllib
 
 from idfkit.hvac._node_fields import NODE_FIELDS
 from idfkit.hvac._port_rules import PORT_RULES
@@ -71,6 +70,9 @@ def test_most_rules_come_from_energyplus() -> None:
 
 @pytest.mark.parametrize("section", ["rule", "accept", "ambiguous"])
 def test_every_reviewed_override_states_its_reason(section: str) -> None:
+    # The reviewed overrides are read only by the generator, a 3.11+ developer tool; Python 3.10 has
+    # no TOML reader in the standard library and idfkit adds no dependency for one.
+    tomllib = pytest.importorskip("tomllib")
     data = tomllib.loads(OVERRIDES.read_text(encoding="utf-8"))
     entries = data.get(section, [])
     assert entries, section
