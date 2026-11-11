@@ -1251,11 +1251,16 @@ class IDFCollection(Generic[_T]):
 
     def remove(self, obj: _T) -> None:
         """Remove an object from the collection."""
+        # By identity, not equality: two objects of a type with no Name field
+        # compare equal when their fields match, and list.remove would take
+        # whichever comes first.
         key = obj.name.upper() if obj.name else ""
-        if key in self._by_name:
+        if self._by_name.get(key) is obj:
             del self._by_name[key]
-        if obj in self._items:
-            self._items.remove(obj)
+        for i, item in enumerate(self._items):
+            if item is obj:
+                del self._items[i]
+                break
 
     def __getitem__(self, key: str | int) -> _T:
         """Get object by name or index."""
