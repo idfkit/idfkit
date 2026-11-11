@@ -87,6 +87,10 @@ After a bulk edit, scan for references that no longer resolve:
 
 For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E004` errors. See [schema-and-validation.md](schema-and-validation.md).
 
+## Walking references and node connections together
+
+The reference graph answers one hop at a time and never sees nodes. `idfkit.graph.ModelGraph` walks both: its `reference` edges are this graph's edges, and its `flow`, `control` and `membership` edges come from the HVAC topology, so one bounded walk from a coil reaches its schedule, its branch, its nodes and its loops. Pass `edge_kinds=["reference"]` to walk references alone, several hops out. See [model-graph.md](model-graph.md).
+
 ## Common mistakes
 
 !!! failure "editing a name through `_data`"
@@ -141,5 +145,6 @@ For a richer pre-flight check, run `validate_document(doc, check_references=True
 - [document-and-objects.md](document-and-objects.md) — where field mutations originate.
 - [hvac-loops.md](hvac-loops.md) — the canonical place reference tracking shines.
 - [hvac-topology.md](hvac-topology.md) — node names, which the reference graph does not track.
+- [model-graph.md](model-graph.md) — references and node connections in one walkable graph, with node-link export.
 - [schema-and-validation.md](schema-and-validation.md) — `check_references=True` surfaces dangling edges as errors.
 - API docs: [py.idfkit.com/api/references/](https://py.idfkit.com/api/references/)

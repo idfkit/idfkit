@@ -27,6 +27,11 @@ Baselines, all on the vendored reference model ``benchmarks/fixtures/HospitalLow
 - :data:`LOOP_QUERY_BASELINE_S`, 0.005 s: one ``memberships(obj)`` or ``chain(loop, side)`` call,
   timed both as the first call on a fresh view (which builds the memoised answer: ``memberships``
   builds every object's memberships at once) and as a repeated, cached call.
+- :data:`GRAPH_CONSTRUCTION_BASELINE_S`, 0.0001 s: ``ModelGraph(doc)``, which builds no layer.
+- :data:`GRAPH_NEIGHBOURHOOD_BASELINE_S`, 0.010 s: ``ModelGraph.neighbourhood`` of 3 hops and up to
+  200 nodes from a zone and from a water heating coil, with the topology cached.
+- :data:`NODE_LINK_BASELINE_S`, 1 s, and :data:`NODE_LINK_MEMORY_BASELINE_B`, 50 MB:
+  ``to_node_link()`` of the ``model`` and ``topology`` layers.
 
 Adding a budget: state its baseline as a module constant next to the others, list it above, and
 add a test that compares a measurement against ``CI_ALLOWANCE * baseline``. Use the
@@ -51,6 +56,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from benchmarks._timing import best_of, load_reference_model, peak_memory, reference_model_path  # noqa: E402
 from idfkit import IDFDocument, IDFObject, load_idf  # noqa: E402
+from idfkit.graph import Layer, ModelGraph, ObjectKey  # noqa: E402
 from idfkit.hvac import HVACTopology  # noqa: E402
 
 pytestmark = pytest.mark.perf
@@ -208,3 +214,69 @@ def test_chain_within_budget(reference_model: IDFDocument) -> None:
     assert len(topo.chain(*widest)) > 100, "premise: the reference model has a loop side with over 100 branches"
     _assert_chain_within_budget(reference_model, topo, *widest)
     _assert_chain_within_budget(reference_model, topo, *air)
+
+
+# The model knowledge graph (``idfkit.graph``), task T117. Budgets from the performance contract in
+# ``specs/014-model-knowledge-graph/contracts/idfkit-api.md`` (idfkit-unification).
+
+GRAPH_CONSTRUCTION_BASELINE_S = 0.0001
+"""``ModelGraph(doc)`` construction, seconds: it stores the document and builds no layer."""
+
+GRAPH_NEIGHBOURHOOD_BASELINE_S = 0.010
+"""``ModelGraph.neighbourhood`` of 3 hops and up to 200 nodes with the topology cached, seconds.
+
+Measured 8.8 ms from a zone and 10.6 ms from a water heating coil when added, both cut at 200
+nodes; the budget of 20 ms holds the allowance, not headroom.
+"""
+
+NODE_LINK_BASELINE_S = 1.0
+"""``to_node_link()`` of the ``model`` and ``topology`` layers on the reference model, seconds.
+
+Measured 0.25 s (9,483 nodes, 19,657 links) with the topology cached when added.
+"""
+
+NODE_LINK_MEMORY_BASELINE_B = 50 * 1024 * 1024
+"""Peak memory of ``to_node_link()`` of both layers on a freshly loaded model, topology build included, bytes.
+
+Measured 22 MB for the export alone when added. Like the topology memory budget, no allowance applies.
+"""
+
+GRAPH_LAYERS: list[Layer] = ["model", "topology"]
+
+
+def test_graph_construction_within_budget(reference_model: IDFDocument) -> None:
+    elapsed = best_of(lambda: ModelGraph(reference_model), RUNS)
+    budget = CI_ALLOWANCE * GRAPH_CONSTRUCTION_BASELINE_S
+    assert elapsed <= budget, f"ModelGraph(doc) took {elapsed * 1e6:.1f} us; budget {budget * 1e6:.0f} us"
+
+
+def test_graph_neighbourhood_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    graph = ModelGraph(reference_model)
+    budget = CI_ALLOWANCE * GRAPH_NEIGHBOURHOOD_BASELINE_S
+    zone = next(iter(reference_model["Zone"]))
+    coil = next(iter(reference_model["Coil:Heating:Water"]))
+    for obj in (zone, coil):
+        start = ObjectKey(obj.obj_type, obj.name)
+        sub = graph.neighbourhood(start, hops=3, max_nodes=200)
+        assert sub.truncated, f"premise: 3 hops from {obj.obj_type} {obj.name!r} reach more than 200 nodes"
+        elapsed = best_of(lambda start=start: graph.neighbourhood(start, hops=3, max_nodes=200), RUNS)
+        assert elapsed <= budget, (
+            f"neighbourhood({obj.obj_type} {obj.name!r}, hops=3, max_nodes=200) took {elapsed * 1000:.2f} ms; "
+            f"budget {budget * 1000:.0f} ms"
+        )
+
+
+def test_node_link_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    graph = ModelGraph(reference_model)
+    budget = CI_ALLOWANCE * NODE_LINK_BASELINE_S
+    elapsed = best_of(lambda: graph.to_node_link(layers=GRAPH_LAYERS), 3)
+    assert elapsed <= budget, f"to_node_link(model, topology) took {elapsed:.2f} s; budget {budget:.0f} s"
+
+
+def test_node_link_memory_within_budget(reference_model_file: Path) -> None:
+    graph = ModelGraph(load_idf(str(reference_model_file)))
+    data, peak = peak_memory(lambda: graph.to_node_link(layers=GRAPH_LAYERS))
+    assert data["nodes"], "premise: the export is not empty"
+    assert peak <= NODE_LINK_MEMORY_BASELINE_B, f"to_node_link(model, topology) peaked at {peak / 1e6:.1f} MB"

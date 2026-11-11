@@ -22,7 +22,12 @@ contract ``make check``'s ``check-baker`` target enforces, but available under
 
 from __future__ import annotations
 
+import runpy
+import shutil
+import sys
 from pathlib import Path
+
+import pytest
 
 from idfkit.codegen.bake_references import bake_markdown
 
@@ -50,9 +55,9 @@ def _source_to_bundle(source: Path) -> Path:
 def test_source_templates_exist() -> None:
     sources = _baked_sources()
     assert sources, "no agent-reference source templates found"
-    # SKILL.md + 16 topic references. index.md is not here: it is the site's landing page
+    # SKILL.md + 18 topic references. index.md is not here: it is the site's landing page
     # for the skill and was never baked, so it stayed with the site.
-    assert len(sources) == 18, f"expected 18 source templates, found {len(sources)}"
+    assert len(sources) == 19, f"expected 19 source templates, found {len(sources)}"
 
 
 def test_bundle_in_sync_with_source() -> None:
@@ -77,3 +82,20 @@ def test_bundle_has_no_unresolved_includes() -> None:
     for bundled in (_SKILL_DIR / "references").glob("*.md"):
         text = bundled.read_text(encoding="utf-8")
         assert "--8<--" not in text, f"{bundled.name} has an unresolved include directive"
+
+
+def test_model_graph_standalone_script_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The model-graph snippet runs as a plain script on a real HVAC model.
+
+    It is the User Story 7 check: findings, a node trace, a neighbourhood walk and an export,
+    using only public names. The model is copied so the export lands in a temporary folder.
+    """
+    model = _REPO_ROOT / "tests" / "fixtures" / "simulation" / "linked" / "5ZoneAirCooled.idf"
+    shutil.copy(model, tmp_path / "5ZoneAirCooled.idf")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["model-graph.py"])
+    runpy.run_path(str(_REPO_ROOT / "agent_references" / "snippets" / "model-graph.py"), run_name="__main__")
+    assert "fans within 4 hops" in capsys.readouterr().out
+    assert (tmp_path / "5ZoneAirCooled.graph.json").is_file()

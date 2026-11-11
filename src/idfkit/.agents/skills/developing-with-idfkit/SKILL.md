@@ -21,6 +21,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Stand up an HVAC system quickly with `HVACTemplate:*` | [hvac-templates.md](references/hvac-templates.md) |
 | Hand-author `AirLoopHVAC` / `PlantLoop` / `CondenserLoop` | [hvac-loops.md](references/hvac-loops.md) |
 | Check how HVAC nodes connect; trace flow up or downstream; find which loop a component sits on; rename a node | [hvac-topology.md](references/hvac-topology.md) |
+| Walk references and HVAC node connections together around an object; export the model as a graph for networkx or d3 | [model-graph.md](references/model-graph.md) |
 | Run EnergyPlus simulations (sync, async, batch) | [simulation-execution.md](references/simulation-execution.md) |
 | Parse SQL / CSV / ESO / MTR / ERR simulation output | [result-parsing.md](references/result-parsing.md) |
 | Find a weather station, download EPW/DDY, inject design days | [weather-data.md](references/weather-data.md) |
@@ -31,7 +32,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 
 ## Conventions used in every reference
 
-- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
+- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.hvac`, `idfkit.graph`, `idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
 - **Python 3.10+** syntax: `tuple[int, int, int]`, `from __future__ import annotations` in real code.
 - **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback; it relaxes attribute reads and writes, not `add()` or `update()`, which refuse unknown keys in every mode.
 - **EnergyPlus version is part of every document**: `doc.version` is a `tuple[int, int, int]`. The latest supported version is exposed as `idfkit.LATEST_VERSION`.
