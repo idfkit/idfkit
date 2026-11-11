@@ -32,6 +32,7 @@ from idfkit.hvac.types import (
     Fluid,
     NodeUse,
     Provenance,
+    TopologyFinding,
 )
 
 if TYPE_CHECKING:
@@ -230,6 +231,7 @@ class HVACTopology:
         "_doc",
         "_edges",
         "_ems_unresolved",
+        "_findings",
         "_in_adj",
         "_meta",
         "_node_edges",
@@ -262,6 +264,7 @@ class HVACTopology:
         self._node_edges: list[list[int]] = []
         self._ems_unresolved: list[ObjectKey] = []
         self._coverage = Coverage.of(())
+        self._findings: list[TopologyFinding] | None = None
         self._build()
 
     @classmethod
@@ -811,6 +814,43 @@ class HVACTopology:
             for eid in adj[oid]:
                 take(eid, depth + 1)
         return [self._edge(e) for e in found]
+
+    def check(self) -> list[TopologyFinding]:
+        """Run the static connection checks; computed once per view.
+
+        Severities are effective: a qualified check may be an error, a finding that relies on a
+        ``hand_written`` rule never is, and a model of an earlier EnergyPlus version is capped by the
+        measured table (FR-013a). A clean result is QA, not proof the model simulates.
+
+        Returns:
+            The findings, branch checks first.
+        """
+        if self._findings is None:
+            from idfkit.hvac._index import TopologyIndex
+            from idfkit.hvac.checks import run_checks
+
+            loop_types = {"AIRLOOPHVAC", "PLANTLOOP", "CONDENSERLOOP"}
+            loop_nodes = frozenset(
+                use[0]
+                for oid, obj in enumerate(self._obj)
+                if obj.obj_type.upper() in loop_types
+                for use in self._obj_uses[oid]
+            )
+            index = TopologyIndex(
+                doc=self._doc,
+                node_name=self._node_name,
+                node_id=self._node_id,
+                uses=self._uses,
+                obj=self._obj,
+                obj_key=self._obj_key,
+                obj_cat=self._obj_cat,
+                obj_uses=self._obj_uses,
+                meta=self._meta,
+                loop_nodes=loop_nodes,
+                coverage=self._coverage,
+            )
+            self._findings = run_checks(index)
+        return list(self._findings)
 
     @property
     def coverage(self) -> Coverage:

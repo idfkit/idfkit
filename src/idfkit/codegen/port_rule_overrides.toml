@@ -289,12 +289,6 @@ reason = "The reference setpoint is the mixed air node itself."
 # ------------------------------------------------------------------------------------------------
 
 [[accept]]
-object_type = "AirLoopHVAC:ReturnPlenum"
-field = "induced_air_outlet_node_or_nodelist_name"
-connection = "Inlet"
-reason = "EnergyPlus registers the plenum's induced-air nodes, drawn by induction terminals, with connection type Inlet."
-
-[[accept]]
 object_type = "AirLoopHVAC:UnitarySystem"
 field = "outdoor_dry_bulb_temperature_sensor_node_name"
 connection = "Inlet"

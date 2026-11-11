@@ -79,8 +79,9 @@ _CONNECTION_MAP: Final[dict[str, ConnectionType | None]] = {
     "ZoneReturn": ConnectionType.ZONE_RETURN,
     "ZoneExhaust": ConnectionType.ZONE_EXHAUST,
     "Setpoint": ConnectionType.SETPOINT,
-    # Air drawn into an induction unit or fan coil from a zone exhaust node: a flow inlet.
-    "InducedAir": ConnectionType.INLET,
+    # Only a return plenum's induced-air outlet carries this: the plenum supplies that node to an
+    # induction unit's secondary inlet, so it is a flow outlet.
+    "InducedAir": ConnectionType.OUTLET,
     # Electric "nodes" are not fluid nodes.
     "Electric": None,
 }
@@ -610,7 +611,15 @@ def add_hand_written(rules: dict[str, list[Rule]]) -> None:
     for object_type, (top, ext) in NODE_FIELDS.items():
         have = {r.field for r in rules.get(object_type, [])}
         names = list(top) + [f"*.{e}" for e in ext]
+        # A field EnergyPlus never reported takes the stream and fluid of its reported partner:
+        # heat_recovery_outlet pairs with heat_recovery_inlet. Unpaired prefixes take new streams.
         streams: dict[str, int] = {}
+        fluids: dict[str, Fluid] = {}
+        for r in rules.get(object_type, []):
+            if r.connection in (ConnectionType.INLET, ConnectionType.OUTLET):
+                streams.setdefault(_stream_prefix(r.field), r.stream)
+                fluids.setdefault(_stream_prefix(r.field), r.fluid)
+        next_stream = max(streams.values(), default=0) + 1
         sibling = {r.field: r for r in rules.get(object_type.removesuffix(":Instance"), [])}
         for name in names:
             if name in have or any(h.endswith("." + name[2:]) for h in have if name.startswith("*.")):
@@ -626,14 +635,16 @@ def add_hand_written(rules: dict[str, list[Rule]]) -> None:
             if connection is None:
                 continue
             prefix = _stream_prefix(name)
-            stream = streams.setdefault(prefix, len(streams) + 1)
+            if prefix not in streams:
+                streams[prefix] = next_stream
+                next_stream += 1
             rules.setdefault(object_type, []).append(
                 Rule(
                     object_type,
                     name,
                     connection,
-                    stream,
-                    _hand_written_fluid(name),
+                    streams[prefix],
+                    fluids.get(prefix, _hand_written_fluid(name)),
                     False,
                     "nodelist" in name,
                     None,

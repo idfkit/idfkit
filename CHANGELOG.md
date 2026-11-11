@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the simulation messages with their counts, the zones with their multipliers and the output
   variable keys from EnergyPlus's SQLite output, one query per table. `report_keys()` never reads
   the timeseries table. `SQLResult` now also sets `PRAGMA query_only`.
+- `idfkit.hvac`, a new subpackage for how a model's HVAC objects connect through their nodes.
+  Node names are strings, not references, so the reference graph never saw them. `HVACTopology`
+  lists every field that names each node with the connection role EnergyPlus gives that field,
+  walks flow upstream and downstream with a component-category filter, and says what it did not
+  cover: unexpanded `HVACTemplate` systems, EMS programs and object types without a rule. EMS
+  sensors and actuators keyed to a node appear as control uses. The roles come from EnergyPlus's
+  own node connection report for the 769 EnergyPlus 26.2 example files: 679 of the 836 rules were
+  reported by EnergyPlus, and each of the 157 written from a field's name says so.
+  ([91c13ba](https://github.com/idfkit/idfkit/commit/91c13ba))
+- `idfkit.hvac.check_topology()` and `HVACTopology.check()` run static connection checks: T010, a
+  branch listing nodes the component does not have; T011, consecutive branch components that do
+  not connect; T030, an inlet nothing supplies or a branch outlet nothing takes; T090 and T091,
+  what could not be checked. T010 and T011 are errors: on the 769 EnergyPlus 26.2 example files
+  they report nothing. T030 is a warning: it reports 25 nodes on 11 of those files. A finding
+  that relies on a rule EnergyPlus never reported is never an error. A clean result does not
+  mean a model simulates. On a 6,876-object model the view and its checks take 27 ms, 11% of
+  loading it. Earlier EnergyPlus versions are not measured yet, so no severity is capped.
 
 ### Changed
 

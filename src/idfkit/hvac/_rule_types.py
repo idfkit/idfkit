@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 
 from idfkit.hvac.types import ConnectionType, Fluid, Provenance
 
@@ -30,3 +30,21 @@ class PortRule(NamedTuple):
     accepts_nodelist: bool
     when: tuple[str, str] | None
     provenance: Provenance
+
+
+class VersionCap(NamedTuple):
+    """The most severe a check may be on models of one measured EnergyPlus version (research R-34).
+
+    Attributes:
+        code: The check code, for example ``"T011"``.
+        version: The measured version.
+        max_severity: ``"warning"`` or ``"info"``.
+        models: Example files measured.
+        false_findings: Findings on those files that a reviewer judged false.
+    """
+
+    code: str
+    version: tuple[int, int, int]
+    max_severity: Literal["warning", "info"]
+    models: int
+    false_findings: int

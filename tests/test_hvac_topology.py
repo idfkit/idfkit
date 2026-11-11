@@ -1,6 +1,6 @@
 """The HVAC topology view on real and minimal models: roles, flow, walks and caching.
 
-Connection-check findings (T010, T011, T030, T090, T091) are tested with ``idfkit.hvac.checks``.
+The second half covers the connection checks (T010, T011, T030, T090, T091).
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from idfkit import IDFDocument, load_idf, new_document
-from idfkit.hvac import ComponentCategory, ConnectionType, Fluid, HVACTopology, ObjectKey
+from idfkit.hvac import ComponentCategory, ConnectionType, Fluid, HVACTopology, ObjectKey, check_topology
 
 LINKED = Path(__file__).parent / "fixtures" / "simulation" / "linked"
 
@@ -155,3 +155,140 @@ def test_outdoor_air_nodes_are_boundaries(five_zone: IDFDocument) -> None:
     topo = HVACTopology.from_document(five_zone)
     roles = {u.connection for u in topo.uses("Outside Air Inlet Node 1")}
     assert ConnectionType.OUTSIDE_AIR in roles
+
+
+# --------------------------------------------------------------------------------------------- #
+# Connection checks (T010, T011, T030, T090, T091)
+# --------------------------------------------------------------------------------------------- #
+
+
+def test_unmodified_model_has_no_connection_error_and_every_finding_names_its_rule(five_zone: IDFDocument) -> None:
+    findings = check_topology(five_zone)
+    assert [f for f in findings if f.severity == "error"] == []
+    assert all(f.code.startswith("T0") for f in findings)
+
+
+def test_outlet_typo_is_a_branch_mismatch_and_a_one_sided_node(five_zone: IDFDocument) -> None:
+    five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"].air_outlet_node_name = "TYPO NODE"
+    findings = check_topology(five_zone)
+
+    (t010,) = [f for f in findings if f.code == "T010"]
+    assert t010.severity == "error"
+    assert t010.objects == (
+        ObjectKey("Branch", "VAV Sys 1 Main Branch"),
+        ObjectKey("Coil:Cooling:Water", "Main Cooling Coil 1"),
+    )
+    assert t010.field == "air_outlet_node_name"
+    assert t010.expected == "Main Cooling Coil 1 Outlet Node"
+    assert t010.actual == "TYPO NODE"
+    assert t010.provenance == "eplus_examples"
+
+    (t030,) = [f for f in findings if f.code == "T030" and f.node == "TYPO NODE"]
+    assert t030.severity == "warning"
+    assert t030.objects == (ObjectKey("Coil:Cooling:Water", "Main Cooling Coil 1"),)
+
+
+def test_disconnected_consecutive_branch_components_are_t011(five_zone: IDFDocument) -> None:
+    branch = five_zone["Branch"]["VAV Sys 1 Main Branch"]
+    branch.components[2].component_inlet_node_name = "Somewhere Else"
+    (t011,) = [f for f in check_topology(five_zone) if f.code == "T011"]
+    assert t011.severity == "error"
+    assert t011.objects[0] == ObjectKey("Branch", "VAV Sys 1 Main Branch")
+    assert t011.expected == "Main Cooling Coil 1 Outlet Node"
+    assert t011.actual == "Somewhere Else"
+
+
+def test_boundaries_are_not_one_sided_nodes() -> None:
+    doc = load_idf(str(LINKED / "5ZoneAirCooled.idf"))
+    nodes = {f.node for f in check_topology(doc) if f.code == "T030"}
+    # outdoor air inlet, mixer relief outlet and the air-cooled chiller's condenser outlet
+    assert {"Outside Air Inlet Node 1", "Relief Air Outlet Node 1", "Central Chiller Condenser Outlet Node"}.isdisjoint(
+        nodes
+    )
+
+
+def test_an_exhaust_fan_venting_outdoors_is_not_reported() -> None:
+    doc = new_document()
+    doc.add(
+        "ZoneHVAC:EquipmentConnections",
+        zone_name="Office",
+        zone_air_exhaust_node_or_nodelist_name="Office Exhaust",
+        zone_air_node_name="Office Air",
+        validate=False,
+    )
+    doc.add(
+        "Fan:ZoneExhaust",
+        "Exhaust Fan",
+        air_inlet_node_name="Office Exhaust",
+        air_outlet_node_name="Outside",
+        validate=False,
+    )
+    assert [f for f in check_topology(doc) if f.code == "T030"] == []
+
+
+def test_an_inlet_nothing_supplies_is_t030() -> None:
+    doc = new_document()
+    doc.add(
+        "Coil:Heating:Electric", "Heater", air_inlet_node_name="Nowhere", air_outlet_node_name="Out", validate=False
+    )
+    (t030,) = [f for f in check_topology(doc) if f.code == "T030"]
+    assert t030.node == "Nowhere"
+    assert t030.severity == "warning"
+
+
+def test_templates_give_t091_and_no_missing_node_findings() -> None:
+    doc = load_idf(str(LINKED / "HVACTemplate-5ZoneVAVWaterCooled.idf"))
+    findings = check_topology(doc)
+    assert [f.code for f in findings if f.code == "T091"] == ["T091"]
+    assert next(f for f in findings if f.code == "T091").severity == "info"
+    assert [f for f in findings if f.code == "T030"] == []
+
+
+def test_a_type_without_rules_is_t090_info() -> None:
+    doc = new_document(version=(8, 9, 0))
+    doc.add(
+        "AirTerminal:SingleDuct:Uncontrolled",
+        "Diffuser",
+        zone_supply_air_node_name="Office Inlet",
+        validate=False,
+    )
+    topo = HVACTopology.from_document(doc)
+    (t090,) = [f for f in topo.check() if f.code == "T090"]
+    assert t090.severity == "info"
+    assert t090.objects == (ObjectKey("AirTerminal:SingleDuct:Uncontrolled", "Diffuser"),)
+    assert [p.kind for p in topo.coverage.uncovered] == ["unclassified_type"]
+    (use,) = topo.uses("Office Inlet")
+    assert use.connection is None
+    assert use.provenance is None
+
+
+def test_hand_written_rules_never_yield_an_error() -> None:
+    from idfkit.hvac.checks import qualified_severity
+
+    assert qualified_severity("T010", "hand_written") == "warning"
+    assert qualified_severity("T010", "eplus_examples") == "error"
+
+
+def test_the_check_result_is_cached_with_the_view(five_zone: IDFDocument) -> None:
+    topo = HVACTopology.from_document(five_zone)
+    assert topo.check() == topo.check()
+    assert check_topology(five_zone) == topo.check()
+
+
+def test_version_caps_lower_errors_on_measured_earlier_versions(
+    five_zone: IDFDocument, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import idfkit.hvac.checks as checks
+    from idfkit.hvac._rule_types import VersionCap
+
+    monkeypatch.setattr(checks, "MEASURED_VERSIONS", ((9, 6, 0), (23, 2, 0)))
+    monkeypatch.setattr(checks, "VERSION_CAPS", (VersionCap("T010", (9, 6, 0), "warning", 400, 3),))
+    error = checks.TopologyFinding("T010", "error", (ObjectKey("Branch", "B"),), "m", "eplus_examples")
+
+    capped = checks.cap_severity(error, (9, 6, 0))
+    assert (capped.severity, capped.capped_from) == ("warning", "error")
+    assert capped.cap_reason is not None and "9.6.0" in capped.cap_reason
+    assert checks.cap_severity(error, (8, 9, 0)).severity == "warning"  # older than measured: oldest row
+    assert checks.cap_severity(error, (22, 1, 0)).severity == "warning"  # nearest at or below: 9.6
+    assert checks.cap_severity(error, (23, 2, 0)) == error  # 23.2 measured clean for T010
+    assert checks.cap_severity(error, (26, 2, 0)) == error  # 26.2 is never capped

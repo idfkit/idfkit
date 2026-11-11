@@ -18,6 +18,13 @@ Baselines, all on the vendored reference model ``benchmarks/fixtures/HospitalLow
   idfkit-mcp, Python 3.12, 4 vCPU). On the same class of machine it measured
   0.13 to 0.16 s when this gate was added, so the budget of 0.456 s holds about 3x headroom.
 
+- :data:`TOPOLOGY_BUILD_BASELINE_S`, 0.050 s: ``HVACTopology.from_document`` plus ``check()`` on a
+  freshly loaded reference model, the plan's budget (R-21). Measured 0.027 s when added, 11% of
+  ``load_idf``. It must also stay within :data:`TOPOLOGY_SHARE_OF_LOAD` of ``load_idf``.
+- :data:`TOPOLOGY_CACHED_BASELINE_S`, 0.0001 s: ``from_document`` again with no edit in between.
+- :data:`TOPOLOGY_MEMORY_BASELINE_B`, 10 MB: peak memory the topology build with checks allocates.
+- :data:`TOPOLOGY_QUERY_BASELINE_S`, 0.005 s: one topology query (a 3-hop walk, a node's uses).
+
 Adding a budget: state its baseline as a module constant next to the others, list it above, and
 add a test that compares a measurement against ``CI_ALLOWANCE * baseline``. Use the
 ``reference_model`` fixture for operations on an already loaded model, so the model is parsed once
@@ -37,8 +44,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from benchmarks._timing import best_of, load_reference_model, reference_model_path  # noqa: E402
+from benchmarks._timing import best_of, load_reference_model, peak_memory, reference_model_path  # noqa: E402
 from idfkit import IDFDocument, load_idf  # noqa: E402
+from idfkit.hvac import HVACTopology  # noqa: E402
 
 pytestmark = pytest.mark.perf
 
@@ -77,3 +85,56 @@ def test_load_idf_within_budget(reference_model_file: Path) -> None:
         f"load_idf of the reference model took {elapsed * 1000:.0f} ms (best of {RUNS}); "
         f"budget {budget * 1000:.0f} ms = {CI_ALLOWANCE:g} x baseline {LOAD_IDF_BASELINE_S * 1000:.0f} ms"
     )
+
+
+TOPOLOGY_BUILD_BASELINE_S = 0.050
+"""``HVACTopology.from_document`` plus ``check()`` after a load, seconds (plan budget, R-21)."""
+
+TOPOLOGY_SHARE_OF_LOAD = 0.25
+"""The topology build with checks may cost at most this share of ``load_idf`` (SC-011)."""
+
+TOPOLOGY_CACHED_BASELINE_S = 0.0001
+"""A repeated ``from_document`` with no edit, seconds."""
+
+TOPOLOGY_QUERY_BASELINE_S = 0.005
+"""One topology query, seconds."""
+
+
+def test_topology_build_with_checks_within_budget(reference_model_file: Path) -> None:
+    path = str(reference_model_file)
+    docs = [load_idf(path) for _ in range(RUNS)]
+    pending = iter(docs)
+    elapsed = best_of(lambda: HVACTopology.from_document(next(pending)).check(), RUNS)
+    load = best_of(lambda: load_idf(path), 3)
+    budget = CI_ALLOWANCE * TOPOLOGY_BUILD_BASELINE_S
+    assert elapsed <= budget, f"topology build + checks took {elapsed * 1000:.1f} ms; budget {budget * 1000:.0f} ms"
+    assert elapsed <= TOPOLOGY_SHARE_OF_LOAD * load, (
+        f"topology build + checks took {elapsed / load:.0%} of load_idf; budget {TOPOLOGY_SHARE_OF_LOAD:.0%}"
+    )
+
+
+def test_cached_topology_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    elapsed = best_of(lambda: HVACTopology.from_document(reference_model), RUNS)
+    assert elapsed <= CI_ALLOWANCE * TOPOLOGY_CACHED_BASELINE_S, f"cached view took {elapsed * 1e6:.1f} us"
+
+
+def test_topology_query_within_budget(reference_model: IDFDocument) -> None:
+    topo = HVACTopology.from_document(reference_model)
+    node = max(topo.nodes(), key=lambda n: len(topo.uses(n)))
+    elapsed = max(
+        best_of(lambda: topo.downstream(node, hops=3), RUNS),
+        best_of(lambda: topo.upstream(node, hops=3), RUNS),
+        best_of(lambda: topo.uses(node), RUNS),
+    )
+    assert elapsed <= CI_ALLOWANCE * TOPOLOGY_QUERY_BASELINE_S, f"slowest query took {elapsed * 1000:.2f} ms"
+
+
+TOPOLOGY_MEMORY_BASELINE_B = 10 * 1024 * 1024
+"""Peak memory of the topology build with checks, bytes (R-21: at most 10 MB extra per model)."""
+
+
+def test_topology_memory_within_budget(reference_model_file: Path) -> None:
+    doc = load_idf(str(reference_model_file))
+    _, peak = peak_memory(lambda: HVACTopology.from_document(doc).check())
+    assert peak <= TOPOLOGY_MEMORY_BASELINE_B, f"topology build + checks peaked at {peak / 1e6:.1f} MB"

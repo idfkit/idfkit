@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from idfkit._graph_common import Coverage, ObjectKey, UncoveredPart
 from idfkit.hvac._categories import category_of
+from idfkit.hvac.checks import check_topology
 from idfkit.hvac.topology import HVACTopology
 from idfkit.hvac.types import (
     ComponentCategory,
@@ -51,4 +52,5 @@ __all__ = [
     "TopologyFinding",
     "UncoveredPart",
     "category_of",
+    "check_topology",
 ]
