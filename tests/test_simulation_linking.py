@@ -310,3 +310,12 @@ def test_no_hand_checked_exact_link_is_wrong() -> None:
         assert objects is not None, link
         assert any((obj.name or "").upper() == link["name"].upper() for obj in objects), link
         assert link["hint"].upper() == link["object_type"].upper(), link
+
+
+def test_zone_keyed_tables_link_to_the_zone_not_a_same_named_schedule(tmp_path: Path) -> None:
+    doc = load_idf(LINKED / "5ZoneAirCooled.idf")
+    doc.add("Schedule:Constant", "SPACE1-1", hourly_value=1.0, validate=False)
+    index = ResultIndex.build(doc, _run(tmp_path, "5ZoneAirCooled"), run_revision=doc.revision, run_model_hash="h")
+    zone_rows = [f.where for f in index.facts(ObjectKey("Zone", "SPACE1-1")) if "Thermostat Schedules" in f.where]
+    assert zone_rows
+    assert not [f for f in index.facts(ObjectKey("Schedule:Constant", "SPACE1-1")) if "Thermostat" in f.where]

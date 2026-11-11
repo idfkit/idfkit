@@ -212,6 +212,8 @@ _AGGREGATE = "Aggregate"
 # Keyword in a variable name, table name or message type → type-name prefixes it suggests, most
 # specific first. A type matches a prefix when its upper-case name starts with it.
 _FAMILIES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    # Report tables keyed by zone whose names mention another family: their rows are zones.
+    ("THERMOSTAT SCHEDULES", ("ZONE", "SPACE")),
     ("SYSTEM NODE", (_NODE.upper(),)),
     ("NODE", (_NODE.upper(),)),
     ("ZONE IDEAL LOADS", ("ZONEHVAC:IDEALLOADSAIRSYSTEM",)),

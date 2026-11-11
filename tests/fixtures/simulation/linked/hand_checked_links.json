@@ -659,7 +659,7 @@
       "object_type": "Zone",
       "name": "ZN_1_FLR_1_SEC_3",
       "rule": "typed",
-      "confidence": "convention"
+      "confidence": "typed"
     },
     {
       "fixture": "5ZoneWaterLoopHeatPump",
