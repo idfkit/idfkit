@@ -61,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   spelling `Output:Table:SummaryReports` does not have, so the request never reached the IDF.
   ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f),
   [1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- `OutputVariableIndex.add_all_to_model` stored each meter name in the `key_name` field of the
+  `Output:Meter` objects it adds. It used to pass the name as the object name, which
+  `Output:Meter` does not have, so both writers dropped it: `write_idf` emitted
+  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`
+  ([d214b51](https://github.com/idfkit/idfkit/commit/d214b51)).
 
 ## [1.2.0] - 2026-10-28
 
