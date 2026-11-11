@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import os
 import shutil
+import threading
 import time
 import zipfile
 from dataclasses import dataclass
@@ -14,7 +17,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from .._atomic import write_bytes_atomically
-from .designday import sanitize_ddy_bytes, sanitize_ddy_file
+from .._forksafe import ForkSafeLock
+from .designday import sanitize_ddy_bytes
 from .index import default_cache_dir
 from .station import WeatherStation
 
@@ -26,6 +30,45 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
+
+# One lock per station directory, so threads of one process download and extract a station once.
+_station_locks: dict[Path, ForkSafeLock] = {}
+_station_locks_guard = threading.Lock()
+# DDYs already checked for placeholders this process, by (path, mtime, size): a cache written by
+# idfkit before 0.12.2 holds uncleaned DDYs, and checking each one once is enough.
+_checked_ddys: set[tuple[str, int, int]] = set()
+
+
+def _station_lock(station_dir: Path) -> threading.Lock | threading.RLock:
+    """The lock that serialises downloads of the station cached in *station_dir*."""
+    with _station_locks_guard:
+        lock = _station_locks.get(station_dir)
+        if lock is None:
+            lock = _station_locks[station_dir] = ForkSafeLock()
+    return lock.lock
+
+
+def _is_fresh(target: Path, zip_mtime_ns: int, expected_size: int | None) -> bool:
+    """Whether *target* holds a complete copy extracted from the archive whose mtime is *zip_mtime_ns*."""
+    try:
+        st = target.stat()
+    except FileNotFoundError:
+        return False
+    return st.st_mtime_ns >= zip_mtime_ns and (expected_size is None or st.st_size == expected_size)
+
+
+def _clean_legacy_ddy(ddy_path: Path) -> None:
+    """Clean a cached DDY written before idfkit cleaned DDYs at extraction; once per file per process."""
+    st = ddy_path.stat()
+    key = (str(ddy_path), st.st_mtime_ns, st.st_size)
+    if key in _checked_ddys:
+        return
+    cleaned, patched = sanitize_ddy_bytes(ddy_path.read_bytes(), ddy_path.name)
+    if patched:
+        # Keep the mtime, so the cleaned DDY is still judged against the same archive.
+        write_bytes_atomically(ddy_path, cleaned, mtime_ns=st.st_mtime_ns)
+        st = ddy_path.stat()
+    _checked_ddys.add((str(ddy_path), st.st_mtime_ns, st.st_size))
 
 
 def _normalise_suffixes(suffixes: Iterable[str] | None) -> frozenset[str] | None:
@@ -111,12 +154,22 @@ class WeatherDownloader:
             If ``None`` (default), cached files never expire.
 
     Note:
-        Extracted ``.ddy`` files are rewritten in place to drop
-        ``SizingPeriod:DesignDay`` objects whose numeric fields contain
-        non-numeric placeholder tokens (e.g. ``N``, ``N/A``). These appear
-        in some upstream archives when source data is unavailable and
-        would otherwise cause EnergyPlus to fail with a type-constraint
-        error.
+        Extracted ``.ddy`` files are cleaned before they are first written:
+        a non-numeric placeholder (``N``) in a numeric field of a
+        ``SizingPeriod:DesignDay`` object is blanked, so EnergyPlus applies
+        the field's default instead of failing with a type-constraint error.
+        These placeholders appear in some upstream archives when source data
+        is unavailable.
+
+    Note:
+        Several threads or processes may share one cache directory. Every
+        file is written under a temporary name and renamed into place, so a
+        reader sees either nothing or the complete file. Within one process,
+        concurrent requests for the same station download it once; separate
+        processes that miss the same station at the same moment may each
+        download it. Do not call
+        [clear_cache][idfkit.weather.download.WeatherDownloader.clear_cache]
+        while other threads or processes are downloading into the cache.
 
     Note:
         The cache has no size limit. For CI/CD environments with limited disk
@@ -190,32 +243,16 @@ class WeatherDownloader:
         station_dir = self._cache_dir / "files" / str(station.wmo) / stem
         zip_path = station_dir / zip_filename
 
-        # Download if not cached or if stale
-        if not zip_path.exists() or self._is_stale(zip_path):
-            station_dir.mkdir(parents=True, exist_ok=True)
-            logger.info("Downloading weather data for %s (WMO %s)", station.display_name, station.wmo)
-            try:
-                req = Request(station.url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
-                with urlopen(req, timeout=120) as resp:  # noqa: S310
-                    payload = resp.read()
-                # Published in one rename: another thread or process checking this cache must
-                # never open a half-written archive, and a failed download must leave none.
-                write_bytes_atomically(zip_path, payload)
-            except (HTTPError, URLError, TimeoutError, OSError) as exc:
-                msg = f"Failed to download weather data from {station.url}: {exc}"
-                raise RuntimeError(msg) from exc
-        else:
-            logger.debug("Cache hit for station %s (WMO %s)", station.display_name, station.wmo)
-
         only_set = _normalise_suffixes(only)
-        self._ensure_extracted(zip_path, station_dir, only_set)
-
-        epw_path = self._find_file(station_dir, ".epw")
-        ddy_path = self._find_file(station_dir, ".ddy")
-        stat_path = self._find_file(station_dir, ".stat")
-
-        if ddy_path is not None:
-            sanitize_ddy_file(ddy_path)
+        # One thread per station at a time in this process: the others wait, then find the
+        # archive in the cache instead of each downloading it again.
+        with _station_lock(station_dir):
+            self._fetch_and_extract(station, zip_path, station_dir, only_set)
+            epw_path = self._find_file(station_dir, ".epw")
+            ddy_path = self._find_file(station_dir, ".ddy")
+            stat_path = self._find_file(station_dir, ".stat")
+            if ddy_path is not None:
+                _clean_legacy_ddy(ddy_path)
 
         if only_set is not None:
             return PartialWeatherFiles(
@@ -241,6 +278,32 @@ class WeatherDownloader:
             station=station,
         )
 
+    def _fetch_and_extract(
+        self,
+        station: WeatherStation,
+        zip_path: Path,
+        station_dir: Path,
+        only: frozenset[str] | None,
+    ) -> None:
+        """Download *station*'s archive unless a fresh copy is cached, then extract what is missing."""
+        if not zip_path.exists() or self._is_stale(zip_path):
+            station_dir.mkdir(parents=True, exist_ok=True)
+            logger.info("Downloading weather data for %s (WMO %s)", station.display_name, station.wmo)
+            try:
+                req = Request(station.url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
+                with urlopen(req, timeout=120) as resp:  # noqa: S310
+                    payload = resp.read()
+                # Published in one rename: another thread or process checking this cache must
+                # never open a half-written archive, and a failed download must leave none.
+                write_bytes_atomically(zip_path, payload, keep_existing_if_locked=True)
+                del payload
+            except (HTTPError, URLError, TimeoutError, OSError) as exc:
+                msg = f"Failed to download weather data from {station.url}: {exc}"
+                raise RuntimeError(msg) from exc
+        else:
+            logger.debug("Cache hit for station %s (WMO %s)", station.display_name, station.wmo)
+        self._ensure_extracted(zip_path, station_dir, only)
+
     @staticmethod
     def _ensure_extracted(
         zip_path: Path,
@@ -249,40 +312,47 @@ class WeatherDownloader:
     ) -> None:
         """Extract members from *zip_path* into *station_dir*.
 
-        If *only* is ``None``, every member is extracted (matching the
-        historical ``extractall`` behaviour). Otherwise, only members whose
-        lowercased suffix is in *only* are extracted. A member is skipped if
-        an up-to-date copy already exists on disk (mtime ≥ ZIP mtime).
+        If *only* is ``None``, every top-level member is extracted. Otherwise,
+        only members whose lowercased suffix is in *only* are extracted.
+        Members inside a folder of the archive (including the ``__MACOSX``
+        resource forks a macOS Finder zip adds) are skipped: ``_find_file``
+        looks only at the top of *station_dir*.
 
-        Each member is written to a temporary file and renamed into place, so
-        a concurrent reader sees either the previous copy or the complete new
-        one. A ``.ddy`` member is cleaned of placeholder values (see
-        :func:`~idfkit.weather.designday.sanitize_ddy_file`) before it is
-        published, so the cached design days are never rewritten afterwards.
-        Members are extracted flat into *station_dir*, which is where
-        ``_find_file`` looks for them.
+        Each member is written to a temporary file, stamped with the
+        modification time of the archive it came from, and renamed into
+        place, so a concurrent reader sees either the previous copy or the
+        complete new one. A member is up to date when its mtime is at least
+        the archive's and, for every member but the DDY, its size matches
+        the archive's record; anything else (a member from an older archive,
+        or one truncated by a crash or by an older idfkit) is extracted
+        again. A ``.ddy`` member is cleaned of placeholder values before it
+        is published, so a cached DDY is never rewritten under a reader.
+
+        A corrupt archive is removed before the error is raised, so the next
+        call downloads it again instead of failing on it for good.
         """
         try:
-            with zipfile.ZipFile(zip_path) as zf:
-                # Compare against the ZIP's mtime rather than ``_is_stale`` —
-                # ``zipfile`` preserves archive-internal timestamps, so the
-                # extracted file's mtime can be arbitrarily old.
-                zip_mtime = zip_path.stat().st_mtime
-                for member in zf.namelist():
+            with open(zip_path, "rb") as fh, zipfile.ZipFile(fh) as zf:
+                # The mtime of the archive actually being read: another process may rename a
+                # newer archive over the path while this one is open.
+                zip_mtime_ns = os.fstat(fh.fileno()).st_mtime_ns
+                for info in zf.infolist():
+                    member = info.filename
+                    if info.is_dir() or "/" in member or "\\" in member or member.startswith("._"):
+                        continue
                     suffix = Path(member).suffix.lower()
                     if only is not None and suffix not in only:
                         continue
-                    name = Path(member).name
-                    if not name or member.endswith("/"):
-                        continue  # a directory entry
-                    target = station_dir / name
-                    if target.exists() and target.stat().st_mtime >= zip_mtime:
+                    target = station_dir / member
+                    if _is_fresh(target, zip_mtime_ns, None if suffix == ".ddy" else info.file_size):
                         continue
-                    data = zf.read(member)
+                    data = zf.read(info)
                     if suffix == ".ddy":
-                        data, _ = sanitize_ddy_bytes(data, name)
-                    write_bytes_atomically(target, data)
+                        data, _ = sanitize_ddy_bytes(data, member)
+                    write_bytes_atomically(target, data, mtime_ns=zip_mtime_ns, keep_existing_if_locked=True)
         except zipfile.BadZipFile as exc:
+            with contextlib.suppress(OSError):
+                zip_path.unlink()
             msg = f"Downloaded file is not a valid ZIP archive: {zip_path}"
             raise RuntimeError(msg) from exc
 

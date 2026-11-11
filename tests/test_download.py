@@ -568,7 +568,7 @@ class TestFailedDownload:
 
         with (
             patch("idfkit.download.urlopen", side_effect=responses),
-            patch("idfkit.download.shutil.move", side_effect=OSError(28, "No space left on device")),
+            patch("idfkit._atomic.os.replace", side_effect=OSError(28, "No space left on device")),
             pytest.raises(OSError, match="No space left"),
         ):
             download_schema((24, 1, 0), target_dir=tmp_path)

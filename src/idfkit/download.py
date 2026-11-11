@@ -27,7 +27,6 @@ import os
 import shutil
 import sys
 import tarfile
-import tempfile
 import zlib
 from http.client import HTTPException
 from io import BytesIO
@@ -36,6 +35,7 @@ from typing import Any
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+from ._atomic import write_bytes_atomically
 from .versions import (
     ENERGYPLUS_VERSIONS,
     github_release_tag,
@@ -208,24 +208,9 @@ def _download_into(version: tuple[int, int, int], target_dir: Path, compress: bo
         msg = f"Could not find {_SCHEMA_FILENAME} in release tarball for {version_string(version)}"
         raise RuntimeError(msg)
 
-    # Write to target (atomic via temp file)
-    with tempfile.NamedTemporaryFile(dir=target_dir, delete=False, suffix=".tmp") as tmp:
-        tmp_path = Path(tmp.name)
-        try:
-            if compress:
-                with gzip.open(tmp, "wb") as gz:
-                    gz.write(schema_bytes)
-            else:
-                tmp.write(schema_bytes)
-        except BaseException:
-            tmp_path.unlink(missing_ok=True)
-            raise
-
-    try:
-        shutil.move(str(tmp_path), str(target_path))
-    except BaseException:
-        tmp_path.unlink(missing_ok=True)
-        raise
+    # Published in one rename (with a retry on Windows, where a rename onto an existing file is
+    # refused while a reader has it open), so a concurrent SchemaManager never reads half a schema.
+    write_bytes_atomically(target_path, gzip.compress(schema_bytes, mtime=0) if compress else schema_bytes)
     return target_path
 
 

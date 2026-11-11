@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 import time
 import zipfile
 from datetime import timedelta
@@ -420,61 +421,79 @@ class TestGetEpwByFilename:
         assert epw.suffix == ".epw"
 
 
-class TestConcurrentDownloads:
-    """Threads (or processes) downloading the same station at once share one cache directory."""
+class TestCacheConsistency:
+    """What the extractor does with archive members and with damaged cache entries."""
 
-    def test_concurrent_downloads_of_one_station_never_see_a_partial_file(self, tmp_path: Path) -> None:
-        # Before the fix the archive and its members were written in place, so a thread that found
-        # the archive present could open it mid-write ("not a valid ZIP archive", EOFError) or
-        # return a truncated EPW, and a truncated member newer than the archive stayed cached.
-        import threading
+    @staticmethod
+    def _serve(payload: bytes) -> MagicMock:
+        mock = MagicMock(side_effect=lambda *_a, **_k: io.BytesIO(payload))
+        return mock
 
-        epw = "LOCATION,Chicago\n" + "8760 rows of weather,1,2,3,4,5,6,7,8,9\n" * 60_000
-        ddy = "SizingPeriod:DesignDay,\n  Chicago Ann Htg 99.6% Condns DB,  !- Name\n  N;  !- Wind Speed\n"
-        payload = _make_zip_bytes(epw_content=epw, ddy_content=ddy)
-        threads = 16
-        timeout = 60
+    def test_nested_and_macos_resource_members_are_skipped(self, tmp_path: Path) -> None:
+        # Flat extraction put __MACOSX/._x.epw beside the real file, where _find_file could pick it.
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr("__MACOSX/._a.epw", b"\x00\x05\x16\x07 resource fork")
+            zf.writestr("._a.ddy", b"\x00\x05\x16\x07 resource fork")
+            zf.writestr("2004-2018/old.epw", "LOCATION,old")
+            zf.writestr("a.epw", "LOCATION,Chicago")
+            zf.writestr("a.ddy", "Version,25.2;")
+        with patch("idfkit.weather.download.urlopen", self._serve(buf.getvalue())):
+            files = WeatherDownloader(cache_dir=tmp_path).download(_make_station())
 
-        def fake_urlopen(*_args: object, **_kwargs: object) -> MagicMock:
-            response = MagicMock()
-            response.__enter__ = MagicMock(return_value=response)
-            response.__exit__ = MagicMock(return_value=False)
-            response.read.return_value = payload
-            return response
+        assert files.epw.read_text() == "LOCATION,Chicago"
+        assert {p.name for p in files.epw.parent.iterdir()} == {"a.ddy", "a.epw", files.zip_path.name}
 
-        for round_no in range(4):
-            downloader = WeatherDownloader(cache_dir=tmp_path / f"round{round_no}")
-            barrier = threading.Barrier(threads, timeout=timeout)
-            outcomes: list[tuple[str, str, str]] = []
-            errors: list[BaseException] = []
+    def test_members_carry_their_archives_mtime(self, tmp_path: Path) -> None:
+        # Stamped with the archive's mtime, a member extracted from an archive another process has
+        # since replaced is older than the new archive, so the next call extracts it again.
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        with patch("idfkit.weather.download.urlopen", self._serve(_make_zip_bytes(epw_content="LOCATION,v1"))):
+            files = downloader.download(_make_station())
+        assert files.epw.stat().st_mtime_ns == files.zip_path.stat().st_mtime_ns
 
-            def run(
-                downloader: WeatherDownloader = downloader,
-                barrier: threading.Barrier = barrier,
-                outcomes: list[tuple[str, str, str]] = outcomes,
-                errors: list[BaseException] = errors,
-            ) -> None:
-                try:
-                    barrier.wait()
-                    files = downloader.download(_make_station())
-                    outcomes.append((files.epw.read_text(), files.ddy.read_text(), files.zip_path.name))
-                except BaseException as exc:
-                    errors.append(exc)
+        files.zip_path.write_bytes(_make_zip_bytes(epw_content="LOCATION,v2"))
+        later = files.zip_path.stat().st_mtime_ns + 10**9
+        os.utime(files.zip_path, ns=(later, later))
 
-            with patch("idfkit.weather.download.urlopen", side_effect=fake_urlopen):
-                workers = [threading.Thread(target=run, daemon=True) for _ in range(threads)]
-                for worker in workers:
-                    worker.start()
-                for worker in workers:
-                    worker.join(timeout)
+        assert downloader.download(_make_station()).epw.read_text() == "LOCATION,v2"
 
-            assert not any(worker.is_alive() for worker in workers), "a download hung"
-            assert not errors, f"round {round_no}: {errors[0]!r}"
-            assert len(outcomes) == threads
-            assert all(e == epw for e, _, _ in outcomes), "a thread read a truncated EPW"
-            assert all("N;" not in d for _, d, _ in outcomes), "a thread read the DDY before it was cleaned"
-            station_dir = next((tmp_path / f"round{round_no}" / "files").rglob("*.epw")).parent
-            assert not list(station_dir.glob("*.part")), "a temporary file was left behind"
-            # A later single call serves the complete files from the cache.
-            later = downloader.download(_make_station())
-            assert later.epw.read_text() == epw
+    def test_a_truncated_member_is_extracted_again(self, tmp_path: Path) -> None:
+        # The old in-place writes could leave a truncated member newer than its archive, which the
+        # mtime check alone kept serving for good.
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        epw = "LOCATION,Chicago\n" + "row\n" * 1000
+        with patch("idfkit.weather.download.urlopen", self._serve(_make_zip_bytes(epw_content=epw))):
+            files = downloader.download(_make_station())
+        files.epw.write_text(epw[:100])
+
+        assert downloader.download(_make_station()).epw.read_text() == epw
+
+    def test_a_corrupt_archive_is_downloaded_again_next_time(self, tmp_path: Path) -> None:
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        urlopen = self._serve(_make_zip_bytes())
+        with patch("idfkit.weather.download.urlopen", urlopen):
+            files = downloader.download(_make_station())
+            files.zip_path.write_bytes(b"PK\x03\x04 truncated")
+            for member in files.epw.parent.glob("*.epw"):
+                member.unlink()
+
+            with pytest.raises(RuntimeError, match="not a valid ZIP"):
+                downloader.download(_make_station())
+            assert downloader.download(_make_station()).epw.read_text() == "LOCATION,Chicago"
+
+        assert urlopen.call_count == 2
+
+    def test_a_ddy_cached_uncleaned_by_an_old_version_is_cleaned_once(self, tmp_path: Path) -> None:
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        with patch("idfkit.weather.download.urlopen", self._serve(_make_zip_bytes())):
+            files = downloader.download(_make_station())
+        dirty = "SizingPeriod:DesignDay,\n  Chicago Ann Htg 99.6% Condns DB,  !- Name\n  N;  !- Wind Speed\n"
+        files.ddy.write_text(dirty)
+        stamp = files.zip_path.stat().st_mtime_ns
+        os.utime(files.ddy, ns=(stamp, stamp))
+
+        cleaned = downloader.download(_make_station()).ddy
+
+        assert "N;" not in cleaned.read_text()
+        assert cleaned.stat().st_mtime_ns == stamp, "cleaning must not make the DDY look newer than its archive"

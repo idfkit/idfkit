@@ -1191,6 +1191,26 @@ class TestLoadBundled:
         # User-visible warning explains what happened.
         assert any("could not be loaded" in r.message for r in caplog.records)
 
+    def test_a_truncated_cache_falls_back_instead_of_raising(self, tmp_path: Path) -> None:
+        # A gzip cut short (a refresh killed mid-write, or read while being written by an older
+        # idfkit) raised EOFError out of load(), which caught only the decoded-content errors.
+        stations = _fixture_stations()[:2]
+        dest = tmp_path / _CACHED_INDEX
+        _save_compressed_index(stations, {}, dest)
+        dest.write_bytes(dest.read_bytes()[:40])
+
+        idx = StationIndex.load(cache_dir=tmp_path)
+
+        assert len(idx) > 2  # the bundled index
+
+    def test_the_index_is_published_in_one_rename(self, tmp_path: Path) -> None:
+        stations = _fixture_stations()[:2]
+        dest = tmp_path / _CACHED_INDEX
+        with patch("idfkit.weather.index.write_bytes_atomically") as publish:
+            _save_compressed_index(stations, {}, dest)
+        publish.assert_called_once()
+        assert publish.call_args.args[0] == dest
+
 
 class TestCheckForUpdates:
     def test_stale_returns_true(self) -> None:

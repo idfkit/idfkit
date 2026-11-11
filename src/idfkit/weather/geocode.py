@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, cast
 from urllib.error import HTTPError
 
+from .._atomic import write_bytes_atomically
 from .._forksafe import ForkSafeLock
 
 if TYPE_CHECKING:
@@ -254,7 +255,8 @@ def _write_ipgeo_cache(path: Path, lat: float, lon: float) -> None:
     }
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload), encoding="utf-8")
+        # Published in one rename, so a concurrent reader never mistakes a half-written entry for a miss.
+        write_bytes_atomically(path, json.dumps(payload).encode("utf-8"))
     except OSError:
         # A cache write failure should never break the caller.
         pass

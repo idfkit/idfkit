@@ -19,6 +19,7 @@ The contract they pin, as stated in the ``threading`` agent reference:
 from __future__ import annotations
 
 import copy
+import io
 import os
 import pickle
 import signal
@@ -26,9 +27,11 @@ import sys
 import threading
 import time
 import warnings
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, TypeVar
+from unittest.mock import patch
 
 import pytest
 
@@ -39,6 +42,8 @@ from idfkit.schedules.file import ScheduleFileCache
 from idfkit.schema import EpJSONSchema, SchemaManager
 from idfkit.simulation.fs import FileSystem
 from idfkit.validation import validate_document
+from idfkit.weather.download import WeatherDownloader
+from idfkit.weather.station import WeatherStation
 
 THREADS = 16
 #: Seconds any wait in this module may take before the test fails instead of hanging the run.
@@ -576,3 +581,58 @@ def test_a_child_forked_while_the_geocoder_paces_a_request_can_geocode() -> None
         return limiter._lock.lock.acquire(timeout=5)  # pyright: ignore[reportPrivateUsage]
 
     _in_forked_child(child, "the geocoder's rate-limit lock")
+
+
+_STATION = WeatherStation(
+    country="USA",
+    state="IL",
+    city="Chicago.Ohare.Intl.AP",
+    wmo="725300",
+    source="TMYx.2009-2023",
+    latitude=41.98,
+    longitude=-87.92,
+    timezone=-6.0,
+    elevation=201.0,
+    url="https://climate.onebuilding.org/WMO_Region_4/USA_IL_Chicago.Ohare.Intl.AP.725300_TMYx.2009-2023.zip",
+    ashrae_climate_zone="5A",
+    heating_design_db_c=-17.4,
+    cooling_design_db_c=32.5,
+    hdd18=3454,
+    cdd10=2103,
+)
+
+
+def _weather_zip(members: dict[str, str]) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        for name, text in members.items():
+            zf.writestr(name, text)
+    return buf.getvalue()
+
+
+class TestWeatherCacheSharedByThreads:
+    """Threads downloading the same station into one cache directory."""
+
+    EPW = "LOCATION,Chicago\n" + "8760 rows of weather,1,2,3,4,5,6,7,8,9\n" * 60_000
+    DDY = "SizingPeriod:DesignDay,\n  Chicago Ann Htg 99.6% Condns DB,  !- Name\n  N;  !- Wind Speed\n"
+
+    @pytest.mark.parametrize("attempt", range(4))
+    def test_threads_downloading_one_station_see_only_complete_files(self, tmp_path: Path, attempt: int) -> None:
+        # Before the fix the archive and its members were written in place, so a thread that found
+        # the archive present could open it mid-write ("not a valid ZIP archive", EOFError) or
+        # return a truncated EPW, and a truncated member newer than the archive stayed cached.
+        payload = _weather_zip({"station.epw": self.EPW, "station.ddy": self.DDY, "station.stat": "Stats"})
+        downloader = WeatherDownloader(cache_dir=tmp_path)
+        fetches: list[int] = []
+
+        def fake_urlopen(*_args: object, **_kwargs: object) -> io.BytesIO:
+            fetches.append(1)
+            return io.BytesIO(payload)
+
+        with patch("idfkit.weather.download.urlopen", side_effect=fake_urlopen):
+            outcomes = _all_at_once(lambda _: downloader.download(_STATION))
+
+        assert all(o.epw.read_text() == self.EPW for o in outcomes), "a thread read a truncated EPW"
+        assert all("N;" not in o.ddy.read_text() for o in outcomes), "a thread read the DDY before it was cleaned"
+        assert len(fetches) == 1, "threads of one process downloaded the same station more than once"
+        assert not list(outcomes[0].epw.parent.glob("*.part")), "a temporary file was left behind"
