@@ -13,7 +13,8 @@ from typing import TYPE_CHECKING, overload
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from .designday import sanitize_ddy_file
+from .._atomic import write_bytes_atomically
+from .designday import sanitize_ddy_bytes, sanitize_ddy_file
 from .index import default_cache_dir
 from .station import WeatherStation
 
@@ -196,7 +197,10 @@ class WeatherDownloader:
             try:
                 req = Request(station.url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
                 with urlopen(req, timeout=120) as resp:  # noqa: S310
-                    zip_path.write_bytes(resp.read())
+                    payload = resp.read()
+                # Published in one rename: another thread or process checking this cache must
+                # never open a half-written archive, and a failed download must leave none.
+                write_bytes_atomically(zip_path, payload)
             except (HTTPError, URLError, TimeoutError, OSError) as exc:
                 msg = f"Failed to download weather data from {station.url}: {exc}"
                 raise RuntimeError(msg) from exc
@@ -249,6 +253,14 @@ class WeatherDownloader:
         historical ``extractall`` behaviour). Otherwise, only members whose
         lowercased suffix is in *only* are extracted. A member is skipped if
         an up-to-date copy already exists on disk (mtime ≥ ZIP mtime).
+
+        Each member is written to a temporary file and renamed into place, so
+        a concurrent reader sees either the previous copy or the complete new
+        one. A ``.ddy`` member is cleaned of placeholder values (see
+        :func:`~idfkit.weather.designday.sanitize_ddy_file`) before it is
+        published, so the cached design days are never rewritten afterwards.
+        Members are extracted flat into *station_dir*, which is where
+        ``_find_file`` looks for them.
         """
         try:
             with zipfile.ZipFile(zip_path) as zf:
@@ -260,10 +272,16 @@ class WeatherDownloader:
                     suffix = Path(member).suffix.lower()
                     if only is not None and suffix not in only:
                         continue
-                    target = station_dir / Path(member).name
+                    name = Path(member).name
+                    if not name or member.endswith("/"):
+                        continue  # a directory entry
+                    target = station_dir / name
                     if target.exists() and target.stat().st_mtime >= zip_mtime:
                         continue
-                    zf.extract(member, station_dir)
+                    data = zf.read(member)
+                    if suffix == ".ddy":
+                        data, _ = sanitize_ddy_bytes(data, name)
+                    write_bytes_atomically(target, data)
         except zipfile.BadZipFile as exc:
             msg = f"Downloaded file is not a valid ZIP archive: {zip_path}"
             raise RuntimeError(msg) from exc

@@ -418,3 +418,63 @@ class TestGetEpwByFilename:
             )
         mock_load.assert_called_once()
         assert epw.suffix == ".epw"
+
+
+class TestConcurrentDownloads:
+    """Threads (or processes) downloading the same station at once share one cache directory."""
+
+    def test_concurrent_downloads_of_one_station_never_see_a_partial_file(self, tmp_path: Path) -> None:
+        # Before the fix the archive and its members were written in place, so a thread that found
+        # the archive present could open it mid-write ("not a valid ZIP archive", EOFError) or
+        # return a truncated EPW, and a truncated member newer than the archive stayed cached.
+        import threading
+
+        epw = "LOCATION,Chicago\n" + "8760 rows of weather,1,2,3,4,5,6,7,8,9\n" * 60_000
+        ddy = "SizingPeriod:DesignDay,\n  Chicago Ann Htg 99.6% Condns DB,  !- Name\n  N;  !- Wind Speed\n"
+        payload = _make_zip_bytes(epw_content=epw, ddy_content=ddy)
+        threads = 16
+        timeout = 60
+
+        def fake_urlopen(*_args: object, **_kwargs: object) -> MagicMock:
+            response = MagicMock()
+            response.__enter__ = MagicMock(return_value=response)
+            response.__exit__ = MagicMock(return_value=False)
+            response.read.return_value = payload
+            return response
+
+        for round_no in range(4):
+            downloader = WeatherDownloader(cache_dir=tmp_path / f"round{round_no}")
+            barrier = threading.Barrier(threads, timeout=timeout)
+            outcomes: list[tuple[str, str, str]] = []
+            errors: list[BaseException] = []
+
+            def run(
+                downloader: WeatherDownloader = downloader,
+                barrier: threading.Barrier = barrier,
+                outcomes: list[tuple[str, str, str]] = outcomes,
+                errors: list[BaseException] = errors,
+            ) -> None:
+                try:
+                    barrier.wait()
+                    files = downloader.download(_make_station())
+                    outcomes.append((files.epw.read_text(), files.ddy.read_text(), files.zip_path.name))
+                except BaseException as exc:
+                    errors.append(exc)
+
+            with patch("idfkit.weather.download.urlopen", side_effect=fake_urlopen):
+                workers = [threading.Thread(target=run, daemon=True) for _ in range(threads)]
+                for worker in workers:
+                    worker.start()
+                for worker in workers:
+                    worker.join(timeout)
+
+            assert not any(worker.is_alive() for worker in workers), "a download hung"
+            assert not errors, f"round {round_no}: {errors[0]!r}"
+            assert len(outcomes) == threads
+            assert all(e == epw for e, _, _ in outcomes), "a thread read a truncated EPW"
+            assert all("N;" not in d for _, d, _ in outcomes), "a thread read the DDY before it was cleaned"
+            station_dir = next((tmp_path / f"round{round_no}" / "files").rglob("*.epw")).parent
+            assert not list(station_dir.glob("*.part")), "a temporary file was left behind"
+            # A later single call serves the complete files from the cache.
+            later = downloader.download(_make_station())
+            assert later.epw.read_text() == epw

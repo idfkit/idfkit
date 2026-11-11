@@ -13,6 +13,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from .._atomic import write_bytes_atomically
 from ..exceptions import NoDesignDaysError
 from ..versions import LATEST_VERSION
 
@@ -85,6 +86,30 @@ def _sanitize_ddy_text(text: str) -> tuple[str, list[str]]:
     return new_text, patched
 
 
+def sanitize_ddy_bytes(data: bytes, name: str) -> tuple[bytes, list[str]]:
+    """Return *data*, the bytes of a DDY file called *name*, with placeholder values blanked.
+
+    The in-memory half of :func:`sanitize_ddy_file`, used to clean a DDY before it is first written
+    to the weather cache. Logs a warning naming the design days it changed.
+
+    Returns:
+        The cleaned bytes (*data* itself if nothing needed cleaning) and the names of the design
+        days that had at least one field blanked.
+    """
+    # Bytes in and out, so original line endings (CRLF on OneBuilding archives, LF elsewhere) are
+    # preserved verbatim across the round-trip.
+    new_text, patched = _sanitize_ddy_text(data.decode("utf-8", errors="replace"))
+    if not patched:
+        return data, patched
+    logger.warning(
+        "Sanitized %s: blanked non-numeric placeholder values in %d SizingPeriod:DesignDay object(s): %s",
+        name,
+        len(patched),
+        ", ".join(patched),
+    )
+    return new_text.encode("utf-8"), patched
+
+
 def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
     """Blank placeholder values in ``SizingPeriod:DesignDay`` fields of a DDY file.
 
@@ -95,6 +120,10 @@ def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
     place, replacing each placeholder with an empty field (which EnergyPlus
     treats as defaulted) so the surrounding design day object remains usable.
 
+    The rewrite is atomic: the cleaned text goes to a temporary file that is
+    renamed over the original, so a reader in another thread or process sees
+    either the original file or the cleaned one, never a partial write.
+
     Args:
         ddy_path: Path to a ``.ddy`` file.
 
@@ -103,18 +132,9 @@ def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
         if the file was already clean.
     """
     path = Path(ddy_path)
-    # Use binary I/O so original line endings (CRLF on OneBuilding archives,
-    # LF elsewhere) are preserved verbatim across the round-trip.
-    text = path.read_bytes().decode("utf-8", errors="replace")
-    new_text, patched = _sanitize_ddy_text(text)
+    cleaned, patched = sanitize_ddy_bytes(path.read_bytes(), path.name)
     if patched:
-        path.write_bytes(new_text.encode("utf-8"))
-        logger.warning(
-            "Sanitized %s: blanked non-numeric placeholder values in %d SizingPeriod:DesignDay object(s): %s",
-            path.name,
-            len(patched),
-            ", ".join(patched),
-        )
+        write_bytes_atomically(path, cleaned)
     return patched
 
 
