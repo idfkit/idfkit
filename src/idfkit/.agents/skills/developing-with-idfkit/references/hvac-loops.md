@@ -14,9 +14,9 @@ If templates work, use them. They're simpler, faster to author, and idfkit has m
 
 idfkit doesn't provide higher-level "build me an air loop" helpers — you author each `AirLoopHVAC`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, `Coil:Cooling:Water`, etc. through `doc.add()`. But once you've done that, idfkit gives you three things EnergyPlus alone doesn't:
 
-1. **Schema validation catches node-name typos**. EnergyPlus only catches them at runtime, deep in the `.err` file.
-2. **The reference graph tells you what wires to what**. `doc.get_referencing("AHU-1 Cooling Coil")` returns every object that mentions that coil — branches, controllers, setpoint managers, etc.
-3. **Cascading renames work across the loop graph**. Rename a coil and every branch, controller, and node specification updates.
+1. **Schema validation catches object-name typos**. A branch, branch list or controller that names an object no one declares is an `E009` error before EnergyPlus runs. Node-name typos are not caught: node names are plain strings, not references (see [Pattern: link by node names](#pattern-link-by-node-names)).
+2. **The reference graph tells you what names what**. `doc.get_referencing("AHU-1 Cooling Coil")` returns every object that names that coil in a reference field, such as branches and controllers. Setpoint managers name nodes, not coils, so they are not in it.
+3. **Cascading renames work across the reference graph**. Rename a coil and every branch and controller that names it updates. Node names are not renamed with it.
 
 ## Canonical pattern: lint before simulate
 
@@ -31,18 +31,17 @@ if not result.is_valid:
     raise SystemExit("Refusing to simulate an invalid loop graph")
 ```
 
-`validate_document` with `check_references=True` (the default) reports every dangling node-name reference as an `E004` error. That's the single most useful smoke test before kicking off a simulation.
+`validate_document` with `check_references=True` (the default) reports every dangling object-name reference, such as a branch naming a missing coil, as an `E009` error. It does not check node names: two objects that should share a node but spell it differently both pass. Run it before every simulation, and check node names separately (see [Common mistakes](#common-mistakes)).
 
 ## Tracing a loop with `get_referencing`
 
 ```python
-# Every object that mentions "AHU-1 Cooling Coil"
+# Every object that names "AHU-1 Cooling Coil" in a reference field
 for obj in doc.get_referencing("AHU-1 Cooling Coil"):
     print(obj.obj_type, obj.name)
 # Branch 'AHU-1 Cooling Branch'
 # Controller:WaterCoil 'AHU-1 Cooling Coil Controller'
-# SetpointManager:Scheduled 'AHU-1 Cooling Coil Setpoint'
-# ...
+# Setpoint managers name nodes, not coils, so they are not listed here.
 ```
 
 If a branch or controller you expect to see isn't there, the wiring is wrong — fix it before simulating, not after.
@@ -50,8 +49,8 @@ If a branch or controller you expect to see isn't there, the wiring is wrong —
 ## Safe renames
 
 ```python
-# Rename a coil. Every branch component, controller, setpoint manager
-# that pointed at "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A".
+# Rename a coil. Every branch component and controller that pointed at
+# "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A". Node names are unchanged.
 doc["Coil:Cooling:Water"]["AHU-1 Cooling Coil"].name = "AHU-1 Cooling Coil A"
 ```
 
@@ -96,7 +95,7 @@ mixer.branches.append(inlet_branch_name="Chiller 1 Branch")
 mixer.branches.append(inlet_branch_name="Chiller 2 Branch")
 ```
 
-Validation checks that every branch name in the splitter/mixer exists as a `Branch` object — typos surface as `E004`.
+Validation checks that every branch name in the splitter/mixer exists as a `Branch` object — typos surface as `E009`.
 
 ## Pattern: link by node names
 
@@ -169,18 +168,38 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
 !!! success "also walk the graph manually for critical loops"
 
     ```python
-    # Sanity-check that every coil has a paired adjacent branch component
+    # Node names are plain strings: validate_document and get_referencing do not see them.
+    # Check that every air node a coil names also appears in another object, in any field,
+    # including Branch components, OutdoorAir:Mixer streams and NodeLists.
+    from collections.abc import Iterator
+    from typing import Any
+
+
+    def strings(value: Any) -> Iterator[str]:
+        if isinstance(value, str):
+            yield value.upper()
+        elif isinstance(value, dict):
+            for item in value.values():  # pyright: ignore[reportUnknownVariableType]
+                yield from strings(item)
+        elif isinstance(value, list):
+            for item in value:  # pyright: ignore[reportUnknownVariableType]
+                yield from strings(item)
+
+
+    mentions: dict[str, list[IDFObject]] = {}
+    for obj in doc.all_objects:
+        for text in set(strings(obj.to_dict())):
+            mentions.setdefault(text, []).append(obj)
+
     for coil in doc.get_collection("Coil:Cooling:Water"):
-        inlet = coil.air_inlet_node_name
-        outlet = coil.air_outlet_node_name
-        upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-        downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-        assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+        for node in (coil.air_inlet_node_name, coil.air_outlet_node_name):
+            others = [o for o in mentions.get(str(node).upper(), []) if o is not coil]
+            assert others, f"Coil {coil.name}: no other object names node {node!r}"
     ```
 
 ## Related
 
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.
 - [reference-tracking.md](reference-tracking.md) — the workhorse for navigating and renaming loop graphs.
-- [schema-and-validation.md](schema-and-validation.md) — `E004` errors are dangling node-name references.
+- [schema-and-validation.md](schema-and-validation.md) — `E009` errors are dangling object-name references; node-name typos produce none.
 - I/O Reference (via `idfkit-mcp` search_docs or the docs site): `AirLoopHVAC`, `PlantLoop`, `CondenserLoop`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, setpoint managers, controllers.
