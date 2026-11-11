@@ -225,8 +225,12 @@ def describe_object_type(schema: EpJSONSchema, obj_type: str) -> ObjectDescripti
 
     # Get ordered field names
     field_names: list[str] = schema.get_field_names(obj_type)
-    if not field_names:
-        # Fallback to properties keys if no legacy_idd
+    if len(schema.get_all_field_names(obj_type)) <= 1:
+        # The legacy field list holds at most the type's first field (or nothing): use the schema's
+        # property order, which keeps a repeated group as one array at its position. Deciding this
+        # by the legacy list, not by get_field_names, keeps the first field of a nameless type
+        # (key_name on Output:Meter) without flattening the group of a nameless type such as
+        # ZoneTerminalUnitList, whose legacy list is its first field alone.
         field_names = list(properties.keys())
 
     is_extensible = schema.is_extensible(obj_type)
