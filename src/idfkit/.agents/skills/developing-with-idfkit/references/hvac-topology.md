@@ -151,9 +151,12 @@ Each node gets at most one of `T001` to `T004` and `T030`, the most specific. Th
 ## Read coverage
 
 ```python
+from idfkit.hvac import UncoveredPart
+
 coverage = topo.coverage
 if coverage.partial:
-    for part in coverage.uncovered:
+    parts: tuple[UncoveredPart, ...] = coverage.uncovered
+    for part in parts:
         # hvac_template, ems_program or unclassified_type, with up to 3 examples
         print(part.kind, part.count, part.reason, [k.name for k in part.examples])
 ```
@@ -164,7 +167,9 @@ An empty findings list means nothing was found *in what was covered*. Expand `HV
 
 ```python
 old, new = "Main Cooling Coil 1 Outlet Node", "AHU Cooling Coil Outlet"
-result = doc.rename_node(old, new)
+from idfkit.hvac import NodeRenameResult
+
+result: NodeRenameResult = doc.rename_node(old, new)
 print(result.fields_updated)  # 6: both coils, two Branch fields, the controller sensor, a NodeList entry
 print([key.name for key in result.objects])
 
@@ -182,7 +187,11 @@ assert [o.name for o in topo.consumers(new)] == ["Main Heating Coil 1"]
 ## Filter a walk
 
 ```python
-from idfkit.hvac import ComponentCategory, Fluid
+from idfkit.hvac import ComponentCategory, Fluid, category_of
+
+# The category comes from the object type alone, so it needs no model.
+print(category_of("Coil:Cooling:Water"))  # ComponentCategory.COOLING_COIL
+print(category_of("Schedule:Compact"))  # ComponentCategory.OTHER
 
 # Which plant supplies this coil? Stay on the water stream, keep only plant sources.
 sources = topo.upstream(
@@ -213,7 +222,11 @@ from_zone = topo.upstream(doc["Zone"]["SPACE1-1"], hops=2)
 !!! success "pass `fluid=Fluid.WATER` to stay on the coil's plant loop"
 
     ```python
-    from idfkit.hvac import ComponentCategory, Fluid
+    from idfkit.hvac import ComponentCategory, Fluid, category_of
+
+    # The category comes from the object type alone, so it needs no model.
+    print(category_of("Coil:Cooling:Water"))  # ComponentCategory.COOLING_COIL
+    print(category_of("Schedule:Compact"))  # ComponentCategory.OTHER
 
     # Which plant supplies this coil? Stay on the water stream, keep only plant sources.
     sources = topo.upstream(
@@ -243,7 +256,9 @@ from_zone = topo.upstream(doc["Zone"]["SPACE1-1"], hops=2)
 
     ```python
     old, new = "Main Cooling Coil 1 Outlet Node", "AHU Cooling Coil Outlet"
-    result = doc.rename_node(old, new)
+    from idfkit.hvac import NodeRenameResult
+
+    result: NodeRenameResult = doc.rename_node(old, new)
     print(result.fields_updated)  # 6: both coils, two Branch fields, the controller sensor, a NodeList entry
     print([key.name for key in result.objects])
 
@@ -265,9 +280,12 @@ from_zone = topo.upstream(doc["Zone"]["SPACE1-1"], hops=2)
 !!! success "read `coverage`, then simulate"
 
     ```python
+    from idfkit.hvac import UncoveredPart
+
     coverage = topo.coverage
     if coverage.partial:
-        for part in coverage.uncovered:
+        parts: tuple[UncoveredPart, ...] = coverage.uncovered
+        for part in parts:
             # hvac_template, ems_program or unclassified_type, with up to 3 examples
             print(part.kind, part.count, part.reason, [k.name for k in part.examples])
     ```

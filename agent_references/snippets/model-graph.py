@@ -92,7 +92,13 @@ if sub.truncated:  # the hop or node bound cut the walk
 
 
 # --8<-- [start:filters]
+from idfkit.graph import EdgeKind, Layer, NodeKind
 from idfkit.hvac import ComponentCategory
+
+# Kinds and layers are string literals; these aliases type them.
+present: list[Layer] = list(graph.layers)  # ['model', 'topology'], plus 'results' with a ResultIndex
+objects_only: list[NodeKind] = ["object"]
+fluid_edges: list[EdgeKind] = ["flow", "control"]
 
 # Only the fluid connections: no schedules, branches or loops pulled in by reference edges.
 flow_only = graph.neighbourhood(coil, hops=3, edge_kinds=["flow"])
@@ -104,20 +110,22 @@ print([n.label for n in fans.nodes if n.kind == "object"])
 # ['Coil:Cooling:Water "OA Cooling Coil 1"', 'Fan:VariableVolume "Supply Fan 1"']
 
 # Objects and references only: the reference graph, walkable with the same call.
-references_only = graph.neighbourhood(coil, hops=2, node_kinds=["object"], edge_kinds=["reference"])
+references_only = graph.neighbourhood(coil, hops=2, node_kinds=objects_only, edge_kinds=["reference"])
+controls = graph.neighbourhood(coil, hops=2, edge_kinds=fluid_edges)
 # --8<-- [end:filters]
 
 
 # --8<-- [start:export]
 import json
 
-from idfkit.graph import NODE_LINK_FORMAT_VERSION, save_node_link, write_node_link
+from idfkit.graph import NODE_LINK_FORMAT_VERSION, JSONValue, save_node_link, write_node_link
 
 save_node_link(graph, "model-graph.json")  # the whole model and topology, UTF-8
 
 text = write_node_link(graph, start=coil, hops=2)  # one neighbourhood; start and hops go together
 data = json.loads(text)
 assert data["graph"]["format"] == "idfkit-model-graph"
+layers: JSONValue = data["graph"]["layers"]  # every value in the export is plain JSON
 assert data["graph"]["format_version"] == NODE_LINK_FORMAT_VERSION
 print(data["graph"]["layers"], data["graph"]["unavailable"])
 # ['model', 'topology'] {'results': 'no ResultIndex was passed in'}: a missing layer is listed, never an error

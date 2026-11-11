@@ -61,16 +61,23 @@ if errors:
 
 
 # --8<-- [start:read-coverage]
+from idfkit.hvac import UncoveredPart
+
 coverage = topo.coverage
 if coverage.partial:
-    for part in coverage.uncovered:
+    parts: tuple[UncoveredPart, ...] = coverage.uncovered
+    for part in parts:
         # hvac_template, ems_program or unclassified_type, with up to 3 examples
         print(part.kind, part.count, part.reason, [k.name for k in part.examples])
 # --8<-- [end:read-coverage]
 
 
 # --8<-- [start:category-filter]
-from idfkit.hvac import ComponentCategory, Fluid
+from idfkit.hvac import ComponentCategory, Fluid, category_of
+
+# The category comes from the object type alone, so it needs no model.
+print(category_of("Coil:Cooling:Water"))  # ComponentCategory.COOLING_COIL
+print(category_of("Schedule:Compact"))  # ComponentCategory.OTHER
 
 # Which plant supplies this coil? Stay on the water stream, keep only plant sources.
 sources = topo.upstream(
@@ -133,7 +140,9 @@ demand_branches = topo.chain(chilled_water, "demand")  # one list per demand bra
 
 # --8<-- [start:rename-node]
 old, new = "Main Cooling Coil 1 Outlet Node", "AHU Cooling Coil Outlet"
-result = doc.rename_node(old, new)
+from idfkit.hvac import NodeRenameResult
+
+result: NodeRenameResult = doc.rename_node(old, new)
 print(result.fields_updated)  # 6: both coils, two Branch fields, the controller sensor, a NodeList entry
 print([key.name for key in result.objects])
 

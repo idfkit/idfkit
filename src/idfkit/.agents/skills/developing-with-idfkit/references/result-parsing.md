@@ -201,20 +201,23 @@ fresh = index.is_fresh(doc, model_hash=hashlib.sha256(write_idf(doc).encode()).h
 `for_object(ObjectKey(type, name))` returns `ObjectResults` (all fields empty when the run reported nothing). Fluid nodes use `ObjectKey("Node", name)`.
 
 ```python
-from idfkit.simulation import ObjectKey
+from idfkit.simulation import LinkedMessage, ObjectKey, ObjectNeighbour, ObjectResults, ResultFact
 
-coil = index.for_object(ObjectKey("Coil:Heating:Water", "SPACE1-1 Zone Coil"))  # case-insensitive
+coil: ObjectResults = index.for_object(ObjectKey("Coil:Heating:Water", "SPACE1-1 Zone Coil"))  # case-insensitive
 coil.object  # ObjectKey in the model's spelling
 
-for fact in coil.facts:  # sizing rows first, then object rows of tabular reports
+facts: tuple[ResultFact, ...] = coil.facts
+for fact in facts:  # sizing rows first, then object rows of tabular reports
     print(fact.source, fact.metric, fact.value, fact.units)  # sizing design_size_rated_capacity_w 4626.6 W
     print(fact.where)  # 'ComponentSizes#11' or 'EquipmentSummary/Heating Coils/SPACE1-1 ZONE COIL/...'
 
-for msg in coil.messages:  # one per message kind, most severe first
+messages: tuple[LinkedMessage, ...] = coil.messages
+for msg in messages:  # one per message kind, most severe first
     print(msg.severity, msg.kind, msg.occurrences, msg.first_seen, msg.text)
 
 print(coil.available_variables)  # names of recorded output variables; values are NOT read
-for neighbour in coil.neighbours:  # one hop over HVAC topology / references, at most 20
+neighbours: tuple[ObjectNeighbour, ...] = coil.neighbours
+for neighbour in neighbours:  # one hop over HVAC topology / references, at most 20
     print(neighbour.object, neighbour.top_fact)
 
 # Fluid nodes are keyed by the pseudo-type "Node":
@@ -280,8 +283,12 @@ for source, raw in index.unresolved:  # never dropped: ("timeseries", "SOME KEY"
     print(source, raw)
 
 # How each message link was made, and how far to trust it:
+from idfkit.simulation import Resolution, UncoveredPart
+
+unlinked: list[UncoveredPart] = [part for part in cov.uncovered if part.kind == "unlinked_result"]
 for message in index.messages:
-    for link in message.objects:
+    links: tuple[Resolution, ...] = message.objects
+    for link in links:
         print(link.key, link.rule, link.confidence, link.via)
         # ObjectKey('AirLoopHVAC', 'VAV Sys 1') typed typed ()
         if link.confidence == "weak":  # substring match or ambiguous name: confirm before acting
@@ -293,8 +300,9 @@ for message in index.messages:
 `index.messages` are classified by a catalogue of common EnergyPlus messages; `kind` is a stable dotted id, or `"other"`. Classify any text yourself with `classify_message`; `MESSAGE_KINDS` lists every `MessageKind` (`kind`, `pattern`, `hint`, `inspect`, `symptoms`).
 
 ```python
-from idfkit.simulation import MESSAGE_KINDS, classify_message
+from idfkit.simulation import MESSAGE_KINDS, MessageKind, classify_message
 
+kind: MessageKind | None
 kind, named = classify_message('GetAirPathData: AirLoopHVAC="EVAP COOLER SYSTEM" has no Controllers.')
 if kind:
     print(kind.kind)  # 'airloop.no_controllers'
