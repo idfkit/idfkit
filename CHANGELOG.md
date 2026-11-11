@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
+### Changed
+
+- **Breaking:** `IDFDocument.add()` refuses a key that is not a field of the object type even
+  with `validate=False`, raising `InvalidFieldError`. `validate=False` used to skip every check,
+  so the key was stored, then silently dropped by `write_idf()` and written as an unknown
+  property by `write_epjson()`. It still skips value, required-field and range checks. The
+  object's name belongs in the `name` argument, not in `fields`, and
+  `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate` fields, not a
+  `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+
 ### Fixed
 
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
@@ -39,10 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   case from the schema, such as one added with `addidfobject(IDFObject(obj_type="TIMESTEP", ...))`,
   and of an object of a type the schema does not know. Both are now written with their values.
   ([0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
-- `idfkit.simulation.prep_outputs` now requests the `AllSummary` reports. It passed
-  `report_1="AllSummary"`, which is not a valid name for the `reports` group, so the value was
-  dropped and `Output:Table:SummaryReports` was written empty.
-  ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f))
+- Validation reports unknown fields (`W003`) on extensible object types too. They used to be
+  exempt, so `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the
+  default `validate=True` and stored a key that `write_idf()` silently dropped and
+  `write_epjson()` emitted as an unknown property. Such a call now raises
+  `ValidationFailedError`, as an unknown field on a non-extensible type already did; the
+  wrapper list (`reports=[...]`) and the deprecated flat spellings (`report_name`,
+  `report_name_2`) are still accepted. `validate_document()` reports the same keys on objects
+  loaded from epJSON. ([459258f](https://github.com/idfkit/idfkit/commit/459258f))
+- `prep_outputs()` requests the `AllSummary` tabular report again. It passed `report_1`, a
+  spelling `Output:Table:SummaryReports` does not have, so the request never reached the IDF.
+  ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f),
+  [1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
 
 ## [1.2.0] - 2026-10-28
 

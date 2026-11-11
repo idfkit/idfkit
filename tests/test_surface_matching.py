@@ -152,9 +152,12 @@ def _window(doc: IDFDocument, name: str, base: str, verts: list[tuple[float, flo
             "surface_type": "Window",
             "building_surface_name": base,
             "number_of_vertices": len(verts),
-            "vertices": [
-                {"vertex_x_coordinate": x, "vertex_y_coordinate": y, "vertex_z_coordinate": z} for (x, y, z) in verts
-            ],
+            # FenestrationSurface:Detailed has fixed flat vertex fields, not a wrapper list.
+            **{
+                f"vertex_{i}_{axis}_coordinate": value
+                for i, vertex in enumerate(verts, 1)
+                for axis, value in zip("xyz", vertex, strict=True)
+            },
         },
         validate=False,
     )

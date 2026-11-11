@@ -12,7 +12,7 @@ import pytest
 
 from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
-from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
+from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 
 
@@ -503,11 +503,25 @@ class TestAddWithValidation:
         # Check the error message mentions the unknown field
         assert "fake_field" in str(exc_info.value)
 
-    def test_add_without_validation_allows_unknown_field(self, empty_doc: IDFDocument) -> None:
-        # With validate=False, unknown fields are silently accepted
-        obj = empty_doc.add("Zone", "TestZone", fake_field=123, validate=False)
-        assert obj.name == "TestZone"
-        assert obj.data.get("fake_field") == 123
+    def test_add_without_validation_rejects_unknown_field(self, empty_doc: IDFDocument) -> None:
+        # validate=False skips value checks, not the field names: an unknown key would be
+        # stored and then silently dropped by write_idf().
+        with pytest.raises(InvalidFieldError, match="fake_field"):
+            empty_doc.add("Zone", "TestZone", fake_field=123, validate=False)
+        assert len(empty_doc["Zone"]) == 0
+
+    def test_add_without_validation_rejects_unknown_extensible_spelling(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(InvalidFieldError, match="report_1"):
+            empty_doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+        assert len(empty_doc["Output:Table:SummaryReports"]) == 0
+
+    def test_add_without_validation_accepts_known_fields(self, empty_doc: IDFDocument) -> None:
+        obj = empty_doc.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=False)
+        assert obj.data == {"reports": [{"report_name": "AllSummary"}]}
+
+    def test_add_without_validation_still_skips_value_checks(self, empty_doc: IDFDocument) -> None:
+        obj = empty_doc.add("Zone", "TestZone", multiplier="not-a-number", validate=False)
+        assert obj.data["multiplier"] == "not-a-number"
 
     def test_add_material_missing_required_field(self, empty_doc: IDFDocument) -> None:
         # Material requires roughness, thickness, conductivity, density, specific_heat
@@ -650,27 +664,26 @@ class TestBuildFieldOrderForAdd:
         assert result is None
 
     def test_extensible_with_user_extra_fields(self, empty_doc: IDFDocument) -> None:
-        # Vertices are bucketed into the canonical wrapper; an arbitrary
-        # non-schema field passes through into obj.data (writers ignore it).
-        obj = empty_doc.add(
-            "BuildingSurface:Detailed",
-            "Wall1",
-            {
-                "surface_type": "Wall",
-                "construction_name": "",
-                "zone_name": "",
-                "outside_boundary_condition": "Outdoors",
-                "number_of_vertices": 2,
-                "vertices": [
-                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                ],
-                "extra_nonschema_field": 42.0,
-            },
-            validate=False,
-        )
-        assert obj.data["extra_nonschema_field"] == 42.0
-        assert len(obj.data["vertices"]) == 2
+        # The wrapper key is a known field; a non-schema key beside it is not, even with
+        # validate=False, since the writers would drop it.
+        with pytest.raises(InvalidFieldError, match="extra_nonschema_field"):
+            empty_doc.add(
+                "BuildingSurface:Detailed",
+                "Wall1",
+                {
+                    "surface_type": "Wall",
+                    "construction_name": "",
+                    "zone_name": "",
+                    "outside_boundary_condition": "Outdoors",
+                    "number_of_vertices": 2,
+                    "vertices": [
+                        {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                        {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
+                    ],
+                    "extra_nonschema_field": 42.0,
+                },
+                validate=False,
+            )
 
 
 class TestRemoveIdfObjectEdgeCases:
