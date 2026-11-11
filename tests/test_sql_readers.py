@@ -18,6 +18,7 @@ from typing import Any
 
 import pytest
 
+from idfkit import load_idf
 from idfkit.simulation.parsers.sql import ComponentSize, SQLErrorRow, SQLResult, VariableInfo, ZoneRow
 
 LINKED_DIR = Path(__file__).parent / "fixtures" / "simulation" / "linked"
@@ -280,7 +281,8 @@ class TestLinkedFixtures:
         with SQLResult(sql_path) as sql:
             assert not sql.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'ReportData'")
             zones = sql.zones()
-            assert zones
+            # One row per Zone in the model the SQL came from; plant-only models have none.
+            assert len(zones) == len(load_idf(str(sql_path.with_suffix(".idf")))["Zone"])
             assert all(z.multiplier >= 1 and z.list_multiplier >= 1 for z in zones)
             assert sql.report_keys()
 

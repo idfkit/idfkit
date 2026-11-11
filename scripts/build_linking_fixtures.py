@@ -123,7 +123,7 @@ def prepare_model(doc: IDFDocument) -> None:
             for obj in list(doc[obj_type]):
                 doc.removeidfobject(obj)
     doc.add("Output:SQLite", "", option_type="SimpleAndTabular", validate=False)
-    doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+    doc.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=False)
     for variable in OUTPUT_VARIABLES:
         doc.add(
             "Output:Variable",
