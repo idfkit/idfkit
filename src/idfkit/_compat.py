@@ -351,8 +351,6 @@ class EppyDocumentMixin:
             >>> model.getobject("Material", "Insulation").thickness
             0.1
         """
-        from .objects import to_python_name
-
         for dotted_key, value in updates.items():
             parts = dotted_key.split(".", 2)
             if len(parts) != 3:
@@ -363,7 +361,8 @@ class EppyDocumentMixin:
             if obj is None:
                 msg = f"No {obj_type} named '{obj_name}'"
                 raise KeyError(msg)
-            setattr(obj, to_python_name(field_name), value)
+            # setattr normalizes the name itself, and keeps a field whose schema name ends in "_".
+            setattr(obj, field_name, value)
 
     # -- Surfaces (common access pattern) ------------------------------------
 

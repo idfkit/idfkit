@@ -594,6 +594,21 @@ class IDFObject(EppyObjectMixin):
             return []
         return cast("list[dict[str, Any]]", items)
 
+    def _field_key(self, key: str) -> str:
+        """Resolve an attribute or :meth:`update` key to the data key it names.
+
+        Normally this is :func:`to_python_name`. A key that is already exactly one of the
+        type's fields is kept as given, so a schema property that ends in ``_``
+        (``cond_flag_is_the_basement_conditioned_``, ``name_``) is not stripped into a
+        name the type does not have.
+        """
+        python_key = to_python_name(key)
+        if python_key != key:
+            field_order = self._field_order
+            if field_order is not None and key in field_order:
+                return key
+        return python_key
+
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check whether *python_key* is a valid field name for this object.
 
@@ -655,7 +670,7 @@ class IDFObject(EppyObjectMixin):
             return data[key_lower]
 
         # Try python name conversion
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if python_key in data:
             return data[python_key]
 
@@ -722,7 +737,7 @@ class IDFObject(EppyObjectMixin):
             view.replace(cast("list[Any]", value))
             return
         # Normalize key to python style
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
 
         # Eppy-compat: legacy flat extensible field write
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
@@ -993,7 +1008,7 @@ class IDFObject(EppyObjectMixin):
         group: dict[str, tuple[str, Any]] = {}
         for source in (values if values is not None else {}, kwargs):
             for key, value in source.items():
-                group[key if key[:1] == "_" else to_python_name(key)] = (key, value)
+                group[key if key[:1] == "_" else self._field_key(key)] = (key, value)
         refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
         if refused:
             self._refuse(refused)
@@ -1004,7 +1019,7 @@ class IDFObject(EppyObjectMixin):
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
             return RefusedEntry(key, "unknown", "private attribute, not a field")
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if key.lower() == "name" or python_key == "name":
             return RefusedEntry(key, "name", "use rename() to change an object's name")
         wrapper_key = self._wrapper_key
