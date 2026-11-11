@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The README opens with the idfkit identity header at `identity-2026.5`: the mark, the
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
+- A field whose epJSON key ends in `_` can be given without the underscore, in `add()`,
+  attribute access and `update()`: `cond_flag_is_the_basement_conditioned="FALSE"` sets
+  `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`. The value is
+  stored and written under the schema's key. The underscore comes from IDD names that end in
+  punctuation, and EnergyPlus has started dropping it: `WindowShadingControl`'s
+  `construction_with_shading_name_` in 9.0.1 and 9.1.0 is `construction_with_shading_name` from
+  9.2.0, and the one spelling now works on both. `add()` refuses a call that gives both
+  spellings of one field. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc))
 - `IDFDocument.revision`, a counter bumped exactly once by every change to a document's objects
   (add, remove, field write, rename, extensible-group edit) and never by a read. Derived views such
   as the coming HVAC topology use it to know when a cached copy is stale.

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Container, Iterator, Mapping
+from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
@@ -433,6 +433,21 @@ def to_python_name(idf_name: str) -> str:
     return _FIELD_NAME_PATTERN.sub("_", idf_name.lower()).strip("_")
 
 
+def resolve_trailing_underscore_keys(data: dict[str, Any], field_names: Sequence[str]) -> dict[str, Any]:
+    """Rename keys of *data* that name a trailing-underscore field without its underscore.
+
+    ``cond_flag_is_the_basement_conditioned`` becomes ``cond_flag_is_the_basement_conditioned_``
+    when the latter is one of *field_names* and the former is not. A key whose underscored form
+    is also given is left as it is, so the conflict is reported as an unknown field rather than
+    settled silently. Returns *data* itself when nothing is renamed.
+    """
+    fields = frozenset(field_names)
+    renames = {key: key + "_" for key in data if key not in fields and key + "_" in fields and key + "_" not in data}
+    if not renames:
+        return data
+    return {renames.get(key, key): value for key, value in data.items()}
+
+
 def to_idf_name(python_name: str) -> str:
     """Convert Python name back to IDF-style name.
 
@@ -607,16 +622,22 @@ class IDFObject(EppyObjectMixin):
     def _field_key(self, key: str) -> str:
         """Resolve an attribute or :meth:`update` key to the data key it names.
 
-        Normally this is :func:`to_python_name`. A key that is already exactly one of the
-        type's fields is kept as given, so a schema property that ends in ``_``
-        (``cond_flag_is_the_basement_conditioned_``, ``name_``) is not stripped into a
-        name the type does not have.
+        Normally this is :func:`to_python_name`. Some epJSON properties end in ``_``
+        because the IDD field name ends in punctuation (``"COND: Flag: Is the basement
+        conditioned?"`` is ``cond_flag_is_the_basement_conditioned_``). Such a field is
+        reached by its exact key and by the spelling without the underscore, which is what
+        :func:`to_python_name` makes of either; both resolve to the schema's key, so the
+        value is stored and written under the name EnergyPlus reads.
         """
         python_key = to_python_name(key)
-        if python_key != key:
-            field_order = self._field_order
-            if field_order is not None and key in field_order:
-                return key
+        if python_key in self._data:
+            return python_key
+        field_order = self._field_order
+        if field_order is None or python_key in field_order:
+            return python_key
+        trailing = python_key + "_"
+        if trailing in field_order:
+            return trailing
         return python_key
 
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
