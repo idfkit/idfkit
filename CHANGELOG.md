@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed fields whose names look like a flat spelling of the type's own extensible group are now
+  kept as fixed fields. `MaterialProperty:GlazingSpectralData` (`wavelength_1` …
+  `back_reflectance_4`), `Site:SpectrumData` (`wavelength`, `spectrum`, `wavelength_1`,
+  `spectrum_2`) and `ZoneHVAC:HybridUnitaryHVAC` (`mode_0_*`) were affected. `add()` and
+  `load_epjson()` moved these values into the extensible groups with a deprecation warning, so
+  `write_idf` wrote the fixed fields blank and shifted the data after them. On
+  `Site:SpectrumData`, `wavelength_1` silently overwrote `wavelength`. Attribute assignment
+  stored the value in a group, attribute reads of an unset field returned a group's value, and
+  `update()` refused the field as a legacy flat name.
+  ([cee2d7c](https://github.com/idfkit/idfkit/commit/cee2d7c))
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
   swallowed the object after it, and EnergyPlus read that object's type name and values as fields
   of the empty one. This happened to a nameless type with no fixed fields
