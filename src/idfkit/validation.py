@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable
 
     from .document import IDFDocument
     from .objects import IDFObject
@@ -272,22 +272,6 @@ def validate_object(
     )
 
 
-def unknown_fields(schema: EpJSONSchema, obj_type: str, data: Mapping[str, Any]) -> list[str]:
-    """Return the keys of *data* that *obj_type*'s schema does not name, in input order.
-
-    These are the keys :func:`validate_object` reports as ``W003``. On an extensible type the
-    wrapper key (``reports``, ``vertices``, ...) is a known field; any flat spelling left in
-    *data* is not, since :meth:`IDFDocument.add` folds the valid ones into the wrapper first.
-    Blank values (``None`` or ``""``) are skipped, as ``W003`` skips them. An object type the
-    schema does not know yields an empty list.
-    """
-    rules = _object_rules(schema, obj_type)
-    if rules is None:
-        return []
-    fields = rules.fields
-    return [key for key, value in data.items() if key not in fields and value is not None and value != ""]
-
-
 def _validate_object(  # noqa: C901
     obj: IDFObject,
     schema: EpJSONSchema,
@@ -336,13 +320,11 @@ def _validate_object(  # noqa: C901
 
     # Check field types and ranges
     for field_name, value in data.items():
-        if value is None or value == "":
-            continue
-
         rule = field_rules.get(field_name)
         if rule is None:
-            # Unknown field. Valid flat extensible spellings were folded into the wrapper key
-            # by add(), and the wrapper key is a known field, so anything left is unknown.
+            # Unknown field, whatever its value. Valid flat extensible spellings were folded into
+            # the wrapper key on the way in (add(), the epJSON parser), and the wrapper key is a
+            # known field, so anything left is unknown.
             if check_unknown:
                 errors.append(
                     ValidationError(
@@ -354,6 +336,8 @@ def _validate_object(  # noqa: C901
                         code="W003",
                     )
                 )
+            continue
+        if value is None or value == "":
             continue
 
         # Most fields constrain nothing but their type, and most values already have it;
@@ -856,13 +840,11 @@ class _ObjectRules:
     Attributes:
         fields: Compiled rule per known field. A field absent here is an unknown field.
         required: Names the schema marks required.
-        extensible: Whether the type accepts fields the schema does not name.
         contributing: Fields carrying ``reference``, so their value declares a name.
     """
 
     fields: dict[str, _FieldRule]
     required: set[str]
-    extensible: bool
     contributing: tuple[str, ...]
 
 
@@ -887,10 +869,9 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
     properties: dict[str, Any] = inner_schema.get("properties", {})
     rules = _ObjectRules(
         # A falsy field schema was treated as an unknown field before compilation existed;
-        # leaving it out of `fields` keeps that.
+        # leaving it out of `fields` keeps that. ParsingCache.known_keys applies the same rule.
         fields={name: _compile_field_rule(spec) for name, spec in properties.items() if spec},
         required=set(inner_schema.get("required", [])),
-        extensible=schema.is_extensible(obj_type),
         contributing=tuple(name for name, spec in properties.items() if spec and spec.get("reference")),
     )
     by_type[obj_type] = rules

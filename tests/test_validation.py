@@ -10,13 +10,13 @@ from unittest.mock import patch
 import pytest
 
 from idfkit import IDFDocument, load_epjson, new_document
-from idfkit.exceptions import ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.schema import get_schema
 from idfkit.validation import (
     Severity,
     ValidationError,
     ValidationResult,
+    _object_rules,  # pyright: ignore[reportPrivateUsage]
     _unpopulated_reference_lists,  # pyright: ignore[reportPrivateUsage]
     _validate_field,  # pyright: ignore[reportPrivateUsage]
     _validate_field_range,  # pyright: ignore[reportPrivateUsage]
@@ -25,6 +25,7 @@ from idfkit.validation import (
     validate_document,
     validate_object,
 )
+from idfkit.versions import ENERGYPLUS_VERSIONS
 
 # ---------------------------------------------------------------------------
 # ValidationError
@@ -280,6 +281,19 @@ class TestValidateObjectUnknownType:
         assert errors[0].severity == Severity.WARNING
 
 
+class TestKnownKeysAgreeWithValidation:
+    def test_parsing_cache_known_keys_match_w003(self) -> None:
+        """add() refuses against ParsingCache.known_keys and W003 against the compiled rules; one set."""
+        for version in ENERGYPLUS_VERSIONS:
+            schema = get_schema(version)
+            for obj_type in schema.object_types:
+                cache = schema.get_parsing_cache(obj_type)
+                rules = _object_rules(schema, obj_type)
+                assert cache is not None
+                assert rules is not None
+                assert cache.known_keys == frozenset(rules.fields), (version, obj_type)
+
+
 class TestValidateObjectUnknownField:
     def test_unknown_field_on_non_extensible_produces_w003(self) -> None:
         schema = get_schema((24, 1, 0))
@@ -314,56 +328,23 @@ class TestValidateObjectUnknownField:
         errors = _validate_object(obj, schema, check_unknown=True)
         assert any(e.code == "W003" and e.field == "vertex_999_x_coordinate" for e in errors)
 
-    def test_unknown_field_on_extensible_skipped_when_check_unknown_false(self) -> None:
+    @pytest.mark.parametrize("value", [None, ""])
+    def test_blank_unknown_field_produces_w003(self, value: str | None) -> None:
+        """A blank value does not make an unknown key known; add() would store it otherwise."""
         schema = get_schema((24, 1, 0))
-        obj = IDFObject(obj_type="Output:Table:SummaryReports", name="", data={"report_1": "AllSummary"})
+        obj = IDFObject(obj_type="Zone", name="Z1", data={"not_a_real_field": value})
+        errors = _validate_object(obj, schema, check_unknown=True)
+        assert [(e.code, e.field) for e in errors] == [("W003", "not_a_real_field")]
+
+    @pytest.mark.parametrize(
+        ("obj_type", "field"),
+        [("Zone", "not_a_real_field"), ("Output:Table:SummaryReports", "report_1")],
+    )
+    def test_unknown_field_skipped_when_check_unknown_false(self, obj_type: str, field: str) -> None:
+        schema = get_schema((24, 1, 0))
+        obj = IDFObject(obj_type=obj_type, name="x", data={field: "value"})
         errors = _validate_object(obj, schema, check_unknown=False)
         assert not any(e.code == "W003" for e in errors)
-
-
-def _unknown_fields(exc: ValidationFailedError) -> list[str | None]:
-    return [e.field for e in exc.errors if isinstance(e, ValidationError) and e.code == "W003"]
-
-
-class TestAddRejectsUnknownExtensibleSpelling:
-    """``add()`` validates by default, so an unknown key on an extensible type must fail there."""
-
-    def test_add_rejects_nonexistent_flat_spelling(self) -> None:
-        doc = new_document(version=(24, 1, 0))
-        with pytest.raises(ValidationFailedError) as exc_info:
-            doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")
-        assert _unknown_fields(exc_info.value) == ["report_1"]
-        assert len(doc["Output:Table:SummaryReports"]) == 0
-
-    def test_add_accepts_wrapper_list(self) -> None:
-        doc = new_document(version=(24, 1, 0))
-        obj = doc.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}])
-        assert obj.data == {"reports": [{"report_name": "AllSummary"}]}
-
-    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-    def test_add_accepts_valid_flat_spelling(self) -> None:
-        """The deprecated flat spellings are folded into the wrapper before validation runs."""
-        doc = new_document(version=(24, 1, 0))
-        obj = doc.add(
-            "Output:Table:SummaryReports",
-            "",
-            report_name="AllSummary",
-            report_name_2="ZoneComponentLoadSummary",
-        )
-        assert obj.data == {
-            "reports": [{"report_name": "AllSummary"}, {"report_name": "ZoneComponentLoadSummary"}],
-        }
-
-    def test_add_rejects_unknown_key_beside_wrapper(self) -> None:
-        doc = new_document(version=(24, 1, 0))
-        with pytest.raises(ValidationFailedError) as exc_info:
-            doc.add(
-                "Output:Table:SummaryReports",
-                "",
-                reports=[{"report_name": "AllSummary"}],
-                bogus_field="x",
-            )
-        assert _unknown_fields(exc_info.value) == ["bogus_field"]
 
     def test_validate_document_reports_unknown_extensible_key(self, tmp_path: Path) -> None:
         """A file can still carry such a key, since loading does not reject it; validation reports it."""
@@ -376,12 +357,6 @@ class TestAddRejectsUnknownExtensibleSpelling:
         )
         result = validate_document(load_epjson(path))
         assert any(w.code == "W003" and w.field == "report_1" for w in result.warnings)
-
-    def test_unknown_field_skipped_when_check_unknown_false(self) -> None:
-        schema = get_schema((24, 1, 0))
-        obj = IDFObject(obj_type="Zone", name="Z1", data={"not_a_real_field": "value"})
-        errors = _validate_object(obj, schema, check_unknown=False)
-        assert not any(e.code == "W003" for e in errors)
 
 
 # ---------------------------------------------------------------------------
