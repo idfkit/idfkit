@@ -42,13 +42,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#263](https://github.com/idfkit/idfkit/pull/263))
 - `idfkit.hvac.check_topology()` and `HVACTopology.check()` run static connection checks: T010, a
   branch listing nodes the component does not have; T011, consecutive branch components that do
-  not connect; T030, an inlet nothing supplies or a branch outlet nothing takes; T090 and T091,
-  what could not be checked. T010 and T011 are errors: on the 769 EnergyPlus 26.2 example files
-  they report nothing. T030 is a warning: it reports 25 nodes on 11 of those files. A finding
+  not connect; T001, a component inlet nothing supplies that is neither a loop's own inlet nor
+  outdoor air; T002, a zone inlet nothing supplies; T003, a zone exhaust nothing draws from; T004,
+  a node that only setpoint managers, sensors, controllers or actuators name; T030, an outlet a
+  branch carries that nothing takes; T090 and T091, what could not be checked. Each node is
+  reported once, under the most specific code. T010 and T011 are errors: on the 769 EnergyPlus
+  26.2 example files they report nothing. T001 to T004 and T030 are warnings: on those files T001
+  reports 25 nodes on 11 of them, T003 one node, and the others nothing. A finding
   that relies on a rule EnergyPlus never reported is never an error. A clean result does not
   mean a model simulates. On a 6,876-object model the view and its checks take 27 ms, 11% of
   loading it. Earlier EnergyPlus versions are not measured yet, so no severity is capped.
-  ([#263](https://github.com/idfkit/idfkit/pull/263))
+  ([#263](https://github.com/idfkit/idfkit/pull/263), [78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
+- `HVACTopology.loops()`, `memberships(obj)`, `chain(loop, side)` and `zones_served(air_loop)`
+  answer which loop a component is on and what a loop holds. `loops()` lists every `AirLoopHVAC`,
+  `PlantLoop` and `CondenserLoop`, air loops first. `memberships()` returns `LoopMembership`
+  records: a component on a branch reports the branch and its 0-based position, one on an air
+  loop's path but on no branch (an outdoor-air mixer, a terminal unit) reports the side alone,
+  and zone equipment reports its `ZoneHVAC:EquipmentConnections`; a water coil reports both its
+  air loop and its water loop. `chain()` gives one side of a loop in flow order, one list per
+  branch, or for an air loop's demand side one per path to and from the zones. `zones_served()`
+  lists the zones or spaces an air loop's demand side reaches. The first `memberships()` call on
+  a 6,876-object model takes about 5 ms. ([78721c5](https://github.com/idfkit/idfkit/commit/78721c5),
+  [b96c190](https://github.com/idfkit/idfkit/commit/b96c190))
+- `IDFDocument.rename_node(old, new)` renames a node everywhere it is used: every node field
+  naming it and every `NodeList` entry, while a field naming a `NodeList` keeps naming the list.
+  Node names are strings, so `rename()` never reached them. Each write goes through the normal
+  field write, so `revision` moves and cached views are rebuilt; if one fails, the writes already
+  made are undone. It refuses a new name that is already a node of the model, so two nodes are
+  never merged, leaves output variable keys and other free text alone, and returns a
+  `NodeRenameResult`. ([78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
 
 ### Changed
 
