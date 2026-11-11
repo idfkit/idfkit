@@ -19,7 +19,7 @@ from collections.abc import Collection, Iterable, Mapping
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, cast
 
 from idfkit._derived import get_or_build
-from idfkit._graph_common import MAX_EXAMPLES, Coverage, ObjectKey, UncoveredPart
+from idfkit._graph_common import MAX_EXAMPLES, Coverage, ObjectKey, UncoveredPart, display_name
 from idfkit.hvac._categories import category_of
 from idfkit.hvac._node_fields import NODE_FIELDS
 from idfkit.hvac._port_rules import PORT_RULES
@@ -206,17 +206,6 @@ def _select(rules: tuple[_Rule, ...], obj: IDFObject, schema: EpJSONSchema) -> _
     return fallback
 
 
-def _display_name(obj: IDFObject) -> str:
-    """The name an object is known by: its name, or for unnamed types the zone or space it serves."""
-    if obj.name:
-        return obj.name
-    for field in ("zone_name", "space_name"):
-        value = obj.data.get(field)
-        if isinstance(value, str) and value:
-            return value
-    return obj.obj_type
-
-
 # --------------------------------------------------------------------------------------------- #
 # The view
 # --------------------------------------------------------------------------------------------- #
@@ -262,6 +251,7 @@ class HVACTopology:
         "_ems_unresolved",
         "_findings",
         "_in_adj",
+        "_members",
         "_memberships",
         "_meta",
         "_node_edges",
@@ -301,6 +291,7 @@ class HVACTopology:
         self._coverage = Coverage.of(())
         self._findings: list[TopologyFinding] | None = None
         self._memberships: dict[int, list[LoopMembership]] | None = None
+        self._members: dict[ObjectKey, list[tuple[IDFObject, LoopMembership]]] | None = None
         self._node_lists: dict[str, tuple[str, ...]] | None = None
         self._chains: dict[tuple[int, LoopSide], list[list[IDFObject]]] = {}
         self._build()
@@ -336,10 +327,10 @@ class HVACTopology:
     def _add_object(self, obj: IDFObject) -> int:
         oid = len(self._obj)
         self._obj.append(obj)
-        self._obj_key.append(ObjectKey(obj.obj_type, _display_name(obj)))
+        self._obj_key.append(ObjectKey(obj.obj_type, display_name(obj)))
         self._obj_cat.append(category_of(obj.obj_type))
         self._obj_index[id(obj)] = oid
-        self._obj_lookup.setdefault((obj.obj_type.upper(), _display_name(obj).upper()), oid)
+        self._obj_lookup.setdefault((obj.obj_type.upper(), display_name(obj).upper()), oid)
         self._obj_uses.append([])
         self._out_adj.append([])
         self._in_adj.append([])
@@ -631,7 +622,7 @@ class HVACTopology:
                 UncoveredPart(
                     "hvac_template",
                     len(templates),
-                    tuple(ObjectKey(o.obj_type, _display_name(o)) for o in templates[:MAX_EXAMPLES]),
+                    tuple(ObjectKey(o.obj_type, display_name(o)) for o in templates[:MAX_EXAMPLES]),
                     "HVACTemplate objects have no nodes until ExpandObjects expands them; their systems are not covered.",
                 )
             )
@@ -649,7 +640,7 @@ class HVACTopology:
                 UncoveredPart(
                     "unclassified_type",
                     len(unclassified),
-                    tuple(ObjectKey(o.obj_type, _display_name(o)) for o in unclassified[:MAX_EXAMPLES]),
+                    tuple(ObjectKey(o.obj_type, display_name(o)) for o in unclassified[:MAX_EXAMPLES]),
                     "These object types name nodes but have no connection rule; their connections are not known.",
                 )
             )
@@ -672,7 +663,7 @@ class HVACTopology:
             return oid
         object_type = obj.obj_type.upper()
         object_type = ZONE_VERTEX.get(object_type, object_type)
-        return self._obj_lookup.get((object_type, _display_name(obj).upper()))
+        return self._obj_lookup.get((object_type, display_name(obj).upper()))
 
     def _start_nodes(self, name: str) -> list[int]:
         """Node ids for a walk start: the node itself, or every node of a ``NodeList`` of that name."""
@@ -1124,6 +1115,21 @@ class HVACTopology:
             self._memberships = self._build_memberships()
         oid = self._oid(obj)
         return list(self._memberships.get(oid, [])) if oid is not None else []
+
+    def _members_of(self, loop: ObjectKey) -> list[tuple[IDFObject, LoopMembership]]:
+        """The components on *loop* and their membership, the reverse of :meth:`memberships`.
+
+        For the combined graph view, which walks a membership edge from either end.
+        """
+        if self._members is None:
+            if self._memberships is None:
+                self._memberships = self._build_memberships()
+            members: dict[ObjectKey, list[tuple[IDFObject, LoopMembership]]] = {}
+            for oid, found in self._memberships.items():
+                for membership in found:
+                    members.setdefault(membership.loop, []).append((self._obj[oid], membership))
+            self._members = members
+        return list(self._members.get(loop, []))
 
     def chain(self, loop: IDFObject, side: Literal["supply", "demand"]) -> list[list[IDFObject]]:
         """One side of a loop, in flow order.
