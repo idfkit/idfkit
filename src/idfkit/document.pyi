@@ -75,6 +75,25 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         change while schema operations remain coherent.
         """
     @property
+    def revision(self) -> int:
+        """Monotonic; bumped by add, removeidfobject, field assignment, rename, rename_node.
+
+        Every change to the document's objects bumps it exactly once, and reading never does. Two
+        equal values mean the document has not changed in between, which is what derived views
+        such as the HVAC topology use to decide whether a cached copy is still valid.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> before = model.revision
+            >>> zone = model.add("Zone", "Office")
+            >>> model.revision == before + 1
+            True
+            >>> zone.x_origin = 2.0
+            >>> model.revision == before + 2
+            True
+        """
+    @property
     def strict(self) -> Strict:
         """Whether strict field access mode is enabled.
 

@@ -185,6 +185,40 @@ class InMemoryAsyncFileSystem:
             del self._files[key]
 
 
+# ---------------------------------------------------------------------------
+# Corpus measurement (research R-34)
+# ---------------------------------------------------------------------------
+#
+# ``--corpus VERSION=PATH`` points the HVAC corpus test at an ExampleFiles directory for one
+# EnergyPlus version. Repeat it to measure several versions in one run. It is an option, not an
+# environment variable, so the measured versions are visible in the command that produced them.
+
+
+def _parse_corpus(value: str) -> tuple[str, Path]:
+    version, sep, path = value.partition("=")
+    if not sep or not version.strip() or not path.strip():
+        msg = f"--corpus expects VERSION=PATH, got {value!r}"
+        raise pytest.UsageError(msg)
+    return version.strip(), Path(path.strip()).expanduser()
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--corpus",
+        action="append",
+        default=[],
+        metavar="VERSION=PATH",
+        help="ExampleFiles directory of one EnergyPlus version for the HVAC corpus measurement; repeatable.",
+    )
+
+
+@pytest.fixture(scope="session")
+def corpus_dirs(pytestconfig: pytest.Config) -> dict[str, Path]:
+    """The ``--corpus`` directories, keyed by EnergyPlus version (empty when none was given)."""
+    raw: list[str] = pytestconfig.getoption("corpus")
+    return dict(_parse_corpus(value) for value in raw)
+
+
 @pytest.fixture(autouse=True)
 def _disable_weather_update_check(monkeypatch: pytest.MonkeyPatch) -> None:
     """Suppress the weather index freshness nudge in `StationIndex.load()`.

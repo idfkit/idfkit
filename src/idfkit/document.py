@@ -131,8 +131,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         "_collections",
         "_count_at_read",
         "_cst",
+        "_derived",
         "_raw_text",
         "_references",
+        "_revision",
         "_schedules_cache",
         "_schema",
         "_spans",
@@ -158,6 +160,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     the epJSON writer. Nothing outside this package needs to ask.
     """
     _count_at_read: int | None
+    _revision: int
+    _derived: dict[str, tuple[int, object]]
 
     def __init__(
         self,
@@ -192,6 +196,30 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         self._spans: dict[IDFObject, tuple[SourceSpan, CSTNode]] | None = None
         self._raw_text: str | None = None
         self._count_at_read: int | None = None
+        self._revision = 0
+        # Derived views (HVAC topology, results index), each stored with the revision it was built at.
+        self._derived: dict[str, tuple[int, object]] = {}
+
+    @property
+    def revision(self) -> int:
+        """Monotonic; bumped by add, removeidfobject, field assignment, rename, rename_node.
+
+        Every change to the document's objects bumps it exactly once, and reading never does. Two
+        equal values mean the document has not changed in between, which is what derived views
+        such as the HVAC topology use to decide whether a cached copy is still valid.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> before = model.revision
+            >>> zone = model.add("Zone", "Office")
+            >>> model.revision == before + 1
+            True
+            >>> zone.x_origin = 2.0
+            >>> model.revision == before + 2
+            True
+        """
+        return self._revision
 
     @property
     def strict(self) -> bool:
@@ -843,6 +871,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if resolved_obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
+        self._revision += 1
         logger.debug("Added %s '%s'", resolved_obj_type, name)
         return obj
 
@@ -854,6 +883,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         when a ``Version`` object is added (e.g. during parsing or copy).
         """
         result = super().addidfobject(obj)
+        self._revision += 1
         if obj.obj_type.upper() == "VERSION":
             vi = obj.data.get("version_identifier")
             if isinstance(vi, str) and vi.strip():
@@ -891,6 +921,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
+        self._revision += 1
         logger.debug("Removed %s '%s'", obj_type, obj.name)
 
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
@@ -971,6 +1002,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if obj_type.upper().startswith("SCHEDULE"):
             self._schedules_cache = None
 
+        self._revision += 1
+
         logger.debug(
             "Renamed %s '%s' -> '%s' (updated %d referencing objects)",
             obj_type,
@@ -997,6 +1030,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         old_str = old_value if isinstance(old_value, str) else None
         new_str = new_value if isinstance(new_value, str) else None
         self._references.update_reference(obj, field_name, old_str, new_str)
+        self._revision += 1
 
     def _index_object_references(self, obj: IDFObject) -> None:
         """Index all references in an object using pre-computed ref_fields."""
