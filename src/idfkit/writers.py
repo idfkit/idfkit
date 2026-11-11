@@ -752,7 +752,25 @@ class IDFWriter:
             values.pop()
             comments.pop()
 
+        # An object with nothing to write still needs one value to carry its terminator. A nameless
+        # type whose only fields are an extensible group (Output:Diagnostics, Output:Table:SummaryReports,
+        # OutdoorAir:NodeList ...) has no values at all when it holds no groups, and without this the
+        # object came out as a bare ``Output:Diagnostics,`` that swallowed the object after it. One
+        # blank field, ``Output:Diagnostics,;``, rather than ``Output:Diagnostics;``: EnergyPlus's IDF
+        # parser does not accept the second and reads on into the next object exactly as it does when
+        # the terminator is missing.
+        if not values:
+            values.append("")
+            comments.append(self._first_field_label(obj_type, pc))
+
         return values, comments
+
+    def _first_field_label(self, obj_type: str, pc: ParsingCache | None) -> str:
+        """The comment label for an object's first field, for the blank written into an empty object."""
+        schema = self._doc.schema
+        fields = schema.get_all_field_names(obj_type) if schema else []
+        first = fields[0] if fields else (pc.ext_field_names[0] if pc and pc.ext_field_names else "")
+        return first.replace("_", " ").title()
 
     def format_object(self, obj: IDFObject, source_text: str | None = None) -> str:
         """Convert a single object to IDF string.

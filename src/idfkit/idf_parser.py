@@ -739,7 +739,15 @@ class IDFParser:
                 if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
                     invalid.append((i, field_name, value))
 
-        if not pc.extensible and len(remaining_fields) > num_named and self._strict_parsing:
+        # Blank overflow is unset, like any other blank field, and is not an extra value. It is how
+        # an object with nothing in it is written, ``GroundHeatTransfer:Slab:XFACE,;``, the one
+        # spelling EnergyPlus reads as an empty object; refusing it refused idfkit's own output.
+        if (
+            not pc.extensible
+            and len(remaining_fields) > num_named
+            and self._strict_parsing
+            and any(remaining_fields[num_named:])
+        ):
             overflow = len(remaining_fields) - num_named
             msg = (
                 f"Object has {overflow} extra field(s) but type is not extensible "

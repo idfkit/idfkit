@@ -1109,3 +1109,88 @@ class TestVersionFirstControl:
             reparsed_source.write_text(write_idf(model, version_first=pinned), encoding="latin-1")
             reparsed = parse_idf(reparsed_source)
             assert sorted(reparsed.collections) == sorted(model.collections)
+
+
+def _field_less_types() -> list[str]:
+    """Nameless types with no fixed fields: when they hold no extensible groups, nothing is left to write."""
+    from idfkit.schema import get_schema
+
+    schema = get_schema((24, 1, 0))
+    return [t for t in schema.object_types if not schema.has_name(t) and not schema.get_all_field_names(t)]
+
+
+class TestIDFWriterObjectWithNoFields:
+    """An object with nothing to write still ends with its own terminator.
+
+    A nameless type whose only fields are an extensible group (``Output:Diagnostics``,
+    ``Output:Table:SummaryReports``, ``OutdoorAir:NodeList`` ...) has no values at all when it holds
+    no groups. The writer emitted just ``Output:Table:SummaryReports,`` with no ``;``, so the object
+    swallowed the next one: EnergyPlus read the following ``Output:Variable``'s type name and values
+    as report names and stopped with Severe errors.
+
+    ``Type;`` is not an answer either. EnergyPlus's IDF parser does not accept it and reads on into
+    the next object exactly as it does with the missing terminator; ``Type,;``, one blank field, is
+    the spelling it reads as an empty object.
+    """
+
+    def test_the_affected_types_are_the_ones_this_is_about(self) -> None:
+        affected = _field_less_types()
+        assert "Output:Table:SummaryReports" in affected
+        assert "Output:Diagnostics" in affected
+
+    @pytest.mark.parametrize("output_type", ["standard", "nocomment", "compressed"])
+    def test_empty_object_is_terminated(self, output_type: Any) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Table:SummaryReports", "")
+        doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
+
+        output = write_idf(doc, output_type=output_type)
+
+        body = output.split("Output:Table:SummaryReports,", 1)[1].split("Output:Variable", 1)[0]
+        assert ";" in body, f"no terminator before the next object:\n{output}"
+
+    def test_standard_output_is_one_blank_field(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Diagnostics", "")
+
+        output = write_idf(doc)
+
+        assert "Output:Diagnostics,\n  ;                          !- Key\n" in output
+
+    @pytest.mark.parametrize("obj_type", _field_less_types())
+    @pytest.mark.parametrize("output_type", ["standard", "nocomment", "compressed"])
+    def test_round_trip_keeps_the_next_object(self, tmp_path: Path, obj_type: str, output_type: Any) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add(obj_type, "", validate=False)
+        doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
+        path = tmp_path / "model.idf"
+        save_idf(doc, path, output_type=output_type)
+
+        roundtrip = parse_idf(path)
+
+        assert len(roundtrip[obj_type]) == 1
+        assert roundtrip[obj_type].first() is not None
+        assert len(roundtrip["Output:Variable"]) == 1
+
+    def test_copy_writes_the_terminator(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Table:SummaryReports", "")
+        doc.add("Output:Variable", "", key_value="*", variable_name="Site Outdoor Air Drybulb Temperature")
+
+        output = write_idf(doc.copy())
+
+        assert "Output:Table:SummaryReports,\n  ;" in output
+
+    def test_preserving_path_terminates_an_added_empty_object(self, tmp_path: Path) -> None:
+        source = tmp_path / "source.idf"
+        source.write_text("Version,24.1;\n\nOutput:Variable,*,Site Outdoor Air Drybulb Temperature,Hourly;\n")
+        doc = parse_idf(source, preserve_formatting=True)
+        doc.add("Output:Table:SummaryReports", "")
+        doc.add("Output:Variable", "", key_value="Zone 1", variable_name="Zone Mean Air Temperature")
+        path = tmp_path / "model.idf"
+        save_idf(doc, path)
+
+        roundtrip = parse_idf(path)
+
+        assert len(roundtrip["Output:Table:SummaryReports"]) == 1
+        assert len(roundtrip["Output:Variable"]) == 2
