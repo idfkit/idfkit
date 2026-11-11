@@ -84,10 +84,11 @@ def test_basement_interior_update_and_write() -> None:
 
 
 def test_report_period_name_underscore_is_a_field_not_the_object_name() -> None:
+    """Up to 25.1 ``Output:Table:ReportPeriod`` has no Name field; ``name_`` is its first field."""
     doc = new_document((24, 1, 0))
-    obj = doc.add("Output:Table:ReportPeriod", "Period", validate=False)
+    obj = doc.add("Output:Table:ReportPeriod", validate=False)
     obj.update(name_="Summer", report_name_="AllSummary")
-    assert obj.name == "Period"
+    assert obj.name == ""
     assert obj.data["name_"] == "Summer"
     assert obj.data["report_name_"] == "AllSummary"
 
@@ -182,8 +183,21 @@ def test_add_refuses_both_spellings_of_one_field() -> None:
         )
 
 
-def test_name_on_report_period_is_still_the_object_name() -> None:
+def test_name_on_nameless_report_period_is_refused_not_moved_to_name_underscore() -> None:
+    """A name on the 24.1 type, which has none, is refused and never lands in ``name_``."""
     doc = new_document((24, 1, 0))
+    with pytest.raises(InvalidFieldError, match='name_="Period"'):
+        doc.add("Output:Table:ReportPeriod", "Period", validate=False)
+    obj = doc.add("Output:Table:ReportPeriod", validate=False)
+    with pytest.raises(InvalidFieldError):
+        obj.name = "Renamed"
+    assert obj.name == ""
+    assert "name_" not in obj.data
+
+
+def test_name_on_named_report_period_is_the_object_name() -> None:
+    """From 25.2 the type has a Name field, and a name is accepted."""
+    doc = new_document((26, 1, 0))
     obj = doc.add("Output:Table:ReportPeriod", "Period", validate=False)
     obj.name = "Renamed"
     assert obj.name == "Renamed"

@@ -30,6 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a
+  type without a Name field, such as `Output:Meter`, `Output:Variable`, `Output:SQLite`,
+  `Timestep` or `SimulationControl` (165 of the 880 types in the 26.2 schema), whether or not
+  `validate` is set. The name used to be stored and then dropped by both writers, so
+  `add("Output:SQLite", "SimpleAndTabular")` wrote `Output:SQLite,` and EnergyPlus produced no
+  `.sql` file. The message names the field to pass instead (`key_name="Electricity:Facility"`
+  for `Output:Meter`, `option_type=...` for `Output:SQLite`); the value is never moved there for
+  you. The same rule applies to `obj.name = ...` and to `newidfobject`, `addidfobject` and
+  `copyidfobject(..., new_name=...)`. Loading existing IDF and epJSON files is unaffected.
+  ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
 - **Breaking:** `IDFDocument.add()` refused a key that is not a field of the object type even
   with `validate=False`, raising `InvalidFieldError` that names every such key, whatever its
   value. `validate=False` used to skip schema validation entirely, so the key was stored, then
@@ -48,6 +58,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
+  a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
+  `['reporting_frequency']`. It now drops the first field only for a named type. As a result
+  `describe_object_type()` (and `IDFDocument.describe()`) lists `key_name` for `Output:Meter`,
+  and the generated `OutputMeter` class and its `update()` keywords include it; the same holds
+  for every other nameless type. Validation no longer counts a name stored on a nameless object
+  as a declared name. ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
 - Fixed fields whose names look like a flat spelling of the type's own extensible group were
   treated as that group's fields. This affected `MaterialProperty:GlazingSpectralData`
   (`wavelength_1` … `back_reflectance_4`), `Site:SpectrumData` (`wavelength`, `spectrum`,

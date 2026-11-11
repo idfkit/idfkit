@@ -208,6 +208,7 @@ class InvalidFieldError(IdfKitError, AttributeError):
         *,
         refused: Sequence[RefusedEntry] | None = None,
         operation: Literal["update", "add"] = "update",
+        message: str | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
@@ -215,11 +216,12 @@ class InvalidFieldError(IdfKitError, AttributeError):
         self.version = version
         self.extensible_fields = extensible_fields
         self.refused = tuple(refused) if refused else ()
-        msg = (
-            format_refused(obj_type, refused, operation)
-            if refused
-            else f"Invalid field '{field_name}' for object type '{obj_type}'"
-        )
+        if message is not None:
+            msg = message
+        elif refused:
+            msg = format_refused(obj_type, refused, operation)
+        else:
+            msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:

@@ -109,6 +109,8 @@ class ParsingCache:
 
     obj_schema: dict[str, Any]
     has_name: bool
+    #: The positional fields after the name: ``all_field_names[1:]`` for a named type, and all
+    #: of them for a type without a Name field, whose first field is an ordinary field.
     field_names: tuple[str, ...]
     all_field_names: tuple[str, ...]
     field_types: dict[str, str | None]
@@ -337,9 +339,10 @@ class EpJSONSchema:
         if not obj_schema:
             return []
         legacy = obj_schema.get("legacy_idd", {})
-        fields = legacy.get("fields", [])
-        # First field is 'name', return the rest
-        return fields[1:] if fields else []
+        fields: list[str] = list(legacy.get("fields", []))
+        # The first legacy field is the name only for a type that has one; for a type without
+        # a Name field (Output:Meter, Timestep, ...) it is an ordinary field and stays.
+        return fields[1:] if "name" in obj_schema else fields
 
     def get_all_field_names(self, obj_type: str) -> list[str]:
         """Get all field names including 'name'."""
@@ -470,7 +473,7 @@ class EpJSONSchema:
         legacy: dict[str, Any] = obj_schema.get("legacy_idd", {})
         all_fields_list: list[str] = legacy.get("fields", [])
         all_field_names = tuple(all_fields_list)
-        field_names = tuple(all_fields_list[1:]) if all_fields_list else ()
+        field_names = tuple(all_fields_list[1:]) if has_name else all_field_names
 
         # Extract inner schema properties
         pattern_props: dict[str, Any] = obj_schema.get("patternProperties", {})

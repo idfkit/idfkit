@@ -824,17 +824,30 @@ class TestReferenceDeclarations:
         """`FluidProperties:Name` has no name field and declares itself through `fluid_name`."""
         doc = new_document(version=(26, 1, 0))
         doc.add("FluidProperties:Name", fluid_name="R22", fluid_type="Refrigerant")
-        doc.add("FluidProperties:Saturated", name="Sat1", fluid_name="R22")
+        doc.add("FluidProperties:Saturated", fluid_name="R22")
 
         result = validate_document(doc)
 
         assert [e for e in result.errors if e.code == "E009"] == []
 
+    def test_a_name_on_a_nameless_object_declares_nothing(self) -> None:
+        """A name stored on a type without a Name field is dropped on write, so it declares nothing."""
+        doc = new_document(version=(26, 1, 0))
+        doc.add("FluidProperties:Name", fluid_name="R22", fluid_type="Refrigerant")
+        # Built without a schema, so nothing refuses the stray name on the way in.
+        stray = IDFObject(obj_type="FluidProperties:Name", name="R404A", data={"fluid_name": "R410A"})
+        doc.addidfobject(stray)
+        doc.add("FluidProperties:Saturated", fluid_name="R404A")
+
+        result = validate_document(doc)
+
+        assert [e.code for e in result.errors if e.field == "fluid_name"] == ["E009"]
+
     def test_a_genuinely_undeclared_fluid_is_still_dangling(self) -> None:
         """The fix must not blanket-suppress the check it narrows."""
         doc = new_document(version=(26, 1, 0))
         doc.add("FluidProperties:Name", fluid_name="R22", fluid_type="Refrigerant")
-        doc.add("FluidProperties:Saturated", name="Sat1", fluid_name="NeverDeclared")
+        doc.add("FluidProperties:Saturated", fluid_name="NeverDeclared")
 
         result = validate_document(doc)
 

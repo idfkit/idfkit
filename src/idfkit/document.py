@@ -23,7 +23,13 @@ from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
-from .objects import IDFCollection, IDFObject, refuse_unknown_fields_for_add, resolve_trailing_underscore_keys
+from .objects import (
+    IDFCollection,
+    IDFObject,
+    refuse_name_for_nameless_type,
+    refuse_unknown_fields_for_add,
+    resolve_trailing_underscore_keys,
+)
 from .references import ReferenceGraph
 from .validation import validate_object
 from .versions import LATEST_VERSION
@@ -738,8 +744,10 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Args:
             obj_type: Object type (e.g., "Zone")
-            name: Object name (optional for object types without a name field,
-                such as Timestep, SimulationControl, GlobalGeometryRules)
+            name: The object's name. Must be empty ("" or omitted) for types without
+                a Name field, such as Output:Meter, Output:SQLite, Timestep or
+                SimulationControl; their first field is a normal field, passed by its
+                schema name (key_name=..., option_type=...).
             fields: Field values as a dict, useful when field names are
                 computed dynamically. Equivalent to passing the same keys
                 as ``**kwargs``; merged before ``kwargs`` so explicit
@@ -763,7 +771,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 required fields, invalid values)
             InvalidFieldError: If ``validate=False`` and a key is not a field of
                 the object type, naming every such key (the name goes in ``name``,
-                not in ``fields``)
+                not in ``fields``); or, in either mode, if ``name`` is not empty and
+                the type has no Name field (the message names the field to use
+                instead, e.g. ``key_name`` for Output:Meter)
             TypeError: If the extensible wrapper value is not a list of groups,
                 or a group has a key the group does not name (in either mode,
                 as ``IDFObject.update`` refuses it)
@@ -827,13 +837,13 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
 
+            # A type without a Name field drops a name on write; refuse it in either mode.
+            refuse_name_for_nameless_type(resolved_obj_type, name, obj_schema)
+
             if obj_schema.get("maxProperties") == 1:
                 self._reject_second_singleton(resolved_obj_type)
 
-            if self._schema.has_name(resolved_obj_type):
-                field_order = self._schema.get_field_names(resolved_obj_type)
-            else:
-                field_order = self._schema.get_all_field_names(resolved_obj_type)
+            field_order = self._schema.get_field_names(resolved_obj_type)
             parsing_cache = self._schema.get_parsing_cache(resolved_obj_type)
             field_order = self._build_field_order_for_add(field_order, field_data, parsing_cache)
             ref_fields = self._compute_ref_fields(self._schema, resolved_obj_type)
