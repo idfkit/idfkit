@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `mode_0_minimum_outdoor_air_temperature`, was read as the last group: assignment overwrote the
   last group's value, or raised `IndexError` when there were no groups, and `add()` inserted it
   as a new first group. Group numbers now start at 1, so such a name is an unknown field.
+  ([da8a613](https://github.com/idfkit/idfkit/commit/da8a613))
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
   swallowed the object after it, and EnergyPlus read that object's type name and values as fields
   of the empty one. This happened to a nameless type with no fixed fields
