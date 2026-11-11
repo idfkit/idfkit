@@ -23,7 +23,7 @@ from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
 from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
-from .objects import IDFCollection, IDFObject
+from .objects import IDFCollection, IDFObject, resolve_trailing_underscore_keys
 from .references import ReferenceGraph
 from .validation import unknown_fields, validate_object
 from .versions import LATEST_VERSION
@@ -804,6 +804,9 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             pc = self._schema.get_parsing_cache(resolved_obj_type)
             if pc and pc.ext_field_names:
                 field_data = self._normalize_extensible_input(resolved_obj_type, field_data, pc)
+            # A trailing-underscore field (cond_flag_is_the_basement_conditioned_) may be given
+            # without its underscore; store it under the schema's key.
+            field_data = resolve_trailing_underscore_keys(field_data, pc.all_field_names if pc else ())
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)

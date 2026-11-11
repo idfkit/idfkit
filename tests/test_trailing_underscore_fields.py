@@ -1,8 +1,9 @@
-"""Fields whose epJSON property name ends in ``_`` are reachable by assignment and ``update()``.
+"""Fields whose epJSON property name ends in ``_`` are reachable by assignment, ``update()`` and ``add()``.
 
-``to_python_name`` strips a trailing underscore, so ``cond_flag_is_the_basement_conditioned_``
-used to resolve to ``cond_flag_is_the_basement_conditioned``, which is not a field, and
-assignment and ``update()`` refused a real field. ``add()`` already accepted these names.
+The underscore comes from IDD field names that end in punctuation (``"COND: Flag: Is the basement
+conditioned?"``). ``to_python_name`` strips it, so assignment and ``update()`` used to refuse the
+real field. Both the schema's key and the spelling without the underscore now resolve to the
+schema's key, which is what is stored and written.
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from idfkit import IDFDocument, IDFObject, new_document, write_idf
+from idfkit import IDFDocument, IDFObject, new_document, write_epjson, write_idf
 from idfkit.exceptions import InvalidFieldError
 from idfkit.objects import to_python_name
 from idfkit.schema import get_schema
@@ -91,13 +92,13 @@ def test_report_period_name_underscore_is_a_field_not_the_object_name() -> None:
     assert obj.data["report_name_"] == "AllSummary"
 
 
-def test_stripped_spelling_is_still_unknown() -> None:
+def test_a_misspelling_is_still_unknown() -> None:
     doc = new_document((24, 1, 0))
     obj = doc.add("GroundHeatTransfer:Basement:Interior", "", validate=False)
     with pytest.raises(InvalidFieldError):
-        obj.update(cond_flag_is_the_basement_conditioned="FALSE")
+        obj.update(cond_flag_is_the_basement_conditionned="FALSE")
     with pytest.raises(InvalidFieldError):
-        obj.cond_flag_is_the_basement_conditioned = "FALSE"
+        obj.cond_flag_is_the_basement_conditionned = "FALSE"
 
 
 def test_trailing_underscore_on_an_ordinary_field_still_normalizes() -> None:
@@ -114,3 +115,76 @@ def test_eppy_dotted_update_accepts_trailing_underscore_field() -> None:
     obj = doc["GroundHeatTransfer:Basement:ManualGrid"][0]
     doc.update({f"GroundHeatTransfer:Basement:ManualGrid.{obj.name}.nx_number_of_cells_in_the_x_direction_20_": 12})
     assert obj.data["nx_number_of_cells_in_the_x_direction_20_"] == 12
+
+
+# The spelling without the underscore is an alias for the schema's key. ``name`` is not: on
+# Output:Table:ReportPeriod it is the object's name, and ``name_`` is the field.
+_STEM_FIELDS = [(v, t, k) for v, t, k in _FIELDS if k != "name_"]
+_STEM_IDS = [f"{t}.{k[:-1]}" for _, t, k in _STEM_FIELDS]
+
+
+@pytest.mark.parametrize(("version", "obj_type", "key"), _STEM_FIELDS, ids=_STEM_IDS)
+def test_stripped_spelling_resolves_to_the_schema_key(version: tuple[int, int, int], obj_type: str, key: str) -> None:
+    stem = key.rstrip("_")
+    doc = new_document(version)
+    obj = _add(doc, obj_type)
+    setattr(obj, stem, "A")
+    assert obj.data[key] == "A"
+    assert stem not in obj.data
+    assert getattr(obj, stem) == "A"
+    assert getattr(obj, key) == "A"
+    obj.update({stem: "B"})
+    assert obj.data[key] == "B"
+    assert stem not in obj.data
+
+
+@pytest.mark.parametrize(("version", "obj_type", "key"), _STEM_FIELDS, ids=_STEM_IDS)
+def test_add_stores_stripped_spelling_under_the_schema_key(
+    version: tuple[int, int, int], obj_type: str, key: str
+) -> None:
+    stem = key.rstrip("_")
+    doc = new_document(version)
+    pc = doc.schema.get_parsing_cache(obj_type) if doc.schema is not None else None
+    name = "Obj" if pc is not None and pc.has_name else ""
+    obj = doc.add(obj_type, name, {stem: "A"}, validate=False)
+    assert obj.data[key] == "A"
+    assert stem not in obj.data
+
+
+def test_stripped_spelling_is_written_under_the_schema_key() -> None:
+    doc = new_document((24, 1, 0))
+    obj = doc.add("GroundHeatTransfer:Basement:Interior", "", validate=False)
+    obj.cond_flag_is_the_basement_conditioned = "FALSE"
+    epjson = write_epjson(doc)
+    assert '"cond_flag_is_the_basement_conditioned_": "FALSE"' in epjson
+    assert '"cond_flag_is_the_basement_conditioned"' not in epjson
+
+
+def test_one_spelling_works_across_a_version_that_fixed_the_name() -> None:
+    # 9.0.1 and 9.1.0 have construction_with_shading_name_; 9.2.0 onward dropped the underscore.
+    old = new_document((9, 1, 0)).add("WindowShadingControl", "W", validate=False)
+    new = new_document((24, 1, 0)).add("WindowShadingControl", "W", validate=False)
+    old.construction_with_shading_name = "Shaded"
+    new.construction_with_shading_name = "Shaded"
+    assert old.data["construction_with_shading_name_"] == "Shaded"
+    assert new.data["construction_with_shading_name"] == "Shaded"
+
+
+def test_add_refuses_both_spellings_of_one_field() -> None:
+    doc = new_document((24, 1, 0))
+    with pytest.raises(InvalidFieldError):
+        doc.add(
+            "GroundHeatTransfer:Basement:Interior",
+            "",
+            validate=False,
+            cond_flag_is_the_basement_conditioned="TRUE",
+            cond_flag_is_the_basement_conditioned_="FALSE",
+        )
+
+
+def test_name_on_report_period_is_still_the_object_name() -> None:
+    doc = new_document((24, 1, 0))
+    obj = doc.add("Output:Table:ReportPeriod", "Period", validate=False)
+    obj.name = "Renamed"
+    assert obj.name == "Renamed"
+    assert "name_" not in obj.data
