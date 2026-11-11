@@ -229,6 +229,36 @@ def _field_docstring(
 
 # ---- object class generation ----------------------------------------------
 
+# Every typed class derives from one of these stub-only bases instead of IDFObject / ExtensibleGroup.
+# The runtime ``__getattr__``/``__setattr__`` take any ``str`` and return ``Any``, so a type checker
+# would resolve any undeclared name through them and accept ``material.thermal_resistance = 1.0`` on
+# a type that has no such field. Re-declaring both with a ``Never`` name makes every undeclared name
+# a type error, for reading and for assigning, while declared fields still resolve to their annotated
+# types (attribute lookup only falls back to ``__getattr__`` for names the class does not declare).
+# Plain ``IDFObject`` keeps the permissive signatures, so ``IDFCollection[IDFObject]`` is unaffected.
+# ``typing.Never`` is 3.11+, hence ``typing_extensions``; the import only exists in the stub, which
+# the type checker reads from its bundled typeshed, so it adds no runtime dependency.
+_TYPED_OBJECT_BASE = "_TypedIDFObject"
+_TYPED_GROUP_BASE = "_TypedExtensibleGroup"
+
+
+def _generate_typed_bases() -> list[str]:
+    """Emit the stub-only base classes that turn off the catch-all attribute access."""
+    return [
+        f"class {_TYPED_OBJECT_BASE}(IDFObject):",
+        '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
+        "",
+        "    def __getattr__(self, key: Never) -> Never: ...",
+        "    def __setattr__(self, key: Never, value: Never) -> None: ...",
+        "",
+        f"class {_TYPED_GROUP_BASE}(ExtensibleGroup):",
+        '    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""',
+        "",
+        "    def __getattr__(self, name: Never) -> Never: ...",
+        "    def __setattr__(self, name: Never, value: Never) -> None: ...",
+        "",
+    ]
+
 
 def _sanitize_docstring(text: str) -> str:
     """Replace characters that would break triple-quoted docstrings or ruff checks."""
@@ -371,7 +401,7 @@ def _generate_object_class(
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
         group_cls_name = f"{cls_name}{_to_class_name(wrapper_key.title())}Group"
-        lines.append(f"{indent}class {group_cls_name}(ExtensibleGroup):")
+        lines.append(f"{indent}class {group_cls_name}({_TYPED_GROUP_BASE}):")
         lines.append(f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""')
         for inner_name, inner_schema in ext_inner_props.items():
             if not inner_name.isidentifier():
@@ -381,7 +411,7 @@ def _generate_object_class(
             lines.append(f"{indent}    {inner_name}: {py_type} | None")
         lines.append("")
 
-    lines.append(f"{indent}class {cls_name}(IDFObject):")
+    lines.append(f"{indent}class {cls_name}({_TYPED_OBJECT_BASE}):")
 
     body_indent = indent + "    "
 
@@ -395,7 +425,7 @@ def _generate_object_class(
 
     if not field_names and not group_cls_name:
         if not has_body:
-            lines[-1] = f"{indent}class {cls_name}(IDFObject): ..."
+            lines[-1] = f"{indent}class {cls_name}({_TYPED_OBJECT_BASE}): ..."
         else:
             lines.append("")
         return lines
@@ -584,9 +614,11 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Unpack")
+    parts.append("from typing_extensions import Never, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
+    parts.append("")
+    parts.extend(_generate_typed_bases())
     parts.append("")
     parts.append("# =========================================================================")
     parts.append("# Typed object classes (one per EnergyPlus object type)")

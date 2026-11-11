@@ -52,6 +52,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A type checker now reports an undeclared field name on a typed object, for reading and for
+  assigning: `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
+  `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
+  `__setattr__` of `IDFObject` accepted any name. The same holds for the groups of an extensible
+  type, such as `surface.vertices[0]`. Declared fields, `name` and wrong-type errors behave as
+  before, plain `IDFObject` (from `doc.get_collection(...)`) stays permissive, and item access
+  (`obj[field_name]`) still takes a name known only at run time. Typing only: run-time behaviour is
+  unchanged. ([#272](https://github.com/idfkit/idfkit/pull/272))
+
 - **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a
   type without a Name field, such as `Output:Meter`, `Output:Variable`, `Output:SQLite`,
   `Timestep` or `SimulationControl` (165 of the 880 types in the 26.2 schema), whether or not
