@@ -150,10 +150,14 @@ class OutputVariableIndex:
                 )
                 count += 1
             else:
+                # Output:Meter has no name field; the meter name belongs in
+                # Key_Name. Passing it as the object name would leave the
+                # written object's first field blank.
                 # validate=False for bulk performance
                 model.add(
                     "Output:Meter",
-                    item.name,
+                    "",
+                    key_name=item.name,
                     reporting_frequency=frequency,
                     validate=False,
                 )

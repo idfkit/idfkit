@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 
-from idfkit import new_document
+from idfkit import new_document, write_idf
 from idfkit.simulation.outputs import OutputVariableIndex
 from idfkit.simulation.parsers.rdd import OutputMeter, OutputVariable
 
@@ -116,6 +117,18 @@ class TestAddAllToModel:
         index.add_all_to_model(model)
         output_meters = list(model["Output:Meter"])
         assert len(output_meters) == 5
+
+    def test_add_all_meters_store_key_name(self, index: OutputVariableIndex) -> None:
+        model = new_document()
+        index.add_all_to_model(model, frequency="Timestep")
+        key_names = {m.key_name for m in model["Output:Meter"]}
+        expected = {m.name for m in index.meters}
+        assert key_names == expected
+        written = write_idf(model)
+        assert written is not None
+        for name in expected:
+            assert re.search(rf"Output:Meter,\n\s+{re.escape(name)},\s+!- Key Name\n", written)
+        assert not re.search(r"Output:Meter,\n\s+,", written)
 
     def test_add_with_filter(self, index: OutputVariableIndex) -> None:
         model = new_document()
