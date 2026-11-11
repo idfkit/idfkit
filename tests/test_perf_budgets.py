@@ -14,8 +14,8 @@ Baselines, all on the vendored reference model ``benchmarks/fixtures/HospitalLow
 (6,876 objects) and timed as the best of :data:`RUNS` runs:
 
 - :data:`LOAD_IDF_BASELINE_S`, 0.228 s: ``load_idf`` of the reference model, as measured during
-  planning (``specs/001-model-knowledge-graph/background/04-performance-measurements.md`` in
-  idfkit-mcp, Python 3.12, 4 vCPU). On the same class of machine it measured
+  planning (``specs/013-model-knowledge-graph/background/04-performance-measurements.md`` in
+  idfkit-unification, Python 3.12, 4 vCPU). On the same class of machine it measured
   0.13 to 0.16 s when this gate was added, so the budget of 0.456 s holds about 3x headroom.
 
 - :data:`TOPOLOGY_BUILD_BASELINE_S`, 0.050 s: ``HVACTopology.from_document`` plus ``check()`` on a
