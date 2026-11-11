@@ -21,14 +21,13 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
 from .objects import (
     IDFCollection,
     IDFObject,
     refuse_name_for_nameless_type,
     refuse_unknown_fields_for_add,
-    resolve_trailing_underscore_keys,
 )
 from .references import ReferenceGraph
 from .validation import validate_object
@@ -675,6 +674,32 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data[wrapper_key] = [flat_groups[i] for i in sorted(flat_groups)]
         return field_data
 
+    def _resolve_field_aliases(
+        self, obj_type: str, field_data: dict[str, Any], pc: ParsingCache | None
+    ) -> dict[str, Any]:
+        """Store a trailing-underscore field given without its underscore under the schema's key.
+
+        ``cond_flag_is_the_basement_conditioned`` is stored as
+        ``cond_flag_is_the_basement_conditioned_`` (:attr:`ParsingCache.field_aliases`). Two keys
+        naming one field are refused, even when one of them is blank.
+        """
+        aliases = pc.field_aliases if pc is not None else None
+        if not aliases or aliases.keys().isdisjoint(field_data):
+            return field_data
+        resolved: dict[str, Any] = {}
+        for key, value in field_data.items():
+            target = aliases.get(key, key)
+            if target in resolved:
+                # Name the spelling without the underscore, whichever of the two came second.
+                raise InvalidFieldError(
+                    obj_type,
+                    key if key != target else target[:-1],
+                    available_fields=[f for f in pc.all_field_names if f != "name"] if pc is not None else None,
+                    version=self.version,
+                )
+            resolved[target] = value
+        return resolved
+
     def _reject_second_singleton(self, obj_type: str) -> None:
         """Raise ``DuplicateObjectError`` if the singleton *obj_type* (``maxProperties == 1``) exists."""
         existing_type = self._find_existing_collection_type(obj_type)
@@ -802,9 +827,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             pc = self._schema.get_parsing_cache(resolved_obj_type)
             if pc and pc.ext_field_names:
                 field_data = self._normalize_extensible_input(resolved_obj_type, field_data, pc)
-            # A trailing-underscore field (cond_flag_is_the_basement_conditioned_) may be given
-            # without its underscore; store it under the schema's key.
-            field_data = resolve_trailing_underscore_keys(field_data, pc.all_field_names if pc else ())
+            field_data = self._resolve_field_aliases(resolved_obj_type, field_data, pc)
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
@@ -832,6 +855,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
             wrapper_key=parsing_cache.ext_wrapper_key if parsing_cache else None,
             ext_inner_names=tuple(parsing_cache.ext_inner_props.keys()) if parsing_cache else (),
+            aliases=parsing_cache.field_aliases if parsing_cache else None,
         )
 
         # A key the type does not name would be stored, then dropped by write_idf() and written as

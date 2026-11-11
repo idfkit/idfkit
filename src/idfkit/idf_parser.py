@@ -656,6 +656,7 @@ class IDFParser:
                 extensibles=frozenset(pc.ext_field_names),
                 wrapper_key=pc.ext_wrapper_key,
                 ext_inner_names=tuple(pc.ext_inner_props.keys()),
+                aliases=pc.field_aliases,
             )
 
         # No-schema fallback
