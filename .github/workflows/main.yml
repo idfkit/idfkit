@@ -83,7 +83,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run the performance budgets
-        run: uv run pytest -m perf
+        # Only tests/: testpaths also collects src/idfkit for doctests, and the codegen modules there
+        # import tomllib, which Python 3.10 lacks. The main tests job runs `pytest tests` likewise.
+        run: uv run pytest -m perf tests
 
   nodelink:
     # Loads the node-link export into networkx, the de facto consumer of that format. networkx is
@@ -109,7 +111,7 @@ jobs:
           # exit still fails the job. Remove this tolerance once nodelink tests exist, so that losing
           # them all is caught.
           status=0
-          uv run --with "networkx>=3.6" pytest -m nodelink || status=$?
+          uv run --with "networkx>=3.6" pytest -m nodelink tests || status=$?
           if [ "$status" -eq 5 ]; then
             echo "::notice::no nodelink tests collected yet (pytest exit 5); treated as success"
             exit 0

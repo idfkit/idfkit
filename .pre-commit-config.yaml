@@ -20,9 +20,9 @@ repos:
       # are evidence, not source: nothing may rewrite them, including a hook that
       # only means to add a trailing newline.
       - id: end-of-file-fixer
-        exclude: ^(old-sitemaps/|docs/typedoc/)
+        exclude: ^(old-sitemaps/|docs/typedoc/|tests/fixtures/simulation/linked/)
       - id: trailing-whitespace
-        exclude: ^(old-sitemaps/|docs/typedoc/)
+        exclude: ^(old-sitemaps/|docs/typedoc/|tests/fixtures/simulation/linked/)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.14.9"
