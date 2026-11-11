@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   type, such as `surface.vertices[0]`. Declared fields, `name` and wrong-type errors behave as
   before, plain `IDFObject` (from `doc.get_collection(...)`) stays permissive, and item access
   (`obj[field_name]`) still takes a name known only at run time. Typing only: run-time behaviour is
-  unchanged.
+  unchanged. ([#272](https://github.com/idfkit/idfkit/pull/272))
 
 - **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a
   type without a Name field, such as `Output:Meter`, `Output:Variable`, `Output:SQLite`,
