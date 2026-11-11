@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Container, Iterator, Mapping
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
@@ -37,7 +37,9 @@ _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 _EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
 
 
-def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tuple[str | None, int]:
+def parse_extensible_index(
+    field_name: str, extensibles: frozenset[str], fixed: Container[str] = ()
+) -> tuple[str | None, int]:
     """Extract the base name and 1-based group index from an extensible field name.
 
     Handles both naming conventions:
@@ -46,8 +48,14 @@ def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tupl
     - ``field`` / ``field_2`` (schema style, first group has no number)
     - ``vertex_x_coordinate`` / ``vertex_x_coordinate_2`` (schema style)
 
+    A name in *fixed* (the type's fixed properties) is never extensible, even when it fits a pattern:
+    ``MaterialProperty:GlazingSpectralData`` has fixed ``wavelength_1`` beside an extensible
+    ``wavelength``, and ``Site:SpectrumData`` has a fixed ``wavelength`` of the same name as one.
+
     Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
     """
+    if field_name in fixed:
+        return None, 0
     if field_name in extensibles:
         return field_name, 1
 
@@ -666,7 +674,7 @@ class IDFObject(EppyObjectMixin):
         # warning. Scheduled for removal in a future release.
         extensibles = self._extensibles
         if extensibles:
-            base, group_idx = parse_extensible_index(python_key, extensibles)
+            base, group_idx = parse_extensible_index(python_key, extensibles, self._field_order or ())
             if base is not None and wrapper_key is not None:
                 items_any: Any = data.get(wrapper_key)
                 if isinstance(items_any, list):
@@ -729,7 +737,7 @@ class IDFObject(EppyObjectMixin):
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
         # wrapper slot with a deprecation warning.
         if self._extensibles:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            base, group_idx = parse_extensible_index(python_key, self._extensibles, self._field_order or ())
             if base is not None and self._wrapper_key is not None:
                 warnings.warn(
                     f"{key!r} flat-extensible assignment is deprecated; "
@@ -1019,7 +1027,7 @@ class IDFObject(EppyObjectMixin):
                 return RefusedEntry(key, "wrapper-value", str(exc))
             return None
         if self._extensibles and wrapper_key is not None:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            base, group_idx = parse_extensible_index(python_key, self._extensibles, self._field_order or ())
             if base is not None:
                 return RefusedEntry(key, "legacy-flat", f"use {wrapper_key}[{group_idx - 1}].{base}")
         field_order = self._field_order
