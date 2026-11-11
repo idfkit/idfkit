@@ -32,7 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `idfkit.hvac`, a new subpackage for how a model's HVAC objects connect through their nodes.
   Node names are strings, not references, so the reference graph never saw them. `HVACTopology`
   lists every field that names each node with the connection role EnergyPlus gives that field,
-  walks flow upstream and downstream with a component-category filter, and says what it did not
+  walks flow upstream and downstream with a component-category filter from a component, a zone or
+  space, a node or a `NodeList`, and says what it did not
   cover: unexpanded `HVACTemplate` systems, EMS programs and object types without a rule. EMS
   sensors and actuators keyed to a node appear as control uses. The roles come from EnergyPlus's
   own node connection report for the 769 EnergyPlus 26.2 example files: 679 of the 836 rules were

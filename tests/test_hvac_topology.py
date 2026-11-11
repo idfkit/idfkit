@@ -101,6 +101,64 @@ def test_a_node_start_walks_the_edges_through_that_node(five_zone: IDFDocument) 
     assert {(e.source.name, e.target.name) for e in edges} == {("OA Mixing Box 1", "Main Cooling Coil 1")}
 
 
+@pytest.fixture
+def dual_duct() -> IDFDocument:
+    return load_idf(str(LINKED / "DOASDualDuctSchool.idf"))
+
+
+def test_a_zone_start_walks_from_its_equipment_connections(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    zone = dual_duct["Zone"]["Corridor_Pod_1"]
+    down = {(e.source, e.target.object_type) for e in topo.downstream(zone, hops=1)}
+    assert down == {
+        (ObjectKey("Zone", "Corridor_Pod_1"), "AirLoopHVAC:ZoneMixer"),
+        (ObjectKey("Zone", "Corridor_Pod_1"), "OutdoorAir:Mixer"),
+    }
+    heating = topo.upstream(zone, hops=4, categories={ComponentCategory.HEATING_COIL})
+    assert {e.source.name for e in heating} == {"Corridor_Pod_1 Fan Coil Heat Coil", "DOAS_POD_1_OA_HeatC 1"}
+    assert {u.field for u in topo.ports(zone)} >= {"zone_air_node_name"}
+
+
+def test_a_flow_edge_zone_key_is_a_valid_start(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    terminal = dual_duct["AirTerminal:DualDuct:VAV:OutdoorAir"]["Lobby Dual Duct Box Component"]
+    (edge,) = [e for e in topo.downstream(terminal, hops=1) if e.kind == "zone"]
+    assert edge.target.object_type == "Zone"
+    zone = dual_duct["Zone"][edge.target.name]
+    assert topo.upstream(zone, hops=1)
+
+
+def test_an_object_with_no_connections_is_an_error_not_an_empty_walk(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    material = next(iter(dual_duct["Material"]))
+    with pytest.raises(KeyError, match="no HVAC connections"):
+        topo.downstream(material)
+    assert topo.ports(material) == []
+
+
+def test_a_loop_crossing_is_found_from_the_supply_outlet_node(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    loop = dual_duct["PlantLoop"]["CoolSys1"]
+    assert loop.plant_side_outlet_node_name is not None
+    (edge,) = topo.downstream(loop.plant_side_outlet_node_name, hops=1)
+    assert edge.source == ObjectKey("Pipe:Adiabatic", "CoolSys1 Supply Outlet Pipe")
+    assert edge.target == ObjectKey("Pipe:Adiabatic", "CoolSys1 Demand Inlet Pipe")
+    assert edge.kind == "component"  # no splitter or mixer between the two pipes
+
+
+def test_a_nodelist_start_walks_from_every_listed_node(dual_duct: IDFDocument) -> None:
+    topo = HVACTopology.from_document(dual_duct)
+    loop = dual_duct["AirLoopHVAC"]["DUALDUCT_OTHER"]
+    assert loop.supply_side_outlet_node_names is not None
+    edges = topo.downstream(loop.supply_side_outlet_node_names, hops=1)
+    assert {e.target.name for e in edges} == {
+        "DUALDUCT_OTHER Supply Air Splitter",
+        "DUALDUCT_OTHER RC Supply Air Splitter",
+    }
+    with pytest.raises(KeyError, match="No node or NodeList"):
+        topo.downstream("No Such Node", hops=1)
+
+
 def test_an_outlet_typo_leaves_a_one_sided_node(five_zone: IDFDocument) -> None:
     coil = five_zone["Coil:Cooling:Water"]["Main Cooling Coil 1"]
     coil.air_outlet_node_name = "TYPO NODE"

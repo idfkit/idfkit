@@ -78,6 +78,8 @@ BOUNDARIES = frozenset(_C[c] for c in (ConnectionType.OUTSIDE_AIR, ConnectionTyp
 """Roles that connect a node to the outdoors."""
 
 ZONE_TYPES = {"ZONEHVAC:EQUIPMENTCONNECTIONS": "Zone", "SPACEHVAC:EQUIPMENTCONNECTIONS": "Space"}
+ZONE_VERTEX = {"ZONE": "ZONEHVAC:EQUIPMENTCONNECTIONS", "SPACE": "SPACEHVAC:EQUIPMENTCONNECTIONS"}
+"""A zone or space stands in the flow graph as its equipment connections; a start names either."""
 """Object types that stand for a zone or space in the flow graph, and the key type they report."""
 
 CONNECTOR_TYPES = frozenset({"CONNECTOR:SPLITTER", "CONNECTOR:MIXER"})
@@ -241,6 +243,7 @@ class HVACTopology:
         "_obj_cat",
         "_obj_index",
         "_obj_key",
+        "_obj_lookup",
         "_obj_uses",
         "_out_adj",
         "_uses",
@@ -256,6 +259,7 @@ class HVACTopology:
         self._obj_key: list[ObjectKey] = []
         self._obj_cat: list[ComponentCategory] = []
         self._obj_index: dict[int, int] = {}
+        self._obj_lookup: dict[tuple[str, str], int] = {}
         self._obj_uses: list[list[_Use]] = []
         self._meta: list[_Meta] = []
         self._edges: list[_Edge] = []
@@ -301,6 +305,7 @@ class HVACTopology:
         self._obj_key.append(ObjectKey(obj.obj_type, _display_name(obj)))
         self._obj_cat.append(category_of(obj.obj_type))
         self._obj_index[id(obj)] = oid
+        self._obj_lookup.setdefault((obj.obj_type.upper(), _display_name(obj).upper()), oid)
         self._obj_uses.append([])
         self._out_adj.append([])
         self._in_adj.append([])
@@ -457,15 +462,16 @@ class HVACTopology:
             return 1
         return 0
 
-    def _add_edge(self, src: int, dst: int, nid: int, kind: int, seen: set[tuple[int, int, int]]) -> None:
+    def _add_edge(self, src: int, dst: int, nid: int, kind: int, seen: set[tuple[int, int, int]]) -> int | None:
         if src == dst or (src, dst, nid) in seen:
-            return
+            return None
         seen.add((src, dst, nid))
         eid = len(self._edges)
         self._edges.append((src, dst, nid, kind))
         self._out_adj[src].append(eid)
         self._in_adj[dst].append(eid)
         self._node_edges[nid].append(eid)
+        return eid
 
     def _flow_ends(self, nid: int) -> tuple[list[int], list[int]]:
         producers: list[int] = []
@@ -537,7 +543,10 @@ class HVACTopology:
             _, consumers = self._flow_ends(nb)
             for p in producers:
                 for c in consumers:
-                    self._add_edge(p, c, nb, 1, seen)
+                    # The edge passes through both nodes: a start at either one finds it.
+                    eid = self._add_edge(p, c, nb, self._edge_kind(p, c), seen)
+                    if eid is not None:
+                        self._node_edges[na].append(eid)
 
     def _add_ems(self, meta_id: Any) -> list[IDFObject]:  # noqa: C901
         """Link EMS sensors and actuators whose key names a node, as control uses (rule ``ems_key``).
@@ -623,11 +632,22 @@ class HVACTopology:
         oid = self._obj_index.get(id(obj))
         if oid is not None and self._obj[oid] is obj:
             return oid
-        key = ObjectKey(obj.obj_type, _display_name(obj))
-        for i, k in enumerate(self._obj_key):
-            if k == key:
-                return i
-        return None
+        object_type = obj.obj_type.upper()
+        object_type = ZONE_VERTEX.get(object_type, object_type)
+        return self._obj_lookup.get((object_type, _display_name(obj).upper()))
+
+    def _start_nodes(self, name: str) -> list[int]:
+        """Node ids for a walk start: the node itself, or every node of a ``NodeList`` of that name."""
+        nid = self._node_id.get(name.upper())
+        if nid is not None:
+            return [nid]
+        members = self._nodelists().get(name.upper())
+        if members:
+            found = [self._node_id[m.upper()] for m in members if m.upper() in self._node_id]
+            if found:
+                return found
+        msg = f"No node or NodeList named {name!r} in the model"
+        raise KeyError(msg)
 
     def _node_use(self, nid: int, use: _Use) -> NodeUse:
         oid, mid, conn, stream, via = use
@@ -711,7 +731,10 @@ class HVACTopology:
         return [self._node_use(nid, u) for u in self._uses[nid] if u[2] in CONTROLS]
 
     def ports(self, obj: IDFObject) -> list[NodeUse]:
-        """Every node use of *obj*, ordered by stream. Empty for an object with no node fields."""
+        """Every node use of *obj*, ordered by stream. Empty for an object with no node fields.
+
+        A ``Zone`` or ``Space`` answers with the node uses of its equipment connections.
+        """
         oid = self._oid(obj)
         if oid is None:
             return []
@@ -728,7 +751,10 @@ class HVACTopology:
         """The flow edges reached going downstream from a component or a node, breadth first.
 
         Args:
-            start: A component, or a node name.
+            start: A component; a ``Zone`` or ``Space`` (walked as its equipment connections); a
+                node name; or a ``NodeList`` name, which starts from every node it lists. The walk
+                follows every stream of each component it passes, so it can cross from air to water
+                at a coil.
             hops: The most edges walked from the start. ``0`` returns nothing.
             categories: When given, keep only edges whose downstream end is a component of one of
                 these categories. The walk still passes through components of other categories.
@@ -737,7 +763,8 @@ class HVACTopology:
             The edges in breadth-first order.
 
         Raises:
-            KeyError: If *start* is a node name no field uses.
+            KeyError: If *start* is a name that is neither a node nor a ``NodeList`` of used nodes,
+                or an object with no connections in this view.
             ValueError: If *hops* is negative.
         """
         return self._walk(start, hops, categories, downstream=True)
@@ -752,7 +779,10 @@ class HVACTopology:
         """The flow edges reached going upstream from a component or a node, breadth first.
 
         Args:
-            start: A component, or a node name.
+            start: A component; a ``Zone`` or ``Space`` (walked as its equipment connections); a
+                node name; or a ``NodeList`` name, which starts from every node it lists. The walk
+                follows every stream of each component it passes, so it can cross from air to water
+                at a coil.
             hops: The most edges walked from the start. ``0`` returns nothing.
             categories: When given, keep only edges whose upstream end is a component of one of
                 these categories. The walk still passes through components of other categories.
@@ -761,7 +791,8 @@ class HVACTopology:
             The edges in breadth-first order.
 
         Raises:
-            KeyError: If *start* is a node name no field uses.
+            KeyError: If *start* is a name that is neither a node nor a ``NodeList`` of used nodes,
+                or an object with no connections in this view.
             ValueError: If *hops* is negative.
         """
         return self._walk(start, hops, categories, downstream=False)
@@ -799,12 +830,14 @@ class HVACTopology:
         if hops == 0:
             return []
         if isinstance(start, str):
-            for eid in self._node_edges[self._nid(start)]:
-                take(eid, 1)
+            for nid in self._start_nodes(start):
+                for eid in self._node_edges[nid]:
+                    take(eid, 1)
         else:
             oid = self._oid(start)
             if oid is None:
-                return []
+                msg = f"{start.obj_type} {start.name!r} has no HVAC connections in this view"
+                raise KeyError(msg)
             visited.add(oid)
             queue.append((oid, 0))
         while queue:
