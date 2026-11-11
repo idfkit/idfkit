@@ -22,13 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   still skips value, required-field and range checks. The object's name belongs in the `name`
   argument, not in `fields`; display spellings such as `"X Origin"` are refused with the field
   to use instead; and `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate`
-  fields, not a `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+  fields, not a `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171),
+  [b415635](https://github.com/idfkit/idfkit/commit/b415635))
 - **Breaking:** `IDFDocument.add()` checked the extensible groups it was given in either
   validate mode, as `IDFObject.update()` already did, and raised `TypeError` for a group key the
   group does not name (`reports=[{"report_nme": ...}]`) or a wrapper value that is not a list of
   groups (a string, a list of strings or tuples, or another object's live `vertices` view).
   Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
-  values or crashed. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+  values or crashed. ([b415635](https://github.com/idfkit/idfkit/commit/b415635))
 
 ### Fixed
 
@@ -40,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   field on a non-extensible type already did; the wrapper list (`reports=[...]`) and the
   deprecated flat spellings (`report_name`, `report_name_2`) are still accepted.
   `validate_document()` reports the same keys on objects loaded from epJSON.
-  ([459258f](https://github.com/idfkit/idfkit/commit/459258f))
+  ([459258f](https://github.com/idfkit/idfkit/commit/459258f), [b415635](https://github.com/idfkit/idfkit/commit/b415635))
 - `prep_outputs()` requested the `AllSummary` tabular report, which it never had. It passed
   `report_1`, a spelling `Output:Table:SummaryReports` does not have, so `write_idf()` wrote the object with
   no fields and no terminator, and EnergyPlus read the next object into it and stopped with a
