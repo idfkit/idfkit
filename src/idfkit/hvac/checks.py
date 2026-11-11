@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from idfkit.hvac._index import TopologyIndex, Use
     from idfkit.objects import IDFObject
 
-__all__ = ["QUALIFIED", "check_topology"]
+__all__ = ["check_topology"]
 
 QUALIFIED: Final[dict[str, Severity]] = {
     "T010": "error",

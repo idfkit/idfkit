@@ -20,6 +20,17 @@ Provenance = Literal["eplus_examples", "eplus_test_model", "hand_written"]
 were not, and a finding that relies on one is never an error.
 """
 
+__all__ = [
+    "ComponentCategory",
+    "ConnectionType",
+    "FlowEdge",
+    "Fluid",
+    "LoopMembership",
+    "NodeRenameResult",
+    "NodeUse",
+    "TopologyFinding",
+]
+
 Severity = Literal["error", "warning", "info"]
 LoopKind = Literal["air", "plant", "condenser", "zone_equipment"]
 LoopSide = Literal["supply", "demand"]
