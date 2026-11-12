@@ -17,6 +17,7 @@ from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from .objects import refuse_name_for_nameless_type
 from .writers import OutputType
 
 if TYPE_CHECKING:
@@ -214,6 +215,8 @@ class EppyDocumentMixin:
         !!! tip
             Prefer [add][idfkit.document.IDFDocument.add] for new code.
         """
+        # A loader leaves a nameless object's name empty; a hand-built one may not.
+        refuse_name_for_nameless_type(obj.obj_type, obj.name, object.__getattribute__(obj, "_schema"))
         object.__setattr__(obj, "_document", self)
 
         if object.__getattribute__(obj, "_ref_fields") is None and self._schema:
@@ -363,7 +366,10 @@ class EppyDocumentMixin:
             if obj is None:
                 msg = f"No {obj_type} named '{obj_name}'"
                 raise KeyError(msg)
-            setattr(obj, to_python_name(field_name), value)
+            # A schema key is kept as given: to_python_name would turn ReportPeriod's name_ field into
+            # its name. Anything else is normalized, which keeps private slots out of reach.
+            field_order = obj.field_order or ()
+            setattr(obj, field_name if field_name in field_order else to_python_name(field_name), value)
 
     # -- Surfaces (common access pattern) ------------------------------------
 

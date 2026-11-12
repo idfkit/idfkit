@@ -656,6 +656,7 @@ class IDFParser:
                 extensibles=frozenset(pc.ext_field_names),
                 wrapper_key=pc.ext_wrapper_key,
                 ext_inner_names=tuple(pc.ext_inner_props.keys()),
+                aliases=pc.field_aliases,
             )
 
         # No-schema fallback
@@ -739,23 +740,28 @@ class IDFParser:
                 if invalid is not None and coerced is value and field_type in _NUMERIC_FIELD_TYPES:
                     invalid.append((i, field_name, value))
 
-        if not pc.extensible and len(remaining_fields) > num_named and self._strict_parsing:
-            overflow = len(remaining_fields) - num_named
-            msg = (
-                f"Object has {overflow} extra field(s) but type is not extensible "
-                f"(expected at most {num_named}, got {len(remaining_fields)})"
-            )
-            raise ValueError(msg)
-
-        if pc.extensible and num_named < len(remaining_fields):
+        if len(remaining_fields) > num_named:
             extra = remaining_fields[num_named:]
-            self._append_extensible_fields(
-                data=data,
-                extra=extra,
-                field_names=field_names,
-                field_types=field_types,
-                pc=pc,
-            )
+            if pc.extensible:
+                self._append_extensible_fields(
+                    data=data,
+                    extra=extra,
+                    field_names=field_names,
+                    field_types=field_types,
+                    pc=pc,
+                )
+            elif self._strict_parsing and any(extra):
+                # Trailing blanks past the last field are unset, like any other blank field, and are
+                # not extra values: EnergyPlus accepts ``Timestep,4,,;`` and refuses ``Timestep,4,5;``.
+                # It is also how idfkit writes an object with nothing in it to keep its terminator,
+                # ``GroundHeatTransfer:Slab:XFACE,;``. Only the values up to the last non-blank one
+                # are counted as extra.
+                overflow = len(extra) - next(i for i, value in enumerate(reversed(extra)) if value)
+                msg = (
+                    f"Object has {overflow} extra field(s) but type is not extensible "
+                    f"(expected at most {num_named}, got {num_named + overflow})"
+                )
+                raise ValueError(msg)
 
         return data
 

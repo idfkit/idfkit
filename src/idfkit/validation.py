@@ -320,13 +320,12 @@ def _validate_object(  # noqa: C901
 
     # Check field types and ranges
     for field_name, value in data.items():
-        if value is None or value == "":
-            continue
-
         rule = field_rules.get(field_name)
         if rule is None:
-            # Unknown field - could be extensible or error
-            if check_unknown and not rules.extensible:
+            # Unknown field, whatever its value. Valid flat extensible spellings were folded into
+            # the wrapper key on the way in (add(), the epJSON parser), and the wrapper key is a
+            # known field, so anything left is unknown.
+            if check_unknown:
                 errors.append(
                     ValidationError(
                         severity=Severity.WARNING,
@@ -337,6 +336,8 @@ def _validate_object(  # noqa: C901
                         code="W003",
                     )
                 )
+            continue
+        if value is None or value == "":
             continue
 
         # Most fields constrain nothing but their type, and most values already have it;
@@ -839,13 +840,11 @@ class _ObjectRules:
     Attributes:
         fields: Compiled rule per known field. A field absent here is an unknown field.
         required: Names the schema marks required.
-        extensible: Whether the type accepts fields the schema does not name.
         contributing: Fields carrying ``reference``, so their value declares a name.
     """
 
     fields: dict[str, _FieldRule]
     required: set[str]
-    extensible: bool
     contributing: tuple[str, ...]
 
 
@@ -870,10 +869,9 @@ def _object_rules(schema: EpJSONSchema, obj_type: str) -> _ObjectRules | None:
     properties: dict[str, Any] = inner_schema.get("properties", {})
     rules = _ObjectRules(
         # A falsy field schema was treated as an unknown field before compilation existed;
-        # leaving it out of `fields` keeps that.
+        # leaving it out of `fields` keeps that. ParsingCache.known_keys applies the same rule.
         fields={name: _compile_field_rule(spec) for name, spec in properties.items() if spec},
         required=set(inner_schema.get("required", [])),
-        extensible=schema.is_extensible(obj_type),
         contributing=tuple(name for name, spec in properties.items() if spec and spec.get("reference")),
     )
     by_type[obj_type] = rules
@@ -1038,8 +1036,11 @@ def _declared_names(doc: IDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
         rules = _object_rules(schema, obj_type)
         contributing = rules.contributing if rules is not None else ()
         type_upper = obj_type.upper()
+        # A type without a Name field declares nothing through ``obj.name``: a name stored on
+        # one is dropped on write, so a reference to it would dangle in EnergyPlus.
+        type_has_name = schema.has_name(obj_type)
         for obj in collection:
-            if obj.name:
+            if type_has_name and obj.name:
                 name_upper = obj.name.upper()
                 declared.all_names.add(name_upper)
                 if type_upper in ("ZONE", "SPACE"):

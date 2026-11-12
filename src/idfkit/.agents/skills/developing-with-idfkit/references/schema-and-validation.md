@@ -171,14 +171,15 @@ for field in desc.fields:
 !!! failure "assuming a field exists without checking the schema"
 
     ```python
-    zone.fictional_field = 1.0                 # InvalidFieldError in strict mode
+    zone.fictional_field = 1.0                 # InvalidFieldError in strict mode; a type error too
     ```
 
-!!! success "ask the schema"
+!!! success "ask the schema, then use item access for a name chosen at run time"
 
     ```python
-    if "fictional_field" in doc.schema.get_field_names("Zone"):
-        zone.fictional_field = 1.0
+    field_name = "fictional_field"  # a name only known at run time
+    if field_name in doc.schema.get_field_names("Zone"):
+        zone[field_name] = 1.0
     ```
 
 !!! failure "caching a schema across versions"

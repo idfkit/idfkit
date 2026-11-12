@@ -431,14 +431,14 @@ class TestGenerateObjectClass:
     def test_basic_class(self, schema: EpJSONSchema) -> None:
         lines = _generate_object_class(schema, "Zone")
         text = "\n".join(lines)
-        assert "class Zone(IDFObject):" in text
+        assert "class Zone(_TypedIDFObject):" in text
 
     def test_class_with_version_info(self, schema: EpJSONSchema) -> None:
         type_since = {"Zone": (8, 9, 0)}
         field_since: dict[tuple[str, str], tuple[int, int, int]] = {}
         lines = _generate_object_class(schema, "Zone", type_since=type_since, field_since=field_since)
         text = "\n".join(lines)
-        assert "class Zone(IDFObject):" in text
+        assert "class Zone(_TypedIDFObject):" in text
 
     def test_class_with_no_fields_no_docstring(self) -> None:
         """Cover line 302: object type with no fields and no docstring."""
@@ -447,19 +447,20 @@ class TestGenerateObjectClass:
         mock_schema.is_extensible.return_value = False
         mock_schema.get_object_memo.return_value = None
         lines = _generate_object_class(mock_schema, "FakeEmpty")
-        assert lines == ["class FakeEmpty(IDFObject): ..."]
+        assert lines == ["class FakeEmpty(_TypedIDFObject): ..."]
 
     def test_class_with_no_fields_but_docstring(self, schema: EpJSONSchema) -> None:
         """Cover line 304: no-fields type that has a docstring."""
         # Version (real type with memo but no fields)
         lines = _generate_object_class(schema, "Version")
         text = "\n".join(lines)
-        assert "class Version(IDFObject):" in text
+        assert "class Version(_TypedIDFObject):" in text
 
     def test_extensible_type(self, schema: EpJSONSchema) -> None:
         lines = _generate_object_class(schema, "BuildingSurface:Detailed")
         text = "\n".join(lines)
-        assert "class BuildingSurfaceDetailed(IDFObject):" in text
+        assert "class BuildingSurfaceDetailed(_TypedIDFObject):" in text
+        assert "class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):" in text
 
 
 class TestGenerateObjectTypeMap:
@@ -531,7 +532,16 @@ class TestGenerateStubs:
         # Use a specific version to keep it fast
         content = generate_stubs((24, 1, 0))
         assert "Auto-generated type stubs" in content
-        assert "class Zone(IDFObject):" in content
+        assert "class Zone(_TypedIDFObject):" in content
+        # The stub-only bases switch off the catch-all attribute access with a Never name.
+        assert "class _TypedIDFObject(IDFObject):" in content
+        assert "def __getattr__(self, key: Never) -> object: ..." in content
+        assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
+        assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
+        assert "from typing_extensions import Never, Unpack" in content
+        # A trailing-underscore field is declared under both spellings the runtime accepts.
+        assert "    cond_flag_is_the_basement_conditioned_: " in content
+        assert "    cond_flag_is_the_basement_conditioned: " in content
         assert "_ObjectTypeMap" in content
         assert "from __future__ import annotations" in content
         # Validate that the output is syntactically valid Python

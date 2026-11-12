@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import pytest
+from conftest import fixed_vertices
 
 from idfkit import IDFDocument, new_document
 from idfkit.geometry import (
@@ -1320,12 +1321,7 @@ class TestSetWWR:
                 "building_surface_name": "SouthWall",
                 "construction_name": "GlazingConstruction",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1.0, 0.0, 2.5), (1.0, 0.0, 0.5), (4.0, 0.0, 0.5), (4.0, 0.0, 2.5)),
             },
             validate=False,
         )
@@ -2263,12 +2259,7 @@ class TestSetWWRFenReferrers:
                 "building_surface_name": "SouthWall",
                 "construction_name": "GlazingC",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1.0, 0.0, 2.5), (1.0, 0.0, 0.5), (4.0, 0.0, 0.5), (4.0, 0.0, 2.5)),
             },
             validate=False,
         )
@@ -2280,12 +2271,7 @@ class TestSetWWRFenReferrers:
                 "surface_type": "Door",
                 "building_surface_name": "OldWindow",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.0},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 1.0},
-                    {"vertex_x_coordinate": 2.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 1.0},
-                    {"vertex_x_coordinate": 2.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.0},
-                ],
+                **fixed_vertices((1.0, 0.0, 2.0), (1.0, 0.0, 1.0), (2.0, 0.0, 1.0), (2.0, 0.0, 2.0)),
             },
             validate=False,
         )
@@ -2490,12 +2476,7 @@ class TestSetWWREdgeCases:
                 "surface_type": "Window",
                 "building_surface_name": "NorthWall",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 8.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 8.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 2.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 2.0, "vertex_y_coordinate": 10.0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((8.0, 10.0, 2.5), (8.0, 10.0, 0.5), (2.0, 10.0, 0.5), (2.0, 10.0, 2.5)),
             },
             validate=False,
         )
@@ -2536,12 +2517,7 @@ class TestSetWWREdgeCases:
                 "building_surface_name": "IntWall",
                 "construction_name": "GlazingC",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 4.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1.0, 0.0, 2.5), (1.0, 0.0, 0.5), (4.0, 0.0, 0.5), (4.0, 0.0, 2.5)),
             },
             validate=False,
         )
@@ -2553,12 +2529,7 @@ class TestSetWWREdgeCases:
                 "surface_type": "Door",
                 "building_surface_name": "IntWindow",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1.5, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.0},
-                    {"vertex_x_coordinate": 1.5, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 1.0},
-                    {"vertex_x_coordinate": 2.5, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 1.0},
-                    {"vertex_x_coordinate": 2.5, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 2.0},
-                ],
+                **fixed_vertices((1.5, 0.0, 2.0), (1.5, 0.0, 1.0), (2.5, 0.0, 1.0), (2.5, 0.0, 2.0)),
             },
             validate=False,
         )

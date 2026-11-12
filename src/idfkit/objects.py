@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
+from .schema import trailing_underscore_aliases
 
 __all__ = [
     "ExtensibleGroup",
@@ -28,15 +29,20 @@ __all__ = [
 
 if TYPE_CHECKING:
     from .document import IDFDocument
+    from .schema import ParsingCache
 
 # Field name conversion patterns
 _FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 
-# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate"
-_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_(\d+)_(.+)$")
+# Matches a numbered extensible field like "vertex_1_x_coordinate" -> "vertex_x_coordinate".
+# Group numbers are 1-based ASCII without leading zeros: "_0_" names no group.
+_EXTENSIBLE_NUMBER_PATTERN = re.compile(r"^(.+?)_([1-9][0-9]*)_(.+)$")
+_GROUP_NUMBER_PATTERN = re.compile(r"[1-9][0-9]*")
 
 
-def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tuple[str | None, int]:
+def parse_extensible_index(
+    field_name: str, extensibles: frozenset[str], fixed: Container[str] = ()
+) -> tuple[str | None, int]:
     """Extract the base name and 1-based group index from an extensible field name.
 
     Handles both naming conventions:
@@ -45,17 +51,25 @@ def parse_extensible_index(field_name: str, extensibles: frozenset[str]) -> tupl
     - ``field`` / ``field_2`` (schema style, first group has no number)
     - ``vertex_x_coordinate`` / ``vertex_x_coordinate_2`` (schema style)
 
+    A name in *fixed* (the type's fixed properties) is never extensible, even when it fits a pattern:
+    ``MaterialProperty:GlazingSpectralData`` has fixed ``wavelength_1`` beside an extensible
+    ``wavelength``, and ``Site:SpectrumData`` has a fixed ``wavelength`` of the same name as one.
+
+    Group numbers start at 1. A ``0`` (``vertex_0_x_coordinate``), a leading zero or a non-ASCII
+    digit names no group, so such a name is not extensible either.
+
     Returns ``(base_name, group_index)`` or ``(None, 0)`` if not extensible.
     """
+    if field_name in fixed:
+        return None, 0
     if field_name in extensibles:
         return field_name, 1
 
     last_underscore = field_name.rfind("_")
-    if last_underscore > 0 and field_name[last_underscore + 1 :].isdigit():
+    if last_underscore > 0 and _GROUP_NUMBER_PATTERN.fullmatch(field_name, last_underscore + 1):
         base = field_name[:last_underscore]
-        num = int(field_name[last_underscore + 1 :])
         if base in extensibles:
-            return base, num
+            return base, int(field_name[last_underscore + 1 :])
 
     m = _EXTENSIBLE_NUMBER_PATTERN.match(field_name)
     if m:
@@ -473,10 +487,12 @@ class IDFObject(EppyObjectMixin):
         _schema: Optional schema dict for validation
         _document: Reference to parent document (for reference resolution)
         _field_order: Ordered list of field names from schema
+        _aliases: Spellings of trailing-underscore fields to their keys (shared per type)
     """
 
     __slots__ = (
         "__weakref__",
+        "_aliases",
         "_data",
         "_document",
         "_ext_inner_names",
@@ -503,6 +519,7 @@ class IDFObject(EppyObjectMixin):
     _ext_inner_names: tuple[str, ...]
     _extensibles: frozenset[str]
     _version: int
+    _aliases: Mapping[str, str]
 
     def __init__(
         self,
@@ -517,6 +534,7 @@ class IDFObject(EppyObjectMixin):
         extensibles: frozenset[str] | None = None,
         wrapper_key: str | None = None,
         ext_inner_names: tuple[str, ...] = (),
+        aliases: Mapping[str, str] | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
@@ -542,6 +560,23 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_version", 0)
         object.__setattr__(self, "_wrapper_key", wrapper_key)
         object.__setattr__(self, "_ext_inner_names", ext_inner_names)
+        # The document passes its schema's per-type map; anything else derives it once here.
+        if aliases is None:
+            aliases = trailing_underscore_aliases(field_order) if field_order else {}
+        object.__setattr__(self, "_aliases", aliases)
+
+    def __setstate__(self, state: Any) -> None:
+        """Restore a pickled or deep-copied object.
+
+        An object pickled before ``_aliases`` existed has no such slot in its state; it gets
+        the map from its field order, as a constructed object without ``aliases`` does.
+        """
+        slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
+        for key, value in slots.items():
+            object.__setattr__(self, key, value)
+        if "_aliases" not in slots:
+            field_order = cast("list[str] | None", slots.get("_field_order"))
+            object.__setattr__(self, "_aliases", trailing_underscore_aliases(field_order) if field_order else {})
 
     @property
     def obj_type(self) -> str:
@@ -593,6 +628,35 @@ class IDFObject(EppyObjectMixin):
         if not isinstance(items, list):
             return []
         return cast("list[dict[str, Any]]", items)
+
+    def _field_key(self, key: str) -> str:
+        """Resolve an attribute or :meth:`update` key to the data key it names.
+
+        Normally this is :func:`to_python_name`. A field whose epJSON key ends in ``_``
+        (``cond_flag_is_the_basement_conditioned_``) is reached by that key and by the spelling
+        without the underscore, which is what :func:`to_python_name` makes of either; both
+        resolve to the key, so the value is stored and written under the name EnergyPlus reads.
+        The lookup is in a per-type map that is empty for nearly every type
+        (:func:`~idfkit.schema.trailing_underscore_aliases`).
+        """
+        aliases = self._aliases
+        if not aliases:
+            return to_python_name(key)
+        exact = aliases.get(key)
+        if exact is not None:
+            return exact
+        python_key = to_python_name(key)
+        return aliases.get(python_key, python_key)
+
+    def _flat_extensible(self, python_key: str) -> tuple[str | None, int]:
+        """Classify *python_key* as a legacy flat extensible spelling, never one of the fixed fields.
+
+        Without a field order (an object built by hand), the schema's legacy field list stands in.
+        """
+        fixed: Container[str] | None = self._field_order
+        if fixed is None:
+            fixed = cast("list[str]", (self._schema or {}).get("legacy_idd", {}).get("fields", ()))
+        return parse_extensible_index(python_key, self._extensibles, fixed)
 
     def _is_known_field(self, python_key: str, field_order: list[str]) -> bool:
         """Check whether *python_key* is a valid field name for this object.
@@ -655,7 +719,7 @@ class IDFObject(EppyObjectMixin):
             return data[key_lower]
 
         # Try python name conversion
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if python_key in data:
             return data[python_key]
 
@@ -665,7 +729,7 @@ class IDFObject(EppyObjectMixin):
         # warning. Scheduled for removal in a future release.
         extensibles = self._extensibles
         if extensibles:
-            base, group_idx = parse_extensible_index(python_key, extensibles)
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None and wrapper_key is not None:
                 items_any: Any = data.get(wrapper_key)
                 if isinstance(items_any, list):
@@ -722,13 +786,13 @@ class IDFObject(EppyObjectMixin):
             view.replace(cast("list[Any]", value))
             return
         # Normalize key to python style
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
 
         # Eppy-compat: legacy flat extensible field write
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
         # wrapper slot with a deprecation warning.
         if self._extensibles:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None and self._wrapper_key is not None:
                 warnings.warn(
                     f"{key!r} flat-extensible assignment is deprecated; "
@@ -821,10 +885,16 @@ class IDFObject(EppyObjectMixin):
         return id(self)
 
     def _set_name(self, value: str) -> None:
-        """Centralized name-change logic with document notification."""
+        """Centralized name-change logic with document notification.
+
+        Raises:
+            InvalidFieldError: If *value* is not empty and the object's type has no Name field
+                (``Output:Meter``, ``Timestep``, ...): the name would be dropped on write.
+        """
         old = self._name
         if old == value:
             return
+        refuse_name_for_nameless_type(self._type, value, self._schema)
         object.__setattr__(self, "_name", value)
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
@@ -993,7 +1063,7 @@ class IDFObject(EppyObjectMixin):
         group: dict[str, tuple[str, Any]] = {}
         for source in (values if values is not None else {}, kwargs):
             for key, value in source.items():
-                group[key if key[:1] == "_" else to_python_name(key)] = (key, value)
+                group[key if key[:1] == "_" else self._field_key(key)] = (key, value)
         refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
         if refused:
             self._refuse(refused)
@@ -1004,7 +1074,7 @@ class IDFObject(EppyObjectMixin):
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
             return RefusedEntry(key, "unknown", "private attribute, not a field")
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if key.lower() == "name" or python_key == "name":
             return RefusedEntry(key, "name", "use rename() to change an object's name")
         wrapper_key = self._wrapper_key
@@ -1018,7 +1088,7 @@ class IDFObject(EppyObjectMixin):
                 return RefusedEntry(key, "wrapper-value", str(exc))
             return None
         if self._extensibles and wrapper_key is not None:
-            base, group_idx = parse_extensible_index(python_key, self._extensibles)
+            base, group_idx = self._flat_extensible(python_key)
             if base is not None:
                 return RefusedEntry(key, "legacy-flat", f"use {wrapper_key}[{group_idx - 1}].{base}")
         field_order = self._field_order
@@ -1026,20 +1096,28 @@ class IDFObject(EppyObjectMixin):
             return RefusedEntry(key, "unknown", f"not a field of {self._type}")
         return None
 
-    def _refuse(self, refused: list[RefusedEntry]) -> None:
-        """Raise the error for a refused :meth:`update` group, before anything is written."""
+    def _refuse(self, refused: list[RefusedEntry], operation: Literal["update", "add"] = "update") -> None:
+        """Raise the error for a refused :meth:`update` group or ``add()`` call, before anything is written."""
         named = [entry for entry in refused if entry.reason != "wrapper-value"]
         if not named:
-            raise TypeError(format_refused(self._type, refused))
+            raise TypeError(format_refused(self._type, refused, operation))
         doc = self._document
         field_order = self._field_order
+        available: list[str] | None = None
+        if field_order is not None:
+            # The legacy field order omits the wrapper key, the spelling the groups must use.
+            wrapper_key = self._wrapper_key
+            available = list(field_order)
+            if wrapper_key is not None and wrapper_key not in available:
+                available.append(wrapper_key)
         raise InvalidFieldError(
             self._type,
             named[0].name,
-            available_fields=list(field_order) if field_order is not None else None,
+            available_fields=available,
             version=object.__getattribute__(doc, "version") if doc is not None else None,
             extensible_fields=self._extensibles,
             refused=refused,
+            operation=operation,
         )
 
     def copy(self) -> IDFObject:
@@ -1056,6 +1134,7 @@ class IDFObject(EppyObjectMixin):
             extensibles=self._extensibles,
             wrapper_key=self._wrapper_key,
             ext_inner_names=self._ext_inner_names,
+            aliases=self._aliases,
         )
 
     def __dir__(self) -> list[str]:
@@ -1116,6 +1195,77 @@ class IDFObject(EppyObjectMixin):
 
 
 _T = TypeVar("_T", bound=IDFObject)
+
+
+def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mapping[str, Any] | None) -> None:
+    """Raise :class:`InvalidFieldError` when *name* is given to a type without a Name field.
+
+    165 of the 880 types in the 26.2 schema (``Output:Meter``, ``Output:SQLite``, ``Timestep``,
+    ``SimulationControl``, ...) have no Name field: their first IDF field is an ordinary field.
+    A name stored on one of them is dropped by both writers, so ``add("Output:SQLite",
+    "SimpleAndTabular")`` writes ``Output:SQLite,`` and EnergyPlus produces no ``.sql`` file.
+    The value is not moved into the first field either: for most of these types that field is
+    an option or a number, and guessing a value is worse than refusing.
+
+    ``""`` and ``None`` mean no name. An unknown type (*obj_schema* is ``None``) is not checked.
+    """
+    if not name or obj_schema is None or "name" in obj_schema:
+        return
+    legacy: Mapping[str, Any] = obj_schema.get("legacy_idd", {})
+    fields: Sequence[str] = legacy.get("fields", [])
+    if fields:
+        hint = f'Pass it as a field instead: {fields[0]}="{name}".'
+    else:
+        hint = "The type has no fields to carry it; leave the name empty."
+    msg = f'{obj_type} has no Name field, so "{name}" would be dropped on write. {hint}'
+    raise InvalidFieldError(obj_type, "name", message=msg)
+
+
+def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_names: bool) -> None:
+    """Refuse what ``IDFDocument.add`` must not store, as :meth:`IDFObject.update` refuses it.
+
+    Runs on the new object before it joins the document, so a refusal leaves nothing behind.
+
+    Args:
+        obj: The object ``add()`` built, not yet in any collection.
+        pc: Its type's parsing cache.
+        check_names: Whether to refuse keys the type does not name. ``add(validate=True)`` reports
+            those as ``W003`` instead; the extensible wrapper value is checked either way, since
+            validation does not look inside its groups.
+
+    Raises:
+        InvalidFieldError: A key is not a field of the type, is ``name`` (which belongs in the
+            ``name`` argument), or is not spelled as the field (``"X Origin"`` for ``x_origin``).
+        TypeError: The only problem is the wrapper value: not a list, an item that is not a dict
+            or group, or a group with a key the group does not name.
+    """
+    data = obj.data
+    wrapper_key = pc.ext_wrapper_key
+    refused: list[RefusedEntry] = []
+    known = pc.known_keys
+    # Fast path: every key known. The refusal tests below run only when one is not.
+    if check_names and not data.keys() <= known:
+        for key, value in data.items():
+            if key == wrapper_key or key in known:
+                continue
+            python_key = to_python_name(key)
+            if key.lower() == "name" or python_key == "name":
+                refused.append(RefusedEntry(key, "name", "pass the object's name as add()'s name argument"))
+            elif (entry := obj._examine(key, value)) is not None:  # pyright: ignore[reportPrivateUsage]
+                refused.append(entry)
+            elif python_key != key:
+                # update() resolves display spellings such as "X Origin"; add() stores keys as given.
+                refused.append(RefusedEntry(key, "unknown", f"spell it {python_key!r}"))
+    if wrapper_key is not None and wrapper_key in data:
+        groups = data[wrapper_key]
+        inner = pc.ext_inner_props.keys()
+        plain = type(groups) is list and all(
+            type(group) is dict and group.keys() <= inner for group in cast("list[Any]", groups)
+        )
+        if not plain and (entry := obj._examine(wrapper_key, groups)) is not None:  # pyright: ignore[reportPrivateUsage]
+            refused.append(entry)
+    if refused:
+        obj._refuse(refused, "add")  # pyright: ignore[reportPrivateUsage]
 
 
 class IDFCollection(Generic[_T]):
@@ -1195,11 +1345,16 @@ class IDFCollection(Generic[_T]):
 
     def remove(self, obj: _T) -> None:
         """Remove an object from the collection."""
+        # By identity, not equality: two objects of a type with no Name field
+        # compare equal when their fields match, and list.remove would take
+        # whichever comes first.
         key = obj.name.upper() if obj.name else ""
-        if key in self._by_name:
+        if self._by_name.get(key) is obj:
             del self._by_name[key]
-        if obj in self._items:
-            self._items.remove(obj)
+        for i, item in enumerate(self._items):
+            if item is obj:
+                del self._items[i]
+                break
 
     def __getitem__(self, key: str | int) -> _T:
         """Get object by name or index."""

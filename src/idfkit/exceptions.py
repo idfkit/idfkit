@@ -165,7 +165,7 @@ class UnknownObjectTypeError(IdfKitError, KeyError):
 
 @dataclass(frozen=True, slots=True)
 class RefusedEntry:
-    """One entry of an ``IDFObject.update`` group that will not be applied.
+    """One entry of an ``IDFObject.update`` group, or ``IDFDocument.add`` call, that will not be applied.
 
     ``reason`` is ``"unknown"`` (not a field of the type), ``"name"`` (renaming has its own
     operation), ``"legacy-flat"`` (an eppy-style flat extensible name) or ``"wrapper-value"``
@@ -178,9 +178,14 @@ class RefusedEntry:
     detail: str
 
 
-def format_refused(obj_type: str, refused: Sequence[RefusedEntry]) -> str:
-    """Message for an ``IDFObject.update`` group that was refused: the type, then one line per entry."""
-    lines = [f"Update of object type '{obj_type}' refused; no field was changed:"]
+def format_refused(
+    obj_type: str, refused: Sequence[RefusedEntry], operation: Literal["update", "add"] = "update"
+) -> str:
+    """Message for a refused ``IDFObject.update`` group or ``IDFDocument.add`` call: the type, then one line per entry."""
+    if operation == "add":
+        lines = [f"add() of object type '{obj_type}' refused; nothing was added:"]
+    else:
+        lines = [f"Update of object type '{obj_type}' refused; no field was changed:"]
     lines.extend(f"  - {entry.name}: {entry.reason} ({entry.detail})" for entry in refused)
     return "\n".join(lines)
 
@@ -202,6 +207,8 @@ class InvalidFieldError(IdfKitError, AttributeError):
         extensible_fields: frozenset[str] | None = None,
         *,
         refused: Sequence[RefusedEntry] | None = None,
+        operation: Literal["update", "add"] = "update",
+        message: str | None = None,
     ) -> None:
         self.obj_type = obj_type
         self.field_name = field_name
@@ -209,11 +216,12 @@ class InvalidFieldError(IdfKitError, AttributeError):
         self.version = version
         self.extensible_fields = extensible_fields
         self.refused = tuple(refused) if refused else ()
-        msg = (
-            format_refused(obj_type, refused)
-            if refused
-            else f"Invalid field '{field_name}' for object type '{obj_type}'"
-        )
+        if message is not None:
+            msg = message
+        elif refused:
+            msg = format_refused(obj_type, refused, operation)
+        else:
+            msg = f"Invalid field '{field_name}' for object type '{obj_type}'"
         if available_fields:
             msg += f"\nAvailable fields: {', '.join(available_fields[:10])}"
             if len(available_fields) > 10:

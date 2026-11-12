@@ -65,6 +65,20 @@ def ground_heat_model(*, slab: str | None = "Yes", basement: str | None = "Yes")
     return model
 
 
+def fixed_vertices(*vertices: tuple[float, float, float]) -> dict[str, float]:
+    """Return ``vertex_N_{x,y,z}_coordinate`` keys for *vertices*, numbered from 1.
+
+    ``FenestrationSurface:Detailed`` (and other types with a fixed number of vertices) has one
+    field per coordinate rather than an extensible ``vertices`` list; spread the result into the
+    fields passed to ``add()``.
+    """
+    return {
+        f"vertex_{i}_{axis}_coordinate": value
+        for i, vertex in enumerate(vertices, 1)
+        for axis, value in zip("xyz", vertex, strict=True)
+    }
+
+
 class InMemoryFileSystem:
     """Dict-backed file system for testing.
 

@@ -28,16 +28,18 @@ idfkit reads both EnergyPlus formats — classic `.idf` and `.epJSON` — throug
 
 ## Strict mode (the default)
 
-`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site.
+`strict=True` makes any attempt to access or set an unknown field name raise `InvalidFieldError`. This is what you want 99% of the time — it catches typos and version-mismatched field names at the call site. On a typed object (`doc["Zone"][...]`) pyright reports an undeclared field name before the code runs, for reading and for assigning.
 
 ```python
 --8<-- "agent_references/snippets/parsing-idf-epjson.py:strict-mode"
+zone.x_orign  # raises InvalidFieldError, and pyright reports it before the code runs
 ```
 
 Drop to `strict=False` only as a tolerant fallback for legacy or noisy files:
 
 ```python
 --8<-- "agent_references/snippets/parsing-idf-epjson.py:strict-false"
+zone.x_orign  # returns None at run time; pyright still reports the name
 ```
 
 ## Strict parsing (the default)

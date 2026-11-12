@@ -13,7 +13,7 @@ import json
 import logging
 import os
 import time
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -89,6 +89,30 @@ def _choice_spellings(field_schema: dict[str, Any]) -> dict[str, str]:
     return table
 
 
+def trailing_underscore_aliases(field_names: Iterable[str]) -> dict[str, str]:
+    """Map the spellings of a type's trailing-underscore fields to their epJSON keys.
+
+    EnergyPlus derives an epJSON key from the IDD field name without trimming, so a name that
+    ends in punctuation or a space ends in ``_``: ``"COND: Flag: Is the basement conditioned?"``
+    is ``cond_flag_is_the_basement_conditioned_``. :func:`~idfkit.objects.to_python_name` trims
+    that underscore, so both the key itself and the spelling without it are mapped here, the
+    latter only when it is not a field of its own. ``name`` is never mapped: it means the
+    object's name everywhere, including on the nameless ``Output:Table:ReportPeriod`` of
+    22.2 to 25.1, whose IDD ``Name,`` field is ``name_``.
+
+    The result is empty for nearly every type. It is shared by every object of the type and
+    must not be changed; it is a plain dict so that objects holding it can be pickled.
+    """
+    names = set(field_names)
+    aliases: dict[str, str] = {}
+    for key in names:
+        if key.endswith("_") and key[:-1] not in names:
+            aliases[key] = key
+            if key[:-1] != "name":
+                aliases[key[:-1]] = key
+    return aliases
+
+
 def _spelling_tables(properties: Mapping[str, Any]) -> Mapping[str, ChoiceSpellings]:
     """The non-empty spelling tables of a set of field schemas, keyed by field name."""
     tables = {
@@ -109,6 +133,8 @@ class ParsingCache:
 
     obj_schema: dict[str, Any]
     has_name: bool
+    #: The positional fields after the name: ``all_field_names[1:]`` for a named type, and all
+    #: of them for a type without a Name field, whose first field is an ordinary field.
     field_names: tuple[str, ...]
     all_field_names: tuple[str, ...]
     field_types: dict[str, str | None]
@@ -118,9 +144,14 @@ class ParsingCache:
     ext_field_names: tuple[str, ...]
     ext_wrapper_key: str | None
     ext_inner_props: Mapping[str, dict[str, Any]]
+    #: Every key the type's epJSON properties name: the fixed fields plus the extensible wrapper
+    #: key, never ``name``. The same set validation reports ``W003`` against.
+    known_keys: frozenset[str] = frozenset()
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
     choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
+    #: Trailing-underscore field spellings to their keys (see :func:`trailing_underscore_aliases`).
+    field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
 
 
 def _resolve_field_type(
@@ -334,9 +365,10 @@ class EpJSONSchema:
         if not obj_schema:
             return []
         legacy = obj_schema.get("legacy_idd", {})
-        fields = legacy.get("fields", [])
-        # First field is 'name', return the rest
-        return fields[1:] if fields else []
+        fields: list[str] = list(legacy.get("fields", []))
+        # The first legacy field is the name only for a type that has one; for a type without
+        # a Name field (Output:Meter, Timestep, ...) it is an ordinary field and stays.
+        return fields[1:] if "name" in obj_schema else fields
 
     def get_all_field_names(self, obj_type: str) -> list[str]:
         """Get all field names including 'name'."""
@@ -467,7 +499,7 @@ class EpJSONSchema:
         legacy: dict[str, Any] = obj_schema.get("legacy_idd", {})
         all_fields_list: list[str] = legacy.get("fields", [])
         all_field_names = tuple(all_fields_list)
-        field_names = tuple(all_fields_list[1:]) if all_fields_list else ()
+        field_names = tuple(all_fields_list[1:]) if has_name else all_field_names
 
         # Extract inner schema properties
         pattern_props: dict[str, Any] = obj_schema.get("patternProperties", {})
@@ -554,8 +586,10 @@ class EpJSONSchema:
             ext_field_names=tuple(ext_field_names_list),
             ext_wrapper_key=ext_wrapper_key,
             ext_inner_props=MappingProxyType(ext_inner_props),
+            known_keys=frozenset(name for name, spec in props.items() if spec),
             choice_spellings=_spelling_tables(props),
             ext_choice_spellings=_spelling_tables(ext_inner_props),
+            field_aliases=trailing_underscore_aliases(all_fields_list),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:
