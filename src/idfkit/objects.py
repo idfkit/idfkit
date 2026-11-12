@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
+from .schema import trailing_underscore_aliases
 
 __all__ = [
     "ExtensibleGroup",
@@ -486,10 +487,12 @@ class IDFObject(EppyObjectMixin):
         _schema: Optional schema dict for validation
         _document: Reference to parent document (for reference resolution)
         _field_order: Ordered list of field names from schema
+        _aliases: Spellings of trailing-underscore fields to their keys (shared per type)
     """
 
     __slots__ = (
         "__weakref__",
+        "_aliases",
         "_data",
         "_document",
         "_ext_inner_names",
@@ -516,6 +519,7 @@ class IDFObject(EppyObjectMixin):
     _ext_inner_names: tuple[str, ...]
     _extensibles: frozenset[str]
     _version: int
+    _aliases: Mapping[str, str]
 
     def __init__(
         self,
@@ -530,6 +534,7 @@ class IDFObject(EppyObjectMixin):
         extensibles: frozenset[str] | None = None,
         wrapper_key: str | None = None,
         ext_inner_names: tuple[str, ...] = (),
+        aliases: Mapping[str, str] | None = None,
     ) -> None:
         object.__setattr__(self, "_type", obj_type)
         object.__setattr__(self, "_name", name)
@@ -555,6 +560,23 @@ class IDFObject(EppyObjectMixin):
         object.__setattr__(self, "_version", 0)
         object.__setattr__(self, "_wrapper_key", wrapper_key)
         object.__setattr__(self, "_ext_inner_names", ext_inner_names)
+        # The document passes its schema's per-type map; anything else derives it once here.
+        if aliases is None:
+            aliases = trailing_underscore_aliases(field_order) if field_order else {}
+        object.__setattr__(self, "_aliases", aliases)
+
+    def __setstate__(self, state: Any) -> None:
+        """Restore a pickled or deep-copied object.
+
+        An object pickled before ``_aliases`` existed has no such slot in its state; it gets
+        the map from its field order, as a constructed object without ``aliases`` does.
+        """
+        slots = cast("dict[str, Any]", (state[1] if isinstance(state, tuple) else state) or {})
+        for key, value in slots.items():
+            object.__setattr__(self, key, value)
+        if "_aliases" not in slots:
+            field_order = cast("list[str] | None", slots.get("_field_order"))
+            object.__setattr__(self, "_aliases", trailing_underscore_aliases(field_order) if field_order else {})
 
     @property
     def obj_type(self) -> str:
@@ -606,6 +628,25 @@ class IDFObject(EppyObjectMixin):
         if not isinstance(items, list):
             return []
         return cast("list[dict[str, Any]]", items)
+
+    def _field_key(self, key: str) -> str:
+        """Resolve an attribute or :meth:`update` key to the data key it names.
+
+        Normally this is :func:`to_python_name`. A field whose epJSON key ends in ``_``
+        (``cond_flag_is_the_basement_conditioned_``) is reached by that key and by the spelling
+        without the underscore, which is what :func:`to_python_name` makes of either; both
+        resolve to the key, so the value is stored and written under the name EnergyPlus reads.
+        The lookup is in a per-type map that is empty for nearly every type
+        (:func:`~idfkit.schema.trailing_underscore_aliases`).
+        """
+        aliases = self._aliases
+        if not aliases:
+            return to_python_name(key)
+        exact = aliases.get(key)
+        if exact is not None:
+            return exact
+        python_key = to_python_name(key)
+        return aliases.get(python_key, python_key)
 
     def _flat_extensible(self, python_key: str) -> tuple[str | None, int]:
         """Classify *python_key* as a legacy flat extensible spelling, never one of the fixed fields.
@@ -678,7 +719,7 @@ class IDFObject(EppyObjectMixin):
             return data[key_lower]
 
         # Try python name conversion
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if python_key in data:
             return data[python_key]
 
@@ -745,7 +786,7 @@ class IDFObject(EppyObjectMixin):
             view.replace(cast("list[Any]", value))
             return
         # Normalize key to python style
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
 
         # Eppy-compat: legacy flat extensible field write
         # (surface.vertex_3_x_coordinate = 5.0). Routes to the canonical
@@ -1016,7 +1057,7 @@ class IDFObject(EppyObjectMixin):
         group: dict[str, tuple[str, Any]] = {}
         for source in (values if values is not None else {}, kwargs):
             for key, value in source.items():
-                group[key if key[:1] == "_" else to_python_name(key)] = (key, value)
+                group[key if key[:1] == "_" else self._field_key(key)] = (key, value)
         refused = [entry for key, value in group.values() if (entry := self._examine(key, value)) is not None]
         if refused:
             self._refuse(refused)
@@ -1027,7 +1068,7 @@ class IDFObject(EppyObjectMixin):
         """Classify one :meth:`update` entry with the tests ``__setattr__`` applies to it."""
         if key[:1] == "_":
             return RefusedEntry(key, "unknown", "private attribute, not a field")
-        python_key = to_python_name(key)
+        python_key = self._field_key(key)
         if key.lower() == "name" or python_key == "name":
             return RefusedEntry(key, "name", "use rename() to change an object's name")
         wrapper_key = self._wrapper_key
@@ -1087,6 +1128,7 @@ class IDFObject(EppyObjectMixin):
             extensibles=self._extensibles,
             wrapper_key=self._wrapper_key,
             ext_inner_names=self._ext_inner_names,
+            aliases=self._aliases,
         )
 
     def __dir__(self) -> list[str]:
