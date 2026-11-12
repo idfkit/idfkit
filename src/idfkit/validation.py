@@ -1036,8 +1036,11 @@ def _declared_names(doc: IDFDocument, schema: EpJSONSchema) -> _DeclaredNames:
         rules = _object_rules(schema, obj_type)
         contributing = rules.contributing if rules is not None else ()
         type_upper = obj_type.upper()
+        # A type without a Name field declares nothing through ``obj.name``: a name stored on
+        # one is dropped on write, so a reference to it would dangle in EnergyPlus.
+        type_has_name = schema.has_name(obj_type)
         for obj in collection:
-            if obj.name:
+            if type_has_name and obj.name:
                 name_upper = obj.name.upper()
                 declared.all_names.add(name_upper)
                 if type_upper in ("ZONE", "SPACE"):

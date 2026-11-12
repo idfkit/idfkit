@@ -20,9 +20,19 @@ from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
 class Version(IDFObject):
     """Specifies the EnergyPlus version of the IDF file."""
 
+    version_identifier: str | None
+    """Default: 26.2"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_VersionFields]) -> None: ...  # type: ignore[override]
+
+class _VersionFields(TypedDict, total=False):
+    version_identifier: str | None
+
 class SimulationControl(IDFObject):
     """Note that the following 3 fields are related to the Sizing:Zone, Sizing:System, and Sizing:Plant objects. Having thes..."""
 
+    do_zone_sizing_calculation: Literal["", "No", "Yes"] | None
+    """If Yes, Zone sizing is accomplished from corresponding Sizing:Zone objects and autosize fields.; Default: No"""
     do_system_sizing_calculation: Literal["", "No", "Yes"] | None
     """If Yes, System sizing is accomplished from corresponding Sizing:System objects and autosize fields. If Yes, Zone sizi...; Default: No"""
     do_plant_sizing_calculation: Literal["", "No", "Yes"] | None
@@ -39,6 +49,7 @@ class SimulationControl(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SimulationControlFields]) -> None: ...  # type: ignore[override]
 
 class _SimulationControlFields(TypedDict, total=False):
+    do_zone_sizing_calculation: Literal["", "No", "Yes"] | None
     do_system_sizing_calculation: Literal["", "No", "Yes"] | None
     do_plant_sizing_calculation: Literal["", "No", "Yes"] | None
     run_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None
@@ -49,6 +60,8 @@ class _SimulationControlFields(TypedDict, total=False):
 class PerformancePrecisionTradeoffs(IDFObject):
     """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea...; Since: 9.2.0"""
 
+    use_coil_direct_solutions: Literal["", "No", "Yes"] | None
+    """If Yes, an analytical or empirical solution will be used to replace iterations in the coil performance calculations.; Default: No"""
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
     """Determines which algorithm will be used to solve long wave radiant exchange among surfaces within a zone.; Default: ScriptF; Since: 9.3.0"""
     override_mode: (
@@ -70,6 +83,7 @@ class PerformancePrecisionTradeoffs(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _PerformancePrecisionTradeoffsFields(TypedDict, total=False):
+    use_coil_direct_solutions: Literal["", "No", "Yes"] | None
     zone_radiant_exchange_algorithm: Literal["", "CarrollMRT", "ScriptF"] | None
     override_mode: (
         Literal[
@@ -141,6 +155,8 @@ class ShadowCalculationShadingZoneGroupsGroup(ExtensibleGroup):
 class ShadowCalculation(IDFObject):
     """This object is used to control details of the solar, shading, and daylighting models"""
 
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
+    """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping; Since: 9.3.0"""
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic; Since: 9.3.0"""
     shading_calculation_update_frequency: int | None
@@ -166,6 +182,7 @@ class ShadowCalculation(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculationFields]) -> None: ...  # type: ignore[override]
 
 class _ShadowCalculationFields(TypedDict, total=False):
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     shading_calculation_update_frequency: int | None
     maximum_figures_in_shadow_overlap_calculations: int | None
@@ -182,12 +199,43 @@ class _ShadowCalculationFields(TypedDict, total=False):
 class SurfaceConvectionAlgorithmInside(IDFObject):
     """Default indoor surface heat transfer convection algorithm to be used for all zones"""
 
+    algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    """Simple = constant value natural convection (ASHRAE) TARP = variable natural convection based on temperature differenc...; Default: TARP"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _SurfaceConvectionAlgorithmInsideFields(TypedDict, total=False):
+    algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+
 class SurfaceConvectionAlgorithmOutside(IDFObject):
     """Default outside surface heat transfer convection algorithm to be used for all zones"""
+
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
+    """SimpleCombined = Combined radiation and convection coefficient using simple ASHRAE model TARP = correlation from mode...; Default: DOE-2"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _SurfaceConvectionAlgorithmOutsideFields(TypedDict, total=False):
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
 
 class HeatBalanceAlgorithm(IDFObject):
     """Determines which Heat Balance Algorithm will be used ie. CTF (Conduction Transfer Functions), EMPD (Effective Moistur..."""
 
+    algorithm: (
+        Literal[
+            "",
+            "CombinedHeatAndMoistureFiniteElement",
+            "ConductionFiniteDifference",
+            "ConductionTransferFunction",
+            "MoisturePenetrationDepthConductionTransferFunction",
+        ]
+        | None
+    )
+    """Default: ConductionTransferFunction"""
     surface_temperature_upper_limit: float | None
     """[C]; Default: 200.0; Range: >= 200.0"""
     minimum_surface_convection_heat_transfer_coefficient_value: float | None
@@ -200,6 +248,16 @@ class HeatBalanceAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HeatBalanceAlgorithmFields(TypedDict, total=False):
+    algorithm: (
+        Literal[
+            "",
+            "CombinedHeatAndMoistureFiniteElement",
+            "ConductionFiniteDifference",
+            "ConductionTransferFunction",
+            "MoisturePenetrationDepthConductionTransferFunction",
+        ]
+        | None
+    )
     surface_temperature_upper_limit: float | None
     minimum_surface_convection_heat_transfer_coefficient_value: float | None
     maximum_surface_convection_heat_transfer_coefficient_value: float | None
@@ -207,6 +265,8 @@ class _HeatBalanceAlgorithmFields(TypedDict, total=False):
 class HeatBalanceSettingsConductionFiniteDifference(IDFObject):
     """Determines settings for the Conduction Finite Difference algorithm for surface heat transfer modeling."""
 
+    difference_scheme: Literal["", "CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"] | None
+    """Default: FullyImplicitFirstOrder"""
     space_discretization_constant: float | None
     """increase or decrease number of nodes; Default: 3.0"""
     relaxation_factor: float | None
@@ -222,6 +282,7 @@ class HeatBalanceSettingsConductionFiniteDifference(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HeatBalanceSettingsConductionFiniteDifferenceFields(TypedDict, total=False):
+    difference_scheme: Literal["", "CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"] | None
     space_discretization_constant: float | None
     relaxation_factor: float | None
     inside_face_surface_temperature_convergence_criteria: float | None
@@ -229,6 +290,8 @@ class _HeatBalanceSettingsConductionFiniteDifferenceFields(TypedDict, total=Fals
 class ZoneAirHeatBalanceAlgorithm(IDFObject):
     """Controls the zone/space air heat balance."""
 
+    algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
+    """Determines which algorithm will be used to solve the air heat balance.; Default: ThirdOrderBackwardDifference"""
     do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None
     """If yes, space heat balance will be calculated and reported during sizing.; Default: No; Since: 23.1.0"""
     do_space_heat_balance_for_simulation: Literal["", "No", "Yes"] | None
@@ -239,12 +302,15 @@ class ZoneAirHeatBalanceAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirHeatBalanceAlgorithmFields(TypedDict, total=False):
+    algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
     do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None
     do_space_heat_balance_for_simulation: Literal["", "No", "Yes"] | None
 
 class ZoneAirContaminantBalance(IDFObject):
     """Determines which contaminant concentration will be simulates."""
 
+    carbon_dioxide_concentration: Literal["", "No", "Yes"] | None
+    """If Yes, CO2 simulation will be performed.; Default: No"""
     outdoor_carbon_dioxide_schedule_name: str | None
     """Schedule values should be in parts per million (ppm)"""
     generic_contaminant_concentration: Literal["", "No", "Yes"] | None
@@ -257,6 +323,7 @@ class ZoneAirContaminantBalance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirContaminantBalanceFields(TypedDict, total=False):
+    carbon_dioxide_concentration: Literal["", "No", "Yes"] | None
     outdoor_carbon_dioxide_schedule_name: str | None
     generic_contaminant_concentration: Literal["", "No", "Yes"] | None
     outdoor_generic_contaminant_schedule_name: str | None
@@ -264,6 +331,11 @@ class _ZoneAirContaminantBalanceFields(TypedDict, total=False):
 class ZoneAirMassFlowConservation(IDFObject):
     """Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return..."""
 
+    adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
+        Literal["", "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"]
+        | None
+    )
+    """If 'AdjustMixingOnly', zone mixing object flow rates are adjusted to balance the zone air mass flow and zone infiltra...; Default: None; Since: 9.5.0"""
     infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
     """This input field allows user to choose how zone infiltration flow is treated during the zone air mass flow balance ca...; Default: AddInfiltrationFlow"""
     infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
@@ -274,6 +346,10 @@ class ZoneAirMassFlowConservation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirMassFlowConservationFields(TypedDict, total=False):
+    adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
+        Literal["", "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"]
+        | None
+    )
     infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
     infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
 
@@ -308,9 +384,19 @@ class _ZoneCapacitanceMultiplierResearchSpecialFields(TypedDict, total=False):
 class Timestep(IDFObject):
     """Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is..."""
 
+    number_of_timesteps_per_hour: int | None
+    """Number in hour: normal validity 4 to 60: 6 suggested Must be evenly divisible into 60 Allowable values include 1, 2, ...; Default: 6; Range: >= 1, <= 60"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TimestepFields]) -> None: ...  # type: ignore[override]
+
+class _TimestepFields(TypedDict, total=False):
+    number_of_timesteps_per_hour: int | None
+
 class ConvergenceLimits(IDFObject):
     """Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be ..."""
 
+    minimum_system_timestep: int | None
+    """0 sets the minimum to the zone timestep (ref: Timestep) 1 is normal (ratchet down to 1 minute) setting greater than z...; [minutes]; Range: >= 0, <= 60"""
     maximum_hvac_iterations: int | None
     """Default: 20; Range: >= 1"""
     minimum_plant_iterations: int | None
@@ -321,6 +407,7 @@ class ConvergenceLimits(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConvergenceLimitsFields]) -> None: ...  # type: ignore[override]
 
 class _ConvergenceLimitsFields(TypedDict, total=False):
+    minimum_system_timestep: int | None
     maximum_hvac_iterations: int | None
     minimum_plant_iterations: int | None
     maximum_plant_iterations: int | None
@@ -328,6 +415,11 @@ class _ConvergenceLimitsFields(TypedDict, total=False):
 class HVACSystemRootFindingAlgorithm(IDFObject):
     """Specifies a HVAC system solver algorithm to find a root"""
 
+    algorithm: (
+        Literal["", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"]
+        | None
+    )
+    """Default: RegulaFalsi"""
     number_of_iterations_before_algorithm_switch: int | None
     """This field is used when RegulaFalsiThenBisection or BisectionThenRegulaFalsi is entered. When iteration number is gre...; Default: 5"""
 
@@ -336,10 +428,24 @@ class HVACSystemRootFindingAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACSystemRootFindingAlgorithmFields(TypedDict, total=False):
+    algorithm: (
+        Literal["", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"]
+        | None
+    )
     number_of_iterations_before_algorithm_switch: int | None
 
 class ComplianceBuilding(IDFObject):
     """Building level inputs related to compliance to building standards, building codes, and beyond energy code programs."""
+
+    building_rotation_for_appendix_g: float | None
+    """Additional degrees of rotation to be used with the requirement in ASHRAE Standard 90.1 Appendix G that states that th...; [deg]; Default: 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComplianceBuildingFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _ComplianceBuildingFields(TypedDict, total=False):
+    building_rotation_for_appendix_g: float | None
 
 class SiteLocation(IDFObject):
     """Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will overr..."""
@@ -771,6 +877,7 @@ class _RunPeriodControlSpecialDaysFields(TypedDict, total=False):
 class RunPeriodControlDaylightSavingTime(IDFObject):
     """This object sets up the daylight saving time period for any RunPeriod. Ignores any daylight saving time period on the..."""
 
+    start_date: str | None
     end_date: str | None
     """Dates can be several formats: <number>/<number> (month/day) <number> <Month> <Month> <number> <Nth> <Weekday> in <Mon..."""
 
@@ -779,6 +886,7 @@ class RunPeriodControlDaylightSavingTime(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RunPeriodControlDaylightSavingTimeFields(TypedDict, total=False):
+    start_date: str | None
     end_date: str | None
 
 class WeatherPropertySkyTemperature(IDFObject):
@@ -827,6 +935,8 @@ class _WeatherPropertySkyTemperatureFields(TypedDict, total=False):
 class SiteWeatherStation(IDFObject):
     """This object should only be used for non-standard weather data. Standard weather data such as TMY2, IWEC, and ASHRAE d..."""
 
+    wind_sensor_height_above_ground: float | None
+    """[m]; Default: 10.0; Range: > 0.0"""
     wind_speed_profile_exponent: float | None
     """Default: 0.14; Range: >= 0.0"""
     wind_speed_profile_boundary_layer_thickness: float | None
@@ -839,6 +949,7 @@ class SiteWeatherStation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWeatherStationFields(TypedDict, total=False):
+    wind_sensor_height_above_ground: float | None
     wind_speed_profile_exponent: float | None
     wind_speed_profile_boundary_layer_thickness: float | None
     air_temperature_sensor_height_above_ground: float | None
@@ -846,6 +957,8 @@ class _SiteWeatherStationFields(TypedDict, total=False):
 class SiteHeightVariation(IDFObject):
     """This object is used if the user requires advanced control over height-dependent variations in wind speed and temperat..."""
 
+    wind_speed_profile_exponent: float | None
+    """Set to zero for no wind speed dependence on height.; Default: 0.22; Range: >= 0.0"""
     wind_speed_profile_boundary_layer_thickness: float | None
     """[m]; Default: 370.0; Range: > 0.0"""
     air_temperature_gradient_coefficient: float | None
@@ -856,12 +969,15 @@ class SiteHeightVariation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteHeightVariationFields(TypedDict, total=False):
+    wind_speed_profile_exponent: float | None
     wind_speed_profile_boundary_layer_thickness: float | None
     air_temperature_gradient_coefficient: float | None
 
 class SiteGroundTemperatureBuildingSurface(IDFObject):
     """These temperatures are specifically for those surfaces that have the outside environment of 'Ground'. Documentation a..."""
 
+    january_ground_temperature: float | None
+    """[C]; Default: 18.0"""
     february_ground_temperature: float | None
     """[C]; Default: 18.0"""
     march_ground_temperature: float | None
@@ -890,6 +1006,7 @@ class SiteGroundTemperatureBuildingSurface(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
+    january_ground_temperature: float | None
     february_ground_temperature: float | None
     march_ground_temperature: float | None
     april_ground_temperature: float | None
@@ -905,6 +1022,8 @@ class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
 class SiteGroundTemperatureFCfactorMethod(IDFObject):
     """These temperatures are specifically for underground walls and ground floors defined with the C-factor and F-factor me..."""
 
+    january_ground_temperature: float | None
+    """[C]; Default: 13.0"""
     february_ground_temperature: float | None
     """[C]; Default: 13.0"""
     march_ground_temperature: float | None
@@ -933,6 +1052,7 @@ class SiteGroundTemperatureFCfactorMethod(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
+    january_ground_temperature: float | None
     february_ground_temperature: float | None
     march_ground_temperature: float | None
     april_ground_temperature: float | None
@@ -948,6 +1068,8 @@ class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
 class SiteGroundTemperatureShallow(IDFObject):
     """These temperatures are specifically for the Surface Ground Heat Exchanger and should probably be close to the average..."""
 
+    january_surface_ground_temperature: float | None
+    """[C]; Default: 13.0"""
     february_surface_ground_temperature: float | None
     """[C]; Default: 13.0"""
     march_surface_ground_temperature: float | None
@@ -976,6 +1098,7 @@ class SiteGroundTemperatureShallow(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
+    january_surface_ground_temperature: float | None
     february_surface_ground_temperature: float | None
     march_surface_ground_temperature: float | None
     april_surface_ground_temperature: float | None
@@ -991,6 +1114,8 @@ class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
 class SiteGroundTemperatureDeep(IDFObject):
     """These temperatures are specifically for the ground heat exchangers that would use 'deep' (3-4 m depth) ground tempera..."""
 
+    january_deep_ground_temperature: float | None
+    """[C]; Default: 16.0"""
     february_deep_ground_temperature: float | None
     """[C]; Default: 16.0"""
     march_deep_ground_temperature: float | None
@@ -1019,6 +1144,7 @@ class SiteGroundTemperatureDeep(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureDeepFields(TypedDict, total=False):
+    january_deep_ground_temperature: float | None
     february_deep_ground_temperature: float | None
     march_deep_ground_temperature: float | None
     april_deep_ground_temperature: float | None
@@ -1310,6 +1436,8 @@ class _SiteGroundDomainBasementFields(TypedDict, total=False):
 class SiteGroundReflectance(IDFObject):
     """Specifies the ground reflectance values used to calculate ground reflected solar. The ground reflectance can be furth..."""
 
+    january_ground_reflectance: float | None
+    """[dimensionless]; Default: 0.2; Range: >= 0.0, <= 1.0"""
     february_ground_reflectance: float | None
     """[dimensionless]; Default: 0.2; Range: >= 0.0, <= 1.0"""
     march_ground_reflectance: float | None
@@ -1338,6 +1466,7 @@ class SiteGroundReflectance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceFields(TypedDict, total=False):
+    january_ground_reflectance: float | None
     february_ground_reflectance: float | None
     march_ground_reflectance: float | None
     april_ground_reflectance: float | None
@@ -1353,6 +1482,8 @@ class _SiteGroundReflectanceFields(TypedDict, total=False):
 class SiteGroundReflectanceSnowModifier(IDFObject):
     """Specifies ground reflectance multipliers when snow resident on the ground. These multipliers are applied to the 'norm..."""
 
+    ground_reflected_solar_modifier: float | None
+    """Value for modifying the 'normal' ground reflectance when Snow is on ground when calculating the 'Ground Reflected Sol...; Default: 1.0; Range: >= 0.0"""
     daylighting_ground_reflected_solar_modifier: float | None
     """Value for modifying the 'normal' daylighting ground reflectance when Snow is on ground when calculating the 'Ground R...; Default: 1.0; Range: >= 0.0"""
 
@@ -1361,11 +1492,14 @@ class SiteGroundReflectanceSnowModifier(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceSnowModifierFields(TypedDict, total=False):
+    ground_reflected_solar_modifier: float | None
     daylighting_ground_reflected_solar_modifier: float | None
 
 class SiteWaterMainsTemperature(IDFObject):
     """Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
 
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
+    """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
     temperature_schedule_name: str | None
     annual_average_outdoor_air_temperature: float | None
     """If calculation method is CorrelationFromWeatherFile or Schedule, this input field is ignored.; [C]"""
@@ -1381,6 +1515,7 @@ class SiteWaterMainsTemperature(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWaterMainsTemperatureFields(TypedDict, total=False):
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
     temperature_schedule_name: str | None
     annual_average_outdoor_air_temperature: float | None
     maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None
@@ -1390,6 +1525,7 @@ class _SiteWaterMainsTemperatureFields(TypedDict, total=False):
 class SitePrecipitation(IDFObject):
     """Used to describe the amount of water precipitation at the building site. Precipitation includes both rain and the equ..."""
 
+    precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None
     design_level_for_total_annual_precipitation: float | None
     """meters of water per year used for design level; [m/yr]"""
     precipitation_rates_schedule_name: str | None
@@ -1400,6 +1536,7 @@ class SitePrecipitation(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SitePrecipitationFields]) -> None: ...  # type: ignore[override]
 
 class _SitePrecipitationFields(TypedDict, total=False):
+    precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None
     design_level_for_total_annual_precipitation: float | None
     precipitation_rates_schedule_name: str | None
     average_total_annual_precipitation: float | None
@@ -1407,6 +1544,8 @@ class _SitePrecipitationFields(TypedDict, total=False):
 class RoofIrrigation(IDFObject):
     """Used to describe the amount of irrigation on the ecoroof surface over the course of the simulation runperiod."""
 
+    irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None
+    """SmartSchedule will not allow irrigation when soil is already moist. Current threshold set at 30% of saturation."""
     irrigation_rate_schedule_name: str | None
     """Schedule values in meters of water per hour values should be non-negative"""
     irrigation_maximum_saturation_threshold: float | None
@@ -1415,6 +1554,7 @@ class RoofIrrigation(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofIrrigationFields]) -> None: ...  # type: ignore[override]
 
 class _RoofIrrigationFields(TypedDict, total=False):
+    irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None
     irrigation_rate_schedule_name: str | None
     irrigation_maximum_saturation_threshold: float | None
 
@@ -1827,6 +1967,16 @@ class _ScheduleWeekRuleFields(TypedDict, total=False):
 
 class ScheduleFileShading(IDFObject):
     """A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the ..."""
+
+    file_name: str | None
+    """The name of the file that writes all shading data."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFileShadingFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _ScheduleFileShadingFields(TypedDict, total=False):
+    file_name: str | None
 
 class ScheduleFile(IDFObject):
     """A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
@@ -3109,6 +3259,8 @@ class _MaterialPropertyVariableAbsorptanceFields(TypedDict, total=False):
 class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Additional material properties f..."""
 
+    material_name: str | None
+    """Material Name that the moisture properties will be added to. This augments material properties needed for combined he..."""
     porosity: float | None
     """[m3/m3]; Range: >= 0.0, <= 1.0"""
     initial_water_content_ratio: float | None
@@ -3122,12 +3274,15 @@ class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferSettingsFields(TypedDict, total=False):
+    material_name: str | None
     porosity: float | None
     initial_water_content_ratio: float | None
 
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between moisture co..."""
 
+    material_name: str | None
+    """The Material Name that the moisture sorption isotherm will be added to."""
     number_of_isotherm_coordinates: int | None
     """Number of data Coordinates; Range: >= 1, <= 25"""
     relative_humidity_fraction_1: float | None
@@ -3239,6 +3394,7 @@ class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields(TypedDict, total=False):
+    material_name: str | None
     number_of_isotherm_coordinates: int | None
     relative_humidity_fraction_1: float | None
     moisture_content_1: float | None
@@ -3294,6 +3450,8 @@ class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields(TypedDict, 
 class MaterialPropertyHeatAndMoistureTransferSuction(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid suct..."""
 
+    material_name: str | None
+    """Material Name that the moisture properties will be added to."""
     number_of_suction_points: int | None
     """Number of Suction Liquid Transport Coefficient coordinates; Range: >= 1, <= 25"""
     moisture_content_1: float | None
@@ -3405,6 +3563,7 @@ class MaterialPropertyHeatAndMoistureTransferSuction(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferSuctionFields(TypedDict, total=False):
+    material_name: str | None
     number_of_suction_points: int | None
     moisture_content_1: float | None
     liquid_transport_coefficient_1: float | None
@@ -3460,6 +3619,8 @@ class _MaterialPropertyHeatAndMoistureTransferSuctionFields(TypedDict, total=Fal
 class MaterialPropertyHeatAndMoistureTransferRedistribution(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid tran..."""
 
+    material_name: str | None
+    """Moisture Material Name that the moisture properties will be added to."""
     number_of_redistribution_points: int | None
     """number of data points; Range: >= 1, <= 25"""
     moisture_content_1: float | None
@@ -3571,6 +3732,7 @@ class MaterialPropertyHeatAndMoistureTransferRedistribution(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferRedistributionFields(TypedDict, total=False):
+    material_name: str | None
     number_of_redistribution_points: int | None
     moisture_content_1: float | None
     liquid_transport_coefficient_1: float | None
@@ -3626,6 +3788,8 @@ class _MaterialPropertyHeatAndMoistureTransferRedistributionFields(TypedDict, to
 class MaterialPropertyHeatAndMoistureTransferDiffusion(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between water vapor..."""
 
+    material_name: str | None
+    """Moisture Material Name that the moisture properties will be added to."""
     number_of_data_pairs: int | None
     """Water Vapor Diffusion Resistance Factor; Range: >= 1, <= 25"""
     relative_humidity_fraction_1: float | None
@@ -3737,6 +3901,7 @@ class MaterialPropertyHeatAndMoistureTransferDiffusion(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferDiffusionFields(TypedDict, total=False):
+    material_name: str | None
     number_of_data_pairs: int | None
     relative_humidity_fraction_1: float | None
     water_vapor_diffusion_resistance_factor_1: float | None
@@ -3792,6 +3957,8 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusionFields(TypedDict, total=F
 class MaterialPropertyHeatAndMoistureTransferThermalConductivity(IDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between thermal con..."""
 
+    material_name: str | None
+    """Moisture Material Name that the Thermal Conductivity will be added to."""
     number_of_thermal_coordinates: int | None
     """number of data coordinates; Range: >= 1, <= 25"""
     moisture_content_1: float | None
@@ -3903,6 +4070,7 @@ class MaterialPropertyHeatAndMoistureTransferThermalConductivity(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields(TypedDict, total=False):
+    material_name: str | None
     number_of_thermal_coordinates: int | None
     moisture_content_1: float | None
     thermal_conductivity_1: float | None
@@ -4172,6 +4340,16 @@ class _WindowThermalModelParamsFields(TypedDict, total=False):
 class WindowsCalculationEngine(IDFObject):
     """Describes which window model will be used in calculations. Built in windows model will use algorithms that are part o...; Since: 9.0.1"""
 
+    windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None
+    """Default: BuiltInWindowsModel"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowsCalculationEngineFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _WindowsCalculationEngineFields(TypedDict, total=False):
+    windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None
+
 class ConstructionComplexFenestrationState(IDFObject):
     """Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
 
@@ -4394,6 +4572,10 @@ class _SubSurfaceConstructionAssignmentsFields(TypedDict, total=False):
 class GlobalGeometryRules(IDFObject):
     """Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
 
+    starting_vertex_position: (
+        Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    )
+    """Specified as entry for a 4 sided surface/rectangle Surfaces are specified as viewed from outside the surface Shading ..."""
     vertex_entry_direction: Literal["Clockwise", "Counterclockwise"] | None
     coordinate_system: Literal["Relative", "World"] | None
     """Relative -- coordinates are entered relative to zone origin World -- all coordinates entered are 'absolute' for this ..."""
@@ -4407,6 +4589,9 @@ class GlobalGeometryRules(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GlobalGeometryRulesFields(TypedDict, total=False):
+    starting_vertex_position: (
+        Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    )
     vertex_entry_direction: Literal["Clockwise", "Counterclockwise"] | None
     coordinate_system: Literal["Relative", "World"] | None
     daylighting_reference_point_coordinate_system: Literal["", "Relative", "World"] | None
@@ -4415,6 +4600,8 @@ class _GlobalGeometryRulesFields(TypedDict, total=False):
 class GeometryTransform(IDFObject):
     """Provides a simple method of altering the footprint geometry of a model. The intent is to provide a single parameter t..."""
 
+    plane_of_transform: Literal["", "XY"] | None
+    """only current allowed value is 'XY'; Default: XY"""
     current_aspect_ratio: float | None
     """Aspect ratio of building as described in idf; Range: > 0.0"""
     new_aspect_ratio: float | None
@@ -4423,6 +4610,7 @@ class GeometryTransform(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeometryTransformFields]) -> None: ...  # type: ignore[override]
 
 class _GeometryTransformFields(TypedDict, total=False):
+    plane_of_transform: Literal["", "XY"] | None
     current_aspect_ratio: float | None
     new_aspect_ratio: float | None
 
@@ -5887,6 +6075,8 @@ class _WindowPropertyAirflowControlFields(TypedDict, total=False):
 class WindowPropertyStormWindow(IDFObject):
     """This is a movable exterior glass layer that is usually applied in the winter and removed in the summer."""
 
+    window_name: str | None
+    """Must be the name of a FenestrationSurface:Detailed object with Surface Type = WINDOW. The WindowProperty:StormWindow ..."""
     storm_glass_layer_name: str | None
     """Must be a WindowMaterial:Glazing or WindowMaterial:Glazing:RefractionExtinctionMethod Gap between storm glass layer a..."""
     distance_between_storm_glass_layer_and_adjacent_glass: float | None
@@ -5905,6 +6095,7 @@ class WindowPropertyStormWindow(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _WindowPropertyStormWindowFields(TypedDict, total=False):
+    window_name: str | None
     storm_glass_layer_name: str | None
     distance_between_storm_glass_layer_and_adjacent_glass: float | None
     month_that_storm_glass_layer_is_put_on: int | None
@@ -6204,6 +6395,7 @@ class _ShadingZoneDetailedFields(TypedDict, total=False):
 class ShadingPropertyReflectance(IDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
 
+    shading_surface_name: str | None
     diffuse_solar_reflectance_of_unglazed_part_of_shading_surface: float | None
     """Default: 0.2; Range: >= 0.0, <= 1.0"""
     diffuse_visible_reflectance_of_unglazed_part_of_shading_surface: float | None
@@ -6218,6 +6410,7 @@ class ShadingPropertyReflectance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingPropertyReflectanceFields(TypedDict, total=False):
+    shading_surface_name: str | None
     diffuse_solar_reflectance_of_unglazed_part_of_shading_surface: float | None
     diffuse_visible_reflectance_of_unglazed_part_of_shading_surface: float | None
     fraction_of_shading_surface_that_is_glazed: float | None
@@ -6226,6 +6419,7 @@ class _ShadingPropertyReflectanceFields(TypedDict, total=False):
 class SurfacePropertyHeatTransferAlgorithm(IDFObject):
     """Determines which Heat Balance Algorithm will be used for a specific surface Allows selectively overriding the global ..."""
 
+    surface_name: str | None
     algorithm: (
         Literal[
             "",
@@ -6243,6 +6437,7 @@ class SurfacePropertyHeatTransferAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatTransferAlgorithmFields(TypedDict, total=False):
+    surface_name: str | None
     algorithm: (
         Literal[
             "",
@@ -6396,6 +6591,7 @@ class _SurfacePropertyHeatTransferAlgorithmConstructionFields(TypedDict, total=F
 class SurfacePropertyHeatBalanceSourceTerm(IDFObject):
     """Allows an additional heat source term to be added to the inside or outside surface boundary. A heat source can be add..."""
 
+    surface_name: str | None
     inside_face_heat_source_term_schedule_name: str | None
     """The value of this schedule is the source term value for the inside face of this surface If this field is left blank, ..."""
     outside_face_heat_source_term_schedule_name: str | None
@@ -6406,12 +6602,14 @@ class SurfacePropertyHeatBalanceSourceTerm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatBalanceSourceTermFields(TypedDict, total=False):
+    surface_name: str | None
     inside_face_heat_source_term_schedule_name: str | None
     outside_face_heat_source_term_schedule_name: str | None
 
 class SurfaceControlMovableInsulation(IDFObject):
     """Exterior or Interior Insulation on opaque surfaces"""
 
+    insulation_type: Literal["Inside", "Outside"] | None
     surface_name: str | None
     material_name: str | None
     schedule_name: str | None
@@ -6421,6 +6619,7 @@ class SurfaceControlMovableInsulation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfaceControlMovableInsulationFields(TypedDict, total=False):
+    insulation_type: Literal["Inside", "Outside"] | None
     surface_name: str | None
     material_name: str | None
     schedule_name: str | None
@@ -6591,6 +6790,8 @@ class _FoundationKivaFields(TypedDict, total=False):
 class FoundationKivaSettings(IDFObject):
     """Settings applied across all Kiva foundation calculations. Object is not required. If not defined, defaults will be ap..."""
 
+    soil_conductivity: float | None
+    """[W/m-K]; Default: 1.73; Range: > 0.0"""
     soil_density: float | None
     """[kg/m3]; Default: 1842.0; Range: > 0.0"""
     soil_specific_heat: float | None
@@ -6619,6 +6820,7 @@ class FoundationKivaSettings(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FoundationKivaSettingsFields(TypedDict, total=False):
+    soil_conductivity: float | None
     soil_density: float | None
     soil_specific_heat: float | None
     ground_solar_absorptivity: float | None
@@ -6639,6 +6841,7 @@ class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(ExtensibleGroup):
 class SurfacePropertyExposedFoundationPerimeter(IDFObject):
     """Defines the perimeter of a foundation floor that is exposed to the exterior environment through the floor. User may e..."""
 
+    surface_name: str | None
     exposed_perimeter_calculation_method: (
         Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"] | None
     )
@@ -6657,6 +6860,7 @@ class SurfacePropertyExposedFoundationPerimeter(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyExposedFoundationPerimeterFields(TypedDict, total=False):
+    surface_name: str | None
     exposed_perimeter_calculation_method: (
         Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"] | None
     )
@@ -7852,6 +8056,7 @@ class _SurfaceConvectionAlgorithmOutsideUserCurveFields(TypedDict, total=False):
 class SurfacePropertyConvectionCoefficients(IDFObject):
     """Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
 
+    surface_name: str | None
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -7972,6 +8177,7 @@ class SurfacePropertyConvectionCoefficients(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyConvectionCoefficientsFields(TypedDict, total=False):
+    surface_name: str | None
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -8084,6 +8290,21 @@ class _SurfacePropertyConvectionCoefficientsFields(TypedDict, total=False):
 class SurfacePropertyConvectionCoefficientsMultipleSurface(IDFObject):
     """Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
 
+    surface_type: (
+        Literal[
+            "AllExteriorFloors",
+            "AllExteriorRoofs",
+            "AllExteriorSurfaces",
+            "AllExteriorWalls",
+            "AllExteriorWindows",
+            "AllInteriorCeilings",
+            "AllInteriorFloors",
+            "AllInteriorSurfaces",
+            "AllInteriorWalls",
+            "AllInteriorWindows",
+        ]
+        | None
+    )
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -8207,6 +8428,21 @@ class SurfacePropertyConvectionCoefficientsMultipleSurface(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields(TypedDict, total=False):
+    surface_type: (
+        Literal[
+            "AllExteriorFloors",
+            "AllExteriorRoofs",
+            "AllExteriorSurfaces",
+            "AllExteriorWalls",
+            "AllExteriorWindows",
+            "AllInteriorCeilings",
+            "AllInteriorFloors",
+            "AllInteriorSurfaces",
+            "AllInteriorWalls",
+            "AllInteriorWindows",
+        ]
+        | None
+    )
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -8319,6 +8555,7 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields(TypedDict, tot
 class SurfacePropertiesVaporCoefficients(IDFObject):
     """The interior and external vapor transfer coefficients. Normally these value are calculated using the heat convection ..."""
 
+    surface_name: str | None
     constant_external_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
     """Default: No"""
     external_vapor_coefficient_value: float | None
@@ -8333,6 +8570,7 @@ class SurfacePropertiesVaporCoefficients(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertiesVaporCoefficientsFields(TypedDict, total=False):
+    surface_name: str | None
     constant_external_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
     external_vapor_coefficient_value: float | None
     constant_internal_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
@@ -8411,6 +8649,8 @@ class _SurfacePropertySolarIncidentInsideFields(TypedDict, total=False):
 class SurfacePropertyIncidentSolarMultiplier(IDFObject):
     """Since: 22.2.0"""
 
+    surface_name: str | None
+    """Enter the name of an exterior window outside surface object"""
     incident_solar_multiplier: float | None
     """a constant multiplier for window solar transmittance and visible transmittance. If the Shading Multiplier Schedule Na...; [dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
     incident_solar_multiplier_schedule_name: str | None
@@ -8421,6 +8661,7 @@ class SurfacePropertyIncidentSolarMultiplier(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyIncidentSolarMultiplierFields(TypedDict, total=False):
+    surface_name: str | None
     incident_solar_multiplier: float | None
     incident_solar_multiplier_schedule_name: str | None
 
@@ -8558,6 +8799,8 @@ class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(ExtensibleGroup):
 class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
     """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
 
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """View factors may be entered for a space, zone, group of spaces, or group of zones in the same enclosure by way of Con...; Since: 9.6.0"""
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
 
     def update(
@@ -8568,6 +8811,7 @@ class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZonePropertyUserViewFactorsBySurfaceNameFields(TypedDict, total=False):
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
     view_factors: list[Any]
 
 class ZoneMRTCalculationPeopleNamesGroup(ExtensibleGroup):
@@ -8579,6 +8823,8 @@ class ZoneMRTCalculationPeopleNamesGroup(ExtensibleGroup):
 class ZoneMRTCalculation(IDFObject):
     """Blends MRT values calculated for People instances into one Zone MRT. The weighting factors must sum to a value from 0...; Since: 26.2.0"""
 
+    zone_name: str | None
+    """This field accepts a Zone name only, not a Space or SpaceList name."""
     people_names: ExtensibleList[ZoneMRTCalculationPeopleNamesGroup]
 
     def update(
@@ -8586,6 +8832,7 @@ class ZoneMRTCalculation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneMRTCalculationFields(TypedDict, total=False):
+    zone_name: str | None
     people_names: list[Any]
 
 class GroundHeatTransferControl(IDFObject):
@@ -8607,6 +8854,8 @@ class _GroundHeatTransferControlFields(TypedDict, total=False):
 class GroundHeatTransferSlabMaterials(IDFObject):
     """Object gives an overall description of the slab ground heat transfer model."""
 
+    nmat_number_of_materials: float | None
+    """This field specifies the number of different materials that will be used in the model. Typically only a ground materi...; Range: > 0.0"""
     albedo_surface_albedo_no_snow: float | None
     """Two fields specify the albedo value of the surface: first for no snow coverage days; second for days with snow covera...; Default: 0.16; Range: >= 0.0, <= 1.0"""
     albedo_surface_albedo_snow: float | None
@@ -8629,6 +8878,7 @@ class GroundHeatTransferSlabMaterials(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
+    nmat_number_of_materials: float | None
     albedo_surface_albedo_no_snow: float | None
     albedo_surface_albedo_snow: float | None
     epslw_surface_emissivity_no_snow: float | None
@@ -8641,6 +8891,8 @@ class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
 class GroundHeatTransferSlabMatlProps(IDFObject):
     """This object contains the material properties for the materials used in the model. The fields are mostly self explanat..."""
 
+    rho_slab_material_density: float | None
+    """Density of Slab Material typical value= 2300.0; [kg/m3]; Default: 2300.0; Range: > 0.0"""
     rho_soil_density: float | None
     """Density of Soil Material typical value= 1200.0; [kg/m3]; Default: 1200.0; Range: > 0.0"""
     cp_slab_cp: float | None
@@ -8657,6 +8909,7 @@ class GroundHeatTransferSlabMatlProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMatlPropsFields(TypedDict, total=False):
+    rho_slab_material_density: float | None
     rho_soil_density: float | None
     cp_slab_cp: float | None
     cp_soil_cp: float | None
@@ -8666,6 +8919,8 @@ class _GroundHeatTransferSlabMatlPropsFields(TypedDict, total=False):
 class GroundHeatTransferSlabBoundConds(IDFObject):
     """Supplies some of the boundary conditions used in the ground heat transfer calculations."""
 
+    evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"] | None
+    """This field specifies whether or not to use the evapotranspiration model. The inclusion of evapotranspiration in the c..."""
     fixbc_is_the_lower_boundary_at_a_fixed_temperature: Literal["FALSE", "TRUE"] | None
     """This field permits using a fixed temperature at the lower surface of the model instead of a zero heat flux condition...."""
     tdeepin: float | None
@@ -8680,6 +8935,7 @@ class GroundHeatTransferSlabBoundConds(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
+    evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"] | None
     fixbc_is_the_lower_boundary_at_a_fixed_temperature: Literal["FALSE", "TRUE"] | None
     tdeepin: float | None
     usrhflag_is_the_ground_surface_h_specified_by_the_user_: Literal["FALSE", "TRUE"] | None
@@ -8688,6 +8944,8 @@ class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
 class GroundHeatTransferSlabBldgProps(IDFObject):
     """Object provides information about the building and its operating conditions Monthly Average Temperature SetPoint fiel..."""
 
+    iyrs_number_of_years_to_iterate: float | None
+    """This field specifies the number of years to iterate. Either the ground heat transfer calculations come to an an annua...; Default: 10.0; Range: >= 1.0"""
     shape_slab_shape: float | None
     """Use only the value 0 here. Only a rectangular shape is implemented.; Range: >= 0.0, <= 0.0"""
     hbldg_building_height: float | None
@@ -8726,6 +8984,7 @@ class GroundHeatTransferSlabBldgProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
+    iyrs_number_of_years_to_iterate: float | None
     shape_slab_shape: float | None
     hbldg_building_height: float | None
     tin1_january_indoor_average_temperature_setpoint: float | None
@@ -8746,6 +9005,8 @@ class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
 class GroundHeatTransferSlabInsulation(IDFObject):
     """This object supplies the information about insulation used around the slab. There are two possible configurations: un..."""
 
+    rins_r_value_of_under_slab_insulation: float | None
+    """This field provides the thermal resistance value of the under slab insulation. It should be zero if the vertical insu...; [m2-K/W]; Default: 0.0"""
     dins_width_of_strip_of_under_slab_insulation: float | None
     """This specifies the width of the perimeter strip of insulation under the slab. It should be zero if for the vertical i...; [m]; Default: 0.0"""
     rvins_r_value_of_vertical_insulation: float | None
@@ -8760,6 +9021,7 @@ class GroundHeatTransferSlabInsulation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabInsulationFields(TypedDict, total=False):
+    rins_r_value_of_under_slab_insulation: float | None
     dins_width_of_strip_of_under_slab_insulation: float | None
     rvins_r_value_of_vertical_insulation: float | None
     zvins_depth_of_vertical_insulation: float | None
@@ -8768,6 +9030,8 @@ class _GroundHeatTransferSlabInsulationFields(TypedDict, total=False):
 class GroundHeatTransferSlabEquivalentSlab(IDFObject):
     """Using an equivalent slab allows non-rectangular shapes to be modeled accurately. Object uses the area - perimeter (ar..."""
 
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
+    """Equivalent square slab is simulated, side is 4*APRatio.; [m]; Range: >= 1.5, <= 22.0"""
     slabdepth_thickness_of_slab_on_grade: float | None
     """This field specifies the thickness of the slab. The slab top surface is level with the ground surface, so this is the...; [m]; Default: 0.1"""
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
@@ -8780,6 +9044,7 @@ class GroundHeatTransferSlabEquivalentSlab(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabEquivalentSlabFields(TypedDict, total=False):
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
     slabdepth_thickness_of_slab_on_grade: float | None
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
     zclearance_distance_from_bottom_of_slab_to_domain_bottom: float | None
@@ -8787,6 +9052,8 @@ class _GroundHeatTransferSlabEquivalentSlabFields(TypedDict, total=False):
 class GroundHeatTransferSlabAutoGrid(IDFObject):
     """AutoGrid only necessary when EquivalentSlab option not chosen. Not normally needed by EnergyPlus users. This object p..."""
 
+    slabx_x_dimension_of_the_building_slab: float | None
+    """typical values= 6 to 60.0; [m]; Range: >= 6.0"""
     slaby_y_dimension_of_the_building_slab: float | None
     """typical values= 6 to 60.0; [m]; Range: >= 6.0"""
     slabdepth_thickness_of_slab_on_grade: float | None
@@ -8801,6 +9068,7 @@ class GroundHeatTransferSlabAutoGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabAutoGridFields(TypedDict, total=False):
+    slabx_x_dimension_of_the_building_slab: float | None
     slaby_y_dimension_of_the_building_slab: float | None
     slabdepth_thickness_of_slab_on_grade: float | None
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
@@ -8809,6 +9077,8 @@ class _GroundHeatTransferSlabAutoGridFields(TypedDict, total=False):
 class GroundHeatTransferSlabManualGrid(IDFObject):
     """Manual Grid only necessary when using manual gridding (not recommended) Used only in special cases when previous two ..."""
 
+    nx_number_of_cells_in_the_x_direction: float | None
+    """Range: >= 1.0"""
     ny_number_of_cells_in_the_y_direction: float | None
     """Range: >= 1.0"""
     nz_number_of_cells_in_the_z_direction: float | None
@@ -8823,6 +9093,7 @@ class GroundHeatTransferSlabManualGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabManualGridFields(TypedDict, total=False):
+    nx_number_of_cells_in_the_x_direction: float | None
     ny_number_of_cells_in_the_y_direction: float | None
     nz_number_of_cells_in_the_z_direction: float | None
     ibox_x_direction_cell_indicator_of_slab_edge: float | None
@@ -8840,6 +9111,8 @@ class GroundHeatTransferSlabZFACE(IDFObject):
 class GroundHeatTransferBasementSimParameters(IDFObject):
     """Specifies certain parameters that control the Basement preprocessor ground heat transfer simulation."""
 
+    f_multiplier_for_the_adi_solution: float | None
+    """0<F<1.0, typically 0.1 (0.3 for high k soil - saturated sand is about 2.6 w/m-K); Range: > 0.0, <= 1.0"""
     iyrs_maximum_number_of_yearly_iterations_: float | None
     """typically 15-30]; Default: 15.0; Range: >= 0.0"""
 
@@ -8851,11 +9124,14 @@ class GroundHeatTransferBasementSimParameters(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementSimParametersFields(TypedDict, total=False):
+    f_multiplier_for_the_adi_solution: float | None
     iyrs_maximum_number_of_yearly_iterations_: float | None
 
 class GroundHeatTransferBasementMatlProps(IDFObject):
     """Specifies the material properties for the Basement preprocessor ground heat transfer simulation. Only the Foundation ..."""
 
+    nmat_number_of_materials_in_this_domain: float | None
+    """Range: <= 6.0"""
     density_for_foundation_wall: float | None
     """[kg/m3]; Default: 2243.0; Range: > 0.0"""
     density_for_floor_slab: float | None
@@ -8898,6 +9174,7 @@ class GroundHeatTransferBasementMatlProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
+    nmat_number_of_materials_in_this_domain: float | None
     density_for_foundation_wall: float | None
     density_for_floor_slab: float | None
     density_for_ceiling: float | None
@@ -8920,6 +9197,8 @@ class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
 class GroundHeatTransferBasementInsulation(IDFObject):
     """Describes the insulation used on an exterior basement wall for the Basement preprocessor ground heat transfer simulat..."""
 
+    rext_r_value_of_any_exterior_insulation: float | None
+    """[m2-K/W]; Range: > 0.0"""
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
     """True for full insulation False for insulation half way down side wall from grade line"""
 
@@ -8928,11 +9207,14 @@ class GroundHeatTransferBasementInsulation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInsulationFields(TypedDict, total=False):
+    rext_r_value_of_any_exterior_insulation: float | None
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
 
 class GroundHeatTransferBasementSurfaceProps(IDFObject):
     """Specifies the soil surface properties for the Basement preprocessor ground heat transfer simulation."""
 
+    albedo_surface_albedo_for_no_snow_conditions: float | None
+    """Default: 0.16; Range: >= 0.0, <= 1.0"""
     albedo_surface_albedo_for_snow_conditions: float | None
     """Default: 0.4; Range: >= 0.0, <= 1.0"""
     epsln_surface_emissivity_no_snow: float | None
@@ -8951,6 +9233,7 @@ class GroundHeatTransferBasementSurfaceProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
+    albedo_surface_albedo_for_no_snow_conditions: float | None
     albedo_surface_albedo_for_snow_conditions: float | None
     epsln_surface_emissivity_no_snow: float | None
     epsln_surface_emissivity_with_snow: float | None
@@ -8961,6 +9244,8 @@ class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
 class GroundHeatTransferBasementBldgData(IDFObject):
     """Specifies the surface and gravel thicknesses used for the Basement preprocessor ground heat transfer simulation."""
 
+    dwall_wall_thickness: float | None
+    """[m]; Default: 0.2; Range: >= 0.2"""
     dslab_floor_slab_thickness: float | None
     """[m]; Default: 0.1; Range: > 0.0, <= 0.25"""
     dgravxy_width_of_gravel_pit_beside_basement_wall: float | None
@@ -8975,6 +9260,7 @@ class GroundHeatTransferBasementBldgData(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementBldgDataFields(TypedDict, total=False):
+    dwall_wall_thickness: float | None
     dslab_floor_slab_thickness: float | None
     dgravxy_width_of_gravel_pit_beside_basement_wall: float | None
     dgravzn_gravel_depth_extending_above_the_floor_slab: float | None
@@ -8983,6 +9269,8 @@ class _GroundHeatTransferBasementBldgDataFields(TypedDict, total=False):
 class GroundHeatTransferBasementInterior(IDFObject):
     """Provides the information needed to simulate the inside boundary conditions for the Basement preprocessor ground heat ..."""
 
+    cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None
+    """for EnergyPlus this should be TRUE; Default: TRUE"""
     hin_downward_convection_only_heat_transfer_coefficient: float | None
     """[W/m2-K]; Default: 0.92; Range: > 0.0"""
     hin_upward_convection_only_heat_transfer_coefficient: float | None
@@ -9001,6 +9289,7 @@ class GroundHeatTransferBasementInterior(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
+    cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None
     hin_downward_convection_only_heat_transfer_coefficient: float | None
     hin_upward_convection_only_heat_transfer_coefficient: float | None
     hin_horizontal_convection_only_heat_transfer_coefficient: float | None
@@ -9011,6 +9300,8 @@ class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
 class GroundHeatTransferBasementComBldg(IDFObject):
     """ComBldg contains the monthly average temperatures (C) and possibility of daily variation amplitude"""
 
+    january_average_temperature: float | None
+    """[C]; Default: 22.0"""
     february_average_temperature: float | None
     """[C]; Default: 22.0"""
     march_average_temperature: float | None
@@ -9041,6 +9332,7 @@ class GroundHeatTransferBasementComBldg(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
+    january_average_temperature: float | None
     february_average_temperature: float | None
     march_average_temperature: float | None
     april_average_temperature: float | None
@@ -9057,6 +9349,8 @@ class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
 class GroundHeatTransferBasementEquivSlab(IDFObject):
     """Using an equivalent slab allows non-rectangular shapes to be modeled accurately. The simulation default should be Equ..."""
 
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
+    """[m]; Range: > 0.0"""
     equivsizing_flag: Literal["FALSE", "TRUE"] | None
     """Will the dimensions of an equivalent slab be calculated (TRUE) or will the dimensions be input directly? (FALSE)] Onl..."""
 
@@ -9065,11 +9359,14 @@ class GroundHeatTransferBasementEquivSlab(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementEquivSlabFields(TypedDict, total=False):
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
     equivsizing_flag: Literal["FALSE", "TRUE"] | None
 
 class GroundHeatTransferBasementEquivAutoGrid(IDFObject):
     """EquivAutoGrid necessary when EquivSizing=TRUE, TRUE is is the normal case."""
 
+    clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None
+    """[m]; Default: 15.0; Range: >= 0.0"""
     slabdepth_thickness_of_the_floor_slab: float | None
     """[m]; Default: 0.1; Range: >= 0.0"""
     basedepth_depth_of_the_basement_wall_below_grade: float | None
@@ -9083,12 +9380,15 @@ class GroundHeatTransferBasementEquivAutoGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementEquivAutoGridFields(TypedDict, total=False):
+    clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None
     slabdepth_thickness_of_the_floor_slab: float | None
     basedepth_depth_of_the_basement_wall_below_grade: float | None
 
 class GroundHeatTransferBasementAutoGrid(IDFObject):
     """AutoGrid only necessary when EquivSizing is false If the modeled building is not a rectangle or square, Equivalent si..."""
 
+    clearance_distance_from_outside_of_wall_to_edge_: float | None
+    """[m]; Default: 15.0; Range: >= 0.0"""
     slabx_x_dimension_of_the_building_slab: float | None
     """[m]; Range: >= 0.0, <= 60.0"""
     slaby_y_dimension_of_the_building_slab: float | None
@@ -9105,6 +9405,7 @@ class GroundHeatTransferBasementAutoGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
+    clearance_distance_from_outside_of_wall_to_edge_: float | None
     slabx_x_dimension_of_the_building_slab: float | None
     slaby_y_dimension_of_the_building_slab: float | None
     concagheight_height_of_the_foundation_wall_above_grade: float | None
@@ -9114,6 +9415,8 @@ class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
 class GroundHeatTransferBasementManualGrid(IDFObject):
     """Manual Grid only necessary using manual gridding (not recommended)"""
 
+    nx_number_of_cells_in_the_x_direction_20_: float | None
+    """Range: >= 1.0"""
     ny_number_of_cells_in_the_y_direction_20_: float | None
     """Range: >= 1.0"""
     nzag_number_of_cells_in_the_z_direction_above_grade_4_always_: float | None
@@ -9129,6 +9432,7 @@ class GroundHeatTransferBasementManualGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
+    nx_number_of_cells_in_the_x_direction_20_: float | None
     ny_number_of_cells_in_the_y_direction_20_: float | None
     nzag_number_of_cells_in_the_z_direction_above_grade_4_always_: float | None
     nzbg_number_of_cells_in_z_direction_below_grade_10_35_: float | None
@@ -9208,6 +9512,7 @@ class _RoomAirTemperaturePatternUserDefinedFields(TypedDict, total=False):
 class RoomAirTemperaturePatternConstantGradient(IDFObject):
     """Used to model room air with a fixed temperature gradient in the vertical direction. Used in combination with RoomAir:..."""
 
+    room_air_temperature_pattern_constant_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: int | None
     """reference this entry in Schedule Name"""
     thermostat_offset: float | None
@@ -9227,6 +9532,7 @@ class RoomAirTemperaturePatternConstantGradient(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirTemperaturePatternConstantGradientFields(TypedDict, total=False):
+    room_air_temperature_pattern_constant_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: int | None
     thermostat_offset: float | None
     return_air_offset: float | None
@@ -9236,6 +9542,7 @@ class _RoomAirTemperaturePatternConstantGradientFields(TypedDict, total=False):
 class RoomAirTemperaturePatternTwoGradient(IDFObject):
     """Used to model room air with two temperature gradients in the vertical direction. Used in combination with RoomAir:Tem..."""
 
+    room_air_temperature_pattern_two_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: int | None
     """reference this entry in Schedule Name"""
     thermostat_height: float | None
@@ -9272,6 +9579,7 @@ class RoomAirTemperaturePatternTwoGradient(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirTemperaturePatternTwoGradientFields(TypedDict, total=False):
+    room_air_temperature_pattern_two_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: int | None
     thermostat_height: float | None
     return_air_height: float | None
@@ -9419,6 +9727,7 @@ class _RoomAirNodeFields(TypedDict, total=False):
 class RoomAirSettingsOneNodeDisplacementVentilation(IDFObject):
     """The Mundt model for displacement ventilation"""
 
+    zone_name: str | None
     fraction_of_convective_internal_loads_added_to_floor_air: float | None
     """Range: >= 0.0, <= 1.0"""
     fraction_of_infiltration_internal_loads_added_to_floor_air: float | None
@@ -9432,12 +9741,15 @@ class RoomAirSettingsOneNodeDisplacementVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsOneNodeDisplacementVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     fraction_of_convective_internal_loads_added_to_floor_air: float | None
     fraction_of_infiltration_internal_loads_added_to_floor_air: float | None
 
 class RoomAirSettingsThreeNodeDisplacementVentilation(IDFObject):
     """The UCSD model for Displacement Ventilation"""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     gain_distribution_schedule_name: str | None
     """Distribution of the convective heat gains between the occupied and mixed zones. 0<= Accepted Value <= 1. In the DV mo..."""
     number_of_plumes_per_occupant: float | None
@@ -9457,6 +9769,7 @@ class RoomAirSettingsThreeNodeDisplacementVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsThreeNodeDisplacementVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     gain_distribution_schedule_name: str | None
     number_of_plumes_per_occupant: float | None
     thermostat_height: float | None
@@ -9466,6 +9779,8 @@ class _RoomAirSettingsThreeNodeDisplacementVentilationFields(TypedDict, total=Fa
 class RoomAirSettingsCrossVentilation(IDFObject):
     """This UCSD Cross Ventilation Room Air Model provides a simple model for heat transfer and vertical temperature profile..."""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     gain_distribution_schedule_name: str | None
     """Distribution of the convective heat gains between the jet and recirculation zones. 0<= Accepted Value <= 1. In the CV..."""
     airflow_region_used_for_thermal_comfort_evaluation: Literal["Jet", "Recirculation"] | None
@@ -9476,12 +9791,15 @@ class RoomAirSettingsCrossVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsCrossVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     gain_distribution_schedule_name: str | None
     airflow_region_used_for_thermal_comfort_evaluation: Literal["Jet", "Recirculation"] | None
 
 class RoomAirSettingsUnderFloorAirDistributionInterior(IDFObject):
     """This Room Air Model is applicable to interior spaces that are served by an underfloor air distribution system. The do..."""
 
+    zone_name: str | None
+    """Name of Zone with underfloor air distribution"""
     number_of_diffusers: float | Literal["", "Autocalculate"] | None
     """Total number of diffusers in this zone; Default: Autocalculate"""
     power_per_plume: float | Literal["", "Autocalculate"] | None
@@ -9519,6 +9837,7 @@ class RoomAirSettingsUnderFloorAirDistributionInterior(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsUnderFloorAirDistributionInteriorFields(TypedDict, total=False):
+    zone_name: str | None
     number_of_diffusers: float | Literal["", "Autocalculate"] | None
     power_per_plume: float | Literal["", "Autocalculate"] | None
     design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None
@@ -9537,6 +9856,8 @@ class _RoomAirSettingsUnderFloorAirDistributionInteriorFields(TypedDict, total=F
 class RoomAirSettingsUnderFloorAirDistributionExterior(IDFObject):
     """Applicable to exterior spaces that are served by an underfloor air distribution system. The dominant sources of heat ..."""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     number_of_diffusers_per_zone: float | Literal["", "Autocalculate"] | None
     """Default: Autocalculate"""
     power_per_plume: float | Literal["", "Autocalculate"] | None
@@ -9574,6 +9895,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsUnderFloorAirDistributionExteriorFields(TypedDict, total=False):
+    zone_name: str | None
     number_of_diffusers_per_zone: float | Literal["", "Autocalculate"] | None
     power_per_plume: float | Literal["", "Autocalculate"] | None
     design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None
@@ -11497,6 +11819,7 @@ class _DaylightingDeviceShelfFields(TypedDict, total=False):
 class DaylightingDeviceLightWell(IDFObject):
     """Applies only to exterior windows in daylighting-controlled zones or in zones that share an interior window with a day..."""
 
+    exterior_window_name: str | None
     height_of_well: float | None
     """Distance from Bottom of Window to Bottom of Well; [m]; Range: >= 0.0"""
     perimeter_of_bottom_of_well: float | None
@@ -11511,6 +11834,7 @@ class DaylightingDeviceLightWell(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDeviceLightWellFields(TypedDict, total=False):
+    exterior_window_name: str | None
     height_of_well: float | None
     perimeter_of_bottom_of_well: float | None
     area_of_bottom_of_well: float | None
@@ -11518,6 +11842,15 @@ class _DaylightingDeviceLightWellFields(TypedDict, total=False):
 
 class OutputDaylightFactors(IDFObject):
     """Reports hourly daylight factors for each exterior window for four sky types (clear, turbid clear, intermediate, and o..."""
+
+    reporting_days: Literal["AllShadowCalculationDays", "SizingDays"] | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDaylightFactorsFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputDaylightFactorsFields(TypedDict, total=False):
+    reporting_days: Literal["AllShadowCalculationDays", "SizingDays"] | None
 
 class OutputIlluminanceMap(IDFObject):
     """reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
@@ -11555,6 +11888,16 @@ class _OutputIlluminanceMapFields(TypedDict, total=False):
 
 class OutputControlIlluminanceMapStyle(IDFObject):
     """default style for the Daylighting Illuminance Map is comma -- this works well for importing into spreadsheet programs..."""
+
+    column_separator: Literal["", "Comma", "Fixed", "Tab"] | None
+    """Default: Comma"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlIlluminanceMapStyleFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlIlluminanceMapStyleFields(TypedDict, total=False):
+    column_separator: Literal["", "Comma", "Fixed", "Tab"] | None
 
 class ZoneInfiltrationDesignFlowRate(IDFObject):
     """Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
@@ -11978,6 +12321,7 @@ class _ZoneRefrigerationDoorMixingFields(TypedDict, total=False):
 class ZoneEarthtube(IDFObject):
     """Earth Tube is specified as a design level which is modified by a Schedule fraction, temperature difference and wind s..."""
 
+    zone_name: str | None
     schedule_name: str | None
     design_flow_rate: float | None
     """'Edesign' in Equation; [m3/s]; Range: >= 0.0"""
@@ -12027,6 +12371,7 @@ class ZoneEarthtube(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneEarthtubeFields]) -> None: ...  # type: ignore[override]
 
 class _ZoneEarthtubeFields(TypedDict, total=False):
+    zone_name: str | None
     schedule_name: str | None
     design_flow_rate: float | None
     minimum_zone_temperature_when_cooling: float | None
@@ -12054,6 +12399,7 @@ class _ZoneEarthtubeFields(TypedDict, total=False):
 class ZoneEarthtubeParameters(IDFObject):
     """Parameters that apply to the vertical model for an earth tube; Since: 23.2.0"""
 
+    earth_tube_model_parameters_name: str | None
     nodes_above_earth_tube: int | None
     """[dimensionless]; Default: 5; Range: >= 3, <= 10"""
     nodes_below_earth_tube: int | None
@@ -12070,6 +12416,7 @@ class ZoneEarthtubeParameters(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneEarthtubeParametersFields(TypedDict, total=False):
+    earth_tube_model_parameters_name: str | None
     nodes_above_earth_tube: int | None
     nodes_below_earth_tube: int | None
     earth_tube_dimensionless_boundary_above: float | None
@@ -12465,6 +12812,8 @@ class _AirflowNetworkSimulationControlFields(TypedDict, total=False):
 class AirflowNetworkMultiZoneZone(IDFObject):
     """This object is used to simultaneously control a thermal zone's window and door openings, both exterior and interior."""
 
+    zone_name: str | None
+    """Enter the zone name where ventilation control is required."""
     ventilation_control_mode: (
         Literal["", "ASHRAE55Adaptive", "CEN15251Adaptive", "Constant", "Enthalpy", "NoVent", "Temperature"] | None
     )
@@ -12495,6 +12844,7 @@ class AirflowNetworkMultiZoneZone(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
+    zone_name: str | None
     ventilation_control_mode: (
         Literal["", "ASHRAE55Adaptive", "CEN15251Adaptive", "Constant", "Enthalpy", "NoVent", "Temperature"] | None
     )
@@ -12512,6 +12862,8 @@ class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
 class AirflowNetworkMultiZoneSurface(IDFObject):
     """This object specifies the properties of a surface linkage through which air flows. Airflow Report: Node 1 as an insid..."""
 
+    surface_name: str | None
+    """Enter the name of a heat transfer surface."""
     leakage_component_name: str | None
     """Enter the name of an Airflow Network leakage component. A leakage component is one of the following AirflowNetwork:Mu..."""
     external_node_name: str | None
@@ -12560,6 +12912,7 @@ class AirflowNetworkMultiZoneSurface(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneSurfaceFields(TypedDict, total=False):
+    surface_name: str | None
     leakage_component_name: str | None
     external_node_name: str | None
     window_door_opening_factor_or_crack_factor: float | None
@@ -13269,6 +13622,8 @@ class _AirflowNetworkDistributionComponentDuctFields(TypedDict, total=False):
 class AirflowNetworkDistributionComponentFan(IDFObject):
     """This object defines the name of the supply Air Fan used in an Air loop."""
 
+    fan_name: str | None
+    """Enter the name of the fan in the primary air loop."""
     supply_fan_object_type: (
         Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
@@ -13279,6 +13634,7 @@ class AirflowNetworkDistributionComponentFan(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentFanFields(TypedDict, total=False):
+    fan_name: str | None
     supply_fan_object_type: (
         Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
     )
@@ -13286,6 +13642,8 @@ class _AirflowNetworkDistributionComponentFanFields(TypedDict, total=False):
 class AirflowNetworkDistributionComponentCoil(IDFObject):
     """This object defines the name of a coil used in an air loop."""
 
+    coil_name: str | None
+    """Enter the name of a cooling or heating coil in the primary Air loop."""
     coil_object_type: (
         Literal[
             "Coil:Cooling:DX",
@@ -13326,6 +13684,7 @@ class AirflowNetworkDistributionComponentCoil(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentCoilFields(TypedDict, total=False):
+    coil_name: str | None
     coil_object_type: (
         Literal[
             "Coil:Cooling:DX",
@@ -13358,6 +13717,8 @@ class _AirflowNetworkDistributionComponentCoilFields(TypedDict, total=False):
 class AirflowNetworkDistributionComponentHeatExchanger(IDFObject):
     """This object defines the name of an air-to-air heat exchanger used in an air loop."""
 
+    heatexchanger_name: str | None
+    """Enter the name of an air-to-air heat exchanger in the primary Air loop."""
     heatexchanger_object_type: (
         Literal[
             "HeatExchanger:AirToAir:FlatPlate",
@@ -13380,6 +13741,7 @@ class AirflowNetworkDistributionComponentHeatExchanger(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentHeatExchangerFields(TypedDict, total=False):
+    heatexchanger_name: str | None
     heatexchanger_object_type: (
         Literal[
             "HeatExchanger:AirToAir:FlatPlate",
@@ -13394,6 +13756,8 @@ class _AirflowNetworkDistributionComponentHeatExchangerFields(TypedDict, total=F
 class AirflowNetworkDistributionComponentTerminalUnit(IDFObject):
     """This object defines the name of a terminal unit in an air loop."""
 
+    terminal_unit_name: str | None
+    """Enter the name of a terminal unit in the AirLoopHVAC."""
     terminal_unit_object_type: (
         Literal["AirTerminal:SingleDuct:ConstantVolume:Reheat", "AirTerminal:SingleDuct:VAV:Reheat"] | None
     )
@@ -13411,6 +13775,7 @@ class AirflowNetworkDistributionComponentTerminalUnit(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentTerminalUnitFields(TypedDict, total=False):
+    terminal_unit_name: str | None
     terminal_unit_object_type: (
         Literal["AirTerminal:SingleDuct:ConstantVolume:Reheat", "AirTerminal:SingleDuct:VAV:Reheat"] | None
     )
@@ -13514,6 +13879,7 @@ class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(ExtensibleGroup):
 class AirflowNetworkDistributionDuctViewFactors(IDFObject):
     """This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfac..."""
 
+    linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     duct_surface_emittance: float | None
@@ -13528,6 +13894,7 @@ class AirflowNetworkDistributionDuctViewFactors(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionDuctViewFactorsFields(TypedDict, total=False):
+    linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     duct_surface_emittance: float | None
     surfaces: list[Any]
@@ -13815,6 +14182,8 @@ class _HVACTemplateThermostatFields(TypedDict, total=False):
 class HVACTemplateZoneIdealLoadsAirSystem(IDFObject):
     """Zone with ideal air system that meets heating or cooling loads"""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     system_availability_schedule_name: str | None
@@ -13883,6 +14252,7 @@ class HVACTemplateZoneIdealLoadsAirSystem(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     system_availability_schedule_name: str | None
     maximum_heating_supply_air_temperature: float | None
@@ -13920,6 +14290,8 @@ class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
 class HVACTemplateZoneBaseboardHeat(IDFObject):
     """Zone baseboard heating system."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     zone_heating_sizing_factor: float | None
@@ -13952,6 +14324,7 @@ class HVACTemplateZoneBaseboardHeat(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     zone_heating_sizing_factor: float | None
     baseboard_heating_type: Literal["", "Electric", "HotWater"] | None
@@ -13970,6 +14343,8 @@ class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
 class HVACTemplateZoneFanCoil(IDFObject):
     """4 pipe fan coil unit with optional outdoor air."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -14060,6 +14435,7 @@ class HVACTemplateZoneFanCoil(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneFanCoilFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
     zone_heating_sizing_factor: float | None
@@ -14115,6 +14491,8 @@ class _HVACTemplateZoneFanCoilFields(TypedDict, total=False):
 class HVACTemplateZonePTAC(IDFObject):
     """Packaged Terminal Air Conditioner"""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14205,6 +14583,7 @@ class HVACTemplateZonePTAC(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZonePTACFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14254,6 +14633,8 @@ class _HVACTemplateZonePTACFields(TypedDict, total=False):
 class HVACTemplateZonePTHP(IDFObject):
     """Packaged Terminal Heat Pump"""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14364,6 +14745,7 @@ class HVACTemplateZonePTHP(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZonePTHPFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14423,6 +14805,8 @@ class _HVACTemplateZonePTHPFields(TypedDict, total=False):
 class HVACTemplateZoneWaterToAirHeatPump(IDFObject):
     """Water to Air Heat Pump to be used with HVACTemplate:Plant:MixedWaterLoop"""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14519,6 +14903,7 @@ class HVACTemplateZoneWaterToAirHeatPump(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneWaterToAirHeatPumpFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -14571,6 +14956,8 @@ class _HVACTemplateZoneWaterToAirHeatPumpFields(TypedDict, total=False):
 class HVACTemplateZoneVRF(IDFObject):
     """Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air or water-to-air heat..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vrf_system_name: str | None
     """Name of a HVACTemplate:System:VRF object serving this zone"""
     template_thermostat_name: str | None
@@ -14669,6 +15056,7 @@ class HVACTemplateZoneVRF(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVRFFields(TypedDict, total=False):
+    zone_name: str | None
     template_vrf_system_name: str | None
     template_thermostat_name: str | None
     zone_heating_sizing_factor: float | None
@@ -14722,6 +15110,8 @@ class _HVACTemplateZoneVRFFields(TypedDict, total=False):
 class HVACTemplateZoneUnitary(IDFObject):
     """Zone terminal unit, constant volume, no controls."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_unitary_system_name: str | None
     """Enter the name of an HVACTemplate:System:Unitary, HVACTemplate:System:UnitaryHeatPump:AirToAir, or HVACTemplate:Syste..."""
     template_thermostat_name: str | None
@@ -14778,6 +15168,7 @@ class HVACTemplateZoneUnitary(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
+    zone_name: str | None
     template_unitary_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -14810,6 +15201,8 @@ class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
 class HVACTemplateZoneVAV(IDFObject):
     """Zone terminal unit, variable volume, reheat optional. For heating, this unit activates reheat coil first, then increa..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vav_system_name: str | None
     """Name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone"""
     template_thermostat_name: str | None
@@ -14888,6 +15281,7 @@ class HVACTemplateZoneVAV(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -14931,6 +15325,8 @@ class _HVACTemplateZoneVAVFields(TypedDict, total=False):
 class HVACTemplateZoneVAVFanPowered(IDFObject):
     """Zone terminal unit, fan powered variable volume, reheat optional. Referenced schedules must be defined elsewhere in t..."""
 
+    zone_name: str | None
+    """Zone Name must match a building zone name"""
     template_vav_system_name: str | None
     """Enter the name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone."""
     template_thermostat_name: str | None
@@ -15005,6 +15401,7 @@ class HVACTemplateZoneVAVFanPowered(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     primary_supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -15047,6 +15444,8 @@ class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
 class HVACTemplateZoneVAVHeatAndCool(IDFObject):
     """VAV system with VAV for both heating and cooling and optional reheat coil. For heating, this unit increases airflow f..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vav_system_name: str | None
     """Name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone"""
     template_thermostat_name: str | None
@@ -15111,6 +15510,7 @@ class HVACTemplateZoneVAVHeatAndCool(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -15147,6 +15547,8 @@ class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
 class HVACTemplateZoneConstantVolume(IDFObject):
     """Zone terminal unit, constant volume, reheat optional. Referenced schedules must be defined elsewhere in the idf."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_constant_volume_system_name: str | None
     """Name of a HVACTemplate:System:ConstantVolume object serving this zone"""
     template_thermostat_name: str | None
@@ -15209,6 +15611,7 @@ class HVACTemplateZoneConstantVolume(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
+    zone_name: str | None
     template_constant_volume_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -15244,6 +15647,8 @@ class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
 class HVACTemplateZoneDualDuct(IDFObject):
     """Zone terminal unit, dual-duct, constant or variable volume."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_dual_duct_system_name: str | None
     """Name of a HVACTemplate:System:DualDuct object serving this zone"""
     template_thermostat_name: str | None
@@ -15306,6 +15711,7 @@ class HVACTemplateZoneDualDuct(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneDualDuctFields(TypedDict, total=False):
+    zone_name: str | None
     template_dual_duct_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -18335,6 +18741,8 @@ class _DesignSpecificationZoneAirDistributionFields(TypedDict, total=False):
 class SizingParameters(IDFObject):
     """Specifies global heating and cooling sizing factors/ratios. These ratios are applied at the zone level to all of the ..."""
 
+    heating_sizing_factor: float | None
+    """Default: 1.0; Range: > 0.0"""
     cooling_sizing_factor: float | None
     """Default: 1.0; Range: > 0.0"""
     timesteps_in_averaging_window: int | None
@@ -18343,12 +18751,14 @@ class SizingParameters(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingParametersFields]) -> None: ...  # type: ignore[override]
 
 class _SizingParametersFields(TypedDict, total=False):
+    heating_sizing_factor: float | None
     cooling_sizing_factor: float | None
     timesteps_in_averaging_window: int | None
 
 class SizingZone(IDFObject):
     """Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
 
+    zone_or_zonelist_name: str | None
     zone_cooling_design_supply_air_temperature_input_method: (
         Literal["", "SupplyAirTemperature", "TemperatureDifference"] | None
     )
@@ -18443,6 +18853,7 @@ class SizingZone(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingZoneFields]) -> None: ...  # type: ignore[override]
 
 class _SizingZoneFields(TypedDict, total=False):
+    zone_or_zonelist_name: str | None
     zone_cooling_design_supply_air_temperature_input_method: (
         Literal["", "SupplyAirTemperature", "TemperatureDifference"] | None
     )
@@ -18676,6 +19087,7 @@ class _DesignSpecificationAirTerminalSizingFields(TypedDict, total=False):
 class SizingSystem(IDFObject):
     """Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
 
+    airloop_name: str | None
     type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
     """Specifies the basis for sizing the system supply air flow rate Sensible and Total use the zone design air flow rates ...; Default: Sensible"""
     design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -18785,6 +19197,7 @@ class SizingSystem(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingSystemFields]) -> None: ...  # type: ignore[override]
 
 class _SizingSystemFields(TypedDict, total=False):
+    airloop_name: str | None
     type_of_load_to_size_on: Literal["", "Latent", "Sensible", "Total", "VentilationRequirement"] | None
     design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None
     central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None
@@ -18857,6 +19270,8 @@ class _SizingSystemFields(TypedDict, total=False):
 class SizingPlant(IDFObject):
     """Specifies the input needed to autosize plant loop flow rates and equipment capacities. This information is initially ..."""
 
+    plant_or_condenser_loop_name: str | None
+    """Enter the name of a PlantLoop or a CondenserLoop object"""
     loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"] | None
     design_loop_exit_temperature: float | None
     """[C]"""
@@ -18874,6 +19289,7 @@ class SizingPlant(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SizingPlantFields]) -> None: ...  # type: ignore[override]
 
 class _SizingPlantFields(TypedDict, total=False):
+    plant_or_condenser_loop_name: str | None
     loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"] | None
     design_loop_exit_temperature: float | None
     loop_design_temperature_difference: float | None
@@ -18885,6 +19301,15 @@ class _SizingPlantFields(TypedDict, total=False):
 
 class OutputControlSizingStyle(IDFObject):
     """Default style for the Sizing output files is comma -- this works well for importing into spreadsheet programs such as..."""
+
+    column_separator: Literal["Comma", "Fixed", "Tab"] | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlSizingStyleFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlSizingStyleFields(TypedDict, total=False):
+    column_separator: Literal["Comma", "Fixed", "Tab"] | None
 
 class ZoneControlHumidistat(IDFObject):
     """Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
@@ -19012,6 +19437,8 @@ class _ZoneControlThermostatFields(TypedDict, total=False):
 class ZoneControlThermostatOperativeTemperature(IDFObject):
     """This object can be used with the ZoneList option on a thermostat or with one of the zones on that list (but you won't..."""
 
+    thermostat_name: str | None
+    """Enter the name of a ZoneControl:Thermostat object. This object modifies a ZoneControl:Thermostat object to add a radi..."""
     radiative_fraction_input_mode: Literal["Constant", "Scheduled"] | None
     fixed_radiative_fraction: float | None
     """Range: >= 0.0, < 0.9"""
@@ -19041,6 +19468,7 @@ class ZoneControlThermostatOperativeTemperature(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatOperativeTemperatureFields(TypedDict, total=False):
+    thermostat_name: str | None
     radiative_fraction_input_mode: Literal["Constant", "Scheduled"] | None
     fixed_radiative_fraction: float | None
     radiative_fraction_schedule_name: str | None
@@ -19173,6 +19601,8 @@ class _ZoneControlThermostatThermalComfortFields(TypedDict, total=False):
 class ZoneControlThermostatTemperatureAndHumidity(IDFObject):
     """This object modifies a ZoneControl:Thermostat object to effect temperature control based on zone air humidity conditi..."""
 
+    thermostat_name: str | None
+    """Enter the name of a ZoneControl:Thermostat object whose operation is to be modified to effect temperature control bas..."""
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
     """Schedule values should be in Relative Humidity (percent)"""
     dehumidification_control_type: Literal["", "None", "Overcool"] | None
@@ -19194,6 +19624,7 @@ class ZoneControlThermostatTemperatureAndHumidity(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatTemperatureAndHumidityFields(TypedDict, total=False):
+    thermostat_name: str | None
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
     dehumidification_control_type: Literal["", "None", "Overcool"] | None
     overcool_range_input_method: Literal["", "Constant", "Scheduled"] | None
@@ -23324,6 +23755,7 @@ class _ZoneHVACEquipmentListFields(TypedDict, total=False):
 class ZoneHVACEquipmentConnections(IDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
 
+    zone_name: str | None
     zone_conditioning_equipment_list_name: str | None
     """Enter the name of a ZoneHVAC:EquipmentList object."""
     zone_air_inlet_node_or_nodelist_name: str | None
@@ -23340,6 +23772,7 @@ class ZoneHVACEquipmentConnections(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
+    zone_name: str | None
     zone_conditioning_equipment_list_name: str | None
     zone_air_inlet_node_or_nodelist_name: str | None
     zone_air_exhaust_node_or_nodelist_name: str | None
@@ -23351,6 +23784,7 @@ class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
 class SpaceHVACEquipmentConnections(IDFObject):
     """Specifies the HVAC equipment connections for a space. Node names are specified for the space air node, air inlet node...; Since: 23.2.0"""
 
+    space_name: str | None
     space_air_inlet_node_or_nodelist_name: str | None
     space_air_exhaust_node_or_nodelist_name: str | None
     space_air_node_name: str | None
@@ -23365,6 +23799,7 @@ class SpaceHVACEquipmentConnections(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
+    space_name: str | None
     space_air_inlet_node_or_nodelist_name: str | None
     space_air_exhaust_node_or_nodelist_name: str | None
     space_air_node_name: str | None
@@ -23788,6 +24223,7 @@ class _FanZoneExhaustFields(TypedDict, total=False):
 class FanPerformanceNightVentilation(IDFObject):
     """Specifies an alternate set of performance parameters for a fan. These alternate parameters are used when a system man..."""
 
+    fan_name: str | None
     fan_total_efficiency: float | None
     """Range: > 0.0, <= 1.0"""
     pressure_rise: float | None
@@ -23804,6 +24240,7 @@ class FanPerformanceNightVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FanPerformanceNightVentilationFields(TypedDict, total=False):
+    fan_name: str | None
     fan_total_efficiency: float | None
     pressure_rise: float | None
     maximum_flow_rate: float | Literal["Autosize"] | None
@@ -31122,6 +31559,8 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndices
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
     """This is a key object in the new physics based VRF model applicable for Fluid Temperature Control It describes the Var..."""
 
+    heat_pump_name: str | None
+    """Enter a unique name for this variable refrigerant flow heat pump"""
     availability_schedule_name: str | None
     """Enter the name of a schedule that defines the availability of the unit Schedule values of 0 denote the unit is off. A..."""
     zone_terminal_unit_list_name: str | None
@@ -31210,6 +31649,7 @@ class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlFields(TypedDict, total=False):
+    heat_pump_name: str | None
     availability_schedule_name: str | None
     zone_terminal_unit_list_name: str | None
     refrigerant_type: str | None
@@ -31455,6 +31895,7 @@ class ZoneTerminalUnitListTerminalUnitsGroup(ExtensibleGroup):
 class ZoneTerminalUnitList(IDFObject):
     """List of variable refrigerant flow (VRF) terminal units served by a given VRF condensing unit. See ZoneHVAC:TerminalUn..."""
 
+    zone_terminal_unit_list_name: str | None
     terminal_units: ExtensibleList[ZoneTerminalUnitListTerminalUnitsGroup]
 
     def update(
@@ -31462,6 +31903,7 @@ class ZoneTerminalUnitList(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneTerminalUnitListFields(TypedDict, total=False):
+    zone_terminal_unit_list_name: str | None
     terminal_units: list[Any]
 
 class ControllerWaterCoil(IDFObject):
@@ -33277,6 +33719,8 @@ class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(ExtensibleGroup):
 class SolarCollectorUnglazedTranspiredMultisystem(IDFObject):
     """quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
 
+    solar_collector_name: str | None
+    """Enter the name of a SolarCollector:UnglazedTranspired object."""
     systems: ExtensibleList[SolarCollectorUnglazedTranspiredMultisystemSystemsGroup]
 
     def update(
@@ -33287,6 +33731,7 @@ class SolarCollectorUnglazedTranspiredMultisystem(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SolarCollectorUnglazedTranspiredMultisystemFields(TypedDict, total=False):
+    solar_collector_name: str | None
     systems: list[Any]
 
 class BoilerHotWater(IDFObject):
@@ -38133,6 +38578,7 @@ class _WaterHeaterStratifiedFields(TypedDict, total=False):
 class WaterHeaterSizing(IDFObject):
     """This input object is used with WaterHeater:Mixed or with WaterHeater:Stratified to autosize tank volume and heater ca..."""
 
+    waterheater_name: str | None
     design_mode: (
         Literal[
             "PeakDraw", "PerFloorArea", "PerPerson", "PerSolarCollectorArea", "PerUnit", "ResidentialHUD-FHAMinimum"
@@ -38171,6 +38617,7 @@ class WaterHeaterSizing(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WaterHeaterSizingFields]) -> None: ...  # type: ignore[override]
 
 class _WaterHeaterSizingFields(TypedDict, total=False):
+    waterheater_name: str | None
     design_mode: (
         Literal[
             "PeakDraw", "PerFloorArea", "PerPerson", "PerSolarCollectorArea", "PerUnit", "ResidentialHUD-FHAMinimum"
@@ -41597,6 +42044,18 @@ class _EnergyManagementSystemConstructionIndexVariableFields(TypedDict, total=Fa
 class ExternalInterface(IDFObject):
     """This object activates the external interface of EnergyPlus. If the object ExternalInterface is present, then all Extn..."""
 
+    name_of_external_interface: (
+        Literal["FunctionalMockupUnitExport", "FunctionalMockupUnitImport", "PtolemyServer"] | None
+    )
+    """Name of External Interface Currently, the only valid entries are PtolemyServer, FunctionalMockupUnitImport, and Funct..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceFields]) -> None: ...  # type: ignore[override]
+
+class _ExternalInterfaceFields(TypedDict, total=False):
+    name_of_external_interface: (
+        Literal["FunctionalMockupUnitExport", "FunctionalMockupUnitImport", "PtolemyServer"] | None
+    )
+
 class ExternalInterfaceSchedule(IDFObject):
     """A ExternalInterface:Schedule contains only one value, which is used during the warm-up period and the system sizing."""
 
@@ -41647,6 +42106,7 @@ class _ExternalInterfaceActuatorFields(TypedDict, total=False):
 class ExternalInterfaceFunctionalMockupUnitImport(IDFObject):
     """This object declares an FMU"""
 
+    fmu_file_name: str | None
     fmu_timeout: float | None
     """in milli-seconds; [ms]; Default: 0.0"""
     fmu_loggingon: int | None
@@ -41660,12 +42120,14 @@ class ExternalInterfaceFunctionalMockupUnitImport(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitImportFields(TypedDict, total=False):
+    fmu_file_name: str | None
     fmu_timeout: float | None
     fmu_loggingon: int | None
 
 class ExternalInterfaceFunctionalMockupUnitImportFromVariable(IDFObject):
     """This object declares an FMU input variable"""
 
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_file_name: str | None
     fmu_instance_name: str | None
@@ -41679,6 +42141,7 @@ class ExternalInterfaceFunctionalMockupUnitImportFromVariable(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields(TypedDict, total=False):
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_file_name: str | None
     fmu_instance_name: str | None
@@ -41761,6 +42224,7 @@ class _ExternalInterfaceFunctionalMockupUnitImportToVariableFields(TypedDict, to
 class ExternalInterfaceFunctionalMockupUnitExportFromVariable(IDFObject):
     """This object declares an FMU input variable"""
 
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_variable_name: str | None
 
@@ -41772,12 +42236,14 @@ class ExternalInterfaceFunctionalMockupUnitExportFromVariable(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields(TypedDict, total=False):
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_variable_name: str | None
 
 class ExternalInterfaceFunctionalMockupUnitExportToSchedule(IDFObject):
     """This objects contains only one value, which is used during the first call of EnergyPlus"""
 
+    schedule_name: str | None
     schedule_type_limits_names: str | None
     fmu_variable_name: str | None
     initial_value: float | None
@@ -41791,6 +42257,7 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields(TypedDict, total=False):
+    schedule_name: str | None
     schedule_type_limits_names: str | None
     fmu_variable_name: str | None
     initial_value: float | None
@@ -49111,6 +49578,7 @@ class _TableLookupFields(TypedDict, total=False):
 class FluidPropertiesName(IDFObject):
     """potential fluid name/type in the input file repeat this object for each fluid"""
 
+    fluid_name: str | None
     fluid_type: Literal["Glycol", "Refrigerant"] | None
 
     def update(
@@ -49118,6 +49586,7 @@ class FluidPropertiesName(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesNameFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_type: Literal["Glycol", "Refrigerant"] | None
 
 class FluidPropertiesGlycolConcentration(IDFObject):
@@ -49901,6 +50370,7 @@ class _FluidPropertiesTemperaturesFields(TypedDict, total=False):
 class FluidPropertiesSaturated(IDFObject):
     """fluid properties for the saturated region"""
 
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy", "Pressure", "SpecificHeat"] | None
     """Enthalpy Units are J/kg Density Units are kg/m3 SpecificHeat Units are J/kg-K Pressure Units are Pa"""
     fluid_phase: Literal["Fluid", "FluidGas"] | None
@@ -50163,6 +50633,7 @@ class FluidPropertiesSaturated(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSaturatedFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy", "Pressure", "SpecificHeat"] | None
     fluid_phase: Literal["Fluid", "FluidGas"] | None
     temperature_values_name: str | None
@@ -50420,6 +50891,7 @@ class _FluidPropertiesSaturatedFields(TypedDict, total=False):
 class FluidPropertiesSuperheated(IDFObject):
     """fluid properties for the superheated region"""
 
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy"] | None
     """Enthalpy Units are J/kg Density Units are kg/m3"""
     temperature_values_name: str | None
@@ -50682,6 +51154,7 @@ class FluidPropertiesSuperheated(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy"] | None
     temperature_values_name: str | None
     pressure: float | None
@@ -50939,6 +51412,8 @@ class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
 class FluidPropertiesConcentration(IDFObject):
     """fluid properties for water/other fluid mixtures"""
 
+    fluid_name: str | None
+    """should not be any of the defaults (Water, EthyleneGlycol, or PropyleneGlycol)"""
     fluid_property_type: Literal["Conductivity", "Density", "SpecificHeat", "Viscosity"] | None
     """Density Units are kg/m3 SpecificHeat Units are J/kg-K Conductivity Units are W/m-K Viscosity Units are N-s/m2"""
     temperature_values_name: str | None
@@ -51201,6 +51676,7 @@ class FluidPropertiesConcentration(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesConcentrationFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Conductivity", "Density", "SpecificHeat", "Viscosity"] | None
     temperature_values_name: str | None
     concentration: float | None
@@ -51458,9 +51934,249 @@ class _FluidPropertiesConcentrationFields(TypedDict, total=False):
 class CurrencyType(IDFObject):
     """If CurrencyType is not specified, it will default to USD and produce $ in the reports."""
 
+    monetary_unit: (
+        Literal[
+            "AFN",
+            "ALL",
+            "ANG",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BGN",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BWP",
+            "BYR",
+            "BZD",
+            "CAD",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CZK",
+            "DKK",
+            "DOP",
+            "EEK",
+            "EGP",
+            "EUR",
+            "FJD",
+            "GBP",
+            "GHC",
+            "GIP",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HRK",
+            "HUF",
+            "IDR",
+            "ILS",
+            "IMP",
+            "INR",
+            "IRR",
+            "ISK",
+            "JEP",
+            "JMD",
+            "JPY",
+            "KGS",
+            "KHR",
+            "KPW",
+            "KRW",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LTL",
+            "LVL",
+            "MKD",
+            "MNT",
+            "MUR",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SOS",
+            "SRD",
+            "SVC",
+            "SYP",
+            "THB",
+            "TRL",
+            "TRY",
+            "TTD",
+            "TVD",
+            "TWD",
+            "UAH",
+            "USD",
+            "UYU",
+            "UZS",
+            "VEF",
+            "VND",
+            "XCD",
+            "YER",
+            "ZAR",
+            "ZWD",
+        ]
+        | None
+    )
+    """The commonly used three letter currency code for the units of money for the country or region. Based on ISO 4217 curr..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurrencyTypeFields]) -> None: ...  # type: ignore[override]
+
+class _CurrencyTypeFields(TypedDict, total=False):
+    monetary_unit: (
+        Literal[
+            "AFN",
+            "ALL",
+            "ANG",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BGN",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BWP",
+            "BYR",
+            "BZD",
+            "CAD",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CZK",
+            "DKK",
+            "DOP",
+            "EEK",
+            "EGP",
+            "EUR",
+            "FJD",
+            "GBP",
+            "GHC",
+            "GIP",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HRK",
+            "HUF",
+            "IDR",
+            "ILS",
+            "IMP",
+            "INR",
+            "IRR",
+            "ISK",
+            "JEP",
+            "JMD",
+            "JPY",
+            "KGS",
+            "KHR",
+            "KPW",
+            "KRW",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LTL",
+            "LVL",
+            "MKD",
+            "MNT",
+            "MUR",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SOS",
+            "SRD",
+            "SVC",
+            "SYP",
+            "THB",
+            "TRL",
+            "TRY",
+            "TTD",
+            "TVD",
+            "TWD",
+            "UAH",
+            "USD",
+            "UYU",
+            "UZS",
+            "VEF",
+            "VND",
+            "XCD",
+            "YER",
+            "ZAR",
+            "ZWD",
+        ]
+        | None
+    )
+
 class ComponentCostAdjustments(IDFObject):
     """Used to perform various modifications to the construction costs to arrive at an estimate for total project costs. Thi..."""
 
+    miscellaneous_cost_per_conditioned_area: float | None
+    """based on conditioned floor area for cost not accounted for in current line item cost model; [$/m2]"""
     design_and_engineering_fees: float | None
     """[dimensionless]"""
     contractor_fee: float | None
@@ -51479,6 +52195,7 @@ class ComponentCostAdjustments(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostAdjustmentsFields(TypedDict, total=False):
+    miscellaneous_cost_per_conditioned_area: float | None
     design_and_engineering_fees: float | None
     contractor_fee: float | None
     contingency: float | None
@@ -51489,6 +52206,8 @@ class _ComponentCostAdjustmentsFields(TypedDict, total=False):
 class ComponentCostReference(IDFObject):
     """Used to allow comparing the current cost estimate to the results of a previous estimate for a reference building. Thi..."""
 
+    reference_building_line_item_costs: float | None
+    """should be comparable to the components in current line item cost model; [$]"""
     reference_building_miscellaneous_cost_per_conditioned_area: float | None
     """based on conditioned floor area for cost not accounted for in reference line item costs; [$/m2]"""
     reference_building_design_and_engineering_fees: float | None
@@ -51508,6 +52227,7 @@ class ComponentCostReference(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostReferenceFields(TypedDict, total=False):
+    reference_building_line_item_costs: float | None
     reference_building_miscellaneous_cost_per_conditioned_area: float | None
     reference_building_design_and_engineering_fees: float | None
     reference_building_contractor_fee: float | None
@@ -51648,6 +52368,8 @@ class _UtilityCostTariffFields(TypedDict, total=False):
 class UtilityCostQualify(IDFObject):
     """The qualify object allows only tariffs to be selected based on limits which may apply such as maximum or minimum dema..."""
 
+    utility_cost_qualify_name: str | None
+    """Displayed in the report if the tariff does not qualify"""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Qualify."""
     variable_name: str | None
@@ -51668,6 +52390,7 @@ class UtilityCostQualify(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostQualifyFields(TypedDict, total=False):
+    utility_cost_qualify_name: str | None
     tariff_name: str | None
     variable_name: str | None
     qualify_type: Literal["", "Maximum", "Minimum"] | None
@@ -51679,6 +52402,8 @@ class _UtilityCostQualifyFields(TypedDict, total=False):
 class UtilityCostChargeSimple(IDFObject):
     """UtilityCost:Charge:Simple is one of the most often used objects for tariff calculation. It is used to compute energy ..."""
 
+    utility_cost_charge_simple_name: str | None
+    """Charge Variable Name This is the name associated with the UtilityCost:Charge:Simple object and will appear in the rep..."""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Charge:Simple."""
     source_variable: str | None
@@ -51709,6 +52434,7 @@ class UtilityCostChargeSimple(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeSimpleFields(TypedDict, total=False):
+    utility_cost_charge_simple_name: str | None
     tariff_name: str | None
     source_variable: str | None
     season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None
@@ -51732,6 +52458,8 @@ class _UtilityCostChargeSimpleFields(TypedDict, total=False):
 class UtilityCostChargeBlock(IDFObject):
     """Used to compute energy and demand charges (or any other charges) that are structured in blocks of charges. Multiple U..."""
 
+    utility_cost_charge_block_name: str | None
+    """Charge Variable Name This is the name associated with the UtilityCost:Charge:Block object and will appear in the repo..."""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Charge:Block."""
     source_variable: str | None
@@ -51824,6 +52552,7 @@ class UtilityCostChargeBlock(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeBlockFields(TypedDict, total=False):
+    utility_cost_charge_block_name: str | None
     tariff_name: str | None
     source_variable: str | None
     season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None
@@ -52257,6 +52986,8 @@ class LifeCycleCostUsePriceEscalationEscalationsGroup(ExtensibleGroup):
 class LifeCycleCostUsePriceEscalation(IDFObject):
     """Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
 
+    lcc_price_escalation_name: str | None
+    """The identifier used for the object. The name usually identifies the location (such as the state or region or country ..."""
     resource: (
         Literal[
             "Coal",
@@ -52308,6 +53039,7 @@ class LifeCycleCostUsePriceEscalation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _LifeCycleCostUsePriceEscalationFields(TypedDict, total=False):
+    lcc_price_escalation_name: str | None
     resource: (
         Literal[
             "Coal",
@@ -52484,6 +53216,8 @@ class _ParametricFileNameSuffixFields(TypedDict, total=False):
 class OutputVariableDictionary(IDFObject):
     """Produces a list summarizing the output variables and meters that are available for reporting for the model being simu..."""
 
+    key_field: Literal["", "IDF", "regular"] | None
+    """Default: regular"""
     sort_option: Literal["Name", "Unsorted"] | None
 
     def update(
@@ -52491,11 +53225,24 @@ class OutputVariableDictionary(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputVariableDictionaryFields(TypedDict, total=False):
+    key_field: Literal["", "IDF", "regular"] | None
     sort_option: Literal["Name", "Unsorted"] | None
 
 class OutputSurfacesList(IDFObject):
     """Produces a report summarizing the details of surfaces in the eio output file."""
 
+    report_type: (
+        Literal[
+            "CostInfo",
+            "DecayCurvesFromComponentLoadsSummary",
+            "Details",
+            "DetailsWithVertices",
+            "Lines",
+            "Vertices",
+            "ViewFactorInfo",
+        ]
+        | None
+    )
     report_specifications: Literal["IDF"] | None
     """(IDF, only for Output:Surfaces:List, Lines report -- will print transformed coordinates in IDF style)"""
 
@@ -52504,11 +53251,24 @@ class OutputSurfacesList(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesListFields(TypedDict, total=False):
+    report_type: (
+        Literal[
+            "CostInfo",
+            "DecayCurvesFromComponentLoadsSummary",
+            "Details",
+            "DetailsWithVertices",
+            "Lines",
+            "Vertices",
+            "ViewFactorInfo",
+        ]
+        | None
+    )
     report_specifications: Literal["IDF"] | None
 
 class OutputSurfacesDrawing(IDFObject):
     """Produces reports/files that are capable of rendering graphically or being imported into other programs. Rendering doe..."""
 
+    report_type: Literal["DXF", "DXF:WireFrame", "VRML"] | None
     report_specifications_1: Literal["", "RegularPolyline", "ThickPolyline", "Triangulate3DFace"] | None
     """Triangulate3DFace (default), ThickPolyline, RegularPolyline apply to DXF This field is ignored for DXF:WireFrame and ...; Default: Triangulate3DFace"""
     report_specifications_2: str | None
@@ -52519,15 +53279,24 @@ class OutputSurfacesDrawing(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesDrawingFields(TypedDict, total=False):
+    report_type: Literal["DXF", "DXF:WireFrame", "VRML"] | None
     report_specifications_1: Literal["", "RegularPolyline", "ThickPolyline", "Triangulate3DFace"] | None
     report_specifications_2: str | None
 
 class OutputSchedules(IDFObject):
     """Produces a condensed reporting that illustrates the full range of schedule values in the eio output file. In the styl..."""
 
+    key_field: Literal["Hourly", "Timestep"] | None
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSchedulesFields]) -> None: ...  # type: ignore[override]
+
+class _OutputSchedulesFields(TypedDict, total=False):
+    key_field: Literal["Hourly", "Timestep"] | None
+
 class OutputConstructions(IDFObject):
     """Adds a report to the eio output file which shows details for each construction, including overall properties, a list ..."""
 
+    details_type_1: Literal["Constructions", "Materials"] | None
     details_type_2: Literal["Constructions", "Materials"] | None
 
     def update(
@@ -52535,11 +53304,14 @@ class OutputConstructions(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputConstructionsFields(TypedDict, total=False):
+    details_type_1: Literal["Constructions", "Materials"] | None
     details_type_2: Literal["Constructions", "Materials"] | None
 
 class OutputEnergyManagementSystem(IDFObject):
     """This object is used to control the output produced by the Energy Management System"""
 
+    actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
+    """Default: None"""
     internal_variable_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     """Default: None"""
     ems_runtime_language_debug_output_level: Literal["", "ErrorsOnly", "None", "Verbose"] | None
@@ -52550,6 +53322,7 @@ class OutputEnergyManagementSystem(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputEnergyManagementSystemFields(TypedDict, total=False):
+    actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     internal_variable_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     ems_runtime_language_debug_output_level: Literal["", "ErrorsOnly", "None", "Verbose"] | None
 
@@ -53334,6 +54107,8 @@ class _OutputTableSummaryReportsFields(TypedDict, total=False):
 class OutputTableTimeBins(IDFObject):
     """Produces a bin report in the table output file which shows the amount of time in hours that occurs in different bins ..."""
 
+    key_value: str | None
+    """use '*' (without quotes) to apply this variable to all keys; Default: *"""
     variable_name: str | None
     interval_start: float | None
     """The lowest value for the intervals being binned into."""
@@ -53351,6 +54126,7 @@ class OutputTableTimeBins(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableTimeBinsFields(TypedDict, total=False):
+    key_value: str | None
     variable_name: str | None
     interval_start: float | None
     interval_size: float | None
@@ -53485,6 +54261,13 @@ class _OutputTableReportPeriodFields(TypedDict, total=False):
 class OutputControlTableStyle(IDFObject):
     """default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
 
+    column_separator: (
+        Literal[
+            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+        ]
+        | None
+    )
+    """Default: Comma"""
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     """Default: None"""
     format_numeric_values: Literal["", "No", "Yes"] | None
@@ -53495,12 +54278,20 @@ class OutputControlTableStyle(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlTableStyleFields(TypedDict, total=False):
+    column_separator: (
+        Literal[
+            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+        ]
+        | None
+    )
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     format_numeric_values: Literal["", "No", "Yes"] | None
 
 class OutputControlReportingTolerances(IDFObject):
     """Calculations of the time that setpoints are not met use a tolerance of 0.2C. This object allows changing the toleranc..."""
 
+    tolerance_for_time_heating_setpoint_not_met: float | None
+    """If the zone temperature is below the heating setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
     tolerance_for_time_cooling_setpoint_not_met: float | None
     """If the zone temperature is above the cooling setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
 
@@ -53509,14 +54300,27 @@ class OutputControlReportingTolerances(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlReportingTolerancesFields(TypedDict, total=False):
+    tolerance_for_time_heating_setpoint_not_met: float | None
     tolerance_for_time_cooling_setpoint_not_met: float | None
 
 class OutputControlResilienceSummaries(IDFObject):
     """Specifies methods for resilience reporting variables; Since: 25.1.0"""
 
+    heat_index_algorithm: Literal["", "Extended", "Simplified"] | None
+    """Whether the simplified or the extended method should be used for heat index Simplified: based on regression analysis ...; Default: Simplified"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlResilienceSummariesFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlResilienceSummariesFields(TypedDict, total=False):
+    heat_index_algorithm: Literal["", "Extended", "Simplified"] | None
+
 class OutputVariable(IDFObject):
     """each Output:Variable command picks variables to be put onto the standard output file (.eso) some variables may not be..."""
 
+    key_value: str | None
+    """use '*' (without quotes) to apply this variable to all keys; Default: *"""
     variable_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
@@ -53527,6 +54331,7 @@ class OutputVariable(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableFields]) -> None: ...  # type: ignore[override]
 
 class _OutputVariableFields(TypedDict, total=False):
+    key_value: str | None
     variable_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
@@ -53536,6 +54341,8 @@ class _OutputVariableFields(TypedDict, total=False):
 class OutputMeter(IDFObject):
     """Each Output:Meter command picks meters to be put onto the standard output file (.eso) and meter file (.mtr). Not all ..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53544,6 +54351,7 @@ class OutputMeter(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputMeterFields]) -> None: ...  # type: ignore[override]
 
 class _OutputMeterFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53551,6 +54359,8 @@ class _OutputMeterFields(TypedDict, total=False):
 class OutputMeterMeterFileOnly(IDFObject):
     """Each Output:Meter:MeterFileOnly command picks meters to be put only onto meter file (.mtr). Not all meters are report..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53561,6 +54371,7 @@ class OutputMeterMeterFileOnly(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterMeterFileOnlyFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53568,6 +54379,8 @@ class _OutputMeterMeterFileOnlyFields(TypedDict, total=False):
 class OutputMeterCumulative(IDFObject):
     """Each Output:Meter:Cumulative command picks meters to be reported cumulatively onto the standard output file (.eso) an..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53578,6 +54391,7 @@ class OutputMeterCumulative(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53585,6 +54399,8 @@ class _OutputMeterCumulativeFields(TypedDict, total=False):
 class OutputMeterCumulativeMeterFileOnly(IDFObject):
     """Each Output:Meter:Cumulative:MeterFileOnly command picks meters to be reported cumulatively onto the standard output ..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53595,6 +54411,7 @@ class OutputMeterCumulativeMeterFileOnly(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -53721,6 +54538,8 @@ class _MeterCustomDecrementFields(TypedDict, total=False):
 class OutputControlFiles(IDFObject):
     """Conditionally turn on/off output from EnergyPlus.; Since: 9.4.0"""
 
+    output_csv: Literal["", "No", "Yes"] | None
+    """Default: No"""
     output_mtr: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_eso: Literal["", "No", "Yes"] | None
@@ -53791,6 +54610,7 @@ class OutputControlFiles(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlFilesFields(TypedDict, total=False):
+    output_csv: Literal["", "No", "Yes"] | None
     output_mtr: Literal["", "No", "Yes"] | None
     output_eso: Literal["", "No", "Yes"] | None
     output_eio: Literal["", "No", "Yes"] | None
@@ -53827,6 +54647,8 @@ class _OutputControlFilesFields(TypedDict, total=False):
 class OutputControlTimestamp(IDFObject):
     """Control timestamp format, currently applies only to JSON and native CSV (not CSV via ReadVars); Since: 23.1.0"""
 
+    iso_8601_format: Literal["", "No", "Yes"] | None
+    """Use the ISO 8601 format YYYY-MM-DDThh:mm:ss; Default: No"""
     timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None
     """Determines where the timestamp is produced, either at the beginning (Yes) or end (No) of the interval; Default: No"""
 
@@ -53835,11 +54657,13 @@ class OutputControlTimestamp(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlTimestampFields(TypedDict, total=False):
+    iso_8601_format: Literal["", "No", "Yes"] | None
     timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None
 
 class OutputJSON(IDFObject):
     """Output from EnergyPlus can be written to JSON format files.; Since: 9.1.0"""
 
+    option_type: Literal["TimeSeries", "TimeSeriesAndTabular"] | None
     output_json: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_cbor: Literal["", "No", "Yes"] | None
@@ -53866,6 +54690,7 @@ class OutputJSON(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputJSONFields]) -> None: ...  # type: ignore[override]
 
 class _OutputJSONFields(TypedDict, total=False):
+    option_type: Literal["TimeSeries", "TimeSeriesAndTabular"] | None
     output_json: Literal["", "No", "Yes"] | None
     output_cbor: Literal["", "No", "Yes"] | None
     output_messagepack: Literal["", "No", "Yes"] | None
@@ -53887,6 +54712,7 @@ class _OutputJSONFields(TypedDict, total=False):
 class OutputSQLite(IDFObject):
     """Output from EnergyPlus can be written to an SQLite format file."""
 
+    option_type: Literal["Simple", "SimpleAndTabular"] | None
     unit_conversion_for_tabular_data: (
         Literal[
             "",
@@ -53907,6 +54733,7 @@ class OutputSQLite(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSQLiteFields]) -> None: ...  # type: ignore[override]
 
 class _OutputSQLiteFields(TypedDict, total=False):
+    option_type: Literal["Simple", "SimpleAndTabular"] | None
     unit_conversion_for_tabular_data: (
         Literal[
             "",
@@ -53925,9 +54752,21 @@ class _OutputSQLiteFields(TypedDict, total=False):
 class OutputEnvironmentalImpactFactors(IDFObject):
     """This is used to Automatically report the facility meters and turn on the Environmental Impact Report calculations for..."""
 
+    reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
+    """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same. Detail..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputEnvironmentalImpactFactorsFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputEnvironmentalImpactFactorsFields(TypedDict, total=False):
+    reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
+
 class EnvironmentalImpactFactors(IDFObject):
     """Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
 
+    district_heating_water_efficiency: float | None
+    """District heating efficiency used when converted to natural gas; Default: 0.3; Range: > 0.0; Since: 23.2.0"""
     district_cooling_cop: float | None
     """District cooling COP used when converted to electricity; [W/W]; Default: 3.0; Range: > 0.0"""
     district_heating_steam_conversion_efficiency: float | None
@@ -53944,6 +54783,7 @@ class EnvironmentalImpactFactors(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _EnvironmentalImpactFactorsFields(TypedDict, total=False):
+    district_heating_water_efficiency: float | None
     district_cooling_cop: float | None
     district_heating_steam_conversion_efficiency: float | None
     total_carbon_equivalent_emission_factor_from_n2o: float | None
@@ -53953,6 +54793,21 @@ class _EnvironmentalImpactFactorsFields(TypedDict, total=False):
 class FuelFactors(IDFObject):
     """Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
     source_energy_factor: float | None
     """[J/J]"""
     source_energy_schedule_name: str | None
@@ -54008,6 +54863,21 @@ class FuelFactors(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactorsFields]) -> None: ...  # type: ignore[override]
 
 class _FuelFactorsFields(TypedDict, total=False):
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
     source_energy_factor: float | None
     source_energy_schedule_name: str | None
     co2_emission_factor: float | None
@@ -54077,6 +54947,8 @@ class _OutputDiagnosticsFields(TypedDict, total=False):
 class OutputDebuggingData(IDFObject):
     """switch eplusout.dbg file on or off"""
 
+    report_debugging_data: Literal["", "No", "Yes"] | None
+    """Default: No"""
     report_during_warmup: Literal["", "No", "Yes"] | None
     """Default: No"""
 
@@ -54085,11 +54957,13 @@ class OutputDebuggingData(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputDebuggingDataFields(TypedDict, total=False):
+    report_debugging_data: Literal["", "No", "Yes"] | None
     report_during_warmup: Literal["", "No", "Yes"] | None
 
 class OutputPreprocessorMessage(IDFObject):
     """This object does not come from a user input. This is generated by a pre-processor so that various conditions can be g..."""
 
+    preprocessor_name: str | None
     error_severity: Literal["Fatal", "Information", "Severe", "Warning"] | None
     """Depending on type, InputProcessor may terminate the program."""
     message_line_1: str | None
@@ -54108,6 +54982,7 @@ class OutputPreprocessorMessage(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputPreprocessorMessageFields(TypedDict, total=False):
+    preprocessor_name: str | None
     error_severity: Literal["Fatal", "Information", "Severe", "Warning"] | None
     message_line_1: str | None
     message_line_2: str | None

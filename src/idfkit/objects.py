@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Callable, Container, Iterator, Mapping
+from collections.abc import Callable, Container, Iterator, Mapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
@@ -885,10 +885,16 @@ class IDFObject(EppyObjectMixin):
         return id(self)
 
     def _set_name(self, value: str) -> None:
-        """Centralized name-change logic with document notification."""
+        """Centralized name-change logic with document notification.
+
+        Raises:
+            InvalidFieldError: If *value* is not empty and the object's type has no Name field
+                (``Output:Meter``, ``Timestep``, ...): the name would be dropped on write.
+        """
         old = self._name
         if old == value:
             return
+        refuse_name_for_nameless_type(self._type, value, self._schema)
         object.__setattr__(self, "_name", value)
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
@@ -1189,6 +1195,30 @@ class IDFObject(EppyObjectMixin):
 
 
 _T = TypeVar("_T", bound=IDFObject)
+
+
+def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mapping[str, Any] | None) -> None:
+    """Raise :class:`InvalidFieldError` when *name* is given to a type without a Name field.
+
+    165 of the 880 types in the 26.2 schema (``Output:Meter``, ``Output:SQLite``, ``Timestep``,
+    ``SimulationControl``, ...) have no Name field: their first IDF field is an ordinary field.
+    A name stored on one of them is dropped by both writers, so ``add("Output:SQLite",
+    "SimpleAndTabular")`` writes ``Output:SQLite,`` and EnergyPlus produces no ``.sql`` file.
+    The value is not moved into the first field either: for most of these types that field is
+    an option or a number, and guessing a value is worse than refusing.
+
+    ``""`` and ``None`` mean no name. An unknown type (*obj_schema* is ``None``) is not checked.
+    """
+    if not name or obj_schema is None or "name" in obj_schema:
+        return
+    legacy: Mapping[str, Any] = obj_schema.get("legacy_idd", {})
+    fields: Sequence[str] = legacy.get("fields", [])
+    if fields:
+        hint = f'Pass it as a field instead: {fields[0]}="{name}".'
+    else:
+        hint = "The type has no fields to carry it; leave the name empty."
+    msg = f'{obj_type} has no Name field, so "{name}" would be dropped on write. {hint}'
+    raise InvalidFieldError(obj_type, "name", message=msg)
 
 
 def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_names: bool) -> None:
