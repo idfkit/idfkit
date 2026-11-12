@@ -269,7 +269,6 @@ def simulate(
         # Auto-preprocess ground heat-transfer objects when needed.
         sim_model, ep_expand = maybe_preprocess(
             sim_model,
-            sim_model,
             config,
             weather_path,
             expand_objects,

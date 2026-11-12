@@ -68,4 +68,4 @@ For CPU-bound batch work on a regular build, use processes. Documents pickle che
 
 ## Optional extras on free-threaded builds
 
-The core package has no dependencies, so importing it never re-enables the GIL. Of the extras, `pandas` before 3.0 does: its compiled modules do not declare free-threading support, so the interpreter turns the GIL back on at import time and warns. `pandas>=3.0`, `numpy`, `matplotlib`, `plotly`, `boto3`, `aiobotocore`, `tqdm` and `openpyxl` keep it off.
+The core package has no dependencies, so importing it never re-enables the GIL. Of the extras, `pandas` before 3.0 does: its compiled modules do not declare free-threading support, so the interpreter turns the GIL back on at import time and warns. `pandas>=3.0` and the other extras' packages (`matplotlib`, `plotly`, `boto3`, `aiobotocore`, `tqdm`) keep it off.

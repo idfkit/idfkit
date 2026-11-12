@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   call that gave both spellings of one field, even with one of them blank. The typed `update()`
   stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
   [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
-- Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
+- Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
 
@@ -172,9 +172,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to the one passed instead of that object. Two objects of a type with no Name field are equal
   when their fields match, so removing one `Output:Meter` could remove another and leave the
   one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
-
-### Fixed
-
 - The `hvac-loops` and `reference-tracking` agent references no longer state that
   `validate_document` reports node-name typos. It reports a dangling object-name reference as
   `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint

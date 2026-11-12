@@ -290,7 +290,6 @@ async def async_simulate(
             # The copy, not the caller's model: this runs on a worker thread, which must not read a
             # model another coroutine may be editing meanwhile.
             sim_model,
-            sim_model,
             config,
             weather_path,
             expand_objects,
