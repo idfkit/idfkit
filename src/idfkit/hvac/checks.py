@@ -15,6 +15,8 @@ measured table in ``_version_caps.py``.
 | T003 | A zone exhaust nothing draws from | warning |
 | T004 | A setpoint, sensor or actuator node no component carries flow through | warning |
 | T030 | An outlet a branch carries that nothing takes | warning |
+| T012 | A branch a loop side's splitter or mixer names that its BranchList omits, or the reverse | warning |
+| T013 | A coil on a plant loop's supply side, or a boiler on its demand side | warning |
 | T090 | Object type with node fields but no connection rule | info |
 | T091 | Template system present; topology not covered | info |
 """
@@ -25,9 +27,10 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING, Final, Literal
 
 from idfkit._graph_common import ObjectKey
+from idfkit.hvac._categories import category_of
 from idfkit.hvac._version_caps import MEASURED_VERSIONS, VERSION_CAPS
 from idfkit.hvac.topology import CONNECTIONS, CONSUMES, CONTROLS, PRODUCES, PROVENANCES, UNCLASSIFIED, HVACTopology
-from idfkit.hvac.types import ConnectionType, Provenance, Severity, TopologyFinding
+from idfkit.hvac.types import ComponentCategory, ConnectionType, Provenance, Severity, TopologyFinding
 
 if TYPE_CHECKING:
     from idfkit.document import IDFDocument
@@ -73,7 +76,13 @@ def check_topology(doc: IDFDocument) -> list[TopologyFinding]:
 
 def run_checks(index: TopologyIndex) -> list[TopologyFinding]:
     """Run every check over a view's index. Called by :meth:`HVACTopology.check`, which caches the result."""
-    findings = [*_branch_checks(index), *_one_sided_nodes(index), *_coverage_findings(index)]
+    findings = [
+        *_branch_checks(index),
+        *_branch_list_checks(index),
+        *_plant_side_checks(index),
+        *_one_sided_nodes(index),
+        *_coverage_findings(index),
+    ]
     return [cap_severity(f, index.doc.version) for f in findings]
 
 
@@ -361,6 +370,160 @@ def _one_sided_nodes(index: TopologyIndex) -> Iterator[TopologyFinding]:
             yield _finding(index, "T003", nid, producers, "is a zone exhaust nothing draws from")
         elif not any(u[2] in _ZONE_SIDE for u in producers) and any((u[0], u[3]) in carried for u in producers):
             yield _finding(index, "T030", nid, producers, "leaves a component on a branch but nothing takes it")
+
+
+# --------------------------------------------------------------------------------------------- #
+# T012: branch lists against connectors; T013: plant equipment on the wrong side
+# --------------------------------------------------------------------------------------------- #
+
+_LOOP_SIDE_LISTS: Final[dict[str, tuple[tuple[str, str, str], ...]]] = {
+    "AirLoopHVAC": (("supply", "branch_list_name", "connector_list_name"),),
+    "PlantLoop": (
+        ("supply", "plant_side_branch_list_name", "plant_side_connector_list_name"),
+        ("demand", "demand_side_branch_list_name", "demand_side_connector_list_name"),
+    ),
+    "CondenserLoop": (
+        ("supply", "condenser_side_branch_list_name", "condenser_side_connector_list_name"),
+        ("demand", "condenser_demand_side_branch_list_name", "condenser_demand_side_connector_list_name"),
+    ),
+}
+"""Each loop type's sides, with the fields naming the side's ``BranchList`` and ``ConnectorList``."""
+
+_WRONG_SIDE: Final[dict[str, frozenset[ComponentCategory]]] = {
+    "supply": frozenset({ComponentCategory.HEATING_COIL, ComponentCategory.COOLING_COIL}),
+    "demand": frozenset({ComponentCategory.BOILER}),
+}
+"""Categories that never belong on a ``PlantLoop`` side. A chiller is left out: its condenser sits on
+a demand side by design."""
+
+
+def _text(obj: IDFObject, field: str) -> str:
+    return str(obj.to_dict().get(field, "") or "")
+
+
+def _get(index: TopologyIndex, object_type: str, name: str) -> IDFObject | None:
+    if not name or object_type not in index.doc:
+        return None
+    return index.doc.get_collection(object_type).get(name)
+
+
+def _list_branches(branch_list: IDFObject) -> list[str]:
+    return [str(item.get("branch_name", "") or "") for item in branch_list.extensible_items("branches")]
+
+
+def _side_lists(index: TopologyIndex) -> Iterator[tuple[IDFObject, str, IDFObject, IDFObject | None]]:
+    """Every loop side with a ``BranchList``: ``(loop, side, branch list, connector list or None)``."""
+    for loop_type, sides in _LOOP_SIDE_LISTS.items():
+        if loop_type not in index.doc:
+            continue
+        for loop in index.doc.get_collection(loop_type):
+            for side, list_field, connector_field in sides:
+                branch_list = _get(index, "BranchList", _text(loop, list_field))
+                if branch_list is not None:
+                    yield loop, side, branch_list, _get(index, "ConnectorList", _text(loop, connector_field))
+
+
+def _connectors(index: TopologyIndex, connector_list: IDFObject) -> Iterator[tuple[IDFObject, list[str], list[str]]]:
+    """The splitters and mixers a ``ConnectorList`` names: ``(connector, trunk branches, parallel branches)``."""
+    data = connector_list.to_dict()
+    for i in (1, 2):
+        ctype = str(data.get(f"connector_{i}_object_type", "") or "")
+        connector = _get(index, ctype, str(data.get(f"connector_{i}_name", "") or ""))
+        if connector is None:
+            continue
+        is_splitter = ctype.upper() == "CONNECTOR:SPLITTER"
+        trunk = _text(connector, "inlet_branch_name" if is_splitter else "outlet_branch_name")
+        key = "outlet_branch_name" if is_splitter else "inlet_branch_name"
+        parallel = [str(item.get(key, "") or "") for item in connector.extensible_items("branches")]
+        yield connector, [trunk] if trunk else [], [b for b in parallel if b]
+
+
+def _branch_list_checks(index: TopologyIndex) -> Iterator[TopologyFinding]:
+    """T012: on each loop side, every branch a splitter or mixer names is in the side's ``BranchList``,
+    and every inner listed branch (neither first nor last) is fed by the side's splitter."""
+    for loop, side, branch_list, connector_list in _side_lists(index):
+        if connector_list is None:
+            continue
+        listed = _list_branches(branch_list)
+        listed_upper = {b.upper() for b in listed}
+        reported: set[str] = set()
+        split_outlets: set[str] | None = None
+        for connector, trunk, parallel in _connectors(index, connector_list):
+            if connector.obj_type.upper() == "CONNECTOR:SPLITTER":
+                outlets: set[str] = {b.upper() for b in parallel}
+                split_outlets = outlets if split_outlets is None else split_outlets | outlets
+            for name in (*trunk, *parallel):
+                if name.upper() in listed_upper or name.upper() in reported:
+                    continue
+                reported.add(name.upper())
+                yield TopologyFinding(
+                    code="T012",
+                    severity="warning",
+                    objects=(
+                        ObjectKey("BranchList", branch_list.name),
+                        ObjectKey("Branch", name),
+                        ObjectKey(connector.obj_type, connector.name),
+                    ),
+                    message=(
+                        f"{connector.obj_type} '{connector.name}' on the {side} side of {loop.obj_type} "
+                        f"'{loop.name}' names branch '{name}', but BranchList '{branch_list.name}' does not list it"
+                    ),
+                    provenance="hand_written",
+                    field="branches",
+                    expected=name,
+                )
+        if split_outlets is None or len(listed) < 3:
+            continue
+        for name in listed[1:-1]:
+            if name and name.upper() not in split_outlets and name.upper() not in reported:
+                reported.add(name.upper())
+                yield TopologyFinding(
+                    code="T012",
+                    severity="warning",
+                    objects=(ObjectKey("BranchList", branch_list.name), ObjectKey("Branch", name)),
+                    message=(
+                        f"BranchList '{branch_list.name}' lists branch '{name}' between the {side} side's inlet "
+                        f"and outlet of {loop.obj_type} '{loop.name}', but no splitter on that side feeds it"
+                    ),
+                    provenance="hand_written",
+                    field="branches",
+                    actual=name,
+                )
+
+
+def _plant_side_checks(index: TopologyIndex) -> Iterator[TopologyFinding]:
+    """T013: no heating or cooling coil on a ``PlantLoop``'s supply side and no boiler on its demand side."""
+    for loop, side, branch_list, _ in _side_lists(index):
+        if loop.obj_type.upper() != "PLANTLOOP":
+            continue
+        wrong = _WRONG_SIDE[side]
+        for branch_name in _list_branches(branch_list):
+            branch = _get(index, "Branch", branch_name)
+            if branch is None:
+                continue
+            for item in branch.extensible_items("components"):
+                ctype = str(item.get("component_object_type", "") or "")
+                category = category_of(ctype)
+                if category not in wrong:
+                    continue
+                cname = str(item.get("component_name", "") or "")
+                belongs = "demand" if side == "supply" else "supply"
+                yield TopologyFinding(
+                    code="T013",
+                    severity="warning",
+                    objects=(
+                        ObjectKey(ctype, cname),
+                        ObjectKey("Branch", branch.name),
+                        ObjectKey(loop.obj_type, loop.name),
+                    ),
+                    message=(
+                        f"{ctype} '{cname}' is on branch '{branch.name}' on the {side} side of PlantLoop "
+                        f"'{loop.name}'; a {category.value.replace('_', ' ')} belongs on the {belongs} side"
+                    ),
+                    provenance="hand_written",
+                    expected=belongs,
+                    actual=side,
+                )
 
 
 # --------------------------------------------------------------------------------------------- #

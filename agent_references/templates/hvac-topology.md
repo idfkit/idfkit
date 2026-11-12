@@ -80,6 +80,8 @@ A walk's start can be a component, a `Zone` or `Space` (walked as its `ZoneHVAC:
 | `T003` | warning | A zone exhaust nothing draws from |
 | `T004` | warning | A node only setpoint managers, sensors, controllers or actuators name |
 | `T030` | warning | An outlet a branch carries that nothing takes |
+| `T012` | warning | A branch a loop side's splitter or mixer names that its `BranchList` omits, or a listed branch no splitter feeds |
+| `T013` | warning | A heating or cooling coil on a `PlantLoop`'s supply side, or a boiler on its demand side |
 | `T090` | info | Object types the view has no rule for |
 | `T091` | info | Unexpanded `HVACTemplate` systems |
 

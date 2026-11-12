@@ -1,6 +1,6 @@
 """The HVAC topology view on real and minimal models: roles, flow, walks and caching.
 
-The second half covers the connection checks (T001-T004, T010, T011, T030, T090, T091) and the loop
+The second half covers the connection checks (T001-T004, T010-T013, T030, T090, T091) and the loop
 queries (memberships, chain, zones served).
 """
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from idfkit import IDFDocument, load_idf, new_document
+from idfkit import IDFDocument, IDFObject, load_idf, new_document
 from idfkit.hvac import (
     ComponentCategory,
     ConnectionType,
@@ -332,6 +332,48 @@ def test_templates_give_t091_and_no_missing_node_findings() -> None:
     assert [f.code for f in findings if f.code == "T091"] == ["T091"]
     assert next(f for f in findings if f.code == "T091").severity == "info"
     assert [f for f in findings if f.code in {"T001", "T002", "T003", "T004", "T030"}] == []
+
+
+def _without(obj: IDFObject, wrapper: str, key: str, name: str) -> list[dict[str, object]]:
+    return [dict(i) for i in obj.extensible_items(wrapper) if str(i.get(key, "")).upper() != name.upper()]
+
+
+def test_unmodified_model_has_no_branch_list_or_plant_side_finding(five_zone: IDFDocument) -> None:
+    assert [f for f in check_topology(five_zone) if f.code in {"T012", "T013"}] == []
+
+
+def test_branch_a_splitter_names_but_the_branch_list_omits_is_t012(five_zone: IDFDocument) -> None:
+    branch_list = five_zone["BranchList"]["Heating Demand Side Branches"]
+    branch_list["branches"] = _without(branch_list, "branches", "branch_name", "SPACE1-1 Reheat Branch")
+    (t012,) = [f for f in check_topology(five_zone) if f.code == "T012"]
+    assert t012.severity == "warning"
+    assert t012.expected == "SPACE1-1 Reheat Branch"
+    assert ObjectKey("BranchList", "Heating Demand Side Branches") in t012.objects
+    assert ObjectKey("Branch", "SPACE1-1 Reheat Branch") in t012.objects
+    assert "Heating Demand Splitter" in t012.message
+
+
+def test_listed_branch_no_splitter_feeds_is_t012(five_zone: IDFDocument) -> None:
+    splitter = five_zone["Connector:Splitter"]["Heating Demand Splitter"]
+    mixer = five_zone["Connector:Mixer"]["Heating Demand Mixer"]
+    splitter["branches"] = _without(splitter, "branches", "outlet_branch_name", "SPACE2-1 Reheat Branch")
+    mixer["branches"] = _without(mixer, "branches", "inlet_branch_name", "SPACE2-1 Reheat Branch")
+    (t012,) = [f for f in check_topology(five_zone) if f.code == "T012"]
+    assert t012.actual == "SPACE2-1 Reheat Branch"
+    assert "no splitter on that side feeds it" in t012.message
+
+
+def test_water_coil_on_the_plant_supply_side_is_t013(five_zone: IDFDocument) -> None:
+    branch = "Cooling Coil Branch"
+    d_list = five_zone["BranchList"]["Cooling Demand Side Branches"]
+    s_list = five_zone["BranchList"]["Cooling Supply Side Branches"]
+    d_list["branches"] = _without(d_list, "branches", "branch_name", branch)
+    s_items = [dict(i) for i in s_list.extensible_items("branches")]
+    s_list["branches"] = [*s_items[:-1], {"branch_name": branch}, s_items[-1]]
+    t013 = [f for f in check_topology(five_zone) if f.code == "T013"]
+    assert [(f.objects[0], f.actual, f.expected, f.severity) for f in t013] == [
+        (ObjectKey("Coil:Cooling:Water", "Main Cooling Coil 1"), "supply", "demand", "warning")
+    ]
 
 
 def test_a_type_without_rules_is_t090_info() -> None:

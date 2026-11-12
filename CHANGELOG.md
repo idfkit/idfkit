@@ -53,6 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mean a model simulates. On a 6,876-object model the view and its checks take 27 ms, 11% of
   loading it. The 685 EnergyPlus 9.6.0 and 734 EnergyPlus 23.2.0 example files were measured too:
   T010 and T011 report nothing on either, so no severity is capped for those versions.
+  T012, a branch a loop side's splitter or mixer names that its `BranchList` omits (or a listed branch no
+  splitter feeds), and T013, a heating or cooling coil on a `PlantLoop`'s supply side or a boiler on its
+  demand side, are warnings; neither reports anything on the 769 26.2, 685 9.6.0 or 734 23.2.0 example files.
   ([#263](https://github.com/idfkit/idfkit/pull/263), [78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
 - `HVACTopology.loops()`, `memberships(obj)`, `chain(loop, side)` and `zones_served(air_loop)`
   answer which loop a component is on and what a loop holds. `loops()` lists every `AirLoopHVAC`,

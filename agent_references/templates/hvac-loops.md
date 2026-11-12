@@ -70,7 +70,7 @@ Validation checks that every branch name in the splitter/mixer exists as a `Bran
 
 EnergyPlus loops are wired by string-typed *node names*, not by object references. A coil declares `air_inlet_node_name` and `air_outlet_node_name`; the adjacent branch component declares the same node names on its own side. **idfkit's schema-driven validation enforces that node names are real strings, not that two objects share the right one.**
 
-Nothing wires two nodes for you, but `idfkit.hvac` checks them: `HVACTopology` reads every node field with the role EnergyPlus gives it, and `check_topology(doc)` reports a branch listing a node its component does not have (`T010`), consecutive branch components that do not connect (`T011`), inlets nothing supplies (`T001` for a component, `T002` for a zone), a zone exhaust nothing draws from (`T003`), a node only controls name (`T004`) and a branch outlet nothing takes (`T030`). See [hvac-topology.md](hvac-topology.md).
+Nothing wires two nodes for you, but `idfkit.hvac` checks them: `HVACTopology` reads every node field with the role EnergyPlus gives it, and `check_topology(doc)` reports a branch listing a node its component does not have (`T010`), consecutive branch components that do not connect (`T011`), inlets nothing supplies (`T001` for a component, `T002` for a zone), a zone exhaust nothing draws from (`T003`), a node only controls name (`T004`), a branch outlet nothing takes (`T030`), a branch missing from its side's `BranchList` (`T012`) and a coil or boiler on the wrong side of a plant loop (`T013`). See [hvac-topology.md](hvac-topology.md).
 
 ```python
 --8<-- "agent_references/snippets/hvac-loops.py:link-node-names"
