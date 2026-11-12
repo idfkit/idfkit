@@ -124,7 +124,7 @@ for obj, field, target in doc.references.get_dangling_references(all_names):
     print(f"{obj.obj_type} '{obj.name}'.{field} -> '{target}' (missing)")
 ```
 
-For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E004` errors. See [schema-and-validation.md](schema-and-validation.md).
+For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors. See [schema-and-validation.md](schema-and-validation.md).
 
 ## Walking references and node connections together
 

@@ -26,19 +26,18 @@ if not result.is_valid:
 
 
 # --8<-- [start:trace-referencing]
-# Every object that mentions "AHU-1 Cooling Coil"
+# Every object that names "AHU-1 Cooling Coil" in a reference field
 for obj in doc.get_referencing("AHU-1 Cooling Coil"):
     print(obj.obj_type, obj.name)
 # Branch 'AHU-1 Cooling Branch'
 # Controller:WaterCoil 'AHU-1 Cooling Coil Controller'
-# SetpointManager:Scheduled 'AHU-1 Cooling Coil Setpoint'
-# ...
+# Setpoint managers name nodes, not coils, so they are not listed here.
 # --8<-- [end:trace-referencing]
 
 
 # --8<-- [start:safe-rename]
-# Rename a coil. Every branch component, controller, setpoint manager
-# that pointed at "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A".
+# Rename a coil. Every branch component and controller that pointed at
+# "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A". Node names are unchanged.
 doc["Coil:Cooling:Water"]["AHU-1 Cooling Coil"].name = "AHU-1 Cooling Coil A"
 # --8<-- [end:safe-rename]
 

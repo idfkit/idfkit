@@ -14,8 +14,8 @@ If templates work, use them. They're simpler, faster to author, and idfkit has m
 
 idfkit doesn't provide higher-level "build me an air loop" helpers — you author each `AirLoopHVAC`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, `Coil:Cooling:Water`, etc. through `doc.add()`. But once you've done that, idfkit gives you three things EnergyPlus alone doesn't:
 
-1. **Schema validation catches object-name typos**: a branch naming a coil, or a branch list naming a branch, that does not exist. EnergyPlus only catches them at runtime, deep in the `.err` file. Node names are not object names; `idfkit.hvac` checks those (see "Pattern: link by node names" below).
-2. **The reference graph tells you what wires to what**. `doc.get_referencing("AHU-1 Cooling Coil")` returns every object that mentions that coil — branches, controllers, etc.
+1. **Schema validation catches object-name typos**. A branch, branch list or controller that names an object no one declares is an `E009` error before EnergyPlus runs. Node names are plain strings, not references, so validation does not check them; `idfkit.hvac` does (see [Pattern: link by node names](#pattern-link-by-node-names)).
+2. **The reference graph tells you what names what**. `doc.get_referencing("AHU-1 Cooling Coil")` returns every object that names that coil in a reference field, such as branches and controllers. Setpoint managers name nodes, not coils, so they are not in it.
 3. **Renames work across the loop graph**. Rename a coil and every branch and controller naming it updates. Rename a node with `doc.rename_node(old, new)` and every field and `NodeList` entry naming it updates.
 
 ## Canonical pattern: lint before simulate
@@ -24,7 +24,7 @@ idfkit doesn't provide higher-level "build me an air loop" helpers — you autho
 --8<-- "agent_references/snippets/hvac-loops.py:lint-before-simulate"
 ```
 
-`validate_document` with `check_references=True` (the default) reports every dangling object-name reference (a branch naming a missing coil, say) as an `E004` error. That's the single most useful smoke test before kicking off a simulation.
+`validate_document` with `check_references=True` (the default) reports every dangling object-name reference, such as a branch naming a missing coil, as an `E009` error. It does not check node names: two objects that should share a node but spell it differently both pass. Run it before every simulation, together with `check_topology` for node names (see [Pattern: link by node names](#pattern-link-by-node-names)).
 
 ## Tracing a loop with `get_referencing`
 
@@ -64,7 +64,7 @@ Splitter/mixer pairs define the parallel paths in an air or water loop. Each nam
 --8<-- "agent_references/snippets/hvac-loops.py:splitter-mixer"
 ```
 
-Validation checks that every branch name in the splitter/mixer exists as a `Branch` object — typos surface as `E004`.
+Validation checks that every branch name in the splitter/mixer exists as a `Branch` object — typos surface as `E009`.
 
 ## Pattern: link by node names
 
@@ -135,5 +135,5 @@ If the strings don't match, the loop is broken, and schema validation will not t
 - [hvac-templates.md](hvac-templates.md) — start here unless you really need hand-authored loops.
 - [hvac-topology.md](hvac-topology.md) — the node graph: who connects to a node, loop memberships, flow walks, connection checks, node renames.
 - [reference-tracking.md](reference-tracking.md) — navigating and renaming the objects a loop references.
-- [schema-and-validation.md](schema-and-validation.md) — `E004` errors are dangling object-name references.
+- [schema-and-validation.md](schema-and-validation.md) — `E009` errors are dangling object-name references; node-name typos produce none.
 - I/O Reference (via `idfkit-mcp` search_docs or the docs site): `AirLoopHVAC`, `PlantLoop`, `CondenserLoop`, `Branch`, `BranchList`, `Connector:Splitter`, `Connector:Mixer`, setpoint managers, controllers.
