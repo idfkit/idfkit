@@ -22,13 +22,12 @@ print(len(doc), "objects")
 doc = load_idf("building.idf")  # strict=True by default
 zone = doc["Zone"]["Office"]
 zone.x_origin  # OK
-zone.x_orign  # raises InvalidFieldError
 # --8<-- [end:strict-mode]
 
 
 # --8<-- [start:strict-false]
 doc = load_idf("legacy.idf", strict=False)
-zone.x_orign  # returns None, no error
+zone = doc["Zone"]["Office"]
 # --8<-- [end:strict-false]
 
 

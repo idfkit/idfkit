@@ -64,7 +64,7 @@ class TestIDFDocumentStrict:
         copy = doc.copy()
         zone = copy["Zone"]["Office"]
         with pytest.raises(AttributeError):
-            _ = zone.nonexistent_field_xyz
+            _ = zone.nonexistent_field_xyz  # pyright: ignore[reportArgumentType]
 
 
 class TestIDFCollectionGeneric:
@@ -122,9 +122,9 @@ class TestStubGeneration:
         from idfkit.codegen.generate_stubs import generate_stubs
 
         content = generate_stubs((24, 1, 0))
-        assert "class Zone(IDFObject):" in content
-        assert "class Building(IDFObject):" in content
-        assert "class Material(IDFObject):" in content
+        assert "class Zone(_TypedIDFObject):" in content
+        assert "class Building(_TypedIDFObject):" in content
+        assert "class Material(_TypedIDFObject):" in content
 
     def test_generate_stubs_has_typed_fields(self) -> None:
         from idfkit.codegen.generate_stubs import generate_stubs
