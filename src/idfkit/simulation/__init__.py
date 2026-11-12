@@ -40,6 +40,8 @@ your use case.
 
 from __future__ import annotations
 
+from idfkit._graph_common import Coverage, ObjectKey, UncoveredPart
+
 from ._common import prep_outputs
 from .async_batch import SimulationEvent, async_simulate_batch, async_simulate_batch_stream
 from .async_runner import async_simulate
@@ -54,9 +56,11 @@ from .expand import (
     run_slab_preprocessor,
 )
 from .fs import AsyncFileSystem, AsyncLocalFileSystem, AsyncS3FileSystem, FileSystem, LocalFileSystem, S3FileSystem
+from .linking import LinkedMessage, ObjectNeighbour, ObjectResults, Resolution, ResultFact, ResultIndex
 from .outputs import OutputVariableIndex
 from .parsers.csv import CSVColumn, CSVResult
 from .parsers.err import ErrorMessage, ErrorReport
+from .parsers.err_catalog import MESSAGE_KINDS, MessageKind, classify_message
 from .parsers.eso import ESOColumn, ESOEnvironment, ESOResult, ESOVariable
 from .parsers.html import HTMLResult, HTMLTable
 from .parsers.rdd import OutputMeter, OutputVariable
@@ -74,6 +78,7 @@ from .result import REFUSED_RUN_DIR, SimulationResult
 from .runner import simulate
 
 __all__ = [
+    "MESSAGE_KINDS",
     "REFUSED_RUN_DIR",
     "AsyncFileSystem",
     "AsyncLocalFileSystem",
@@ -82,6 +87,7 @@ __all__ = [
     "CSVColumn",
     "CSVResult",
     "CacheKey",
+    "Coverage",
     "ESOColumn",
     "ESOEnvironment",
     "ESOResult",
@@ -93,12 +99,20 @@ __all__ = [
     "FileSystem",
     "HTMLResult",
     "HTMLTable",
+    "LinkedMessage",
     "LocalFileSystem",
+    "MessageKind",
+    "ObjectKey",
+    "ObjectNeighbour",
+    "ObjectResults",
     "OutputMeter",
     "OutputVariable",
     "OutputVariableIndex",
     "PlotBackend",
     "ProgressParser",
+    "Resolution",
+    "ResultFact",
+    "ResultIndex",
     "S3FileSystem",
     "SQLResult",
     "SimulationCache",
@@ -108,10 +122,12 @@ __all__ = [
     "SimulationResult",
     "TabularRow",
     "TimeSeriesResult",
+    "UncoveredPart",
     "VariableInfo",
     "async_simulate",
     "async_simulate_batch",
     "async_simulate_batch_stream",
+    "classify_message",
     "expand_objects",
     "find_energyplus",
     "get_default_backend",

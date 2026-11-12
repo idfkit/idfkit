@@ -15,6 +15,7 @@ from ._compat import EppyDocumentMixin
 from ._generated_types import *  # noqa: F403
 from ._generated_types import _ObjectTypeMap
 from .cst import DocumentCST, SourceSpan
+from .hvac.types import NodeRenameResult
 from .introspection import ObjectDescription
 from .objects import IDFCollection, IDFObject
 from .references import ReferenceGraph
@@ -76,11 +77,14 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         """
     @property
     def revision(self) -> int:
-        """Monotonic; bumped by add, removeidfobject, field assignment, rename, rename_node.
+        """Monotonic; moved by adding, removing, renaming and field assignment.
 
-        Every change to the document's objects bumps it exactly once, and reading never does. Two
-        equal values mean the document has not changed in between, which is what derived views
-        such as the HVAC topology use to decide whether a cached copy is still valid.
+        Every change to the document's objects moves it forward, through the document or through
+        one of its collections, and reading never does. One change can move it by more than one:
+        assigning an extensible list counts each group. Two equal values mean the document has not
+        changed in between, which is what derived views such as the HVAC topology use to decide
+        whether a cached copy is still valid. Writing into ``obj.data`` directly, a plain dict,
+        bypasses it; assign the field instead.
 
         Examples:
             >>> from idfkit import new_document
@@ -427,6 +431,41 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
         !!! tip
             This method is also the recommended idfkit API.  Alternatively,
             use `popidfobject()` to remove by index.
+        """
+    def rename_node(self, old: str, new: str) -> NodeRenameResult:
+        """Rename a node everywhere it is used, in one step.
+
+        Node names are strings, not references, so :meth:`rename` never reaches them. This rewrites
+        every node field naming *old* (found through :class:`~idfkit.hvac.HVACTopology`, so fields
+        with no connection rule are included) and every ``NodeList`` entry naming it. A field that
+        names a ``NodeList`` keeps naming the list. Each write goes through the normal field write,
+        so the revision moves and cached views are rebuilt. If any write fails, the writes already
+        made are undone and the error is raised.
+
+        Output variable keys and other free-text fields that happen to spell the node are not
+        node fields and are left alone.
+
+        Args:
+            old: The node to rename, matched case-insensitively.
+            new: The new name.
+
+        Returns:
+            What changed: fields and ``NodeList`` entries rewritten, and each changed object once.
+
+        Raises:
+            KeyError: If no field names *old*.
+            ValueError: If *new* is empty, equal to *old*, or already a node of the model (two
+                nodes are never merged).
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> doc = new_document()
+            >>> _ = doc.add("Fan:ConstantVolume", "Fan", air_inlet_node_name="Mixed Air",
+            ...             air_outlet_node_name="Supply Air", validate=False)
+            >>> doc.rename_node("Supply Air", "AHU Supply").fields_updated
+            1
+            >>> doc["Fan:ConstantVolume"]["Fan"].air_outlet_node_name
+            'AHU Supply'
         """
     def rename(self, obj_type: str, old_name: str, new_name: str) -> None:
         """Rename an object and update all references.

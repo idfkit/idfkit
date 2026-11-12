@@ -187,8 +187,8 @@ class ComponentSize:
 
     Attributes:
         index: The ``ComponentSizesIndex`` of the row, stable within one database.
-        component_type: The component's object type as EnergyPlus reports it, in upper case
-            (e.g. ``"COIL:HEATING:ELECTRIC"``).
+        component_type: The component's object type as EnergyPlus reports it. Its case varies
+            between EnergyPlus versions (e.g. ``"Coil:Heating:Electric"`` or ``"COIL:HEATING:ELECTRIC"``).
         component_name: The component's name, in upper case.
         description: What was sized (e.g. ``"Design Size Nominal Capacity"``).
         value: The sized value, or ``None`` when EnergyPlus recorded none.

@@ -1306,16 +1306,21 @@ class IDFCollection(Generic[_T]):
         _items: Ordered list of objects
     """
 
-    __slots__ = ("_by_name", "_items", "_type")
+    __slots__ = ("_by_name", "_items", "_owner", "_type")
 
     _type: str
     _by_name: dict[str, _T]
     _items: list[_T]
+    _owner: IDFDocument[Any] | None
 
-    def __init__(self, obj_type: str) -> None:
+    def __init__(self, obj_type: str, owner: IDFDocument[Any] | None = None) -> None:
         self._type = obj_type
         self._by_name: dict[str, _T] = {}
         self._items: list[_T] = []
+        # The document whose collection this is. Its add and remove go through the document, so
+        # the reference graph, the source tree and ``revision`` see them (derived views such as
+        # the HVAC topology are cached per revision and would otherwise go stale).
+        self._owner = owner
 
     @property
     def obj_type(self) -> str:
@@ -1331,6 +1336,9 @@ class IDFCollection(Generic[_T]):
         """
         Add an object to the collection.
 
+        In a document's collection this is ``doc.addidfobject(obj)``: the object's references
+        are indexed and ``doc.revision`` moves.
+
         Args:
             obj: The IDFObject to add
 
@@ -1340,6 +1348,13 @@ class IDFCollection(Generic[_T]):
         Raises:
             DuplicateObjectError: If an object with the same name exists
         """
+        if self._owner is not None:
+            self._owner.addidfobject(cast("IDFObject", obj))
+            return obj
+        return self._insert(obj)
+
+    def _insert(self, obj: _T) -> _T:
+        """File *obj* in this collection only. The document's own add path calls this."""
         from .exceptions import DuplicateObjectError
 
         key = obj.name.upper() if obj.name else ""
@@ -1352,7 +1367,18 @@ class IDFCollection(Generic[_T]):
         return obj
 
     def remove(self, obj: _T) -> None:
-        """Remove an object from the collection."""
+        """Remove an object from the collection.
+
+        In a document's collection this is ``doc.removeidfobject(obj)``: the object leaves the
+        reference graph and ``doc.revision`` moves.
+        """
+        if self._owner is not None:
+            self._owner.removeidfobject(cast("IDFObject", obj))
+            return
+        self._discard(obj)
+
+    def _discard(self, obj: _T) -> None:
+        """Take *obj* out of this collection only. The document's own remove path calls this."""
         # By identity, not equality: two objects of a type with no Name field
         # compare equal when their fields match, and list.remove would take
         # whichever comes first.

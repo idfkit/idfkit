@@ -102,6 +102,41 @@ class TestMutationsBumpOnce:
         assert len(set(seen)) == len(seen)
 
 
+class TestCollectionMutationsGoThroughTheDocument:
+    """A document's collection adds and removes through the document (stale topology view, T035 review)."""
+
+    def test_collection_remove_bumps_and_unregisters(self) -> None:
+        doc, before = _doc_with_zone()
+        wall = doc["BuildingSurface:Detailed"]["Wall 1"]
+        doc["BuildingSurface:Detailed"].remove(wall)
+        assert doc.revision == before + 1
+        assert wall not in doc.get_referencing("Office")
+        assert "Wall 1" not in doc["BuildingSurface:Detailed"]
+
+    def test_idfobjects_remove_bumps(self) -> None:
+        doc, before = _doc_with_zone()
+        doc.idfobjects["Zone"].remove(doc["Zone"]["Office"])
+        assert doc.revision == before + 1
+        assert len(doc["Zone"]) == 0
+
+    def test_collection_add_bumps_and_indexes(self) -> None:
+        doc, before = _doc_with_zone()
+        wall = doc["BuildingSurface:Detailed"]["Wall 1"].copy()
+        wall.name = "Wall 2"
+        doc.get_collection("BuildingSurface:Detailed").add(wall)
+        assert doc.revision == before + 1
+        assert wall in doc.get_referencing("Office")
+
+    def test_a_cached_topology_view_is_rebuilt_after_collection_remove(self) -> None:
+        from idfkit.hvac import HVACTopology
+
+        doc = new_document()
+        fan = doc.add("Fan:ConstantVolume", "Fan", air_inlet_node_name="A", air_outlet_node_name="B", validate=False)
+        assert HVACTopology.from_document(doc).nodes()
+        doc.get_collection("Fan:ConstantVolume").remove(fan)
+        assert HVACTopology.from_document(doc).nodes() == []
+
+
 class TestReadsDoNotBump:
     def test_reads_leave_revision_alone(self) -> None:
         doc, before = _doc_with_zone()

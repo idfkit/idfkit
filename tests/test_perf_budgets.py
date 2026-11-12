@@ -18,6 +18,27 @@ Baselines, all on the vendored reference model ``benchmarks/fixtures/HospitalLow
   idfkit-unification, Python 3.12, 4 vCPU). On the same class of machine it measured
   0.13 to 0.16 s when this gate was added, so the budget of 0.456 s holds about 3x headroom.
 
+- :data:`TOPOLOGY_BUILD_BASELINE_S`, 0.050 s: ``HVACTopology.from_document`` plus ``check()`` on a
+  freshly loaded reference model, the plan's budget (R-21). Measured 0.027 s when added, 11% of
+  ``load_idf``. It must also stay within :data:`TOPOLOGY_SHARE_OF_LOAD` of ``load_idf``.
+- :data:`TOPOLOGY_CACHED_BASELINE_S`, 0.0001 s: ``from_document`` again with no edit in between.
+- :data:`TOPOLOGY_MEMORY_BASELINE_B`, 10 MB: peak memory the topology build with checks allocates.
+- :data:`TOPOLOGY_QUERY_BASELINE_S`, 0.005 s: one topology query (a 3-hop walk, a node's uses).
+- :data:`LOOP_QUERY_BASELINE_S`, 0.005 s: one ``memberships(obj)`` or ``chain(loop, side)`` call,
+  timed both as the first call on a fresh view (which builds the memoised answer: ``memberships``
+  builds every object's memberships at once) and as a repeated, cached call.
+- :data:`GRAPH_CONSTRUCTION_BASELINE_S`, 0.0001 s: ``ModelGraph(doc)``, which builds no layer.
+- :data:`GRAPH_NEIGHBOURHOOD_BASELINE_S`, 0.010 s: ``ModelGraph.neighbourhood`` of 3 hops and up to
+  200 nodes from a zone and from a water heating coil, with the topology cached.
+- :data:`NODE_LINK_BASELINE_S`, 1 s, and :data:`NODE_LINK_MEMORY_BASELINE_B`, 50 MB:
+  ``to_node_link()`` of the ``model`` and ``topology`` layers.
+- :data:`RESULT_INDEX_BUILD_BASELINE_S`, 0.050 s: ``ResultIndex.build`` on the largest paired fixture,
+  ``tests/fixtures/simulation/linked/DOASDualDuctSchool`` (the reference model has no simulation
+  output), with the topology built and the SQLite file open. Measured 0.043 to 0.047 s when added.
+  It never reads ``ReportData``, so its cost does not grow with the run's timeseries.
+- :data:`RESULT_INDEX_QUERY_BASELINE_S`, 0.010 s: ``ResultIndex.for_object`` on the same index, for a
+  zone and a coil. Measured under 1 ms when added.
+
 Adding a budget: state its baseline as a module constant next to the others, list it above, and
 add a test that compares a measurement against ``CI_ALLOWANCE * baseline``. Use the
 ``reference_model`` fixture for operations on an already loaded model, so the model is parsed once
@@ -27,7 +48,9 @@ for the whole module.
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Literal
 
 import pytest
 
@@ -37,8 +60,10 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from benchmarks._timing import best_of, load_reference_model, reference_model_path  # noqa: E402
-from idfkit import IDFDocument, load_idf  # noqa: E402
+from benchmarks._timing import best_of, load_reference_model, peak_memory, reference_model_path  # noqa: E402
+from idfkit import IDFDocument, IDFObject, load_idf  # noqa: E402
+from idfkit.graph import Layer, ModelGraph, ObjectKey  # noqa: E402
+from idfkit.hvac import HVACTopology  # noqa: E402
 
 pytestmark = pytest.mark.perf
 
@@ -77,3 +102,225 @@ def test_load_idf_within_budget(reference_model_file: Path) -> None:
         f"load_idf of the reference model took {elapsed * 1000:.0f} ms (best of {RUNS}); "
         f"budget {budget * 1000:.0f} ms = {CI_ALLOWANCE:g} x baseline {LOAD_IDF_BASELINE_S * 1000:.0f} ms"
     )
+
+
+TOPOLOGY_BUILD_BASELINE_S = 0.050
+"""``HVACTopology.from_document`` plus ``check()`` after a load, seconds (plan budget, R-21)."""
+
+TOPOLOGY_SHARE_OF_LOAD = 0.25
+"""The topology build with checks may cost at most this share of ``load_idf`` (SC-011)."""
+
+TOPOLOGY_CACHED_BASELINE_S = 0.0001
+"""A repeated ``from_document`` with no edit, seconds."""
+
+TOPOLOGY_QUERY_BASELINE_S = 0.005
+"""One topology query, seconds."""
+
+
+def test_topology_build_with_checks_within_budget(reference_model_file: Path) -> None:
+    path = str(reference_model_file)
+    docs = [load_idf(path) for _ in range(RUNS)]
+    pending = iter(docs)
+    elapsed = best_of(lambda: HVACTopology.from_document(next(pending)).check(), RUNS)
+    load = best_of(lambda: load_idf(path), 3)
+    budget = CI_ALLOWANCE * TOPOLOGY_BUILD_BASELINE_S
+    assert elapsed <= budget, f"topology build + checks took {elapsed * 1000:.1f} ms; budget {budget * 1000:.0f} ms"
+    assert elapsed <= TOPOLOGY_SHARE_OF_LOAD * load, (
+        f"topology build + checks took {elapsed / load:.0%} of load_idf; budget {TOPOLOGY_SHARE_OF_LOAD:.0%}"
+    )
+
+
+def test_cached_topology_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    elapsed = best_of(lambda: HVACTopology.from_document(reference_model), RUNS)
+    assert elapsed <= CI_ALLOWANCE * TOPOLOGY_CACHED_BASELINE_S, f"cached view took {elapsed * 1e6:.1f} us"
+
+
+def test_topology_query_within_budget(reference_model: IDFDocument) -> None:
+    topo = HVACTopology.from_document(reference_model)
+    node = max(topo.nodes(), key=lambda n: len(topo.uses(n)))
+    elapsed = max(
+        best_of(lambda: topo.downstream(node, hops=3), RUNS),
+        best_of(lambda: topo.upstream(node, hops=3), RUNS),
+        best_of(lambda: topo.uses(node), RUNS),
+    )
+    assert elapsed <= CI_ALLOWANCE * TOPOLOGY_QUERY_BASELINE_S, f"slowest query took {elapsed * 1000:.2f} ms"
+
+
+TOPOLOGY_MEMORY_BASELINE_B = 10 * 1024 * 1024
+"""Peak memory of the topology build with checks, bytes (R-21: at most 10 MB extra per model)."""
+
+
+def test_topology_memory_within_budget(reference_model_file: Path) -> None:
+    doc = load_idf(str(reference_model_file))
+    _, peak = peak_memory(lambda: HVACTopology.from_document(doc).check())
+    assert peak <= TOPOLOGY_MEMORY_BASELINE_B, f"topology build + checks peaked at {peak / 1e6:.1f} MB"
+
+
+LOOP_QUERY_BASELINE_S = 0.005
+"""One ``memberships(obj)`` or ``chain(loop, side)`` call, first on a fresh view or cached, seconds."""
+
+
+def _first_call(doc: IDFDocument, query: Callable[[HVACTopology], object]) -> float:
+    """Best of :data:`RUNS` first calls of *query*, each on its own freshly built view.
+
+    The views are built before timing starts, with the constructor rather than ``from_document``,
+    which would hand back the cached view whose memoised answers are already built.
+    """
+    views = iter([HVACTopology(doc) for _ in range(RUNS)])
+    return best_of(lambda: query(next(views)), RUNS)
+
+
+def _water_coil(topo: HVACTopology, doc: IDFDocument) -> IDFObject:
+    """A water coil on both an air loop and a water loop, the component with the most memberships."""
+    coils = [
+        obj
+        for obj_type in doc.collections
+        if obj_type.startswith("Coil:") and ":Water" in obj_type
+        for obj in doc.get_collection(obj_type)
+    ]
+    return max(coils, key=lambda c: len({m.kind for m in topo.memberships(c)}))
+
+
+def test_memberships_within_budget(reference_model: IDFDocument) -> None:
+    topo = HVACTopology(reference_model)
+    coil = _water_coil(topo, reference_model)
+    assert {m.kind for m in topo.memberships(coil)} >= {"air", "plant"}, "premise: a coil on an air and a water loop"
+    budget = CI_ALLOWANCE * LOOP_QUERY_BASELINE_S
+    first = _first_call(reference_model, lambda view: view.memberships(coil))
+    cached = best_of(lambda: topo.memberships(coil), RUNS)
+    assert first <= budget, (
+        f"first memberships() on a fresh view took {first * 1000:.2f} ms; budget {budget * 1000:.0f} ms"
+    )
+    assert cached <= budget, f"cached memberships() took {cached * 1000:.3f} ms; budget {budget * 1000:.0f} ms"
+
+
+Side = Literal["supply", "demand"]
+SIDES: tuple[Side, ...] = ("supply", "demand")
+
+
+def _assert_chain_within_budget(doc: IDFDocument, topo: HVACTopology, loop: IDFObject, side: Side) -> None:
+    budget = CI_ALLOWANCE * LOOP_QUERY_BASELINE_S
+    first = _first_call(doc, lambda view: view.chain(loop, side))
+    cached = best_of(lambda: topo.chain(loop, side), RUNS)
+    label = f"chain({loop.name!r}, {side!r}), {len(topo.chain(loop, side))} paths"
+    assert first <= budget, f"first {label} on a fresh view took {first * 1000:.2f} ms; budget {budget * 1000:.0f} ms"
+    assert cached <= budget, f"cached {label} took {cached * 1000:.3f} ms; budget {budget * 1000:.0f} ms"
+
+
+def test_chain_within_budget(reference_model: IDFDocument) -> None:
+    topo = HVACTopology(reference_model)
+    sides: list[tuple[IDFObject, Side]] = [(loop, side) for loop in topo.loops() for side in SIDES]
+    # The side with the most branches (a plant loop's demand side), and the air loop demand side with
+    # the most paths, which takes the other code path: a walk of the demand side, not a BranchList.
+    widest = max(sides, key=lambda s: len(topo.chain(*s)))
+    air = max(
+        (s for s in sides if s[0].obj_type == "AirLoopHVAC" and s[1] == "demand"), key=lambda s: len(topo.chain(*s))
+    )
+    assert len(topo.chain(*widest)) > 100, "premise: the reference model has a loop side with over 100 branches"
+    _assert_chain_within_budget(reference_model, topo, *widest)
+    _assert_chain_within_budget(reference_model, topo, *air)
+
+
+# The model knowledge graph (``idfkit.graph``), task T117. Budgets from the performance contract in
+# ``specs/014-model-knowledge-graph/contracts/idfkit-api.md`` (idfkit-unification).
+
+GRAPH_CONSTRUCTION_BASELINE_S = 0.0001
+"""``ModelGraph(doc)`` construction, seconds: it stores the document and builds no layer."""
+
+GRAPH_NEIGHBOURHOOD_BASELINE_S = 0.010
+"""``ModelGraph.neighbourhood`` of 3 hops and up to 200 nodes with the topology cached, seconds.
+
+Measured 8.8 ms from a zone and 10.6 ms from a water heating coil when added, both cut at 200
+nodes; the budget of 20 ms holds the allowance, not headroom.
+"""
+
+NODE_LINK_BASELINE_S = 1.0
+"""``to_node_link()`` of the ``model`` and ``topology`` layers on the reference model, seconds.
+
+Measured 0.25 s (9,483 nodes, 19,657 links) with the topology cached when added.
+"""
+
+NODE_LINK_MEMORY_BASELINE_B = 50 * 1024 * 1024
+"""Peak memory of ``to_node_link()`` of both layers on a freshly loaded model, topology build included, bytes.
+
+Measured 22 MB for the export alone when added. Like the topology memory budget, no allowance applies.
+"""
+
+GRAPH_LAYERS: list[Layer] = ["model", "topology"]
+
+
+def test_graph_construction_within_budget(reference_model: IDFDocument) -> None:
+    elapsed = best_of(lambda: ModelGraph(reference_model), RUNS)
+    budget = CI_ALLOWANCE * GRAPH_CONSTRUCTION_BASELINE_S
+    assert elapsed <= budget, f"ModelGraph(doc) took {elapsed * 1e6:.1f} us; budget {budget * 1e6:.0f} us"
+
+
+def test_graph_neighbourhood_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    graph = ModelGraph(reference_model)
+    budget = CI_ALLOWANCE * GRAPH_NEIGHBOURHOOD_BASELINE_S
+    zone = next(iter(reference_model["Zone"]))
+    coil = next(iter(reference_model["Coil:Heating:Water"]))
+    for obj in (zone, coil):
+        start = ObjectKey(obj.obj_type, obj.name)
+        sub = graph.neighbourhood(start, hops=3, max_nodes=200)
+        assert sub.truncated, f"premise: 3 hops from {obj.obj_type} {obj.name!r} reach more than 200 nodes"
+        elapsed = best_of(lambda start=start: graph.neighbourhood(start, hops=3, max_nodes=200), RUNS)
+        assert elapsed <= budget, (
+            f"neighbourhood({obj.obj_type} {obj.name!r}, hops=3, max_nodes=200) took {elapsed * 1000:.2f} ms; "
+            f"budget {budget * 1000:.0f} ms"
+        )
+
+
+def test_node_link_within_budget(reference_model: IDFDocument) -> None:
+    HVACTopology.from_document(reference_model)
+    graph = ModelGraph(reference_model)
+    budget = CI_ALLOWANCE * NODE_LINK_BASELINE_S
+    elapsed = best_of(lambda: graph.to_node_link(layers=GRAPH_LAYERS), 3)
+    assert elapsed <= budget, f"to_node_link(model, topology) took {elapsed:.2f} s; budget {budget:.0f} s"
+
+
+def test_node_link_memory_within_budget(reference_model_file: Path) -> None:
+    graph = ModelGraph(load_idf(str(reference_model_file)))
+    data, peak = peak_memory(lambda: graph.to_node_link(layers=GRAPH_LAYERS))
+    assert data["nodes"], "premise: the export is not empty"
+    assert peak <= NODE_LINK_MEMORY_BASELINE_B, f"to_node_link(model, topology) peaked at {peak / 1e6:.1f} MB"
+
+
+RESULT_INDEX_BUILD_BASELINE_S = 0.050
+"""``ResultIndex.build`` on the largest paired fixture, seconds (contract, R-21)."""
+
+RESULT_INDEX_QUERY_BASELINE_S = 0.010
+"""``ResultIndex.for_object`` on the same index, seconds (contract, R-21)."""
+
+
+def test_result_index_within_budget() -> None:
+    from itertools import count
+
+    from benchmarks.bench_result_index import linked_run
+    from idfkit.simulation import ResultIndex
+
+    idf, result = linked_run()
+    doc = load_idf(str(idf))
+    HVACTopology.from_document(doc)
+    assert result.sql is not None
+    runs = count()
+
+    def build() -> ResultIndex:
+        return ResultIndex.build(doc, result, run_revision=doc.revision, run_model_hash=str(next(runs)))
+
+    index = build()
+    assert index.coverage.resolved, "premise: the fixture links"
+    budget = CI_ALLOWANCE * RESULT_INDEX_BUILD_BASELINE_S
+    elapsed = best_of(build, RUNS)
+    assert elapsed <= budget, f"ResultIndex.build took {elapsed * 1000:.1f} ms; budget {budget * 1000:.0f} ms"
+
+    query_budget = CI_ALLOWANCE * RESULT_INDEX_QUERY_BASELINE_S
+    coil = next(iter(doc["Coil:Cooling:Water"]))
+    for key in (ObjectKey("Zone", "Offices"), ObjectKey(coil.obj_type, coil.name)):
+        assert index.for_object(key).facts, f"premise: {key} has facts"
+        elapsed = best_of(lambda key=key: index.for_object(key), RUNS)
+        assert elapsed <= query_budget, (
+            f"for_object({key}) took {elapsed * 1000:.2f} ms; budget {query_budget * 1000:.0f} ms"
+        )

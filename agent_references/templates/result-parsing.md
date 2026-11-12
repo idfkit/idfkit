@@ -8,6 +8,7 @@
 - You're aggregating results across a batch (peak loads, energy totals, comfort hours).
 - You need to read the `.err` file to surface warnings/errors.
 - You want available output variables before adding `Output:Variable` objects.
+- You want everything a run reported about one model object (sizing, report rows, warnings), or to rank objects by a sized value — see [Results linked to objects](#results-linked-to-objects).
 
 ## Quick start
 
@@ -71,6 +72,95 @@ For ad-hoc queries SQLResult exposes the underlying connection:
 ```
 
 The EnergyPlus SQLite schema is documented at [bigladdersoftware.com/epx/docs/](https://bigladdersoftware.com/epx/docs/) (the SQL Output sections).
+
+## SQL readers
+
+Four typed readers over SQLite tables that `get_tabular_data` and `get_timeseries` don't cover:
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:sql-readers"
+```
+
+| Method | Table | Returns |
+|---|---|---|
+| `component_sizes()` | `ComponentSizes` | `list[ComponentSize]`: `index`, `component_type`, `component_name` (upper case), `description`, `value` (`float \| None`), `units` |
+| `errors()` | `Errors` | `list[SQLErrorRow]`: `severity` (`"info"`/`"warning"`/`"severe"`/`"fatal"`), `message` (with continuation lines), `count` |
+| `zones()` | `Zones` | `list[ZoneRow]`: `index`, `name` (upper case), `multiplier`, `list_multiplier` |
+| `report_keys()` | `ReportDataDictionary` | `list[VariableInfo]`: every variable and meter key. **Never reads `ReportData`**, so it is cheap on any run length |
+
+## Results linked to objects
+
+`ResultIndex.build(doc, result, *, run_revision, run_model_hash)` links a run's SQLite output to the objects of the document that was simulated: `ComponentSizes` rows, object rows of tabular reports, timeseries keys (names only — **`ReportData` values are never read**), and `Errors` messages. It needs `Output:SQLite` (raises `ValueError` without it).
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-build"
+```
+
+**Staleness.** The index belongs to one run. Build it right after the run, before editing — linking reads the document's names as they are now. After any edit, `index.is_fresh(doc)` is `False` (it compares `doc.revision`, plus the model text hash when you pass `model_hash=`); re-run and rebuild rather than reading old facts as if they described the new model.
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-fresh"
+```
+
+### One object: `for_object`
+
+`for_object(ObjectKey(type, name))` returns `ObjectResults` (all fields empty when the run reported nothing). Fluid nodes use `ObjectKey("Node", name)`.
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-object"
+```
+
+| `ObjectResults` field | Holds |
+|---|---|
+| `facts` | `ResultFact`s: `source` (`"sizing"`/`"tabular"`/`"timeseries_stat"`), `metric` (snake case with units, e.g. `design_size_nominal_capacity_w`), `value`, `units`, `where` (`ComponentSizes#<i>` or `Report/Table/Row/Column`), `multiplier` (zones only) |
+| `messages` | `LinkedMessage`s **deduplicated by kind**: `occurrences` summed, `first_seen` (`"<environment> MM/DD HH:MM"` or `None`), `severity`, `kind`, `text` (first line), `objects` |
+| `available_variables` | Output variable names recorded for it; fetch values with `result.sql.get_timeseries` |
+| `neighbours` | `ObjectNeighbour`s one hop away over HVAC topology and references (max 20), each with its `top_fact` |
+| `coverage` | The index's `Coverage` (see below) |
+
+### Ranking: `objects_with`
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-rank"
+```
+
+### Zone multipliers
+
+A zone fact is **per zone instance**; `fact.multiplier` is the `Zone` multiplier times its `ZoneList` multiplier. **Never sum zone facts without applying it.** Also filter on `where`: the same value can appear in more than one report (Zone Summary and Space Summary both carry area).
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-multiplier"
+```
+
+### Resolution, confidence and coverage
+
+Every link is a `Resolution(key, rule, confidence, via)`. Rules run in order; the first that answers wins:
+
+| Rule | Matches | Confidence |
+|---|---|---|
+| `exact` | the source names the type, and an object of that type has the name | `exact` |
+| `typed` | known name; the variable/table/message context picks the type | `typed`; `convention` when a shared name falls back to the zone/loop or an `HVACTemplate:*`; `weak` when the context can't tell several types apart (the others are in `via`) |
+| `zonelist_composite` | `"<ZONE> <OBJECT>"` — a load applied to every zone of a zone list; the zone is in `via` | `convention` (`weak` if the object type is ambiguous) |
+| `space_to_zone` | `"<ZONE>_SPACE"` | `convention` |
+| `mirrored_shading` | `"Mir-<SURFACE>"` | `convention` |
+| `aggregate` | `Total`, `Total Facility`, `Whole Building`, … → `ObjectKey("Aggregate", raw)` | `convention` |
+| `ideal_loads_suffix` | `"<ZONE> Ideal Loads Air System"` | `convention` |
+| `ems_key` | the key of an `EnergyManagementSystem:OutputVariable` | `convention` |
+| `substring` | longest known name inside the key | **always `weak`** |
+
+Treat `weak` links as candidates to confirm, not facts. Nothing is dropped: items no rule answers are in `index.unresolved` as `(source, raw_key)`, and `index.coverage` counts `resolved`/`unresolved` and lists `uncovered` parts (`unlinked_result`, and `hvac_template` — objects expanded from `HVACTemplate:*` aren't in the model, so they link by convention or not at all).
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:link-coverage"
+```
+
+### Message catalogue
+
+`index.messages` are classified by a catalogue of common EnergyPlus messages; `kind` is a stable dotted id, or `"other"`. Classify any text yourself with `classify_message`; `MESSAGE_KINDS` lists every `MessageKind` (`kind`, `pattern`, `hint`, `inspect`, `symptoms`).
+
+```python
+--8<-- "agent_references/snippets/result-parsing.py:message-catalogue"
+```
 
 ## CSV (if `readvars=True`)
 
@@ -183,7 +273,22 @@ Backends: matplotlib (default, requires `idfkit[plot]`) and plotly (requires `id
     --8<-- "agent_references/snippets/result-parsing.py:mistake-errors-good"
     ```
 
+!!! failure "summing zone facts without the multiplier"
+
+    ```python
+    total = sum(f.value for z in doc["Zone"] for f in index.for_object(ObjectKey("Zone", z.name)).facts
+                if f.metric == "area_m2")
+    # Undercounts every multiplied zone (and double-counts values reported in two tables)
+    ```
+
+!!! success "apply `fact.multiplier` and pick one report via `where`"
+
+    ```python
+    --8<-- "agent_references/snippets/result-parsing.py:link-multiplier"
+    ```
+
 ## Related
 
 - [simulation-execution.md](simulation-execution.md) — running simulations that produce these results.
+- [hvac-topology.md](hvac-topology.md) / [model-graph.md](model-graph.md) — the connections `ObjectResults.neighbours` walks.
 - API docs: [py.idfkit.com/simulation/parsers/](https://py.idfkit.com/simulation/parsers/)

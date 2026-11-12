@@ -20,8 +20,10 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Build a footprint with a courtyard or hole (no slit polygons) | [geometry-builders-and-zoning.md](references/geometry-builders-and-zoning.md) |
 | Stand up an HVAC system quickly with `HVACTemplate:*` | [hvac-templates.md](references/hvac-templates.md) |
 | Hand-author `AirLoopHVAC` / `PlantLoop` / `CondenserLoop` | [hvac-loops.md](references/hvac-loops.md) |
+| Check how HVAC nodes connect; trace flow up or downstream; find which loop a component sits on; rename a node | [hvac-topology.md](references/hvac-topology.md) |
+| Walk references and HVAC node connections together around an object; export the model as a graph for networkx or d3 | [model-graph.md](references/model-graph.md) |
 | Run EnergyPlus simulations (sync, async, batch) | [simulation-execution.md](references/simulation-execution.md) |
-| Parse SQL / CSV / ESO / MTR / ERR simulation output | [result-parsing.md](references/result-parsing.md) |
+| Parse SQL / CSV / ESO / MTR / ERR simulation output; link results and warnings to model objects (`ResultIndex`) | [result-parsing.md](references/result-parsing.md) |
 | Find a weather station, download EPW/DDY, inject design days | [weather-data.md](references/weather-data.md) |
 | Evaluate `Schedule:*` objects to time series | [schedule-evaluation.md](references/schedule-evaluation.md) |
 | Compute R-value, U-value, SHGC, gas mixture properties | [thermal-properties.md](references/thermal-properties.md) |
@@ -30,7 +32,7 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 
 ## Conventions used in every reference
 
-- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
+- **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.hvac`, `idfkit.graph`, `idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
 - **Python 3.10+** syntax: `tuple[int, int, int]`, `from __future__ import annotations` in real code.
 - **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback; it relaxes attribute reads and writes, not `add()` or `update()`, which refuse unknown keys in every mode.
 - **EnergyPlus version is part of every document**: `doc.version` is a `tuple[int, int, int]`. The latest supported version is exposed as `idfkit.LATEST_VERSION`.
@@ -39,6 +41,6 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 ## Common pitfalls
 
 - `IDFObject` field names use Python-style snake_case (`zone.x_origin`, not `zone["X Origin"]`). The schema's IDD field names map to attribute names automatically.
-- Renaming an object via `obj.name = "new"` propagates through the reference graph automatically. **Editing a node-name string elsewhere does not** — see [reference-tracking.md](references/reference-tracking.md).
+- Renaming an object via `obj.name = "new"` propagates through the reference graph automatically. **Node names are not references**: editing one node field leaves the other ends stale. Rename a node with `doc.rename_node(old, new)` — see [hvac-topology.md](references/hvac-topology.md).
 - `HVACTemplate:*` objects must be expanded before EnergyPlus can simulate them. Either call `doc.expand(...)` explicitly, or pass `expand_objects=True` to `simulate(...)`. See [hvac-templates.md](references/hvac-templates.md).
 - Simulations need EnergyPlus installed on the host. idfkit discovers it via `$ENERGYPLUS_DIR`, `$PATH`, or standard install locations. See [simulation-execution.md](references/simulation-execution.md).

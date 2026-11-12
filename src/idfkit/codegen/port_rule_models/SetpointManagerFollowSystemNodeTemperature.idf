@@ -1,0 +1,13 @@
+! base: 5ZoneAirCooled.idf
+! Appended to the base example so EnergyPlus reports this type's node connections in eplusout.bnd.
+! Run for design days only by idfkit.codegen.generate_port_rules; not a modelling example.
+
+  SetpointManager:FollowSystemNodeTemperature,
+    Port Rule Follow Node,   !- Name
+    Temperature,             !- Control Variable
+    Outside Air Inlet Node 1,  !- Reference Node Name
+    NodeDryBulb,             !- Reference Temperature Type
+    0.0,                     !- Offset Temperature Difference {deltaC}
+    50.0,                    !- Maximum Limit Setpoint Temperature {C}
+    5.0,                     !- Minimum Limit Setpoint Temperature {C}
+    VAV Sys 1 Inlet Node;    !- Setpoint Node or NodeList Name

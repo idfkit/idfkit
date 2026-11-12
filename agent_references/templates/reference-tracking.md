@@ -23,6 +23,7 @@ EnergyPlus models are graphs of cross-references: a `BuildingSurface:Detailed.zo
 | `doc.get_references(obj)` | All names referenced by `obj`'s fields. |
 | `doc.rename(obj_type, old, new)` | Rename an object and cascade through every reference. |
 | `obj.name = "new"` | Equivalent to `doc.rename(obj.obj_type, obj.name, "new")`. |
+| `doc.rename_node(old, new)` | Rename an HVAC node in every node field and `NodeList` entry. Nodes are not in the graph. |
 | `doc.references` | The underlying `ReferenceGraph` — use for advanced queries below. |
 | `ReferenceGraph.get_referencing_with_fields(name)` | `set[(IDFObject, field_name)]` — same as above, with the originating field. |
 | `ReferenceGraph.get_references_with_fields(obj)` | `set[(field_name, referenced_name)]` — what this object references and from which field. |
@@ -60,6 +61,16 @@ The canonical pattern. Set `obj.name` (or call `doc.rename`) and every reference
 
 Renaming an object that nothing references is also fine — it just updates the collection key.
 
+## Node names are not references
+
+HVAC node names (`air_inlet_node_name`, `setpoint_node_or_nodelist_name`, a `Branch` component's inlet and outlet nodes) are plain strings shared by the objects they join. No schema reference list covers them, so the graph has no edge for a node, `get_referencing(node)` returns nothing, and `doc.rename()` never reaches one. Rename a node with `doc.rename_node`:
+
+```python
+--8<-- "agent_references/snippets/reference-tracking.py:rename-node"
+```
+
+It raises `KeyError` for a name no field uses, and `ValueError` for a new name that is empty, unchanged or already a node. `Output:Variable` key values are not rewritten. To ask who uses a node, see [hvac-topology.md](hvac-topology.md).
+
 ## Finding what an object references
 
 ```python
@@ -75,6 +86,10 @@ After a bulk edit, scan for references that no longer resolve:
 ```
 
 For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors. See [schema-and-validation.md](schema-and-validation.md).
+
+## Walking references and node connections together
+
+The reference graph answers one hop at a time and never sees nodes. `idfkit.graph.ModelGraph` walks both: its `reference` edges are this graph's edges, and its `flow`, `control` and `membership` edges come from the HVAC topology, so one bounded walk from a coil reaches its schedule, its branch, its nodes and its loops. Pass `edge_kinds=["reference"]` to walk references alone, several hops out. See [model-graph.md](model-graph.md).
 
 ## Common mistakes
 
@@ -129,5 +144,7 @@ For a richer pre-flight check, run `validate_document(doc, check_references=True
 
 - [document-and-objects.md](document-and-objects.md) — where field mutations originate.
 - [hvac-loops.md](hvac-loops.md) — the canonical place reference tracking shines.
+- [hvac-topology.md](hvac-topology.md) — node names, which the reference graph does not track.
+- [model-graph.md](model-graph.md) — references and node connections in one walkable graph, with node-link export.
 - [schema-and-validation.md](schema-and-validation.md) — `check_references=True` surfaces dangling edges as errors.
 - API docs: [py.idfkit.com/api/references/](https://py.idfkit.com/api/references/)

@@ -29,6 +29,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the simulation messages with their counts, the zones with their multipliers and the output
   variable keys from EnergyPlus's SQLite output, one query per table. `report_keys()` never reads
   the timeseries table. `SQLResult` now also sets `PRAGMA query_only`.
+- `idfkit.hvac`, a new subpackage for how a model's HVAC objects connect through their nodes.
+  Node names are strings, not references, so the reference graph never saw them. `HVACTopology`
+  lists every field that names each node with the connection role EnergyPlus gives that field,
+  walks flow upstream and downstream from a component, a zone or space, a node or a `NodeList`,
+  with a component-category filter and a fluid filter that keeps a walk on one stream instead of
+  crossing from air to water at a coil, and says what it did not cover: unexpanded `HVACTemplate`
+  systems, EMS programs and object types without a rule. EMS sensors and actuators keyed to a node
+  appear as control uses. The roles come from EnergyPlus's
+  own node connection report for the 769 EnergyPlus 26.2 example files: 679 of the 836 rules were
+  reported by EnergyPlus, and each of the 157 written from a field's name says so.
+  ([#263](https://github.com/idfkit/idfkit/pull/263))
+- `idfkit.hvac.check_topology()` and `HVACTopology.check()` run static connection checks: T010, a
+  branch listing nodes the component does not have; T011, consecutive branch components that do
+  not connect; T001, a component inlet nothing supplies that is neither a loop's own inlet nor
+  outdoor air; T002, a zone inlet nothing supplies; T003, a zone exhaust nothing draws from; T004,
+  a node that only setpoint managers, sensors, controllers or actuators name; T030, an outlet a
+  branch carries that nothing takes; T090 and T091, what could not be checked. Each node is
+  reported once, under the most specific code. T010 and T011 are errors: on the 769 EnergyPlus
+  26.2 example files they report nothing. T001 to T004 and T030 are warnings: on those files T001
+  reports 25 nodes on 11 of them, T003 one node, and the others nothing. A finding
+  that relies on a rule EnergyPlus never reported is never an error. A clean result does not
+  mean a model simulates. On a 6,876-object model the view and its checks take 27 ms, 11% of
+  loading it. The 685 EnergyPlus 9.6.0 and 734 EnergyPlus 23.2.0 example files were measured too:
+  T010 and T011 report nothing on either, so no severity is capped for those versions.
+  T012, a branch a loop side's splitter or mixer names that its `BranchList` omits (or a listed branch no
+  splitter feeds), and T013, a heating or cooling coil on a `PlantLoop`'s supply side or a boiler on its
+  demand side, are warnings; neither reports anything on the 769 26.2, 685 9.6.0 or 734 23.2.0 example files.
+  ([#263](https://github.com/idfkit/idfkit/pull/263), [78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
+- `HVACTopology.loops()`, `memberships(obj)`, `chain(loop, side)` and `zones_served(air_loop)`
+  answer which loop a component is on and what a loop holds. `loops()` lists every `AirLoopHVAC`,
+  `PlantLoop` and `CondenserLoop`, air loops first. `memberships()` returns `LoopMembership`
+  records: a component on a branch reports the branch and its 0-based position, one on an air
+  loop's path but on no branch (an outdoor-air mixer, a terminal unit) reports the side alone,
+  and zone equipment reports its `ZoneHVAC:EquipmentConnections`; a water coil reports both its
+  air loop and its water loop. `chain()` gives one side of a loop in flow order, one list per
+  branch, or for an air loop's demand side one per path to and from the zones. `zones_served()`
+  lists the zones or spaces an air loop's demand side reaches. The first `memberships()` call on
+  a 6,876-object model takes about 5 ms. ([78721c5](https://github.com/idfkit/idfkit/commit/78721c5),
+  [b96c190](https://github.com/idfkit/idfkit/commit/b96c190))
+- `IDFDocument.rename_node(old, new)` renames a node everywhere it is used: every node field
+  naming it and every `NodeList` entry, while a field naming a `NodeList` keeps naming the list.
+  Node names are strings, so `rename()` never reached them. Each write goes through the normal
+  field write, so `revision` moves and cached views are rebuilt; if one fails, the writes already
+  made are undone. It refuses a new name that is already a node of the model, so two nodes are
+  never merged, leaves output variable keys and other free text alone, and returns a
+  `NodeRenameResult`. ([78721c5](https://github.com/idfkit/idfkit/commit/78721c5))
+- `idfkit.graph`, a new subpackage with `ModelGraph`, one read-only view over the reference graph
+  and the HVAC topology. Objects are `object` nodes joined by `reference` edges; fluid nodes are
+  `node` nodes, joined to objects by `flow`, `control` and `membership` edges. Constructing a
+  `ModelGraph` does no work: each walk asks the reference graph and the cached `HVACTopology` for
+  neighbours, so the view is never stale. `neighbourhood()` walks breadth first from an object or a
+  node, bounded by hops, a node count, node and edge kinds and component categories, and reports
+  whether the bound cut the walk (`truncated`), how many nodes it left out (`omitted_nodes`) and the
+  returned nodes to continue from (`frontier`). `to_node_link()`, `write_node_link()` and
+  `save_node_link()` export node-link JSON, format version 1, with the edge list under `"edges"`,
+  which networkx 3.6 or later reads with `node_link_graph(data)`. Passed a run's
+  `ResultIndex` (`ModelGraph(doc, results=index)`), the view adds the results layer: `result_fact`
+  and `message` nodes joined to their objects and nodes by `result_link` edges with the link's
+  confidence and rule, marked `stale` when the document has changed since the run; without one the
+  layer is listed in `unavailable`. ([09d5777](https://github.com/idfkit/idfkit/commit/09d5777),
+  [b40d0ac](https://github.com/idfkit/idfkit/commit/b40d0ac))
+- `idfkit.simulation.ResultIndex`, in the new module `idfkit.simulation.linking`, links what a run
+  wrote to its SQLite output to the objects and nodes of the document that was simulated: component
+  sizing rows, timeseries output keys (the `ReportData` values are never read), the object rows of
+  tabular reports, and every warning, severe and fatal message. Each key goes through an ordered
+  chain of rules, and the first that answers wins: `exact` (type and name), `typed` (the name, with
+  the type taken from the context), `zonelist_composite`, `space_to_zone`, `mirrored_shading`,
+  `aggregate`, `ideal_loads_suffix`, `ems_key` and `substring`. Each link is a `Resolution` that
+  records the rule and a confidence (`exact`, `typed`, `convention` or `weak`); a substring match is
+  always `weak`. Items no rule answers are listed in `unresolved`, never dropped, and counted in
+  `coverage`. Zone facts carry the zone multiplier, so a total built from zone rows can apply it.
+  `for_object()` returns an `ObjectResults` with an object's facts (`ResultFact`), its messages
+  merged by kind (`LinkedMessage`), its recorded variables and its neighbours one hop away
+  (`ObjectNeighbour`); `objects_with()` ranks objects by one metric; `is_fresh()` says whether the
+  document still matches the run. `ResultIndex`, `Resolution`, `ResultFact`, `LinkedMessage`,
+  `ObjectResults` and `ObjectNeighbour` are exported from `idfkit.simulation`, with `ObjectKey`,
+  `Coverage` and `UncoveredPart`. ([#263](https://github.com/idfkit/idfkit/pull/263), [5d54502](https://github.com/idfkit/idfkit/commit/5d54502))
+- `idfkit.simulation.parsers.err_catalog`, a catalogue of 21 common EnergyPlus message kinds
+  (`MESSAGE_KINDS`). Each `MessageKind` has a stable dotted id such as `dxcoil.low_outlet_temp`, a
+  one-sentence hint at the likely causes, the neighbouring object types worth inspecting and the
+  result symptoms it can explain. `classify_message()` returns the kind a message matches, or
+  `None`, and the `(type, name)` pairs the message names. Every kind is tested against real
+  EnergyPlus output. `MessageKind`, `MESSAGE_KINDS` and `classify_message` are exported from
+  `idfkit.simulation`. ([#263](https://github.com/idfkit/idfkit/pull/263))
 
 ### Changed
 
@@ -81,6 +165,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `add()` and `remove()` on a document's collection (`doc["Zone"].remove(zone)`,
+  `doc.idfobjects["Zone"].remove(zone)`) only changed the collection: the reference graph kept the
+  removed object, `get_referencing()` still returned it, and `revision` did not move, so a cached
+  `HVACTopology` kept listing it. They now go through `addidfobject()` and `removeidfobject()`.
+  A collection returned for a type the document does not hold is still detached.
+  ([#263](https://github.com/idfkit/idfkit/pull/263))
 - `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
   a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
   `['reporting_frequency']`. It now drops the first field only for a named type. As a result

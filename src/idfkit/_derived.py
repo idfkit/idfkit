@@ -5,8 +5,9 @@ exactly one document revision. The cache lives on the document itself, in its ``
 it dies with the document: there is no global registry and no ``id(doc)`` keying that a recycled
 id could confuse (research R-06, R-21).
 
-Every mutation path of the document bumps :attr:`IDFDocument.revision
-<idfkit.document.IDFDocument.revision>` exactly once. A view stored at revision *r* is returned while
+Every mutation path of the document moves :attr:`IDFDocument.revision
+<idfkit.document.IDFDocument.revision>` forward (an extensible-list assignment by one per group;
+a write into ``obj.data`` not at all). A view stored at revision *r* is returned while
 the document is still at *r* and rebuilt on the first ask after any change. Rebuilding costs a few
 percent of loading the model, which is why the views are rebuilt instead of maintained
 incrementally.
@@ -17,7 +18,7 @@ package never touches ``_revision`` or ``_derived`` directly.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Hashable
 from typing import TYPE_CHECKING, TypeVar, cast
 
 if TYPE_CHECKING:
@@ -55,4 +56,32 @@ def get_or_build(doc: IDFDocument, view_name: str, build: Callable[[], T]) -> T:
         return cast("T", entry[1])
     view = build()
     cache[view_name] = (revision, view)
+    return view
+
+
+def get_or_build_stamped(doc: IDFDocument, view_name: str, stamp: Hashable, build: Callable[[], T]) -> T:
+    """Return the view *view_name* of *doc* built for *stamp*, building it on the first ask for that stamp.
+
+    Unlike :func:`get_or_build`, the view is not tied to the document's revision. A results index
+    belongs to one simulation run: an edit after the run makes it stale, which callers report, but
+    the run's results do not change, so the index is kept until a different run asks for the slot.
+
+    Args:
+        doc: The document the view is attached to.
+        view_name: The cache slot, for example ``"results"``.
+        stamp: What identifies the source the view was built from, such as the run directory,
+            revision and model hash.
+        build: Called with no arguments to compute the view when the slot holds another stamp.
+
+    Returns:
+        The cached view when it was built for an equal *stamp*, otherwise the result of ``build()``.
+    """
+    cache = cast("dict[str, tuple[int, object]]", object.__getattribute__(doc, "_derived"))
+    entry = cache.get(view_name)
+    if entry is not None:
+        held_stamp, view = cast("tuple[Hashable, T]", entry[1])
+        if held_stamp == stamp:
+            return view
+    view = build()
+    cache[view_name] = (-1, (stamp, view))
     return view

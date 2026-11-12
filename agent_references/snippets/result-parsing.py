@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from idfkit import IDFDocument
-from idfkit.simulation import SimulationResult, simulate
+from idfkit.simulation import ObjectKey, ResultIndex, SimulationResult, simulate
 
 doc: IDFDocument = ...  # type: ignore[assignment]
 result: SimulationResult = ...  # type: ignore[assignment]
+index: ResultIndex = ...  # type: ignore[assignment]
 
 # --8<-- [start:quickstart]
 result = simulate(doc, "weather.epw")
@@ -91,6 +92,141 @@ rows = result.sql.query(
     ("Zone Mean Air Temperature",),
 )
 # --8<-- [end:raw-sql]
+
+
+# --8<-- [start:sql-readers]
+sql = result.sql
+if sql:
+    # ComponentSizes: every autosized value. Type and name come back as EnergyPlus wrote them.
+    for size in sql.component_sizes():
+        print(size.component_type, size.component_name, size.description, size.value, size.units)
+        # Chiller:Electric CENTRAL CHILLER Design Size Nominal Capacity 38762.4 W
+
+    # Errors table: severity is "info" | "warning" | "severe" | "fatal"; count sums recurrences.
+    for row in sql.errors():
+        if row.severity in ("severe", "fatal"):
+            print(row.severity, row.count, row.message)
+
+    # Zones table, with the multipliers EnergyPlus applied.
+    for zone in sql.zones():
+        print(zone.name, zone.multiplier * zone.list_multiplier)  # 'MID CENTER ZONE' 32
+
+    # Every reported variable and meter key, from ReportDataDictionary only: no values are read,
+    # so the cost does not grow with the run length. Fetch values with get_timeseries.
+    for key in sql.report_keys():
+        print(key.name, key.key_value, key.frequency, key.units, key.is_meter)
+# --8<-- [end:sql-readers]
+
+
+# --8<-- [start:link-build]
+import hashlib
+
+from idfkit import write_idf
+from idfkit.simulation import ResultIndex
+
+# Capture what was simulated BEFORE running: simulate() runs a copy, so doc.revision is unchanged.
+run_revision = doc.revision
+run_model_hash = hashlib.sha256(write_idf(doc).encode()).hexdigest()
+result = simulate(doc, "weather.epw")  # needs Output:SQLite, which simulate() injects
+
+# Build right after the run, before editing: linking reads the document's names as they are now.
+index = ResultIndex.build(doc, result, run_revision=run_revision, run_model_hash=run_model_hash)
+# Raises ValueError when the run has no SQLite output. A second call with the same run is cached.
+# --8<-- [end:link-build]
+
+
+# --8<-- [start:link-object]
+from idfkit.simulation import LinkedMessage, ObjectKey, ObjectNeighbour, ObjectResults, ResultFact
+
+coil: ObjectResults = index.for_object(ObjectKey("Coil:Heating:Water", "SPACE1-1 Zone Coil"))  # case-insensitive
+coil.object  # ObjectKey in the model's spelling
+
+facts: tuple[ResultFact, ...] = coil.facts
+for fact in facts:  # sizing rows first, then object rows of tabular reports
+    print(fact.source, fact.metric, fact.value, fact.units)  # sizing design_size_rated_capacity_w 4626.6 W
+    print(fact.where)  # 'ComponentSizes#11' or 'EquipmentSummary/Heating Coils/SPACE1-1 ZONE COIL/...'
+
+messages: tuple[LinkedMessage, ...] = coil.messages
+for msg in messages:  # one per message kind, most severe first
+    print(msg.severity, msg.kind, msg.occurrences, msg.first_seen, msg.text)
+
+print(coil.available_variables)  # names of recorded output variables; values are NOT read
+neighbours: tuple[ObjectNeighbour, ...] = coil.neighbours
+for neighbour in neighbours:  # one hop over HVAC topology / references, at most 20
+    print(neighbour.object, neighbour.top_fact)
+
+# Fluid nodes are keyed by the pseudo-type "Node":
+inlet = index.for_object(ObjectKey("Node", "SPACE1-1 Zone Coil Air In Node"))
+# --8<-- [end:link-object]
+
+
+# --8<-- [start:link-rank]
+# Largest values of one metric across the model, largest first. Metrics are snake-case with units.
+for key, fact in index.objects_with("design_size_nominal_capacity_w", top=5):
+    print(key.object_type, key.name, fact.value, fact.units, fact.where)
+# Chiller:Electric Central Chiller 38762.4 W ComponentSizes#125
+# --8<-- [end:link-rank]
+
+
+# --8<-- [start:link-multiplier]
+# Zone facts are per zone instance. fact.multiplier = Zone multiplier x ZoneList multiplier.
+# Never sum zone facts without it: MultiStory.idf gives 216 m2 unscaled, 1440 m2 correctly.
+floor_area = 0.0
+for zone in doc["Zone"]:
+    for fact in index.for_object(ObjectKey("Zone", zone.name)).facts:
+        in_zone_summary = fact.where.startswith("InputVerificationandResultsSummary/Zone Summary/")
+        if in_zone_summary and fact.metric == "area_m2" and isinstance(fact.value, float):
+            floor_area += fact.value * (fact.multiplier or 1)
+# --8<-- [end:link-multiplier]
+
+
+# --8<-- [start:link-coverage]
+cov = index.coverage
+print(cov.resolved, cov.unresolved, cov.partial)  # 678 0 False
+for part in cov.uncovered:  # "unlinked_result", "hvac_template"
+    print(part.kind, part.count, part.reason)
+for source, raw in index.unresolved:  # never dropped: ("timeseries", "SOME KEY"), ("message", ...)
+    print(source, raw)
+
+# How each message link was made, and how far to trust it:
+from idfkit.simulation import Resolution, UncoveredPart
+
+unlinked: list[UncoveredPart] = [part for part in cov.uncovered if part.kind == "unlinked_result"]
+for message in index.messages:
+    links: tuple[Resolution, ...] = message.objects
+    for link in links:
+        print(link.key, link.rule, link.confidence, link.via)
+        # ObjectKey('AirLoopHVAC', 'VAV Sys 1') typed typed ()
+        if link.confidence == "weak":  # substring match or ambiguous name: confirm before acting
+            pass
+# --8<-- [end:link-coverage]
+
+
+# --8<-- [start:link-fresh]
+doc["Zone"][0].multiplier = 2  # any edit moves doc.revision
+if not index.is_fresh(doc):  # compares the revision (and model_hash when given)
+    result = simulate(doc, "weather.epw")  # facts describe the OLD model: re-run, then rebuild
+    index = ResultIndex.build(doc, result, run_revision=doc.revision, run_model_hash="")
+
+# Stronger check, when you also hash the model text:
+fresh = index.is_fresh(doc, model_hash=hashlib.sha256(write_idf(doc).encode()).hexdigest())
+# --8<-- [end:link-fresh]
+
+
+# --8<-- [start:message-catalogue]
+from idfkit.simulation import MESSAGE_KINDS, MessageKind, classify_message
+
+kind: MessageKind | None
+kind, named = classify_message('GetAirPathData: AirLoopHVAC="EVAP COOLER SYSTEM" has no Controllers.')
+if kind:
+    print(kind.kind)  # 'airloop.no_controllers'
+    print(kind.hint)  # likely causes, one sentence
+    print(kind.inspect)  # ('AirLoopHVAC:ControllerList', 'Controller:OutdoorAir', 'Controller:WaterCoil')
+    print(kind.symptoms)  # () here; e.g. ('unmet_heating', 'unmet_cooling') for others
+print(named)  # [('AirLoopHVAC', 'EVAP COOLER SYSTEM')] -- type is None when the message omits it
+
+print([k.kind for k in MESSAGE_KINDS])  # 'sizing.zero_load', 'dxcoil.low_outlet_temp', ...
+# --8<-- [end:message-catalogue]
 
 
 # --8<-- [start:csv]

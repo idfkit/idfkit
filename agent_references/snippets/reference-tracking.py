@@ -86,3 +86,13 @@ surfaces["South Wall"].zone_name = "Open_Office"  # graph updates
 # --8<-- [start:mistake-count-good]
 count = len(doc.get_referencing("Office"))  # O(1)
 # --8<-- [end:mistake-count-good]
+
+
+# --8<-- [start:rename-node]
+# Node names are strings, not references: the graph has no edge for them.
+assert not doc.get_referencing("AHU-1 Supply Outlet Node")
+
+# rename_node rewrites every node field and NodeList entry naming the node, all or nothing.
+result = doc.rename_node("AHU-1 Supply Outlet Node", "AHU-1 Supply Air")
+print(result.fields_updated, [key.name for key in result.objects])
+# --8<-- [end:rename-node]

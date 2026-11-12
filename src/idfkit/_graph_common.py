@@ -8,7 +8,10 @@ that no layer depends on another for them; each layer re-exports them publicly.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from idfkit.objects import IDFObject
 
 PSEUDO_TYPES: frozenset[str] = frozenset({"Node", "Aggregate", "Unresolved"})
 """Object types that are not schema types: a fluid node, a report aggregate, an unresolved result key."""
@@ -119,3 +122,17 @@ class Coverage:
     ) -> Coverage:
         """Build a coverage record, deriving ``partial`` from ``uncovered``."""
         return cls(partial=bool(uncovered), uncovered=uncovered, resolved=resolved, unresolved=unresolved)
+
+
+def display_name(obj: IDFObject) -> str:
+    """The name an object is known by: its name, or for unnamed types the zone or space it serves.
+
+    An unnamed object that serves no zone or space is known by its type.
+    """
+    if obj.name:
+        return obj.name
+    for field in ("zone_name", "space_name"):
+        value = obj.data.get(field)
+        if isinstance(value, str) and value:
+            return value
+    return obj.obj_type
