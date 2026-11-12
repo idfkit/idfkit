@@ -376,6 +376,17 @@ def test_water_coil_on_the_plant_supply_side_is_t013(five_zone: IDFDocument) -> 
     ]
 
 
+def test_boiler_on_the_plant_demand_side_is_t013(five_zone: IDFDocument) -> None:
+    branch = "Central Boiler Branch"
+    s_list = five_zone["BranchList"]["Heating Supply Side Branches"]
+    d_list = five_zone["BranchList"]["Heating Demand Side Branches"]
+    s_list["branches"] = _without(s_list, "branches", "branch_name", branch)
+    d_items = [dict(i) for i in d_list.extensible_items("branches")]
+    d_list["branches"] = [*d_items[:-1], {"branch_name": branch}, d_items[-1]]
+    t013 = [f for f in check_topology(five_zone) if f.code == "T013"]
+    assert [(f.objects[0].object_type, f.actual, f.expected) for f in t013] == [("Boiler:HotWater", "demand", "supply")]
+
+
 def test_a_type_without_rules_is_t090_info() -> None:
     doc = new_document(version=(8, 9, 0))
     doc.add(

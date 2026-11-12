@@ -24,12 +24,22 @@ measured table in ``_version_caps.py``.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Final, Literal
+from typing import TYPE_CHECKING, Final, Literal, NamedTuple
 
 from idfkit._graph_common import ObjectKey
 from idfkit.hvac._categories import category_of
 from idfkit.hvac._version_caps import MEASURED_VERSIONS, VERSION_CAPS
-from idfkit.hvac.topology import CONNECTIONS, CONSUMES, CONTROLS, PRODUCES, PROVENANCES, UNCLASSIFIED, HVACTopology
+from idfkit.hvac.topology import (
+    CONNECTIONS,
+    CONSUMES,
+    CONTROLS,
+    LOOP_ORDER,
+    LOOP_SIDES,
+    PRODUCES,
+    PROVENANCES,
+    UNCLASSIFIED,
+    HVACTopology,
+)
 from idfkit.hvac.types import ComponentCategory, ConnectionType, Provenance, Severity, TopologyFinding
 
 if TYPE_CHECKING:
@@ -76,10 +86,11 @@ def check_topology(doc: IDFDocument) -> list[TopologyFinding]:
 
 def run_checks(index: TopologyIndex) -> list[TopologyFinding]:
     """Run every check over a view's index. Called by :meth:`HVACTopology.check`, which caches the result."""
+    sides = _side_lists(index)
     findings = [
         *_branch_checks(index),
-        *_branch_list_checks(index),
-        *_plant_side_checks(index),
+        *_branch_list_checks(sides),
+        *_plant_side_checks(index, sides),
         *_one_sided_nodes(index),
         *_coverage_findings(index),
     ]
@@ -376,18 +387,14 @@ def _one_sided_nodes(index: TopologyIndex) -> Iterator[TopologyFinding]:
 # T012: branch lists against connectors; T013: plant equipment on the wrong side
 # --------------------------------------------------------------------------------------------- #
 
-_LOOP_SIDE_LISTS: Final[dict[str, tuple[tuple[str, str, str], ...]]] = {
-    "AirLoopHVAC": (("supply", "branch_list_name", "connector_list_name"),),
-    "PlantLoop": (
-        ("supply", "plant_side_branch_list_name", "plant_side_connector_list_name"),
-        ("demand", "demand_side_branch_list_name", "demand_side_connector_list_name"),
-    ),
-    "CondenserLoop": (
-        ("supply", "condenser_side_branch_list_name", "condenser_side_connector_list_name"),
-        ("demand", "condenser_demand_side_branch_list_name", "condenser_demand_side_connector_list_name"),
-    ),
+_CONNECTOR_LIST_FIELDS: Final[dict[tuple[str, str], str]] = {
+    ("AIRLOOPHVAC", "supply"): "connector_list_name",
+    ("PLANTLOOP", "supply"): "plant_side_connector_list_name",
+    ("PLANTLOOP", "demand"): "demand_side_connector_list_name",
+    ("CONDENSERLOOP", "supply"): "condenser_side_connector_list_name",
+    ("CONDENSERLOOP", "demand"): "condenser_demand_side_connector_list_name",
 }
-"""Each loop type's sides, with the fields naming the side's ``BranchList`` and ``ConnectorList``."""
+"""The field naming each loop side's ``ConnectorList``; the ``BranchList`` field comes from ``LOOP_SIDES``."""
 
 _WRONG_SIDE: Final[dict[str, frozenset[ComponentCategory]]] = {
     "supply": frozenset({ComponentCategory.HEATING_COIL, ComponentCategory.COOLING_COIL}),
@@ -397,8 +404,27 @@ _WRONG_SIDE: Final[dict[str, frozenset[ComponentCategory]]] = {
 a demand side by design."""
 
 
+class _Connector(NamedTuple):
+    """A splitter or mixer: its trunk branch (splitter inlet or mixer outlet) and its parallel branches."""
+
+    obj: IDFObject
+    is_splitter: bool
+    trunk: str
+    parallel: list[str]
+
+
+class _SideLists(NamedTuple):
+    """One loop side with a ``BranchList``, and the splitters and mixers its ``ConnectorList`` names
+    (``None`` when the side has no ``ConnectorList``)."""
+
+    loop: IDFObject
+    side: str
+    branch_list: IDFObject
+    connectors: list[_Connector] | None
+
+
 def _text(obj: IDFObject, field: str) -> str:
-    return str(obj.to_dict().get(field, "") or "")
+    return str(obj.get(field, "") or "")
 
 
 def _get(index: TopologyIndex, object_type: str, name: str) -> IDFObject | None:
@@ -411,89 +437,103 @@ def _list_branches(branch_list: IDFObject) -> list[str]:
     return [str(item.get("branch_name", "") or "") for item in branch_list.extensible_items("branches")]
 
 
-def _side_lists(index: TopologyIndex) -> Iterator[tuple[IDFObject, str, IDFObject, IDFObject | None]]:
-    """Every loop side with a ``BranchList``: ``(loop, side, branch list, connector list or None)``."""
-    for loop_type, sides in _LOOP_SIDE_LISTS.items():
+def _side_lists(index: TopologyIndex) -> list[_SideLists]:
+    """Every loop side with a ``BranchList``, read once per check run and shared by T012 and T013."""
+    found: list[_SideLists] = []
+    for loop_type in LOOP_ORDER:
         if loop_type not in index.doc:
             continue
+        _, sides = LOOP_SIDES[loop_type.upper()]
         for loop in index.doc.get_collection(loop_type):
-            for side, list_field, connector_field in sides:
+            for side, list_field in sides:
                 branch_list = _get(index, "BranchList", _text(loop, list_field))
-                if branch_list is not None:
-                    yield loop, side, branch_list, _get(index, "ConnectorList", _text(loop, connector_field))
+                if branch_list is None:
+                    continue
+                connector_field = _CONNECTOR_LIST_FIELDS[(loop_type.upper(), side)]
+                connector_list = _get(index, "ConnectorList", _text(loop, connector_field))
+                connectors = None if connector_list is None else list(_connectors(index, connector_list))
+                found.append(_SideLists(loop, side, branch_list, connectors))
+    return found
 
 
-def _connectors(index: TopologyIndex, connector_list: IDFObject) -> Iterator[tuple[IDFObject, list[str], list[str]]]:
-    """The splitters and mixers a ``ConnectorList`` names: ``(connector, trunk branches, parallel branches)``."""
-    data = connector_list.to_dict()
+def _connectors(index: TopologyIndex, connector_list: IDFObject) -> Iterator[_Connector]:
+    """The splitters and mixers a ``ConnectorList`` names."""
     for i in (1, 2):
-        ctype = str(data.get(f"connector_{i}_object_type", "") or "")
-        connector = _get(index, ctype, str(data.get(f"connector_{i}_name", "") or ""))
+        ctype = _text(connector_list, f"connector_{i}_object_type")
+        connector = _get(index, ctype, _text(connector_list, f"connector_{i}_name"))
         if connector is None:
             continue
         is_splitter = ctype.upper() == "CONNECTOR:SPLITTER"
         trunk = _text(connector, "inlet_branch_name" if is_splitter else "outlet_branch_name")
         key = "outlet_branch_name" if is_splitter else "inlet_branch_name"
         parallel = [str(item.get(key, "") or "") for item in connector.extensible_items("branches")]
-        yield connector, [trunk] if trunk else [], [b for b in parallel if b]
+        yield _Connector(connector, is_splitter, trunk, [b for b in parallel if b])
 
 
-def _branch_list_checks(index: TopologyIndex) -> Iterator[TopologyFinding]:
-    """T012: on each loop side, every branch a splitter or mixer names is in the side's ``BranchList``,
-    and every inner listed branch (neither first nor last) is fed by the side's splitter."""
-    for loop, side, branch_list, connector_list in _side_lists(index):
-        if connector_list is None:
+def _branch_list_checks(sides: list[_SideLists]) -> Iterator[TopologyFinding]:
+    """T012, both directions: a branch a splitter or mixer names that the side's ``BranchList``
+    omits, and a listed branch, other than a connector's trunk branch, that no splitter feeds."""
+    for entry in sides:
+        if entry.connectors is not None:
+            yield from _unlisted_branches(entry, entry.connectors)
+            yield from _unfed_branches(entry, entry.connectors)
+
+
+def _unlisted_branches(entry: _SideLists, connectors: list[_Connector]) -> Iterator[TopologyFinding]:
+    loop, side, branch_list, _ = entry
+    listed = {b.upper() for b in _list_branches(branch_list)}
+    reported: set[str] = set()
+    for connector in connectors:
+        for name in ([connector.trunk] if connector.trunk else []) + connector.parallel:
+            if name.upper() in listed or name.upper() in reported:
+                continue
+            reported.add(name.upper())
+            yield TopologyFinding(
+                code="T012",
+                severity="warning",
+                objects=(
+                    ObjectKey("BranchList", branch_list.name),
+                    ObjectKey("Branch", name),
+                    ObjectKey(connector.obj.obj_type, connector.obj.name),
+                ),
+                message=(
+                    f"{connector.obj.obj_type} '{connector.obj.name}' on the {side} side of {loop.obj_type} "
+                    f"'{loop.name}' names branch '{name}', but BranchList '{branch_list.name}' does not list it"
+                ),
+                provenance="hand_written",
+                field="branches",
+                expected=name,
+            )
+
+
+def _unfed_branches(entry: _SideLists, connectors: list[_Connector]) -> Iterator[TopologyFinding]:
+    splitters = [c for c in connectors if c.is_splitter]
+    if not splitters:
+        return
+    loop, side, branch_list, _ = entry
+    fed = {b.upper() for c in splitters for b in c.parallel} | {c.trunk.upper() for c in connectors if c.trunk}
+    reported: set[str] = set()
+    for name in _list_branches(branch_list):
+        if not name or name.upper() in fed or name.upper() in reported:
             continue
-        listed = _list_branches(branch_list)
-        listed_upper = {b.upper() for b in listed}
-        reported: set[str] = set()
-        split_outlets: set[str] | None = None
-        for connector, trunk, parallel in _connectors(index, connector_list):
-            if connector.obj_type.upper() == "CONNECTOR:SPLITTER":
-                outlets: set[str] = {b.upper() for b in parallel}
-                split_outlets = outlets if split_outlets is None else split_outlets | outlets
-            for name in (*trunk, *parallel):
-                if name.upper() in listed_upper or name.upper() in reported:
-                    continue
-                reported.add(name.upper())
-                yield TopologyFinding(
-                    code="T012",
-                    severity="warning",
-                    objects=(
-                        ObjectKey("BranchList", branch_list.name),
-                        ObjectKey("Branch", name),
-                        ObjectKey(connector.obj_type, connector.name),
-                    ),
-                    message=(
-                        f"{connector.obj_type} '{connector.name}' on the {side} side of {loop.obj_type} "
-                        f"'{loop.name}' names branch '{name}', but BranchList '{branch_list.name}' does not list it"
-                    ),
-                    provenance="hand_written",
-                    field="branches",
-                    expected=name,
-                )
-        if split_outlets is None or len(listed) < 3:
-            continue
-        for name in listed[1:-1]:
-            if name and name.upper() not in split_outlets and name.upper() not in reported:
-                reported.add(name.upper())
-                yield TopologyFinding(
-                    code="T012",
-                    severity="warning",
-                    objects=(ObjectKey("BranchList", branch_list.name), ObjectKey("Branch", name)),
-                    message=(
-                        f"BranchList '{branch_list.name}' lists branch '{name}' between the {side} side's inlet "
-                        f"and outlet of {loop.obj_type} '{loop.name}', but no splitter on that side feeds it"
-                    ),
-                    provenance="hand_written",
-                    field="branches",
-                    actual=name,
-                )
+        reported.add(name.upper())
+        yield TopologyFinding(
+            code="T012",
+            severity="warning",
+            objects=(ObjectKey("BranchList", branch_list.name), ObjectKey("Branch", name)),
+            message=(
+                f"BranchList '{branch_list.name}' lists branch '{name}' on the {side} side of "
+                f"{loop.obj_type} '{loop.name}', but no splitter on that side feeds it"
+            ),
+            provenance="hand_written",
+            field="branches",
+            actual=name,
+        )
 
 
-def _plant_side_checks(index: TopologyIndex) -> Iterator[TopologyFinding]:
+def _plant_side_checks(index: TopologyIndex, sides: list[_SideLists]) -> Iterator[TopologyFinding]:
     """T013: no heating or cooling coil on a ``PlantLoop``'s supply side and no boiler on its demand side."""
-    for loop, side, branch_list, _ in _side_lists(index):
+    for loop, side, branch_list, _ in sides:
         if loop.obj_type.upper() != "PLANTLOOP":
             continue
         wrong = _WRONG_SIDE[side]
