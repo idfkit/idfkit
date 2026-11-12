@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import copy
 import io
+import logging
 import os
 import pickle
 import signal
@@ -562,6 +563,33 @@ class TestSchemaManagerClearAndReentry:
         monkeypatch.setattr(schema_module, "load_schema_json", reentrant_load)
 
         assert _in_background(lambda: manager.get_schema((24, 1, 0)))().version == (24, 1, 0)
+
+    def test_a_logging_handler_that_asks_for_the_loaded_version_gets_the_cached_schema(self) -> None:
+        # The "Loaded schema" record is emitted after the schema is published. Emitted before, a
+        # handler asking for that version missed the cache and started a load of its own, which
+        # logged again: unbounded recursion.
+        manager = SchemaManager()
+        seen: list[EpJSONSchema] = []
+
+        class AskingHandler(logging.Handler):
+            def emit(self, record: logging.LogRecord) -> None:
+                if record.levelno == logging.INFO and len(seen) < 5:
+                    seen.append(manager.get_schema((24, 1, 0)))
+
+        schema_logger = logging.getLogger(schema_module.__name__)
+        handler = AskingHandler()
+        previous_level = schema_logger.level
+        schema_logger.addHandler(handler)
+        schema_logger.setLevel(logging.INFO)
+        try:
+            schema = manager.get_schema((24, 1, 0))
+        finally:
+            schema_logger.removeHandler(handler)
+            schema_logger.setLevel(previous_level)
+
+        assert len(seen) == 1
+        assert seen[0] is schema
+        assert manager.owns(schema)
 
 
 @pytest.mark.skipif(sys.platform != "linux", reason="forks the test process")

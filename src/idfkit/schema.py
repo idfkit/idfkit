@@ -855,21 +855,33 @@ class SchemaManager:
         # each walks away with a different instance: the one-schema-per-version invariant breaks,
         # and pickling (see ``owns``) sends all but the last-cached by content.
         # ``dict.setdefault`` is atomic, with or without the GIL, so the lock table needs no lock.
-        with self._load_locks.setdefault(version, ForkSafeLock(reentrant=True)).lock:
+        load_lock = self._load_locks.get(version)
+        if load_lock is None:
+            load_lock = self._load_locks.setdefault(version, ForkSafeLock(reentrant=True))
+        with load_lock.lock:
             cached = self._cache.get(version)
             if cached is not None:
                 return cached
             generation = self._generation
+            t0 = time.perf_counter()
             schema = self._load_schema(version)
             with self._publish_lock.lock:
                 if generation == self._generation:
-                    self._cache[version] = schema
+                    # A re-entrant request for this version (from code the load ran) may have
+                    # published first; keep its instance, so every caller holds the cached one.
+                    schema = self._cache.setdefault(version, schema)
+            # Logged only once published: a logging handler that asks for this version gets the
+            # cached schema instead of starting another load.
+            logger.info(
+                "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
+                *version,
+                len(schema),
+                time.perf_counter() - t0,
+            )
             return schema
 
     def _load_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
-        """Load *version* from disk. The caller holds that version's load lock and publishes the result."""
-        t0 = time.perf_counter()
-
+        """Load *version* from disk. The caller holds that version's load lock, publishes the result and logs it."""
         # Try exact version first
         schema_path = self._find_schema_file(version)
         if schema_path is None:
@@ -890,16 +902,7 @@ class SchemaManager:
         logger.debug("Loading schema from %s", schema_path)
         data = load_schema_json(schema_path)
 
-        schema = EpJSONSchema(version, data)
-
-        elapsed = time.perf_counter() - t0
-        logger.info(
-            "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
-            *version,
-            len(schema),
-            elapsed,
-        )
-        return schema
+        return EpJSONSchema(version, data)
 
     def _find_schema_file(self, version: tuple[int, int, int]) -> Path | None:
         """

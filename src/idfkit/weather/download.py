@@ -33,7 +33,7 @@ _USER_AGENT = "idfkit (https://github.com/idfkit/idfkit)"
 
 # One lock per station directory, so threads of one process download and extract a station once.
 _station_locks: dict[Path, ForkSafeLock] = {}
-_station_locks_guard = threading.Lock()
+_station_locks_guard = ForkSafeLock()
 # DDYs already checked for placeholders this process, by (path, mtime, size): a cache written by
 # idfkit before 0.12.2 holds uncleaned DDYs, and checking each one once is enough.
 _checked_ddys: set[tuple[str, int, int]] = set()
@@ -41,10 +41,13 @@ _checked_ddys: set[tuple[str, int, int]] = set()
 
 def _station_lock(station_dir: Path) -> threading.Lock | threading.RLock:
     """The lock that serialises downloads of the station cached in *station_dir*."""
-    with _station_locks_guard:
-        lock = _station_locks.get(station_dir)
+    # Keyed by absolute path, so downloaders given the same cache directory by different
+    # spellings (relative, absolute) share one lock.
+    key = Path(os.path.abspath(station_dir))
+    with _station_locks_guard.lock:
+        lock = _station_locks.get(key)
         if lock is None:
-            lock = _station_locks[station_dir] = ForkSafeLock()
+            lock = _station_locks[key] = ForkSafeLock()
     return lock.lock
 
 
@@ -331,28 +334,35 @@ class WeatherDownloader:
         A corrupt archive is removed before the error is raised, so the next
         call downloads it again instead of failing on it for good.
         """
+        read_stat: os.stat_result | None = None
         try:
-            with open(zip_path, "rb") as fh, zipfile.ZipFile(fh) as zf:
-                # The mtime of the archive actually being read: another process may rename a
-                # newer archive over the path while this one is open.
-                zip_mtime_ns = os.fstat(fh.fileno()).st_mtime_ns
-                for info in zf.infolist():
-                    member = info.filename
-                    if info.is_dir() or "/" in member or "\\" in member or member.startswith("._"):
-                        continue
-                    suffix = Path(member).suffix.lower()
-                    if only is not None and suffix not in only:
-                        continue
-                    target = station_dir / member
-                    if _is_fresh(target, zip_mtime_ns, None if suffix == ".ddy" else info.file_size):
-                        continue
-                    data = zf.read(info)
-                    if suffix == ".ddy":
-                        data, _ = sanitize_ddy_bytes(data, member)
-                    write_bytes_atomically(target, data, mtime_ns=zip_mtime_ns, keep_existing_if_locked=True)
+            with open(zip_path, "rb") as fh:
+                # The archive actually being read: another process may rename a newer archive over
+                # the path while this one is open.
+                read_stat = os.fstat(fh.fileno())
+                zip_mtime_ns = read_stat.st_mtime_ns
+                with zipfile.ZipFile(fh) as zf:
+                    for info in zf.infolist():
+                        member = info.filename
+                        if info.is_dir() or "/" in member or "\\" in member or member.startswith("._"):
+                            continue
+                        suffix = Path(member).suffix.lower()
+                        if only is not None and suffix not in only:
+                            continue
+                        target = station_dir / member
+                        if _is_fresh(target, zip_mtime_ns, None if suffix == ".ddy" else info.file_size):
+                            continue
+                        data = zf.read(info)
+                        if suffix == ".ddy":
+                            data, _ = sanitize_ddy_bytes(data, member)
+                        write_bytes_atomically(target, data, mtime_ns=zip_mtime_ns, keep_existing_if_locked=True)
         except zipfile.BadZipFile as exc:
+            # Remove only the archive that was read: another process may already have renamed a
+            # good one over the path, and deleting that would force a needless download.
             with contextlib.suppress(OSError):
-                zip_path.unlink()
+                current = zip_path.stat()
+                if read_stat is not None and (current.st_dev, current.st_ino) == (read_stat.st_dev, read_stat.st_ino):
+                    zip_path.unlink()
             msg = f"Downloaded file is not a valid ZIP archive: {zip_path}"
             raise RuntimeError(msg) from exc
 
