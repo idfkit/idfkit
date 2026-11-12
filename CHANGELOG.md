@@ -159,6 +159,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when their fields match, so removing one `Output:Meter` could remove another and leave the
   one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
 
+### Fixed
+
+- The `hvac-loops` and `reference-tracking` agent references no longer state that
+  `validate_document` reports node-name typos. It reports a dangling object-name reference as
+  `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
+  managers among the objects `get_referencing` returns for a coil, and the node walk under
+  "Common mistakes" now finds a node in any field, including branch components and outdoor-air
+  mixer streams, so it no longer fails on correct models such as `5ZoneAirCooled`.
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
