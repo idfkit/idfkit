@@ -74,7 +74,7 @@ After a bulk edit, scan for references that no longer resolve:
 --8<-- "agent_references/snippets/reference-tracking.py:dangling"
 ```
 
-For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E004` errors. See [schema-and-validation.md](schema-and-validation.md).
+For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors. See [schema-and-validation.md](schema-and-validation.md).
 
 ## Common mistakes
 

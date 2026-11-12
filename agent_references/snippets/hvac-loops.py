@@ -26,19 +26,18 @@ if not result.is_valid:
 
 
 # --8<-- [start:trace-referencing]
-# Every object that mentions "AHU-1 Cooling Coil"
+# Every object that names "AHU-1 Cooling Coil" in a reference field
 for obj in doc.get_referencing("AHU-1 Cooling Coil"):
     print(obj.obj_type, obj.name)
 # Branch 'AHU-1 Cooling Branch'
 # Controller:WaterCoil 'AHU-1 Cooling Coil Controller'
-# SetpointManager:Scheduled 'AHU-1 Cooling Coil Setpoint'
-# ...
+# Setpoint managers name nodes, not coils, so they are not listed here.
 # --8<-- [end:trace-referencing]
 
 
 # --8<-- [start:safe-rename]
-# Rename a coil. Every branch component, controller, setpoint manager
-# that pointed at "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A".
+# Rename a coil. Every branch component and controller that pointed at
+# "AHU-1 Cooling Coil" now points at "AHU-1 Cooling Coil A". Node names are unchanged.
 doc["Coil:Cooling:Water"]["AHU-1 Cooling Coil"].name = "AHU-1 Cooling Coil A"
 # --8<-- [end:safe-rename]
 
@@ -109,11 +108,31 @@ coil.name = "New Coil Name"
 
 
 # --8<-- [start:mistake-walk-good]
-# Sanity-check that every coil has a paired adjacent branch component
+# Node names are plain strings: validate_document and get_referencing do not see them.
+# Check that every air node a coil names also appears in another object, in any field,
+# including Branch components, OutdoorAir:Mixer streams and NodeLists.
+from collections.abc import Iterator
+from typing import Any
+
+
+def strings(value: Any) -> Iterator[str]:
+    if isinstance(value, str):
+        yield value.upper()
+    elif isinstance(value, dict):
+        for item in value.values():  # pyright: ignore[reportUnknownVariableType]
+            yield from strings(item)
+    elif isinstance(value, list):
+        for item in value:  # pyright: ignore[reportUnknownVariableType]
+            yield from strings(item)
+
+
+mentions: dict[str, list[IDFObject]] = {}
+for obj in doc.all_objects:
+    for text in set(strings(obj.to_dict())):
+        mentions.setdefault(text, []).append(obj)
+
 for coil in doc.get_collection("Coil:Cooling:Water"):
-    inlet = coil.air_inlet_node_name
-    outlet = coil.air_outlet_node_name
-    upstream = [o for o in doc.all_objects if getattr(o, "air_outlet_node_name", None) == inlet]
-    downstream = [o for o in doc.all_objects if getattr(o, "air_inlet_node_name", None) == outlet]
-    assert upstream and downstream, f"Coil {coil.name} has dangling air nodes"
+    for node in (coil.air_inlet_node_name, coil.air_outlet_node_name):
+        others = [o for o in mentions.get(str(node).upper(), []) if o is not coil]
+        assert others, f"Coil {coil.name}: no other object names node {node!r}"
 # --8<-- [end:mistake-walk-good]

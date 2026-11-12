@@ -9,9 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The README opens with the idfkit identity header at `identity-2026.5`: the mark, the
+  repository's one sentence, the family links and the badge row. The `Identity` workflow
+  (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
+- A field whose epJSON key ends in `_` could be given without the underscore, in `add()`,
+  attribute access, `update()` and the eppy helpers: `cond_flag_is_the_basement_conditioned="FALSE"`
+  set `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`, and the value
+  was stored and written under the schema's key. The underscore comes from IDD names that end in
+  punctuation or a space, and EnergyPlus has started dropping it: `WindowShadingControl`'s
+  `construction_with_shading_name_` in 9.0.1 and 9.1.0 is `construction_with_shading_name` from
+  9.2.0, and the one spelling worked on both. `name` was never such a spelling. `add()` refused a
+  call that gave both spellings of one field, even with one of them blank. The typed `update()`
+  stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
+  [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
 - Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
 - Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
+
+### Changed
+
+- **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
+  error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
+  `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
+  `__setattr__` of `IDFObject` accepted any name. pyright reports the name whether it is read or
+  assigned; mypy reports an assignment, and types a read as `object`, so it reports any use that
+  needs a more specific type.
+  The same holds for the groups of an extensible type, such as `surface.vertices[0]`. Typed objects
+  declare snake_case names only, so an eppy-style capitalised spelling such as
+  `material.Thickness = 0.2` is now reported too, although it still works at run time: use
+  `material.thickness`. The typed classes describe EnergyPlus 26.2, so a field name that only exists
+  in an earlier version, such as `Lights.watts_per_zone_floor_area` up to 23.2, is reported as well;
+  on such a model, reach it with item access (`lights["watts_per_zone_floor_area"]`) or `getattr`.
+  Objects from the eppy API (`doc.idfobjects[...]`, `newidfobject()`, `getobject()`) and other plain
+  `IDFObject`s, such as those from `doc.add()` or `doc.get_collection()`, stay permissive. Declared
+  fields, `name`, the spellings of trailing-underscore fields with and without the underscore, and
+  wrong-type errors behave as before. Run-time behaviour is unchanged. ([#272](https://github.com/idfkit/idfkit/pull/272))
+
+- **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a
+  type without a Name field, such as `Output:Meter`, `Output:Variable`, `Output:SQLite`,
+  `Timestep` or `SimulationControl` (165 of the 880 types in the 26.2 schema), whether or not
+  `validate` is set. The name used to be stored and then dropped by both writers, so
+  `add("Output:SQLite", "SimpleAndTabular")` wrote `Output:SQLite,` and EnergyPlus produced no
+  `.sql` file. The message names the field to pass instead (`key_name="Electricity:Facility"`
+  for `Output:Meter`, `option_type=...` for `Output:SQLite`); the value is never moved there for
+  you. The same rule applies to `obj.name = ...` and to `newidfobject`, `addidfobject` and
+  `copyidfobject(..., new_name=...)`. Loading existing IDF and epJSON files is unaffected.
+  ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
+- **Breaking:** `IDFDocument.add()` refused a key that is not a field of the object type even
+  with `validate=False`, raising `InvalidFieldError` that names every such key, whatever its
+  value. `validate=False` used to skip schema validation entirely, so the key was stored, then
+  silently dropped by `write_idf()` and written as an unknown property by `write_epjson()`. It
+  still skips value, required-field and range checks. The object's name belongs in the `name`
+  argument, not in `fields`; display spellings such as `"X Origin"` are refused with the field
+  to use instead; and `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate`
+  fields, not a `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171),
+  [b415635](https://github.com/idfkit/idfkit/commit/b415635))
+- **Breaking:** `IDFDocument.add()` checked the extensible groups it was given in either
+  validate mode, as `IDFObject.update()` already did, and raised `TypeError` for a group key the
+  group does not name (`reports=[{"report_nme": ...}]`) or a wrapper value that is not a list of
+  groups (a string, a list of strings or tuples, or another object's live `vertices` view).
+  Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
+  values or crashed. ([b415635](https://github.com/idfkit/idfkit/commit/b415635))
 
 ### Removed
 
@@ -19,6 +77,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The `hvac-loops` and `reference-tracking` agent references no longer state that
+  `validate_document` reports node-name typos. It reports a dangling object-name reference as
+  `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
+  managers among the objects `get_referencing` returns for a coil, and the node walk under
+  "Common mistakes" now finds a node in any field, including branch components and outdoor-air
+  mixer streams, so it no longer fails on correct models such as `5ZoneAirCooled`.
 - Threads asking for the same schema version at the same moment each loaded and built their own copy, so a cold start with 16 threads read the schema file 16 times and handed out 16 different `EpJSONSchema` instances. All but one were then pickled by content instead of by version. The manager now loads each version once and gives every thread the same instance, and on a free-threaded build the first calls to `get_schema_manager()` no longer create several managers ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran. A read still in flight when another thread called `invalidate` or `clear` also cached what it had read before the call, which silently undid the invalidation; such a read is now returned but not cached ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `SchemaManager.clear_cache` did not stop a load already in flight from caching its schema afterwards, so the clear was undone and a request made after it could be handed the pre-clear instance. Such a load now returns its schema to its caller without caching it. A logging handler or other code that asks for the version being loaded no longer deadlocks on the new load lock ([#254](https://github.com/idfkit/idfkit/pull/254)).

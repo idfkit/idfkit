@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
-from idfkit import new_document
+from idfkit import new_document, write_epjson, write_idf
 from idfkit.simulation.outputs import OutputVariableIndex
 from idfkit.simulation.parsers.rdd import OutputMeter, OutputVariable
 
@@ -116,6 +117,33 @@ class TestAddAllToModel:
         index.add_all_to_model(model)
         output_meters = list(model["Output:Meter"])
         assert len(output_meters) == 5
+
+    def test_add_all_meters_store_key_name(self, index: OutputVariableIndex) -> None:
+        model = new_document()
+        index.add_all_to_model(model, frequency="Hourly")
+        expected = {m.name for m in index.meters}
+        assert {m.key_name for m in model["Output:Meter"]} == expected
+        # Both writers must emit the meter name, and the requested frequency.
+        compressed = write_idf(model, output_type="compressed")
+        for name in expected:
+            assert f"Output:Meter,{name},Hourly;" in compressed
+        epjson_meters = json.loads(write_epjson(model))["Output:Meter"].values()
+        assert {(m["key_name"], m["reporting_frequency"]) for m in epjson_meters} == {(n, "Hourly") for n in expected}
+
+    def test_removing_added_meter_keeps_equal_existing_meter(self) -> None:
+        model = new_document()
+        existing = model.add("Output:Meter", key_name="Electricity:Facility", reporting_frequency="Timestep")
+        index = OutputVariableIndex(
+            variables=(), meters=(OutputMeter(name="Electricity:Facility", units="J", frequency="hourly"),)
+        )
+        index.add_all_to_model(model, frequency="Timestep")
+        added = model["Output:Meter"][1]
+        assert added == existing and added is not existing
+
+        model.removeidfobject(added)
+        remaining = list(model["Output:Meter"])
+        assert len(remaining) == 1
+        assert remaining[0] is existing
 
     def test_add_with_filter(self, index: OutputVariableIndex) -> None:
         model = new_document()
