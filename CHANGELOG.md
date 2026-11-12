@@ -13,6 +13,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository's one sentence, the family links and the badge row. The `Identity` workflow
   (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
 
+### Fixed
+
+- `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
+  swallowed the object after it, and EnergyPlus read that object's type name and values as fields
+  of the empty one. This happened to a nameless type with no fixed fields
+  (`Output:Table:SummaryReports`, `Output:Diagnostics`, `OutdoorAir:NodeList`,
+  `EnergyManagementSystem:GlobalVariable` and the six `GroundHeatTransfer` face types) when it held
+  no groups. It affected the standard and `nocomment` output types, `doc.copy()`, and objects
+  added to a document loaded with `preserve_formatting=True`. Such an object is now written with
+  one blank field, `Output:Diagnostics,;`, which keeps the next object intact. IDF has no spelling
+  that EnergyPlus reads as one of these objects with nothing in it: `Output:Diagnostics;` swallows
+  the next object too, and EnergyPlus reads `Output:Diagnostics,;` as one blank group. That gives a
+  warning for `Output:Diagnostics` and a Severe error for `Output:Table:SummaryReports`, and
+  EnergyPlus refuses the input for `OutdoorAir:NodeList` and
+  `EnergyManagementSystem:GlobalVariable`. Remove such an object, or write the model as epJSON, to
+  keep it empty. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- Strict IDF parsing no longer rejects blank fields past the last field of a type without
+  repeated groups, such as `Timestep,4,,;` or `GroundHeatTransfer:Slab:XFACE,;`; EnergyPlus accepts
+  them too. A non-blank extra value is still an error, and the error counts only the values up to
+  the last non-blank one. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- `write_idf` dropped the name and every field of an object whose type was spelled in a different
+  case from the schema, such as one added with `addidfobject(IDFObject(obj_type="TIMESTEP", ...))`,
+  and of an object of a type the schema does not know. Both are now written with their values.
+  ([0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- `idfkit.simulation.prep_outputs` now requests the `AllSummary` reports. It passed
+  `report_1="AllSummary"`, which is not a valid name for the `reports` group, so the value was
+  dropped and `Output:Table:SummaryReports` was written empty.
+  ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f))
+
 ## [1.2.0] - 2026-10-28
 
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
