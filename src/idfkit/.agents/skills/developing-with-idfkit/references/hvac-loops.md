@@ -101,7 +101,7 @@ Validation checks that every branch name in the splitter/mixer exists as a `Bran
 
 EnergyPlus loops are wired by string-typed *node names*, not by object references. A coil declares `air_inlet_node_name` and `air_outlet_node_name`; the adjacent branch component declares the same node names on its own side. **idfkit's schema-driven validation enforces that node names are real strings, not that two objects share the right one.**
 
-The safety net is `get_referencing` plus a final `validate_document` call. There's no idfkit feature that "wires" two nodes for you — that's still your responsibility.
+Neither `validate_document` nor `get_referencing` sees node names, so neither is a safety net for node wiring: `validate_document` reports dangling object-name references (`E009`) only. There's no idfkit feature that "wires" two nodes for you — that's still your responsibility. Check node names with the node-mention walk in [Common mistakes](#common-mistakes).
 
 ```python
 # Coil names node A and node B
@@ -125,7 +125,7 @@ fan = doc.add(
 )
 ```
 
-If the strings don't match exactly (case-sensitive), the loop is broken. EnergyPlus will only tell you at simulation time. **Always lint with `validate_document` and a `get_referencing` spot-check before simulating.**
+EnergyPlus matches node names case-insensitively, but any other difference in spelling breaks the loop, and EnergyPlus will only tell you at simulation time. **Before simulating, run `validate_document` for object-name references and the node-mention walk in [Common mistakes](#common-mistakes) for node names.**
 
 ## Common mistakes
 
@@ -136,7 +136,7 @@ If the strings don't match exactly (case-sensitive), the loop is broken. EnergyP
     # fan.air_inlet_node_name still says "AHU-1 Cooling Coil Outlet Node" — broken
     ```
 
-!!! success "set both ends, or rename the coil"
+!!! success "set both ends"
 
     ```python
     coil.air_outlet_node_name = "AHU-1 Coil Out"

@@ -77,6 +77,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The bundled agent references described the changes above wrongly or not at all. The HVAC loops
+  reference still called `validate_document` and `get_referencing` the safety net for node wiring,
+  though neither sees node names, and offered renaming a coil as a fix for a mismatched node name.
+  The references now say that typed objects accept only 26.2 snake_case field names, that an empty
+  group-only object such as `Output:Table:SummaryReports` is written to IDF as `Type,;`, and that
+  `prep_outputs` also requests the `AllSummary` tabular report.
+  ([2399407](https://github.com/idfkit/idfkit/commit/2399407))
+- `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
+  a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
+  `['reporting_frequency']`. It now drops the first field only for a named type. As a result
+  `describe_object_type()` (and `IDFDocument.describe()`) lists `key_name` for `Output:Meter`,
+  and the generated `OutputMeter` class and its `update()` keywords include it; the same holds
+  for every other nameless type. Validation no longer counts a name stored on a nameless object
+  as a declared name. ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
+- Fixed fields whose names look like a flat spelling of the type's own extensible group were
+  treated as that group's fields. This affected `MaterialProperty:GlazingSpectralData`
+  (`wavelength_1` … `back_reflectance_4`), `Site:SpectrumData` (`wavelength`, `spectrum`,
+  `wavelength_1`, `spectrum_2`), `ZoneHVAC:HybridUnitaryHVAC` (`mode_0_*`) and, in EnergyPlus 8.9
+  to 9.1, `Table:MultiVariableLookup` (`field_1_…` and `field_2_…`). `add()` moved these values
+  into the extensible groups with a deprecation warning, or raised `ValueError` ("cannot mix") when
+  the groups were passed too. `load_epjson()` moved them silently, after any groups already in the
+  file. Either way `write_idf` wrote the fixed fields blank and the values out of place. On
+  `Site:SpectrumData`, `wavelength_1` overwrote `wavelength`. Attribute assignment stored the
+  value in a group (for `mode_0_*`, the last mode), attribute reads of an unset field returned a
+  group's value, and `update()` refused the field as a legacy flat name. These fields are now
+  kept as fixed fields.
+  ([cee2d7c](https://github.com/idfkit/idfkit/commit/cee2d7c))
+- A field whose epJSON name ends in `_` was out of reach by attribute: assigning it or passing it
+  to `update()` raised `InvalidFieldError`, and so did reading it unset in a strict document,
+  because the trailing underscore was stripped into a name the type does not have. In a document
+  opened with `strict=False`, the assignment was stored under that name instead, and `write_idf()`
+  dropped it. 24 such fields exist across the bundled schemas, among them
+  `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`,
+  `GroundHeatTransfer:Basement:ManualGrid.nx_number_of_cells_in_the_x_direction_20_` and
+  `SizingPeriod:DesignDay.ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`; `add()`
+  already accepted them. `update()` also refused `Output:Table:ReportPeriod.name_` as the
+  object's name. The eppy-style dotted `IDFDocument.update()`, `get_referenced_object()`,
+  `getrange()`, `checkrange()` and `getreferingobjs(fields=...)` missed them the same way.
+  ([a520960](https://github.com/idfkit/idfkit/commit/a520960),
+  [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
+- A flat extensible name with group number 0, such as `vertex_0_x_coordinate` or
+  `mode_0_minimum_outdoor_air_temperature`, was read as the last group: assignment overwrote the
+  last group's value, or raised `IndexError` when there were no groups, and `add()` inserted it
+  as a new first group. Group numbers now start at 1, so such a name is an unknown field.
+  ([da8a613](https://github.com/idfkit/idfkit/commit/da8a613))
+- `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
+  swallowed the object after it, and EnergyPlus read that object's type name and values as fields
+  of the empty one. This happened to a nameless type with no fixed fields
+  (`Output:Table:SummaryReports`, `Output:Diagnostics`, `OutdoorAir:NodeList`,
+  `EnergyManagementSystem:GlobalVariable` and the six `GroundHeatTransfer` face types) when it held
+  no groups. It affected the standard and `nocomment` output types, `doc.copy()`, and objects
+  added to a document loaded with `preserve_formatting=True`. Such an object is now written with
+  one blank field, `Output:Diagnostics,;`, which keeps the next object intact. IDF has no spelling
+  that EnergyPlus reads as one of these objects with nothing in it: `Output:Diagnostics;` swallows
+  the next object too, and EnergyPlus reads `Output:Diagnostics,;` as one blank group. That gives a
+  warning for `Output:Diagnostics` and a Severe error for `Output:Table:SummaryReports`, and
+  EnergyPlus refuses the input for `OutdoorAir:NodeList` and
+  `EnergyManagementSystem:GlobalVariable`. Remove such an object, or write the model as epJSON, to
+  keep it empty. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- Strict IDF parsing no longer rejects blank fields past the last field of a type without
+  repeated groups, such as `Timestep,4,,;` or `GroundHeatTransfer:Slab:XFACE,;`; EnergyPlus accepts
+  them too. A non-blank extra value is still an error, and the error counts only the values up to
+  the last non-blank one. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- `write_idf` dropped the name and every field of an object whose type was spelled in a different
+  case from the schema, such as one added with `addidfobject(IDFObject(obj_type="TIMESTEP", ...))`,
+  and of an object of a type the schema does not know. Both are now written with their values.
+  ([0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- **Breaking:** Validation reported unknown fields (`W003`) on extensible object types too, and
+  on unknown fields with a blank value. Extensible types used to be exempt, so
+  `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the default
+  `validate=True` and stored a key that `write_idf()` silently dropped and `write_epjson()`
+  emitted as an unknown property. Such a call now raises `ValidationFailedError`, as an unknown
+  field on a non-extensible type already did; the wrapper list (`reports=[...]`) and the
+  deprecated flat spellings (`report_name`, `report_name_2`) are still accepted.
+  `validate_document()` reports the same keys on objects loaded from epJSON.
+  ([459258f](https://github.com/idfkit/idfkit/commit/459258f), [b415635](https://github.com/idfkit/idfkit/commit/b415635))
+- `prep_outputs()` requested the `AllSummary` tabular report, which it never had. It passed
+  `report_1`, a spelling `Output:Table:SummaryReports` does not have, so `write_idf()` wrote the object with
+  no fields and no terminator, and EnergyPlus read the next object into it and stopped with a
+  fatal error. ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f),
+  [1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- `OutputVariableIndex.add_all_to_model` stored each meter name in the `key_name` field of the
+  `Output:Meter` objects it adds. It used to pass the name as the object name, which
+  `Output:Meter` does not have, so both writers dropped it: `write_idf` emitted
+  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`.
+  The added meters now have an empty name, like meters loaded from a file, so
+  `doc["Output:Meter"]["<meter>"]` no longer finds them, and calling `add_all_to_model` twice
+  adds each meter twice instead of raising `DuplicateObjectError`
+  ([d214b51](https://github.com/idfkit/idfkit/commit/d214b51)).
+- `IDFCollection.remove` (and so `IDFDocument.removeidfobject`) removed the first object equal
+  to the one passed instead of that object. Two objects of a type with no Name field are equal
+  when their fields match, so removing one `Output:Meter` could remove another and leave the
+  one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
+
+### Fixed
+
 - The `hvac-loops` and `reference-tracking` agent references no longer state that
   `validate_document` reports node-name typos. It reports a dangling object-name reference as
   `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
