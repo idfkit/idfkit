@@ -670,6 +670,16 @@ class TestAnyOfField:
         errors = _validate_field(self._obj(), "f", "Bogus", self.AUTOSIZABLE)
         assert [e.code for e in errors] == ["E004"]
 
+    def test_wrong_sentinel_message_says_energyplus_accepts_it(self) -> None:
+        """The finding is about the schema: EnergyPlus reads either sizing keyword from IDF."""
+        (error,) = _validate_field(self._obj(), "f", "AUTOCALCULATE", self.AUTOSIZABLE)
+        assert "EnergyPlus accepts either sizing keyword from IDF" in error.message
+        assert "the schema names 'Autosize'" in error.message
+
+    def test_arbitrary_string_message_has_no_sizing_note(self) -> None:
+        (error,) = _validate_field(self._obj(), "f", "Bogus", self.AUTOSIZABLE)
+        assert error.message == "Value 'Bogus' not in allowed values: ['', 'Autosize']"
+
     def test_string_branch_without_enum_accepts_any_string(self) -> None:
         """646 fields put no enum on the string branch, so any string is legal there."""
         field_schema: dict[str, object] = {"anyOf": [{"type": "number", "minimum": 0.0}, {"type": "string"}]}

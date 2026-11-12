@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `validate_document` still reports a sizing keyword the field's schema does not name as `E004`, but the
+  message now says that EnergyPlus accepts either keyword from IDF, so the value is not an input error, and
+  names the keyword `write_epjson` writes. On `5ZoneAirCooled` the ten `AUTOCALCULATE` findings read as
+  defects to fix before this change.
+
 - **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
   error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
   `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and

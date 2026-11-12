@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
+from .schema import SIZING_SENTINELS
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -93,6 +95,21 @@ class ValidationResult:
 
     def __bool__(self) -> bool:
         return self.is_valid
+
+
+def _enum_message(value: Any, enum: Any) -> str:
+    """The E004 message. A sizing keyword in a field whose schema names the other one is explained:
+    EnergyPlus reads either from IDF, and ``write_epjson`` writes the declared one, so the finding is
+    about the schema, not about whether the model runs."""
+    message = f"Value '{value}' not in allowed values: {enum}"
+    if isinstance(value, str) and value.casefold() in SIZING_SENTINELS:
+        declared = [m for m in cast("list[object]", list(enum)) if str(m).casefold() in SIZING_SENTINELS]
+        if len(declared) == 1:
+            message += (
+                f". EnergyPlus accepts either sizing keyword from IDF, so this value is not an input error; "
+                f"the schema names '{declared[0]}' for this field, which write_epjson writes"
+            )
+    return message
 
 
 def validate_document(  # noqa: C901
@@ -458,7 +475,7 @@ def _branch_constraint_failure(
             obj_type=obj.obj_type,
             obj_name=obj.name,
             field=field_name,
-            message=f"Value '{value}' not in allowed values: {branch.enum}",
+            message=_enum_message(value, branch.enum),
             code="E004",
         )
 
@@ -642,7 +659,7 @@ class _FieldRule:
                     obj_type=obj.obj_type,
                     obj_name=obj.name,
                     field=field_name,
-                    message=f"Value '{value}' not in allowed values: {self.enum}",
+                    message=_enum_message(value, self.enum),
                     code="E004",
                 )
 
@@ -811,7 +828,7 @@ def _validate_field_type(  # pyright: ignore[reportUnusedFunction]
                 obj_type=obj.obj_type,
                 obj_name=obj.name,
                 field=field_name,
-                message=f"Value '{value}' not in allowed values: {rule.enum}",
+                message=_enum_message(value, rule.enum),
                 code="E004",
             )
         )

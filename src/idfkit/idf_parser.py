@@ -146,7 +146,8 @@ _NUMERIC_FIELD_TYPES: Final = frozenset({"number", "integer"})
 #:
 #: A parse finding says the value is not of the kind the field takes. Whether the exact sentinel is
 #: the one THIS field documents is a schema-conformance question, and `validate_document` already
-#: answers it: it reports these as E003. Duplicating that here, less accurately, would make the
+#: answers it: it reports these as E004, with a message saying EnergyPlus reads either from IDF.
+#: Duplicating that here, less accurately, would make the
 #: parse diagnostic noise and teach a reader to ignore it.
 _SIZING_SENTINELS: Final = SIZING_SENTINELS
 
