@@ -212,12 +212,12 @@ if idx:
         print(m.name)
 ```
 
-To produce RDD/MDD, the IDF needs `Output:VariableDictionary, IDF;` (or `regular`). The `idfkit.simulation.prep_outputs` helper adds it for you:
+To produce RDD/MDD, the IDF needs `Output:VariableDictionary, IDF;` (or `regular`). The `idfkit.simulation.prep_outputs` helper adds it for you, together with `Output:SQLite` and an `Output:Table:SummaryReports` requesting `AllSummary`, so `result.sql` and `result.html` are populated too. It skips any of the three the model already has:
 
 ```python
 from idfkit.simulation import prep_outputs
 
-prep_outputs(doc)  # adds Output:VariableDictionary (and Output:SQLite)
+prep_outputs(doc)  # adds Output:SQLite, Output:Table:SummaryReports (AllSummary), Output:VariableDictionary
 result = simulate(doc, "weather.epw")
 ```
 

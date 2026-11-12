@@ -70,6 +70,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The bundled agent references described the changes above wrongly or not at all. The HVAC loops
+  reference still called `validate_document` and `get_referencing` the safety net for node wiring,
+  though neither sees node names, and offered renaming a coil as a fix for a mismatched node name.
+  The references now say that typed objects accept only 26.2 snake_case field names, that an empty
+  group-only object such as `Output:Table:SummaryReports` is written to IDF as `Type,;`, and that
+  `prep_outputs` also requests the `AllSummary` tabular report.
+  ([2399407](https://github.com/idfkit/idfkit/commit/2399407))
 - `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
   a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
   `['reporting_frequency']`. It now drops the first field only for a named type. As a result

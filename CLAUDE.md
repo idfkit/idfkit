@@ -14,12 +14,14 @@ Key capabilities: IDF/epJSON parsing and writing, schema-driven validation, 3D g
 
 The core package — including simulation, schedules, thermal, and geometry — has **zero third-party dependencies** (stdlib only). Optional extras (defined in `pyproject.toml`):
 
-- `weather` — openpyxl (for station index refresh; bundled index works without it)
-- `pandas` / `dataframes` — pandas (for DataFrame result conversion)
+- `sim` — empty; simulation needs no extras
+- `pandas` — pandas (for DataFrame result conversion); `dataframes` is an alias
 - `plot` — matplotlib | `plotly` — plotly (plotting backends)
 - `progress` — tqdm (simulation progress bars)
-- `s3` / `async-s3` / `cloud` — boto3 / aiobotocore (cloud storage)
-- `all` — everything above
+- `s3` — boto3 (`cloud` is an alias) | `async-s3` — aiobotocore (cloud storage)
+- `all` — pandas, matplotlib, plotly, boto3, aiobotocore and tqdm
+
+There is no `weather` extra: weather search, download and station-index refresh are stdlib only.
 
 ## Common Commands
 

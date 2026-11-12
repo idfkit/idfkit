@@ -108,7 +108,7 @@ If you want to know what variables you *could* report before adding `Output:Vari
 --8<-- "agent_references/snippets/result-parsing.py:output-discovery"
 ```
 
-To produce RDD/MDD, the IDF needs `Output:VariableDictionary, IDF;` (or `regular`). The `idfkit.simulation.prep_outputs` helper adds it for you:
+To produce RDD/MDD, the IDF needs `Output:VariableDictionary, IDF;` (or `regular`). The `idfkit.simulation.prep_outputs` helper adds it for you, together with `Output:SQLite` and an `Output:Table:SummaryReports` requesting `AllSummary`, so `result.sql` and `result.html` are populated too. It skips any of the three the model already has:
 
 ```python
 --8<-- "agent_references/snippets/result-parsing.py:prep-outputs"
