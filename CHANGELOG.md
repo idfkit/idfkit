@@ -36,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   message now says that EnergyPlus accepts either keyword from IDF, so the value is not an input error, and
   names the keyword `write_epjson` writes. On `5ZoneAirCooled` the ten `AUTOCALCULATE` findings read as
   defects to fix before this change.
-
 - **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
   error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
   `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
@@ -170,6 +169,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to the one passed instead of that object. Two objects of a type with no Name field are equal
   when their fields match, so removing one `Output:Meter` could remove another and leave the
   one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
+- The `hvac-loops` and `reference-tracking` agent references no longer state that
+  `validate_document` reports node-name typos. It reports a dangling object-name reference as
+  `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
+  managers among the objects `get_referencing` returns for a coil, and the node walk under
+  "Common mistakes" now finds a node in any field, including branch components and outdoor-air
+  mixer streams, so it no longer fails on correct models such as `5ZoneAirCooled`.
 
 ## [1.2.0] - 2026-10-28
 
