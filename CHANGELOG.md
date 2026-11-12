@@ -22,9 +22,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   call that gave both spellings of one field, even with one of them blank. The typed `update()`
   stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
   [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
+- `IDFDocument.revision`, a counter bumped exactly once by every change to a document's objects
+  (add, remove, field write, rename, extensible-group edit) and never by a read. Derived views such
+  as the coming HVAC topology use it to know when a cached copy is stale.
+- `SQLResult.component_sizes()`, `errors()`, `zones()` and `report_keys()` read the sizing rows,
+  the simulation messages with their counts, the zones with their multipliers and the output
+  variable keys from EnergyPlus's SQLite output, one query per table. `report_keys()` never reads
+  the timeseries table. `SQLResult` now also sets `PRAGMA query_only`.
 
 ### Changed
 
+- `validate_document` still reports a sizing keyword the field's schema does not name as `E004`, but the
+  message now says that EnergyPlus accepts either keyword from IDF, so the value is not an input error, and
+  names the keyword `write_epjson` writes. On `5ZoneAirCooled` the ten `AUTOCALCULATE` findings read as
+  defects to fix before this change.
 - **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
   error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
   `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
@@ -158,9 +169,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to the one passed instead of that object. Two objects of a type with no Name field are equal
   when their fields match, so removing one `Output:Meter` could remove another and leave the
   one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
-
-### Fixed
-
 - The `hvac-loops` and `reference-tracking` agent references no longer state that
   `validate_document` reports node-name typos. It reports a dangling object-name reference as
   `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint

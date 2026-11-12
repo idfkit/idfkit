@@ -62,6 +62,62 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  perf:
+    # The performance budget gate (tests/test_perf_budgets.py, research R-21). Its tests are marked
+    # `perf` and deselected by default, so the tests job above never runs them. Each budget is twice
+    # a measured baseline, which absorbs a slower runner; a failure here is a regression, not noise.
+    # 3.10 is the slowest interpreter idfkit supports and 3.12 the one the baselines were measured on.
+    name: "perf (${{ matrix.python-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+      fail-fast: false
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run the performance budgets
+        # Only tests/: testpaths also collects src/idfkit for doctests, and the codegen modules there
+        # import tomllib, which Python 3.10 lacks. The main tests job runs `pytest tests` likewise.
+        run: uv run pytest -m perf tests
+
+  nodelink:
+    # Loads the node-link export into networkx, the de facto consumer of that format. networkx is
+    # deliberately never declared in pyproject.toml or uv.lock: idfkit has no third-party runtime
+    # dependency, and the export must not grow one. `uv run --with` adds it for this run only.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: "3.12"
+
+      - name: Run the node-link tests
+        run: |
+          # pytest exits 5 when no test is selected. Until the node-link export and its tests land,
+          # `-m nodelink` selects nothing, and that is expected, not a failure. Every other non-zero
+          # exit still fails the job. Remove this tolerance once nodelink tests exist, so that losing
+          # them all is caught.
+          status=0
+          uv run --with "networkx>=3.6" pytest -m nodelink tests || status=$?
+          if [ "$status" -eq 5 ]; then
+            echo "::notice::no nodelink tests collected yet (pytest exit 5); treated as success"
+            exit 0
+          fi
+          exit "$status"
+
   example-sweep:
     # Read every EnergyPlus example file, for every version idfkit bundles a schema for.
     #

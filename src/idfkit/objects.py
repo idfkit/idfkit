@@ -15,6 +15,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, overload
 
 from ._compat_object import EppyObjectMixin
+from ._derived import bump_revision
 from .exceptions import InvalidFieldError, RefusedEntry, format_refused
 from .schema import trailing_underscore_aliases
 
@@ -913,6 +914,9 @@ class IDFObject(EppyObjectMixin):
         """
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)
+        doc = self._document
+        if doc is not None:
+            bump_revision(doc)
         self._reindex_extensible_references()
 
     def _reindex_extensible_references(self) -> None:
@@ -973,8 +977,12 @@ class IDFObject(EppyObjectMixin):
 
         doc = self._document
         ref_fields = self._ref_fields
-        if doc is not None and ref_fields is not None and python_key in ref_fields:
-            doc.notify_reference_change(self, python_key, current, value)
+        if doc is not None:
+            if ref_fields is not None and python_key in ref_fields:
+                # Bumps the document revision itself.
+                doc.notify_reference_change(self, python_key, current, value)
+            else:
+                bump_revision(doc)
 
         object.__setattr__(self, "_version", self._version + 1)
         object.__setattr__(self, "_source_text", None)

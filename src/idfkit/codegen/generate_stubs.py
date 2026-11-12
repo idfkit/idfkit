@@ -782,6 +782,7 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
     # Properties
     emit("def version(self) -> tuple[int, int, int]", "IDFDocument.version", decorators=("@property",))
+    emit("def revision(self) -> int", "IDFDocument.revision", decorators=("@property",))
     emit("def strict(self) -> Strict", "IDFDocument.strict", decorators=("@property",))
     emit("def schema(self) -> EpJSONSchema | None", "IDFDocument.schema", decorators=("@property",))
     emit("def cst(self) -> DocumentCST | None", "IDFDocument.cst", decorators=("@property",))
