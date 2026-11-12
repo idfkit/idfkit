@@ -33,6 +33,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed fields whose names look like a flat spelling of the type's own extensible group were
+  treated as that group's fields. This affected `MaterialProperty:GlazingSpectralData`
+  (`wavelength_1` … `back_reflectance_4`), `Site:SpectrumData` (`wavelength`, `spectrum`,
+  `wavelength_1`, `spectrum_2`), `ZoneHVAC:HybridUnitaryHVAC` (`mode_0_*`) and, in EnergyPlus 8.9
+  to 9.1, `Table:MultiVariableLookup` (`field_1_…` and `field_2_…`). `add()` moved these values
+  into the extensible groups with a deprecation warning, or raised `ValueError` ("cannot mix") when
+  the groups were passed too. `load_epjson()` moved them silently, after any groups already in the
+  file. Either way `write_idf` wrote the fixed fields blank and the values out of place. On
+  `Site:SpectrumData`, `wavelength_1` overwrote `wavelength`. Attribute assignment stored the
+  value in a group (for `mode_0_*`, the last mode), attribute reads of an unset field returned a
+  group's value, and `update()` refused the field as a legacy flat name. These fields are now
+  kept as fixed fields.
+  ([cee2d7c](https://github.com/idfkit/idfkit/commit/cee2d7c))
+- A flat extensible name with group number 0, such as `vertex_0_x_coordinate` or
+  `mode_0_minimum_outdoor_air_temperature`, was read as the last group: assignment overwrote the
+  last group's value, or raised `IndexError` when there were no groups, and `add()` inserted it
+  as a new first group. Group numbers now start at 1, so such a name is an unknown field.
+  ([da8a613](https://github.com/idfkit/idfkit/commit/da8a613))
 - `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
   swallowed the object after it, and EnergyPlus read that object's type name and values as fields
   of the empty one. This happened to a nameless type with no fixed fields
