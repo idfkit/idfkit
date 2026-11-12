@@ -337,7 +337,9 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
                 kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
-                bulk operations where performance matters.
+                bulk operations where performance matters: values, required fields
+                and ranges are then not checked, but a key the schema does not name
+                still raises InvalidFieldError, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -350,6 +352,12 @@ class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: 
                 schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
+            InvalidFieldError: If ``validate=False`` and a key is not a field of
+                the object type, naming every such key (the name goes in ``name``,
+                not in ``fields``)
+            TypeError: If the extensible wrapper value is not a list of groups,
+                or a group has a key the group does not name (in either mode,
+                as ``IDFObject.update`` refuses it)
 
         Examples:
             >>> from idfkit import new_document

@@ -23,6 +23,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from conftest import fixed_vertices
 
 from idfkit import IDFDocument, new_document
 from idfkit.exceptions import RangeError
@@ -1037,12 +1038,7 @@ class TestSetWWR:
                 "construction_name": "OriginalGlazing",
                 "building_surface_name": "SouthWall",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1, 0, 2.5), (1, 0, 0.5), (3, 0, 0.5), (3, 0, 2.5)),
             },
             validate=False,
         )
@@ -1063,12 +1059,7 @@ class TestSetWWR:
                 "construction_name": "OriginalGlazing",
                 "building_surface_name": "SouthWall",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1, 0, 2.5), (1, 0, 0.5), (3, 0, 0.5), (3, 0, 2.5)),
             },
             validate=False,
         )
@@ -1087,12 +1078,7 @@ class TestSetWWR:
                 "construction_name": "SimpleGlazing",
                 "building_surface_name": "SouthWall",
                 "number_of_vertices": 4,
-                "vertices": [
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                    {"vertex_x_coordinate": 1, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 0.5},
-                    {"vertex_x_coordinate": 3, "vertex_y_coordinate": 0, "vertex_z_coordinate": 2.5},
-                ],
+                **fixed_vertices((1, 0, 2.5), (1, 0, 0.5), (3, 0, 0.5), (3, 0, 2.5)),
             },
             validate=False,
         )
