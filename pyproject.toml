@@ -136,9 +136,9 @@ exclude = [
 # pythonVersion above, and still supports it.
 #
 # reportTypedDictNotRequiredAccess is on everywhere. It was suppressed for the package while the
-# document stub's map was total=False; it is total=True, and the one map with entries that are not
-# required, behind AnyIDFDocument, has them because some EnergyPlus versions lack those types, which
-# is exactly what the rule should report in idfkit's own code.
+# document stub's map was total=False; every generated map is now total=True, AnyIDFDocument's
+# included, which leaves out the types some EnergyPlus version lacks rather than marking them
+# NotRequired, so the rule has nothing generated to report and stays on for idfkit's own code.
 [[tool.pyright.executionEnvironments]]
 root = "src/idfkit/codegen"
 pythonVersion = "3.11"
