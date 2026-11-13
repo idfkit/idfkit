@@ -970,19 +970,19 @@ def _common_object_types() -> list[str]:
 def _generate_common_type_map() -> list[str]:
     """Generate the map behind ``IDFDocumentAllVersions``, the version-agnostic half of ``AnyIDFDocument``.
 
-    A type every version has is a required entry; a type of the latest release that some version
-    lacks is a ``NotRequired`` one, which is what it is: reading it is reported as access that may
-    fail at run time ("... is not a required key ..."), and the result keeps its type rather than
-    becoming ``Unknown``. Each entry is ``ReadOnly[IDFCollection[<the type as every version that has
-    it declares it>]]``. Read-only entries are covariant, and so is ``IDFCollection``, so every
-    version's map is assignable to this one; a version that lacks a type can be, because its map is
-    closed (PEP 728), which promises it holds no key it does not declare.
+    It holds the object types every version has, each ``ReadOnly[IDFCollection[<the type as every
+    version declares it>]]``. Read-only entries are covariant, and so is ``IDFCollection``, so every
+    version's map, which holds each of these keys and more, is assignable to this one by ordinary
+    structural subtyping.
+
+    A type some version lacks is left out rather than declared ``NotRequired``. Such an entry is
+    only assignable from a version's map that is closed (PEP 728), and neither form of closing works
+    for both checkers: pyright takes about a minute to build a ``closed=True`` map of ~800 entries,
+    in every file that names the version's type, and mypy ignores ``extra_items``.
     """
-    common = set(_common_object_types())
     lines = ['_CommonTypeMap = TypedDict("_CommonTypeMap", {']
-    for obj_type in get_schema(SUPPORTED.latest).object_types:
-        entry = f"ReadOnly[IDFCollection[{_shared_class_name(obj_type)}]]"
-        lines.append(f'    "{obj_type}": {entry if obj_type in common else f"NotRequired[{entry}]"},')
+    for obj_type in _common_object_types():
+        lines.append(f'    "{obj_type}": ReadOnly[IDFCollection[{_shared_class_name(obj_type)}]],')
     lines.append("}, total=True)")
     return lines
 
@@ -1197,9 +1197,9 @@ def generate_versioned_pyi() -> str:
         tag = _version_tag(ver)
         maps = [_span_name("_Types", span) for span in type_spans if span[0] <= ver <= span[1]]
         mixins = [_span_name("_Accessors", span) for span in accessor_spans if span[0] <= ver <= span[1]]
-        # Closed: the map holds no key it does not declare, so a version lacking an object type is
-        # still assignable to AnyIDFDocument, where that type is an entry that is not required.
-        parts.append(f"class _ObjectTypeMapV{tag}({', '.join(maps)}, closed=True): ...")
+        # Open, like every map here: AnyIDFDocument declares only the types every version has, so
+        # no version's map needs to be closed to be assignable to it (see _generate_common_type_map).
+        parts.append(f"class _ObjectTypeMapV{tag}({', '.join(maps)}): ...")
         parts.append("")
         bases = ", ".join([f"_ObjectTypeMapV{tag}", *mixins, "_IDFDocumentMethods[Strict]"])
         parts.append(f"class {_document_class_name(ver)}({bases}):  # type: ignore[misc]")
@@ -1332,7 +1332,7 @@ def _generate_types_module() -> str:
     parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Never, NotRequired, ReadOnly, Unpack")
+    parts.append("from typing_extensions import Never, ReadOnly, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")
@@ -1403,15 +1403,23 @@ matches ``IDFDocument`` directly. Narrow a document to its release with
 """
 
 
-def _generate_any_accessors() -> list[str]:
-    """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
+def _any_accessor_types() -> dict[str, str]:
+    """Each ``AnyIDFDocument`` accessor, a name that reaches the same type in every version, and its class."""
     per_version = [_accessors(ver) for ver in SUPPORTED.versions]
     common = set(_common_object_types())
+    return {
+        name: _shared_class_name(obj_type)
+        for name, obj_type in per_version[-1].items()
+        if obj_type in common and all(accessors.get(name) == obj_type for accessors in per_version)
+    }
+
+
+def _generate_any_accessors() -> list[str]:
+    """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
     lines: list[str] = []
-    for name, obj_type in per_version[-1].items():
-        if obj_type in common and all(accessors.get(name) == obj_type for accessors in per_version):
-            lines.append("    @property")
-            lines.append(f"    def {name}(self) -> IDFCollection[{_shared_class_name(obj_type)}]: ...")
+    for name, cls in _any_accessor_types().items():
+        lines.append("    @property")
+        lines.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
     return lines
 
 
@@ -1464,7 +1472,12 @@ def _generate_document_module() -> str:
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
-    lines.append("from ._generated_types import _CommonTypeMap, _ObjectTypeMap")
+    # A star import skips names that start with an underscore, so the private shared bases the
+    # AnyIDFDocument accessors return are imported by name; without them those accessors are Unknown.
+    # Case-insensitive, as ruff's import sorting (run by pre-commit, not by this generator) orders them.
+    private = {cls for cls in _any_accessor_types().values() if cls.startswith("_")}
+    names = sorted({"_CommonTypeMap", "_ObjectTypeMap", *private}, key=str.lower)
+    lines.append(f"from ._generated_types import {', '.join(names)}")
     # Alphabetical, because the formatter that runs after this sorts them and the stub gate then
     # regenerates and diffs. An import emitted out of order is reordered on the way in and never
     # matches on the way back, which fails the gate everywhere except the machine that committed it.

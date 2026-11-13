@@ -74,6 +74,8 @@ Override the version when the file is missing or wrong:
 
 If the file references a version idfkit doesn't bundle, you'll get `VersionNotFoundError`. To upgrade, see [version-migration.md](version-migration.md).
 
+The loaded document is still typed for the latest release, because a type checker cannot read the file. To edit an older model with its own release's fields and choices, type it with `as_version(doc, IDFDocumentV9_4)` from `idfkit.versioned`; see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md).
+
 ## Lossless round-trips
 
 For workflows that mutate a handful of objects and want to preserve every byte of whitespace, comments, and formatting elsewhere in the file, pass `preserve_formatting=True`:

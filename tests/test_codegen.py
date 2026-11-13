@@ -540,7 +540,7 @@ class TestGenerateStubs:
         assert "def __getattr__(self, key: Never) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
         assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
-        assert "from typing_extensions import Never, NotRequired, ReadOnly, Unpack" in content
+        assert "from typing_extensions import Never, ReadOnly, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.
         assert "    cond_flag_is_the_basement_conditioned_: " in content
         assert "    cond_flag_is_the_basement_conditioned: " in content

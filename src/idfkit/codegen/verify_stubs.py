@@ -37,7 +37,6 @@ class _Class:
     bases: list[str]
     fields: dict[str, str]
     properties: dict[str, str]
-    closed: bool = False
 
 
 @dataclasses.dataclass
@@ -58,8 +57,7 @@ def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ClassDef):
-            closed = any(k.arg == "closed" and ast.unparse(k.value) == "True" for k in node.keywords)
-            cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {}, closed)
+            cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {})
             for item in node.body:
                 if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                     cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
@@ -231,7 +229,35 @@ def verify(types_source: str, document_source: str, versioned_source: str, versi
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
+    _check_private_imports(document_source, module, problems)
     return problems
+
+
+def _check_private_imports(document_source: str, module: _Module, problems: list[str]) -> None:
+    """Every private class ``document.pyi`` names must be imported by name.
+
+    ``document.pyi`` takes the generated classes through ``from ._generated_types import *``, which
+    skips names that start with an underscore. A private class reached only that way resolves to
+    ``Unknown``, so an ``AnyIDFDocument`` accessor returning one would be partially unknown.
+    """
+    imported: set[str] = set()
+    for node in ast.parse(document_source).body:
+        if isinstance(node, ast.ImportFrom):
+            imported.update(alias.asname or alias.name for alias in node.names)
+    defined = {node.name for node in ast.parse(document_source).body if isinstance(node, ast.ClassDef)}
+    for cls_name in ("IDFDocument", "IDFDocumentAllVersions"):
+        if cls_name not in module.classes:
+            continue
+        for name, annotation in _properties(module, cls_name).items():
+            node = ast.parse(annotation, mode="eval").body
+            for sub in ast.walk(node):
+                if (
+                    isinstance(sub, ast.Name)
+                    and sub.id.startswith("_")
+                    and sub.id not in imported
+                    and sub.id not in defined
+                ):
+                    problems.append(f"{cls_name}.{name}: {sub.id} is not imported into document.pyi by name")
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:
@@ -249,9 +275,6 @@ def _check_version(module: _Module, ver: Version, is_latest: bool, problems: lis
         problems.append(f"{'.'.join(map(str, ver))}: no {map_name}")
         return
     entries = _map_entries(module, map_name, problems)
-    if not is_latest and not module.classes[map_name].closed:
-        # Open, a map lacking a type the latest release has is not assignable to AnyIDFDocument.
-        problems.append(f"{map_name}: not closed")
     if set(entries) != set(schema.object_types):
         missing = sorted(set(schema.object_types) - set(entries))
         extra = sorted(set(entries) - set(schema.object_types))
@@ -278,17 +301,19 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
 
     schemas = [get_schema(ver) for ver in versions]
     common = _intersection([set(s.object_types) for s in schemas])
-    latest = set(schemas[-1].object_types)
     entries = _map_entries(module, "_CommonTypeMap", problems)
-    if set(entries) != latest:
-        problems.append("AnyIDFDocument: its types are not exactly those of the latest release")
+    if set(entries) != common:
+        # A type some version lacks is left out: as an optional entry it would need every version's
+        # map closed to stay assignable, which no form of closing allows for both pyright and mypy.
+        missing = sorted(common - set(entries))
+        extra = sorted(set(entries) - common)
+        problems.append(f"AnyIDFDocument: types are not those every version has: missing {missing}, extra {extra}")
     for obj_type, annotation in entries.items():
-        # ReadOnly[IDFCollection[X]], wrapped in NotRequired[...] for a type some version lacks
-        optional = annotation.startswith("NotRequired[")
-        if optional == (obj_type in common):
-            state = "optional" if optional else "required"
-            problems.append(f"AnyIDFDocument[{obj_type!r}]: {state}, but every version has it: {obj_type in common}")
-        cls = _collection_class(_collection_class(_collection_class(annotation) if optional else annotation))
+        # ReadOnly[IDFCollection[X]]
+        if not annotation.startswith("ReadOnly[IDFCollection["):
+            problems.append(f"AnyIDFDocument[{obj_type!r}]: not ReadOnly[IDFCollection[...]]: {annotation}")
+            continue
+        cls = _collection_class(_collection_class(annotation))
         decls = [_field_decls(s, obj_type) for s in schemas if obj_type in s.object_types]
         shared = _intersection([set(d) for d in decls])
         actual = {k: v for k, v in _fields(module, cls).items() if k not in _group_names(module, cls)}

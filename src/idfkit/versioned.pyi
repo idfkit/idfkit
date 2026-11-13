@@ -25189,7 +25189,6 @@ class _ObjectTypeMapV8_9(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV8_9(
@@ -25240,7 +25239,6 @@ class _ObjectTypeMapV9_0(
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_0(
@@ -25302,7 +25300,6 @@ class _ObjectTypeMapV9_1(
     _Types_v9_1_to_v22_1,
     _Types_v9_1_to_v25_1,
     _Types_v9_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_1(
@@ -25374,7 +25371,6 @@ class _ObjectTypeMapV9_2(
     _Types_v9_2_to_v23_1,
     _Types_v9_2_to_v25_1,
     _Types_v9_2_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_2(
@@ -25457,7 +25453,6 @@ class _ObjectTypeMapV9_3(
     _Types_v9_3_to_v24_1,
     _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_3(
@@ -25548,7 +25543,6 @@ class _ObjectTypeMapV9_4(
     _Types_v9_4_to_v23_1,
     _Types_v9_4_to_v24_1,
     _Types_v9_4_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_4(
@@ -25643,7 +25637,6 @@ class _ObjectTypeMapV9_5(
     _Types_v9_5_to_v22_1,
     _Types_v9_5_to_v23_2,
     _Types_v9_5_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_5(
@@ -25740,7 +25733,6 @@ class _ObjectTypeMapV9_6(
     _Types_v9_6_to_v25_1,
     _Types_v9_6_to_v26_1,
     _Types_v9_6_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV9_6(
@@ -25837,7 +25829,6 @@ class _ObjectTypeMapV22_1(
     _Types_v22_1,
     _Types_v22_1_to_v26_1,
     _Types_v22_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV22_1(
@@ -25932,7 +25923,6 @@ class _ObjectTypeMapV22_2(
     _Types_v22_2_to_v25_1,
     _Types_v22_2_to_v26_1,
     _Types_v22_2_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV22_2(
@@ -26028,7 +26018,6 @@ class _ObjectTypeMapV23_1(
     _Types_v23_1_to_v25_1,
     _Types_v23_1_to_v26_1,
     _Types_v23_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV23_1(
@@ -26123,7 +26112,6 @@ class _ObjectTypeMapV23_2(
     _Types_v23_2_to_v24_1,
     _Types_v23_2_to_v25_1,
     _Types_v23_2_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV23_2(
@@ -26213,7 +26201,6 @@ class _ObjectTypeMapV24_1(
     _Types_v24_1_to_v24_2,
     _Types_v24_1_to_v25_1,
     _Types_v24_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV24_1(
@@ -26298,7 +26285,6 @@ class _ObjectTypeMapV24_2(
     _Types_v24_2_to_v25_1,
     _Types_v24_2_to_v25_2,
     _Types_v24_2_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV24_2(
@@ -26378,7 +26364,6 @@ class _ObjectTypeMapV25_1(
     _Types_v24_2_to_v25_2,
     _Types_v24_2_to_v26_2,
     _Types_v25_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV25_1(
@@ -26447,7 +26432,6 @@ class _ObjectTypeMapV25_2(
     _Types_v24_2_to_v26_2,
     _Types_v25_1_to_v26_2,
     _Types_v25_2_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV25_2(
@@ -26506,7 +26490,6 @@ class _ObjectTypeMapV26_1(
     _Types_v25_1_to_v26_2,
     _Types_v25_2_to_v26_2,
     _Types_v26_1_to_v26_2,
-    closed=True,
 ): ...
 
 class IDFDocumentV26_1(

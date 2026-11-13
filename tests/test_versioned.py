@@ -124,6 +124,14 @@ class TestCommittedStubs:
     def test_describe_every_supported_version_exactly(self) -> None:
         assert verify(*_committed(), ENERGYPLUS_VERSIONS) == []
 
+    def test_no_map_is_closed(self) -> None:
+        # pyright takes about a minute to build a closed TypedDict of ~800 entries, in every file
+        # that names the document type, and mypy reads no other spelling of it (extra_items). So
+        # AnyIDFDocument holds only the types every version has, and no map needs closing (#251).
+        for source in _committed():
+            assert "closed=True" not in source
+            assert "extra_items=" not in source
+
     @pytest.mark.parametrize(
         ("source", "pattern", "replacement", "expected"),
         [
@@ -138,15 +146,16 @@ class TestCommittedStubs:
                 "def spaces(self) -> IDFCollection[_g.Zone]",
                 "accessors",
             ),
-            # A version's map left open, so a document of that version is not assignable to AnyIDFDocument.
-            (2, r"(?m)^    closed=True,\n", "", "not closed"),
-            # A type some version lacks, made a required key of AnyIDFDocument.
+            # A type some version lacks, added to AnyIDFDocument: an older version's map lacks the key,
+            # so its document would no longer be assignable to AnyIDFDocument.
             (
                 0,
-                r"NotRequired\[ReadOnly\[IDFCollection\[_SpaceBase\]\]\]",
-                "ReadOnly[IDFCollection[_SpaceBase]]",
-                "required",
+                r'(?m)^(\s+)"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n',
+                r'\g<0>\1"Space": ReadOnly[IDFCollection[Space]],\n',
+                "extra ['Space']",
             ),
+            # A private shared base left to the star import, which skips it: the accessor is Unknown.
+            (1, r"(?m)^    _ZoneBase,\n", "", "_ZoneBase is not imported"),
             # A type every version has, dropped from AnyIDFDocument.
             (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n', "", "AnyIDFDocument"),
         ],

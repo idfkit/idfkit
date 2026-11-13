@@ -1,7 +1,6 @@
 """Type-check fixture for the per-version document types (never called; checked by ``make check``).
 
-Field names are not checked by attribute access, as everywhere in idfkit (``IDFObject`` resolves
-names at run time), so a renamed field is seeded through ``update``, whose keywords are typed.
+A renamed field is seeded through ``update``, whose keywords are typed for each release.
 
 Each seeded error below carries a ``pyright: ignore`` naming the rule it must trigger, and this file
 turns on ``reportUnnecessaryTypeIgnoreComment``. If a seeded error stops being reported, the ignore
@@ -38,6 +37,11 @@ def people_count(doc: AnyIDFDocument) -> int:
     total = 0
     for people in doc["People"]:
         total += 1 if people.number_of_people_schedule_name else 0
+    # An accessor returning a private shared base is typed, not partially Unknown (strict mode).
+    for zone in doc.zones:
+        print(zone.name)
+    for material in doc.materials:
+        print(material.thickness)
     return total
 
 
@@ -76,11 +80,8 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     heater.update(heater_fuel_type="DistrictHeatingWater")  # pyright: ignore[reportArgumentType]  (a later choice)
     latest_only(legacy)  # pyright: ignore[reportArgumentType]  (a 9.4 document is not a latest one)
     print(legacy.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (no Space before 9.6)
-    # Through AnyIDFDocument, only what every version has.
-    # A type some version lacks is a key that may be missing: reported, and still typed. Were the
-    # result Unknown, strict mode would also report it here (reportUnknownVariableType), unignored.
-    space = any_doc["Space"]  # pyright: ignore[reportTypedDictNotRequiredAccess]  (not in every version)
-    print(space)
+    # Through AnyIDFDocument, only what every version has: a type some version lacks is not a key.
+    print(any_doc["Space"])  # pyright: ignore[reportGeneralTypeIssues, reportUnknownArgumentType]  (not in every version)
     print(any_doc.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (not in every version)
     any_doc["People"]["Office"].update(zone_or_zonelist_name="Office")  # pyright: ignore[reportCallIssue]  (renamed in 9.6)
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "Plutonium"  # pyright: ignore[reportAttributeAccessIssue]  (no version)
