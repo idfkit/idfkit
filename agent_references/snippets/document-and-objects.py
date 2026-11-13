@@ -271,3 +271,20 @@ def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
 
 
 # --8<-- [end:versioned-renamed-field]
+
+
+# --8<-- [start:typed-object-parameter]
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run time fails
+    from idfkit.document import Zone  # not "from idfkit import Zone": recent pyright reports that
+
+
+def ceiling(zone: Zone) -> float | None:
+    """A latest-release Zone; a 9.4 zone is Zone_v8_9_to_v9_4 and is rejected."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+ceiling(doc["Zone"]["Office"])
+# --8<-- [end:typed-object-parameter]

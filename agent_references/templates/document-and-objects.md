@@ -83,6 +83,14 @@ The type stubs describe the latest supported release, and every document is type
 | Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
 
+### Annotating a parameter with an object class
+
+The object classes (`Zone`, `Material`, ...) exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time. A class describes the latest release: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected, so in code for any release pass the document and let the function reach its objects, or take `IDFObject`.
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:typed-object-parameter"
+```
+
 ### Reading and writing through `AnyIDFDocument`
 
 Reading a field gives any value some release allows; writing accepts only what every release accepts:
