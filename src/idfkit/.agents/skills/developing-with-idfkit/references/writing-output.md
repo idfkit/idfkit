@@ -181,7 +181,7 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     save_idf(doc, "out.idf")                   # writes `Output:Table:SummaryReports,;` — EnergyPlus: Severe
     ```
 
-    A nameless type whose only fields are an extensible group (`Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList`, `EnergyManagementSystem:GlobalVariable`, the `GroundHeatTransfer` face types) is written as `Type,;` when it holds no groups. EnergyPlus reads that as one blank group: a warning for `Output:Diagnostics`, a Severe for `Output:Table:SummaryReports`, a refused input for `OutdoorAir:NodeList` and `EnergyManagementSystem:GlobalVariable`. IDF cannot carry such an object empty; only epJSON can.
+    A nameless type whose only fields are an extensible group (`Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList`, `EnergyManagementSystem:GlobalVariable`, the `GroundHeatTransfer` face types) is written as `Type,;` when it holds no groups. EnergyPlus reads that as one blank group: a warning for `Output:Diagnostics`, a Severe for `Output:Table:SummaryReports`, a refused input for `OutdoorAir:NodeList` and `EnergyManagementSystem:GlobalVariable`. IDF cannot carry such an object empty; only epJSON can. It does nothing in EnergyPlus anyway, and `validate_document` reports it as `W004`: fill it in or remove it.
 
 !!! success "give it at least one group"
 

@@ -1031,3 +1031,149 @@ class TestImplicitRemainderSpace:
         result = validate_document(doc)
 
         assert [e.code for e in result.errors if e.field == "space_name"] == ["E009"]
+
+
+# Nameless types whose only field is an extensible group. Holding no groups, each does nothing in
+# EnergyPlus, and IDF has no spelling EnergyPlus reads as one of them empty.
+GROUP_ONLY_TYPES = {
+    "EnergyManagementSystem:GlobalVariable": "variables",
+    "OutdoorAir:NodeList": "nodes",
+    "Output:Diagnostics": "diagnostics",
+    "Output:Table:SummaryReports": "reports",
+}
+
+
+def _w004(doc: IDFDocument) -> list[ValidationError]:
+    return [w for w in validate_document(doc).warnings if w.code == "W004"]
+
+
+class TestEmptyGroupOnlyObject:
+    """``W004``: a group-only object with no groups does nothing, and IDF cannot carry it.
+
+    ``validate_document`` passed such an object with no findings, while its IDF, ``Type,;``, is read by
+    EnergyPlus as one blank group: refused for ``OutdoorAir:NodeList`` and
+    ``EnergyManagementSystem:GlobalVariable``.
+    """
+
+    @pytest.mark.parametrize(("obj_type", "wrapper"), sorted(GROUP_ONLY_TYPES.items()))
+    def test_an_empty_one_is_reported(self, obj_type: str, wrapper: str) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add(obj_type, "")
+
+        findings = _w004(doc)
+
+        assert [(f.obj_type, f.field, f.severity) for f in findings] == [(obj_type, wrapper, Severity.WARNING)]
+        assert "does nothing in EnergyPlus" in findings[0].message
+
+    @pytest.mark.parametrize("version", ENERGYPLUS_VERSIONS)
+    def test_the_types_are_every_nameless_group_only_type(self, version: tuple[int, int, int]) -> None:
+        schema = get_schema(version)
+        doc = new_document(version=version)
+        for obj_type in schema.object_types:
+            if not schema.has_name(obj_type):
+                doc.addidfobject(IDFObject(obj_type=obj_type, name="", data={}))
+
+        flagged = {f.obj_type for f in validate_document(doc).warnings if f.code == "W004"}
+
+        # Output:Diagnostics had two fixed fields before 9.4, so only the other three are group-only there.
+        expected = {
+            t
+            for t in schema.object_types
+            if not schema.has_name(t) and not schema.get_all_field_names(t) and schema.get_extensible_field_names(t)
+        }
+        assert flagged == expected
+        assert expected <= set(GROUP_ONLY_TYPES)
+        assert len(expected) >= 3
+
+    @pytest.mark.parametrize(
+        ("obj_type", "required"),
+        [
+            ("OutdoorAir:NodeList", "node_or_nodelist_name"),
+            ("EnergyManagementSystem:GlobalVariable", "erl_variable_name"),
+        ],
+    )
+    def test_the_message_names_the_field_energyplus_requires(self, obj_type: str, required: str) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add(obj_type, "")
+
+        assert f"refuses because '{required}' is required" in _w004(doc)[0].message
+
+    def test_an_object_with_a_group_is_not_reported(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("OutdoorAir:NodeList", "", nodes=[{"node_or_nodelist_name": "OA Node"}])
+
+        assert _w004(doc) == []
+
+    def test_a_field_less_face_type_is_not_reported(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:XFACE", "", validate=False)
+
+        assert _w004(doc) == []
+
+    def test_add_still_accepts_one_to_be_filled_in_later(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        node_list = doc.add("OutdoorAir:NodeList", "")
+        assert validate_object(node_list, doc.schema) == []  # type: ignore[arg-type]
+
+        node_list.nodes = [{"node_or_nodelist_name": "OA Node"}]
+
+        assert _w004(doc) == []
+
+    def test_check_required_false_skips_it(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Diagnostics", "")
+
+        assert validate_document(doc, check_required=False).warnings == []
+
+    def test_one_read_from_idf_is_reported(self, tmp_path: Path) -> None:
+        from idfkit import load_idf
+
+        path = tmp_path / "model.idf"
+        path.write_text("Version,24.1;\nOutput:Diagnostics,;\n")
+
+        assert [f.obj_type for f in _w004(load_idf(str(path)))] == ["Output:Diagnostics"]
+
+
+@pytest.mark.integration
+class TestEmptyGroupOnlyObjectInEnergyPlus:
+    """``W004`` reports the model EnergyPlus refuses, and acting on it gives one EnergyPlus accepts."""
+
+    @pytest.mark.parametrize("obj_type", ["OutdoorAir:NodeList", "EnergyManagementSystem:GlobalVariable"])
+    def test_the_finding_matches_what_energyplus_refuses(self, tmp_path: Path, obj_type: str) -> None:
+        import subprocess
+
+        from idfkit import load_idf, save_idf
+        from idfkit.exceptions import EnergyPlusNotFoundError
+        from idfkit.simulation import find_energyplus
+
+        try:
+            energyplus = find_energyplus()
+        except EnergyPlusNotFoundError:
+            pytest.skip("EnergyPlus not installed")
+
+        def accepted(doc: IDFDocument, name: str) -> tuple[bool, str]:
+            path = tmp_path / f"{name}.idf"
+            save_idf(doc, path)
+            run = subprocess.run(  # noqa: S603 - the executable is the discovered EnergyPlus
+                [str(energyplus.executable), "--convert-only", "--output-directory", str(tmp_path / name), str(path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            err = tmp_path / name / "eplusout.err"
+            return run.returncode == 0, err.read_text() if err.exists() else run.stdout
+
+        model = load_idf(str(energyplus.install_dir / "ExampleFiles" / "1ZoneUncontrolled.idf"))
+        empty = model.add(obj_type, "")
+
+        findings = _w004(model)
+        ok, output = accepted(model, "flagged")
+        assert [f.obj_type for f in findings] == [obj_type]
+        assert not ok
+        assert "Missing required property" in output
+
+        model.removeidfobject(empty)
+
+        ok, output = accepted(model, "fixed")
+        assert _w004(model) == []
+        assert ok, output[-2000:]

@@ -198,6 +198,13 @@ def validate_document(  # noqa: C901
                 check_types=check_types,
                 check_ranges=check_ranges,
             )
+            # Here and not in `_validate_object`: `add()` refuses any finding that function makes,
+            # and an empty group-only object is a normal step in building one up. Only the finished
+            # model is wrong to hold it.
+            if check_required:
+                empty = _empty_group_only_object(obj, schema)
+                if empty is not None:
+                    obj_errors.append(empty)
 
             for err in obj_errors:
                 if err.severity == Severity.ERROR:
@@ -352,6 +359,55 @@ def _validate_object(  # noqa: C901
             errors.append(error)
 
     return errors
+
+
+def _empty_group_only_object(obj: IDFObject, schema: EpJSONSchema) -> ValidationError | None:
+    """``W004`` for a group-only object holding no groups, or ``None``.
+
+    A group-only type is a nameless type whose only field is an extensible group:
+    ``Output:Diagnostics``, ``Output:Table:SummaryReports``, ``OutdoorAir:NodeList`` and
+    ``EnergyManagementSystem:GlobalVariable``. Holding no groups, one says nothing. EnergyPlus runs
+    it in epJSON exactly as it runs the model without it, so it is almost always a model left
+    unfinished or a group given under a key the type does not have.
+
+    It is also an object IDF cannot carry. The writer spells it ``Type,;``, since ``Type;`` would run
+    on into the next object, and EnergyPlus reads that as one blank group: a warning for
+    ``Output:Diagnostics``, a Severe for ``Output:Table:SummaryReports``, and refused input for the
+    two types whose group has a required field.
+    """
+    cache = schema.get_parsing_cache(obj.obj_type)
+    if cache is None or cache.has_name or not cache.ext_wrapper_key:
+        return None
+    wrapper = cache.ext_wrapper_key
+    if any(name != wrapper for name in cache.all_field_names):
+        return None
+    if obj.data.get(wrapper):
+        return None
+    message = (
+        f"'{obj.obj_type}' has no '{wrapper}' entries, so it does nothing in EnergyPlus. Give it at "
+        "least one entry or remove it. Written to IDF it becomes one blank entry, which EnergyPlus "
+    )
+    required = _required_inner_fields(schema, obj.obj_type, wrapper)
+    if required:
+        message += f"refuses because '{required[0]}' is required."
+    else:
+        message += "reports as invalid."
+    return ValidationError(
+        severity=Severity.WARNING,
+        obj_type=obj.obj_type,
+        obj_name=obj.name,
+        field=wrapper,
+        message=message,
+        code="W004",
+    )
+
+
+def _required_inner_fields(schema: EpJSONSchema, obj_type: str, wrapper: str) -> list[str]:
+    """The fields every entry of *obj_type*'s extensible group must give."""
+    spec = schema.get_object_schema(obj_type) or {}
+    props: dict[str, Any] = spec.get("patternProperties", {}).get(".*", {}).get("properties", {})
+    items: dict[str, Any] = props.get(wrapper, {}).get("items", {})
+    return list(items.get("required", []))
 
 
 def _validate_field(  # pyright: ignore[reportUnusedFunction]
