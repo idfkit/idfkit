@@ -74,6 +74,70 @@ The type stubs describe the latest supported release, and every document is type
 
 `idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected before 23.2) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`. Through `AnyIDFDocument`, `doc["Space"]` is reported as `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"` and `doc.spaces` as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it. The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
 
+### Which document type to annotate with
+
+| The code works on | Annotate with |
+|---|---|
+| Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
+| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument` |
+| Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
+| Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
+
+### Reading and writing through `AnyIDFDocument`
+
+Reading a field gives any value some release allows; writing accepts only what every release accepts:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-read-write"
+```
+
+### Code for a range of releases
+
+A union of release types accepts exactly those releases. Under pyright, a value is accepted only if every release in the union accepts it, by assignment or `update()`; mypy checks `update()` this way but not attribute assignment through a union. Bind a `TypeVar` to the union, so the function returns the caller's own type (unannotated, pyright infers the whole union and mypy infers `Any`):
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-range"
+```
+
+The annotation is not checked at run time. To narrow a document of unknown release, call `as_version` with one release type; it does not take a union.
+
+A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-exhaustive"
+```
+
+### A model created for an older release
+
+`new_document(version=...)` is typed for the latest release, whatever version it is given. Type it for its release with `as_version`, as for a loaded model; a test fixture that skips this is checked against the wrong release:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-new-document"
+```
+
+### A field renamed between releases
+
+`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and type each branch with `as_version`, one release at a time; item access is the unchecked fallback:
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-renamed-field"
+```
+
+### Checking: pyright versus `idfkit check`
+
+They catch different mistakes, so code meant for several releases should run both:
+
+- **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped.
+- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
+- Neither checks `doc.get_collection("Space")` or item access (`obj["field"]`).
+
+```bash
+uv run pyright src/
+uv run idfkit check --targets 9.4,23.2,26.2 src/my_module.py
+```
+
+mypy does not see the document's own methods and properties (it reports `add` and `version` as missing on a document), so prefer pyright for idfkit code.
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:

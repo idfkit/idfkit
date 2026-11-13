@@ -147,3 +147,127 @@ def count_people(doc: AnyIDFDocument) -> int:
 
 
 # --8<-- [end:versioned]
+
+
+# --8<-- [start:versioned-read-write]
+def use_natural_gas(doc: AnyIDFDocument) -> None:
+    for heater in doc["WaterHeater:Mixed"]:
+        fuel = heater.heater_fuel_type  # reads as str | None: any release's value can be in the file
+        print(fuel)
+        heater.heater_fuel_type = "NaturalGas"  # accepted: every release accepts it
+        heater.update(heater_fuel_type="Electricity")  # update() is typed the same way
+        # heater.heater_fuel_type = "DistrictHeatingWater"  # error: 9.3 to 23.1 reject it
+        # heater.heater_fuel_type = "Steam"                 # error: 23.2 on rejects it
+
+
+# --8<-- [end:versioned-read-write]
+
+
+# --8<-- [start:versioned-range]
+from typing import TypeVar
+
+from idfkit.versioned import IDFDocumentV26_1, IDFDocumentV26_2
+
+# A function for 26.1 and later. The TypeVar hands the caller's own type back: a plain
+# load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
+Since26_1 = TypeVar("Since26_1", bound="IDFDocumentV26_1 | IDFDocumentV26_2")
+
+
+def use_district_steam(doc: Since26_1) -> Since26_1:
+    for heater in doc["WaterHeater:Mixed"]:
+        heater.heater_fuel_type = "DistrictHeatingSteam"  # both releases accept it
+    return doc
+
+
+latest = use_district_steam(load_idf("model.idf"))  # IDFDocument
+older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1))  # IDFDocumentV26_1
+# use_district_steam(legacy)  # error: a 9.4 document is not in the range
+# --8<-- [end:versioned-range]
+
+
+# --8<-- [start:versioned-exhaustive]
+from typing import TypeAlias
+
+from typing_extensions import assert_never
+
+from idfkit import IDFDocument
+from idfkit.versioned import (
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+)
+
+# Through this range heater_fuel_type reads as 12 known choices (or None), so the checker can
+# prove every one is handled. Through AnyIDFDocument it reads as str | None (8.9 to 9.2 accept any
+# string), and no match over it can be exhaustive.
+Since23_2: TypeAlias = (
+    IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+
+
+def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
+    fuel = doc["WaterHeater:Mixed"][heater_name].heater_fuel_type
+    match fuel:
+        case "DistrictHeatingWater" | "DistrictHeatingSteam":
+            return True
+        case (
+            "Coal"
+            | "Diesel"
+            | "Electricity"
+            | "FuelOilNo1"
+            | "FuelOilNo2"
+            | "Gasoline"
+            | "NaturalGas"
+            | "OtherFuel1"
+            | "OtherFuel2"
+            | "Propane"
+            | None
+        ):
+            return False
+        case _:
+            assert_never(fuel)  # reported if a choice is left unhandled
+
+
+# --8<-- [end:versioned-exhaustive]
+
+
+# --8<-- [start:versioned-new-document]
+from idfkit import new_document
+
+blank = new_document(version=(9, 4, 0))  # still typed IDFDocument, the latest release
+blank_94 = as_version(new_document(version=(9, 4, 0)), IDFDocumentV9_4)  # typed for 9.4
+blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
+# --8<-- [end:versioned-new-document]
+
+
+# --8<-- [start:versioned-renamed-field]
+from idfkit.versioned import IDFDocumentV9_5
+
+
+def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
+    """Set a People object's zone in a 9.4 or later model.
+
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. as_version takes one
+    release, so each supported release before the rename gets its own branch.
+    """
+    if doc.version[:2] == (9, 4):
+        as_version(doc, IDFDocumentV9_4)["People"][people].update(zone_or_zonelist_name=zone)
+    elif doc.version[:2] == (9, 5):
+        as_version(doc, IDFDocumentV9_5)["People"][people].update(zone_or_zonelist_name=zone)
+    elif doc.version >= (9, 6, 0):
+        # One release type each would be checked; item access is the unchecked fallback.
+        doc["People"][people]["zone_or_zonelist_or_space_or_spacelist_name"] = zone
+    else:
+        msg = f"EnergyPlus {doc.version} is not handled"
+        raise NotImplementedError(msg)
+
+
+# --8<-- [end:versioned-renamed-field]

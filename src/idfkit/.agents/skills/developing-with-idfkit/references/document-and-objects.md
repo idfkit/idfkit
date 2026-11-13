@@ -137,6 +137,169 @@ def count_people(doc: AnyIDFDocument) -> int:
 
 `idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected before 23.2) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`. Through `AnyIDFDocument`, `doc["Space"]` is reported as `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"` and `doc.spaces` as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it. The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
 
+### Which document type to annotate with
+
+| The code works on | Annotate with |
+|---|---|
+| Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
+| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument` |
+| Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
+| Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
+
+### Reading and writing through `AnyIDFDocument`
+
+Reading a field gives any value some release allows; writing accepts only what every release accepts:
+
+```python
+def use_natural_gas(doc: AnyIDFDocument) -> None:
+    for heater in doc["WaterHeater:Mixed"]:
+        fuel = heater.heater_fuel_type  # reads as str | None: any release's value can be in the file
+        print(fuel)
+        heater.heater_fuel_type = "NaturalGas"  # accepted: every release accepts it
+        heater.update(heater_fuel_type="Electricity")  # update() is typed the same way
+        # heater.heater_fuel_type = "DistrictHeatingWater"  # error: 9.3 to 23.1 reject it
+        # heater.heater_fuel_type = "Steam"                 # error: 23.2 on rejects it
+
+
+```
+
+### Code for a range of releases
+
+A union of release types accepts exactly those releases. Under pyright, a value is accepted only if every release in the union accepts it, by assignment or `update()`; mypy checks `update()` this way but not attribute assignment through a union. Bind a `TypeVar` to the union, so the function returns the caller's own type (unannotated, pyright infers the whole union and mypy infers `Any`):
+
+```python
+from typing import TypeVar
+
+from idfkit.versioned import IDFDocumentV26_1, IDFDocumentV26_2
+
+# A function for 26.1 and later. The TypeVar hands the caller's own type back: a plain
+# load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
+Since26_1 = TypeVar("Since26_1", bound="IDFDocumentV26_1 | IDFDocumentV26_2")
+
+
+def use_district_steam(doc: Since26_1) -> Since26_1:
+    for heater in doc["WaterHeater:Mixed"]:
+        heater.heater_fuel_type = "DistrictHeatingSteam"  # both releases accept it
+    return doc
+
+
+latest = use_district_steam(load_idf("model.idf"))  # IDFDocument
+older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1))  # IDFDocumentV26_1
+# use_district_steam(legacy)  # error: a 9.4 document is not in the range
+```
+
+The annotation is not checked at run time. To narrow a document of unknown release, call `as_version` with one release type; it does not take a union.
+
+A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
+
+```python
+from typing import TypeAlias
+
+from typing_extensions import assert_never
+
+from idfkit import IDFDocument
+from idfkit.versioned import (
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+)
+
+# Through this range heater_fuel_type reads as 12 known choices (or None), so the checker can
+# prove every one is handled. Through AnyIDFDocument it reads as str | None (8.9 to 9.2 accept any
+# string), and no match over it can be exhaustive.
+Since23_2: TypeAlias = (
+    IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+
+
+def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
+    fuel = doc["WaterHeater:Mixed"][heater_name].heater_fuel_type
+    match fuel:
+        case "DistrictHeatingWater" | "DistrictHeatingSteam":
+            return True
+        case (
+            "Coal"
+            | "Diesel"
+            | "Electricity"
+            | "FuelOilNo1"
+            | "FuelOilNo2"
+            | "Gasoline"
+            | "NaturalGas"
+            | "OtherFuel1"
+            | "OtherFuel2"
+            | "Propane"
+            | None
+        ):
+            return False
+        case _:
+            assert_never(fuel)  # reported if a choice is left unhandled
+
+
+```
+
+### A model created for an older release
+
+`new_document(version=...)` is typed for the latest release, whatever version it is given. Type it for its release with `as_version`, as for a loaded model; a test fixture that skips this is checked against the wrong release:
+
+```python
+from idfkit import new_document
+
+blank = new_document(version=(9, 4, 0))  # still typed IDFDocument, the latest release
+blank_94 = as_version(new_document(version=(9, 4, 0)), IDFDocumentV9_4)  # typed for 9.4
+blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
+```
+
+### A field renamed between releases
+
+`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and type each branch with `as_version`, one release at a time; item access is the unchecked fallback:
+
+```python
+from idfkit.versioned import IDFDocumentV9_5
+
+
+def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
+    """Set a People object's zone in a 9.4 or later model.
+
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. as_version takes one
+    release, so each supported release before the rename gets its own branch.
+    """
+    if doc.version[:2] == (9, 4):
+        as_version(doc, IDFDocumentV9_4)["People"][people].update(zone_or_zonelist_name=zone)
+    elif doc.version[:2] == (9, 5):
+        as_version(doc, IDFDocumentV9_5)["People"][people].update(zone_or_zonelist_name=zone)
+    elif doc.version >= (9, 6, 0):
+        # One release type each would be checked; item access is the unchecked fallback.
+        doc["People"][people]["zone_or_zonelist_or_space_or_spacelist_name"] = zone
+    else:
+        msg = f"EnergyPlus {doc.version} is not handled"
+        raise NotImplementedError(msg)
+
+
+```
+
+### Checking: pyright versus `idfkit check`
+
+They catch different mistakes, so code meant for several releases should run both:
+
+- **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped.
+- **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
+- Neither checks `doc.get_collection("Space")` or item access (`obj["field"]`).
+
+```bash
+uv run pyright src/
+uv run idfkit check --targets 9.4,23.2,26.2 src/my_module.py
+```
+
+mypy does not see the document's own methods and properties (it reports `add` and `version` as missing on a document), so prefer pyright for idfkit code.
+
 ## Modifying objects
 
 Field access is via attribute. Setting a value re-validates against the schema and updates the reference graph automatically:
