@@ -14,6 +14,9 @@ name: Rehearse a candidate against every consumer
 # consumer's pull requests, it cannot block any consumer's unrelated work (FR-013).
 #
 # A dispatch that does not land fails this run. A rehearsal that reached nobody is not a rehearsal.
+# This run then waits for every rehearsal to conclude and fails if any one fails or times out, so a
+# candidate that breaks a consumer is red here as well. The job timeout covers the consumers' own
+# 45-minute rehearsal jobs.
 on:
   workflow_dispatch:
     inputs:
@@ -28,7 +31,7 @@ permissions:
 jobs:
   rehearse:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 60
     steps:
       - name: Check out this repository for its governance pin
         uses: actions/checkout@v4
