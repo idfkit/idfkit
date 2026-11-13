@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   call that gave both spellings of one field, even with one of them blank. The typed `update()`
   stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
   [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
+- Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
 
 ### Changed
 

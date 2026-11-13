@@ -68,7 +68,7 @@ jobs:
 
       - name: Set up the environment
         # 3.11 is the floor the corpus runner needs: it reads case files with tomllib, which is
-        # standard library only from 3.11. The library itself is tested across 3.10 to 3.13 in
+        # standard library only from 3.11. The library itself is tested across 3.10 to 3.14 in
         # main.yml; this job is about the corpus, not about the supported interpreter range.
         uses: ./.github/actions/setup-python-env
         with:
