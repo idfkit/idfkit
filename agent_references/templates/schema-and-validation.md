@@ -79,6 +79,7 @@ Common codes (see `ValidationError.code`):
 - `E009` — reference to a name no object declares
 - `E010` — singleton constraint violated (>1 instance of a `maxProperties: 1` type)
 - `W002` — unknown object type; `W003` — unknown field
+- `W004` — an `Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList` or `EnergyManagementSystem:GlobalVariable` with no entries: it does nothing in EnergyPlus, and its IDF (`Type,;`) is read as one blank entry. Reported by `validate_document` only, so `add()` still accepts one to fill in later.
 
 These codes are stable; agents and CI checks can filter on them.
 

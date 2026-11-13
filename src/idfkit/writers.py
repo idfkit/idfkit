@@ -771,7 +771,8 @@ class IDFWriter:
         # as one BLANK GROUP. That is a warning for Output:Diagnostics and a Severe for
         # Output:Table:SummaryReports, and EnergyPlus refuses the input for OutdoorAir:NodeList and
         # EnergyManagementSystem:GlobalVariable, whose group has a required field. Only epJSON can
-        # carry these objects empty.
+        # carry these objects empty. An empty one does nothing in EnergyPlus, so the writer keeps
+        # what the document holds and validate_document reports it (W004).
         if not values:
             values.append("")
             comments.append(_field_label(pc.ext_field_names[0]) if pc and pc.ext_field_names else "")

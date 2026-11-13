@@ -1031,3 +1031,177 @@ class TestImplicitRemainderSpace:
         result = validate_document(doc)
 
         assert [e.code for e in result.errors if e.field == "space_name"] == ["E009"]
+
+
+def _group_only_types(version: tuple[int, int, int]) -> dict[str, str]:
+    """Each nameless type whose only field is an extensible group, with its group's wrapper key.
+
+    Read from the schema, as the check does, so a type a later schema adds is covered without a list
+    to keep up to date. Holding no groups, such an object does nothing in EnergyPlus, and IDF has no
+    spelling EnergyPlus reads as one of them empty.
+    """
+    schema = get_schema(version)
+    found: dict[str, str] = {}
+    for obj_type in schema.object_types:
+        wrapper = schema.get_extensible_wrapper_key(obj_type)
+        if wrapper and not schema.has_name(obj_type) and not schema.get_all_field_names(obj_type):
+            found[obj_type] = wrapper
+    return found
+
+
+def _required_in_group(version: tuple[int, int, int], obj_type: str, wrapper: str) -> list[str]:
+    """The fields the schema requires of every entry in *obj_type*'s group."""
+    spec = get_schema(version).get_object_schema(obj_type) or {}
+    group = spec["patternProperties"][".*"]["properties"][wrapper]
+    return list(group.get("items", {}).get("required", []))
+
+
+_CASES = [
+    pytest.param(version, obj_type, wrapper, id=f"{'.'.join(map(str, version))}-{obj_type}")
+    for version in ENERGYPLUS_VERSIONS
+    for obj_type, wrapper in sorted(_group_only_types(version).items())
+]
+
+
+def _w004(doc: IDFDocument) -> list[ValidationError]:
+    return [w for w in validate_document(doc).warnings if w.code == "W004"]
+
+
+class TestEmptyGroupOnlyObject:
+    """``W004``: a group-only object with no groups does nothing, and IDF cannot carry it.
+
+    ``validate_document`` passed such an object with no findings, while its IDF, ``Type,;``, is read by
+    EnergyPlus as one blank group: refused for ``OutdoorAir:NodeList`` and
+    ``EnergyManagementSystem:GlobalVariable``.
+    """
+
+    def test_every_version_has_some(self) -> None:
+        # Guards the derivation itself: an empty set would make every test below vacuous.
+        assert all(_group_only_types(version) for version in ENERGYPLUS_VERSIONS)
+
+    @pytest.mark.parametrize(("version", "obj_type", "wrapper"), _CASES)
+    def test_an_empty_one_is_reported(self, version: tuple[int, int, int], obj_type: str, wrapper: str) -> None:
+        doc = new_document(version=version)
+        doc.add(obj_type, "")
+
+        findings = _w004(doc)
+
+        assert [(f.obj_type, f.field, f.severity) for f in findings] == [(obj_type, wrapper, Severity.WARNING)]
+        assert "does nothing in EnergyPlus" in findings[0].message
+
+    @pytest.mark.parametrize("version", ENERGYPLUS_VERSIONS)
+    def test_the_types_are_every_nameless_group_only_type(self, version: tuple[int, int, int]) -> None:
+        schema = get_schema(version)
+        doc = new_document(version=version)
+        for obj_type in schema.object_types:
+            if not schema.has_name(obj_type):
+                doc.addidfobject(IDFObject(obj_type=obj_type, name="", data={}))
+
+        flagged = {f.obj_type for f in validate_document(doc).warnings if f.code == "W004"}
+
+        assert flagged == set(_group_only_types(version))
+
+    @pytest.mark.parametrize(("version", "obj_type", "wrapper"), _CASES)
+    def test_the_message_names_a_field_the_group_requires(
+        self, version: tuple[int, int, int], obj_type: str, wrapper: str
+    ) -> None:
+        doc = new_document(version=version)
+        doc.add(obj_type, "")
+        required = _required_in_group(version, obj_type, wrapper)
+
+        message = _w004(doc)[0].message
+
+        if required:
+            assert f"refuses because '{required[0]}' is required" in message
+        else:
+            assert "reports as invalid" in message
+
+    def test_an_object_with_a_group_is_not_reported(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("OutdoorAir:NodeList", "", nodes=[{"node_or_nodelist_name": "OA Node"}])
+
+        assert _w004(doc) == []
+
+    def test_a_field_less_face_type_is_not_reported(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("GroundHeatTransfer:Slab:XFACE", "", validate=False)
+
+        assert _w004(doc) == []
+
+    def test_add_still_accepts_one_to_be_filled_in_later(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        node_list = doc.add("OutdoorAir:NodeList", "")
+        assert validate_object(node_list, doc.schema) == []  # type: ignore[arg-type]
+
+        node_list.nodes = [{"node_or_nodelist_name": "OA Node"}]
+
+        assert _w004(doc) == []
+
+    def test_check_required_false_skips_it(self) -> None:
+        doc = new_document(version=(24, 1, 0))
+        doc.add("Output:Diagnostics", "")
+
+        assert validate_document(doc, check_required=False).warnings == []
+
+    def test_one_read_from_idf_is_reported(self, tmp_path: Path) -> None:
+        from idfkit import load_idf
+
+        path = tmp_path / "model.idf"
+        path.write_text("Version,24.1;\nOutput:Diagnostics,;\n")
+
+        assert [f.obj_type for f in _w004(load_idf(str(path)))] == ["Output:Diagnostics"]
+
+
+@pytest.mark.integration
+class TestEmptyGroupOnlyObjectInEnergyPlus:
+    """``W004`` reports the model EnergyPlus refuses, and acting on it gives one EnergyPlus accepts."""
+
+    def test_the_finding_matches_what_energyplus_refuses(self, tmp_path: Path) -> None:
+        import subprocess
+
+        from idfkit import load_idf, save_idf
+        from idfkit.exceptions import EnergyPlusNotFoundError
+        from idfkit.simulation import find_energyplus
+
+        try:
+            energyplus = find_energyplus()
+        except EnergyPlusNotFoundError:
+            pytest.skip("EnergyPlus not installed")
+
+        def accepted(doc: IDFDocument, name: str) -> tuple[bool, str]:
+            path = tmp_path / f"{name}.idf"
+            save_idf(doc, path)
+            run = subprocess.run(  # noqa: S603 - the executable is the discovered EnergyPlus
+                [str(energyplus.executable), "--convert-only", "--output-directory", str(tmp_path / name), str(path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            err = tmp_path / name / "eplusout.err"
+            return run.returncode == 0, err.read_text() if err.exists() else run.stdout
+
+        # The types EnergyPlus refuses as ``Type,;``: those whose entries have a required field.
+        version = energyplus.version
+        refused = [
+            obj_type
+            for obj_type, wrapper in sorted(_group_only_types(version).items())
+            if _required_in_group(version, obj_type, wrapper)
+        ]
+        assert refused
+
+        for obj_type in refused:
+            model = load_idf(str(energyplus.install_dir / "ExampleFiles" / "1ZoneUncontrolled.idf"))
+            empty = model.add(obj_type, "")
+            name = obj_type.replace(":", "_")
+
+            findings = _w004(model)
+            ok, output = accepted(model, f"{name}_flagged")
+            assert [f.obj_type for f in findings] == [obj_type]
+            assert not ok, obj_type
+            assert "Missing required property" in output
+
+            model.removeidfobject(empty)
+
+            ok, output = accepted(model, f"{name}_fixed")
+            assert _w004(model) == []
+            assert ok, output[-2000:]
