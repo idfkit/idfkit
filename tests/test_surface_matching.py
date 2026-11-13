@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from conftest import fixed_vertices
 
 from idfkit import MatchOptions, MatchReport, intersect_and_match, new_document
 from idfkit.document import IDFDocument
@@ -152,9 +153,7 @@ def _window(doc: IDFDocument, name: str, base: str, verts: list[tuple[float, flo
             "surface_type": "Window",
             "building_surface_name": base,
             "number_of_vertices": len(verts),
-            "vertices": [
-                {"vertex_x_coordinate": x, "vertex_y_coordinate": y, "vertex_z_coordinate": z} for (x, y, z) in verts
-            ],
+            **fixed_vertices(*verts),
         },
         validate=False,
     )

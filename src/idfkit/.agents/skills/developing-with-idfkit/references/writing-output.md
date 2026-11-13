@@ -174,6 +174,22 @@ for wwr in (0.2, 0.3, 0.4, 0.5):
     save_idf(doc, "out.idf", output_type="compressed", preserve_formatting=False)
     ```
 
+!!! failure "saving an empty group-only object to IDF"
+
+    ```python
+    doc.add("Output:Table:SummaryReports")    # no reports
+    save_idf(doc, "out.idf")                   # writes `Output:Table:SummaryReports,;` — EnergyPlus: Severe
+    ```
+
+    A nameless type whose only fields are an extensible group (`Output:Diagnostics`, `Output:Table:SummaryReports`, `OutdoorAir:NodeList`, `EnergyManagementSystem:GlobalVariable`, the `GroundHeatTransfer` face types) is written as `Type,;` when it holds no groups. EnergyPlus reads that as one blank group: a warning for `Output:Diagnostics`, a Severe for `Output:Table:SummaryReports`, a refused input for `OutdoorAir:NodeList` and `EnergyManagementSystem:GlobalVariable`. IDF cannot carry such an object empty; only epJSON can.
+
+!!! success "give it at least one group"
+
+    ```python
+    doc.add("Output:Table:SummaryReports", reports=[{"report_name": "AllSummary"}])
+    save_idf(doc, "out.idf")  # Output:Table:SummaryReports, AllSummary;
+    ```
+
 ## Related
 
 - [parsing-idf-epjson.md](parsing-idf-epjson.md) — the loader side, including `preserve_formatting`.

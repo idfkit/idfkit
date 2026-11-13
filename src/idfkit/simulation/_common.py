@@ -313,14 +313,13 @@ def prep_outputs(model: AnyIDFDocument) -> None:
     ensure_sql_output(model)
 
     if "Output:Table:SummaryReports" not in model:
-        model.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+        model.add("Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=False)
 
     if "Output:VariableDictionary" not in model:
         model.add("Output:VariableDictionary", "", key_field="Regular", validate=False)
 
 
 def maybe_preprocess(
-    original: AnyIDFDocument,
     sim_model: AnyIDFDocument,
     config: EnergyPlusConfig,
     weather_path: Path | None,
@@ -336,8 +335,8 @@ def maybe_preprocess(
     ``-x`` flag.
 
     Args:
-        original: The original (unmutated) model, used for GHT detection.
-        sim_model: The working copy of the model.
+        sim_model: The working copy of the model, used both to detect ground heat-transfer
+            objects and as the preprocessing input.
         config: EnergyPlus configuration.
         weather_path: Resolved path to the weather file, or ``None`` when
             the run has no weather file. Weather admission guarantees that
@@ -361,7 +360,7 @@ def maybe_preprocess(
 
     from .expand import needs_ground_heat_preprocessing, run_preprocessing
 
-    if needs_ground_heat_preprocessing(original):
+    if needs_ground_heat_preprocessing(sim_model):
         preprocessed = run_preprocessing(
             sim_model,
             energyplus=config,

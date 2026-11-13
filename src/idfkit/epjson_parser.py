@@ -85,6 +85,7 @@ def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> d
     from .objects import is_blank_slot, parse_extensible_index
 
     ext_set = frozenset(pc.ext_field_names)
+    fixed = frozenset(pc.all_field_names)
     wrapper_key = pc.ext_wrapper_key
     assert wrapper_key is not None  # caller checked  # noqa: S101
 
@@ -93,7 +94,7 @@ def _bucket_flat_extensibles(fields_dict: dict[str, Any], pc: ParsingCache) -> d
     for key in fields_dict:
         if key == wrapper_key:
             continue
-        base, idx = parse_extensible_index(key, ext_set)
+        base, idx = parse_extensible_index(key, ext_set, fixed)
         if base is not None:
             if not is_blank_slot(fields_dict[key]):
                 flat_groups.setdefault(idx, {})[base] = fields_dict[key]
@@ -276,6 +277,7 @@ class EpJSONParser:
                     extensibles=frozenset(pc.ext_field_names) if pc else None,
                     wrapper_key=pc.ext_wrapper_key if pc else None,
                     ext_inner_names=tuple(pc.ext_inner_props.keys()) if pc else (),
+                    aliases=pc.field_aliases if pc else None,
                 )
 
                 addidfobject(obj)

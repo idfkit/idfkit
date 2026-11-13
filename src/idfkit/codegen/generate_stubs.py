@@ -30,7 +30,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-from idfkit.schema import EpJSONSchema, get_schema
+from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
 # ---- helpers ---------------------------------------------------------------
@@ -277,6 +277,39 @@ def _field_docstring(
 
 # ---- object class generation ----------------------------------------------
 
+# Every typed class derives from one of these stub-only bases instead of IDFObject / ExtensibleGroup.
+# The runtime ``__getattr__``/``__setattr__`` take any ``str`` and return ``Any``, so a type checker
+# would resolve any undeclared name through them and accept ``material.thermal_resistance = 1.0`` on
+# a type that has no such field. Re-declaring both with a ``Never`` name turns that off: pyright
+# reports every undeclared name, read or assigned, and mypy reports every undeclared assignment.
+# Declared fields still resolve to their annotated types, because attribute lookup only falls back
+# to ``__getattr__`` for names the class does not declare. ``__getattr__`` returns ``object``, not
+# ``Never``: mypy does not check the name argument, and a ``Never`` read would fit anywhere and make
+# mypy treat the code after ``obj.typo()`` as unreachable, while ``object`` makes it report each use.
+# Plain ``IDFObject`` keeps the permissive signatures, so ``IDFCollection[IDFObject]`` is unaffected.
+# ``typing.Never`` is 3.11+, hence ``typing_extensions``; the import only exists in the stub, which
+# the type checker reads from its bundled typeshed, so it adds no runtime dependency.
+_TYPED_OBJECT_BASE = "_TypedIDFObject"
+_TYPED_GROUP_BASE = "_TypedExtensibleGroup"
+
+
+def _generate_typed_bases() -> list[str]:
+    """Emit the stub-only base classes that turn off the catch-all attribute access."""
+    return [
+        f"class {_TYPED_OBJECT_BASE}(IDFObject):",
+        '    """Stub-only base: an undeclared field name is a type error on a typed object."""',
+        "",
+        "    def __getattr__(self, key: Never) -> object: ...",
+        "    def __setattr__(self, key: Never, value: Never) -> None: ...",
+        "",
+        f"class {_TYPED_GROUP_BASE}(ExtensibleGroup):",
+        '    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""',
+        "",
+        "    def __getattr__(self, name: Never) -> object: ...",
+        "    def __setattr__(self, name: Never, value: Never) -> None: ...",
+        "",
+    ]
+
 
 def _sanitize_docstring(text: str) -> str:
     """Replace characters that would break triple-quoted docstrings or ruff checks."""
@@ -394,7 +427,8 @@ def _generate_object_class(
     suffix: str = "",
     class_doc: str | None = None,
     cls_name: str | None = None,
-    base: str = "IDFObject",
+    base: str = _TYPED_OBJECT_BASE,
+    group_base: str = _TYPED_GROUP_BASE,
     skip_fields: frozenset[str] = frozenset(),
     omit_group: bool = False,
     fields_base: str = "TypedDict",
@@ -417,8 +451,10 @@ def _generate_object_class(
         class_doc: Replaces the class docstring built from the memo and *type_since*; ``""``
             emits none.
         cls_name: Replaces the class name derived from *obj_type* and *suffix*.
-        base: The class's base, ``IDFObject`` unless the fields it shares with other versions
+        base: The class's base, ``_TypedIDFObject`` unless the fields it shares with other versions
             live on a per-type base class.
+        group_base: The extensible group class's base, ``_TypedExtensibleGroup`` as reached from
+            the module the class is emitted in.
         skip_fields: Fields left to *base*.
         omit_group: Leave the extensible group and its wrapper attribute to *base* (or out).
         fields_base: The ``TypedDict`` that ``update``'s keyword ``TypedDict`` extends.
@@ -441,7 +477,7 @@ def _generate_object_class(
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
         group_cls_name = f"{_to_class_name(obj_type)}{_to_class_name(wrapper_key.title())}Group{suffix}"
-        lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent))
+        lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base))
 
     lines.append(f"{indent}class {cls_name}({base}):")
 
@@ -482,11 +518,16 @@ def _generate_object_class(
 
 
 def _generate_group_class(
-    group_cls_name: str, cls_name: str, wrapper_key: str, inner_props: dict[str, Any], indent: str
+    group_cls_name: str,
+    cls_name: str,
+    wrapper_key: str,
+    inner_props: dict[str, Any],
+    indent: str,
+    group_base: str = _TYPED_GROUP_BASE,
 ) -> list[str]:
     """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields."""
     lines = [
-        f"{indent}class {group_cls_name}(ExtensibleGroup):",
+        f"{indent}class {group_cls_name}({group_base}):",
         f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""',
     ]
     for inner_name, inner_schema in inner_props.items():
@@ -574,6 +615,32 @@ def _generate_fields(
         docstring = None if field_name in undocumented else _field_docstring(field_schema, since_version=fld_since)
         if docstring:
             lines.append(f'{indent}"""{docstring}"""')
+
+    declared.extend(_generate_field_aliases(lines, field_names, dict(declared), indent))
+    return declared
+
+
+def _generate_field_aliases(
+    lines: list[str], field_names: list[str], typed: dict[str, str], indent: str
+) -> list[tuple[str, str]]:
+    """Declare the spelling without the trailing underscore of each field whose key ends in ``_``.
+
+    The runtime reaches such a field by both spellings (``IDFObject._field_key``), so the typed
+    class declares both, or it would reject the one without the underscore. Emitted in field
+    order, because the alias map's own order is not stable between runs.
+    """
+    alias_of = {
+        key: alias
+        for alias, key in trailing_underscore_aliases(field_names).items()
+        if alias != key and alias.isidentifier() and alias not in typed
+    }
+    declared: list[tuple[str, str]] = []
+    for key in field_names:
+        alias = alias_of.get(key)
+        if alias is not None and key in typed:
+            lines.append(f"{indent}{alias}: {typed[key]}")
+            lines.append(f'{indent}"""Alias of :attr:`{key}`, the same field without the trailing underscore."""')
+            declared.append((alias, typed[key]))
     return declared
 
 
@@ -697,11 +764,17 @@ def _build_type_runs() -> dict[str, list[list[Version]]]:
 
 
 def _field_decls(schema: EpJSONSchema, obj_type: str) -> dict[str, str]:
-    """Each identifier field of *obj_type* with its generated value type."""
+    """Each identifier field of *obj_type* with its generated value type.
+
+    A field whose key ends in ``_`` is followed, after every key, by its spelling without the
+    underscore, with the same type, as :func:`_generate_field_aliases` declares it; the classes
+    that share fields between versions, and the check of them, then treat the alias as a field.
+    """
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    field_names = schema.get_field_names(obj_type)
     decls: dict[str, str] = {}
-    for field_name in schema.get_field_names(obj_type):
+    for field_name in field_names:
         if not field_name.isidentifier():
             continue
         field_schema = properties.get(field_name)
@@ -709,6 +782,12 @@ def _field_decls(schema: EpJSONSchema, obj_type: str) -> dict[str, str]:
         decls[field_name] = _schema_type_to_python(
             field_schema, schema.get_field_type(obj_type, field_name), has_any_of
         )
+    # In field order: the alias map's own order is not stable between runs.
+    alias_of = {key: alias for alias, key in trailing_underscore_aliases(field_names).items() if alias != key}
+    for key in field_names:
+        alias = alias_of.get(key)
+        if alias is not None and alias.isidentifier() and alias not in decls and key in decls:
+            decls[alias] = decls[key]
     return decls
 
 
@@ -1040,7 +1119,7 @@ def generate_versioned_pyi() -> str:
         "from . import _generated_types as _g",
         "from .document import AnyIDFDocument as AnyIDFDocument",
         "from .document import IDFDocument, Strict, _IDFDocumentMethods",
-        "from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject",
+        "from .objects import ExtensibleList, IDFCollection",
         "",
         "# =========================================================================",
         "# Object classes of the version ranges that end before the latest release",
@@ -1061,7 +1140,8 @@ def generate_versioned_pyi() -> str:
                 obj_type,
                 suffix=_run_suffix(list(run)),
                 class_doc=doc,
-                base=f"_g.{_shared_class_name(obj_type)}" if shared else "IDFObject",
+                base=f"_g.{_shared_class_name(obj_type)}" if shared else f"_g.{_TYPED_OBJECT_BASE}",
+                group_base=f"_g.{_TYPED_GROUP_BASE}",
                 skip_fields=shared.identical if shared else frozenset(),
                 omit_group=shared.group if shared else False,
                 fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
@@ -1252,9 +1332,11 @@ def _generate_types_module() -> str:
     parts.append("from collections.abc import Mapping")
     parts.append("from typing import Any, Literal, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import NotRequired, ReadOnly, Unpack")
+    parts.append("from typing_extensions import Never, NotRequired, ReadOnly, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
+    parts.append("")
+    parts.extend(_generate_typed_bases())
     parts.append("")
     parts.append("# =========================================================================")
     parts.append("# Typed object classes (one per EnergyPlus object type)")

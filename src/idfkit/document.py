@@ -22,9 +22,14 @@ from ._accessors import AccessorAttributeError, AccessorResolver
 from ._compat import EppyDocumentMixin
 from ._document_types import DocumentTypeMeta
 from .cst import CSTNode, DocumentCST, SourceSpan
-from .exceptions import DuplicateObjectError, UnknownObjectTypeError, ValidationFailedError
+from .exceptions import DuplicateObjectError, InvalidFieldError, UnknownObjectTypeError, ValidationFailedError
 from .introspection import ObjectDescription, describe_object_type
-from .objects import IDFCollection, IDFObject
+from .objects import (
+    IDFCollection,
+    IDFObject,
+    refuse_name_for_nameless_type,
+    refuse_unknown_fields_for_add,
+)
 from .references import ReferenceGraph
 from .validation import validate_object
 from .versions import LATEST_VERSION
@@ -632,6 +637,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         field_data = drop_blank_group_slots(field_data, pc.ext_wrapper_key)
 
         ext_set = frozenset(pc.ext_field_names)
+        fixed = frozenset(pc.all_field_names)
         wrapper_key = pc.ext_wrapper_key
         wrapper_present = wrapper_key in field_data
 
@@ -641,7 +647,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         for key, value in field_data.items():
             if key == wrapper_key:
                 continue
-            base, idx = parse_extensible_index(key, ext_set)
+            base, idx = parse_extensible_index(key, ext_set, fixed)
             if base is not None:
                 if not is_blank_slot(value):
                     flat_groups.setdefault(idx, {})[base] = value
@@ -668,6 +674,41 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             del field_data[k]
         field_data[wrapper_key] = [flat_groups[i] for i in sorted(flat_groups)]
         return field_data
+
+    def _resolve_field_aliases(
+        self, obj_type: str, field_data: dict[str, Any], pc: ParsingCache | None
+    ) -> dict[str, Any]:
+        """Store a trailing-underscore field given without its underscore under the schema's key.
+
+        ``cond_flag_is_the_basement_conditioned`` is stored as
+        ``cond_flag_is_the_basement_conditioned_`` (:attr:`ParsingCache.field_aliases`). Two keys
+        naming one field are refused, even when one of them is blank.
+        """
+        aliases = pc.field_aliases if pc is not None else None
+        if not aliases or aliases.keys().isdisjoint(field_data):
+            return field_data
+        resolved: dict[str, Any] = {}
+        for key, value in field_data.items():
+            target = aliases.get(key, key)
+            if target in resolved:
+                # Name the spelling without the underscore, whichever of the two came second.
+                raise InvalidFieldError(
+                    obj_type,
+                    key if key != target else target[:-1],
+                    available_fields=[f for f in pc.all_field_names if f != "name"] if pc is not None else None,
+                    version=self.version,
+                )
+            resolved[target] = value
+        return resolved
+
+    def _reject_second_singleton(self, obj_type: str) -> None:
+        """Raise ``DuplicateObjectError`` if the singleton *obj_type* (``maxProperties == 1``) exists."""
+        existing_type = self._find_existing_collection_type(obj_type)
+        if existing_type is None:
+            return
+        existing = self._collections[existing_type].first()
+        duplicate_name = existing.name if existing and existing.name else existing_type
+        raise DuplicateObjectError(obj_type, duplicate_name)
 
     def _resolve_schema_obj_type(self, obj_type: str) -> str:
         """Resolve object type casing against schema definitions."""
@@ -701,15 +742,19 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Args:
             obj_type: Object type (e.g., "Zone")
-            name: Object name (optional for object types without a name field,
-                such as Timestep, SimulationControl, GlobalGeometryRules)
+            name: The object's name. Must be empty ("" or omitted) for types without
+                a Name field, such as Output:Meter, Output:SQLite, Timestep or
+                SimulationControl; their first field is a normal field, passed by its
+                schema name (key_name=..., option_type=...).
             fields: Field values as a dict, useful when field names are
                 computed dynamically. Equivalent to passing the same keys
                 as ``**kwargs``; merged before ``kwargs`` so explicit
                 kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
-                bulk operations where performance matters.
+                bulk operations where performance matters: values, required fields
+                and ranges are then not checked, but a key the schema does not name
+                still raises InvalidFieldError, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -722,6 +767,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
+            InvalidFieldError: If ``validate=False`` and a key is not a field of
+                the object type, naming every such key (the name goes in ``name``,
+                not in ``fields``); or, in either mode, if ``name`` is not empty and
+                the type has no Name field (the message names the field to use
+                instead, e.g. ``key_name`` for Output:Meter)
+            TypeError: If the extensible wrapper value is not a list of groups,
+                or a group has a key the group does not name (in either mode,
+                as ``IDFObject.update`` refuses it)
 
         Examples:
             >>> from idfkit import new_document
@@ -775,22 +828,18 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             pc = self._schema.get_parsing_cache(resolved_obj_type)
             if pc and pc.ext_field_names:
                 field_data = self._normalize_extensible_input(resolved_obj_type, field_data, pc)
+            field_data = self._resolve_field_aliases(resolved_obj_type, field_data, pc)
 
             if obj_schema is None:
                 raise UnknownObjectTypeError(obj_type, version=self.version)
 
-            # Enforce singleton object types (schema marker: maxProperties == 1).
-            if obj_schema.get("maxProperties") == 1:
-                existing_type = self._find_existing_collection_type(resolved_obj_type)
-                if existing_type is not None:
-                    existing = self._collections[existing_type].first()
-                    duplicate_name = existing.name if existing and existing.name else existing_type
-                    raise DuplicateObjectError(resolved_obj_type, duplicate_name)
+            # A type without a Name field drops a name on write; refuse it in either mode.
+            refuse_name_for_nameless_type(resolved_obj_type, name, obj_schema)
 
-            if self._schema.has_name(resolved_obj_type):
-                field_order = self._schema.get_field_names(resolved_obj_type)
-            else:
-                field_order = self._schema.get_all_field_names(resolved_obj_type)
+            if obj_schema.get("maxProperties") == 1:
+                self._reject_second_singleton(resolved_obj_type)
+
+            field_order = self._schema.get_field_names(resolved_obj_type)
             parsing_cache = self._schema.get_parsing_cache(resolved_obj_type)
             field_order = self._build_field_order_for_add(field_order, field_data, parsing_cache)
             ref_fields = self._compute_ref_fields(self._schema, resolved_obj_type)
@@ -807,7 +856,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             extensibles=frozenset(parsing_cache.ext_field_names) if parsing_cache else None,
             wrapper_key=parsing_cache.ext_wrapper_key if parsing_cache else None,
             ext_inner_names=tuple(parsing_cache.ext_inner_props.keys()) if parsing_cache else (),
+            aliases=parsing_cache.field_aliases if parsing_cache else None,
         )
+
+        # A key the type does not name would be stored, then dropped by write_idf() and written as
+        # an unknown property by write_epjson(). validate=True reports such keys (W003) with every
+        # other finding below; skipping validation must not let one through either.
+        if parsing_cache is not None:
+            refuse_unknown_fields_for_add(obj, parsing_cache, check_names=not validate)
 
         # Validate if requested
         if validate and self._schema:

@@ -7,6 +7,188 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The README opens with the idfkit identity header at `identity-2026.5`: the mark, the
+  repository's one sentence, the family links and the badge row. The `Identity` workflow
+  (`.github/workflows/check-identity.yml`) holds the header to that tag on every pull request.
+- A field whose epJSON key ends in `_` could be given without the underscore, in `add()`,
+  attribute access, `update()` and the eppy helpers: `cond_flag_is_the_basement_conditioned="FALSE"`
+  set `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`, and the value
+  was stored and written under the schema's key. The underscore comes from IDD names that end in
+  punctuation or a space, and EnergyPlus has started dropping it: `WindowShadingControl`'s
+  `construction_with_shading_name_` in 9.0.1 and 9.1.0 is `construction_with_shading_name` from
+  9.2.0, and the one spelling worked on both. `name` was never such a spelling. `add()` refused a
+  call that gave both spellings of one field, even with one of them blank. The typed `update()`
+  stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
+  [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
+- Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
+- Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
+
+### Changed
+
+- **Breaking:** for type checking only, an undeclared field name on a typed object is now a type
+  error. `material.thermal_resistance = 1.0` on a `Material` taken from `doc["Material"]`, or
+  `print(material.bogus)`, used to type-check clean because the catch-all `__getattr__` and
+  `__setattr__` of `IDFObject` accepted any name. pyright reports the name whether it is read or
+  assigned; mypy reports an assignment, and types a read as `object`, so it reports any use that
+  needs a more specific type.
+  The same holds for the groups of an extensible type, such as `surface.vertices[0]`. Typed objects
+  declare snake_case names only, so an eppy-style capitalised spelling such as
+  `material.Thickness = 0.2` is now reported too, although it still works at run time: use
+  `material.thickness`. The typed classes describe EnergyPlus 26.2, so a field name that only exists
+  in an earlier version, such as `Lights.watts_per_zone_floor_area` up to 23.2, is reported as well;
+  on such a model, reach it with item access (`lights["watts_per_zone_floor_area"]`) or `getattr`.
+  Objects from the eppy API (`doc.idfobjects[...]`, `newidfobject()`, `getobject()`) and other plain
+  `IDFObject`s, such as those from `doc.add()` or `doc.get_collection()`, stay permissive. Declared
+  fields, `name`, the spellings of trailing-underscore fields with and without the underscore, and
+  wrong-type errors behave as before. Run-time behaviour is unchanged. ([#272](https://github.com/idfkit/idfkit/pull/272))
+
+- **Breaking:** `IDFDocument.add()` raised `InvalidFieldError` when given a non-empty name for a
+  type without a Name field, such as `Output:Meter`, `Output:Variable`, `Output:SQLite`,
+  `Timestep` or `SimulationControl` (165 of the 880 types in the 26.2 schema), whether or not
+  `validate` is set. The name used to be stored and then dropped by both writers, so
+  `add("Output:SQLite", "SimpleAndTabular")` wrote `Output:SQLite,` and EnergyPlus produced no
+  `.sql` file. The message names the field to pass instead (`key_name="Electricity:Facility"`
+  for `Output:Meter`, `option_type=...` for `Output:SQLite`); the value is never moved there for
+  you. The same rule applies to `obj.name = ...` and to `newidfobject`, `addidfobject` and
+  `copyidfobject(..., new_name=...)`. Loading existing IDF and epJSON files is unaffected.
+  ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
+- **Breaking:** `IDFDocument.add()` refused a key that is not a field of the object type even
+  with `validate=False`, raising `InvalidFieldError` that names every such key, whatever its
+  value. `validate=False` used to skip schema validation entirely, so the key was stored, then
+  silently dropped by `write_idf()` and written as an unknown property by `write_epjson()`. It
+  still skips value, required-field and range checks. The object's name belongs in the `name`
+  argument, not in `fields`; display spellings such as `"X Origin"` are refused with the field
+  to use instead; and `FenestrationSurface:Detailed` takes its fixed `vertex_N_x_coordinate`
+  fields, not a `vertices` list. ([1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171),
+  [b415635](https://github.com/idfkit/idfkit/commit/b415635))
+- **Breaking:** `IDFDocument.add()` checked the extensible groups it was given in either
+  validate mode, as `IDFObject.update()` already did, and raised `TypeError` for a group key the
+  group does not name (`reports=[{"report_nme": ...}]`) or a wrapper value that is not a list of
+  groups (a string, a list of strings or tuples, or another object's live `vertices` view).
+  Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
+  values or crashed. ([b415635](https://github.com/idfkit/idfkit/commit/b415635))
+
+### Removed
+
+- **Breaking:** `SchemaManager.get_schema` is no longer wrapped in `functools.lru_cache`, so `get_schema.cache_clear()`, `get_schema.cache_info()` and `get_schema.cache_parameters()` are gone. The manager's own cache already held every loaded version; call `SchemaManager.clear_cache()` to drop it ([#254](https://github.com/idfkit/idfkit/pull/254)).
+
+### Fixed
+
+- The bundled agent references described the changes above wrongly or not at all. The HVAC loops
+  reference still called `validate_document` and `get_referencing` the safety net for node wiring,
+  though neither sees node names, and offered renaming a coil as a fix for a mismatched node name.
+  The references now say that typed objects accept only 26.2 snake_case field names, that an empty
+  group-only object such as `Output:Table:SummaryReports` is written to IDF as `Type,;`, and that
+  `prep_outputs` also requests the `AllSummary` tabular report.
+  ([2399407](https://github.com/idfkit/idfkit/commit/2399407))
+- `EpJSONSchema.get_field_names()` dropped the first field of every type, including types without
+  a Name field, whose first field is an ordinary one: `get_field_names("Output:Meter")` was
+  `['reporting_frequency']`. It now drops the first field only for a named type. As a result
+  `describe_object_type()` (and `IDFDocument.describe()`) lists `key_name` for `Output:Meter`,
+  and the generated `OutputMeter` class and its `update()` keywords include it; the same holds
+  for every other nameless type. Validation no longer counts a name stored on a nameless object
+  as a declared name. ([11ac720](https://github.com/idfkit/idfkit/commit/11ac720))
+- Fixed fields whose names look like a flat spelling of the type's own extensible group were
+  treated as that group's fields. This affected `MaterialProperty:GlazingSpectralData`
+  (`wavelength_1` … `back_reflectance_4`), `Site:SpectrumData` (`wavelength`, `spectrum`,
+  `wavelength_1`, `spectrum_2`), `ZoneHVAC:HybridUnitaryHVAC` (`mode_0_*`) and, in EnergyPlus 8.9
+  to 9.1, `Table:MultiVariableLookup` (`field_1_…` and `field_2_…`). `add()` moved these values
+  into the extensible groups with a deprecation warning, or raised `ValueError` ("cannot mix") when
+  the groups were passed too. `load_epjson()` moved them silently, after any groups already in the
+  file. Either way `write_idf` wrote the fixed fields blank and the values out of place. On
+  `Site:SpectrumData`, `wavelength_1` overwrote `wavelength`. Attribute assignment stored the
+  value in a group (for `mode_0_*`, the last mode), attribute reads of an unset field returned a
+  group's value, and `update()` refused the field as a legacy flat name. These fields are now
+  kept as fixed fields.
+  ([cee2d7c](https://github.com/idfkit/idfkit/commit/cee2d7c))
+- A field whose epJSON name ends in `_` was out of reach by attribute: assigning it or passing it
+  to `update()` raised `InvalidFieldError`, and so did reading it unset in a strict document,
+  because the trailing underscore was stripped into a name the type does not have. In a document
+  opened with `strict=False`, the assignment was stored under that name instead, and `write_idf()`
+  dropped it. 24 such fields exist across the bundled schemas, among them
+  `GroundHeatTransfer:Basement:Interior.cond_flag_is_the_basement_conditioned_`,
+  `GroundHeatTransfer:Basement:ManualGrid.nx_number_of_cells_in_the_x_direction_20_` and
+  `SizingPeriod:DesignDay.ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`; `add()`
+  already accepted them. `update()` also refused `Output:Table:ReportPeriod.name_` as the
+  object's name. The eppy-style dotted `IDFDocument.update()`, `get_referenced_object()`,
+  `getrange()`, `checkrange()` and `getreferingobjs(fields=...)` missed them the same way.
+  ([a520960](https://github.com/idfkit/idfkit/commit/a520960),
+  [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
+- A flat extensible name with group number 0, such as `vertex_0_x_coordinate` or
+  `mode_0_minimum_outdoor_air_temperature`, was read as the last group: assignment overwrote the
+  last group's value, or raised `IndexError` when there were no groups, and `add()` inserted it
+  as a new first group. Group numbers now start at 1, so such a name is an unknown field.
+  ([da8a613](https://github.com/idfkit/idfkit/commit/da8a613))
+- `write_idf` and `save_idf` wrote an object with nothing in it without its terminating `;`, so it
+  swallowed the object after it, and EnergyPlus read that object's type name and values as fields
+  of the empty one. This happened to a nameless type with no fixed fields
+  (`Output:Table:SummaryReports`, `Output:Diagnostics`, `OutdoorAir:NodeList`,
+  `EnergyManagementSystem:GlobalVariable` and the six `GroundHeatTransfer` face types) when it held
+  no groups. It affected the standard and `nocomment` output types, `doc.copy()`, and objects
+  added to a document loaded with `preserve_formatting=True`. Such an object is now written with
+  one blank field, `Output:Diagnostics,;`, which keeps the next object intact. IDF has no spelling
+  that EnergyPlus reads as one of these objects with nothing in it: `Output:Diagnostics;` swallows
+  the next object too, and EnergyPlus reads `Output:Diagnostics,;` as one blank group. That gives a
+  warning for `Output:Diagnostics` and a Severe error for `Output:Table:SummaryReports`, and
+  EnergyPlus refuses the input for `OutdoorAir:NodeList` and
+  `EnergyManagementSystem:GlobalVariable`. Remove such an object, or write the model as epJSON, to
+  keep it empty. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- Strict IDF parsing no longer rejects blank fields past the last field of a type without
+  repeated groups, such as `Timestep,4,,;` or `GroundHeatTransfer:Slab:XFACE,;`; EnergyPlus accepts
+  them too. A non-blank extra value is still an error, and the error counts only the values up to
+  the last non-blank one. ([3e3e772](https://github.com/idfkit/idfkit/commit/3e3e772),
+  [0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- `write_idf` dropped the name and every field of an object whose type was spelled in a different
+  case from the schema, such as one added with `addidfobject(IDFObject(obj_type="TIMESTEP", ...))`,
+  and of an object of a type the schema does not know. Both are now written with their values.
+  ([0dcfdd3](https://github.com/idfkit/idfkit/commit/0dcfdd3))
+- **Breaking:** Validation reported unknown fields (`W003`) on extensible object types too, and
+  on unknown fields with a blank value. Extensible types used to be exempt, so
+  `doc.add("Output:Table:SummaryReports", "", report_1="AllSummary")` passed the default
+  `validate=True` and stored a key that `write_idf()` silently dropped and `write_epjson()`
+  emitted as an unknown property. Such a call now raises `ValidationFailedError`, as an unknown
+  field on a non-extensible type already did; the wrapper list (`reports=[...]`) and the
+  deprecated flat spellings (`report_name`, `report_name_2`) are still accepted.
+  `validate_document()` reports the same keys on objects loaded from epJSON.
+  ([459258f](https://github.com/idfkit/idfkit/commit/459258f), [b415635](https://github.com/idfkit/idfkit/commit/b415635))
+- `prep_outputs()` requested the `AllSummary` tabular report, which it never had. It passed
+  `report_1`, a spelling `Output:Table:SummaryReports` does not have, so `write_idf()` wrote the object with
+  no fields and no terminator, and EnergyPlus read the next object into it and stopped with a
+  fatal error. ([381c12f](https://github.com/idfkit/idfkit/commit/381c12f),
+  [1fe5171](https://github.com/idfkit/idfkit/commit/1fe5171))
+- `OutputVariableIndex.add_all_to_model` stored each meter name in the `key_name` field of the
+  `Output:Meter` objects it adds. It used to pass the name as the object name, which
+  `Output:Meter` does not have, so both writers dropped it: `write_idf` emitted
+  `Output:Meter,,Timestep;` and EnergyPlus stopped with `Missing required property 'key_name'`.
+  The added meters now have an empty name, like meters loaded from a file, so
+  `doc["Output:Meter"]["<meter>"]` no longer finds them, and calling `add_all_to_model` twice
+  adds each meter twice instead of raising `DuplicateObjectError`
+  ([d214b51](https://github.com/idfkit/idfkit/commit/d214b51)).
+- `IDFCollection.remove` (and so `IDFDocument.removeidfobject`) removed the first object equal
+  to the one passed instead of that object. Two objects of a type with no Name field are equal
+  when their fields match, so removing one `Output:Meter` could remove another and leave the
+  one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
+- The `hvac-loops` and `reference-tracking` agent references no longer state that
+  `validate_document` reports node-name typos. It reports a dangling object-name reference as
+  `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
+  managers among the objects `get_referencing` returns for a coil, and the node walk under
+  "Common mistakes" now finds a node in any field, including branch components and outdoor-air
+  mixer streams, so it no longer fails on correct models such as `5ZoneAirCooled`.
+- Threads asking for the same schema version at the same moment each loaded and built their own copy, so a cold start with 16 threads read the schema file 16 times and handed out 16 different `EpJSONSchema` instances. All but one were then pickled by content instead of by version. The manager now loads each version once and gives every thread the same instance, and on a free-threaded build the first calls to `get_schema_manager()` no longer create several managers ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran. A read still in flight when another thread called `invalidate` or `clear` also cached what it had read before the call, which silently undid the invalidation; such a read is now returned but not cached ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `SchemaManager.clear_cache` did not stop a load already in flight from caching its schema afterwards, so the clear was undone and a request made after it could be handed the pre-clear instance. Such a load now returns its schema to its caller without caching it. A logging handler or other code that asks for the version being loaded no longer deadlocks on the new load lock ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `copy.deepcopy` of a `ScheduleFileCache` or `SchemaManager` that other threads were using could raise `RuntimeError: dictionary changed size during iteration`, and `copy.copy` of a cache returned an alias that shared its entries but not its invalidations. Both now copy a consistent snapshot into an independent object, and instances pickled by idfkit 1.2.0 still load and work ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `ScheduleFileCache.invalidate` discarded every read in flight, of any file, so a steady stream of invalidations of one file stopped the cache caching the others. It now discards only reads of the file it invalidates. A child forked while another thread was inside `invalidate` or `clear` no longer inherits a half-invalidated cache ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- The weather cache is now safe to share between threads and processes. `WeatherDownloader.download` wrote the archive, the extracted files and the cleaned DDY in place, so callers downloading the same station at once could read a truncated file or raise "Downloaded file is not a valid ZIP archive", and a truncated file could stay in the cache for good; `StationIndex.refresh()` likewise rewrote `stations.json.gz` and its KML sources in place, so a concurrent `StationIndex.load()` raised `EOFError` or moved the half-written index aside. Every weather cache file, the IP-location cache and downloaded schemas are now written under a temporary name and renamed into place, with the permissions an in-place write would have given them. Extracted files carry their archive's modification time and size, so a file left truncated by an older version, or extracted from an archive that has since been replaced, is extracted again, and a corrupt archive is downloaded again on the next call. Threads of one process download a station once. Files inside folders of an archive, such as macOS `__MACOSX` resource forks, are no longer extracted beside the weather files ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- A child process forked while another thread was waiting out the geocoding rate limit hung on its first `geocode()` or `detect_location()` call ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `simulate` computed the cache key from the caller's model before copying it, so an edit made on another thread in between could store one model's results under another model's key. `async_simulate` read the caller's model on a worker thread after copying it, which raised on a free-threaded build when another coroutine edited the model meanwhile. Both now work only from their copy ([#254](https://github.com/idfkit/idfkit/pull/254)).
+
+## [1.2.0] - 2026-10-28
+
 This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the level the TypeScript library also declares, the corpus adds five cases for the multi-field `update` shared with the TypeScript library, an `update` operation and a `post-operation-epjson` assertion (`conformance-2026.17`), and removes the divergence entries for those cases in both languages: the ten Python entries that `IDFObject.update` closes (`conformance-2026.18`) and the six TypeScript ones (`conformance-2026.19`). `conformance-2026.20` then removes the two Python round-trip entries that #183 closes. An idfkit release without `IDFObject.update` fails the five update cases at this level, and one that still stores a blank fixed field as `""` fails those two. `conformance-2026.21` removes the three Python entries that #187 closes, so a release that still drops an unterminated final object fails `malformed-truncated-object` and `preserve-unterminated-final`.
 
 ### Added
@@ -52,9 +234,8 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
 - `idfkit.geometry_builders.split_horizontal_surface_by_regions(doc, surface, regions)` splits a horizontal surface under several regions in one step and returns `(region_surfaces, remaining_surfaces)`. `link_blocks` now uses it for each roof, so adjacent floors resting on one roof are subtracted together. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 - `idfkit.zoning.create_courtyard_block(doc, name, outer, courtyards, floor_to_floor, num_stories)` builds a block whose footprint has one or more courtyards cut out. The footprint is split into hole-free pieces with `polygon_difference_parts_2d`, each piece becomes one zone per story named `"<name> Part <k>"` (`"<name> Story <n> Part <k>"` for several stories), and the walls along the cuts between pieces are paired interior walls rather than exterior walls. ([#245](https://github.com/idfkit/idfkit/pull/245))
 - `idfkit.zoning.footprint_courtyard_parts(outer_width, outer_depth, inner_width, inner_depth)` returns a centred rectangular courtyard footprint as two hole-free U-shaped halves. ([#245](https://github.com/idfkit/idfkit/pull/245))
-- `IDFObject.update` sets several fields in one call, given as a mapping, keyword arguments, or both; where both name the same field, the keyword wins, as with `dict.update`. The call is all or nothing: every entry is examined before any is applied, and if one is refused, no field changes. An entry is refused when its name is not a field of the type, when it is `name` (use `IDFDocument.rename`), when it is a legacy flat extensible name such as `vertex_3_x_coordinate`, or when it gives the extensible wrapper key a value single assignment rejects: something other than a list, or a list holding an item that is not a dict or group, or a group with an unknown field. Unknown names are refused whenever the object has a schema field order, including in a document opened with `strict=False`, where single assignment stores them; an object constructed detached without one accepts any name, as single assignment does. Accepted entries are applied by ordinary attribute assignment, so reference and change tracking are those of consecutive assignments. The method returns `None`; the TypeScript `IdfObject.update` returns the object, a difference recorded in the naming register. The generated stubs type `update` per object type, so a type checker reports a misspelled field name or a wrongly typed value given as a keyword; the positional mapping is typed `Mapping[str, Any] | None`, as at run time, so that a mapping built at run time is accepted. ([#235](https://github.com/idfkit/idfkit/issues/235))
-- `InvalidFieldError` accepts an optional keyword-only `refused`, the entries of a refused `update` group, and then lists every one in its message and in its `refused` attribute, a tuple of `idfkit.exceptions.RefusedEntry`. Without it, every message is unchanged.
-
+- `IDFObject.update` sets several fields in one call, given as a mapping, keyword arguments, or both; where both name the same field, the keyword wins, as with `dict.update`. The call is all or nothing: every entry is examined before any is applied, and if one is refused, no field changes. An entry is refused when its name is not a field of the type, when it is `name` (use `IDFDocument.rename`), when it is a legacy flat extensible name such as `vertex_3_x_coordinate`, or when it gives the extensible wrapper key a value single assignment rejects: something other than a list, or a list holding an item that is not a dict or group, or a group with an unknown field. Unknown names are refused whenever the object has a schema field order, including in a document opened with `strict=False`, where single assignment stores them; an object constructed detached without one accepts any name, as single assignment does. Accepted entries are applied by ordinary attribute assignment, so reference and change tracking are those of consecutive assignments. The method returns `None`; the TypeScript `IdfObject.update` returns the object, a difference recorded in the naming register. The generated stubs type `update` per object type, so a type checker reports a misspelled field name or a wrongly typed value given as a keyword; the positional mapping is typed `Mapping[str, Any] | None`, as at run time, so that a mapping built at run time is accepted. ([#235](https://github.com/idfkit/idfkit/issues/235), [#236](https://github.com/idfkit/idfkit/pull/236))
+- `InvalidFieldError` accepts an optional keyword-only `refused`, the entries of a refused `update` group, and then lists every one in its message and in its `refused` attribute, a tuple of `idfkit.exceptions.RefusedEntry`. Without it, every message is unchanged. ([#236](https://github.com/idfkit/idfkit/pull/236))
 - **`GeocodingError` gained `kind` and `status`.** `kind` is `"not-found"`,
   `"unreachable"`, `"http"` or `"invalid-response"`, and `status` holds the HTTP
   code when `kind` is `"http"`, so a caller can tell a place name that matches
@@ -66,20 +247,21 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   `"unreachable"` rather than escaping as `http.client.IncompleteRead`.
   Coordinates that are blank, boolean or not finite are `"invalid-response"`.
   `@idfkit/weather` carries the same fields
-  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88), [#249](https://github.com/idfkit/idfkit/pull/249)).
 
 ### Changed
 
+- **Breaking:** `polygon_difference_2d` raises `ValueError` when the difference has a hole (the subtracted polygon lies strictly inside) or falls into several pieces, and names `polygon_difference_parts_2d` as the replacement. It used to return a single "bridge/slit" ring for these cases, which had the wrong area or coincident vertices. The subtracted polygon no longer has to lie inside the outer one, and either winding is accepted. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
+- **Breaking:** A blank fixed field (any field outside a repeating group, in every object type) was stored in the model as `""`, numeric fields included, although `write_idf` and `write_epjson` both omitted it, so re-parsing idfkit's own IDF output did not equal the document it was written from: a `Zone` written with eight blank trailing commas parsed to 12 fields and came back with 4. Such a field is now left out of the model, as ConvertInputFormat and idfkit-js leave it out, and assigning `None` or `""` to a field now clears it, as it already cleared an extensible slot. A blank field now reads as `None`, as a field cut off by an earlier semicolon always has, in attribute, item and positional access and in the eppy-compatible `fieldvalues`; code that compared such a field with `""` should test for `None`. An explicit `0` is still a value, and `write_idf` still writes an interior blank in its position. ([#183](https://github.com/idfkit/idfkit/issues/183), [#242](https://github.com/idfkit/idfkit/pull/242))
 - `idfkit tmy --near ADDRESS` now exits `1` (no matches) instead of `3`
   (network failure) when the address resolves to no place. Exit `3` remains for
   a geocoder that could not be reached, answered with an HTTP error, or returned
   an unreadable body
-  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88)).
+  ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88), [#249](https://github.com/idfkit/idfkit/pull/249)).
 - `IDFCollection` became covariant in its object type, so `IDFCollection[Zone]` is accepted
   where `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` now takes any `IDFObject`,
   and `get(name, default)` returns the object type or the default's type
   ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
-- **Breaking:** `polygon_difference_2d` raises `ValueError` when the difference has a hole (the subtracted polygon lies strictly inside) or falls into several pieces, and names `polygon_difference_parts_2d` as the replacement. It used to return a single "bridge/slit" ring for these cases, which had the wrong area or coincident vertices. The subtracted polygon no longer has to lie inside the outer one, and either winding is accepted. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 
 ### Deprecated
 
@@ -87,6 +269,7 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
 
 ### Fixed
 
+- `StationIndex.search` missed queries in the form "City, state" and accented queries, and now finds them. Tokens are split on commas and semicolons as well as whitespace, so `"Golden, CO"` no longer keeps the comma in `"golden,"`, and on dots and hyphens as station names are, so `"St. Louis, MO"` and `"Winston-Salem, NC"` find their stations; a token equal to a station's state or country code qualifies the match rather than having to appear in its name, and counts as matched in a partial match, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name, so `"co"` no longer prefix-matches Mbanza Congo and Cotonou; and query and station names are compared with diacritics folded, so `"Montréal"` finds Montreal and `"Tromsø"` finds Tromso. ([#248](https://github.com/idfkit/idfkit/issues/248), [#250](https://github.com/idfkit/idfkit/pull/250))
 - `create_block`, `create_courtyard_block` and `ZonedBlock.build` with `air_boundary=True` now raise a `ValueError` naming the version requirement on a document older than EnergyPlus 9.2, before adding anything. `Construction:AirBoundary` first appeared in 9.2, and they previously added every zone and surface of the block and then failed with `UnknownObjectTypeError`, leaving the document holding a block with blank constructions on its interior walls. ([#247](https://github.com/idfkit/idfkit/pull/247))
 - `expand_objects`, `IDFDocument.expand` and the ground heat-transfer preprocessors returned a
   strict document for a model opened with `strict=False` whenever a preprocessor ran; only a model
@@ -102,7 +285,6 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
 - `split_horizontal_surface` and `link_blocks` no longer leave a wrong-area, slit-shaped exposed roof when an upper block sits strictly inside the lower block's roof. The exposed frame is split into hole-free surfaces, and each extra piece is named `"<roof name> Remainder"` and copies the roof's construction, zone and boundary conditions. ([#164](https://github.com/idfkit/idfkit/issues/164), [#244](https://github.com/idfkit/idfkit/pull/244))
 - `view_model()` and the other 3D viewers in `idfkit.visualization` drew concave surfaces, such as L- and U-shaped floors and roofs, with spurious triangles spanning their notches. Surfaces were fan-triangulated from their first vertex, which is only correct for convex polygons; concave ones are now ear-clipped on their own plane, keeping the surface's winding, and convex ones keep the fan. Collinear and duplicate vertices are skipped, keyhole polygons with doubled bridge vertices are clipped correctly, and a self-intersecting polygon is still drawn instead of raising. ([#240](https://github.com/idfkit/idfkit/pull/240), [#246](https://github.com/idfkit/idfkit/pull/246))
 - `intersect_and_match` and `intersect_match` no longer give a concave surface drawn as a keyhole (a courtyard roof or ceiling with doubled bridge vertices), or one pinched at a vertex, the wrong area when they split it. Its triangulation clipped triangles that lay outside the surface. A 96 m² keyhole ceiling with one 4 m² floor above it was split into fragments totalling 168 m²; they now total 96 m². ([#246](https://github.com/idfkit/idfkit/pull/246))
-- A blank fixed field (any field outside a repeating group, in every object type) was stored in the model as `""`, numeric fields included, although `write_idf` and `write_epjson` both omitted it, so re-parsing idfkit's own IDF output did not equal the document it was written from: a `Zone` written with eight blank trailing commas parsed to 12 fields and came back with 4. Such a field is now left out of the model, as ConvertInputFormat and idfkit-js leave it out, and assigning `None` or `""` to a field now clears it, as it already cleared an extensible slot. A blank field now reads as `None`, as a field cut off by an earlier semicolon always has, in attribute, item and positional access and in the eppy-compatible `fieldvalues`; code that compared such a field with `""` should test for `None`. An explicit `0` is still a value, and `write_idf` still writes an interior blank in its position. ([#183](https://github.com/idfkit/idfkit/issues/183), [#242](https://github.com/idfkit/idfkit/pull/242))
 - An IDF file whose last object has no closing `;`, such as `Version, 24.1;\nZone, Z1, 0`, no longer loads with that object silently dropped. A strict parse (the default) raises `IDFParseError` with an `Unterminated object near "..." (missing ";")` finding of code `ParseError`, positioned at the line the object starts on and naming its type. With `strict_parsing=False` or `load_idf_with_diagnostics` the rest of the file still loads, and the finding is logged as a warning and returned. Trailing whitespace and comments are not affected. The same change removes exponential backtracking in the object pattern and in the `preserve_formatting=True` syntax-tree pattern, which made an unterminated tail of thirty characters take more than one hundred seconds to read, and `iter_idf_objects` now skips such a tail with a warning instead of scanning it. ([#187](https://github.com/idfkit/idfkit/issues/187), [#243](https://github.com/idfkit/idfkit/pull/243))
 
 ## [1.1.1] - 2026-10-19
@@ -1006,7 +1188,9 @@ Initial public release.
 - Performance benchmarks comparing idfkit against eppy and opyplus. ([#5](https://github.com/idfkit/idfkit/pull/5))
 - MkDocs Material documentation site with a full API reference, an eppy migration guide, and a getting-started Jupyter notebook. ([#2](https://github.com/idfkit/idfkit/pull/2))
 
-[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/idfkit/idfkit/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/idfkit/idfkit/compare/v1.1.1...v1.2.0
+[1.1.1]: https://github.com/idfkit/idfkit/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/idfkit/idfkit/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.6...v1.0.0
 [1.0.0-rc.6]: https://github.com/idfkit/idfkit/compare/v1.0.0-rc.5...v1.0.0-rc.6

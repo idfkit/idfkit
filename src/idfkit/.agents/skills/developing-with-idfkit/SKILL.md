@@ -28,12 +28,13 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 | Compute R-value, U-value, SHGC, gas mixture properties | [thermal-properties.md](references/thermal-properties.md) |
 | Render building geometry to 3D or SVG | [visualization.md](references/visualization.md) |
 | Migrate a model forward across EnergyPlus versions | [version-migration.md](references/version-migration.md) |
+| Share models between threads, or run on free-threaded Python (`3.14t`) | [threading.md](references/threading.md) |
 
 ## Conventions used in every reference
 
 - **Imports come from `idfkit` directly** unless the symbol lives in a sub-package (`idfkit.simulation`, `idfkit.weather`, `idfkit.schedules`, `idfkit.thermal`, `idfkit.visualization`).
 - **Python 3.10+** syntax: `tuple[int, int, int]`, `from __future__ import annotations` in real code.
-- **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback.
+- **Strict mode is the default**: unknown field names raise `InvalidFieldError`. Pass `strict=False` only as a tolerant migration fallback; it relaxes attribute reads and writes, not `add()` or `update()`, which refuse unknown keys in every mode.
 - **EnergyPlus version is part of every document**: `doc.version` is a `tuple[int, int, int]`. The latest supported version is exposed as `idfkit.LATEST_VERSION`.
 - **Code snippets in references are mined from `agent_references/snippets/`** — they are linted with `ruff` and type-checked with `pyright`, so they run as-is.
 
@@ -42,4 +43,5 @@ Read `references/<topic>.md` for focused, task-oriented guidance. Each reference
 - `IDFObject` field names use Python-style snake_case (`zone.x_origin`, not `zone["X Origin"]`). The schema's IDD field names map to attribute names automatically.
 - Renaming an object via `obj.name = "new"` propagates through the reference graph automatically. **Editing a node-name string elsewhere does not** — see [reference-tracking.md](references/reference-tracking.md).
 - `HVACTemplate:*` objects must be expanded before EnergyPlus can simulate them. Either call `doc.expand(...)` explicitly, or pass `expand_objects=True` to `simulate(...)`. See [hvac-templates.md](references/hvac-templates.md).
+- One document must not be mutated from several threads at once: it may raise, or silently go inconsistent. Reading it from many threads, and separate documents per thread, are safe. See [threading.md](references/threading.md).
 - Simulations need EnergyPlus installed on the host. idfkit discovers it via `$ENERGYPLUS_DIR`, `$PATH`, or standard install locations. See [simulation-execution.md](references/simulation-execution.md).

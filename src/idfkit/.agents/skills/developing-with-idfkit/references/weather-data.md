@@ -49,7 +49,7 @@ for hit in hits[:3]:
     print(hit.score, hit.station.display_name)
 ```
 
-`search` is whitespace-tokenised and case-insensitive. Use it for "I know roughly what the station is called."
+`search` splits the query on whitespace, commas, semicolons, dots and hyphens, and is case- and accent-insensitive (`"Montréal"` finds `Montreal`). A token equal to a station's state or country code qualifies the match instead of having to appear in its name, so `"Boulder, CO"` ranks Boulder, Colorado first; a token shorter than three characters must equal a whole word of the name rather than prefix one. Use it for "I know roughly what the station is called."
 
 ### By address (geocode + nearest)
 
@@ -188,7 +188,7 @@ if index.check_for_updates():
     index = StationIndex.refresh()  # re-download + rebuild
 ```
 
-`refresh()` requires `idfkit[weather]` for the openpyxl extra (TMYx publishes the catalogue as `.xlsx`).
+`refresh()` re-downloads the regional KML index files from climate.onebuilding.org and parses them with the Python standard library; it needs network access and no extra.
 
 ## Common mistakes
 

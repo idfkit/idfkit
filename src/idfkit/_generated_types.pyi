@@ -9,27 +9,50 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Literal, TypedDict
 
-from typing_extensions import NotRequired, ReadOnly, Unpack
+from typing_extensions import Never, NotRequired, ReadOnly, Unpack
 
 from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
+
+class _TypedIDFObject(IDFObject):
+    """Stub-only base: an undeclared field name is a type error on a typed object."""
+
+    def __getattr__(self, key: Never) -> object: ...
+    def __setattr__(self, key: Never, value: Never) -> None: ...
+
+class _TypedExtensibleGroup(ExtensibleGroup):
+    """Stub-only base: an undeclared field name is a type error on a typed extensible group."""
+
+    def __getattr__(self, name: Never) -> object: ...
+    def __setattr__(self, name: Never, value: Never) -> None: ...
 
 # =========================================================================
 # Typed object classes (one per EnergyPlus object type)
 # =========================================================================
 
-class Version(IDFObject):
+class Version(_TypedIDFObject):
     """Specifies the EnergyPlus version of the IDF file."""
 
+    version_identifier: str | None
+    """Default: 26.2"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_VersionFields]) -> None: ...  # type: ignore[override]
+
+class _VersionFields(TypedDict, total=False):
+    version_identifier: str | None
+
 class _SimulationControlCommonFields(TypedDict, total=False):
+    do_zone_sizing_calculation: Literal["", "No", "Yes"] | None
     do_system_sizing_calculation: Literal["", "No", "Yes"] | None
     do_plant_sizing_calculation: Literal["", "No", "Yes"] | None
     run_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None
     run_simulation_for_weather_file_run_periods: Literal["", "No", "Yes"] | None
     do_hvac_sizing_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None
 
-class _SimulationControlBase(IDFObject):
+class _SimulationControlBase(_TypedIDFObject):
     """``SimulationControl`` as every supported EnergyPlus version declares it."""
 
+    do_zone_sizing_calculation: Literal["", "No", "Yes"] | None
+    """If Yes, Zone sizing is accomplished from corresponding Sizing:Zone objects and autosize fields.; Default: No"""
     do_system_sizing_calculation: Literal["", "No", "Yes"] | None
     """If Yes, System sizing is accomplished from corresponding Sizing:System objects and autosize fields. If Yes, Zone sizi...; Default: No"""
     do_plant_sizing_calculation: Literal["", "No", "Yes"] | None
@@ -53,10 +76,14 @@ class SimulationControl(_SimulationControlBase):
 class _SimulationControlFields(_SimulationControlCommonFields, total=False):
     maximum_number_of_hvac_sizing_simulation_passes: int | None
 
-class _PerformancePrecisionTradeoffsCommonFields(TypedDict, total=False): ...
+class _PerformancePrecisionTradeoffsCommonFields(TypedDict, total=False):
+    use_coil_direct_solutions: Literal["", "No", "Yes"] | None
 
-class _PerformancePrecisionTradeoffsBase(IDFObject):
+class _PerformancePrecisionTradeoffsBase(_TypedIDFObject):
     """``PerformancePrecisionTradeoffs`` as every supported EnergyPlus version declares it."""
+
+    use_coil_direct_solutions: Literal["", "No", "Yes"] | None
+    """If Yes, an analytical or empirical solution will be used to replace iterations in the coil performance calculations.; Default: No"""
 
 class PerformancePrecisionTradeoffs(_PerformancePrecisionTradeoffsBase):
     """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea...; Since: 9.2.0"""
@@ -110,7 +137,7 @@ class _BuildingCommonFields(TypedDict, total=False):
         | None
     )
 
-class _BuildingBase(IDFObject):
+class _BuildingBase(_TypedIDFObject):
     """``Building`` as every supported EnergyPlus version declares it."""
 
     north_axis: float | None
@@ -160,12 +187,12 @@ class _ShadowCalculationCommonFields(TypedDict, total=False):
     disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None
     shading_zone_groups: list[Any]
 
-class ShadowCalculationShadingZoneGroupsGroup(ExtensibleGroup):
+class ShadowCalculationShadingZoneGroupsGroup(_TypedExtensibleGroup):
     """One shading_zone_groups group inside :class:`_ShadowCalculationBase`."""
 
     shading_zone_group_zonelist_name: str | None
 
-class _ShadowCalculationBase(IDFObject):
+class _ShadowCalculationBase(_TypedIDFObject):
     """``ShadowCalculation`` as every supported EnergyPlus version declares it."""
 
     maximum_figures_in_shadow_overlap_calculations: float | int | None
@@ -185,6 +212,8 @@ class _ShadowCalculationBase(IDFObject):
 class ShadowCalculation(_ShadowCalculationBase):
     """This object is used to control details of the solar, shading, and daylighting models"""
 
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
+    """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping; Since: 9.3.0"""
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic; Since: 9.3.0"""
     shading_calculation_update_frequency: int | None
@@ -201,6 +230,7 @@ class ShadowCalculation(_ShadowCalculationBase):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadowCalculationFields]) -> None: ...  # type: ignore[override]
 
 class _ShadowCalculationFields(_ShadowCalculationCommonFields, total=False):
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     shading_calculation_update_frequency: int | None
     maximum_figures_in_shadow_overlap_calculations: int | None
@@ -209,15 +239,53 @@ class _ShadowCalculationFields(_ShadowCalculationCommonFields, total=False):
     )
     pixel_counting_resolution: int | None
 
-class SurfaceConvectionAlgorithmInside(IDFObject):
+class _SurfaceConvectionAlgorithmInsideCommonFields(TypedDict, total=False): ...
+
+class _SurfaceConvectionAlgorithmInsideBase(_TypedIDFObject):
+    """``SurfaceConvectionAlgorithm:Inside`` as every supported EnergyPlus version declares it."""
+
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "ASTMC1340"] | None
+
+class SurfaceConvectionAlgorithmInside(_SurfaceConvectionAlgorithmInsideBase):
     """Default indoor surface heat transfer convection algorithm to be used for all zones"""
 
-class SurfaceConvectionAlgorithmOutside(IDFObject):
+    algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    """Simple = constant value natural convection (ASHRAE) TARP = variable natural convection based on temperature differenc...; Default: TARP"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmInsideFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _SurfaceConvectionAlgorithmInsideFields(_SurfaceConvectionAlgorithmInsideCommonFields, total=False):
+    algorithm: Literal["", "ASTMC1340", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+
+class SurfaceConvectionAlgorithmOutside(_TypedIDFObject):
     """Default outside surface heat transfer convection algorithm to be used for all zones"""
 
-class HeatBalanceAlgorithm(IDFObject):
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
+    """SimpleCombined = Combined radiation and convection coefficient using simple ASHRAE model TARP = correlation from mode...; Default: DOE-2"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SurfaceConvectionAlgorithmOutsideFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _SurfaceConvectionAlgorithmOutsideFields(TypedDict, total=False):
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
+
+class HeatBalanceAlgorithm(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used ie. CTF (Conduction Transfer Functions), EMPD (Effective Moistur..."""
 
+    algorithm: (
+        Literal[
+            "",
+            "CombinedHeatAndMoistureFiniteElement",
+            "ConductionFiniteDifference",
+            "ConductionTransferFunction",
+            "MoisturePenetrationDepthConductionTransferFunction",
+        ]
+        | None
+    )
+    """Default: ConductionTransferFunction"""
     surface_temperature_upper_limit: float | None
     """[C]; Default: 200.0; Range: >= 200.0"""
     minimum_surface_convection_heat_transfer_coefficient_value: float | None
@@ -230,13 +298,25 @@ class HeatBalanceAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HeatBalanceAlgorithmFields(TypedDict, total=False):
+    algorithm: (
+        Literal[
+            "",
+            "CombinedHeatAndMoistureFiniteElement",
+            "ConductionFiniteDifference",
+            "ConductionTransferFunction",
+            "MoisturePenetrationDepthConductionTransferFunction",
+        ]
+        | None
+    )
     surface_temperature_upper_limit: float | None
     minimum_surface_convection_heat_transfer_coefficient_value: float | None
     maximum_surface_convection_heat_transfer_coefficient_value: float | None
 
-class HeatBalanceSettingsConductionFiniteDifference(IDFObject):
+class HeatBalanceSettingsConductionFiniteDifference(_TypedIDFObject):
     """Determines settings for the Conduction Finite Difference algorithm for surface heat transfer modeling."""
 
+    difference_scheme: Literal["", "CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"] | None
+    """Default: FullyImplicitFirstOrder"""
     space_discretization_constant: float | None
     """increase or decrease number of nodes; Default: 3.0"""
     relaxation_factor: float | None
@@ -252,14 +332,19 @@ class HeatBalanceSettingsConductionFiniteDifference(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HeatBalanceSettingsConductionFiniteDifferenceFields(TypedDict, total=False):
+    difference_scheme: Literal["", "CrankNicholsonSecondOrder", "FullyImplicitFirstOrder"] | None
     space_discretization_constant: float | None
     relaxation_factor: float | None
     inside_face_surface_temperature_convergence_criteria: float | None
 
-class _ZoneAirHeatBalanceAlgorithmCommonFields(TypedDict, total=False): ...
+class _ZoneAirHeatBalanceAlgorithmCommonFields(TypedDict, total=False):
+    algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
 
-class _ZoneAirHeatBalanceAlgorithmBase(IDFObject):
+class _ZoneAirHeatBalanceAlgorithmBase(_TypedIDFObject):
     """``ZoneAirHeatBalanceAlgorithm`` as every supported EnergyPlus version declares it."""
+
+    algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
+    """Determines which algorithm will be used to solve the air heat balance.; Default: ThirdOrderBackwardDifference"""
 
 class ZoneAirHeatBalanceAlgorithm(_ZoneAirHeatBalanceAlgorithmBase):
     """Controls the zone/space air heat balance."""
@@ -277,9 +362,11 @@ class _ZoneAirHeatBalanceAlgorithmFields(_ZoneAirHeatBalanceAlgorithmCommonField
     do_space_heat_balance_for_sizing: Literal["", "No", "Yes"] | None
     do_space_heat_balance_for_simulation: Literal["", "No", "Yes"] | None
 
-class ZoneAirContaminantBalance(IDFObject):
+class ZoneAirContaminantBalance(_TypedIDFObject):
     """Determines which contaminant concentration will be simulates."""
 
+    carbon_dioxide_concentration: Literal["", "No", "Yes"] | None
+    """If Yes, CO2 simulation will be performed.; Default: No"""
     outdoor_carbon_dioxide_schedule_name: str | None
     """Schedule values should be in parts per million (ppm)"""
     generic_contaminant_concentration: Literal["", "No", "Yes"] | None
@@ -292,27 +379,43 @@ class ZoneAirContaminantBalance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneAirContaminantBalanceFields(TypedDict, total=False):
+    carbon_dioxide_concentration: Literal["", "No", "Yes"] | None
     outdoor_carbon_dioxide_schedule_name: str | None
     generic_contaminant_concentration: Literal["", "No", "Yes"] | None
     outdoor_generic_contaminant_schedule_name: str | None
 
-class ZoneAirMassFlowConservation(IDFObject):
-    """Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return..."""
+class _ZoneAirMassFlowConservationCommonFields(TypedDict, total=False):
+    infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
+    infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
+
+class _ZoneAirMassFlowConservationBase(_TypedIDFObject):
+    """``ZoneAirMassFlowConservation`` as every supported EnergyPlus version declares it."""
 
     infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
     """This input field allows user to choose how zone infiltration flow is treated during the zone air mass flow balance ca...; Default: AddInfiltrationFlow"""
     infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
     """This input field allows user to choose which zones are included in infiltration balancing. MixingSourceZonesOnly allo...; Default: MixingSourceZonesOnly"""
 
+class ZoneAirMassFlowConservation(_ZoneAirMassFlowConservationBase):
+    """Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return..."""
+
+    adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
+        Literal["", "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"]
+        | None
+    )
+    """If 'AdjustMixingOnly', zone mixing object flow rates are adjusted to balance the zone air mass flow and zone infiltra...; Default: None; Since: 9.5.0"""
+
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneAirMassFlowConservationFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ZoneAirMassFlowConservationFields(TypedDict, total=False):
-    infiltration_balancing_method: Literal["", "AddInfiltrationFlow", "AdjustInfiltrationFlow", "None"] | None
-    infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
+class _ZoneAirMassFlowConservationFields(_ZoneAirMassFlowConservationCommonFields, total=False):
+    adjust_zone_mixing_and_return_for_air_mass_flow_balance: (
+        Literal["", "AdjustMixingOnly", "AdjustMixingThenReturn", "AdjustReturnOnly", "AdjustReturnThenMixing", "None"]
+        | None
+    )
 
-class ZoneCapacitanceMultiplierResearchSpecial(IDFObject):
+class ZoneCapacitanceMultiplierResearchSpecial(_TypedIDFObject):
     """Multiplier altering the relative capacitance of the air compared to an empty zone"""
 
     zone_or_zonelist_name: str | None
@@ -340,14 +443,30 @@ class _ZoneCapacitanceMultiplierResearchSpecialFields(TypedDict, total=False):
     carbon_dioxide_capacity_multiplier: float | None
     generic_contaminant_capacity_multiplier: float | None
 
-class Timestep(IDFObject):
+class _TimestepCommonFields(TypedDict, total=False): ...
+
+class _TimestepBase(_TypedIDFObject):
+    """``Timestep`` as every supported EnergyPlus version declares it."""
+
+    number_of_timesteps_per_hour: float | int | None
+
+class Timestep(_TimestepBase):
     """Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is..."""
+
+    number_of_timesteps_per_hour: int | None
+    """Number in hour: normal validity 4 to 60: 6 suggested Must be evenly divisible into 60 Allowable values include 1, 2, ...; Default: 6; Range: >= 1, <= 60"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_TimestepFields]) -> None: ...  # type: ignore[override]
+
+class _TimestepFields(_TimestepCommonFields, total=False):
+    number_of_timesteps_per_hour: int | None
 
 class _ConvergenceLimitsCommonFields(TypedDict, total=False): ...
 
-class _ConvergenceLimitsBase(IDFObject):
+class _ConvergenceLimitsBase(_TypedIDFObject):
     """``ConvergenceLimits`` as every supported EnergyPlus version declares it."""
 
+    minimum_system_timestep: float | int | None
     maximum_hvac_iterations: float | int | None
     minimum_plant_iterations: float | int | None
     maximum_plant_iterations: float | int | None
@@ -355,6 +474,8 @@ class _ConvergenceLimitsBase(IDFObject):
 class ConvergenceLimits(_ConvergenceLimitsBase):
     """Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be ..."""
 
+    minimum_system_timestep: int | None
+    """0 sets the minimum to the zone timestep (ref: Timestep) 1 is normal (ratchet down to 1 minute) setting greater than z...; [minutes]; Range: >= 0, <= 60"""
     maximum_hvac_iterations: int | None
     """Default: 20; Range: >= 1"""
     minimum_plant_iterations: int | None
@@ -365,15 +486,25 @@ class ConvergenceLimits(_ConvergenceLimitsBase):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ConvergenceLimitsFields]) -> None: ...  # type: ignore[override]
 
 class _ConvergenceLimitsFields(_ConvergenceLimitsCommonFields, total=False):
+    minimum_system_timestep: int | None
     maximum_hvac_iterations: int | None
     minimum_plant_iterations: int | None
     maximum_plant_iterations: int | None
 
-class _HVACSystemRootFindingAlgorithmCommonFields(TypedDict, total=False): ...
+class _HVACSystemRootFindingAlgorithmCommonFields(TypedDict, total=False):
+    algorithm: (
+        Literal["", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"]
+        | None
+    )
 
-class _HVACSystemRootFindingAlgorithmBase(IDFObject):
+class _HVACSystemRootFindingAlgorithmBase(_TypedIDFObject):
     """``HVACSystemRootFindingAlgorithm`` as every supported EnergyPlus version declares it."""
 
+    algorithm: (
+        Literal["", "Alternation", "Bisection", "BisectionThenRegulaFalsi", "RegulaFalsi", "RegulaFalsiThenBisection"]
+        | None
+    )
+    """Default: RegulaFalsi"""
     number_of_iterations_before_algorithm_switch: float | int | None
 
 class HVACSystemRootFindingAlgorithm(_HVACSystemRootFindingAlgorithmBase):
@@ -389,8 +520,18 @@ class HVACSystemRootFindingAlgorithm(_HVACSystemRootFindingAlgorithmBase):
 class _HVACSystemRootFindingAlgorithmFields(_HVACSystemRootFindingAlgorithmCommonFields, total=False):
     number_of_iterations_before_algorithm_switch: int | None
 
-class ComplianceBuilding(IDFObject):
+class ComplianceBuilding(_TypedIDFObject):
     """Building level inputs related to compliance to building standards, building codes, and beyond energy code programs."""
+
+    building_rotation_for_appendix_g: float | None
+    """Additional degrees of rotation to be used with the requirement in ASHRAE Standard 90.1 Appendix G that states that th...; [deg]; Default: 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ComplianceBuildingFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _ComplianceBuildingFields(TypedDict, total=False):
+    building_rotation_for_appendix_g: float | None
 
 class _SiteLocationCommonFields(TypedDict, total=False):
     latitude: float | None
@@ -398,7 +539,7 @@ class _SiteLocationCommonFields(TypedDict, total=False):
     time_zone: float | None
     elevation: float | None
 
-class _SiteLocationBase(IDFObject):
+class _SiteLocationBase(_TypedIDFObject):
     """``Site:Location`` as every supported EnergyPlus version declares it."""
 
     latitude: float | None
@@ -421,7 +562,7 @@ class SiteLocation(_SiteLocationBase):
 class _SiteLocationFields(_SiteLocationCommonFields, total=False):
     keep_site_location_information: Literal["", "No", "Yes"] | None
 
-class SiteVariableLocation(IDFObject):
+class SiteVariableLocation(_TypedIDFObject):
     """Captures the scheduling of a moving/reorienting building, or more likely a vessel"""
 
     building_location_latitude_schedule: str | None
@@ -495,8 +636,10 @@ class _SizingPeriodDesignDayCommonFields(TypedDict, total=False):
     ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_: float | None
     ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_: float | None
     sky_clearness: float | None
+    ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None
+    ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
 
-class _SizingPeriodDesignDayBase(IDFObject):
+class _SizingPeriodDesignDayBase(_TypedIDFObject):
     """``SizingPeriod:DesignDay`` as every supported EnergyPlus version declares it."""
 
     month: float | int | None
@@ -578,6 +721,10 @@ class _SizingPeriodDesignDayBase(IDFObject):
     """Required if Solar Model Indicator = ASHRAETau or ASHRAETau2017 ASHRAETau2017 solar model can be used with 2013 and 20...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 3.0"""
     sky_clearness: float | None
     """Used if Sky Model Indicator = ASHRAEClearSky or ZhangHuang 0.0 is totally unclear, 1.0 is totally clear; Default: 0.0; Range: >= 0.0, <= 1.2"""
+    ashrae_clear_sky_optical_depth_for_beam_irradiance_taub: float | None
+    """Alias of :attr:`ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`, the same field without the trailing underscore."""
+    ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
+    """Alias of :attr:`ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_`, the same field without the trailing underscore."""
 
 class SizingPeriodDesignDay(_SizingPeriodDesignDayBase):
     """The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
@@ -625,7 +772,7 @@ class _SizingPeriodWeatherFileDaysCommonFields(TypedDict, total=False):
     use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None
     use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None
 
-class _SizingPeriodWeatherFileDaysBase(IDFObject):
+class _SizingPeriodWeatherFileDaysBase(_TypedIDFObject):
     """``SizingPeriod:WeatherFileDays`` as every supported EnergyPlus version declares it."""
 
     begin_month: float | int | None
@@ -677,7 +824,7 @@ class _SizingPeriodWeatherFileDaysFields(_SizingPeriodWeatherFileDaysCommonField
     end_month: int | None
     end_day_of_month: int | None
 
-class SizingPeriodWeatherFileConditionType(IDFObject):
+class SizingPeriodWeatherFileConditionType(_TypedIDFObject):
     """Use a weather file period for design sizing calculations. EPW weather files are created with typical and extreme peri..."""
 
     period_selection: (
@@ -778,7 +925,7 @@ class _RunPeriodCommonFields(TypedDict, total=False):
     use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None
     use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
 
-class _RunPeriodBase(IDFObject):
+class _RunPeriodBase(_TypedIDFObject):
     """``RunPeriod`` as every supported EnergyPlus version declares it."""
 
     begin_month: float | int | None
@@ -839,7 +986,7 @@ class _RunPeriodFields(_RunPeriodCommonFields, total=False):
     treat_weather_as_actual: Literal["", "No", "Yes"] | None
     first_hour_interpolation_starting_values: Literal["", "Hour1", "Hour24"] | None
 
-class RunPeriodControlSpecialDays(IDFObject):
+class RunPeriodControlSpecialDays(_TypedIDFObject):
     """This object sets up holidays/special days to be used during weather file run periods. (These are not used with Sizing..."""
 
     start_date: str | None
@@ -858,9 +1005,10 @@ class _RunPeriodControlSpecialDaysFields(TypedDict, total=False):
     duration: float | None
     special_day_type: Literal["", "CustomDay1", "CustomDay2", "Holiday", "SummerDesignDay", "WinterDesignDay"] | None
 
-class RunPeriodControlDaylightSavingTime(IDFObject):
+class RunPeriodControlDaylightSavingTime(_TypedIDFObject):
     """This object sets up the daylight saving time period for any RunPeriod. Ignores any daylight saving time period on the..."""
 
+    start_date: str | None
     end_date: str | None
     """Dates can be several formats: <number>/<number> (month/day) <number> <Month> <Month> <number> <Nth> <Weekday> in <Mon..."""
 
@@ -869,12 +1017,13 @@ class RunPeriodControlDaylightSavingTime(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RunPeriodControlDaylightSavingTimeFields(TypedDict, total=False):
+    start_date: str | None
     end_date: str | None
 
 class _WeatherPropertySkyTemperatureCommonFields(TypedDict, total=False):
     schedule_name: str | None
 
-class _WeatherPropertySkyTemperatureBase(IDFObject):
+class _WeatherPropertySkyTemperatureBase(_TypedIDFObject):
     """``WeatherProperty:SkyTemperature`` as every supported EnergyPlus version declares it."""
 
     calculation_type: (
@@ -933,9 +1082,11 @@ class _WeatherPropertySkyTemperatureFields(_WeatherPropertySkyTemperatureCommonF
     )
     use_weather_file_horizontal_ir: Literal["", "No", "Yes"] | None
 
-class SiteWeatherStation(IDFObject):
+class SiteWeatherStation(_TypedIDFObject):
     """This object should only be used for non-standard weather data. Standard weather data such as TMY2, IWEC, and ASHRAE d..."""
 
+    wind_sensor_height_above_ground: float | None
+    """[m]; Default: 10.0; Range: > 0.0"""
     wind_speed_profile_exponent: float | None
     """Default: 0.14; Range: >= 0.0"""
     wind_speed_profile_boundary_layer_thickness: float | None
@@ -948,13 +1099,16 @@ class SiteWeatherStation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWeatherStationFields(TypedDict, total=False):
+    wind_sensor_height_above_ground: float | None
     wind_speed_profile_exponent: float | None
     wind_speed_profile_boundary_layer_thickness: float | None
     air_temperature_sensor_height_above_ground: float | None
 
-class SiteHeightVariation(IDFObject):
+class SiteHeightVariation(_TypedIDFObject):
     """This object is used if the user requires advanced control over height-dependent variations in wind speed and temperat..."""
 
+    wind_speed_profile_exponent: float | None
+    """Set to zero for no wind speed dependence on height.; Default: 0.22; Range: >= 0.0"""
     wind_speed_profile_boundary_layer_thickness: float | None
     """[m]; Default: 370.0; Range: > 0.0"""
     air_temperature_gradient_coefficient: float | None
@@ -965,12 +1119,15 @@ class SiteHeightVariation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteHeightVariationFields(TypedDict, total=False):
+    wind_speed_profile_exponent: float | None
     wind_speed_profile_boundary_layer_thickness: float | None
     air_temperature_gradient_coefficient: float | None
 
-class SiteGroundTemperatureBuildingSurface(IDFObject):
+class SiteGroundTemperatureBuildingSurface(_TypedIDFObject):
     """These temperatures are specifically for those surfaces that have the outside environment of 'Ground'. Documentation a..."""
 
+    january_ground_temperature: float | None
+    """[C]; Default: 18.0"""
     february_ground_temperature: float | None
     """[C]; Default: 18.0"""
     march_ground_temperature: float | None
@@ -999,6 +1156,7 @@ class SiteGroundTemperatureBuildingSurface(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
+    january_ground_temperature: float | None
     february_ground_temperature: float | None
     march_ground_temperature: float | None
     april_ground_temperature: float | None
@@ -1011,9 +1169,11 @@ class _SiteGroundTemperatureBuildingSurfaceFields(TypedDict, total=False):
     november_ground_temperature: float | None
     december_ground_temperature: float | None
 
-class SiteGroundTemperatureFCfactorMethod(IDFObject):
+class SiteGroundTemperatureFCfactorMethod(_TypedIDFObject):
     """These temperatures are specifically for underground walls and ground floors defined with the C-factor and F-factor me..."""
 
+    january_ground_temperature: float | None
+    """[C]; Default: 13.0"""
     february_ground_temperature: float | None
     """[C]; Default: 13.0"""
     march_ground_temperature: float | None
@@ -1042,6 +1202,7 @@ class SiteGroundTemperatureFCfactorMethod(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
+    january_ground_temperature: float | None
     february_ground_temperature: float | None
     march_ground_temperature: float | None
     april_ground_temperature: float | None
@@ -1054,9 +1215,11 @@ class _SiteGroundTemperatureFCfactorMethodFields(TypedDict, total=False):
     november_ground_temperature: float | None
     december_ground_temperature: float | None
 
-class SiteGroundTemperatureShallow(IDFObject):
+class SiteGroundTemperatureShallow(_TypedIDFObject):
     """These temperatures are specifically for the Surface Ground Heat Exchanger and should probably be close to the average..."""
 
+    january_surface_ground_temperature: float | None
+    """[C]; Default: 13.0"""
     february_surface_ground_temperature: float | None
     """[C]; Default: 13.0"""
     march_surface_ground_temperature: float | None
@@ -1085,6 +1248,7 @@ class SiteGroundTemperatureShallow(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
+    january_surface_ground_temperature: float | None
     february_surface_ground_temperature: float | None
     march_surface_ground_temperature: float | None
     april_surface_ground_temperature: float | None
@@ -1097,9 +1261,11 @@ class _SiteGroundTemperatureShallowFields(TypedDict, total=False):
     november_surface_ground_temperature: float | None
     december_surface_ground_temperature: float | None
 
-class SiteGroundTemperatureDeep(IDFObject):
+class SiteGroundTemperatureDeep(_TypedIDFObject):
     """These temperatures are specifically for the ground heat exchangers that would use 'deep' (3-4 m depth) ground tempera..."""
 
+    january_deep_ground_temperature: float | None
+    """[C]; Default: 16.0"""
     february_deep_ground_temperature: float | None
     """[C]; Default: 16.0"""
     march_deep_ground_temperature: float | None
@@ -1128,6 +1294,7 @@ class SiteGroundTemperatureDeep(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundTemperatureDeepFields(TypedDict, total=False):
+    january_deep_ground_temperature: float | None
     february_deep_ground_temperature: float | None
     march_deep_ground_temperature: float | None
     april_deep_ground_temperature: float | None
@@ -1140,7 +1307,7 @@ class _SiteGroundTemperatureDeepFields(TypedDict, total=False):
     november_deep_ground_temperature: float | None
     december_deep_ground_temperature: float | None
 
-class SiteGroundTemperatureUndisturbedFiniteDifference(IDFObject):
+class SiteGroundTemperatureUndisturbedFiniteDifference(_TypedIDFObject):
     """Undisturbed ground temperature object using a detailed finite difference 1-D model"""
 
     soil_thermal_conductivity: float | None
@@ -1171,7 +1338,7 @@ class _SiteGroundTemperatureUndisturbedFiniteDifferenceFields(TypedDict, total=F
     soil_moisture_content_volume_fraction_at_saturation: float | None
     evapotranspiration_ground_cover_parameter: float | None
 
-class SiteGroundTemperatureUndisturbedKusudaAchenbach(IDFObject):
+class SiteGroundTemperatureUndisturbedKusudaAchenbach(_TypedIDFObject):
     """Undisturbed ground temperature object using the Kusuda-Achenbach 1965 correlation."""
 
     soil_thermal_conductivity: float | None
@@ -1211,7 +1378,7 @@ class _SiteGroundTemperatureUndisturbedXingCommonFields(TypedDict, total=False):
     phase_shift_of_temperature_amplitude_1: float | None
     phase_shift_of_temperature_amplitude_2: float | None
 
-class _SiteGroundTemperatureUndisturbedXingBase(IDFObject):
+class _SiteGroundTemperatureUndisturbedXingBase(_TypedIDFObject):
     """``Site:GroundTemperature:Undisturbed:Xing`` as every supported EnergyPlus version declares it."""
 
     soil_thermal_conductivity: float | None
@@ -1274,7 +1441,7 @@ class _SiteGroundDomainSlabCommonFields(TypedDict, total=False):
     simulation_timestep: Literal["", "Hourly", "Timestep"] | None
     geometric_mesh_coefficient: float | None
 
-class _SiteGroundDomainSlabBase(IDFObject):
+class _SiteGroundDomainSlabBase(_TypedIDFObject):
     """``Site:GroundDomain:Slab`` as every supported EnergyPlus version declares it."""
 
     ground_domain_depth: float | None
@@ -1373,7 +1540,7 @@ class _SiteGroundDomainBasementCommonFields(TypedDict, total=False):
     vertical_insulation_depth: float | None
     simulation_timestep: Literal["", "Hourly", "Timestep"] | None
 
-class _SiteGroundDomainBasementBase(IDFObject):
+class _SiteGroundDomainBasementBase(_TypedIDFObject):
     """``Site:GroundDomain:Basement`` as every supported EnergyPlus version declares it."""
 
     ground_domain_depth: float | None
@@ -1436,9 +1603,11 @@ class SiteGroundDomainBasement(_SiteGroundDomainBasementBase):
 class _SiteGroundDomainBasementFields(_SiteGroundDomainBasementCommonFields, total=False):
     mesh_density_parameter: int | None
 
-class SiteGroundReflectance(IDFObject):
+class SiteGroundReflectance(_TypedIDFObject):
     """Specifies the ground reflectance values used to calculate ground reflected solar. The ground reflectance can be furth..."""
 
+    january_ground_reflectance: float | None
+    """[dimensionless]; Default: 0.2; Range: >= 0.0, <= 1.0"""
     february_ground_reflectance: float | None
     """[dimensionless]; Default: 0.2; Range: >= 0.0, <= 1.0"""
     march_ground_reflectance: float | None
@@ -1467,6 +1636,7 @@ class SiteGroundReflectance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceFields(TypedDict, total=False):
+    january_ground_reflectance: float | None
     february_ground_reflectance: float | None
     march_ground_reflectance: float | None
     april_ground_reflectance: float | None
@@ -1479,9 +1649,11 @@ class _SiteGroundReflectanceFields(TypedDict, total=False):
     november_ground_reflectance: float | None
     december_ground_reflectance: float | None
 
-class SiteGroundReflectanceSnowModifier(IDFObject):
+class SiteGroundReflectanceSnowModifier(_TypedIDFObject):
     """Specifies ground reflectance multipliers when snow resident on the ground. These multipliers are applied to the 'norm..."""
 
+    ground_reflected_solar_modifier: float | None
+    """Value for modifying the 'normal' ground reflectance when Snow is on ground when calculating the 'Ground Reflected Sol...; Default: 1.0; Range: >= 0.0"""
     daylighting_ground_reflected_solar_modifier: float | None
     """Value for modifying the 'normal' daylighting ground reflectance when Snow is on ground when calculating the 'Ground R...; Default: 1.0; Range: >= 0.0"""
 
@@ -1490,6 +1662,7 @@ class SiteGroundReflectanceSnowModifier(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteGroundReflectanceSnowModifierFields(TypedDict, total=False):
+    ground_reflected_solar_modifier: float | None
     daylighting_ground_reflected_solar_modifier: float | None
 
 class _SiteWaterMainsTemperatureCommonFields(TypedDict, total=False):
@@ -1497,9 +1670,10 @@ class _SiteWaterMainsTemperatureCommonFields(TypedDict, total=False):
     annual_average_outdoor_air_temperature: float | None
     maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None
 
-class _SiteWaterMainsTemperatureBase(IDFObject):
+class _SiteWaterMainsTemperatureBase(_TypedIDFObject):
     """``Site:WaterMainsTemperature`` as every supported EnergyPlus version declares it."""
 
+    calculation_method: Literal["Correlation", "Schedule", "", "CorrelationFromWeatherFile"] | None
     temperature_schedule_name: str | None
     annual_average_outdoor_air_temperature: float | None
     """If calculation method is CorrelationFromWeatherFile or Schedule, this input field is ignored.; [C]"""
@@ -1509,6 +1683,8 @@ class _SiteWaterMainsTemperatureBase(IDFObject):
 class SiteWaterMainsTemperature(_SiteWaterMainsTemperatureBase):
     """Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
 
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
+    """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
     temperature_multiplier: float | None
     """If calculation method is Schedule, this input field is ignored.; [dimensionless]; Default: 1.0; Range: >= 0.0; Since: 25.2.0"""
     temperature_offset: float | None
@@ -1519,12 +1695,14 @@ class SiteWaterMainsTemperature(_SiteWaterMainsTemperatureBase):
     ) -> None: ...  # type: ignore[override]
 
 class _SiteWaterMainsTemperatureFields(_SiteWaterMainsTemperatureCommonFields, total=False):
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
     temperature_multiplier: float | None
     temperature_offset: float | None
 
-class SitePrecipitation(IDFObject):
+class SitePrecipitation(_TypedIDFObject):
     """Used to describe the amount of water precipitation at the building site. Precipitation includes both rain and the equ..."""
 
+    precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None
     design_level_for_total_annual_precipitation: float | None
     """meters of water per year used for design level; [m/yr]"""
     precipitation_rates_schedule_name: str | None
@@ -1535,13 +1713,16 @@ class SitePrecipitation(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SitePrecipitationFields]) -> None: ...  # type: ignore[override]
 
 class _SitePrecipitationFields(TypedDict, total=False):
+    precipitation_model_type: Literal["ScheduleAndDesignLevel"] | None
     design_level_for_total_annual_precipitation: float | None
     precipitation_rates_schedule_name: str | None
     average_total_annual_precipitation: float | None
 
-class RoofIrrigation(IDFObject):
+class RoofIrrigation(_TypedIDFObject):
     """Used to describe the amount of irrigation on the ecoroof surface over the course of the simulation runperiod."""
 
+    irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None
+    """SmartSchedule will not allow irrigation when soil is already moist. Current threshold set at 30% of saturation."""
     irrigation_rate_schedule_name: str | None
     """Schedule values in meters of water per hour values should be non-negative"""
     irrigation_maximum_saturation_threshold: float | None
@@ -1550,10 +1731,11 @@ class RoofIrrigation(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofIrrigationFields]) -> None: ...  # type: ignore[override]
 
 class _RoofIrrigationFields(TypedDict, total=False):
+    irrigation_model_type: Literal["Schedule", "SmartSchedule"] | None
     irrigation_rate_schedule_name: str | None
     irrigation_maximum_saturation_threshold: float | None
 
-class SiteSolarAndVisibleSpectrum(IDFObject):
+class SiteSolarAndVisibleSpectrum(_TypedIDFObject):
     """If this object is omitted, the default solar and visible spectrum data will be used."""
 
     spectrum_data_method: Literal["", "Default", "UserDefined"] | None
@@ -1570,13 +1752,13 @@ class _SiteSolarAndVisibleSpectrumFields(TypedDict, total=False):
     solar_spectrum_data_object_name: str | None
     visible_spectrum_data_object_name: str | None
 
-class SiteSpectrumDataExtensionsGroup(ExtensibleGroup):
+class SiteSpectrumDataExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`SiteSpectrumData`."""
 
     wavelength: float | None
     spectrum: float | None
 
-class SiteSpectrumData(IDFObject):
+class SiteSpectrumData(_TypedIDFObject):
     """Spectrum Data Type is followed by up to 107 sets of normal-incidence measured values of [wavelength, spectrum] for wa..."""
 
     spectrum_data_type: Literal["Solar", "Visible"] | None
@@ -1598,7 +1780,7 @@ class _SiteSpectrumDataFields(TypedDict, total=False):
     spectrum_2: float | None
     extensions: list[Any]
 
-class ScheduleTypeLimits(IDFObject):
+class ScheduleTypeLimits(_TypedIDFObject):
     """ScheduleTypeLimits specifies the data types and limits for the values contained in schedules"""
 
     lower_limit_value: float | None
@@ -1658,7 +1840,7 @@ class _ScheduleTypeLimitsFields(TypedDict, total=False):
         | None
     )
 
-class ScheduleDayHourly(IDFObject):
+class ScheduleDayHourly(_TypedIDFObject):
     """A Schedule:Day:Hourly contains 24 values for each hour of the day."""
 
     schedule_type_limits_name: str | None
@@ -1744,14 +1926,14 @@ class _ScheduleDayIntervalCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
 
-class _ScheduleDayIntervalBase(IDFObject):
+class _ScheduleDayIntervalBase(_TypedIDFObject):
     """``Schedule:Day:Interval`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
     """when the interval does not match the user specified timestep a Average choice will average between the intervals requ...; Default: No"""
 
-class ScheduleDayIntervalDataGroup(ExtensibleGroup):
+class ScheduleDayIntervalDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleDayInterval`."""
 
     time: str | None
@@ -1774,12 +1956,12 @@ class _ScheduleDayListCommonFields(TypedDict, total=False):
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
     extensions: list[Any]
 
-class ScheduleDayListExtensionsGroup(ExtensibleGroup):
+class ScheduleDayListExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`_ScheduleDayListBase`."""
 
     value: float | None
 
-class _ScheduleDayListBase(IDFObject):
+class _ScheduleDayListBase(_TypedIDFObject):
     """``Schedule:Day:List`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
@@ -1799,7 +1981,7 @@ class ScheduleDayList(_ScheduleDayListBase):
 class _ScheduleDayListFields(_ScheduleDayListCommonFields, total=False):
     minutes_per_item: int | None
 
-class ScheduleWeekDaily(IDFObject):
+class ScheduleWeekDaily(_TypedIDFObject):
     """A Schedule:Week:Daily contains 12 Schedule:Day:Hourly objects, one for each day type."""
 
     sunday_schedule_day_name: str | None
@@ -1831,13 +2013,13 @@ class _ScheduleWeekDailyFields(TypedDict, total=False):
     customday1_schedule_day_name: str | None
     customday2_schedule_day_name: str | None
 
-class ScheduleWeekCompactDataGroup(ExtensibleGroup):
+class ScheduleWeekCompactDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleWeekCompact`."""
 
     daytype_list: str | None
     schedule_day_name: str | None
 
-class ScheduleWeekCompact(IDFObject):
+class ScheduleWeekCompact(_TypedIDFObject):
     """Compact definition for Schedule:Day:List"""
 
     data: ExtensibleList[ScheduleWeekCompactDataGroup]
@@ -1852,12 +2034,12 @@ class _ScheduleWeekCompactFields(TypedDict, total=False):
 class _ScheduleYearCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
 
-class _ScheduleYearBase(IDFObject):
+class _ScheduleYearBase(_TypedIDFObject):
     """``Schedule:Year`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
 
-class ScheduleYearScheduleWeeksGroup(ExtensibleGroup):
+class ScheduleYearScheduleWeeksGroup(_TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear`."""
 
     schedule_week_name: str | None
@@ -1876,12 +2058,12 @@ class ScheduleYear(_ScheduleYearBase):
 class _ScheduleYearFields(_ScheduleYearCommonFields, total=False):
     schedule_weeks: list[Any]
 
-class ScheduleCompactDataGroup(ExtensibleGroup):
+class ScheduleCompactDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleCompact`."""
 
     field: float | str | None
 
-class ScheduleCompact(IDFObject):
+class ScheduleCompact(_TypedIDFObject):
     """Irregular object. Does not follow the usual definition for fields. Fields A3... are: Through: Date For: Applicable da..."""
 
     schedule_type_limits_name: str | None
@@ -1893,7 +2075,7 @@ class _ScheduleCompactFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     data: list[Any]
 
-class ScheduleConstant(IDFObject):
+class ScheduleConstant(_TypedIDFObject):
     """Constant hourly value for entire year."""
 
     schedule_type_limits_name: str | None
@@ -1906,7 +2088,7 @@ class _ScheduleConstantFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     hourly_value: float | None
 
-class ScheduleYearRules(IDFObject):
+class ScheduleYearRules(_TypedIDFObject):
     """A Schedule:Year:Rules defines a yearly schedule using a default day profile and a prioritized list of override rules ...; Since: 26.2.0"""
 
     schedule_type_limits_name: str | None
@@ -1933,7 +2115,7 @@ class _ScheduleYearRulesFields(TypedDict, total=False):
     custom_day_1_schedule_name: str | None
     custom_day_2_schedule_name: str | None
 
-class ScheduleWeekRuleDateRangesGroup(ExtensibleGroup):
+class ScheduleWeekRuleDateRangesGroup(_TypedExtensibleGroup):
     """One date_ranges group inside :class:`ScheduleWeekRule`."""
 
     start_month: int | None
@@ -1941,7 +2123,7 @@ class ScheduleWeekRuleDateRangesGroup(ExtensibleGroup):
     end_month: int | None
     end_day: int | None
 
-class ScheduleWeekRule(IDFObject):
+class ScheduleWeekRule(_TypedIDFObject):
     """A Schedule:Week:Rule defines one override rule for a Schedule:Year:Rules. Rules are evaluated in ascending Rule Prior...; Since: 26.2.0"""
 
     schedule_year_rules_name: str | None
@@ -1979,8 +2161,18 @@ class _ScheduleWeekRuleFields(TypedDict, total=False):
     apply_saturday: Literal["", "No", "Yes"] | None
     date_ranges: list[Any]
 
-class ScheduleFileShading(IDFObject):
+class ScheduleFileShading(_TypedIDFObject):
     """A Schedule:File:Shading points to a CSV file that has 8760-8784 hours of sunlit fraction data for all or some of the ..."""
+
+    file_name: str | None
+    """The name of the file that writes all shading data."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleFileShadingFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _ScheduleFileShadingFields(TypedDict, total=False):
+    file_name: str | None
 
 class _ScheduleFileCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -1988,7 +2180,7 @@ class _ScheduleFileCommonFields(TypedDict, total=False):
     number_of_hours_of_data: float | None
     interpolate_to_timestep: Literal["", "No", "Yes"] | None
 
-class _ScheduleFileBase(IDFObject):
+class _ScheduleFileBase(_TypedIDFObject):
     """``Schedule:File`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
@@ -2035,7 +2227,7 @@ class _MaterialCommonFields(TypedDict, total=False):
     solar_absorptance: float | None
     visible_absorptance: float | None
 
-class _MaterialBase(IDFObject):
+class _MaterialBase(_TypedIDFObject):
     """``Material`` as every supported EnergyPlus version declares it."""
 
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"] | None
@@ -2078,7 +2270,7 @@ class _MaterialNoMassCommonFields(TypedDict, total=False):
     solar_absorptance: float | None
     visible_absorptance: float | None
 
-class _MaterialNoMassBase(IDFObject):
+class _MaterialNoMassBase(_TypedIDFObject):
     """``Material:NoMass`` as every supported EnergyPlus version declares it."""
 
     roughness: Literal["MediumRough", "MediumSmooth", "Rough", "Smooth", "VeryRough", "VerySmooth"] | None
@@ -2108,10 +2300,10 @@ class _MaterialNoMassFields(_MaterialNoMassCommonFields, total=False):
     solar_absorptance_inside_face: float | None
     visible_absorptance_inside_face: float | None
 
-class MaterialInfraredTransparent(IDFObject):
+class MaterialInfraredTransparent(_TypedIDFObject):
     """Special infrared transparent material. Similar to a Material:Nomass with low thermal resistance. High absorptance in ..."""
 
-class MaterialAirGap(IDFObject):
+class MaterialAirGap(_TypedIDFObject):
     """Air Space in Opaque Construction"""
 
     thermal_resistance: float | None
@@ -2122,7 +2314,7 @@ class MaterialAirGap(IDFObject):
 class _MaterialAirGapFields(TypedDict, total=False):
     thermal_resistance: float | None
 
-class MaterialRoofVegetation(IDFObject):
+class MaterialRoofVegetation(_TypedIDFObject):
     """EcoRoof model, plant layer plus soil layer Implemented by Portland State University (Sailor et al., January, 2007) on..."""
 
     height_of_plants: float | None
@@ -2186,7 +2378,7 @@ class _MaterialRoofVegetationFields(TypedDict, total=False):
     initial_volumetric_moisture_content_of_the_soil_layer: float | None
     moisture_diffusion_calculation_method: Literal["", "Advanced", "Simple"] | None
 
-class WindowMaterialSimpleGlazingSystem(IDFObject):
+class WindowMaterialSimpleGlazingSystem(_TypedIDFObject):
     """Alternate method of describing windows This window material object is used to define an entire glazing system using s..."""
 
     u_factor: float | None
@@ -2205,7 +2397,7 @@ class _WindowMaterialSimpleGlazingSystemFields(TypedDict, total=False):
     solar_heat_gain_coefficient: float | None
     visible_transmittance: float | None
 
-class WindowMaterialGlazing(IDFObject):
+class WindowMaterialGlazing(_TypedIDFObject):
     """Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
 
     optical_data_type: Literal["BSDF", "Spectral", "SpectralAndAngle", "SpectralAverage"] | None
@@ -2274,13 +2466,13 @@ class _WindowMaterialGlazingFields(TypedDict, total=False):
     window_glass_spectral_and_incident_angle_front_reflectance_data_set_table_name: str | None
     window_glass_spectral_and_incident_angle_back_reflectance_data_set_table_name: str | None
 
-class WindowMaterialGlazingGroupThermochromicTemperatureDataGroup(ExtensibleGroup):
+class WindowMaterialGlazingGroupThermochromicTemperatureDataGroup(_TypedExtensibleGroup):
     """One temperature_data group inside :class:`WindowMaterialGlazingGroupThermochromic`."""
 
     optical_data_temperature: float | None
     window_material_glazing_name: str | None
 
-class WindowMaterialGlazingGroupThermochromic(IDFObject):
+class WindowMaterialGlazingGroupThermochromic(_TypedIDFObject):
     """thermochromic glass at different temperatures"""
 
     temperature_data: ExtensibleList[WindowMaterialGlazingGroupThermochromicTemperatureDataGroup]
@@ -2295,7 +2487,7 @@ class WindowMaterialGlazingGroupThermochromic(IDFObject):
 class _WindowMaterialGlazingGroupThermochromicFields(TypedDict, total=False):
     temperature_data: list[Any]
 
-class WindowMaterialGlazingRefractionExtinctionMethod(IDFObject):
+class WindowMaterialGlazingRefractionExtinctionMethod(_TypedIDFObject):
     """Glass material properties for Windows or Glass Doors Index of Refraction/Extinction Coefficient input method Not to b..."""
 
     thickness: float | None
@@ -2338,7 +2530,7 @@ class _WindowMaterialGlazingRefractionExtinctionMethodFields(TypedDict, total=Fa
     dirt_correction_factor_for_solar_and_visible_transmittance: float | None
     solar_diffusing: Literal["", "No", "Yes"] | None
 
-class WindowMaterialGas(IDFObject):
+class WindowMaterialGas(_TypedIDFObject):
     """Gas material properties that are used in Windows or Glass Doors"""
 
     gas_type: Literal["Air", "Argon", "Custom", "Krypton", "Xenon"] | None
@@ -2384,7 +2576,7 @@ class _WindowMaterialGasFields(TypedDict, total=False):
     molecular_weight: float | None
     specific_heat_ratio: float | None
 
-class WindowGapSupportPillar(IDFObject):
+class WindowGapSupportPillar(_TypedIDFObject):
     """used to define pillar geometry for support pillars"""
 
     spacing: float | None
@@ -2400,7 +2592,7 @@ class _WindowGapSupportPillarFields(TypedDict, total=False):
     spacing: float | None
     radius: float | None
 
-class WindowGapDeflectionState(IDFObject):
+class WindowGapDeflectionState(_TypedIDFObject):
     """Used to enter data describing deflection state of the gap. It is referenced from WindowMaterial:Gap object only and i..."""
 
     deflected_thickness: float | None
@@ -2430,7 +2622,7 @@ class _WindowMaterialGasMixtureCommonFields(TypedDict, total=False):
     gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None
     gas_4_fraction: float | None
 
-class _WindowMaterialGasMixtureBase(IDFObject):
+class _WindowMaterialGasMixtureBase(_TypedIDFObject):
     """``WindowMaterial:GasMixture`` as every supported EnergyPlus version declares it."""
 
     thickness: float | None
@@ -2462,7 +2654,7 @@ class WindowMaterialGasMixture(_WindowMaterialGasMixtureBase):
 class _WindowMaterialGasMixtureFields(_WindowMaterialGasMixtureCommonFields, total=False):
     number_of_gases_in_mixture: int | None
 
-class WindowMaterialGap(IDFObject):
+class WindowMaterialGap(_TypedIDFObject):
     """Used to define the gap between two layers in a complex fenestration system, where the Construction:ComplexFenestratio..."""
 
     thickness: float | None
@@ -2475,6 +2667,8 @@ class WindowMaterialGap(IDFObject):
     """If left blank, it will be considered that gap is not deflected"""
     support_pillar: str | None
     """If left blank, it will be considered that gap does not have support pillars"""
+    gas_or_gas_mixture: str | None
+    """Alias of :attr:`gas_or_gas_mixture_`, the same field without the trailing underscore."""
 
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowMaterialGapFields]) -> None: ...  # type: ignore[override]
 
@@ -2484,8 +2678,9 @@ class _WindowMaterialGapFields(TypedDict, total=False):
     pressure: float | None
     deflection_state: str | None
     support_pillar: str | None
+    gas_or_gas_mixture: str | None
 
-class WindowMaterialShade(IDFObject):
+class WindowMaterialShade(_TypedIDFObject):
     """Specifies the properties of window shade materials. Reflectance and emissivity properties are assumed to be the same ..."""
 
     solar_transmittance: float | None
@@ -2555,7 +2750,7 @@ class _WindowMaterialComplexShadeCommonFields(TypedDict, total=False):
     slat_conductivity: float | None
     slat_curve: float | None
 
-class _WindowMaterialComplexShadeBase(IDFObject):
+class _WindowMaterialComplexShadeBase(_TypedIDFObject):
     """``WindowMaterial:ComplexShade`` as every supported EnergyPlus version declares it."""
 
     layer_type: (
@@ -2614,7 +2809,7 @@ class _WindowMaterialComplexShadeFields(_WindowMaterialComplexShadeCommonFields,
         Literal["", "BSDF", "OtherShadingType", "Perforated", "VenetianHorizontal", "VenetianVertical", "Woven"] | None
     )
 
-class WindowMaterialBlind(IDFObject):
+class WindowMaterialBlind(_TypedIDFObject):
     """Window blind thermal properties"""
 
     slat_orientation: Literal["", "Horizontal", "Vertical"] | None
@@ -2708,7 +2903,7 @@ class _WindowMaterialBlindFields(TypedDict, total=False):
     minimum_slat_angle: float | None
     maximum_slat_angle: float | None
 
-class WindowMaterialScreen(IDFObject):
+class WindowMaterialScreen(_TypedIDFObject):
     """Window screen physical properties. Can only be located on the exterior side of a window construction."""
 
     reflected_beam_transmittance_accounting_method: (
@@ -2761,7 +2956,7 @@ class _WindowMaterialScreenFields(TypedDict, total=False):
     right_side_opening_multiplier: float | None
     angle_of_resolution_for_screen_transmittance_output_map: Literal[0, 1, 2, 3, 5, ""] | None
 
-class WindowMaterialShadeEquivalentLayer(IDFObject):
+class WindowMaterialShadeEquivalentLayer(_TypedIDFObject):
     """Specifies the properties of equivalent layer window shade material Shades are considered to be perfect diffusers (all..."""
 
     shade_beam_beam_solar_transmittance: float | None
@@ -2804,7 +2999,7 @@ class _WindowMaterialShadeEquivalentLayerFields(TypedDict, total=False):
     front_side_shade_material_infrared_emissivity: float | None
     back_side_shade_material_infrared_emissivity: float | None
 
-class WindowMaterialDrapeEquivalentLayer(IDFObject):
+class WindowMaterialDrapeEquivalentLayer(_TypedIDFObject):
     """Specifies the properties of equivalent layer drape fabric materials. Shades are considered to be perfect diffusers (a..."""
 
     drape_beam_beam_solar_transmittance_at_normal_incidence: float | None
@@ -2853,7 +3048,7 @@ class _WindowMaterialDrapeEquivalentLayerFields(TypedDict, total=False):
     width_of_pleated_fabric: float | None
     length_of_pleated_fabric: float | None
 
-class WindowMaterialBlindEquivalentLayer(IDFObject):
+class WindowMaterialBlindEquivalentLayer(_TypedIDFObject):
     """Window equivalent layer blind slat optical and thermal properties. The model assumes that slats are thin and flat, ap..."""
 
     slat_orientation: Literal["", "Horizontal", "Vertical"] | None
@@ -2932,7 +3127,7 @@ class _WindowMaterialBlindEquivalentLayerFields(TypedDict, total=False):
     back_side_slat_infrared_emissivity: float | None
     slat_angle_control: Literal["", "BlockBeamSolar", "FixedSlatAngle", "MaximizeSolar"] | None
 
-class WindowMaterialScreenEquivalentLayer(IDFObject):
+class WindowMaterialScreenEquivalentLayer(_TypedIDFObject):
     """Equivalent layer window screen physical properties. Can only be located on the exterior side of a window construction."""
 
     screen_beam_beam_solar_transmittance: float | Literal["", "Autocalculate"] | None
@@ -3000,8 +3195,9 @@ class _WindowMaterialGlazingEquivalentLayerCommonFields(TypedDict, total=False):
     infrared_transmittance_applies_to_front_and_back_: float | None
     front_side_infrared_emissivity: float | None
     back_side_infrared_emissivity: float | None
+    infrared_transmittance_applies_to_front_and_back: float | None
 
-class _WindowMaterialGlazingEquivalentLayerBase(IDFObject):
+class _WindowMaterialGlazingEquivalentLayerBase(_TypedIDFObject):
     """``WindowMaterial:Glazing:EquivalentLayer`` as every supported EnergyPlus version declares it."""
 
     optical_data_type: Literal["", "Spectral", "SpectralAverage"] | None
@@ -3058,6 +3254,8 @@ class _WindowMaterialGlazingEquivalentLayerBase(IDFObject):
     """The front side long-wave hemispherical emissivity of the glazing.; [dimensionless]; Default: 0.84; Range: > 0.0, < 1.0"""
     back_side_infrared_emissivity: float | None
     """The back side long-wave hemispherical emissivity of the glazing.; [dimensionless]; Default: 0.84; Range: > 0.0, < 1.0"""
+    infrared_transmittance_applies_to_front_and_back: float | None
+    """Alias of :attr:`infrared_transmittance_applies_to_front_and_back_`, the same field without the trailing underscore."""
 
 class WindowMaterialGlazingEquivalentLayer(_WindowMaterialGlazingEquivalentLayerBase):
     """Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
@@ -3072,7 +3270,7 @@ class WindowMaterialGlazingEquivalentLayer(_WindowMaterialGlazingEquivalentLayer
 class _WindowMaterialGlazingEquivalentLayerFields(_WindowMaterialGlazingEquivalentLayerCommonFields, total=False):
     thermal_resistance: float | None
 
-class WindowMaterialGapEquivalentLayer(IDFObject):
+class WindowMaterialGapEquivalentLayer(_TypedIDFObject):
     """Gas material properties that are used in Windows Equivalent Layer References only WindowMaterial:Gas properties"""
 
     gas_type: Literal["AIR", "ARGON", "CUSTOM", "KRYPTON", "XENON"] | None
@@ -3123,7 +3321,7 @@ class _WindowMaterialGapEquivalentLayerFields(TypedDict, total=False):
     molecular_weight: float | None
     specific_heat_ratio: float | None
 
-class MaterialPropertyMoisturePenetrationDepthSettings(IDFObject):
+class MaterialPropertyMoisturePenetrationDepthSettings(_TypedIDFObject):
     """Additional properties for moisture using EMPD procedure HeatBalanceAlgorithm choice=MoisturePenetrationDepthConductio..."""
 
     water_vapor_diffusion_resistance_factor: float | None
@@ -3166,13 +3364,13 @@ class _MaterialPropertyMoisturePenetrationDepthSettingsFields(TypedDict, total=F
 class _MaterialPropertyPhaseChangeCommonFields(TypedDict, total=False):
     temperature_coefficient_for_thermal_conductivity: float | None
 
-class _MaterialPropertyPhaseChangeBase(IDFObject):
+class _MaterialPropertyPhaseChangeBase(_TypedIDFObject):
     """``MaterialProperty:PhaseChange`` as every supported EnergyPlus version declares it."""
 
     temperature_coefficient_for_thermal_conductivity: float | None
     """The base temperature is 20C. This is the thermal conductivity change per degree excursion from 20C. This variable con...; [W/m-K2]; Default: 0.0"""
 
-class MaterialPropertyPhaseChangeValuesGroup(ExtensibleGroup):
+class MaterialPropertyPhaseChangeValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyPhaseChange`."""
 
     temperature: float | None
@@ -3190,7 +3388,7 @@ class MaterialPropertyPhaseChange(_MaterialPropertyPhaseChangeBase):
 class _MaterialPropertyPhaseChangeFields(_MaterialPropertyPhaseChangeCommonFields, total=False):
     values: list[Any]
 
-class MaterialPropertyPhaseChangeHysteresis(IDFObject):
+class MaterialPropertyPhaseChangeHysteresis(_TypedIDFObject):
     """Additional properties for temperature dependent thermal conductivity and enthalpy for Phase Change Materials (PCM) wi..."""
 
     latent_heat_during_the_entire_phase_change_process: float | None
@@ -3241,10 +3439,10 @@ class _MaterialPropertyPhaseChangeHysteresisFields(TypedDict, total=False):
 
 class _MaterialPropertyVariableThermalConductivityCommonFields(TypedDict, total=False): ...
 
-class _MaterialPropertyVariableThermalConductivityBase(IDFObject):
+class _MaterialPropertyVariableThermalConductivityBase(_TypedIDFObject):
     """``MaterialProperty:VariableThermalConductivity`` as every supported EnergyPlus version declares it."""
 
-class MaterialPropertyVariableThermalConductivityValuesGroup(ExtensibleGroup):
+class MaterialPropertyVariableThermalConductivityValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyVariableThermalConductivity`."""
 
     temperature: float | None
@@ -3278,7 +3476,7 @@ class _MaterialPropertyVariableAbsorptanceCommonFields(TypedDict, total=False):
     solar_absorptance_function_name: str | None
     solar_absorptance_schedule_name: str | None
 
-class _MaterialPropertyVariableAbsorptanceBase(IDFObject):
+class _MaterialPropertyVariableAbsorptanceBase(_TypedIDFObject):
     """``MaterialProperty:VariableAbsorptance`` as every supported EnergyPlus version declares it."""
 
     reference_material_name: str | None
@@ -3326,9 +3524,11 @@ class _MaterialPropertyVariableAbsorptanceFields(_MaterialPropertyVariableAbsorp
     solar_absorptance_function_name_inside_face: str | None
     solar_absorptance_schedule_name_inside_face: str | None
 
-class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
+class MaterialPropertyHeatAndMoistureTransferSettings(_TypedIDFObject):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Additional material properties f..."""
 
+    material_name: str | None
+    """Material Name that the moisture properties will be added to. This augments material properties needed for combined he..."""
     porosity: float | None
     """[m3/m3]; Range: >= 0.0, <= 1.0"""
     initial_water_content_ratio: float | None
@@ -3342,10 +3542,12 @@ class MaterialPropertyHeatAndMoistureTransferSettings(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _MaterialPropertyHeatAndMoistureTransferSettingsFields(TypedDict, total=False):
+    material_name: str | None
     porosity: float | None
     initial_water_content_ratio: float | None
 
 class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields(TypedDict, total=False):
+    material_name: str | None
     relative_humidity_fraction_1: float | None
     moisture_content_1: float | None
     relative_humidity_fraction_2: float | None
@@ -3397,9 +3599,11 @@ class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields(Typed
     relative_humidity_fraction_25: float | None
     moisture_content_25: float | None
 
-class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermBase(IDFObject):
+class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermBase(_TypedIDFObject):
     """``MaterialProperty:HeatAndMoistureTransfer:SorptionIsotherm`` as every supported EnergyPlus version declares it."""
 
+    material_name: str | None
+    """The Material Name that the moisture sorption isotherm will be added to."""
     number_of_isotherm_coordinates: float | int | None
     relative_humidity_fraction_1: float | None
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
@@ -3523,6 +3727,7 @@ class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermFields(
     number_of_isotherm_coordinates: int | None
 
 class _MaterialPropertyHeatAndMoistureTransferSuctionCommonFields(TypedDict, total=False):
+    material_name: str | None
     moisture_content_1: float | None
     liquid_transport_coefficient_1: float | None
     moisture_content_2: float | None
@@ -3574,9 +3779,11 @@ class _MaterialPropertyHeatAndMoistureTransferSuctionCommonFields(TypedDict, tot
     moisture_content_25: float | None
     liquid_transport_coefficient_25: float | None
 
-class _MaterialPropertyHeatAndMoistureTransferSuctionBase(IDFObject):
+class _MaterialPropertyHeatAndMoistureTransferSuctionBase(_TypedIDFObject):
     """``MaterialProperty:HeatAndMoistureTransfer:Suction`` as every supported EnergyPlus version declares it."""
 
+    material_name: str | None
+    """Material Name that the moisture properties will be added to."""
     number_of_suction_points: float | int | None
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
@@ -3698,6 +3905,7 @@ class _MaterialPropertyHeatAndMoistureTransferSuctionFields(
     number_of_suction_points: int | None
 
 class _MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields(TypedDict, total=False):
+    material_name: str | None
     moisture_content_1: float | None
     liquid_transport_coefficient_1: float | None
     moisture_content_2: float | None
@@ -3749,9 +3957,11 @@ class _MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields(TypedDi
     moisture_content_25: float | None
     liquid_transport_coefficient_25: float | None
 
-class _MaterialPropertyHeatAndMoistureTransferRedistributionBase(IDFObject):
+class _MaterialPropertyHeatAndMoistureTransferRedistributionBase(_TypedIDFObject):
     """``MaterialProperty:HeatAndMoistureTransfer:Redistribution`` as every supported EnergyPlus version declares it."""
 
+    material_name: str | None
+    """Moisture Material Name that the moisture properties will be added to."""
     number_of_redistribution_points: float | int | None
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
@@ -3873,6 +4083,7 @@ class _MaterialPropertyHeatAndMoistureTransferRedistributionFields(
     number_of_redistribution_points: int | None
 
 class _MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields(TypedDict, total=False):
+    material_name: str | None
     relative_humidity_fraction_1: float | None
     water_vapor_diffusion_resistance_factor_1: float | None
     relative_humidity_fraction_2: float | None
@@ -3924,9 +4135,11 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields(TypedDict, t
     relative_humidity_fraction_25: float | None
     water_vapor_diffusion_resistance_factor_25: float | None
 
-class _MaterialPropertyHeatAndMoistureTransferDiffusionBase(IDFObject):
+class _MaterialPropertyHeatAndMoistureTransferDiffusionBase(_TypedIDFObject):
     """``MaterialProperty:HeatAndMoistureTransfer:Diffusion`` as every supported EnergyPlus version declares it."""
 
+    material_name: str | None
+    """Moisture Material Name that the moisture properties will be added to."""
     number_of_data_pairs: float | int | None
     relative_humidity_fraction_1: float | None
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
@@ -4048,6 +4261,7 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusionFields(
     number_of_data_pairs: int | None
 
 class _MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields(TypedDict, total=False):
+    material_name: str | None
     moisture_content_1: float | None
     thermal_conductivity_1: float | None
     moisture_content_2: float | None
@@ -4099,9 +4313,11 @@ class _MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields(Ty
     moisture_content_25: float | None
     thermal_conductivity_25: float | None
 
-class _MaterialPropertyHeatAndMoistureTransferThermalConductivityBase(IDFObject):
+class _MaterialPropertyHeatAndMoistureTransferThermalConductivityBase(_TypedIDFObject):
     """``MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity`` as every supported EnergyPlus version declares it."""
 
+    material_name: str | None
+    """Moisture Material Name that the Thermal Conductivity will be added to."""
     number_of_thermal_coordinates: float | int | None
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
@@ -4242,7 +4458,7 @@ class _MaterialPropertyGlazingSpectralDataCommonFields(TypedDict, total=False):
     front_reflectance_4: float | None
     back_reflectance_4: float | None
 
-class _MaterialPropertyGlazingSpectralDataBase(IDFObject):
+class _MaterialPropertyGlazingSpectralDataBase(_TypedIDFObject):
     """``MaterialProperty:GlazingSpectralData`` as every supported EnergyPlus version declares it."""
 
     wavelength_1: float | None
@@ -4266,7 +4482,7 @@ class _MaterialPropertyGlazingSpectralDataBase(IDFObject):
     front_reflectance_4: float | None
     back_reflectance_4: float | None
 
-class MaterialPropertyGlazingSpectralDataExtensionsGroup(ExtensibleGroup):
+class MaterialPropertyGlazingSpectralDataExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`MaterialPropertyGlazingSpectralData`."""
 
     wavelength: float | None
@@ -4286,7 +4502,7 @@ class MaterialPropertyGlazingSpectralData(_MaterialPropertyGlazingSpectralDataBa
 class _MaterialPropertyGlazingSpectralDataFields(_MaterialPropertyGlazingSpectralDataCommonFields, total=False):
     extensions: list[Any]
 
-class Construction(IDFObject):
+class Construction(_TypedIDFObject):
     """Start with outside layer and work your way to the inside layer Up to 10 layers total, 8 for windows Enter the materia..."""
 
     outside_layer: str | None
@@ -4314,7 +4530,7 @@ class _ConstructionFields(TypedDict, total=False):
     layer_9: str | None
     layer_10: str | None
 
-class ConstructionCfactorUndergroundWall(IDFObject):
+class ConstructionCfactorUndergroundWall(_TypedIDFObject):
     """Alternate method of describing underground wall constructions"""
 
     c_factor: float | None
@@ -4330,7 +4546,7 @@ class _ConstructionCfactorUndergroundWallFields(TypedDict, total=False):
     c_factor: float | None
     height: float | None
 
-class ConstructionFfactorGroundFloor(IDFObject):
+class ConstructionFfactorGroundFloor(_TypedIDFObject):
     """Alternate method of describing slab-on-grade or underground floor constructions"""
 
     f_factor: float | None
@@ -4354,7 +4570,7 @@ class _ConstructionPropertyInternalHeatSourceCommonFields(TypedDict, total=False
     tube_spacing: float | None
     two_dimensional_temperature_calculation_position: float | None
 
-class _ConstructionPropertyInternalHeatSourceBase(IDFObject):
+class _ConstructionPropertyInternalHeatSourceBase(_TypedIDFObject):
     """``ConstructionProperty:InternalHeatSource`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -4390,7 +4606,7 @@ class _ConstructionAirBoundaryCommonFields(TypedDict, total=False):
     simple_mixing_air_changes_per_hour: float | None
     simple_mixing_schedule_name: str | None
 
-class _ConstructionAirBoundaryBase(IDFObject):
+class _ConstructionAirBoundaryBase(_TypedIDFObject):
     """``Construction:AirBoundary`` as every supported EnergyPlus version declares it."""
 
     air_exchange_method: Literal["", "None", "SimpleMixing"] | None
@@ -4409,7 +4625,7 @@ class ConstructionAirBoundary(_ConstructionAirBoundaryBase):
 
 class _ConstructionAirBoundaryFields(_ConstructionAirBoundaryCommonFields, total=False): ...
 
-class WindowThermalModelParams(IDFObject):
+class WindowThermalModelParams(_TypedIDFObject):
     """object is used to select which thermal model should be used in tarcog simulations"""
 
     standard: Literal["", "EN673Declared", "EN673Design", "ISO15099"] | None
@@ -4458,8 +4674,18 @@ class _WindowThermalModelParamsFields(TypedDict, total=False):
     initial_temperature: float | None
     initial_pressure: float | None
 
-class WindowsCalculationEngine(IDFObject):
+class WindowsCalculationEngine(_TypedIDFObject):
     """Describes which window model will be used in calculations. Built in windows model will use algorithms that are part o...; Since: 9.0.1"""
+
+    windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None
+    """Default: BuiltInWindowsModel"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowsCalculationEngineFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _WindowsCalculationEngineFields(TypedDict, total=False):
+    windows_engine: Literal["", "BuiltInWindowsModel", "ExternalWindowsModel"] | None
 
 class _ConstructionComplexFenestrationStateCommonFields(TypedDict, total=False):
     basis_type: Literal["", "LBNLWINDOW", "UserDefined"] | None
@@ -4479,7 +4705,7 @@ class _ConstructionComplexFenestrationStateCommonFields(TypedDict, total=False):
     gap_4_name: str | None
     layer_5_name: str | None
 
-class _ConstructionComplexFenestrationStateBase(IDFObject):
+class _ConstructionComplexFenestrationStateBase(_TypedIDFObject):
     """``Construction:ComplexFenestrationState`` as every supported EnergyPlus version declares it."""
 
     basis_type: Literal["", "LBNLWINDOW", "UserDefined"] | None
@@ -4568,7 +4794,7 @@ class _ConstructionComplexFenestrationStateFields(_ConstructionComplexFenestrati
     layer_5_directional_front_absorptance_matrix_name: str | None
     layer_5_directional_back_absorptance_matrix_name: str | None
 
-class ConstructionWindowEquivalentLayer(IDFObject):
+class ConstructionWindowEquivalentLayer(_TypedIDFObject):
     """Start with outside layer and work your way to the inside Layer Up to 11 layers total. Up to six solid layers and up t..."""
 
     outside_layer: str | None
@@ -4600,7 +4826,7 @@ class _ConstructionWindowEquivalentLayerFields(TypedDict, total=False):
     layer_10: str | None
     layer_11: str | None
 
-class ConstructionWindowDataFile(IDFObject):
+class ConstructionWindowDataFile(_TypedIDFObject):
     """Initiates search of the Window data file for a window called Name."""
 
     file_name: str | None
@@ -4613,7 +4839,7 @@ class ConstructionWindowDataFile(IDFObject):
 class _ConstructionWindowDataFileFields(TypedDict, total=False):
     file_name: str | None
 
-class ConstructionAssignmentSet(IDFObject):
+class ConstructionAssignmentSet(_TypedIDFObject):
     """Defines a set of construction assignments for surfaces and sub-surfaces based on their type and outside boundary cond...; Since: 26.2.0"""
 
     exterior_surface_construction_assignments_name: str | None
@@ -4644,7 +4870,7 @@ class _ConstructionAssignmentSetFields(TypedDict, total=False):
     interior_partition_construction_name: str | None
     adiabatic_surface_construction_name: str | None
 
-class SurfaceConstructionAssignments(IDFObject):
+class SurfaceConstructionAssignments(_TypedIDFObject):
     """Defines construction assignments for the three opaque surface types (Floor, Wall, Roof/Ceiling) for a single boundary...; Since: 26.2.0"""
 
     floor_construction_name: str | None
@@ -4660,7 +4886,7 @@ class _SurfaceConstructionAssignmentsFields(TypedDict, total=False):
     wall_construction_name: str | None
     roof_ceiling_construction_name: str | None
 
-class SubSurfaceConstructionAssignments(IDFObject):
+class SubSurfaceConstructionAssignments(_TypedIDFObject):
     """Defines construction assignments for each sub-surface type for a single boundary-condition category (exterior or inte...; Since: 26.2.0"""
 
     fixed_window_construction_name: str | None
@@ -4688,9 +4914,12 @@ class _SubSurfaceConstructionAssignmentsFields(TypedDict, total=False):
 
 class _GlobalGeometryRulesCommonFields(TypedDict, total=False): ...
 
-class _GlobalGeometryRulesBase(IDFObject):
+class _GlobalGeometryRulesBase(_TypedIDFObject):
     """``GlobalGeometryRules`` as every supported EnergyPlus version declares it."""
 
+    starting_vertex_position: (
+        str | Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    )
     vertex_entry_direction: str | Literal["Clockwise", "Counterclockwise"] | None
     coordinate_system: str | Literal["Relative", "World"] | None
     daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
@@ -4699,6 +4928,10 @@ class _GlobalGeometryRulesBase(IDFObject):
 class GlobalGeometryRules(_GlobalGeometryRulesBase):
     """Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
 
+    starting_vertex_position: (
+        Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    )
+    """Specified as entry for a 4 sided surface/rectangle Surfaces are specified as viewed from outside the surface Shading ..."""
     vertex_entry_direction: Literal["Clockwise", "Counterclockwise"] | None
     coordinate_system: Literal["Relative", "World"] | None
     """Relative -- coordinates are entered relative to zone origin World -- all coordinates entered are 'absolute' for this ..."""
@@ -4712,14 +4945,19 @@ class GlobalGeometryRules(_GlobalGeometryRulesBase):
     ) -> None: ...  # type: ignore[override]
 
 class _GlobalGeometryRulesFields(_GlobalGeometryRulesCommonFields, total=False):
+    starting_vertex_position: (
+        Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    )
     vertex_entry_direction: Literal["Clockwise", "Counterclockwise"] | None
     coordinate_system: Literal["Relative", "World"] | None
     daylighting_reference_point_coordinate_system: Literal["", "Relative", "World"] | None
     rectangular_surface_coordinate_system: Literal["", "Relative", "World"] | None
 
-class GeometryTransform(IDFObject):
+class GeometryTransform(_TypedIDFObject):
     """Provides a simple method of altering the footprint geometry of a model. The intent is to provide a single parameter t..."""
 
+    plane_of_transform: Literal["", "XY"] | None
+    """only current allowed value is 'XY'; Default: XY"""
     current_aspect_ratio: float | None
     """Aspect ratio of building as described in idf; Range: > 0.0"""
     new_aspect_ratio: float | None
@@ -4728,6 +4966,7 @@ class GeometryTransform(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GeometryTransformFields]) -> None: ...  # type: ignore[override]
 
 class _GeometryTransformFields(TypedDict, total=False):
+    plane_of_transform: Literal["", "XY"] | None
     current_aspect_ratio: float | None
     new_aspect_ratio: float | None
 
@@ -4737,12 +4976,12 @@ class _SpaceCommonFields(TypedDict, total=False):
     space_type: str | None
     tags: list[Any]
 
-class SpaceTagsGroup(ExtensibleGroup):
+class SpaceTagsGroup(_TypedExtensibleGroup):
     """One tags group inside :class:`_SpaceBase`."""
 
     tag: str | None
 
-class _SpaceBase(IDFObject):
+class _SpaceBase(_TypedIDFObject):
     """``Space`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
@@ -4769,12 +5008,12 @@ class _SpaceFields(_SpaceCommonFields, total=False):
     volume: float | Literal["", "Autocalculate"] | None
     construction_assignment_set_name: str | None
 
-class SpaceListSpacesGroup(ExtensibleGroup):
+class SpaceListSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceList`."""
 
     space_name: str | None
 
-class SpaceList(IDFObject):
+class SpaceList(_TypedIDFObject):
     """Defines a list of Spaces which can be referenced as a group. The SpaceList name may be used elsewhere in the input to...; Since: 9.6.0"""
 
     spaces: ExtensibleList[SpaceListSpacesGroup]
@@ -4797,7 +5036,7 @@ class _ZoneCommonFields(TypedDict, total=False):
     )
     part_of_total_floor_area: Literal["", "No", "Yes"] | None
 
-class _ZoneBase(IDFObject):
+class _ZoneBase(_TypedIDFObject):
     """``Zone`` as every supported EnergyPlus version declares it."""
 
     direction_of_relative_north: float | None
@@ -4850,12 +5089,12 @@ class _ZoneFields(_ZoneCommonFields, total=False):
         | None
     )
 
-class ZoneListZonesGroup(ExtensibleGroup):
+class ZoneListZonesGroup(_TypedExtensibleGroup):
     """One zones group inside :class:`ZoneList`."""
 
     zone_name: str | None
 
-class ZoneList(IDFObject):
+class ZoneList(_TypedIDFObject):
     """Defines a list of thermal zones which can be referenced as a group. The ZoneList name may be used elsewhere in the in..."""
 
     zones: ExtensibleList[ZoneListZonesGroup]
@@ -4868,7 +5107,7 @@ class _ZoneListFields(TypedDict, total=False):
 class _ZoneGroupCommonFields(TypedDict, total=False):
     zone_list_name: str | None
 
-class _ZoneGroupBase(IDFObject):
+class _ZoneGroupBase(_TypedIDFObject):
     """``ZoneGroup`` as every supported EnergyPlus version declares it."""
 
     zone_list_name: str | None
@@ -4895,7 +5134,7 @@ class _BuildingSurfaceDetailedCommonFields(TypedDict, total=False):
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _BuildingSurfaceDetailedBase(IDFObject):
+class _BuildingSurfaceDetailedBase(_TypedIDFObject):
     """``BuildingSurface:Detailed`` as every supported EnergyPlus version declares it."""
 
     surface_type: Literal["Ceiling", "Floor", "Roof", "Wall"] | None
@@ -4936,7 +5175,7 @@ class _BuildingSurfaceDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 120 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates (last ...; Default: Autocalculate"""
 
-class BuildingSurfaceDetailedVerticesGroup(ExtensibleGroup):
+class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`BuildingSurfaceDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -5011,7 +5250,7 @@ class _WallDetailedCommonFields(TypedDict, total=False):
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _WallDetailedBase(IDFObject):
+class _WallDetailedBase(_TypedIDFObject):
     """``Wall:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5051,7 +5290,7 @@ class _WallDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
 
-class WallDetailedVerticesGroup(ExtensibleGroup):
+class WallDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`WallDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -5124,7 +5363,7 @@ class _RoofCeilingDetailedCommonFields(TypedDict, total=False):
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _RoofCeilingDetailedBase(IDFObject):
+class _RoofCeilingDetailedBase(_TypedIDFObject):
     """``RoofCeiling:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5162,7 +5401,7 @@ class _RoofCeilingDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
 
-class RoofCeilingDetailedVerticesGroup(ExtensibleGroup):
+class RoofCeilingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`RoofCeilingDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -5233,7 +5472,7 @@ class _FloorDetailedCommonFields(TypedDict, total=False):
     view_factor_to_ground: float | Literal["", "Autocalculate"] | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _FloorDetailedBase(IDFObject):
+class _FloorDetailedBase(_TypedIDFObject):
     """``Floor:Detailed`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5273,7 +5512,7 @@ class _FloorDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
 
-class FloorDetailedVerticesGroup(ExtensibleGroup):
+class FloorDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`FloorDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -5348,7 +5587,7 @@ class _WallExteriorCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _WallExteriorBase(IDFObject):
+class _WallExteriorBase(_TypedIDFObject):
     """``Wall:Exterior`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5392,7 +5631,7 @@ class _WallAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _WallAdiabaticBase(IDFObject):
+class _WallAdiabaticBase(_TypedIDFObject):
     """``Wall:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5436,7 +5675,7 @@ class _WallUndergroundCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _WallUndergroundBase(IDFObject):
+class _WallUndergroundBase(_TypedIDFObject):
     """``Wall:Underground`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5481,7 +5720,7 @@ class _WallInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _WallInterzoneBase(IDFObject):
+class _WallInterzoneBase(_TypedIDFObject):
     """``Wall:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5527,7 +5766,7 @@ class _RoofCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _RoofBase(IDFObject):
+class _RoofBase(_TypedIDFObject):
     """``Roof`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5571,7 +5810,7 @@ class _CeilingAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _CeilingAdiabaticBase(IDFObject):
+class _CeilingAdiabaticBase(_TypedIDFObject):
     """``Ceiling:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5616,7 +5855,7 @@ class _CeilingInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _CeilingInterzoneBase(IDFObject):
+class _CeilingInterzoneBase(_TypedIDFObject):
     """``Ceiling:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5662,7 +5901,7 @@ class _FloorGroundContactCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _FloorGroundContactBase(IDFObject):
+class _FloorGroundContactBase(_TypedIDFObject):
     """``Floor:GroundContact`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5708,7 +5947,7 @@ class _FloorAdiabaticCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _FloorAdiabaticBase(IDFObject):
+class _FloorAdiabaticBase(_TypedIDFObject):
     """``Floor:Adiabatic`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5753,7 +5992,7 @@ class _FloorInterzoneCommonFields(TypedDict, total=False):
     length: float | None
     width: float | None
 
-class _FloorInterzoneBase(IDFObject):
+class _FloorInterzoneBase(_TypedIDFObject):
     """``Floor:Interzone`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5809,7 +6048,7 @@ class _FenestrationSurfaceDetailedCommonFields(TypedDict, total=False):
     vertex_4_y_coordinate: float | None
     vertex_4_z_coordinate: float | None
 
-class _FenestrationSurfaceDetailedBase(IDFObject):
+class _FenestrationSurfaceDetailedBase(_TypedIDFObject):
     """``FenestrationSurface:Detailed`` as every supported EnergyPlus version declares it."""
 
     surface_type: (
@@ -5913,7 +6152,7 @@ class _WindowCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _WindowBase(IDFObject):
+class _WindowBase(_TypedIDFObject):
     """``Window`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -5940,7 +6179,7 @@ class Window(_WindowBase):
 
 class _WindowFields(_WindowCommonFields, total=False): ...
 
-class Door(IDFObject):
+class Door(_TypedIDFObject):
     """Allows for simplified entry of opaque Doors."""
 
     construction_name: str | None
@@ -5979,7 +6218,7 @@ class _GlazedDoorCommonFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _GlazedDoorBase(IDFObject):
+class _GlazedDoorBase(_TypedIDFObject):
     """``GlazedDoor`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -6006,7 +6245,7 @@ class GlazedDoor(_GlazedDoorBase):
 
 class _GlazedDoorFields(_GlazedDoorCommonFields, total=False): ...
 
-class WindowInterzone(IDFObject):
+class WindowInterzone(_TypedIDFObject):
     """Allows for simplified entry of interzone windows (adjacent to other zones)."""
 
     construction_name: str | None
@@ -6038,7 +6277,7 @@ class _WindowInterzoneFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class DoorInterzone(IDFObject):
+class DoorInterzone(_TypedIDFObject):
     """Allows for simplified entry of interzone (opaque interior) doors (adjacent to other zones)."""
 
     construction_name: str | None
@@ -6070,7 +6309,7 @@ class _DoorInterzoneFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class GlazedDoorInterzone(IDFObject):
+class GlazedDoorInterzone(_TypedIDFObject):
     """Allows for simplified entry of interzone (glass interior) doors (adjacent to other zones)."""
 
     construction_name: str | None
@@ -6119,6 +6358,7 @@ class _WindowShadingControlCommonFields(TypedDict, total=False):
         ]
         | None
     )
+    construction_with_shading_name: str | None
     schedule_name: str | None
     setpoint: float | None
     shading_control_is_scheduled: Literal["", "No", "Yes"] | None
@@ -6131,12 +6371,12 @@ class _WindowShadingControlCommonFields(TypedDict, total=False):
     multiple_surface_control_type: Literal["", "Group", "Sequential"] | None
     fenestration_surfaces: list[Any]
 
-class WindowShadingControlFenestrationSurfacesGroup(ExtensibleGroup):
+class WindowShadingControlFenestrationSurfacesGroup(_TypedExtensibleGroup):
     """One fenestration_surfaces group inside :class:`_WindowShadingControlBase`."""
 
     fenestration_surface_name: str | None
 
-class _WindowShadingControlBase(IDFObject):
+class _WindowShadingControlBase(_TypedIDFObject):
     """``WindowShadingControl`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
@@ -6154,6 +6394,8 @@ class _WindowShadingControlBase(IDFObject):
         ]
         | None
     )
+    construction_with_shading_name: str | None
+    """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter...; Since: 9.2.0"""
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -6210,8 +6452,6 @@ class WindowShadingControl(_WindowShadingControlBase):
 
     shading_control_sequence_number: int | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1; Range: >= 1"""
-    construction_with_shading_name: str | None
-    """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter...; Since: 9.2.0"""
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -6249,7 +6489,6 @@ class WindowShadingControl(_WindowShadingControlBase):
 
 class _WindowShadingControlFields(_WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: int | None
-    construction_with_shading_name: str | None
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -6304,7 +6543,7 @@ class _WindowPropertyFrameAndDividerCommonFields(TypedDict, total=False):
     inside_reveal_depth: float | None
     inside_reveal_solar_absorptance: float | None
 
-class _WindowPropertyFrameAndDividerBase(IDFObject):
+class _WindowPropertyFrameAndDividerBase(_TypedIDFObject):
     """``WindowProperty:FrameAndDivider`` as every supported EnergyPlus version declares it."""
 
     frame_width: float | None
@@ -6427,7 +6666,7 @@ class _WindowPropertyFrameAndDividerFields(_WindowPropertyFrameAndDividerCommonF
         | None
     )
 
-class WindowPropertyAirflowControl(IDFObject):
+class WindowPropertyAirflowControl(_TypedIDFObject):
     """Used to control forced airflow through a gap between glass layers"""
 
     airflow_source: Literal["", "IndoorAir", "OutdoorAir"] | None
@@ -6459,12 +6698,15 @@ class _WindowPropertyAirflowControlFields(TypedDict, total=False):
     airflow_return_air_node_name: str | None
 
 class _WindowPropertyStormWindowCommonFields(TypedDict, total=False):
+    window_name: str | None
     storm_glass_layer_name: str | None
     distance_between_storm_glass_layer_and_adjacent_glass: float | None
 
-class _WindowPropertyStormWindowBase(IDFObject):
+class _WindowPropertyStormWindowBase(_TypedIDFObject):
     """``WindowProperty:StormWindow`` as every supported EnergyPlus version declares it."""
 
+    window_name: str | None
+    """Must be the name of a FenestrationSurface:Detailed object with Surface Type = WINDOW. The WindowProperty:StormWindow ..."""
     storm_glass_layer_name: str | None
     """Must be a WindowMaterial:Glazing or WindowMaterial:Glazing:RefractionExtinctionMethod Gap between storm glass layer a..."""
     distance_between_storm_glass_layer_and_adjacent_glass: float | None
@@ -6500,7 +6742,7 @@ class _InternalMassCommonFields(TypedDict, total=False):
     construction_name: str | None
     surface_area: float | None
 
-class _InternalMassBase(IDFObject):
+class _InternalMassBase(_TypedIDFObject):
     """``InternalMass`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -6522,7 +6764,7 @@ class _InternalMassFields(_InternalMassCommonFields, total=False):
     zone_or_zonelist_name: str | None
     space_or_spacelist_name: str | None
 
-class ShadingSite(IDFObject):
+class ShadingSite(_TypedIDFObject):
     """used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
 
     azimuth_angle: float | None
@@ -6551,7 +6793,7 @@ class _ShadingSiteFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class ShadingBuilding(IDFObject):
+class ShadingBuilding(_TypedIDFObject):
     """used for shading elements such as trees, other buildings, parts of this building not being modeled these items are re..."""
 
     azimuth_angle: float | None
@@ -6584,7 +6826,7 @@ class _ShadingSiteDetailedCommonFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _ShadingSiteDetailedBase(IDFObject):
+class _ShadingSiteDetailedBase(_TypedIDFObject):
     """``Shading:Site:Detailed`` as every supported EnergyPlus version declares it."""
 
     transmittance_schedule_name: str | None
@@ -6592,7 +6834,7 @@ class _ShadingSiteDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
 
-class ShadingSiteDetailedVerticesGroup(ExtensibleGroup):
+class ShadingSiteDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingSiteDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -6615,7 +6857,7 @@ class _ShadingBuildingDetailedCommonFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _ShadingBuildingDetailedBase(IDFObject):
+class _ShadingBuildingDetailedBase(_TypedIDFObject):
     """``Shading:Building:Detailed`` as every supported EnergyPlus version declares it."""
 
     transmittance_schedule_name: str | None
@@ -6623,7 +6865,7 @@ class _ShadingBuildingDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
 
-class ShadingBuildingDetailedVerticesGroup(ExtensibleGroup):
+class ShadingBuildingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingBuildingDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -6642,7 +6884,7 @@ class ShadingBuildingDetailed(_ShadingBuildingDetailedBase):
 class _ShadingBuildingDetailedFields(_ShadingBuildingDetailedCommonFields, total=False):
     vertices: list[Any]
 
-class ShadingOverhang(IDFObject):
+class ShadingOverhang(_TypedIDFObject):
     """Overhangs are usually flat shading surfaces that reference a window or door."""
 
     window_or_door_name: str | None
@@ -6667,7 +6909,7 @@ class _ShadingOverhangFields(TypedDict, total=False):
     right_extension_from_window_door_width: float | None
     depth: float | None
 
-class ShadingOverhangProjection(IDFObject):
+class ShadingOverhangProjection(_TypedIDFObject):
     """Overhangs are typically flat shading surfaces that reference a window or door."""
 
     window_or_door_name: str | None
@@ -6694,7 +6936,7 @@ class _ShadingOverhangProjectionFields(TypedDict, total=False):
     right_extension_from_window_door_width: float | None
     depth_as_fraction_of_window_door_height: float | None
 
-class ShadingFin(IDFObject):
+class ShadingFin(_TypedIDFObject):
     """Fins are usually shading surfaces that are perpendicular to a window or door."""
 
     window_or_door_name: str | None
@@ -6734,7 +6976,7 @@ class _ShadingFinFields(TypedDict, total=False):
     right_tilt_angle_from_window_door: float | None
     right_depth: float | None
 
-class ShadingFinProjection(IDFObject):
+class ShadingFinProjection(_TypedIDFObject):
     """Fins are usually shading surfaces that are perpendicular to a window or door."""
 
     window_or_door_name: str | None
@@ -6781,7 +7023,7 @@ class _ShadingZoneDetailedCommonFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
 
-class _ShadingZoneDetailedBase(IDFObject):
+class _ShadingZoneDetailedBase(_TypedIDFObject):
     """``Shading:Zone:Detailed`` as every supported EnergyPlus version declares it."""
 
     base_surface_name: str | None
@@ -6790,7 +7032,7 @@ class _ShadingZoneDetailedBase(IDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object vertices are given in GlobalGeometryRules coordinates -- if rela...; Default: Autocalculate"""
 
-class ShadingZoneDetailedVerticesGroup(ExtensibleGroup):
+class ShadingZoneDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingZoneDetailed`."""
 
     vertex_x_coordinate: float | None
@@ -6809,9 +7051,10 @@ class ShadingZoneDetailed(_ShadingZoneDetailedBase):
 class _ShadingZoneDetailedFields(_ShadingZoneDetailedCommonFields, total=False):
     vertices: list[Any]
 
-class ShadingPropertyReflectance(IDFObject):
+class ShadingPropertyReflectance(_TypedIDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
 
+    shading_surface_name: str | None
     diffuse_solar_reflectance_of_unglazed_part_of_shading_surface: float | None
     """Default: 0.2; Range: >= 0.0, <= 1.0"""
     diffuse_visible_reflectance_of_unglazed_part_of_shading_surface: float | None
@@ -6826,14 +7069,16 @@ class ShadingPropertyReflectance(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ShadingPropertyReflectanceFields(TypedDict, total=False):
+    shading_surface_name: str | None
     diffuse_solar_reflectance_of_unglazed_part_of_shading_surface: float | None
     diffuse_visible_reflectance_of_unglazed_part_of_shading_surface: float | None
     fraction_of_shading_surface_that_is_glazed: float | None
     glazing_construction_name: str | None
 
-class SurfacePropertyHeatTransferAlgorithm(IDFObject):
+class SurfacePropertyHeatTransferAlgorithm(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for a specific surface Allows selectively overriding the global ..."""
 
+    surface_name: str | None
     algorithm: (
         Literal[
             "",
@@ -6851,6 +7096,7 @@ class SurfacePropertyHeatTransferAlgorithm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatTransferAlgorithmFields(TypedDict, total=False):
+    surface_name: str | None
     algorithm: (
         Literal[
             "",
@@ -6862,7 +7108,7 @@ class _SurfacePropertyHeatTransferAlgorithmFields(TypedDict, total=False):
         | None
     )
 
-class SurfacePropertyHeatTransferAlgorithmMultipleSurface(IDFObject):
+class SurfacePropertyHeatTransferAlgorithmMultipleSurface(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for a group of surface types Allows selectively overriding the g..."""
 
     surface_type: (
@@ -6924,12 +7170,12 @@ class _SurfacePropertyHeatTransferAlgorithmMultipleSurfaceFields(TypedDict, tota
         | None
     )
 
-class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup(ExtensibleGroup):
+class SurfacePropertyHeatTransferAlgorithmSurfaceListSurfaceGroup(_TypedExtensibleGroup):
     """One surface group inside :class:`SurfacePropertyHeatTransferAlgorithmSurfaceList`."""
 
     surface_name: str | None
 
-class SurfacePropertyHeatTransferAlgorithmSurfaceList(IDFObject):
+class SurfacePropertyHeatTransferAlgorithmSurfaceList(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for a list of surfaces Allows selectively overriding the global ..."""
 
     algorithm: (
@@ -6965,7 +7211,7 @@ class _SurfacePropertyHeatTransferAlgorithmSurfaceListFields(TypedDict, total=Fa
     )
     surface: list[Any]
 
-class SurfacePropertyHeatTransferAlgorithmConstruction(IDFObject):
+class SurfacePropertyHeatTransferAlgorithmConstruction(_TypedIDFObject):
     """Determines which Heat Balance Algorithm will be used for surfaces that have a specific type of construction Allows se..."""
 
     algorithm: (
@@ -7001,9 +7247,10 @@ class _SurfacePropertyHeatTransferAlgorithmConstructionFields(TypedDict, total=F
     )
     construction_name: str | None
 
-class SurfacePropertyHeatBalanceSourceTerm(IDFObject):
+class SurfacePropertyHeatBalanceSourceTerm(_TypedIDFObject):
     """Allows an additional heat source term to be added to the inside or outside surface boundary. A heat source can be add..."""
 
+    surface_name: str | None
     inside_face_heat_source_term_schedule_name: str | None
     """The value of this schedule is the source term value for the inside face of this surface If this field is left blank, ..."""
     outside_face_heat_source_term_schedule_name: str | None
@@ -7014,12 +7261,14 @@ class SurfacePropertyHeatBalanceSourceTerm(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyHeatBalanceSourceTermFields(TypedDict, total=False):
+    surface_name: str | None
     inside_face_heat_source_term_schedule_name: str | None
     outside_face_heat_source_term_schedule_name: str | None
 
-class SurfaceControlMovableInsulation(IDFObject):
+class SurfaceControlMovableInsulation(_TypedIDFObject):
     """Exterior or Interior Insulation on opaque surfaces"""
 
+    insulation_type: Literal["Inside", "Outside"] | None
     surface_name: str | None
     material_name: str | None
     schedule_name: str | None
@@ -7029,11 +7278,12 @@ class SurfaceControlMovableInsulation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfaceControlMovableInsulationFields(TypedDict, total=False):
+    insulation_type: Literal["Inside", "Outside"] | None
     surface_name: str | None
     material_name: str | None
     schedule_name: str | None
 
-class SurfacePropertyOtherSideCoefficients(IDFObject):
+class SurfacePropertyOtherSideCoefficients(_TypedIDFObject):
     """This object sets the other side conditions for a surface in a variety of ways."""
 
     combined_convective_radiative_film_coefficient: float | None
@@ -7082,7 +7332,7 @@ class _SurfacePropertyOtherSideCoefficientsFields(TypedDict, total=False):
     minimum_other_side_temperature_limit: float | None
     maximum_other_side_temperature_limit: float | None
 
-class SurfacePropertyOtherSideConditionsModel(IDFObject):
+class SurfacePropertyOtherSideConditionsModel(_TypedIDFObject):
     """This object sets up modifying the other side conditions for a surface from other model results."""
 
     type_of_modeling: (
@@ -7116,7 +7366,7 @@ class _SurfacePropertyOtherSideConditionsModelFields(TypedDict, total=False):
         | None
     )
 
-class SurfacePropertyUnderwater(IDFObject):
+class SurfacePropertyUnderwater(_TypedIDFObject):
     """This object sets up a convective water boundary condition for a surface The free stream temperature and velocity are ..."""
 
     distance_from_surface_centroid_to_leading_edge_of_boundary_layer: float | None
@@ -7152,7 +7402,7 @@ class _FoundationKivaCommonFields(TypedDict, total=False):
     footing_material_name: str | None
     footing_depth: float | None
 
-class _FoundationKivaBase(IDFObject):
+class _FoundationKivaBase(_TypedIDFObject):
     """``Foundation:Kiva`` as every supported EnergyPlus version declares it."""
 
     interior_horizontal_insulation_material_name: str | None
@@ -7181,7 +7431,7 @@ class _FoundationKivaBase(IDFObject):
     footing_depth: float | None
     """Top-to-bottom dimension of the footing (not to be confused with its depth in the ground). The width of the footing is...; [m]; Default: 0.3; Range: > 0.0"""
 
-class FoundationKivaBlocksGroup(ExtensibleGroup):
+class FoundationKivaBlocksGroup(_TypedExtensibleGroup):
     """One blocks group inside :class:`FoundationKiva`."""
 
     custom_block_material_name: str | None
@@ -7202,9 +7452,11 @@ class _FoundationKivaFields(_FoundationKivaCommonFields, total=False):
     initial_indoor_air_temperature: float | None
     blocks: list[Any]
 
-class FoundationKivaSettings(IDFObject):
+class FoundationKivaSettings(_TypedIDFObject):
     """Settings applied across all Kiva foundation calculations. Object is not required. If not defined, defaults will be ap..."""
 
+    soil_conductivity: float | None
+    """[W/m-K]; Default: 1.73; Range: > 0.0"""
     soil_density: float | None
     """[kg/m3]; Default: 1842.0; Range: > 0.0"""
     soil_specific_heat: float | None
@@ -7233,6 +7485,7 @@ class FoundationKivaSettings(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FoundationKivaSettingsFields(TypedDict, total=False):
+    soil_conductivity: float | None
     soil_density: float | None
     soil_specific_heat: float | None
     ground_solar_absorptivity: float | None
@@ -7246,15 +7499,17 @@ class _FoundationKivaSettingsFields(TypedDict, total=False):
     simulation_timestep: Literal["", "Hourly", "Timestep"] | None
 
 class _SurfacePropertyExposedFoundationPerimeterCommonFields(TypedDict, total=False):
+    surface_name: str | None
     exposed_perimeter_calculation_method: (
         Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"] | None
     )
     total_exposed_perimeter: float | None
     exposed_perimeter_fraction: float | None
 
-class _SurfacePropertyExposedFoundationPerimeterBase(IDFObject):
+class _SurfacePropertyExposedFoundationPerimeterBase(_TypedIDFObject):
     """``SurfaceProperty:ExposedFoundationPerimeter`` as every supported EnergyPlus version declares it."""
 
+    surface_name: str | None
     exposed_perimeter_calculation_method: (
         Literal["BySegment", "ExposedPerimeterFraction", "TotalExposedPerimeter"] | None
     )
@@ -7264,7 +7519,7 @@ class _SurfacePropertyExposedFoundationPerimeterBase(IDFObject):
     exposed_perimeter_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
 
-class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(ExtensibleGroup):
+class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter`."""
 
     surface_segment_exposed: Literal["", "No", "Yes"] | None
@@ -7286,7 +7541,7 @@ class _SurfacePropertyExposedFoundationPerimeterFields(
 ):
     surfaces: list[Any]
 
-class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(IDFObject):
+class SurfaceConvectionAlgorithmInsideAdaptiveModelSelections(_TypedIDFObject):
     """Options to change the individual convection model equations for dynamic selection when using AdaptiveConvectiongAlgor..."""
 
     simple_buoyancy_vertical_wall_equation_source: (
@@ -8241,7 +8496,7 @@ class _SurfaceConvectionAlgorithmInsideAdaptiveModelSelectionsFields(TypedDict, 
     )
     mixed_regime_window_equation_user_curve_name: str | None
 
-class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections(IDFObject):
+class SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections(_TypedIDFObject):
     """Options to change the individual convection model equations for dynamic selection when using AdaptiveConvectiongAlgor..."""
 
     wind_convection_windward_vertical_wall_equation_source: (
@@ -8410,7 +8665,7 @@ class _SurfaceConvectionAlgorithmOutsideAdaptiveModelSelectionsFields(TypedDict,
     )
     natural_convection_unstable_horizontal_equation_user_curve_name: str | None
 
-class SurfaceConvectionAlgorithmInsideUserCurve(IDFObject):
+class SurfaceConvectionAlgorithmInsideUserCurve(_TypedIDFObject):
     """Used to describe a custom model equation for surface convection heat transfer coefficient If more than one curve is r..."""
 
     reference_temperature_for_convection_heat_transfer: (
@@ -8442,7 +8697,7 @@ class _SurfaceConvectionAlgorithmInsideUserCurveFields(TypedDict, total=False):
     hc_function_of_air_change_rate_curve_name: str | None
     hc_function_of_air_system_volume_flow_rate_divided_by_zone_perimeter_length_curve_name: str | None
 
-class SurfaceConvectionAlgorithmOutsideUserCurve(IDFObject):
+class SurfaceConvectionAlgorithmOutsideUserCurve(_TypedIDFObject):
     """Used to describe a custom model equation for surface convection heat transfer coefficient If more than one curve is r..."""
 
     wind_speed_type_for_curve: (
@@ -8472,6 +8727,7 @@ class _SurfaceConvectionAlgorithmOutsideUserCurveFields(TypedDict, total=False):
     hn_function_of_temperature_difference_divided_by_height_curve_name: str | None
 
 class _SurfacePropertyConvectionCoefficientsCommonFields(TypedDict, total=False):
+    surface_name: str | None
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1: float | None
     convection_coefficient_1_schedule_name: str | None
@@ -8481,9 +8737,10 @@ class _SurfacePropertyConvectionCoefficientsCommonFields(TypedDict, total=False)
     convection_coefficient_2_schedule_name: str | None
     convection_coefficient_2_user_curve_name: str | None
 
-class _SurfacePropertyConvectionCoefficientsBase(IDFObject):
+class _SurfacePropertyConvectionCoefficientsBase(_TypedIDFObject):
     """``SurfaceProperty:ConvectionCoefficients`` as every supported EnergyPlus version declares it."""
 
+    surface_name: str | None
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -8810,6 +9067,21 @@ class _SurfacePropertyConvectionCoefficientsFields(_SurfacePropertyConvectionCoe
     )
 
 class _SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields(TypedDict, total=False):
+    surface_type: (
+        Literal[
+            "AllExteriorFloors",
+            "AllExteriorRoofs",
+            "AllExteriorSurfaces",
+            "AllExteriorWalls",
+            "AllExteriorWindows",
+            "AllInteriorCeilings",
+            "AllInteriorFloors",
+            "AllInteriorSurfaces",
+            "AllInteriorWalls",
+            "AllInteriorWindows",
+        ]
+        | None
+    )
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1: float | None
     convection_coefficient_1_schedule_name: str | None
@@ -8819,9 +9091,24 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields(TypedDic
     convection_coefficient_2_schedule_name: str | None
     convection_coefficient_2_user_curve_name: str | None
 
-class _SurfacePropertyConvectionCoefficientsMultipleSurfaceBase(IDFObject):
+class _SurfacePropertyConvectionCoefficientsMultipleSurfaceBase(_TypedIDFObject):
     """``SurfaceProperty:ConvectionCoefficients:MultipleSurface`` as every supported EnergyPlus version declares it."""
 
+    surface_type: (
+        Literal[
+            "AllExteriorFloors",
+            "AllExteriorRoofs",
+            "AllExteriorSurfaces",
+            "AllExteriorWalls",
+            "AllExteriorWindows",
+            "AllInteriorCeilings",
+            "AllInteriorFloors",
+            "AllInteriorSurfaces",
+            "AllInteriorWalls",
+            "AllInteriorWindows",
+        ]
+        | None
+    )
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
     convection_coefficient_1_type: (
         Literal[
@@ -9152,9 +9439,10 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceFields(
         | None
     )
 
-class SurfacePropertiesVaporCoefficients(IDFObject):
+class SurfacePropertiesVaporCoefficients(_TypedIDFObject):
     """The interior and external vapor transfer coefficients. Normally these value are calculated using the heat convection ..."""
 
+    surface_name: str | None
     constant_external_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
     """Default: No"""
     external_vapor_coefficient_value: float | None
@@ -9169,17 +9457,18 @@ class SurfacePropertiesVaporCoefficients(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertiesVaporCoefficientsFields(TypedDict, total=False):
+    surface_name: str | None
     constant_external_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
     external_vapor_coefficient_value: float | None
     constant_internal_vapor_transfer_coefficient: Literal["", "No", "Yes"] | None
     internal_vapor_coefficient_value: float | None
 
-class SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup(ExtensibleGroup):
+class SurfacePropertyExteriorNaturalVentedCavitySurfaceGroup(_TypedExtensibleGroup):
     """One surface group inside :class:`SurfacePropertyExteriorNaturalVentedCavity`."""
 
     surface_name: str | None
 
-class SurfacePropertyExteriorNaturalVentedCavity(IDFObject):
+class SurfacePropertyExteriorNaturalVentedCavity(_TypedIDFObject):
     """Used to describe the decoupled layer, or baffle, and the characteristics of the cavity and openings for naturally ven..."""
 
     boundary_conditions_model_name: str | None
@@ -9227,7 +9516,7 @@ class _SurfacePropertyExteriorNaturalVentedCavityFields(TypedDict, total=False):
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
     surface: list[Any]
 
-class SurfacePropertySolarIncidentInside(IDFObject):
+class SurfacePropertySolarIncidentInside(_TypedIDFObject):
     """Used to provide incident solar radiation on the inside of the surface. Reference surface-construction pair and if tha..."""
 
     surface_name: str | None
@@ -9244,9 +9533,11 @@ class _SurfacePropertySolarIncidentInsideFields(TypedDict, total=False):
     construction_name: str | None
     inside_surface_incident_sun_solar_radiation_schedule_name: str | None
 
-class SurfacePropertyIncidentSolarMultiplier(IDFObject):
+class SurfacePropertyIncidentSolarMultiplier(_TypedIDFObject):
     """Since: 22.2.0"""
 
+    surface_name: str | None
+    """Enter the name of an exterior window outside surface object"""
     incident_solar_multiplier: float | None
     """a constant multiplier for window solar transmittance and visible transmittance. If the Shading Multiplier Schedule Na...; [dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
     incident_solar_multiplier_schedule_name: str | None
@@ -9257,6 +9548,7 @@ class SurfacePropertyIncidentSolarMultiplier(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SurfacePropertyIncidentSolarMultiplierFields(TypedDict, total=False):
+    surface_name: str | None
     incident_solar_multiplier: float | None
     incident_solar_multiplier_schedule_name: str | None
 
@@ -9265,7 +9557,7 @@ class _SurfacePropertyLocalEnvironmentCommonFields(TypedDict, total=False):
     surrounding_surfaces_object_name: str | None
     outdoor_air_node_name: str | None
 
-class _SurfacePropertyLocalEnvironmentBase(IDFObject):
+class _SurfacePropertyLocalEnvironmentBase(_TypedIDFObject):
     """``SurfaceProperty:LocalEnvironment`` as every supported EnergyPlus version declares it."""
 
     exterior_surface_name: str | None
@@ -9291,7 +9583,7 @@ class _SurfacePropertyLocalEnvironmentFields(_SurfacePropertyLocalEnvironmentCom
     sunlit_fraction_schedule_name: str | None
     ground_surfaces_object_name: str | None
 
-class ZonePropertyLocalEnvironment(IDFObject):
+class ZonePropertyLocalEnvironment(_TypedIDFObject):
     """This object defines the local environment properties of a zone object. A corresponding outdoor air node should be def..."""
 
     zone_name: str | None
@@ -9311,7 +9603,7 @@ class _SurfacePropertySurroundingSurfacesCommonFields(TypedDict, total=False):
     sky_temperature_schedule_name: str | None
     ground_temperature_schedule_name: str | None
 
-class _SurfacePropertySurroundingSurfacesBase(IDFObject):
+class _SurfacePropertySurroundingSurfacesBase(_TypedIDFObject):
     """``SurfaceProperty:SurroundingSurfaces`` as every supported EnergyPlus version declares it."""
 
     sky_view_factor: float | Literal["", "Autocalculate"] | None
@@ -9321,7 +9613,7 @@ class _SurfacePropertySurroundingSurfacesBase(IDFObject):
     ground_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
 
-class SurfacePropertySurroundingSurfacesSurfacesGroup(ExtensibleGroup):
+class SurfacePropertySurroundingSurfacesSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertySurroundingSurfaces`."""
 
     surrounding_surface_name: str | None
@@ -9346,7 +9638,7 @@ class _SurfacePropertySurroundingSurfacesFields(_SurfacePropertySurroundingSurfa
     ground_view_factor: float | Literal["", "Autocalculate"] | None
     surfaces: list[Any]
 
-class SurfacePropertyGroundSurfacesGroundSurfacesGroup(ExtensibleGroup):
+class SurfacePropertyGroundSurfacesGroundSurfacesGroup(_TypedExtensibleGroup):
     """One ground_surfaces group inside :class:`SurfacePropertyGroundSurfaces`."""
 
     ground_surface_name: str | None
@@ -9354,7 +9646,7 @@ class SurfacePropertyGroundSurfacesGroundSurfacesGroup(ExtensibleGroup):
     ground_surface_temperature_schedule_name: str | None
     ground_surface_reflectance_schedule_name: str | None
 
-class SurfacePropertyGroundSurfaces(IDFObject):
+class SurfacePropertyGroundSurfaces(_TypedIDFObject):
     """This object defines a list of ground surfaces for use with an exterior surface.; Since: 22.2.0"""
 
     ground_surfaces: ExtensibleList[SurfacePropertyGroundSurfacesGroundSurfacesGroup]
@@ -9366,7 +9658,7 @@ class SurfacePropertyGroundSurfaces(IDFObject):
 class _SurfacePropertyGroundSurfacesFields(TypedDict, total=False):
     ground_surfaces: list[Any]
 
-class ComplexFenestrationPropertySolarAbsorbedLayers(IDFObject):
+class ComplexFenestrationPropertySolarAbsorbedLayers(_TypedIDFObject):
     """Used to provide solar radiation absorbed in fenestration layers. References surface-construction pair and if that pai..."""
 
     fenestration_surface: str | None
@@ -9398,17 +9690,26 @@ class _ComplexFenestrationPropertySolarAbsorbedLayersFields(TypedDict, total=Fal
     layer_4_solar_radiation_absorbed_schedule_name: str | None
     layer_5_solar_radiation_absorbed_schedule_name: str | None
 
-class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(ExtensibleGroup):
-    """One view_factors group inside :class:`ZonePropertyUserViewFactorsBySurfaceName`."""
+class _ZonePropertyUserViewFactorsBySurfaceNameCommonFields(TypedDict, total=False):
+    view_factors: list[Any]
+
+class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(_TypedExtensibleGroup):
+    """One view_factors group inside :class:`_ZonePropertyUserViewFactorsBySurfaceNameBase`."""
 
     from_surface: str | None
     to_surface: str | None
     view_factor: float | None
 
-class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
-    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
+class _ZonePropertyUserViewFactorsBySurfaceNameBase(_TypedIDFObject):
+    """``ZoneProperty:UserViewFactors:BySurfaceName`` as every supported EnergyPlus version declares it."""
 
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
+
+class ZonePropertyUserViewFactorsBySurfaceName(_ZonePropertyUserViewFactorsBySurfaceNameBase):
+    """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
+
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
+    """View factors may be entered for a space, zone, group of spaces, or group of zones in the same enclosure by way of Con...; Since: 9.6.0"""
 
     def update(
         self,
@@ -9417,18 +9718,22 @@ class ZonePropertyUserViewFactorsBySurfaceName(IDFObject):
         **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceNameFields],
     ) -> None: ...  # type: ignore[override]
 
-class _ZonePropertyUserViewFactorsBySurfaceNameFields(TypedDict, total=False):
-    view_factors: list[Any]
+class _ZonePropertyUserViewFactorsBySurfaceNameFields(
+    _ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
+):
+    zone_or_zonelist_or_space_or_spacelist_name: str | None
 
-class ZoneMRTCalculationPeopleNamesGroup(ExtensibleGroup):
+class ZoneMRTCalculationPeopleNamesGroup(_TypedExtensibleGroup):
     """One people_names group inside :class:`ZoneMRTCalculation`."""
 
     people_name: str | None
     mrt_weighting_factor: float | None
 
-class ZoneMRTCalculation(IDFObject):
+class ZoneMRTCalculation(_TypedIDFObject):
     """Blends MRT values calculated for People instances into one Zone MRT. The weighting factors must sum to a value from 0...; Since: 26.2.0"""
 
+    zone_name: str | None
+    """This field accepts a Zone name only, not a Space or SpaceList name."""
     people_names: ExtensibleList[ZoneMRTCalculationPeopleNamesGroup]
 
     def update(
@@ -9436,9 +9741,10 @@ class ZoneMRTCalculation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneMRTCalculationFields(TypedDict, total=False):
+    zone_name: str | None
     people_names: list[Any]
 
-class GroundHeatTransferControl(IDFObject):
+class GroundHeatTransferControl(_TypedIDFObject):
     """Object determines if the Slab and Basement preprocessors are going to be executed."""
 
     run_basement_preprocessor: Literal["", "No", "Yes"] | None
@@ -9454,9 +9760,11 @@ class _GroundHeatTransferControlFields(TypedDict, total=False):
     run_basement_preprocessor: Literal["", "No", "Yes"] | None
     run_slab_preprocessor: Literal["", "No", "Yes"] | None
 
-class GroundHeatTransferSlabMaterials(IDFObject):
+class GroundHeatTransferSlabMaterials(_TypedIDFObject):
     """Object gives an overall description of the slab ground heat transfer model."""
 
+    nmat_number_of_materials: float | None
+    """This field specifies the number of different materials that will be used in the model. Typically only a ground materi...; Range: > 0.0"""
     albedo_surface_albedo_no_snow: float | None
     """Two fields specify the albedo value of the surface: first for no snow coverage days; second for days with snow covera...; Default: 0.16; Range: >= 0.0, <= 1.0"""
     albedo_surface_albedo_snow: float | None
@@ -9479,6 +9787,7 @@ class GroundHeatTransferSlabMaterials(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
+    nmat_number_of_materials: float | None
     albedo_surface_albedo_no_snow: float | None
     albedo_surface_albedo_snow: float | None
     epslw_surface_emissivity_no_snow: float | None
@@ -9488,9 +9797,11 @@ class _GroundHeatTransferSlabMaterialsFields(TypedDict, total=False):
     hin_indoor_hconv_downward_flow: float | None
     hin_indoor_hconv_upward: float | None
 
-class GroundHeatTransferSlabMatlProps(IDFObject):
+class GroundHeatTransferSlabMatlProps(_TypedIDFObject):
     """This object contains the material properties for the materials used in the model. The fields are mostly self explanat..."""
 
+    rho_slab_material_density: float | None
+    """Density of Slab Material typical value= 2300.0; [kg/m3]; Default: 2300.0; Range: > 0.0"""
     rho_soil_density: float | None
     """Density of Soil Material typical value= 1200.0; [kg/m3]; Default: 1200.0; Range: > 0.0"""
     cp_slab_cp: float | None
@@ -9507,15 +9818,18 @@ class GroundHeatTransferSlabMatlProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabMatlPropsFields(TypedDict, total=False):
+    rho_slab_material_density: float | None
     rho_soil_density: float | None
     cp_slab_cp: float | None
     cp_soil_cp: float | None
     tcon_slab_k: float | None
     tcon_soil_k: float | None
 
-class GroundHeatTransferSlabBoundConds(IDFObject):
+class GroundHeatTransferSlabBoundConds(_TypedIDFObject):
     """Supplies some of the boundary conditions used in the ground heat transfer calculations."""
 
+    evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"] | None
+    """This field specifies whether or not to use the evapotranspiration model. The inclusion of evapotranspiration in the c..."""
     fixbc_is_the_lower_boundary_at_a_fixed_temperature: Literal["FALSE", "TRUE"] | None
     """This field permits using a fixed temperature at the lower surface of the model instead of a zero heat flux condition...."""
     tdeepin: float | None
@@ -9524,20 +9838,26 @@ class GroundHeatTransferSlabBoundConds(IDFObject):
     """This field flags the use of a user specified heat transfer coefficient on the ground surface. This condition is used ..."""
     userh_user_specified_ground_surface_heat_transfer_coefficient: float | None
     """Used only if USRHflag is TRUE and the heat transfer coefficient value is specified in this field.; [W/m2-K]"""
+    usrhflag_is_the_ground_surface_h_specified_by_the_user: Literal["FALSE", "TRUE"] | None
+    """Alias of :attr:`usrhflag_is_the_ground_surface_h_specified_by_the_user_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferSlabBoundCondsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBoundCondsFields(TypedDict, total=False):
+    evtr_is_surface_evapotranspiration_modeled: Literal["FALSE", "TRUE"] | None
     fixbc_is_the_lower_boundary_at_a_fixed_temperature: Literal["FALSE", "TRUE"] | None
     tdeepin: float | None
     usrhflag_is_the_ground_surface_h_specified_by_the_user_: Literal["FALSE", "TRUE"] | None
     userh_user_specified_ground_surface_heat_transfer_coefficient: float | None
+    usrhflag_is_the_ground_surface_h_specified_by_the_user: Literal["FALSE", "TRUE"] | None
 
-class GroundHeatTransferSlabBldgProps(IDFObject):
+class GroundHeatTransferSlabBldgProps(_TypedIDFObject):
     """Object provides information about the building and its operating conditions Monthly Average Temperature SetPoint fiel..."""
 
+    iyrs_number_of_years_to_iterate: float | None
+    """This field specifies the number of years to iterate. Either the ground heat transfer calculations come to an an annua...; Default: 10.0; Range: >= 1.0"""
     shape_slab_shape: float | None
     """Use only the value 0 here. Only a rectangular shape is implemented.; Range: >= 0.0, <= 0.0"""
     hbldg_building_height: float | None
@@ -9576,6 +9896,7 @@ class GroundHeatTransferSlabBldgProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
+    iyrs_number_of_years_to_iterate: float | None
     shape_slab_shape: float | None
     hbldg_building_height: float | None
     tin1_january_indoor_average_temperature_setpoint: float | None
@@ -9593,9 +9914,11 @@ class _GroundHeatTransferSlabBldgPropsFields(TypedDict, total=False):
     tinamp_daily_indoor_sine_wave_variation_amplitude: float | None
     convtol_convergence_tolerance: float | None
 
-class GroundHeatTransferSlabInsulation(IDFObject):
+class GroundHeatTransferSlabInsulation(_TypedIDFObject):
     """This object supplies the information about insulation used around the slab. There are two possible configurations: un..."""
 
+    rins_r_value_of_under_slab_insulation: float | None
+    """This field provides the thermal resistance value of the under slab insulation. It should be zero if the vertical insu...; [m2-K/W]; Default: 0.0"""
     dins_width_of_strip_of_under_slab_insulation: float | None
     """This specifies the width of the perimeter strip of insulation under the slab. It should be zero if for the vertical i...; [m]; Default: 0.0"""
     rvins_r_value_of_vertical_insulation: float | None
@@ -9610,14 +9933,17 @@ class GroundHeatTransferSlabInsulation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabInsulationFields(TypedDict, total=False):
+    rins_r_value_of_under_slab_insulation: float | None
     dins_width_of_strip_of_under_slab_insulation: float | None
     rvins_r_value_of_vertical_insulation: float | None
     zvins_depth_of_vertical_insulation: float | None
     ivins_flag_is_there_vertical_insulation: Literal[0, 1, ""] | None
 
-class GroundHeatTransferSlabEquivalentSlab(IDFObject):
+class GroundHeatTransferSlabEquivalentSlab(_TypedIDFObject):
     """Using an equivalent slab allows non-rectangular shapes to be modeled accurately. Object uses the area - perimeter (ar..."""
 
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
+    """Equivalent square slab is simulated, side is 4*APRatio.; [m]; Range: >= 1.5, <= 22.0"""
     slabdepth_thickness_of_slab_on_grade: float | None
     """This field specifies the thickness of the slab. The slab top surface is level with the ground surface, so this is the...; [m]; Default: 0.1"""
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
@@ -9630,13 +9956,16 @@ class GroundHeatTransferSlabEquivalentSlab(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabEquivalentSlabFields(TypedDict, total=False):
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
     slabdepth_thickness_of_slab_on_grade: float | None
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
     zclearance_distance_from_bottom_of_slab_to_domain_bottom: float | None
 
-class GroundHeatTransferSlabAutoGrid(IDFObject):
+class GroundHeatTransferSlabAutoGrid(_TypedIDFObject):
     """AutoGrid only necessary when EquivalentSlab option not chosen. Not normally needed by EnergyPlus users. This object p..."""
 
+    slabx_x_dimension_of_the_building_slab: float | None
+    """typical values= 6 to 60.0; [m]; Range: >= 6.0"""
     slaby_y_dimension_of_the_building_slab: float | None
     """typical values= 6 to 60.0; [m]; Range: >= 6.0"""
     slabdepth_thickness_of_slab_on_grade: float | None
@@ -9651,14 +9980,17 @@ class GroundHeatTransferSlabAutoGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabAutoGridFields(TypedDict, total=False):
+    slabx_x_dimension_of_the_building_slab: float | None
     slaby_y_dimension_of_the_building_slab: float | None
     slabdepth_thickness_of_slab_on_grade: float | None
     clearance_distance_from_edge_of_slab_to_domain_edge: float | None
     zclearance_distance_from_bottom_of_slab_to_domain_bottom: float | None
 
-class GroundHeatTransferSlabManualGrid(IDFObject):
+class GroundHeatTransferSlabManualGrid(_TypedIDFObject):
     """Manual Grid only necessary when using manual gridding (not recommended) Used only in special cases when previous two ..."""
 
+    nx_number_of_cells_in_the_x_direction: float | None
+    """Range: >= 1.0"""
     ny_number_of_cells_in_the_y_direction: float | None
     """Range: >= 1.0"""
     nz_number_of_cells_in_the_z_direction: float | None
@@ -9673,25 +10005,30 @@ class GroundHeatTransferSlabManualGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferSlabManualGridFields(TypedDict, total=False):
+    nx_number_of_cells_in_the_x_direction: float | None
     ny_number_of_cells_in_the_y_direction: float | None
     nz_number_of_cells_in_the_z_direction: float | None
     ibox_x_direction_cell_indicator_of_slab_edge: float | None
     jbox_y_direction_cell_indicator_of_slab_edge: float | None
 
-class GroundHeatTransferSlabXFACE(IDFObject):
+class GroundHeatTransferSlabXFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m"""
 
-class GroundHeatTransferSlabYFACE(IDFObject):
+class GroundHeatTransferSlabYFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m,"""
 
-class GroundHeatTransferSlabZFACE(IDFObject):
+class GroundHeatTransferSlabZFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m"""
 
-class GroundHeatTransferBasementSimParameters(IDFObject):
+class GroundHeatTransferBasementSimParameters(_TypedIDFObject):
     """Specifies certain parameters that control the Basement preprocessor ground heat transfer simulation."""
 
+    f_multiplier_for_the_adi_solution: float | None
+    """0<F<1.0, typically 0.1 (0.3 for high k soil - saturated sand is about 2.6 w/m-K); Range: > 0.0, <= 1.0"""
     iyrs_maximum_number_of_yearly_iterations_: float | None
     """typically 15-30]; Default: 15.0; Range: >= 0.0"""
+    iyrs_maximum_number_of_yearly_iterations: float | None
+    """Alias of :attr:`iyrs_maximum_number_of_yearly_iterations_`, the same field without the trailing underscore."""
 
     def update(
         self,
@@ -9701,11 +10038,15 @@ class GroundHeatTransferBasementSimParameters(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementSimParametersFields(TypedDict, total=False):
+    f_multiplier_for_the_adi_solution: float | None
     iyrs_maximum_number_of_yearly_iterations_: float | None
+    iyrs_maximum_number_of_yearly_iterations: float | None
 
-class GroundHeatTransferBasementMatlProps(IDFObject):
+class GroundHeatTransferBasementMatlProps(_TypedIDFObject):
     """Specifies the material properties for the Basement preprocessor ground heat transfer simulation. Only the Foundation ..."""
 
+    nmat_number_of_materials_in_this_domain: float | None
+    """Range: <= 6.0"""
     density_for_foundation_wall: float | None
     """[kg/m3]; Default: 2243.0; Range: > 0.0"""
     density_for_floor_slab: float | None
@@ -9748,6 +10089,7 @@ class GroundHeatTransferBasementMatlProps(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
+    nmat_number_of_materials_in_this_domain: float | None
     density_for_foundation_wall: float | None
     density_for_floor_slab: float | None
     density_for_ceiling: float | None
@@ -9767,22 +10109,30 @@ class _GroundHeatTransferBasementMatlPropsFields(TypedDict, total=False):
     thermal_conductivity_for_gravel: float | None
     thermal_conductivity_for_wood: float | None
 
-class GroundHeatTransferBasementInsulation(IDFObject):
+class GroundHeatTransferBasementInsulation(_TypedIDFObject):
     """Describes the insulation used on an exterior basement wall for the Basement preprocessor ground heat transfer simulat..."""
 
+    rext_r_value_of_any_exterior_insulation: float | None
+    """[m2-K/W]; Range: > 0.0"""
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
     """True for full insulation False for insulation half way down side wall from grade line"""
+    insfull_flag_is_the_wall_fully_insulated: Literal["FALSE", "TRUE"] | None
+    """Alias of :attr:`insfull_flag_is_the_wall_fully_insulated_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInsulationFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInsulationFields(TypedDict, total=False):
+    rext_r_value_of_any_exterior_insulation: float | None
     insfull_flag_is_the_wall_fully_insulated_: Literal["FALSE", "TRUE"] | None
+    insfull_flag_is_the_wall_fully_insulated: Literal["FALSE", "TRUE"] | None
 
-class GroundHeatTransferBasementSurfaceProps(IDFObject):
+class GroundHeatTransferBasementSurfaceProps(_TypedIDFObject):
     """Specifies the soil surface properties for the Basement preprocessor ground heat transfer simulation."""
 
+    albedo_surface_albedo_for_no_snow_conditions: float | None
+    """Default: 0.16; Range: >= 0.0, <= 1.0"""
     albedo_surface_albedo_for_snow_conditions: float | None
     """Default: 0.4; Range: >= 0.0, <= 1.0"""
     epsln_surface_emissivity_no_snow: float | None
@@ -9795,22 +10145,28 @@ class GroundHeatTransferBasementSurfaceProps(IDFObject):
     """[cm]; Default: 0.25; Range: >= 0.0"""
     pet_flag_potential_evapotranspiration_on_: Literal["", "FALSE", "TRUE"] | None
     """Typically, PET is False; Default: FALSE"""
+    pet_flag_potential_evapotranspiration_on: Literal["", "FALSE", "TRUE"] | None
+    """Alias of :attr:`pet_flag_potential_evapotranspiration_on_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementSurfacePropsFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementSurfacePropsFields(TypedDict, total=False):
+    albedo_surface_albedo_for_no_snow_conditions: float | None
     albedo_surface_albedo_for_snow_conditions: float | None
     epsln_surface_emissivity_no_snow: float | None
     epsln_surface_emissivity_with_snow: float | None
     veght_surface_roughness_no_snow_conditions: float | None
     veght_surface_roughness_snow_conditions: float | None
     pet_flag_potential_evapotranspiration_on_: Literal["", "FALSE", "TRUE"] | None
+    pet_flag_potential_evapotranspiration_on: Literal["", "FALSE", "TRUE"] | None
 
-class GroundHeatTransferBasementBldgData(IDFObject):
+class GroundHeatTransferBasementBldgData(_TypedIDFObject):
     """Specifies the surface and gravel thicknesses used for the Basement preprocessor ground heat transfer simulation."""
 
+    dwall_wall_thickness: float | None
+    """[m]; Default: 0.2; Range: >= 0.2"""
     dslab_floor_slab_thickness: float | None
     """[m]; Default: 0.1; Range: > 0.0, <= 0.25"""
     dgravxy_width_of_gravel_pit_beside_basement_wall: float | None
@@ -9825,14 +10181,17 @@ class GroundHeatTransferBasementBldgData(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementBldgDataFields(TypedDict, total=False):
+    dwall_wall_thickness: float | None
     dslab_floor_slab_thickness: float | None
     dgravxy_width_of_gravel_pit_beside_basement_wall: float | None
     dgravzn_gravel_depth_extending_above_the_floor_slab: float | None
     dgravzp_gravel_depth_below_the_floor_slab: float | None
 
-class GroundHeatTransferBasementInterior(IDFObject):
+class GroundHeatTransferBasementInterior(_TypedIDFObject):
     """Provides the information needed to simulate the inside boundary conditions for the Basement preprocessor ground heat ..."""
 
+    cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None
+    """for EnergyPlus this should be TRUE; Default: TRUE"""
     hin_downward_convection_only_heat_transfer_coefficient: float | None
     """[W/m2-K]; Default: 0.92; Range: > 0.0"""
     hin_upward_convection_only_heat_transfer_coefficient: float | None
@@ -9845,22 +10204,28 @@ class GroundHeatTransferBasementInterior(IDFObject):
     """[W/m2-K]; Default: 9.26; Range: > 0.0"""
     hin_horizontal_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     """[W/m2-K]; Default: 8.29; Range: > 0.0"""
+    cond_flag_is_the_basement_conditioned: Literal["", "FALSE", "TRUE"] | None
+    """Alias of :attr:`cond_flag_is_the_basement_conditioned_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementInteriorFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementInteriorFields(TypedDict, total=False):
+    cond_flag_is_the_basement_conditioned_: Literal["", "FALSE", "TRUE"] | None
     hin_downward_convection_only_heat_transfer_coefficient: float | None
     hin_upward_convection_only_heat_transfer_coefficient: float | None
     hin_horizontal_convection_only_heat_transfer_coefficient: float | None
     hin_downward_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     hin_upward_combined_convection_and_radiation_heat_transfer_coefficient: float | None
     hin_horizontal_combined_convection_and_radiation_heat_transfer_coefficient: float | None
+    cond_flag_is_the_basement_conditioned: Literal["", "FALSE", "TRUE"] | None
 
-class GroundHeatTransferBasementComBldg(IDFObject):
+class GroundHeatTransferBasementComBldg(_TypedIDFObject):
     """ComBldg contains the monthly average temperatures (C) and possibility of daily variation amplitude"""
 
+    january_average_temperature: float | None
+    """[C]; Default: 22.0"""
     february_average_temperature: float | None
     """[C]; Default: 22.0"""
     march_average_temperature: float | None
@@ -9891,6 +10256,7 @@ class GroundHeatTransferBasementComBldg(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
+    january_average_temperature: float | None
     february_average_temperature: float | None
     march_average_temperature: float | None
     april_average_temperature: float | None
@@ -9904,9 +10270,11 @@ class _GroundHeatTransferBasementComBldgFields(TypedDict, total=False):
     december_average_temperature: float | None
     daily_variation_sine_wave_amplitude: float | None
 
-class GroundHeatTransferBasementEquivSlab(IDFObject):
+class GroundHeatTransferBasementEquivSlab(_TypedIDFObject):
     """Using an equivalent slab allows non-rectangular shapes to be modeled accurately. The simulation default should be Equ..."""
 
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
+    """[m]; Range: > 0.0"""
     equivsizing_flag: Literal["FALSE", "TRUE"] | None
     """Will the dimensions of an equivalent slab be calculated (TRUE) or will the dimensions be input directly? (FALSE)] Onl..."""
 
@@ -9915,11 +10283,14 @@ class GroundHeatTransferBasementEquivSlab(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementEquivSlabFields(TypedDict, total=False):
+    apratio_the_area_to_perimeter_ratio_for_this_slab: float | None
     equivsizing_flag: Literal["FALSE", "TRUE"] | None
 
-class GroundHeatTransferBasementEquivAutoGrid(IDFObject):
+class GroundHeatTransferBasementEquivAutoGrid(_TypedIDFObject):
     """EquivAutoGrid necessary when EquivSizing=TRUE, TRUE is is the normal case."""
 
+    clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None
+    """[m]; Default: 15.0; Range: >= 0.0"""
     slabdepth_thickness_of_the_floor_slab: float | None
     """[m]; Default: 0.1; Range: >= 0.0"""
     basedepth_depth_of_the_basement_wall_below_grade: float | None
@@ -9933,12 +10304,15 @@ class GroundHeatTransferBasementEquivAutoGrid(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementEquivAutoGridFields(TypedDict, total=False):
+    clearance_distance_from_outside_of_wall_to_edge_of_3_d_ground_domain: float | None
     slabdepth_thickness_of_the_floor_slab: float | None
     basedepth_depth_of_the_basement_wall_below_grade: float | None
 
-class GroundHeatTransferBasementAutoGrid(IDFObject):
+class GroundHeatTransferBasementAutoGrid(_TypedIDFObject):
     """AutoGrid only necessary when EquivSizing is false If the modeled building is not a rectangle or square, Equivalent si..."""
 
+    clearance_distance_from_outside_of_wall_to_edge_: float | None
+    """[m]; Default: 15.0; Range: >= 0.0"""
     slabx_x_dimension_of_the_building_slab: float | None
     """[m]; Range: >= 0.0, <= 60.0"""
     slaby_y_dimension_of_the_building_slab: float | None
@@ -9949,21 +10323,27 @@ class GroundHeatTransferBasementAutoGrid(IDFObject):
     """[m]; Default: 0.1"""
     basedepth_depth_of_the_basement_wall_below_grade: float | None
     """[m]; Default: 2.0; Range: >= 0.0"""
+    clearance_distance_from_outside_of_wall_to_edge: float | None
+    """Alias of :attr:`clearance_distance_from_outside_of_wall_to_edge_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementAutoGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementAutoGridFields(TypedDict, total=False):
+    clearance_distance_from_outside_of_wall_to_edge_: float | None
     slabx_x_dimension_of_the_building_slab: float | None
     slaby_y_dimension_of_the_building_slab: float | None
     concagheight_height_of_the_foundation_wall_above_grade: float | None
     slabdepth_thickness_of_the_floor_slab: float | None
     basedepth_depth_of_the_basement_wall_below_grade: float | None
+    clearance_distance_from_outside_of_wall_to_edge: float | None
 
-class GroundHeatTransferBasementManualGrid(IDFObject):
+class GroundHeatTransferBasementManualGrid(_TypedIDFObject):
     """Manual Grid only necessary using manual gridding (not recommended)"""
 
+    nx_number_of_cells_in_the_x_direction_20_: float | None
+    """Range: >= 1.0"""
     ny_number_of_cells_in_the_y_direction_20_: float | None
     """Range: >= 1.0"""
     nzag_number_of_cells_in_the_z_direction_above_grade_4_always_: float | None
@@ -9973,29 +10353,51 @@ class GroundHeatTransferBasementManualGrid(IDFObject):
     ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float | None
     jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float | None
     kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float | None
+    nx_number_of_cells_in_the_x_direction_20: float | None
+    """Alias of :attr:`nx_number_of_cells_in_the_x_direction_20_`, the same field without the trailing underscore."""
+    ny_number_of_cells_in_the_y_direction_20: float | None
+    """Alias of :attr:`ny_number_of_cells_in_the_y_direction_20_`, the same field without the trailing underscore."""
+    nzag_number_of_cells_in_the_z_direction_above_grade_4_always: float | None
+    """Alias of :attr:`nzag_number_of_cells_in_the_z_direction_above_grade_4_always_`, the same field without the trailing underscore."""
+    nzbg_number_of_cells_in_z_direction_below_grade_10_35: float | None
+    """Alias of :attr:`nzbg_number_of_cells_in_z_direction_below_grade_10_35_`, the same field without the trailing underscore."""
+    ibase_x_direction_cell_indicator_of_slab_edge_5_20: float | None
+    """Alias of :attr:`ibase_x_direction_cell_indicator_of_slab_edge_5_20_`, the same field without the trailing underscore."""
+    jbase_y_direction_cell_indicator_of_slab_edge_5_20: float | None
+    """Alias of :attr:`jbase_y_direction_cell_indicator_of_slab_edge_5_20_`, the same field without the trailing underscore."""
+    kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20: float | None
+    """Alias of :attr:`kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_GroundHeatTransferBasementManualGridFields]
     ) -> None: ...  # type: ignore[override]
 
 class _GroundHeatTransferBasementManualGridFields(TypedDict, total=False):
+    nx_number_of_cells_in_the_x_direction_20_: float | None
     ny_number_of_cells_in_the_y_direction_20_: float | None
     nzag_number_of_cells_in_the_z_direction_above_grade_4_always_: float | None
     nzbg_number_of_cells_in_z_direction_below_grade_10_35_: float | None
     ibase_x_direction_cell_indicator_of_slab_edge_5_20_: float | None
     jbase_y_direction_cell_indicator_of_slab_edge_5_20_: float | None
     kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20_: float | None
+    nx_number_of_cells_in_the_x_direction_20: float | None
+    ny_number_of_cells_in_the_y_direction_20: float | None
+    nzag_number_of_cells_in_the_z_direction_above_grade_4_always: float | None
+    nzbg_number_of_cells_in_z_direction_below_grade_10_35: float | None
+    ibase_x_direction_cell_indicator_of_slab_edge_5_20: float | None
+    jbase_y_direction_cell_indicator_of_slab_edge_5_20: float | None
+    kbase_z_direction_cell_indicator_of_the_top_of_the_floor_slab_5_20: float | None
 
-class GroundHeatTransferBasementXFACE(IDFObject):
+class GroundHeatTransferBasementXFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) XFACE: X Direction cell face coordinates: m"""
 
-class GroundHeatTransferBasementYFACE(IDFObject):
+class GroundHeatTransferBasementYFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) YFACE: Y Direction cell face coordinates: m"""
 
-class GroundHeatTransferBasementZFACE(IDFObject):
+class GroundHeatTransferBasementZFACE(_TypedIDFObject):
     """This is only needed when using manual gridding (not recommended) ZFACE: Z Direction cell face coordinates: m"""
 
-class RoomAirModelType(IDFObject):
+class RoomAirModelType(_TypedIDFObject):
     """Selects the type of room air model to be used in a given zone. If no RoomAirModelType object is specified then the de..."""
 
     zone_name: str | None
@@ -10037,7 +10439,7 @@ class _RoomAirModelTypeFields(TypedDict, total=False):
     )
     air_temperature_coupling_strategy: Literal["", "Direct", "Indirect"] | None
 
-class RoomAirTemperaturePatternUserDefined(IDFObject):
+class RoomAirTemperaturePatternUserDefined(_TypedIDFObject):
     """Used to explicitly define temperature patterns that are to be applied to the mean air temperature within a thermal zo..."""
 
     zone_name: str | None
@@ -10056,14 +10458,16 @@ class _RoomAirTemperaturePatternUserDefinedFields(TypedDict, total=False):
     pattern_control_schedule_name: str | None
 
 class _RoomAirTemperaturePatternConstantGradientCommonFields(TypedDict, total=False):
+    room_air_temperature_pattern_constant_gradient_name: str | None
     thermostat_offset: float | None
     return_air_offset: float | None
     exhaust_air_offset: float | None
     temperature_gradient: float | None
 
-class _RoomAirTemperaturePatternConstantGradientBase(IDFObject):
+class _RoomAirTemperaturePatternConstantGradientBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:ConstantGradient`` as every supported EnergyPlus version declares it."""
 
+    room_air_temperature_pattern_constant_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: float | int | None
     thermostat_offset: float | None
     """= (Temp at thermostat- Mean Air Temp); [deltaC]"""
@@ -10093,6 +10497,7 @@ class _RoomAirTemperaturePatternConstantGradientFields(
     control_integer_for_pattern_control_schedule_name: int | None
 
 class _RoomAirTemperaturePatternTwoGradientCommonFields(TypedDict, total=False):
+    room_air_temperature_pattern_two_gradient_name: str | None
     thermostat_height: float | None
     return_air_height: float | None
     exhaust_air_height: float | None
@@ -10113,9 +10518,10 @@ class _RoomAirTemperaturePatternTwoGradientCommonFields(TypedDict, total=False):
     upper_heat_rate_bound: float | None
     lower_heat_rate_bound: float | None
 
-class _RoomAirTemperaturePatternTwoGradientBase(IDFObject):
+class _RoomAirTemperaturePatternTwoGradientBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:TwoGradient`` as every supported EnergyPlus version declares it."""
 
+    room_air_temperature_pattern_two_gradient_name: str | None
     control_integer_for_pattern_control_schedule_name: float | int | None
     thermostat_height: float | None
     """= Distance from floor of zone; [m]"""
@@ -10164,7 +10570,7 @@ class _RoomAirTemperaturePatternNondimensionalHeightCommonFields(TypedDict, tota
     return_air_offset: float | None
     exhaust_air_offset: float | None
 
-class _RoomAirTemperaturePatternNondimensionalHeightBase(IDFObject):
+class _RoomAirTemperaturePatternNondimensionalHeightBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:NondimensionalHeight`` as every supported EnergyPlus version declares it."""
 
     control_integer_for_pattern_control_schedule_name: float | int | None
@@ -10175,7 +10581,7 @@ class _RoomAirTemperaturePatternNondimensionalHeightBase(IDFObject):
     exhaust_air_offset: float | None
     """= (Temp exhaust - Mean Air Temp) deg C the remaining fields have pairs that describe the relative temperature pattern...; [deltaC]"""
 
-class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(ExtensibleGroup):
+class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(_TypedExtensibleGroup):
     """One pairs group inside :class:`RoomAirTemperaturePatternNondimensionalHeight`."""
 
     pair_zeta_nondimensional_height: float | None
@@ -10207,13 +10613,13 @@ class _RoomAirTemperaturePatternSurfaceMappingCommonFields(TypedDict, total=Fals
     exhaust_air_offset: float | None
     surface_deltas: list[Any]
 
-class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(ExtensibleGroup):
+class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(_TypedExtensibleGroup):
     """One surface_deltas group inside :class:`_RoomAirTemperaturePatternSurfaceMappingBase`."""
 
     surface_name_pair: str | None
     delta_adjacent_air_temperature_pair: float | None
 
-class _RoomAirTemperaturePatternSurfaceMappingBase(IDFObject):
+class _RoomAirTemperaturePatternSurfaceMappingBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:SurfaceMapping`` as every supported EnergyPlus version declares it."""
 
     control_integer_for_pattern_control_schedule_name: float | int | None
@@ -10241,7 +10647,7 @@ class RoomAirTemperaturePatternSurfaceMapping(_RoomAirTemperaturePatternSurfaceM
 class _RoomAirTemperaturePatternSurfaceMappingFields(_RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False):
     control_integer_for_pattern_control_schedule_name: int | None
 
-class RoomAirNode(IDFObject):
+class RoomAirNode(_TypedIDFObject):
     """Define an air node for some types of nodal room air models"""
 
     node_type: Literal["Ceiling", "Control", "Floor", "Inlet", "MundtRoom", "Return"] | None
@@ -10298,9 +10704,10 @@ class _RoomAirNodeFields(TypedDict, total=False):
     surface_20_name: str | None
     surface_21_name: str | None
 
-class RoomAirSettingsOneNodeDisplacementVentilation(IDFObject):
+class RoomAirSettingsOneNodeDisplacementVentilation(_TypedIDFObject):
     """The Mundt model for displacement ventilation"""
 
+    zone_name: str | None
     fraction_of_convective_internal_loads_added_to_floor_air: float | None
     """Range: >= 0.0, <= 1.0"""
     fraction_of_infiltration_internal_loads_added_to_floor_air: float | None
@@ -10314,12 +10721,15 @@ class RoomAirSettingsOneNodeDisplacementVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsOneNodeDisplacementVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     fraction_of_convective_internal_loads_added_to_floor_air: float | None
     fraction_of_infiltration_internal_loads_added_to_floor_air: float | None
 
-class RoomAirSettingsThreeNodeDisplacementVentilation(IDFObject):
+class RoomAirSettingsThreeNodeDisplacementVentilation(_TypedIDFObject):
     """The UCSD model for Displacement Ventilation"""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     gain_distribution_schedule_name: str | None
     """Distribution of the convective heat gains between the occupied and mixed zones. 0<= Accepted Value <= 1. In the DV mo..."""
     number_of_plumes_per_occupant: float | None
@@ -10339,15 +10749,18 @@ class RoomAirSettingsThreeNodeDisplacementVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsThreeNodeDisplacementVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     gain_distribution_schedule_name: str | None
     number_of_plumes_per_occupant: float | None
     thermostat_height: float | None
     comfort_height: float | None
     temperature_difference_threshold_for_reporting: float | None
 
-class RoomAirSettingsCrossVentilation(IDFObject):
+class RoomAirSettingsCrossVentilation(_TypedIDFObject):
     """This UCSD Cross Ventilation Room Air Model provides a simple model for heat transfer and vertical temperature profile..."""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     gain_distribution_schedule_name: str | None
     """Distribution of the convective heat gains between the jet and recirculation zones. 0<= Accepted Value <= 1. In the CV..."""
     airflow_region_used_for_thermal_comfort_evaluation: Literal["Jet", "Recirculation"] | None
@@ -10358,12 +10771,15 @@ class RoomAirSettingsCrossVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsCrossVentilationFields(TypedDict, total=False):
+    zone_name: str | None
     gain_distribution_schedule_name: str | None
     airflow_region_used_for_thermal_comfort_evaluation: Literal["Jet", "Recirculation"] | None
 
-class RoomAirSettingsUnderFloorAirDistributionInterior(IDFObject):
+class RoomAirSettingsUnderFloorAirDistributionInterior(_TypedIDFObject):
     """This Room Air Model is applicable to interior spaces that are served by an underfloor air distribution system. The do..."""
 
+    zone_name: str | None
+    """Name of Zone with underfloor air distribution"""
     number_of_diffusers: float | Literal["", "Autocalculate"] | None
     """Total number of diffusers in this zone; Default: Autocalculate"""
     power_per_plume: float | Literal["", "Autocalculate"] | None
@@ -10401,6 +10817,7 @@ class RoomAirSettingsUnderFloorAirDistributionInterior(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsUnderFloorAirDistributionInteriorFields(TypedDict, total=False):
+    zone_name: str | None
     number_of_diffusers: float | Literal["", "Autocalculate"] | None
     power_per_plume: float | Literal["", "Autocalculate"] | None
     design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None
@@ -10416,9 +10833,11 @@ class _RoomAirSettingsUnderFloorAirDistributionInteriorFields(TypedDict, total=F
     coefficient_d: float | Literal["", "Autocalculate"] | None
     coefficient_e: float | Literal["", "Autocalculate"] | None
 
-class RoomAirSettingsUnderFloorAirDistributionExterior(IDFObject):
+class RoomAirSettingsUnderFloorAirDistributionExterior(_TypedIDFObject):
     """Applicable to exterior spaces that are served by an underfloor air distribution system. The dominant sources of heat ..."""
 
+    zone_name: str | None
+    """Name of Zone being described. Any existing zone name"""
     number_of_diffusers_per_zone: float | Literal["", "Autocalculate"] | None
     """Default: Autocalculate"""
     power_per_plume: float | Literal["", "Autocalculate"] | None
@@ -10456,6 +10875,7 @@ class RoomAirSettingsUnderFloorAirDistributionExterior(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _RoomAirSettingsUnderFloorAirDistributionExteriorFields(TypedDict, total=False):
+    zone_name: str | None
     number_of_diffusers_per_zone: float | Literal["", "Autocalculate"] | None
     power_per_plume: float | Literal["", "Autocalculate"] | None
     design_effective_area_of_diffuser: float | Literal["", "Autocalculate"] | None
@@ -10471,7 +10891,7 @@ class _RoomAirSettingsUnderFloorAirDistributionExteriorFields(TypedDict, total=F
     coefficient_d_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float | Literal["", "Autocalculate"] | None
     coefficient_e_in_formula_kc_a_gamma_b_c_d_gamma_e_gamma_2: float | Literal["", "Autocalculate"] | None
 
-class RoomAirNodeAirflowNetwork(IDFObject):
+class RoomAirNodeAirflowNetwork(_TypedIDFObject):
     """define an air node for some types of nodal air models"""
 
     zone_name: str | None
@@ -10492,12 +10912,12 @@ class _RoomAirNodeAirflowNetworkFields(TypedDict, total=False):
     roomair_node_airflownetwork_internalgains_name: str | None
     roomair_node_airflownetwork_hvacequipment_name: str | None
 
-class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`RoomAirNodeAirflowNetworkAdjacentSurfaceList`."""
 
     surface_name: str | None
 
-class RoomAirNodeAirflowNetworkAdjacentSurfaceList(IDFObject):
+class RoomAirNodeAirflowNetworkAdjacentSurfaceList(_TypedIDFObject):
     surfaces: ExtensibleList[RoomAirNodeAirflowNetworkAdjacentSurfaceListSurfacesGroup]
 
     def update(
@@ -10512,10 +10932,10 @@ class _RoomAirNodeAirflowNetworkAdjacentSurfaceListFields(TypedDict, total=False
 
 class _RoomAirNodeAirflowNetworkInternalGainsCommonFields(TypedDict, total=False): ...
 
-class _RoomAirNodeAirflowNetworkInternalGainsBase(IDFObject):
+class _RoomAirNodeAirflowNetworkInternalGainsBase(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:InternalGains`` as every supported EnergyPlus version declares it."""
 
-class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(_TypedExtensibleGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains`."""
 
     internal_gain_object_type: (
@@ -10586,10 +11006,10 @@ class _RoomAirNodeAirflowNetworkInternalGainsFields(_RoomAirNodeAirflowNetworkIn
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields(TypedDict, total=False): ...
 
-class _RoomAirNodeAirflowNetworkHVACEquipmentBase(IDFObject):
+class _RoomAirNodeAirflowNetworkHVACEquipmentBase(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:HVACEquipment`` as every supported EnergyPlus version declares it."""
 
-class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(_TypedExtensibleGroup):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment`."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
@@ -10651,12 +11071,12 @@ class RoomAirNodeAirflowNetworkHVACEquipment(_RoomAirNodeAirflowNetworkHVACEquip
 class _RoomAirNodeAirflowNetworkHVACEquipmentFields(_RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False):
     equipment_fractions: list[Any]
 
-class RoomAirSettingsAirflowNetworkNodesGroup(ExtensibleGroup):
+class RoomAirSettingsAirflowNetworkNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`RoomAirSettingsAirflowNetwork`."""
 
     roomairflownetwork_node_name: str | None
 
-class RoomAirSettingsAirflowNetwork(IDFObject):
+class RoomAirSettingsAirflowNetwork(_TypedIDFObject):
     """RoomAir modeling using Airflow pressure network solver"""
 
     zone_name: str | None
@@ -10691,7 +11111,7 @@ class _PeopleCommonFields(TypedDict, total=False):
     clothing_insulation_schedule_name: str | None
     air_velocity_schedule_name: str | None
 
-class _PeopleBase(IDFObject):
+class _PeopleBase(_TypedIDFObject):
     """``People`` as every supported EnergyPlus version declares it."""
 
     number_of_people_schedule_name: str | None
@@ -10840,7 +11260,7 @@ class _PeopleFields(_PeopleCommonFields, total=False):
     cold_stress_temperature_threshold: float | None
     heat_stress_temperature_threshold: float | None
 
-class PeopleInstance(IDFObject):
+class PeopleInstance(_TypedIDFObject):
     """Sets internal gains and contaminant rates for occupants in the zone. The physical characteristics are given by the re...; Since: 26.2.0"""
 
     people_definition_name: str | None
@@ -10892,7 +11312,7 @@ class _PeopleInstanceFields(TypedDict, total=False):
     cold_stress_temperature_threshold: float | None
     heat_stress_temperature_threshold: float | None
 
-class PeopleDefinition(IDFObject):
+class PeopleDefinition(_TypedIDFObject):
     """Defines the physical characteristics (number of people, heat gain fractions, CO2 generation rate and thermal comfort ...; Since: 26.2.0"""
 
     number_of_people_calculation_method: Literal["", "Area/Person", "People", "People/Area"] | None
@@ -10992,10 +11412,10 @@ class _PeopleDefinitionFields(TypedDict, total=False):
 
 class _ComfortViewFactorAnglesCommonFields(TypedDict, total=False): ...
 
-class _ComfortViewFactorAnglesBase(IDFObject):
+class _ComfortViewFactorAnglesBase(_TypedIDFObject):
     """``ComfortViewFactorAngles`` as every supported EnergyPlus version declares it."""
 
-class ComfortViewFactorAnglesAnglesGroup(ExtensibleGroup):
+class ComfortViewFactorAnglesAnglesGroup(_TypedExtensibleGroup):
     """One angles group inside :class:`ComfortViewFactorAngles`."""
 
     surface_name: str | None
@@ -11028,7 +11448,7 @@ class _LightsCommonFields(TypedDict, total=False):
     return_air_fraction_function_of_plenum_temperature_coefficient_2: float | None
     return_air_heat_gain_node_name: str | None
 
-class _LightsBase(IDFObject):
+class _LightsBase(_TypedIDFObject):
     """``Lights`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -11075,7 +11495,7 @@ class _LightsFields(_LightsCommonFields, total=False):
     watts_per_floor_area: float | None
     exhaust_air_heat_gain_node_name: str | None
 
-class LightsInstance(IDFObject):
+class LightsInstance(_TypedIDFObject):
     """Sets internal gains for lights in the zone. The physical characteristics are given by the referenced Lights:Definitio...; Since: 26.2.0"""
 
     lights_definition_name: str | None
@@ -11105,7 +11525,7 @@ class _LightsInstanceFields(TypedDict, total=False):
     return_air_heat_gain_node_name: str | None
     exhaust_air_heat_gain_node_name: str | None
 
-class LightsDefinition(IDFObject):
+class LightsDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for lights. Referenced by one or more Lig...; Since: 26.2.0"""
 
     design_level_calculation_method: Literal["", "LightingLevel", "Watts/Area", "Watts/Person"] | None
@@ -11153,7 +11573,7 @@ class _ElectricEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class _ElectricEquipmentBase(IDFObject):
+class _ElectricEquipmentBase(_TypedIDFObject):
     """``ElectricEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -11187,7 +11607,7 @@ class _ElectricEquipmentFields(_ElectricEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     watts_per_floor_area: float | None
 
-class ElectricEquipmentInstance(IDFObject):
+class ElectricEquipmentInstance(_TypedIDFObject):
     """Sets internal gains for electric equipment in the zone. The physical characteristics are given by the referenced Elec...; Since: 26.2.0"""
 
     electric_equipment_definition_name: str | None
@@ -11210,7 +11630,7 @@ class _ElectricEquipmentInstanceFields(TypedDict, total=False):
     multiplier: float | None
     end_use_subcategory: str | None
 
-class ElectricEquipmentDefinition(IDFObject):
+class ElectricEquipmentDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for electric equipment. Referenced by one...; Since: 26.2.0"""
 
     design_level_calculation_method: Literal["", "EquipmentLevel", "Watts/Area", "Watts/Person"] | None
@@ -11254,7 +11674,7 @@ class _GasEquipmentCommonFields(TypedDict, total=False):
     carbon_dioxide_generation_rate: float | None
     end_use_subcategory: str | None
 
-class _GasEquipmentBase(IDFObject):
+class _GasEquipmentBase(_TypedIDFObject):
     """``GasEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -11292,7 +11712,7 @@ class _GasEquipmentFields(_GasEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     power_per_floor_area: float | None
 
-class GasEquipmentInstance(IDFObject):
+class GasEquipmentInstance(_TypedIDFObject):
     """Sets internal gains and contaminant rates for gas equipment in the zone. The physical characteristics are given by th...; Since: 26.2.0"""
 
     gas_equipment_definition_name: str | None
@@ -11315,7 +11735,7 @@ class _GasEquipmentInstanceFields(TypedDict, total=False):
     multiplier: float | None
     end_use_subcategory: str | None
 
-class GasEquipmentDefinition(IDFObject):
+class GasEquipmentDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for gas equipment. Referenced by one or m...; Since: 26.2.0"""
 
     design_level_calculation_method: (
@@ -11365,7 +11785,7 @@ class _HotWaterEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class _HotWaterEquipmentBase(IDFObject):
+class _HotWaterEquipmentBase(_TypedIDFObject):
     """``HotWaterEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -11401,7 +11821,7 @@ class _HotWaterEquipmentFields(_HotWaterEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     power_per_floor_area: float | None
 
-class HotWaterEquipmentInstance(IDFObject):
+class HotWaterEquipmentInstance(_TypedIDFObject):
     """Sets internal gains for hot water equipment in the zone. The physical characteristics are given by the referenced Hot...; Since: 26.2.0"""
 
     hot_water_equipment_definition_name: str | None
@@ -11424,7 +11844,7 @@ class _HotWaterEquipmentInstanceFields(TypedDict, total=False):
     multiplier: float | None
     end_use_subcategory: str | None
 
-class HotWaterEquipmentDefinition(IDFObject):
+class HotWaterEquipmentDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for hot water equipment. Referenced by on...; Since: 26.2.0"""
 
     design_level_calculation_method: (
@@ -11471,7 +11891,7 @@ class _SteamEquipmentCommonFields(TypedDict, total=False):
     fraction_lost: float | None
     end_use_subcategory: str | None
 
-class _SteamEquipmentBase(IDFObject):
+class _SteamEquipmentBase(_TypedIDFObject):
     """``SteamEquipment`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -11507,7 +11927,7 @@ class _SteamEquipmentFields(_SteamEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     power_per_floor_area: float | None
 
-class SteamEquipmentInstance(IDFObject):
+class SteamEquipmentInstance(_TypedIDFObject):
     """Sets internal gains for steam equipment in the zone. The physical characteristics are given by the referenced SteamEq...; Since: 26.2.0"""
 
     steam_equipment_definition_name: str | None
@@ -11530,7 +11950,7 @@ class _SteamEquipmentInstanceFields(TypedDict, total=False):
     multiplier: float | None
     end_use_subcategory: str | None
 
-class SteamEquipmentDefinition(IDFObject):
+class SteamEquipmentDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for steam equipment. Referenced by one or...; Since: 26.2.0"""
 
     design_level_calculation_method: (
@@ -11578,7 +11998,7 @@ class _OtherEquipmentCommonFields(TypedDict, total=False):
     carbon_dioxide_generation_rate: float | None
     end_use_subcategory: str | None
 
-class _OtherEquipmentBase(IDFObject):
+class _OtherEquipmentBase(_TypedIDFObject):
     """``OtherEquipment`` as every supported EnergyPlus version declares it."""
 
     fuel_type: (
@@ -11683,7 +12103,7 @@ class _OtherEquipmentFields(_OtherEquipmentCommonFields, total=False):
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     power_per_floor_area: float | None
 
-class OtherEquipmentInstance(IDFObject):
+class OtherEquipmentInstance(_TypedIDFObject):
     """Sets internal gains or losses for 'other' equipment in the zone. The physical characteristics are given by the refere...; Since: 26.2.0"""
 
     other_equipment_definition_name: str | None
@@ -11747,7 +12167,7 @@ class _OtherEquipmentInstanceFields(TypedDict, total=False):
     multiplier: float | None
     end_use_subcategory: str | None
 
-class OtherEquipmentDefinition(IDFObject):
+class OtherEquipmentDefinition(_TypedIDFObject):
     """Defines the physical characteristics (design level and heat gain fractions) for 'other' equipment. Referenced by one ...; Since: 26.2.0"""
 
     design_level_calculation_method: (
@@ -11790,13 +12210,15 @@ class _IndoorLivingWallCommonFields(TypedDict, total=False):
     schedule_name: str | None
     evapotranspiration_calculation_method: Literal["", "Penman-Monteith", "Stanghellini"] | None
     lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None
+    led_intensity_schedule_name: str | None
     daylighting_control_name: str | None
     led_daylight_targeted_lighting_intensity_schedule_name: str | None
     total_leaf_area: float | None
+    led_nominal_intensity: float | None
     led_nominal_power: float | None
     radiant_fraction_of_led_lights: float | None
 
-class _IndoorLivingWallBase(IDFObject):
+class _IndoorLivingWallBase(_TypedIDFObject):
     """``IndoorLivingWall`` as every supported EnergyPlus version declares it."""
 
     surface_name: str | None
@@ -11807,12 +12229,16 @@ class _IndoorLivingWallBase(IDFObject):
     """Model selection for calculating evapotranspiration of indoor greenery system. This rate can also be actuated with use...; Default: Penman-Monteith"""
     lighting_method: Literal["Daylight", "LED", "LED-Daylight"] | None
     """Three different methods are provided here (LED; Daylight; LED-Daylight)"""
+    led_intensity_schedule_name: str | None
+    """Since: 24.2.0"""
     daylighting_control_name: str | None
     """If daylighting is used in the selected lighting methods (Daylight or LED-Daylight), users should define an object of ..."""
     led_daylight_targeted_lighting_intensity_schedule_name: str | None
     """This field defines targeted LED intensity level for indoor living wall systems. The schedule values can be any positi..."""
     total_leaf_area: float | None
     """The value is the one-sided leaf area of an indoor living wall. Based on the users' input, LAI is calculated as the ra...; [m2] (ft2)"""
+    led_nominal_intensity: float | None
+    """The value represents photosynthetic photon flux density (PPFD) of LED grow light. PPFD is measured in micro-mole per ...; [umol/m2-s] (umol/ft2-s); Since: 24.2.0"""
     led_nominal_power: float | None
     """This field defines nominal total LED power for an indoor living wall system.; [W] (W)"""
     radiant_fraction_of_led_lights: float | None
@@ -11821,16 +12247,9 @@ class _IndoorLivingWallBase(IDFObject):
 class IndoorLivingWall(_IndoorLivingWallBase):
     """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
 
-    led_intensity_schedule_name: str | None
-    """Since: 24.2.0"""
-    led_nominal_intensity: float | None
-    """The value represents photosynthetic photon flux density (PPFD) of LED grow light. PPFD is measured in micro-mole per ...; [umol/m2-s] (umol/ft2-s); Since: 24.2.0"""
-
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWallFields]) -> None: ...  # type: ignore[override]
 
-class _IndoorLivingWallFields(_IndoorLivingWallCommonFields, total=False):
-    led_intensity_schedule_name: str | None
-    led_nominal_intensity: float | None
+class _IndoorLivingWallFields(_IndoorLivingWallCommonFields, total=False): ...
 
 class _ElectricEquipmentITEAirCooledCommonFields(TypedDict, total=False):
     air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
@@ -11862,7 +12281,7 @@ class _ElectricEquipmentITEAirCooledCommonFields(TypedDict, total=False):
     return_temperature_difference: float | None
     return_temperature_difference_schedule: str | None
 
-class _ElectricEquipmentITEAirCooledBase(IDFObject):
+class _ElectricEquipmentITEAirCooledBase(_TypedIDFObject):
     """``ElectricEquipment:ITE:AirCooled`` as every supported EnergyPlus version declares it."""
 
     air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
@@ -11942,7 +12361,7 @@ class _ElectricEquipmentITEAirCooledFields(_ElectricEquipmentITEAirCooledCommonF
     watts_per_floor_area: float | None
     environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
 
-class ElectricEquipmentITEAirCooledInstance(IDFObject):
+class ElectricEquipmentITEAirCooledInstance(_TypedIDFObject):
     """This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption...; Since: 26.2.0"""
 
     electricequipment_ite_aircooled_definition_name: str | None
@@ -11984,7 +12403,7 @@ class _ElectricEquipmentITEAirCooledInstanceFields(TypedDict, total=False):
     fan_end_use_subcategory: str | None
     electric_power_supply_end_use_subcategory: str | None
 
-class ElectricEquipmentITEAirCooledDefinition(IDFObject):
+class ElectricEquipmentITEAirCooledDefinition(_TypedIDFObject):
     """Performance characteristics for ElectricEquipment:ITE:AirCooled:Instance. Defines power, airflow, and efficiency as f...; Since: 26.2.0"""
 
     air_flow_calculation_method: Literal["", "FlowControlWithApproachTemperatures", "FlowFromSystem"] | None
@@ -12065,7 +12484,7 @@ class _ZoneBaseboardOutdoorTemperatureControlledCommonFields(TypedDict, total=Fa
     fraction_radiant: float | None
     end_use_subcategory: str | None
 
-class _ZoneBaseboardOutdoorTemperatureControlledBase(IDFObject):
+class _ZoneBaseboardOutdoorTemperatureControlledBase(_TypedIDFObject):
     """``ZoneBaseboard:OutdoorTemperatureControlled`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12112,7 +12531,7 @@ class _ZoneBaseboardOutdoorTemperatureControlledFields(
     high_temperature: float | Literal["", "Autosize"] | None
     design_zone_heating_setpoint: float | None
 
-class SwimmingPoolIndoor(IDFObject):
+class SwimmingPoolIndoor(_TypedIDFObject):
     """Specifies an indoor swimming pools linked to a floor surface. The pool is assumed to cover the entire floor to which ..."""
 
     surface_name: str | None
@@ -12165,7 +12584,7 @@ class _SwimmingPoolIndoorFields(TypedDict, total=False):
     people_schedule: str | None
     people_heat_gain_schedule: str | None
 
-class ZoneContaminantSourceAndSinkCarbonDioxide(IDFObject):
+class ZoneContaminantSourceAndSinkCarbonDioxide(_TypedIDFObject):
     """Represents internal CO2 gains and sinks in the zone."""
 
     zone_name: str | None
@@ -12186,7 +12605,7 @@ class _ZoneContaminantSourceAndSinkCarbonDioxideFields(TypedDict, total=False):
     design_generation_rate: float | None
     schedule_name: str | None
 
-class ZoneContaminantSourceAndSinkGenericConstant(IDFObject):
+class ZoneContaminantSourceAndSinkGenericConstant(_TypedIDFObject):
     """Sets internal generic contaminant gains and sinks in a zone with constant values."""
 
     zone_name: str | None
@@ -12213,7 +12632,7 @@ class _ZoneContaminantSourceAndSinkGenericConstantFields(TypedDict, total=False)
     design_removal_coefficient: float | None
     removal_schedule_name: str | None
 
-class SurfaceContaminantSourceAndSinkGenericPressureDriven(IDFObject):
+class SurfaceContaminantSourceAndSinkGenericPressureDriven(_TypedIDFObject):
     """Simulate generic contaminant source driven by the pressure difference across a surface."""
 
     surface_name: str | None
@@ -12237,7 +12656,7 @@ class _SurfaceContaminantSourceAndSinkGenericPressureDrivenFields(TypedDict, tot
     generation_schedule_name: str | None
     generation_exponent: float | None
 
-class ZoneContaminantSourceAndSinkGenericCutoffModel(IDFObject):
+class ZoneContaminantSourceAndSinkGenericCutoffModel(_TypedIDFObject):
     """Simulate generic contaminant source driven by the cutoff concentration model."""
 
     zone_name: str | None
@@ -12261,7 +12680,7 @@ class _ZoneContaminantSourceAndSinkGenericCutoffModelFields(TypedDict, total=Fal
     schedule_name: str | None
     cutoff_generic_contaminant_at_which_emission_ceases: float | None
 
-class ZoneContaminantSourceAndSinkGenericDecaySource(IDFObject):
+class ZoneContaminantSourceAndSinkGenericDecaySource(_TypedIDFObject):
     """Simulate generic contaminant source driven by the cutoff concentration model."""
 
     zone_name: str | None
@@ -12285,7 +12704,7 @@ class _ZoneContaminantSourceAndSinkGenericDecaySourceFields(TypedDict, total=Fal
     schedule_name: str | None
     delay_time_constant: float | None
 
-class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion(IDFObject):
+class SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion(_TypedIDFObject):
     """Simulate generic contaminant source driven by the boundary layer diffusion controlled model."""
 
     surface_name: str | None
@@ -12309,7 +12728,7 @@ class _SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusionFields(TypedD
     schedule_name: str | None
     henry_adsorption_constant_or_partition_coefficient: float | None
 
-class SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink(IDFObject):
+class SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink(_TypedIDFObject):
     """Simulate generic contaminant source driven by the boundary layer diffusion controlled model."""
 
     surface_name: str | None
@@ -12330,7 +12749,7 @@ class _SurfaceContaminantSourceAndSinkGenericDepositionVelocitySinkFields(TypedD
     deposition_velocity: float | None
     schedule_name: str | None
 
-class ZoneContaminantSourceAndSinkGenericDepositionRateSink(IDFObject):
+class ZoneContaminantSourceAndSinkGenericDepositionRateSink(_TypedIDFObject):
     """Simulate generic contaminant source driven by the boundary layer diffusion controlled model."""
 
     zone_name: str | None
@@ -12363,7 +12782,7 @@ class _DaylightingControlsCommonFields(TypedDict, total=False):
     maximum_allowable_discomfort_glare_index: float | None
     delight_gridding_resolution: float | None
 
-class _DaylightingControlsBase(IDFObject):
+class _DaylightingControlsBase(_TypedIDFObject):
     """``Daylighting:Controls`` as every supported EnergyPlus version declares it."""
 
     daylighting_method: Literal["", "DElight", "SplitFlux"] | None
@@ -12386,7 +12805,7 @@ class _DaylightingControlsBase(IDFObject):
     delight_gridding_resolution: float | None
     """Maximum surface area for nodes in gridding all surfaces in the DElight zone. All reflective and transmitting surfaces...; [m2]; Range: > 0.0"""
 
-class DaylightingControlsControlDataGroup(ExtensibleGroup):
+class DaylightingControlsControlDataGroup(_TypedExtensibleGroup):
     """One control_data group inside :class:`DaylightingControls`."""
 
     daylighting_reference_point_name: str | None
@@ -12416,7 +12835,7 @@ class _DaylightingReferencePointCommonFields(TypedDict, total=False):
     y_coordinate_of_reference_point: float | None
     z_coordinate_of_reference_point: float | None
 
-class _DaylightingReferencePointBase(IDFObject):
+class _DaylightingReferencePointBase(_TypedIDFObject):
     """``Daylighting:ReferencePoint`` as every supported EnergyPlus version declares it."""
 
     x_coordinate_of_reference_point: float | None
@@ -12439,7 +12858,7 @@ class DaylightingReferencePoint(_DaylightingReferencePointBase):
 class _DaylightingReferencePointFields(_DaylightingReferencePointCommonFields, total=False):
     zone_or_space_name: str | None
 
-class DaylightingDELightComplexFenestration(IDFObject):
+class DaylightingDELightComplexFenestration(_TypedIDFObject):
     """Used for DElight Complex Fenestration of all types"""
 
     complex_fenestration_type: str | None
@@ -12461,13 +12880,13 @@ class _DaylightingDELightComplexFenestrationFields(TypedDict, total=False):
     window_name: str | None
     fenestration_rotation: float | None
 
-class DaylightingDeviceTubularTransitionLengthsGroup(ExtensibleGroup):
+class DaylightingDeviceTubularTransitionLengthsGroup(_TypedExtensibleGroup):
     """One transition_lengths group inside :class:`DaylightingDeviceTubular`."""
 
     transition_zone_name: str | None
     transition_zone_length: float | None
 
-class DaylightingDeviceTubular(IDFObject):
+class DaylightingDeviceTubular(_TypedIDFObject):
     """Defines a tubular daylighting device (TDD) consisting of three components: a dome, a pipe, and a diffuser. The dome a..."""
 
     dome_name: str | None
@@ -12496,7 +12915,7 @@ class _DaylightingDeviceTubularFields(TypedDict, total=False):
     effective_thermal_resistance: float | None
     transition_lengths: list[Any]
 
-class DaylightingDeviceShelf(IDFObject):
+class DaylightingDeviceShelf(_TypedIDFObject):
     """Defines a daylighting which can have an inside shelf, an outside shelf, or both. The inside shelf is defined as a bui..."""
 
     window_name: str | None
@@ -12520,9 +12939,10 @@ class _DaylightingDeviceShelfFields(TypedDict, total=False):
     outside_shelf_construction_name: str | None
     view_factor_to_outside_shelf: float | None
 
-class DaylightingDeviceLightWell(IDFObject):
+class DaylightingDeviceLightWell(_TypedIDFObject):
     """Applies only to exterior windows in daylighting-controlled zones or in zones that share an interior window with a day..."""
 
+    exterior_window_name: str | None
     height_of_well: float | None
     """Distance from Bottom of Window to Bottom of Well; [m]; Range: >= 0.0"""
     perimeter_of_bottom_of_well: float | None
@@ -12537,13 +12957,23 @@ class DaylightingDeviceLightWell(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _DaylightingDeviceLightWellFields(TypedDict, total=False):
+    exterior_window_name: str | None
     height_of_well: float | None
     perimeter_of_bottom_of_well: float | None
     area_of_bottom_of_well: float | None
     visible_reflectance_of_well_walls: float | None
 
-class OutputDaylightFactors(IDFObject):
+class OutputDaylightFactors(_TypedIDFObject):
     """Reports hourly daylight factors for each exterior window for four sky types (clear, turbid clear, intermediate, and o..."""
+
+    reporting_days: Literal["AllShadowCalculationDays", "SizingDays"] | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputDaylightFactorsFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputDaylightFactorsFields(TypedDict, total=False):
+    reporting_days: Literal["AllShadowCalculationDays", "SizingDays"] | None
 
 class _OutputIlluminanceMapCommonFields(TypedDict, total=False):
     z_height: float | None
@@ -12552,7 +12982,7 @@ class _OutputIlluminanceMapCommonFields(TypedDict, total=False):
     y_minimum_coordinate: float | None
     y_maximum_coordinate: float | None
 
-class _OutputIlluminanceMapBase(IDFObject):
+class _OutputIlluminanceMapBase(_TypedIDFObject):
     """``Output:IlluminanceMap`` as every supported EnergyPlus version declares it."""
 
     z_height: float | None
@@ -12587,8 +13017,18 @@ class _OutputIlluminanceMapFields(_OutputIlluminanceMapCommonFields, total=False
     number_of_x_grid_points: int | None
     number_of_y_grid_points: int | None
 
-class OutputControlIlluminanceMapStyle(IDFObject):
+class OutputControlIlluminanceMapStyle(_TypedIDFObject):
     """default style for the Daylighting Illuminance Map is comma -- this works well for importing into spreadsheet programs..."""
+
+    column_separator: Literal["", "Comma", "Fixed", "Tab"] | None
+    """Default: Comma"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlIlluminanceMapStyleFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlIlluminanceMapStyleFields(TypedDict, total=False):
+    column_separator: Literal["", "Comma", "Fixed", "Tab"] | None
 
 class _ZoneInfiltrationDesignFlowRateCommonFields(TypedDict, total=False):
     schedule_name: str | None
@@ -12602,7 +13042,7 @@ class _ZoneInfiltrationDesignFlowRateCommonFields(TypedDict, total=False):
     velocity_term_coefficient: float | None
     velocity_squared_term_coefficient: float | None
 
-class _ZoneInfiltrationDesignFlowRateBase(IDFObject):
+class _ZoneInfiltrationDesignFlowRateBase(_TypedIDFObject):
     """``ZoneInfiltration:DesignFlowRate`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12652,7 +13092,7 @@ class _ZoneInfiltrationEffectiveLeakageAreaCommonFields(TypedDict, total=False):
     stack_coefficient: float | None
     wind_coefficient: float | None
 
-class _ZoneInfiltrationEffectiveLeakageAreaBase(IDFObject):
+class _ZoneInfiltrationEffectiveLeakageAreaBase(_TypedIDFObject):
     """``ZoneInfiltration:EffectiveLeakageArea`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12685,7 +13125,7 @@ class _ZoneInfiltrationFlowCoefficientCommonFields(TypedDict, total=False):
     wind_coefficient: float | None
     shelter_factor: float | None
 
-class _ZoneInfiltrationFlowCoefficientBase(IDFObject):
+class _ZoneInfiltrationFlowCoefficientBase(_TypedIDFObject):
     """``ZoneInfiltration:FlowCoefficient`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12739,7 +13179,7 @@ class _ZoneVentilationDesignFlowRateCommonFields(TypedDict, total=False):
     maximum_outdoor_temperature_schedule_name: str | None
     maximum_wind_speed: float | None
 
-class _ZoneVentilationDesignFlowRateBase(IDFObject):
+class _ZoneVentilationDesignFlowRateBase(_TypedIDFObject):
     """``ZoneVentilation:DesignFlowRate`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12827,7 +13267,7 @@ class _ZoneVentilationWindandStackOpenAreaCommonFields(TypedDict, total=False):
     maximum_outdoor_temperature_schedule_name: str | None
     maximum_wind_speed: float | None
 
-class _ZoneVentilationWindandStackOpenAreaBase(IDFObject):
+class _ZoneVentilationWindandStackOpenAreaBase(_TypedIDFObject):
     """``ZoneVentilation:WindandStackOpenArea`` as every supported EnergyPlus version declares it."""
 
     opening_area: float | None
@@ -12878,7 +13318,7 @@ class ZoneVentilationWindandStackOpenArea(_ZoneVentilationWindandStackOpenAreaBa
 class _ZoneVentilationWindandStackOpenAreaFields(_ZoneVentilationWindandStackOpenAreaCommonFields, total=False):
     zone_or_space_name: str | None
 
-class ZoneAirBalanceOutdoorAir(IDFObject):
+class ZoneAirBalanceOutdoorAir(_TypedIDFObject):
     """Provide a combined zone outdoor air flow by including interactions between mechanical ventilation, infiltration and d..."""
 
     zone_name: str | None
@@ -12910,7 +13350,7 @@ class _ZoneMixingCommonFields(TypedDict, total=False):
     minimum_outdoor_temperature_schedule_name: str | None
     maximum_outdoor_temperature_schedule_name: str | None
 
-class _ZoneMixingBase(IDFObject):
+class _ZoneMixingBase(_TypedIDFObject):
     """``ZoneMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -12972,7 +13412,7 @@ class _ZoneCrossMixingCommonFields(TypedDict, total=False):
     minimum_outdoor_temperature_schedule_name: str | None
     maximum_outdoor_temperature_schedule_name: str | None
 
-class _ZoneCrossMixingBase(IDFObject):
+class _ZoneCrossMixingBase(_TypedIDFObject):
     """``ZoneCrossMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -13029,7 +13469,7 @@ class _ZoneRefrigerationDoorMixingCommonFields(TypedDict, total=False):
     door_area: float | None
     door_protection_type: Literal["", "AirCurtain", "None", "StripCurtain"] | None
 
-class _ZoneRefrigerationDoorMixingBase(IDFObject):
+class _ZoneRefrigerationDoorMixingBase(_TypedIDFObject):
     """``ZoneRefrigerationDoorMixing`` as every supported EnergyPlus version declares it."""
 
     schedule_name: str | None
@@ -13058,6 +13498,7 @@ class _ZoneRefrigerationDoorMixingFields(_ZoneRefrigerationDoorMixingCommonField
     zone_or_space_name_2: str | None
 
 class _ZoneEarthtubeCommonFields(TypedDict, total=False):
+    zone_name: str | None
     schedule_name: str | None
     design_flow_rate: float | None
     minimum_zone_temperature_when_cooling: float | None
@@ -13080,9 +13521,10 @@ class _ZoneEarthtubeCommonFields(TypedDict, total=False):
     velocity_term_flow_coefficient: float | None
     velocity_squared_term_flow_coefficient: float | None
 
-class _ZoneEarthtubeBase(IDFObject):
+class _ZoneEarthtubeBase(_TypedIDFObject):
     """``ZoneEarthtube`` as every supported EnergyPlus version declares it."""
 
+    zone_name: str | None
     schedule_name: str | None
     design_flow_rate: float | None
     """'Edesign' in Equation; [m3/s]; Range: >= 0.0"""
@@ -13139,9 +13581,10 @@ class _ZoneEarthtubeFields(_ZoneEarthtubeCommonFields, total=False):
     earth_tube_model_type: Literal["", "Basic", "Vertical"] | None
     earth_tube_model_parameters: str | None
 
-class ZoneEarthtubeParameters(IDFObject):
+class ZoneEarthtubeParameters(_TypedIDFObject):
     """Parameters that apply to the vertical model for an earth tube; Since: 23.2.0"""
 
+    earth_tube_model_parameters_name: str | None
     nodes_above_earth_tube: int | None
     """[dimensionless]; Default: 5; Range: >= 3, <= 10"""
     nodes_below_earth_tube: int | None
@@ -13158,6 +13601,7 @@ class ZoneEarthtubeParameters(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneEarthtubeParametersFields(TypedDict, total=False):
+    earth_tube_model_parameters_name: str | None
     nodes_above_earth_tube: int | None
     nodes_below_earth_tube: int | None
     earth_tube_dimensionless_boundary_above: float | None
@@ -13178,7 +13622,7 @@ class _ZoneCoolTowerShowerCommonFields(TypedDict, total=False):
     fraction_of_flow_schedule: float | None
     rated_power_consumption: float | None
 
-class _ZoneCoolTowerShowerBase(IDFObject):
+class _ZoneCoolTowerShowerBase(_TypedIDFObject):
     """``ZoneCoolTower:Shower`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -13265,7 +13709,7 @@ class _ZoneThermalChimneyCommonFields(TypedDict, total=False):
     distance_from_top_of_thermal_chimney_to_inlet_20: float | None
     cross_sectional_areas_of_air_channel_inlet_20: float | None
 
-class _ZoneThermalChimneyBase(IDFObject):
+class _ZoneThermalChimneyBase(_TypedIDFObject):
     """``ZoneThermalChimney`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
@@ -13512,7 +13956,7 @@ class _AirflowNetworkSimulationControlCommonFields(TypedDict, total=False):
     height_dependence_of_external_node_temperature: Literal["", "No", "Yes"] | None
     solver: Literal["", "ConjugateGradient", "SkylineLU"] | None
 
-class _AirflowNetworkSimulationControlBase(IDFObject):
+class _AirflowNetworkSimulationControlBase(_TypedIDFObject):
     """``AirflowNetwork:SimulationControl`` as every supported EnergyPlus version declares it."""
 
     airflownetwork_control: (
@@ -13569,9 +14013,11 @@ class _AirflowNetworkSimulationControlFields(_AirflowNetworkSimulationControlCom
     allow_unsupported_zone_equipment: Literal["", "No", "Yes"] | None
     do_distribution_duct_sizing_calculation: Literal["", "No", "Yes"] | None
 
-class AirflowNetworkMultiZoneZone(IDFObject):
+class AirflowNetworkMultiZoneZone(_TypedIDFObject):
     """This object is used to simultaneously control a thermal zone's window and door openings, both exterior and interior."""
 
+    zone_name: str | None
+    """Enter the zone name where ventilation control is required."""
     ventilation_control_mode: (
         Literal["", "ASHRAE55Adaptive", "CEN15251Adaptive", "Constant", "Enthalpy", "NoVent", "Temperature"] | None
     )
@@ -13602,6 +14048,7 @@ class AirflowNetworkMultiZoneZone(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
+    zone_name: str | None
     ventilation_control_mode: (
         Literal["", "ASHRAE55Adaptive", "CEN15251Adaptive", "Constant", "Enthalpy", "NoVent", "Temperature"] | None
     )
@@ -13616,9 +14063,11 @@ class _AirflowNetworkMultiZoneZoneFields(TypedDict, total=False):
     facade_width: float | None
     occupant_ventilation_control_name: str | None
 
-class AirflowNetworkMultiZoneSurface(IDFObject):
+class AirflowNetworkMultiZoneSurface(_TypedIDFObject):
     """This object specifies the properties of a surface linkage through which air flows. Airflow Report: Node 1 as an insid..."""
 
+    surface_name: str | None
+    """Enter the name of a heat transfer surface."""
     leakage_component_name: str | None
     """Enter the name of an Airflow Network leakage component. A leakage component is one of the following AirflowNetwork:Mu..."""
     external_node_name: str | None
@@ -13667,6 +14116,7 @@ class AirflowNetworkMultiZoneSurface(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkMultiZoneSurfaceFields(TypedDict, total=False):
+    surface_name: str | None
     leakage_component_name: str | None
     external_node_name: str | None
     window_door_opening_factor_or_crack_factor: float | None
@@ -13696,7 +14146,7 @@ class _AirflowNetworkMultiZoneSurfaceFields(TypedDict, total=False):
     equivalent_rectangle_method: Literal["", "BaseSurfaceAspectRatio", "PolygonHeight", "UserDefinedAspectRatio"] | None
     equivalent_rectangle_aspect_ratio: float | None
 
-class AirflowNetworkMultiZoneReferenceCrackConditions(IDFObject):
+class AirflowNetworkMultiZoneReferenceCrackConditions(_TypedIDFObject):
     """This object specifies the conditions under which the air mass flow coefficient was measured."""
 
     reference_temperature: float | None
@@ -13718,7 +14168,7 @@ class _AirflowNetworkMultiZoneReferenceCrackConditionsFields(TypedDict, total=Fa
     reference_barometric_pressure: float | None
     reference_humidity_ratio: float | None
 
-class AirflowNetworkMultiZoneSurfaceCrack(IDFObject):
+class AirflowNetworkMultiZoneSurfaceCrack(_TypedIDFObject):
     """This object specifies the properties of airflow through a crack."""
 
     air_mass_flow_coefficient_at_reference_conditions: float | None
@@ -13737,7 +14187,7 @@ class _AirflowNetworkMultiZoneSurfaceCrackFields(TypedDict, total=False):
     air_mass_flow_exponent: float | None
     reference_crack_conditions: str | None
 
-class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea(IDFObject):
+class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea(_TypedIDFObject):
     """This object is used to define surface air leakage."""
 
     effective_leakage_area: float | None
@@ -13762,7 +14212,7 @@ class _AirflowNetworkMultiZoneSurfaceEffectiveLeakageAreaFields(TypedDict, total
     reference_pressure_difference: float | None
     air_mass_flow_exponent: float | None
 
-class AirflowNetworkMultiZoneSpecifiedFlowRate(IDFObject):
+class AirflowNetworkMultiZoneSpecifiedFlowRate(_TypedIDFObject):
     """This object is used to define specified flow through a linkage.; Since: 9.6.0"""
 
     air_flow_value: float | None
@@ -13806,8 +14256,9 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields(TypedDict, to
     width_factor_for_opening_factor_4: float | None
     height_factor_for_opening_factor_4: float | None
     start_height_factor_for_opening_factor_4: float | None
+    type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None
 
-class _AirflowNetworkMultiZoneComponentDetailedOpeningBase(IDFObject):
+class _AirflowNetworkMultiZoneComponentDetailedOpeningBase(_TypedIDFObject):
     """``AirflowNetwork:MultiZone:Component:DetailedOpening`` as every supported EnergyPlus version declares it."""
 
     air_mass_flow_coefficient_when_opening_is_closed: float | None
@@ -13859,6 +14310,8 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningBase(IDFObject):
     """The Height Factor is the opening height divided by the window or door height.; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
     start_height_factor_for_opening_factor_4: float | None
     """The Start Height Factor is the Start Height divided by the window or door height. Start Height is the distance betwee...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
+    type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None
+    """Alias of :attr:`type_of_rectangular_large_vertical_opening_lvo_`, the same field without the trailing underscore."""
 
 class AirflowNetworkMultiZoneComponentDetailedOpening(_AirflowNetworkMultiZoneComponentDetailedOpeningBase):
     """This object specifies the properties of airflow through windows and doors (window, door and glass door heat transfer ..."""
@@ -13878,7 +14331,7 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningFields(
 ):
     number_of_sets_of_opening_factor_data: int | None
 
-class AirflowNetworkMultiZoneComponentSimpleOpening(IDFObject):
+class AirflowNetworkMultiZoneComponentSimpleOpening(_TypedIDFObject):
     """This object specifies the properties of air flow through windows and doors (window, door and glass door heat transfer..."""
 
     air_mass_flow_coefficient_when_opening_is_closed: float | None
@@ -13903,7 +14356,7 @@ class _AirflowNetworkMultiZoneComponentSimpleOpeningFields(TypedDict, total=Fals
     minimum_density_difference_for_two_way_flow: float | None
     discharge_coefficient: float | None
 
-class AirflowNetworkMultiZoneComponentHorizontalOpening(IDFObject):
+class AirflowNetworkMultiZoneComponentHorizontalOpening(_TypedIDFObject):
     """This object specifies the properties of air flow through a horizontal opening"""
 
     air_mass_flow_coefficient_when_opening_is_closed: float | None
@@ -13928,7 +14381,7 @@ class _AirflowNetworkMultiZoneComponentHorizontalOpeningFields(TypedDict, total=
     sloping_plane_angle: float | None
     discharge_coefficient: float | None
 
-class AirflowNetworkMultiZoneComponentZoneExhaustFan(IDFObject):
+class AirflowNetworkMultiZoneComponentZoneExhaustFan(_TypedIDFObject):
     """This object specifies the additional properties for a zone exhaust fan to perform multizone airflow calculations."""
 
     air_mass_flow_coefficient_when_the_zone_exhaust_fan_is_off_at_reference_conditions: float | None
@@ -13950,7 +14403,7 @@ class _AirflowNetworkMultiZoneComponentZoneExhaustFanFields(TypedDict, total=Fal
     air_mass_flow_exponent_when_the_zone_exhaust_fan_is_off: float | None
     reference_crack_conditions: str | None
 
-class AirflowNetworkMultiZoneExternalNode(IDFObject):
+class AirflowNetworkMultiZoneExternalNode(_TypedIDFObject):
     """This object defines outdoor environmental conditions outside of the building."""
 
     external_node_height: float | None
@@ -13972,7 +14425,7 @@ class _AirflowNetworkMultiZoneExternalNodeFields(TypedDict, total=False):
     symmetric_wind_pressure_coefficient_curve: Literal["", "No", "Yes"] | None
     wind_angle_type: Literal["", "Absolute", "Relative"] | None
 
-class AirflowNetworkMultiZoneWindPressureCoefficientArray(IDFObject):
+class AirflowNetworkMultiZoneWindPressureCoefficientArray(_TypedIDFObject):
     """Used only if Wind Pressure Coefficient (WPC) Type = Input in the AirflowNetwork:SimulationControl object. Number of W..."""
 
     wind_direction_1: float | None
@@ -14093,7 +14546,7 @@ class _AirflowNetworkMultiZoneWindPressureCoefficientArrayFields(TypedDict, tota
     wind_direction_35: float | None
     wind_direction_36: float | None
 
-class AirflowNetworkMultiZoneWindPressureCoefficientValues(IDFObject):
+class AirflowNetworkMultiZoneWindPressureCoefficientValues(_TypedIDFObject):
     """Used only if Wind Pressure Coefficient (WPC) Type = INPUT in the AirflowNetwork:SimulationControl object. The number ..."""
 
     airflownetwork_multizone_windpressurecoefficientarray_name: str | None
@@ -14217,7 +14670,7 @@ class _AirflowNetworkMultiZoneWindPressureCoefficientValuesFields(TypedDict, tot
     wind_pressure_coefficient_value_35: float | None
     wind_pressure_coefficient_value_36: float | None
 
-class AirflowNetworkZoneControlPressureController(IDFObject):
+class AirflowNetworkZoneControlPressureController(_TypedIDFObject):
     """This object is used to control a zone to a specified indoor pressure using the AirflowNetwork model. The specified pr..."""
 
     control_zone_name: str | None
@@ -14257,7 +14710,7 @@ class _AirflowNetworkDistributionNodeCommonFields(TypedDict, total=False):
     component_name_or_node_name: str | None
     node_height: float | None
 
-class _AirflowNetworkDistributionNodeBase(IDFObject):
+class _AirflowNetworkDistributionNodeBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:Node`` as every supported EnergyPlus version declares it."""
 
     component_name_or_node_name: str | None
@@ -14318,7 +14771,7 @@ class _AirflowNetworkDistributionNodeFields(_AirflowNetworkDistributionNodeCommo
         | None
     )
 
-class AirflowNetworkDistributionComponentLeak(IDFObject):
+class AirflowNetworkDistributionComponentLeak(_TypedIDFObject):
     """This object defines the characteristics of a supply or return air leak."""
 
     air_mass_flow_coefficient: float | None
@@ -14337,7 +14790,7 @@ class _AirflowNetworkDistributionComponentLeakFields(TypedDict, total=False):
     air_mass_flow_coefficient: float | None
     air_mass_flow_exponent: float | None
 
-class AirflowNetworkDistributionComponentLeakageRatio(IDFObject):
+class AirflowNetworkDistributionComponentLeakageRatio(_TypedIDFObject):
     """This object is used to define supply and return air leaks with respect to the fan's maximum air flow rate."""
 
     effective_leakage_ratio: float | None
@@ -14362,7 +14815,7 @@ class _AirflowNetworkDistributionComponentLeakageRatioFields(TypedDict, total=Fa
     reference_pressure_difference: float | None
     air_mass_flow_exponent: float | None
 
-class AirflowNetworkDistributionComponentDuct(IDFObject):
+class AirflowNetworkDistributionComponentDuct(_TypedIDFObject):
     """This object defines the relationship between pressure and air flow through the duct."""
 
     duct_length: float | None
@@ -14402,11 +14855,14 @@ class _AirflowNetworkDistributionComponentDuctFields(TypedDict, total=False):
     outside_convection_coefficient: float | None
     inside_convection_coefficient: float | None
 
-class _AirflowNetworkDistributionComponentFanCommonFields(TypedDict, total=False): ...
+class _AirflowNetworkDistributionComponentFanCommonFields(TypedDict, total=False):
+    fan_name: str | None
 
-class _AirflowNetworkDistributionComponentFanBase(IDFObject):
+class _AirflowNetworkDistributionComponentFanBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:Component:Fan`` as every supported EnergyPlus version declares it."""
 
+    fan_name: str | None
+    """Enter the name of the fan in the primary air loop."""
     supply_fan_object_type: (
         Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume", "Fan:SystemModel"] | None
     )
@@ -14429,12 +14885,15 @@ class _AirflowNetworkDistributionComponentFanFields(_AirflowNetworkDistributionC
     )
 
 class _AirflowNetworkDistributionComponentCoilCommonFields(TypedDict, total=False):
+    coil_name: str | None
     air_path_length: float | None
     air_path_hydraulic_diameter: float | None
 
-class _AirflowNetworkDistributionComponentCoilBase(IDFObject):
+class _AirflowNetworkDistributionComponentCoilBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:Component:Coil`` as every supported EnergyPlus version declares it."""
 
+    coil_name: str | None
+    """Enter the name of a cooling or heating coil in the primary Air loop."""
     coil_object_type: (
         Literal[
             "Coil:Cooling:DX:MultiSpeed",
@@ -14532,9 +14991,11 @@ class _AirflowNetworkDistributionComponentCoilFields(_AirflowNetworkDistribution
         | None
     )
 
-class AirflowNetworkDistributionComponentHeatExchanger(IDFObject):
+class AirflowNetworkDistributionComponentHeatExchanger(_TypedIDFObject):
     """This object defines the name of an air-to-air heat exchanger used in an air loop."""
 
+    heatexchanger_name: str | None
+    """Enter the name of an air-to-air heat exchanger in the primary Air loop."""
     heatexchanger_object_type: (
         Literal[
             "HeatExchanger:AirToAir:FlatPlate",
@@ -14557,6 +15018,7 @@ class AirflowNetworkDistributionComponentHeatExchanger(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentHeatExchangerFields(TypedDict, total=False):
+    heatexchanger_name: str | None
     heatexchanger_object_type: (
         Literal[
             "HeatExchanger:AirToAir:FlatPlate",
@@ -14568,9 +15030,11 @@ class _AirflowNetworkDistributionComponentHeatExchangerFields(TypedDict, total=F
     air_path_length: float | None
     air_path_hydraulic_diameter: float | None
 
-class AirflowNetworkDistributionComponentTerminalUnit(IDFObject):
+class AirflowNetworkDistributionComponentTerminalUnit(_TypedIDFObject):
     """This object defines the name of a terminal unit in an air loop."""
 
+    terminal_unit_name: str | None
+    """Enter the name of a terminal unit in the AirLoopHVAC."""
     terminal_unit_object_type: (
         Literal["AirTerminal:SingleDuct:ConstantVolume:Reheat", "AirTerminal:SingleDuct:VAV:Reheat"] | None
     )
@@ -14588,13 +15052,14 @@ class AirflowNetworkDistributionComponentTerminalUnit(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _AirflowNetworkDistributionComponentTerminalUnitFields(TypedDict, total=False):
+    terminal_unit_name: str | None
     terminal_unit_object_type: (
         Literal["AirTerminal:SingleDuct:ConstantVolume:Reheat", "AirTerminal:SingleDuct:VAV:Reheat"] | None
     )
     air_path_length: float | None
     air_path_hydraulic_diameter: float | None
 
-class AirflowNetworkDistributionComponentConstantPressureDrop(IDFObject):
+class AirflowNetworkDistributionComponentConstantPressureDrop(_TypedIDFObject):
     """This object defines the characteristics of a constant pressure drop component (e.g. filter). Each node connected to t..."""
 
     pressure_difference_across_the_component: float | None
@@ -14615,7 +15080,7 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields(TypedDict, 
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
     reference_crack_conditions: str | None
 
-class _AirflowNetworkDistributionComponentOutdoorAirFlowBase(IDFObject):
+class _AirflowNetworkDistributionComponentOutdoorAirFlowBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:Component:OutdoorAirFlow`` as every supported EnergyPlus version declares it."""
 
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float | None
@@ -14648,7 +15113,7 @@ class _AirflowNetworkDistributionComponentReliefAirFlowCommonFields(TypedDict, t
     air_mass_flow_exponent_when_no_outdoor_air_flow: float | None
     reference_crack_conditions: str | None
 
-class _AirflowNetworkDistributionComponentReliefAirFlowBase(IDFObject):
+class _AirflowNetworkDistributionComponentReliefAirFlowBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:Component:ReliefAirFlow`` as every supported EnergyPlus version declares it."""
 
     air_mass_flow_coefficient_when_no_outdoor_air_flow_at_reference_conditions: float | None
@@ -14676,7 +15141,7 @@ class _AirflowNetworkDistributionComponentReliefAirFlowFields(
 ):
     outdoor_air_mixer_name: str | None
 
-class AirflowNetworkDistributionLinkage(IDFObject):
+class AirflowNetworkDistributionLinkage(_TypedIDFObject):
     """This object defines the connection between two nodes and a component."""
 
     node_1_name: str | None
@@ -14699,18 +15164,20 @@ class _AirflowNetworkDistributionLinkageFields(TypedDict, total=False):
     thermal_zone_name: str | None
 
 class _AirflowNetworkDistributionDuctViewFactorsCommonFields(TypedDict, total=False):
+    linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     duct_surface_emittance: float | None
 
-class _AirflowNetworkDistributionDuctViewFactorsBase(IDFObject):
+class _AirflowNetworkDistributionDuctViewFactorsBase(_TypedIDFObject):
     """``AirflowNetwork:Distribution:DuctViewFactors`` as every supported EnergyPlus version declares it."""
 
+    linkage_name: str | None
     duct_surface_exposure_fraction: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     duct_surface_emittance: float | None
     """Default: 0.9; Range: >= 0.0, <= 1.0"""
 
-class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(ExtensibleGroup):
+class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors`."""
 
     surface_name: str | None
@@ -14733,7 +15200,7 @@ class _AirflowNetworkDistributionDuctViewFactorsFields(
 ):
     surfaces: list[Any]
 
-class AirflowNetworkDistributionDuctSizing(IDFObject):
+class AirflowNetworkDistributionDuctSizing(_TypedIDFObject):
     """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
 
     duct_sizing_method: Literal["", "MaximumVelocity", "PressureLoss", "PressureLossWithMaximumVelocity"] | None
@@ -14764,7 +15231,7 @@ class _AirflowNetworkDistributionDuctSizingFields(TypedDict, total=False):
     total_pressure_loss_across_return_trunk: float | None
     total_pressure_loss_across_return_branch: float | None
 
-class AirflowNetworkOccupantVentilationControl(IDFObject):
+class AirflowNetworkOccupantVentilationControl(_TypedIDFObject):
     """This object is used to provide advanced thermal comfort control of window opening and closing for both exterior and i..."""
 
     minimum_opening_time: float | None
@@ -14804,7 +15271,7 @@ class _AirflowNetworkOccupantVentilationControlFields(TypedDict, total=False):
     opening_probability_schedule_name: str | None
     closing_probability_schedule_name: str | None
 
-class AirflowNetworkIntraZoneNode(IDFObject):
+class AirflowNetworkIntraZoneNode(_TypedIDFObject):
     """This object represents a node in a zone in the combination of RoomAir and AirflowNetwork model."""
 
     roomair_node_airflownetwork_name: str | None
@@ -14823,7 +15290,7 @@ class _AirflowNetworkIntraZoneNodeFields(TypedDict, total=False):
     zone_name: str | None
     node_height: float | None
 
-class AirflowNetworkIntraZoneLinkage(IDFObject):
+class AirflowNetworkIntraZoneLinkage(_TypedIDFObject):
     """This object defines the connection between two nodes and a component used in the combination of RoomAir and AirflowNe..."""
 
     node_1_name: str | None
@@ -14845,7 +15312,7 @@ class _AirflowNetworkIntraZoneLinkageFields(TypedDict, total=False):
     component_name: str | None
     airflownetwork_multizone_surface_name: str | None
 
-class DuctLossConduction(IDFObject):
+class DuctLossConduction(_TypedIDFObject):
     """Since: 25.2.0"""
 
     airloophvac_name: str | None
@@ -14868,7 +15335,7 @@ class _DuctLossConductionFields(TypedDict, total=False):
     ambient_temperature_schedule_name: str | None
     ambient_humidity_ratio_schedule_name: str | None
 
-class DuctLossLeakage(IDFObject):
+class DuctLossLeakage(_TypedIDFObject):
     """Since: 25.2.0"""
 
     airloophvac_name: str | None
@@ -14880,7 +15347,7 @@ class _DuctLossLeakageFields(TypedDict, total=False):
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
-class DuctLossMakeupAir(IDFObject):
+class DuctLossMakeupAir(_TypedIDFObject):
     """Since: 25.2.0"""
 
     airloophvac_name: str | None
@@ -14892,7 +15359,7 @@ class _DuctLossMakeupAirFields(TypedDict, total=False):
     airloophvac_name: str | None
     airflownetwork_distribution_linkage_name: str | None
 
-class ExteriorLights(IDFObject):
+class ExteriorLights(_TypedIDFObject):
     """only used for Meter type reporting, does not affect building loads"""
 
     schedule_name: str | None
@@ -14917,7 +15384,7 @@ class _ExteriorFuelEquipmentCommonFields(TypedDict, total=False):
     design_level: float | None
     end_use_subcategory: str | None
 
-class _ExteriorFuelEquipmentBase(IDFObject):
+class _ExteriorFuelEquipmentBase(_TypedIDFObject):
     """``Exterior:FuelEquipment`` as every supported EnergyPlus version declares it."""
 
     fuel_use_type: (
@@ -14999,7 +15466,7 @@ class _ExteriorFuelEquipmentFields(_ExteriorFuelEquipmentCommonFields, total=Fal
         | None
     )
 
-class ExteriorWaterEquipment(IDFObject):
+class ExteriorWaterEquipment(_TypedIDFObject):
     """only used for Meter type reporting, does not affect building loads"""
 
     fuel_use_type: Literal["", "Water"] | None
@@ -15021,7 +15488,7 @@ class _ExteriorWaterEquipmentFields(TypedDict, total=False):
     design_level: float | None
     end_use_subcategory: str | None
 
-class HVACTemplateThermostat(IDFObject):
+class HVACTemplateThermostat(_TypedIDFObject):
     """Zone thermostat control. Referenced schedules must be defined elsewhere in the idf. Thermostat control type is dual s..."""
 
     heating_setpoint_schedule_name: str | None
@@ -15043,9 +15510,11 @@ class _HVACTemplateThermostatFields(TypedDict, total=False):
     cooling_setpoint_schedule_name: str | None
     constant_cooling_setpoint: float | None
 
-class HVACTemplateZoneIdealLoadsAirSystem(IDFObject):
+class HVACTemplateZoneIdealLoadsAirSystem(_TypedIDFObject):
     """Zone with ideal air system that meets heating or cooling loads"""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     system_availability_schedule_name: str | None
@@ -15114,6 +15583,7 @@ class HVACTemplateZoneIdealLoadsAirSystem(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     system_availability_schedule_name: str | None
     maximum_heating_supply_air_temperature: float | None
@@ -15148,9 +15618,11 @@ class _HVACTemplateZoneIdealLoadsAirSystemFields(TypedDict, total=False):
     sensible_heat_recovery_effectiveness: float | None
     latent_heat_recovery_effectiveness: float | None
 
-class HVACTemplateZoneBaseboardHeat(IDFObject):
+class HVACTemplateZoneBaseboardHeat(_TypedIDFObject):
     """Zone baseboard heating system."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     zone_heating_sizing_factor: float | None
@@ -15183,6 +15655,7 @@ class HVACTemplateZoneBaseboardHeat(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     zone_heating_sizing_factor: float | None
     baseboard_heating_type: Literal["", "Electric", "HotWater"] | None
@@ -15199,6 +15672,7 @@ class _HVACTemplateZoneBaseboardHeatFields(TypedDict, total=False):
     design_specification_zone_air_distribution_object_name: str | None
 
 class _HVACTemplateZoneFanCoilCommonFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
     zone_heating_sizing_factor: float | None
@@ -15236,9 +15710,11 @@ class _HVACTemplateZoneFanCoilCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
 
-class _HVACTemplateZoneFanCoilBase(IDFObject):
+class _HVACTemplateZoneFanCoilBase(_TypedIDFObject):
     """``HVACTemplate:Zone:FanCoil`` as every supported EnergyPlus version declares it."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -15365,6 +15841,7 @@ class _HVACTemplateZoneFanCoilFields(_HVACTemplateZoneFanCoilCommonFields, total
     )
 
 class _HVACTemplateZonePTACCommonFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15410,9 +15887,11 @@ class _HVACTemplateZonePTACCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
 
-class _HVACTemplateZonePTACBase(IDFObject):
+class _HVACTemplateZonePTACBase(_TypedIDFObject):
     """``HVACTemplate:Zone:PTAC`` as every supported EnergyPlus version declares it."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15510,6 +15989,7 @@ class _HVACTemplateZonePTACFields(_HVACTemplateZonePTACCommonFields, total=False
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
 
 class _HVACTemplateZonePTHPCommonFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15565,9 +16045,11 @@ class _HVACTemplateZonePTHPCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
 
-class _HVACTemplateZonePTHPBase(IDFObject):
+class _HVACTemplateZonePTHPBase(_TypedIDFObject):
     """``HVACTemplate:Zone:PTHP`` as every supported EnergyPlus version declares it."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15685,6 +16167,7 @@ class _HVACTemplateZonePTHPFields(_HVACTemplateZonePTHPCommonFields, total=False
     capacity_control_method: Literal["", "None", "SingleZoneVAV"] | None
 
 class _HVACTemplateZoneWaterToAirHeatPumpCommonFields(TypedDict, total=False):
+    zone_name: str | None
     template_thermostat_name: str | None
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
     heating_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15733,9 +16216,11 @@ class _HVACTemplateZoneWaterToAirHeatPumpCommonFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
 
-class _HVACTemplateZoneWaterToAirHeatPumpBase(IDFObject):
+class _HVACTemplateZoneWaterToAirHeatPumpBase(_TypedIDFObject):
     """``HVACTemplate:Zone:WaterToAirHeatPump`` as every supported EnergyPlus version declares it."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_thermostat_name: str | None
     """Enter the name of a HVACTemplate:Thermostat object. If blank, then it is assumed that standard thermostat objects hav..."""
     cooling_supply_air_flow_rate: float | Literal["", "Autosize"] | None
@@ -15838,9 +16323,11 @@ class HVACTemplateZoneWaterToAirHeatPump(_HVACTemplateZoneWaterToAirHeatPumpBase
 class _HVACTemplateZoneWaterToAirHeatPumpFields(_HVACTemplateZoneWaterToAirHeatPumpCommonFields, total=False):
     latent_capacity_time_constant: float | None
 
-class HVACTemplateZoneVRF(IDFObject):
+class HVACTemplateZoneVRF(_TypedIDFObject):
     """Zone terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air or water-to-air heat..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vrf_system_name: str | None
     """Name of a HVACTemplate:System:VRF object serving this zone"""
     template_thermostat_name: str | None
@@ -15939,6 +16426,7 @@ class HVACTemplateZoneVRF(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVRFFields(TypedDict, total=False):
+    zone_name: str | None
     template_vrf_system_name: str | None
     template_thermostat_name: str | None
     zone_heating_sizing_factor: float | None
@@ -15989,9 +16477,11 @@ class _HVACTemplateZoneVRFFields(TypedDict, total=False):
     baseboard_heating_availability_schedule_name: str | None
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
 
-class HVACTemplateZoneUnitary(IDFObject):
+class HVACTemplateZoneUnitary(_TypedIDFObject):
     """Zone terminal unit, constant volume, no controls."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_unitary_system_name: str | None
     """Enter the name of an HVACTemplate:System:Unitary, HVACTemplate:System:UnitaryHeatPump:AirToAir, or HVACTemplate:Syste..."""
     template_thermostat_name: str | None
@@ -16048,6 +16538,7 @@ class HVACTemplateZoneUnitary(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
+    zone_name: str | None
     template_unitary_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16077,9 +16568,11 @@ class _HVACTemplateZoneUnitaryFields(TypedDict, total=False):
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
-class HVACTemplateZoneVAV(IDFObject):
+class HVACTemplateZoneVAV(_TypedIDFObject):
     """Zone terminal unit, variable volume, reheat optional. For heating, this unit activates reheat coil first, then increa..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vav_system_name: str | None
     """Name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone"""
     template_thermostat_name: str | None
@@ -16158,6 +16651,7 @@ class HVACTemplateZoneVAV(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16198,9 +16692,11 @@ class _HVACTemplateZoneVAVFields(TypedDict, total=False):
     design_specification_outdoor_air_object_name_for_sizing: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
-class HVACTemplateZoneVAVFanPowered(IDFObject):
+class HVACTemplateZoneVAVFanPowered(_TypedIDFObject):
     """Zone terminal unit, fan powered variable volume, reheat optional. Referenced schedules must be defined elsewhere in t..."""
 
+    zone_name: str | None
+    """Zone Name must match a building zone name"""
     template_vav_system_name: str | None
     """Enter the name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone."""
     template_thermostat_name: str | None
@@ -16275,6 +16771,7 @@ class HVACTemplateZoneVAVFanPowered(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     primary_supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16314,9 +16811,11 @@ class _HVACTemplateZoneVAVFanPoweredFields(TypedDict, total=False):
     design_specification_outdoor_air_object_name: str | None
     design_specification_zone_air_distribution_object_name: str | None
 
-class HVACTemplateZoneVAVHeatAndCool(IDFObject):
+class HVACTemplateZoneVAVHeatAndCool(_TypedIDFObject):
     """VAV system with VAV for both heating and cooling and optional reheat coil. For heating, this unit increases airflow f..."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_vav_system_name: str | None
     """Name of a HVACTemplate:System:VAV or HVACTemplate:System:PackagedVAV object serving this zone"""
     template_thermostat_name: str | None
@@ -16381,6 +16880,7 @@ class HVACTemplateZoneVAVHeatAndCool(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
+    zone_name: str | None
     template_vav_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16414,9 +16914,11 @@ class _HVACTemplateZoneVAVHeatAndCoolFields(TypedDict, total=False):
     zone_heating_design_supply_air_temperature: float | None
     zone_heating_design_supply_air_temperature_difference: float | None
 
-class HVACTemplateZoneConstantVolume(IDFObject):
+class HVACTemplateZoneConstantVolume(_TypedIDFObject):
     """Zone terminal unit, constant volume, reheat optional. Referenced schedules must be defined elsewhere in the idf."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_constant_volume_system_name: str | None
     """Name of a HVACTemplate:System:ConstantVolume object serving this zone"""
     template_thermostat_name: str | None
@@ -16479,6 +16981,7 @@ class HVACTemplateZoneConstantVolume(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
+    zone_name: str | None
     template_constant_volume_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16511,9 +17014,11 @@ class _HVACTemplateZoneConstantVolumeFields(TypedDict, total=False):
     zone_heating_design_supply_air_temperature: float | None
     zone_heating_design_supply_air_temperature_difference: float | None
 
-class HVACTemplateZoneDualDuct(IDFObject):
+class HVACTemplateZoneDualDuct(_TypedIDFObject):
     """Zone terminal unit, dual-duct, constant or variable volume."""
 
+    zone_name: str | None
+    """Zone name must match a building zone name"""
     template_dual_duct_system_name: str | None
     """Name of a HVACTemplate:System:DualDuct object serving this zone"""
     template_thermostat_name: str | None
@@ -16576,6 +17081,7 @@ class HVACTemplateZoneDualDuct(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _HVACTemplateZoneDualDuctFields(TypedDict, total=False):
+    zone_name: str | None
     template_dual_duct_system_name: str | None
     template_thermostat_name: str | None
     supply_air_maximum_flow_rate: float | Literal["", "Autosize"] | None
@@ -16649,7 +17155,7 @@ class _HVACTemplateSystemVRFCommonFields(TypedDict, total=False):
     minimum_outdoor_temperature_in_heat_recovery_mode: float | None
     maximum_outdoor_temperature_in_heat_recovery_mode: float | None
 
-class _HVACTemplateSystemVRFBase(IDFObject):
+class _HVACTemplateSystemVRFBase(_TypedIDFObject):
     """``HVACTemplate:System:VRF`` as every supported EnergyPlus version declares it."""
 
     system_availability_schedule_name: str | None
@@ -16791,7 +17297,7 @@ class _HVACTemplateSystemVRFFields(_HVACTemplateSystemVRFCommonFields, total=Fal
         | None
     )
 
-class HVACTemplateSystemUnitary(IDFObject):
+class HVACTemplateSystemUnitary(_TypedIDFObject):
     """Unitary furnace with air conditioner"""
 
     system_availability_schedule_name: str | None
@@ -16975,7 +17481,7 @@ class _HVACTemplateSystemUnitaryFields(TypedDict, total=False):
     return_fan_motor_efficiency: float | None
     return_fan_motor_in_air_stream_fraction: float | None
 
-class HVACTemplateSystemUnitaryHeatPumpAirToAir(IDFObject):
+class HVACTemplateSystemUnitaryHeatPumpAirToAir(_TypedIDFObject):
     """Unitary furnace with electric air-to-air heat pump"""
 
     system_availability_schedule_name: str | None
@@ -17308,7 +17814,7 @@ class _HVACTemplateSystemUnitarySystemCommonFields(TypedDict, total=False):
     return_fan_motor_efficiency: float | None
     return_fan_motor_in_air_stream_fraction: float | None
 
-class _HVACTemplateSystemUnitarySystemBase(IDFObject):
+class _HVACTemplateSystemUnitarySystemBase(_TypedIDFObject):
     """``HVACTemplate:System:UnitarySystem`` as every supported EnergyPlus version declares it."""
 
     system_availability_schedule_name: str | None
@@ -17511,7 +18017,7 @@ class _HVACTemplateSystemUnitarySystemFields(_HVACTemplateSystemUnitarySystemCom
     number_of_speeds_for_cooling: int | None
     number_of_speeds_or_stages_for_heating: int | None
 
-class HVACTemplateSystemVAV(IDFObject):
+class HVACTemplateSystemVAV(_TypedIDFObject):
     """Variable Air Volume (VAV) air loop with optional heating coil and optional preheat."""
 
     system_availability_schedule_name: str | None
@@ -17771,7 +18277,7 @@ class _HVACTemplateSystemVAVFields(TypedDict, total=False):
         | None
     )
 
-class HVACTemplateSystemPackagedVAV(IDFObject):
+class HVACTemplateSystemPackagedVAV(_TypedIDFObject):
     """Packaged Variable Air Volume (PVAV) air loop with optional heating coil and optional preheat."""
 
     system_availability_schedule_name: str | None
@@ -18025,7 +18531,7 @@ class _HVACTemplateSystemPackagedVAVFields(TypedDict, total=False):
         | None
     )
 
-class HVACTemplateSystemConstantVolume(IDFObject):
+class HVACTemplateSystemConstantVolume(_TypedIDFObject):
     """Constant Air Volume air loop with optional chilled water cooling coil, optional heating coil and optional preheat."""
 
     system_availability_schedule_name: str | None
@@ -18284,7 +18790,7 @@ class _HVACTemplateSystemConstantVolumeFields(TypedDict, total=False):
     return_fan_motor_efficiency: float | None
     return_fan_motor_in_air_stream_fraction: float | None
 
-class HVACTemplateSystemDualDuct(IDFObject):
+class HVACTemplateSystemDualDuct(_TypedIDFObject):
     """Dual-duct constant volume or variable volume air loop"""
 
     system_availability_schedule_name: str | None
@@ -18692,7 +19198,7 @@ class _HVACTemplateSystemDualDuctFields(TypedDict, total=False):
         | None
     )
 
-class HVACTemplateSystemDedicatedOutdoorAir(IDFObject):
+class HVACTemplateSystemDedicatedOutdoorAir(_TypedIDFObject):
     """This object creates a dedicated outdoor air system that must be used with HVACTemplate:Zone:* objects for BaseboardHe..."""
 
     system_availability_schedule_name: str | None
@@ -18871,7 +19377,7 @@ class _HVACTemplateSystemDedicatedOutdoorAirFields(TypedDict, total=False):
     dehumidification_setpoint_schedule_name: str | None
     humidifier_setpoint_schedule_name: str | None
 
-class HVACTemplatePlantChilledWaterLoop(IDFObject):
+class HVACTemplatePlantChilledWaterLoop(_TypedIDFObject):
     """Plant and condenser loops to serve all HVACTemplate chilled water coils, chillers, and towers."""
 
     pump_schedule_name: str | None
@@ -19069,7 +19575,7 @@ class _HVACTemplatePlantChilledWaterLoopFields(TypedDict, total=False):
         Literal["", "Optimal", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"] | None
     )
 
-class HVACTemplatePlantChiller(IDFObject):
+class HVACTemplatePlantChiller(_TypedIDFObject):
     """This object adds a chiller to an HVACTemplate:Plant:ChilledWaterLoop."""
 
     chiller_type: (
@@ -19121,7 +19627,7 @@ class _HVACTemplatePlantChillerFields(TypedDict, total=False):
     minimum_unloading_ratio: float | None
     leaving_chilled_water_lower_temperature_limit: float | None
 
-class HVACTemplatePlantChillerObjectReference(IDFObject):
+class HVACTemplatePlantChillerObjectReference(_TypedIDFObject):
     """This object references a detailed chiller object and adds it to an HVACTemplate:Plant:ChilledWaterLoop. The user must..."""
 
     chiller_object_type: Literal["", "Chiller:Electric:EIR", "Chiller:Electric:ReformulatedEIR"] | None
@@ -19143,7 +19649,7 @@ class _HVACTemplatePlantChillerObjectReferenceFields(TypedDict, total=False):
     chiller_name: str | None
     priority: float | None
 
-class HVACTemplatePlantTower(IDFObject):
+class HVACTemplatePlantTower(_TypedIDFObject):
     """This object adds a cooling tower to an HVACTemplate:Plant:ChilledWaterLoop or MixedWaterLoop."""
 
     tower_type: Literal["SingleSpeed", "TwoSpeed"] | None
@@ -19179,7 +19685,7 @@ class _HVACTemplatePlantTowerFields(TypedDict, total=False):
     sizing_factor: float | None
     template_plant_loop_type: Literal["ChilledWater", "MixedWater"] | None
 
-class HVACTemplatePlantTowerObjectReference(IDFObject):
+class HVACTemplatePlantTowerObjectReference(_TypedIDFObject):
     """This object references a detailed cooling tower object and adds it to an HVACTemplate:Plant:ChilledWaterLoop or Mixed..."""
 
     cooling_tower_object_type: (
@@ -19205,7 +19711,7 @@ class _HVACTemplatePlantTowerObjectReferenceFields(TypedDict, total=False):
     priority: float | None
     template_plant_loop_type: Literal["ChilledWater", "MixedWater"] | None
 
-class HVACTemplatePlantHotWaterLoop(IDFObject):
+class HVACTemplatePlantHotWaterLoop(_TypedIDFObject):
     """Plant loop to serve all HVACTemplate hot water coils and boilers."""
 
     pump_schedule_name: str | None
@@ -19341,7 +19847,7 @@ class _HVACTemplatePlantBoilerCommonFields(TypedDict, total=False):
     water_outlet_upper_temperature_limit: float | None
     template_plant_loop_type: Literal["HotWater", "MixedWater"] | None
 
-class _HVACTemplatePlantBoilerBase(IDFObject):
+class _HVACTemplatePlantBoilerBase(_TypedIDFObject):
     """``HVACTemplate:Plant:Boiler`` as every supported EnergyPlus version declares it."""
 
     boiler_type: Literal["CondensingHotWaterBoiler", "DistrictHotWater", "HotWaterBoiler"] | None
@@ -19423,7 +19929,7 @@ class _HVACTemplatePlantBoilerFields(_HVACTemplatePlantBoilerCommonFields, total
         | None
     )
 
-class HVACTemplatePlantBoilerObjectReference(IDFObject):
+class HVACTemplatePlantBoilerObjectReference(_TypedIDFObject):
     """This object references a detailed boiler object and adds it to an HVACTemplate:Plant:HotWaterLoop or MixedWaterLoop. ..."""
 
     boiler_object_type: Literal["", "Boiler:HotWater"] | None
@@ -19445,7 +19951,7 @@ class _HVACTemplatePlantBoilerObjectReferenceFields(TypedDict, total=False):
     priority: float | None
     template_plant_loop_type: Literal["HotWater", "MixedWater"] | None
 
-class HVACTemplatePlantMixedWaterLoop(IDFObject):
+class HVACTemplatePlantMixedWaterLoop(_TypedIDFObject):
     """Central plant loop portion of a water source heat pump system."""
 
     pump_schedule_name: str | None
@@ -19565,7 +20071,7 @@ class _DesignSpecificationOutdoorAirCommonFields(TypedDict, total=False):
     outdoor_air_schedule_name: str | None
     proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None
 
-class _DesignSpecificationOutdoorAirBase(IDFObject):
+class _DesignSpecificationOutdoorAirBase(_TypedIDFObject):
     """``DesignSpecification:OutdoorAir`` as every supported EnergyPlus version declares it."""
 
     outdoor_air_method: (
@@ -19638,13 +20144,13 @@ class _DesignSpecificationOutdoorAirFields(_DesignSpecificationOutdoorAirCommonF
         | None
     )
 
-class DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup(ExtensibleGroup):
+class DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup(_TypedExtensibleGroup):
     """One space_specs group inside :class:`DesignSpecificationOutdoorAirSpaceList`."""
 
     space_name: str | None
     space_design_specification_outdoor_air_object_name: str | None
 
-class DesignSpecificationOutdoorAirSpaceList(IDFObject):
+class DesignSpecificationOutdoorAirSpaceList(_TypedIDFObject):
     """Defines a list of DesignSpecification:OutdoorAir names which can be referenced as a group. The DesignSpecification:Ou...; Since: 9.6.0"""
 
     space_specs: ExtensibleList[DesignSpecificationOutdoorAirSpaceListSpaceSpecsGroup]
@@ -19656,7 +20162,7 @@ class DesignSpecificationOutdoorAirSpaceList(IDFObject):
 class _DesignSpecificationOutdoorAirSpaceListFields(TypedDict, total=False):
     space_specs: list[Any]
 
-class DesignSpecificationZoneAirDistribution(IDFObject):
+class DesignSpecificationZoneAirDistribution(_TypedIDFObject):
     """This object is used to describe zone air distribution in terms of air distribution effectiveness and secondary recirc..."""
 
     zone_air_distribution_effectiveness_in_cooling_mode: float | None
@@ -19682,11 +20188,14 @@ class _DesignSpecificationZoneAirDistributionFields(TypedDict, total=False):
     minimum_zone_ventilation_efficiency: float | None
 
 class _SizingParametersCommonFields(TypedDict, total=False):
+    heating_sizing_factor: float | None
     cooling_sizing_factor: float | None
 
-class _SizingParametersBase(IDFObject):
+class _SizingParametersBase(_TypedIDFObject):
     """``Sizing:Parameters`` as every supported EnergyPlus version declares it."""
 
+    heating_sizing_factor: float | None
+    """Default: 1.0; Range: > 0.0"""
     cooling_sizing_factor: float | None
     """Default: 1.0; Range: > 0.0"""
     timesteps_in_averaging_window: float | int | None
@@ -19703,6 +20212,7 @@ class _SizingParametersFields(_SizingParametersCommonFields, total=False):
     timesteps_in_averaging_window: int | None
 
 class _SizingZoneCommonFields(TypedDict, total=False):
+    zone_or_zonelist_name: str | None
     zone_cooling_design_supply_air_temperature_input_method: (
         Literal["", "SupplyAirTemperature", "TemperatureDifference"] | None
     )
@@ -19736,9 +20246,10 @@ class _SizingZoneCommonFields(TypedDict, total=False):
     dedicated_outdoor_air_low_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None
     dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None
 
-class _SizingZoneBase(IDFObject):
+class _SizingZoneBase(_TypedIDFObject):
     """``Sizing:Zone`` as every supported EnergyPlus version declares it."""
 
+    zone_or_zonelist_name: str | None
     zone_cooling_design_supply_air_temperature_input_method: (
         Literal["", "SupplyAirTemperature", "TemperatureDifference"] | None
     )
@@ -19859,7 +20370,7 @@ class _SizingZoneFields(_SizingZoneCommonFields, total=False):
     )
     maximum_heating_capacity_to_cooling_load_sizing_ratio: float | None
 
-class DesignSpecificationZoneHVACSizing(IDFObject):
+class DesignSpecificationZoneHVACSizing(_TypedIDFObject):
     """This object is used to describe general scalable zone HVAC equipment sizing which are referenced by other objects."""
 
     cooling_supply_air_flow_rate_method: (
@@ -20010,7 +20521,7 @@ class _DesignSpecificationZoneHVACSizingFields(TypedDict, total=False):
     heating_design_capacity_per_floor_area: float | None
     fraction_of_autosized_heating_design_capacity: float | None
 
-class DesignSpecificationAirTerminalSizing(IDFObject):
+class DesignSpecificationAirTerminalSizing(_TypedIDFObject):
     """This object is used to scale the sizing of air terminal units."""
 
     fraction_of_design_cooling_load: float | None
@@ -20036,6 +20547,7 @@ class _DesignSpecificationAirTerminalSizingFields(TypedDict, total=False):
     fraction_of_minimum_outdoor_air_flow: float | None
 
 class _SizingSystemCommonFields(TypedDict, total=False):
+    airloop_name: str | None
     design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None
     central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None
     preheat_design_temperature: float | None
@@ -20096,9 +20608,10 @@ class _SizingSystemCommonFields(TypedDict, total=False):
     fraction_of_autosized_heating_design_capacity: float | None
     central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None
 
-class _SizingSystemBase(IDFObject):
+class _SizingSystemBase(_TypedIDFObject):
     """``Sizing:System`` as every supported EnergyPlus version declares it."""
 
+    airloop_name: str | None
     type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement", "Latent"] | None
     design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None
     """[m3/s]; Default: Autosize"""
@@ -20234,6 +20747,7 @@ class _SizingSystemFields(_SizingSystemCommonFields, total=False):
     maximum_heating_capacity_to_cooling_capacity_sizing_ratio: float | None
 
 class _SizingPlantCommonFields(TypedDict, total=False):
+    plant_or_condenser_loop_name: str | None
     loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"] | None
     design_loop_exit_temperature: float | None
     loop_design_temperature_difference: float | None
@@ -20242,9 +20756,11 @@ class _SizingPlantCommonFields(TypedDict, total=False):
         Literal["GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"] | None
     )
 
-class _SizingPlantBase(IDFObject):
+class _SizingPlantBase(_TypedIDFObject):
     """``Sizing:Plant`` as every supported EnergyPlus version declares it."""
 
+    plant_or_condenser_loop_name: str | None
+    """Enter the name of a PlantLoop or a CondenserLoop object"""
     loop_type: Literal["Condenser", "Cooling", "Heating", "Steam"] | None
     design_loop_exit_temperature: float | None
     """[C]"""
@@ -20269,13 +20785,22 @@ class SizingPlant(_SizingPlantBase):
 class _SizingPlantFields(_SizingPlantCommonFields, total=False):
     zone_timesteps_in_averaging_window: int | None
 
-class OutputControlSizingStyle(IDFObject):
+class OutputControlSizingStyle(_TypedIDFObject):
     """Default style for the Sizing output files is comma -- this works well for importing into spreadsheet programs such as..."""
+
+    column_separator: Literal["Comma", "Fixed", "Tab"] | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlSizingStyleFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlSizingStyleFields(TypedDict, total=False):
+    column_separator: Literal["Comma", "Fixed", "Tab"] | None
 
 class _ZoneControlHumidistatCommonFields(TypedDict, total=False):
     zone_name: str | None
 
-class _ZoneControlHumidistatBase(IDFObject):
+class _ZoneControlHumidistatBase(_TypedIDFObject):
     """``ZoneControl:Humidistat`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
@@ -20299,7 +20824,7 @@ class _ZoneControlHumidistatFields(_ZoneControlHumidistatCommonFields, total=Fal
     dehumidifying_setpoint_schedule_name: str | None
     control_variable: Literal["", "Dewpoint", "RelativeHumidity"] | None
 
-class ZoneControlThermostat(IDFObject):
+class ZoneControlThermostat(_TypedIDFObject):
     """Define the Thermostat settings for a zone or list of zones. If you use a ZoneList in the Zone or ZoneList name field ..."""
 
     zone_or_zonelist_name: str | None
@@ -20401,9 +20926,11 @@ class _ZoneControlThermostatFields(TypedDict, total=False):
     control_4_name: str | None
     temperature_difference_between_cutout_and_setpoint: float | None
 
-class ZoneControlThermostatOperativeTemperature(IDFObject):
+class ZoneControlThermostatOperativeTemperature(_TypedIDFObject):
     """This object can be used with the ZoneList option on a thermostat or with one of the zones on that list (but you won't..."""
 
+    thermostat_name: str | None
+    """Enter the name of a ZoneControl:Thermostat object. This object modifies a ZoneControl:Thermostat object to add a radi..."""
     radiative_fraction_input_mode: Literal["Constant", "Scheduled"] | None
     fixed_radiative_fraction: float | None
     """Range: >= 0.0, < 0.9"""
@@ -20433,6 +20960,7 @@ class ZoneControlThermostatOperativeTemperature(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatOperativeTemperatureFields(TypedDict, total=False):
+    thermostat_name: str | None
     radiative_fraction_input_mode: Literal["Constant", "Scheduled"] | None
     fixed_radiative_fraction: float | None
     radiative_fraction_schedule_name: str | None
@@ -20451,7 +20979,7 @@ class _ZoneControlThermostatOperativeTemperatureFields(TypedDict, total=False):
         | None
     )
 
-class ZoneControlThermostatThermalComfort(IDFObject):
+class ZoneControlThermostatThermalComfort(_TypedIDFObject):
     """If you use a ZoneList in the Zone or ZoneList name field then this definition applies to all the zones in the ZoneList."""
 
     zone_or_zonelist_name: str | None
@@ -20562,9 +21090,11 @@ class _ZoneControlThermostatThermalComfortFields(TypedDict, total=False):
     )
     thermal_comfort_control_4_name: str | None
 
-class ZoneControlThermostatTemperatureAndHumidity(IDFObject):
+class ZoneControlThermostatTemperatureAndHumidity(_TypedIDFObject):
     """This object modifies a ZoneControl:Thermostat object to effect temperature control based on zone air humidity conditi..."""
 
+    thermostat_name: str | None
+    """Enter the name of a ZoneControl:Thermostat object whose operation is to be modified to effect temperature control bas..."""
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
     """Schedule values should be in Relative Humidity (percent)"""
     dehumidification_control_type: Literal["", "None", "Overcool"] | None
@@ -20586,6 +21116,7 @@ class ZoneControlThermostatTemperatureAndHumidity(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneControlThermostatTemperatureAndHumidityFields(TypedDict, total=False):
+    thermostat_name: str | None
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
     dehumidification_control_type: Literal["", "None", "Overcool"] | None
     overcool_range_input_method: Literal["", "Constant", "Scheduled"] | None
@@ -20593,7 +21124,7 @@ class _ZoneControlThermostatTemperatureAndHumidityFields(TypedDict, total=False)
     overcool_range_schedule_name: str | None
     overcool_control_ratio: float | None
 
-class ThermostatSetpointSingleHeating(IDFObject):
+class ThermostatSetpointSingleHeating(_TypedIDFObject):
     """Used for a heating only thermostat. The setpoint can be scheduled and varied throughout the simulation but only heati..."""
 
     setpoint_temperature_schedule_name: str | None
@@ -20605,7 +21136,7 @@ class ThermostatSetpointSingleHeating(IDFObject):
 class _ThermostatSetpointSingleHeatingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
 
-class ThermostatSetpointSingleCooling(IDFObject):
+class ThermostatSetpointSingleCooling(_TypedIDFObject):
     """Used for a cooling only thermostat. The setpoint can be scheduled and varied throughout the simulation but only cooli..."""
 
     setpoint_temperature_schedule_name: str | None
@@ -20617,7 +21148,7 @@ class ThermostatSetpointSingleCooling(IDFObject):
 class _ThermostatSetpointSingleCoolingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
 
-class ThermostatSetpointSingleHeatingOrCooling(IDFObject):
+class ThermostatSetpointSingleHeatingOrCooling(_TypedIDFObject):
     """Used for a heating and cooling thermostat with a single setpoint. The setpoint can be scheduled and varied throughout..."""
 
     setpoint_temperature_schedule_name: str | None
@@ -20632,7 +21163,7 @@ class ThermostatSetpointSingleHeatingOrCooling(IDFObject):
 class _ThermostatSetpointSingleHeatingOrCoolingFields(TypedDict, total=False):
     setpoint_temperature_schedule_name: str | None
 
-class ThermostatSetpointDualSetpoint(IDFObject):
+class ThermostatSetpointDualSetpoint(_TypedIDFObject):
     """Used for a heating and cooling thermostat with dual setpoints. The setpoints can be scheduled and varied throughout t..."""
 
     heating_setpoint_temperature_schedule_name: str | None
@@ -20646,7 +21177,7 @@ class _ThermostatSetpointDualSetpointFields(TypedDict, total=False):
     heating_setpoint_temperature_schedule_name: str | None
     cooling_setpoint_temperature_schedule_name: str | None
 
-class ThermostatSetpointThermalComfortFangerSingleHeating(IDFObject):
+class ThermostatSetpointThermalComfortFangerSingleHeating(_TypedIDFObject):
     """Used for heating only thermal comfort control. The PMV setpoint can be scheduled and varied throughout the simulation..."""
 
     fanger_thermal_comfort_schedule_name: str | None
@@ -20662,7 +21193,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeating(IDFObject):
 class _ThermostatSetpointThermalComfortFangerSingleHeatingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
 
-class ThermostatSetpointThermalComfortFangerSingleCooling(IDFObject):
+class ThermostatSetpointThermalComfortFangerSingleCooling(_TypedIDFObject):
     """Used for cooling only thermal comfort control. The PMV setpoint can be scheduled and varied throughout the simulation..."""
 
     fanger_thermal_comfort_schedule_name: str | None
@@ -20678,7 +21209,7 @@ class ThermostatSetpointThermalComfortFangerSingleCooling(IDFObject):
 class _ThermostatSetpointThermalComfortFangerSingleCoolingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
 
-class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling(IDFObject):
+class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling(_TypedIDFObject):
     """Used for heating and cooling thermal comfort control with a single setpoint. The PMV setpoint can be scheduled and va..."""
 
     fanger_thermal_comfort_schedule_name: str | None
@@ -20694,7 +21225,7 @@ class ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling(IDFObject):
 class _ThermostatSetpointThermalComfortFangerSingleHeatingOrCoolingFields(TypedDict, total=False):
     fanger_thermal_comfort_schedule_name: str | None
 
-class ThermostatSetpointThermalComfortFangerDualSetpoint(IDFObject):
+class ThermostatSetpointThermalComfortFangerDualSetpoint(_TypedIDFObject):
     """Used for heating and cooling thermal comfort control with dual setpoints. The PMV setpoints can be scheduled and vari..."""
 
     fanger_thermal_comfort_heating_schedule_name: str | None
@@ -20728,7 +21259,7 @@ class _ZoneControlThermostatStagedDualSetpointCommonFields(TypedDict, total=Fals
     stage_3_cooling_temperature_offset: float | None
     stage_4_cooling_temperature_offset: float | None
 
-class _ZoneControlThermostatStagedDualSetpointBase(IDFObject):
+class _ZoneControlThermostatStagedDualSetpointBase(_TypedIDFObject):
     """``ZoneControl:Thermostat:StagedDualSetpoint`` as every supported EnergyPlus version declares it."""
 
     zone_or_zonelist_name: str | None
@@ -20776,7 +21307,7 @@ class _ZoneControlThermostatStagedDualSetpointFields(_ZoneControlThermostatStage
     number_of_heating_stages: int | None
     number_of_cooling_stages: int | None
 
-class ZoneControlContaminantController(IDFObject):
+class ZoneControlContaminantController(_TypedIDFObject):
     """Used to control a zone to a specified indoor level of CO2 or generic contaminants, or to specify minimum CO2 concentr..."""
 
     zone_name: str | None
@@ -20837,7 +21368,7 @@ class _ZoneHVACIdealLoadsAirSystemCommonFields(TypedDict, total=False):
     latent_heat_recovery_effectiveness: float | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class _ZoneHVACIdealLoadsAirSystemBase(IDFObject):
+class _ZoneHVACIdealLoadsAirSystemBase(_TypedIDFObject):
     """``ZoneHVAC:IdealLoadsAirSystem`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -20991,7 +21522,7 @@ class _ZoneHVACIdealLoadsAirSystemFields(_ZoneHVACIdealLoadsAirSystemCommonField
         | None
     )
 
-class ZoneHVACFourPipeFanCoil(IDFObject):
+class ZoneHVACFourPipeFanCoil(_TypedIDFObject):
     """Four pipe fan coil system. Forced-convection hydronic heating-cooling unit with supply fan, hot water heating coil, c..."""
 
     availability_schedule_name: str | None
@@ -21115,7 +21646,7 @@ class _ZoneHVACFourPipeFanCoilFields(TypedDict, total=False):
     minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
 
-class ZoneHVACWindowAirConditioner(IDFObject):
+class ZoneHVACWindowAirConditioner(_TypedIDFObject):
     """Window air conditioner. Forced-convection cooling-only unit with supply fan, direct expansion (DX) cooling coil, and ..."""
 
     availability_schedule_name: str | None
@@ -21208,7 +21739,7 @@ class _ZoneHVACPackagedTerminalAirConditionerCommonFields(TypedDict, total=False
     minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
 
-class _ZoneHVACPackagedTerminalAirConditionerBase(IDFObject):
+class _ZoneHVACPackagedTerminalAirConditionerBase(_TypedIDFObject):
     """``ZoneHVAC:PackagedTerminalAirConditioner`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -21334,7 +21865,7 @@ class _ZoneHVACPackagedTerminalHeatPumpCommonFields(TypedDict, total=False):
     minimum_supply_air_temperature_in_cooling_mode: float | Literal["", "Autosize"] | None
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
 
-class _ZoneHVACPackagedTerminalHeatPumpBase(IDFObject):
+class _ZoneHVACPackagedTerminalHeatPumpBase(_TypedIDFObject):
     """``ZoneHVAC:PackagedTerminalHeatPump`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -21482,7 +22013,7 @@ class _ZoneHVACWaterToAirHeatPumpCommonFields(TypedDict, total=False):
     heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class _ZoneHVACWaterToAirHeatPumpBase(IDFObject):
+class _ZoneHVACWaterToAirHeatPumpBase(_TypedIDFObject):
     """``ZoneHVAC:WaterToAirHeatPump`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -21570,7 +22101,7 @@ class _ZoneHVACWaterToAirHeatPumpFields(_ZoneHVACWaterToAirHeatPumpCommonFields,
     design_specification_multispeed_object_name: str | None
     dx_heating_coil_sizing_ratio: float | None
 
-class ZoneHVACDehumidifierDX(IDFObject):
+class ZoneHVACDehumidifierDX(_TypedIDFObject):
     """This object calculates the performance of zone (room) air dehumidifiers. Meant to model conventional direct expansion..."""
 
     availability_schedule_name: str | None
@@ -21619,7 +22150,7 @@ class _ZoneHVACDehumidifierDXFields(TypedDict, total=False):
     off_cycle_parasitic_electric_load: float | None
     condensate_collection_water_storage_tank_name: str | None
 
-class ZoneHVACEnergyRecoveryVentilator(IDFObject):
+class ZoneHVACEnergyRecoveryVentilator(_TypedIDFObject):
     """This compound component models a stand-alone energy recovery ventilator (ERV) that conditions outdoor ventilation air..."""
 
     availability_schedule_name: str | None
@@ -21659,7 +22190,7 @@ class _ZoneHVACEnergyRecoveryVentilatorFields(TypedDict, total=False):
     ventilation_rate_per_occupant: float | None
     availability_manager_list_name: str | None
 
-class ZoneHVACEnergyRecoveryVentilatorController(IDFObject):
+class ZoneHVACEnergyRecoveryVentilatorController(_TypedIDFObject):
     """This controller is used exclusively by the ZoneHVAC:EnergyRecoveryVentilator object to allow economizer (free cooling..."""
 
     temperature_high_limit: float | None
@@ -21708,7 +22239,7 @@ class _ZoneHVACEnergyRecoveryVentilatorControllerFields(TypedDict, total=False):
     high_humidity_outdoor_air_flow_ratio: float | None
     control_high_indoor_humidity_based_on_outdoor_humidity_ratio: Literal["", "No", "Yes"] | None
 
-class ZoneHVACUnitVentilator(IDFObject):
+class ZoneHVACUnitVentilator(_TypedIDFObject):
     """Unit ventilator. Forced-convection ventilation unit with supply fan (constant-volume or variable-volume), optional ch..."""
 
     availability_schedule_name: str | None
@@ -21805,7 +22336,7 @@ class _ZoneHVACUnitVentilatorFields(TypedDict, total=False):
     availability_manager_list_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class ZoneHVACUnitHeater(IDFObject):
+class ZoneHVACUnitHeater(_TypedIDFObject):
     """Unit heater. Forced-convection heating-only unit with supply fan, heating coil (gas, electric, hot water, or steam) a..."""
 
     availability_schedule_name: str | None
@@ -21905,7 +22436,7 @@ class _ZoneHVACEvaporativeCoolerUnitCommonFields(TypedDict, total=False):
     second_evaporative_cooler_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class _ZoneHVACEvaporativeCoolerUnitBase(IDFObject):
+class _ZoneHVACEvaporativeCoolerUnitBase(_TypedIDFObject):
     """``ZoneHVAC:EvaporativeCoolerUnit`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -22005,7 +22536,7 @@ class _ZoneHVACHybridUnitaryHVACCommonFields(TypedDict, total=False):
     mode_0_outdoor_air_fraction: float | None
     mode_0_supply_air_mass_flow_rate_ratio: float | None
 
-class _ZoneHVACHybridUnitaryHVACBase(IDFObject):
+class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
     """``ZoneHVAC:HybridUnitaryHVAC`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -22142,7 +22673,7 @@ class _ZoneHVACHybridUnitaryHVACBase(IDFObject):
     mode_0_supply_air_mass_flow_rate_ratio: float | None
     """Enter the supply air mass flow rate ratio for Mode 0. The value in this field will be used to determine the supply ai...; Default: 0.0; Range: >= 0.0, <= 1.0"""
 
-class ZoneHVACHybridUnitaryHVACModesGroup(ExtensibleGroup):
+class ZoneHVACHybridUnitaryHVACModesGroup(_TypedExtensibleGroup):
     """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC`."""
 
     mode_name: str | None
@@ -22315,7 +22846,7 @@ class _ZoneHVACHybridUnitaryHVACFields(_ZoneHVACHybridUnitaryHVACCommonFields, t
     )
     modes: list[Any]
 
-class ZoneHVACOutdoorAirUnit(IDFObject):
+class ZoneHVACOutdoorAirUnit(_TypedIDFObject):
     """The zone outdoor air unit models a single-zone dedicated outdoor air system (DOAS). Forced-convection 100% outdoor ai..."""
 
     availability_schedule_name: str | None
@@ -22384,7 +22915,7 @@ class _ZoneHVACOutdoorAirUnitEquipmentListCommonFields(TypedDict, total=False):
     component_7_name: str | None
     component_8_name: str | None
 
-class _ZoneHVACOutdoorAirUnitEquipmentListBase(IDFObject):
+class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
     """``ZoneHVAC:OutdoorAirUnit:EquipmentList`` as every supported EnergyPlus version declares it."""
 
     component_1_object_type: (
@@ -22874,7 +23405,7 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields(TypedDict, total=
     availability_manager_list_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class _ZoneHVACTerminalUnitVariableRefrigerantFlowBase(IDFObject):
+class _ZoneHVACTerminalUnitVariableRefrigerantFlowBase(_TypedIDFObject):
     """``ZoneHVAC:TerminalUnit:VariableRefrigerantFlow`` as every supported EnergyPlus version declares it."""
 
     terminal_unit_availability_schedule: str | None
@@ -22981,7 +23512,7 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlowFields(
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class ZoneHVACBaseboardRadiantConvectiveWaterDesign(IDFObject):
+class ZoneHVACBaseboardRadiantConvectiveWaterDesign(_TypedIDFObject):
     """Since: 9.5.0"""
 
     heating_design_capacity_method: (
@@ -23026,13 +23557,13 @@ class _ZoneHVACBaseboardRadiantConvectiveWaterCommonFields(TypedDict, total=Fals
     maximum_water_flow_rate: float | Literal["Autosize"] | None
     surface_fractions: list[Any]
 
-class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`_ZoneHVACBaseboardRadiantConvectiveWaterBase`."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class _ZoneHVACBaseboardRadiantConvectiveWaterBase(IDFObject):
+class _ZoneHVACBaseboardRadiantConvectiveWaterBase(_TypedIDFObject):
     """``ZoneHVAC:Baseboard:RadiantConvective:Water`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23065,7 +23596,7 @@ class ZoneHVACBaseboardRadiantConvectiveWater(_ZoneHVACBaseboardRadiantConvectiv
 class _ZoneHVACBaseboardRadiantConvectiveWaterFields(_ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False):
     design_object: str | None
 
-class ZoneHVACBaseboardRadiantConvectiveSteamDesign(IDFObject):
+class ZoneHVACBaseboardRadiantConvectiveSteamDesign(_TypedIDFObject):
     """Since: 9.5.0"""
 
     heating_design_capacity_method: (
@@ -23109,13 +23640,13 @@ class _ZoneHVACBaseboardRadiantConvectiveSteamCommonFields(TypedDict, total=Fals
     maximum_steam_flow_rate: float | Literal["Autosize"] | None
     surface_fractions: list[Any]
 
-class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`_ZoneHVACBaseboardRadiantConvectiveSteamBase`."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class _ZoneHVACBaseboardRadiantConvectiveSteamBase(IDFObject):
+class _ZoneHVACBaseboardRadiantConvectiveSteamBase(_TypedIDFObject):
     """``ZoneHVAC:Baseboard:RadiantConvective:Steam`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23146,13 +23677,13 @@ class ZoneHVACBaseboardRadiantConvectiveSteam(_ZoneHVACBaseboardRadiantConvectiv
 class _ZoneHVACBaseboardRadiantConvectiveSteamFields(_ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False):
     design_object: str | None
 
-class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACBaseboardRadiantConvectiveElectricSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`ZoneHVACBaseboardRadiantConvectiveElectric`."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class ZoneHVACBaseboardRadiantConvectiveElectric(IDFObject):
+class ZoneHVACBaseboardRadiantConvectiveElectric(_TypedIDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     availability_schedule_name: str | None
@@ -23218,13 +23749,13 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields(TypedDict, total=F
     fraction_of_radiant_energy_incident_on_people: float | None
     surface_fractions: list[Any]
 
-class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`_ZoneHVACCoolingPanelRadiantConvectiveWaterBase`."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class _ZoneHVACCoolingPanelRadiantConvectiveWaterBase(IDFObject):
+class _ZoneHVACCoolingPanelRadiantConvectiveWaterBase(_TypedIDFObject):
     """``ZoneHVAC:CoolingPanel:RadiantConvective:Water`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23317,7 +23848,7 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterFields(
         | None
     )
 
-class ZoneHVACBaseboardConvectiveWater(IDFObject):
+class ZoneHVACBaseboardConvectiveWater(_TypedIDFObject):
     """Hot water baseboard heater, convection-only. Natural convection hydronic heating unit."""
 
     availability_schedule_name: str | None
@@ -23359,7 +23890,7 @@ class _ZoneHVACBaseboardConvectiveWaterFields(TypedDict, total=False):
     maximum_water_flow_rate: float | Literal["Autosize"] | None
     convergence_tolerance: float | None
 
-class ZoneHVACBaseboardConvectiveElectric(IDFObject):
+class ZoneHVACBaseboardConvectiveElectric(_TypedIDFObject):
     """Electric baseboard heater, convection-only. Natural convection electric heating unit."""
 
     availability_schedule_name: str | None
@@ -23407,7 +23938,7 @@ class _ZoneHVACLowTemperatureRadiantVariableFlowCommonFields(TypedDict, total=Fa
     number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None
     circuit_length: float | None
 
-class _ZoneHVACLowTemperatureRadiantVariableFlowBase(IDFObject):
+class _ZoneHVACLowTemperatureRadiantVariableFlowBase(_TypedIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:VariableFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23453,7 +23984,7 @@ class _ZoneHVACLowTemperatureRadiantVariableFlowFields(
 ):
     design_object: str | None
 
-class ZoneHVACLowTemperatureRadiantVariableFlowDesign(IDFObject):
+class ZoneHVACLowTemperatureRadiantVariableFlowDesign(_TypedIDFObject):
     """Since: 9.5.0"""
 
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
@@ -23579,7 +24110,7 @@ class _ZoneHVACLowTemperatureRadiantConstantFlowCommonFields(TypedDict, total=Fa
     number_of_circuits: Literal["", "CalculateFromCircuitLength", "OnePerSurface"] | None
     circuit_length: float | None
 
-class _ZoneHVACLowTemperatureRadiantConstantFlowBase(IDFObject):
+class _ZoneHVACLowTemperatureRadiantConstantFlowBase(_TypedIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:ConstantFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23635,7 +24166,7 @@ class _ZoneHVACLowTemperatureRadiantConstantFlowFields(
 ):
     design_object: str | None
 
-class ZoneHVACLowTemperatureRadiantConstantFlowDesign(IDFObject):
+class ZoneHVACLowTemperatureRadiantConstantFlowDesign(_TypedIDFObject):
     """Since: 9.5.0"""
 
     fluid_to_radiant_surface_heat_transfer_model: Literal["", "ConvectionOnly", "ISOStandard"] | None
@@ -23720,7 +24251,7 @@ class _ZoneHVACLowTemperatureRadiantElectricCommonFields(TypedDict, total=False)
     heating_throttling_range: float | None
     heating_setpoint_temperature_schedule_name: str | None
 
-class _ZoneHVACLowTemperatureRadiantElectricBase(IDFObject):
+class _ZoneHVACLowTemperatureRadiantElectricBase(_TypedIDFObject):
     """``ZoneHVAC:LowTemperatureRadiant:Electric`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -23796,13 +24327,13 @@ class _ZoneHVACLowTemperatureRadiantElectricFields(_ZoneHVACLowTemperatureRadian
     )
     setpoint_control_type: Literal["", "HalfFlowPower", "ZeroFlowPower"] | None
 
-class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`ZoneHVACLowTemperatureRadiantSurfaceGroup`."""
 
     surface_name: str | None
     flow_fraction_for_surface: float | None
 
-class ZoneHVACLowTemperatureRadiantSurfaceGroup(IDFObject):
+class ZoneHVACLowTemperatureRadiantSurfaceGroup(_TypedIDFObject):
     """This is used to allow the coordinate control of several radiant system surfaces. Note that the following flow fractio..."""
 
     surface_fractions: ExtensibleList[ZoneHVACLowTemperatureRadiantSurfaceGroupSurfaceFractionsGroup]
@@ -23817,13 +24348,13 @@ class ZoneHVACLowTemperatureRadiantSurfaceGroup(IDFObject):
 class _ZoneHVACLowTemperatureRadiantSurfaceGroupFields(TypedDict, total=False):
     surface_fractions: list[Any]
 
-class ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup(ExtensibleGroup):
+class ZoneHVACHighTemperatureRadiantSurfaceFractionsGroup(_TypedExtensibleGroup):
     """One surface_fractions group inside :class:`ZoneHVACHighTemperatureRadiant`."""
 
     surface_name: str | None
     fraction_of_radiant_energy_to_surface: float | None
 
-class ZoneHVACHighTemperatureRadiant(IDFObject):
+class ZoneHVACHighTemperatureRadiant(_TypedIDFObject):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
     availability_schedule_name: str | None
@@ -23906,7 +24437,7 @@ class _ZoneHVACHighTemperatureRadiantFields(TypedDict, total=False):
     fraction_of_radiant_energy_incident_on_people: float | None
     surface_fractions: list[Any]
 
-class ZoneHVACVentilatedSlab(IDFObject):
+class ZoneHVACVentilatedSlab(_TypedIDFObject):
     """Ventilated slab system where outdoor air flows through hollow cores in a building surface (wall, ceiling, or floor)."""
 
     availability_schedule_name: str | None
@@ -24062,10 +24593,10 @@ class _ZoneHVACVentilatedSlabFields(TypedDict, total=False):
 
 class _ZoneHVACVentilatedSlabSlabGroupCommonFields(TypedDict, total=False): ...
 
-class _ZoneHVACVentilatedSlabSlabGroupBase(IDFObject):
+class _ZoneHVACVentilatedSlabSlabGroupBase(_TypedIDFObject):
     """``ZoneHVAC:VentilatedSlab:SlabGroup`` as every supported EnergyPlus version declares it."""
 
-class ZoneHVACVentilatedSlabSlabGroupDataGroup(ExtensibleGroup):
+class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ZoneHVACVentilatedSlabSlabGroup`."""
 
     zone_name: str | None
@@ -24088,7 +24619,7 @@ class ZoneHVACVentilatedSlabSlabGroup(_ZoneHVACVentilatedSlabSlabGroupBase):
 class _ZoneHVACVentilatedSlabSlabGroupFields(_ZoneHVACVentilatedSlabSlabGroupCommonFields, total=False):
     data: list[Any]
 
-class AirTerminalSingleDuctConstantVolumeReheat(IDFObject):
+class AirTerminalSingleDuctConstantVolumeReheat(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, with reheat coil (hot water, electric, gas, or steam)."""
 
     availability_schedule_name: str | None
@@ -24131,7 +24662,7 @@ class _AirTerminalSingleDuctConstantVolumeReheatFields(TypedDict, total=False):
     convergence_tolerance: float | None
     maximum_reheat_air_temperature: float | None
 
-class AirTerminalSingleDuctConstantVolumeNoReheat(IDFObject):
+class AirTerminalSingleDuctConstantVolumeNoReheat(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, without reheat coil"""
 
     availability_schedule_name: str | None
@@ -24173,7 +24704,7 @@ class _AirTerminalSingleDuctVAVNoReheatCommonFields(TypedDict, total=False):
     minimum_air_flow_fraction_schedule_name: str | None
     design_specification_outdoor_air_object_name: str | None
 
-class _AirTerminalSingleDuctVAVNoReheatBase(IDFObject):
+class _AirTerminalSingleDuctVAVNoReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:VAV:NoReheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24229,7 +24760,7 @@ class _AirTerminalSingleDuctVAVReheatCommonFields(TypedDict, total=False):
     maximum_reheat_air_temperature: float | None
     design_specification_outdoor_air_object_name: str | None
 
-class _AirTerminalSingleDuctVAVReheatBase(IDFObject):
+class _AirTerminalSingleDuctVAVReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:VAV:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24301,7 +24832,7 @@ class _AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields(TypedDict, tot
     minimum_hot_water_or_steam_flow_rate: float | None
     heating_convergence_tolerance: float | None
 
-class _AirTerminalSingleDuctVAVReheatVariableSpeedFanBase(IDFObject):
+class _AirTerminalSingleDuctVAVReheatVariableSpeedFanBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24354,7 +24885,7 @@ class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields(TypedDict, total=
     maximum_air_flow_rate: float | Literal["Autosize"] | None
     zone_minimum_air_flow_fraction: float | None
 
-class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatBase(IDFObject):
+class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24401,7 +24932,7 @@ class _AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields(TypedDict, total=Fa
     convergence_tolerance: float | None
     maximum_reheat_air_temperature: float | None
 
-class _AirTerminalSingleDuctVAVHeatAndCoolReheatBase(IDFObject):
+class _AirTerminalSingleDuctVAVHeatAndCoolReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24465,7 +24996,7 @@ class _AirTerminalSingleDuctSeriesPIUReheatCommonFields(TypedDict, total=False):
     minimum_hot_water_or_steam_flow_rate: float | None
     convergence_tolerance: float | None
 
-class _AirTerminalSingleDuctSeriesPIUReheatBase(IDFObject):
+class _AirTerminalSingleDuctSeriesPIUReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:SeriesPIU:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24537,7 +25068,7 @@ class _AirTerminalSingleDuctParallelPIUReheatCommonFields(TypedDict, total=False
     minimum_hot_water_or_steam_flow_rate: float | None
     convergence_tolerance: float | None
 
-class _AirTerminalSingleDuctParallelPIUReheatBase(IDFObject):
+class _AirTerminalSingleDuctParallelPIUReheatBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:ParallelPIU:Reheat`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24598,7 +25129,7 @@ class _AirTerminalSingleDuctParallelPIUReheatFields(_AirTerminalSingleDuctParall
     backdraft_damper_leakage_fraction_curve_name: str | None
     backdraft_damper_leakage_zone_name: str | None
 
-class AirTerminalSingleDuctConstantVolumeFourPipeInduction(IDFObject):
+class AirTerminalSingleDuctConstantVolumeFourPipeInduction(_TypedIDFObject):
     """Central air system terminal unit, single duct, variable volume, induction unit with hot water reheat coil and chilled..."""
 
     availability_schedule_name: str | None
@@ -24656,7 +25187,7 @@ class _AirTerminalSingleDuctConstantVolumeFourPipeInductionFields(TypedDict, tot
     cooling_convergence_tolerance: float | None
     zone_mixer_name: str | None
 
-class AirTerminalSingleDuctConstantVolumeFourPipeBeam(IDFObject):
+class AirTerminalSingleDuctConstantVolumeFourPipeBeam(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, with heating and/or cooling. Operates as two-pipe uni..."""
 
     primary_air_availability_schedule_name: str | None
@@ -24770,7 +25301,7 @@ class _AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields(TypedDict, tota
     coefficient_of_induction_kin: float | Literal["", "Autocalculate"] | None
     leaving_pipe_inside_diameter: float | None
 
-class _AirTerminalSingleDuctConstantVolumeCooledBeamBase(IDFObject):
+class _AirTerminalSingleDuctConstantVolumeCooledBeamBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:ConstantVolume:CooledBeam`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24830,7 +25361,7 @@ class _AirTerminalSingleDuctConstantVolumeCooledBeamFields(
 ):
     number_of_beams: int | Literal["", "Autosize"] | None
 
-class AirTerminalSingleDuctMixer(IDFObject):
+class AirTerminalSingleDuctMixer(_TypedIDFObject):
     """The mixer air terminal unit provides a means of supplying central system air to the air inlet or outlet side of a zon..."""
 
     zonehvac_unit_object_type: (
@@ -24886,7 +25417,7 @@ class _AirTerminalSingleDuctMixerFields(TypedDict, total=False):
     design_specification_outdoor_air_object_name: str | None
     per_person_ventilation_rate_mode: Literal["", "CurrentOccupancy", "DesignOccupancy"] | None
 
-class AirTerminalDualDuctConstantVolume(IDFObject):
+class AirTerminalDualDuctConstantVolume(_TypedIDFObject):
     """Central air system terminal unit, dual duct, constant volume."""
 
     availability_schedule_name: str | None
@@ -24918,7 +25449,7 @@ class _AirTerminalDualDuctVAVCommonFields(TypedDict, total=False):
     zone_minimum_air_flow_fraction: float | None
     design_specification_outdoor_air_object_name: str | None
 
-class _AirTerminalDualDuctVAVBase(IDFObject):
+class _AirTerminalDualDuctVAVBase(_TypedIDFObject):
     """``AirTerminal:DualDuct:VAV`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -24947,7 +25478,7 @@ class AirTerminalDualDuctVAV(_AirTerminalDualDuctVAVBase):
 class _AirTerminalDualDuctVAVFields(_AirTerminalDualDuctVAVCommonFields, total=False):
     minimum_air_flow_turndown_schedule_name: str | None
 
-class AirTerminalDualDuctVAVOutdoorAir(IDFObject):
+class AirTerminalDualDuctVAVOutdoorAir(_TypedIDFObject):
     """Central air system terminal unit, dual duct, variable volume with special controls. One VAV duct is controlled to sup..."""
 
     availability_schedule_name: str | None
@@ -24976,7 +25507,7 @@ class _AirTerminalDualDuctVAVOutdoorAirFields(TypedDict, total=False):
     design_specification_outdoor_air_object_name: str | None
     per_person_ventilation_rate_mode: Literal["CurrentOccupancy", "DesignOccupancy"] | None
 
-class ZoneHVACAirDistributionUnit(IDFObject):
+class ZoneHVACAirDistributionUnit(_TypedIDFObject):
     """Central air system air distribution unit, serves as a wrapper for a specific type of air terminal unit. This object i..."""
 
     air_distribution_unit_outlet_node_name: str | None
@@ -25043,7 +25574,7 @@ class _ZoneHVACAirDistributionUnitFields(TypedDict, total=False):
     constant_downstream_leakage_fraction: float | None
     design_specification_air_terminal_sizing_object_name: str | None
 
-class ZoneHVACExhaustControl(IDFObject):
+class ZoneHVACExhaustControl(_TypedIDFObject):
     """Defines a controlled exhaust flow from a zone which finally feeds into one of AirLoopHVAC:ZoneMixer's inlets, which a...; Since: 22.1.0"""
 
     availability_schedule_name: str | None
@@ -25089,13 +25620,13 @@ class _ZoneHVACExhaustControlFields(TypedDict, total=False):
 class _ZoneHVACEquipmentListCommonFields(TypedDict, total=False):
     load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"] | None
 
-class _ZoneHVACEquipmentListBase(IDFObject):
+class _ZoneHVACEquipmentListBase(_TypedIDFObject):
     """``ZoneHVAC:EquipmentList`` as every supported EnergyPlus version declares it."""
 
     load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"] | None
     """Default: SequentialLoad"""
 
-class ZoneHVACEquipmentListEquipmentGroup(ExtensibleGroup):
+class ZoneHVACEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList`."""
 
     zone_equipment_object_type: (
@@ -25154,9 +25685,10 @@ class ZoneHVACEquipmentList(_ZoneHVACEquipmentListBase):
 class _ZoneHVACEquipmentListFields(_ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
 
-class ZoneHVACEquipmentConnections(IDFObject):
+class ZoneHVACEquipmentConnections(_TypedIDFObject):
     """Specifies the HVAC equipment connections for a zone. Node names are specified for the zone air node, air inlet nodes,..."""
 
+    zone_name: str | None
     zone_conditioning_equipment_list_name: str | None
     """Enter the name of a ZoneHVAC:EquipmentList object."""
     zone_air_inlet_node_or_nodelist_name: str | None
@@ -25173,6 +25705,7 @@ class ZoneHVACEquipmentConnections(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
+    zone_name: str | None
     zone_conditioning_equipment_list_name: str | None
     zone_air_inlet_node_or_nodelist_name: str | None
     zone_air_exhaust_node_or_nodelist_name: str | None
@@ -25181,9 +25714,10 @@ class _ZoneHVACEquipmentConnectionsFields(TypedDict, total=False):
     zone_return_air_node_1_flow_rate_fraction_schedule_name: str | None
     zone_return_air_node_1_flow_rate_basis_node_or_nodelist_name: str | None
 
-class SpaceHVACEquipmentConnections(IDFObject):
+class SpaceHVACEquipmentConnections(_TypedIDFObject):
     """Specifies the HVAC equipment connections for a space. Node names are specified for the space air node, air inlet node...; Since: 23.2.0"""
 
+    space_name: str | None
     space_air_inlet_node_or_nodelist_name: str | None
     space_air_exhaust_node_or_nodelist_name: str | None
     space_air_node_name: str | None
@@ -25198,6 +25732,7 @@ class SpaceHVACEquipmentConnections(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
+    space_name: str | None
     space_air_inlet_node_or_nodelist_name: str | None
     space_air_exhaust_node_or_nodelist_name: str | None
     space_air_node_name: str | None
@@ -25205,14 +25740,14 @@ class _SpaceHVACEquipmentConnectionsFields(TypedDict, total=False):
     space_return_air_node_1_flow_rate_fraction_schedule_name: str | None
     space_return_air_node_1_flow_rate_basis_node_or_nodelist_name: str | None
 
-class SpaceHVACZoneEquipmentSplitterSpacesGroup(ExtensibleGroup):
+class SpaceHVACZoneEquipmentSplitterSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentSplitter`."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
     space_supply_node_name: str | None
 
-class SpaceHVACZoneEquipmentSplitter(IDFObject):
+class SpaceHVACZoneEquipmentSplitter(_TypedIDFObject):
     """Distributes the output from a piece of zone equipment to one or more Spaces in the Zone. If any equipment in a zone h...; Since: 23.2.0"""
 
     zone_name: str | None
@@ -25319,14 +25854,14 @@ class _SpaceHVACZoneEquipmentSplitterFields(TypedDict, total=False):
     )
     spaces: list[Any]
 
-class SpaceHVACZoneEquipmentMixerSpacesGroup(ExtensibleGroup):
+class SpaceHVACZoneEquipmentMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneEquipmentMixer`."""
 
     space_name: str | None
     space_fraction: float | Literal["", "Autosize"] | None
     space_node_name: str | None
 
-class SpaceHVACZoneEquipmentMixer(IDFObject):
+class SpaceHVACZoneEquipmentMixer(_TypedIDFObject):
     """Mixes the airflow from one or more Spaces into a piece of zone equipment. All spaces in the zone must also have a Spa...; Since: 23.2.0"""
 
     zone_name: str | None
@@ -25351,13 +25886,13 @@ class _SpaceHVACZoneEquipmentMixerFields(TypedDict, total=False):
     )
     spaces: list[Any]
 
-class SpaceHVACZoneReturnMixerSpacesGroup(ExtensibleGroup):
+class SpaceHVACZoneReturnMixerSpacesGroup(_TypedExtensibleGroup):
     """One spaces group inside :class:`SpaceHVACZoneReturnMixer`."""
 
     space_name: str | None
     space_return_air_node_name: str | None
 
-class SpaceHVACZoneReturnMixer(IDFObject):
+class SpaceHVACZoneReturnMixer(_TypedIDFObject):
     """Mixes the return airflow from one or more Spaces into a zone return node. All spaces in the zone must also have a Spa...; Since: 24.2.0"""
 
     zone_name: str | None
@@ -25398,7 +25933,7 @@ class _FanSystemModelCommonFields(TypedDict, total=False):
     motor_loss_radiative_fraction: float | None
     end_use_subcategory: str | None
 
-class _FanSystemModelBase(IDFObject):
+class _FanSystemModelBase(_TypedIDFObject):
     """``Fan:SystemModel`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -25442,7 +25977,7 @@ class _FanSystemModelBase(IDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
     number_of_speeds: float | int | None
 
-class FanSystemModelSpeedFractionsGroup(ExtensibleGroup):
+class FanSystemModelSpeedFractionsGroup(_TypedExtensibleGroup):
     """One speed_fractions group inside :class:`FanSystemModel`."""
 
     speed_flow_fraction: float | None
@@ -25464,7 +25999,7 @@ class _FanSystemModelFields(_FanSystemModelCommonFields, total=False):
     number_of_speeds: int | None
     speed_fractions: list[Any]
 
-class FanConstantVolume(IDFObject):
+class FanConstantVolume(_TypedIDFObject):
     """Constant volume fan that is intended to operate continuously based on a time schedule. This fan will not cycle on and..."""
 
     availability_schedule_name: str | None
@@ -25497,7 +26032,7 @@ class _FanConstantVolumeFields(TypedDict, total=False):
     air_outlet_node_name: str | None
     end_use_subcategory: str | None
 
-class FanVariableVolume(IDFObject):
+class FanVariableVolume(_TypedIDFObject):
     """Variable air volume fan where the electric power input varies according to a performance curve as a function of flow ..."""
 
     availability_schedule_name: str | None
@@ -25550,7 +26085,7 @@ class _FanVariableVolumeFields(TypedDict, total=False):
     air_outlet_node_name: str | None
     end_use_subcategory: str | None
 
-class FanOnOff(IDFObject):
+class FanOnOff(_TypedIDFObject):
     """Constant volume fan that is intended to cycle on and off based on cooling/heating load or other control signals. This..."""
 
     availability_schedule_name: str | None
@@ -25587,7 +26122,7 @@ class _FanOnOffFields(TypedDict, total=False):
     fan_efficiency_ratio_function_of_speed_ratio_curve_name: str | None
     end_use_subcategory: str | None
 
-class FanZoneExhaust(IDFObject):
+class FanZoneExhaust(_TypedIDFObject):
     """Models a fan that exhausts air from a zone."""
 
     availability_schedule_name: str | None
@@ -25626,9 +26161,10 @@ class _FanZoneExhaustFields(TypedDict, total=False):
     minimum_zone_temperature_limit_schedule_name: str | None
     balanced_exhaust_fraction_schedule_name: str | None
 
-class FanPerformanceNightVentilation(IDFObject):
+class FanPerformanceNightVentilation(_TypedIDFObject):
     """Specifies an alternate set of performance parameters for a fan. These alternate parameters are used when a system man..."""
 
+    fan_name: str | None
     fan_total_efficiency: float | None
     """Range: > 0.0, <= 1.0"""
     pressure_rise: float | None
@@ -25645,13 +26181,14 @@ class FanPerformanceNightVentilation(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FanPerformanceNightVentilationFields(TypedDict, total=False):
+    fan_name: str | None
     fan_total_efficiency: float | None
     pressure_rise: float | None
     maximum_flow_rate: float | Literal["Autosize"] | None
     motor_efficiency: float | None
     motor_in_airstream_fraction: float | None
 
-class FanComponentModel(IDFObject):
+class FanComponentModel(_TypedIDFObject):
     """A detailed fan type for constant-air-volume (CAV) and variable-air-volume (VAV) systems. It includes inputs that desc..."""
 
     air_inlet_node_name: str | None
@@ -25765,7 +26302,7 @@ class _FanComponentModelFields(TypedDict, total=False):
     vfd_efficiency_curve_name: str | None
     end_use_subcategory: str | None
 
-class CoilCoolingWater(IDFObject):
+class CoilCoolingWater(_TypedIDFObject):
     """Chilled water cooling coil, NTU-effectiveness model, with inputs for design entering and leaving conditions."""
 
     availability_schedule_name: str | None
@@ -25841,7 +26378,7 @@ class _CoilCoolingWaterDetailedGeometryCommonFields(TypedDict, total=False):
     condensate_collection_water_storage_tank_name: str | None
     design_water_temperature_difference: float | None
 
-class _CoilCoolingWaterDetailedGeometryBase(IDFObject):
+class _CoilCoolingWaterDetailedGeometryBase(_TypedIDFObject):
     """``Coil:Cooling:Water:DetailedGeometry`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -25899,7 +26436,7 @@ class CoilCoolingWaterDetailedGeometry(_CoilCoolingWaterDetailedGeometryBase):
 class _CoilCoolingWaterDetailedGeometryFields(_CoilCoolingWaterDetailedGeometryCommonFields, total=False):
     design_inlet_water_temperature: float | Literal["", "Autosize"] | None
 
-class CoilSystemCoolingWater(IDFObject):
+class CoilSystemCoolingWater(_TypedIDFObject):
     """Virtual container component that consists of a water cooling coil and its associated controls. This control object su...; Since: 9.6.0"""
 
     air_inlet_node_name: str | None
@@ -25955,7 +26492,7 @@ class _CoilSystemCoolingWaterFields(TypedDict, total=False):
     minimum_water_loop_temperature_for_heat_recovery: float | None
     companion_coil_used_for_heat_recovery: str | None
 
-class CoilCoolingDX(IDFObject):
+class CoilCoolingDX(_TypedIDFObject):
     """New general DX cooling coil supporting on or more speeds and one or or operating modes. Includes DX evaporator coil, ...; Since: 9.3.0"""
 
     evaporator_inlet_node_name: str | None
@@ -26013,7 +26550,7 @@ class _CoilCoolingDXCurveFitPerformanceCommonFields(TypedDict, total=False):
     alternative_operating_mode_1: str | None
     alternative_operating_mode_2: str | None
 
-class _CoilCoolingDXCurveFitPerformanceBase(IDFObject):
+class _CoilCoolingDXCurveFitPerformanceBase(_TypedIDFObject):
     """``Coil:Cooling:DX:CurveFit:Performance`` as every supported EnergyPlus version declares it."""
 
     crankcase_heater_capacity: float | None
@@ -26090,7 +26627,7 @@ class _CoilCoolingDXCurveFitOperatingModeCommonFields(TypedDict, total=False):
     speed_9_name: str | None
     speed_10_name: str | None
 
-class _CoilCoolingDXCurveFitOperatingModeBase(IDFObject):
+class _CoilCoolingDXCurveFitOperatingModeBase(_TypedIDFObject):
     """``Coil:Cooling:DX:CurveFit:OperatingMode`` as every supported EnergyPlus version declares it."""
 
     rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None
@@ -26160,7 +26697,7 @@ class _CoilCoolingDXCurveFitSpeedCommonFields(TypedDict, total=False):
     sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class _CoilCoolingDXCurveFitSpeedBase(IDFObject):
+class _CoilCoolingDXCurveFitSpeedBase(_TypedIDFObject):
     """``Coil:Cooling:DX:CurveFit:Speed`` as every supported EnergyPlus version declares it."""
 
     gross_total_cooling_capacity_fraction: float | None
@@ -26207,7 +26744,7 @@ class CoilCoolingDXCurveFitSpeed(_CoilCoolingDXCurveFitSpeedBase):
 
 class _CoilCoolingDXCurveFitSpeedFields(_CoilCoolingDXCurveFitSpeedCommonFields, total=False): ...
 
-class CoilDXASHRAE205Performance(IDFObject):
+class CoilDXASHRAE205Performance(_TypedIDFObject):
     """DX coil performance specification referencing an ASHRAE Standard 205 compliant representation for air-to-air direct e...; Since: 25.2.0"""
 
     representation_file_name: str | None
@@ -26264,7 +26801,7 @@ class _CoilCoolingDXSingleSpeedCommonFields(TypedDict, total=False):
     report_ashrae_standard_127_performance_ratings: Literal["", "No", "Yes"] | None
     zone_name_for_condenser_placement: str | None
 
-class _CoilCoolingDXSingleSpeedBase(IDFObject):
+class _CoilCoolingDXSingleSpeedBase(_TypedIDFObject):
     """``Coil:Cooling:DX:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -26383,7 +26920,7 @@ class _CoilCoolingDXTwoSpeedCommonFields(TypedDict, total=False):
     low_speed_sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None
     zone_name_for_condenser_placement: str | None
 
-class _CoilCoolingDXTwoSpeedBase(IDFObject):
+class _CoilCoolingDXTwoSpeedBase(_TypedIDFObject):
     """``Coil:Cooling:DX:TwoSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -26571,7 +27108,7 @@ class _CoilCoolingDXMultiSpeedCommonFields(TypedDict, total=False):
     speed_4_rated_evaporative_condenser_pump_power_consumption: float | Literal["Autosize"] | None
     zone_name_for_condenser_placement: str | None
 
-class _CoilCoolingDXMultiSpeedBase(IDFObject):
+class _CoilCoolingDXMultiSpeedBase(_TypedIDFObject):
     """``Coil:Cooling:DX:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -26923,7 +27460,7 @@ class _CoilCoolingDXVariableSpeedCommonFields(TypedDict, total=False):
     speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
 
-class _CoilCoolingDXVariableSpeedBase(IDFObject):
+class _CoilCoolingDXVariableSpeedBase(_TypedIDFObject):
     """``Coil:Cooling:DX:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     indoor_air_inlet_node_name: str | None
@@ -27218,7 +27755,7 @@ class _CoilCoolingDXTwoStageWithHumidityControlModeCommonFields(TypedDict, total
     basin_heater_setpoint_temperature: float | None
     basin_heater_operating_schedule_name: str | None
 
-class _CoilCoolingDXTwoStageWithHumidityControlModeBase(IDFObject):
+class _CoilCoolingDXTwoStageWithHumidityControlModeBase(_TypedIDFObject):
     """``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27274,7 +27811,7 @@ class _CoilCoolingDXTwoStageWithHumidityControlModeFields(
     number_of_capacity_stages: int | None
     number_of_enhanced_dehumidification_modes: int | None
 
-class CoilPerformanceDXCooling(IDFObject):
+class CoilPerformanceDXCooling(_TypedIDFObject):
     """Used to specify DX cooling coil performance for one mode of operation for a Coil:Cooling:DX:TwoStageWithHumidityContr..."""
 
     gross_rated_total_cooling_capacity: float | Literal["Autosize"] | None
@@ -27347,7 +27884,7 @@ class _CoilPerformanceDXCoolingFields(TypedDict, total=False):
     sensible_heat_ratio_function_of_temperature_curve_name: str | None
     sensible_heat_ratio_function_of_flow_fraction_curve_name: str | None
 
-class CoilCoolingDXVariableRefrigerantFlow(IDFObject):
+class CoilCoolingDXVariableRefrigerantFlow(_TypedIDFObject):
     """Variable refrigerant flow (VRF) direct expansion (DX) cooling coil. Used with ZoneHVAC:TerminalUnit:VariableRefrigera..."""
 
     availability_schedule_name: str | None
@@ -27380,7 +27917,7 @@ class _CoilCoolingDXVariableRefrigerantFlowFields(TypedDict, total=False):
     coil_air_outlet_node: str | None
     name_of_water_storage_tank_for_condensate_collection: str | None
 
-class CoilHeatingDXVariableRefrigerantFlow(IDFObject):
+class CoilHeatingDXVariableRefrigerantFlow(_TypedIDFObject):
     """Variable refrigerant flow (VRF) direct expansion (DX) heating coil (air-to-air heat pump). Used with ZoneHVAC:Termina..."""
 
     availability_schedule: str | None
@@ -27408,7 +27945,7 @@ class _CoilHeatingDXVariableRefrigerantFlowFields(TypedDict, total=False):
     heating_capacity_ratio_modifier_function_of_temperature_curve_name: str | None
     heating_capacity_modifier_function_of_flow_fraction_curve_name: str | None
 
-class CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
+class CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(_TypedIDFObject):
     """This is a key object in the new physics based VRF model applicable for Fluid Temperature Control. It describes the th..."""
 
     availability_schedule_name: str | None
@@ -27443,7 +27980,7 @@ class _CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControlFields(TypedDi
     indoor_unit_evaporating_temperature_function_of_superheating_curve_name: str | None
     name_of_water_storage_tank_for_condensate_collection: str | None
 
-class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(IDFObject):
+class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(_TypedIDFObject):
     """This is a key object in the new physics based VRF model applicable for Fluid Temperature Control. It describes the th..."""
 
     availability_schedule: str | None
@@ -27473,7 +28010,7 @@ class _CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControlFields(TypedDi
     indoor_unit_reference_subcooling: float | None
     indoor_unit_condensing_temperature_function_of_subcooling_curve_name: str | None
 
-class CoilHeatingWater(IDFObject):
+class CoilHeatingWater(_TypedIDFObject):
     """Hot water heating coil, NTU-effectiveness model, assumes a cross-flow heat exchanger. Two options for capacity inputs..."""
 
     availability_schedule_name: str | None
@@ -27522,7 +28059,7 @@ class _CoilHeatingWaterFields(TypedDict, total=False):
     rated_ratio_for_air_and_water_convection: float | None
     design_water_temperature_difference: float | None
 
-class CoilHeatingSteam(IDFObject):
+class CoilHeatingSteam(_TypedIDFObject):
     """Steam heating coil. Condenses and sub-cools steam at loop pressure and discharges condensate through steam traps to l..."""
 
     availability_schedule_name: str | None
@@ -27556,7 +28093,7 @@ class _CoilHeatingSteamFields(TypedDict, total=False):
     coil_control_type: Literal["TemperatureSetpointControl", "ZoneLoadControl"] | None
     temperature_setpoint_node_name: str | None
 
-class CoilHeatingElectric(IDFObject):
+class CoilHeatingElectric(_TypedIDFObject):
     """Electric heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, then it i..."""
 
     availability_schedule_name: str | None
@@ -27596,7 +28133,7 @@ class _CoilHeatingElectricMultiStageCommonFields(TypedDict, total=False):
     stage_4_efficiency: float | None
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
 
-class _CoilHeatingElectricMultiStageBase(IDFObject):
+class _CoilHeatingElectricMultiStageBase(_TypedIDFObject):
     """``Coil:Heating:Electric:MultiStage`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27645,7 +28182,7 @@ class _CoilHeatingFuelCommonFields(TypedDict, total=False):
     temperature_setpoint_node_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class _CoilHeatingFuelBase(IDFObject):
+class _CoilHeatingFuelBase(_TypedIDFObject):
     """``Coil:Heating:Fuel`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27739,7 +28276,7 @@ class _CoilHeatingGasMultiStageCommonFields(TypedDict, total=False):
     stage_4_gas_burner_efficiency: float | None
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
 
-class _CoilHeatingGasMultiStageBase(IDFObject):
+class _CoilHeatingGasMultiStageBase(_TypedIDFObject):
     """``Coil:Heating:Gas:MultiStage`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27804,7 +28341,7 @@ class _CoilHeatingDesuperheaterCommonFields(TypedDict, total=False):
     heating_source_name: str | None
     temperature_setpoint_node_name: str | None
 
-class _CoilHeatingDesuperheaterBase(IDFObject):
+class _CoilHeatingDesuperheaterBase(_TypedIDFObject):
     """``Coil:Heating:Desuperheater`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -27902,7 +28439,7 @@ class _CoilHeatingDXSingleSpeedCommonFields(TypedDict, total=False):
     sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class _CoilHeatingDXSingleSpeedBase(IDFObject):
+class _CoilHeatingDXSingleSpeedBase(_TypedIDFObject):
     """``Coil:Heating:DX:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28054,7 +28591,7 @@ class _CoilHeatingDXMultiSpeedCommonFields(TypedDict, total=False):
     speed_4_sensible_heat_ratio_modifier_function_of_temperature_curve_name: str | None
     speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
-class _CoilHeatingDXMultiSpeedBase(IDFObject):
+class _CoilHeatingDXMultiSpeedBase(_TypedIDFObject):
     """``Coil:Heating:DX:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -28351,7 +28888,7 @@ class _CoilHeatingDXVariableSpeedCommonFields(TypedDict, total=False):
     speed_10_energy_input_ratio_function_of_temperature_curve_name: str | None
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
 
-class _CoilHeatingDXVariableSpeedBase(IDFObject):
+class _CoilHeatingDXVariableSpeedBase(_TypedIDFObject):
     """``Coil:Heating:DX:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     indoor_air_inlet_node_name: str | None
@@ -28582,7 +29119,7 @@ class _CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields(TypedDict, t
     source_side_heat_transfer_resistance1: float | None
     source_side_heat_transfer_resistance2: float | None
 
-class _CoilCoolingWaterToAirHeatPumpParameterEstimationBase(IDFObject):
+class _CoilCoolingWaterToAirHeatPumpParameterEstimationBase(_TypedIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:ParameterEstimation`` as every supported EnergyPlus version declares it."""
 
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"] | None
@@ -28689,7 +29226,7 @@ class _CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields(TypedDict, t
     source_side_heat_transfer_resistance1: float | None
     source_side_heat_transfer_resistance2: float | None
 
-class _CoilHeatingWaterToAirHeatPumpParameterEstimationBase(IDFObject):
+class _CoilHeatingWaterToAirHeatPumpParameterEstimationBase(_TypedIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:ParameterEstimation`` as every supported EnergyPlus version declares it."""
 
     compressor_type: Literal["Reciprocating", "Rotary", "Scroll"] | None
@@ -28769,7 +29306,7 @@ class _CoilCoolingWaterToAirHeatPumpEquationFitCommonFields(TypedDict, total=Fal
     nominal_time_for_condensate_removal_to_begin: float | None
     ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None
 
-class _CoilCoolingWaterToAirHeatPumpEquationFitBase(IDFObject):
+class _CoilCoolingWaterToAirHeatPumpEquationFitBase(_TypedIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:EquationFit`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -28982,7 +29519,7 @@ class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields(TypedDi
     speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
 
-class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBase(IDFObject):
+class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject):
     """``Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`` as every supported EnergyPlus version declares it."""
 
     water_to_refrigerant_hx_water_inlet_node_name: str | None
@@ -29309,7 +29846,7 @@ class _CoilHeatingWaterToAirHeatPumpEquationFitCommonFields(TypedDict, total=Fal
     gross_rated_heating_capacity: float | Literal["Autosize"] | None
     gross_rated_heating_cop: float | None
 
-class _CoilHeatingWaterToAirHeatPumpEquationFitBase(IDFObject):
+class _CoilHeatingWaterToAirHeatPumpEquationFitBase(_TypedIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:EquationFit`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -29490,7 +30027,7 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields(TypedDi
     speed_10_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions: float | None
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
 
-class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBase(IDFObject):
+class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject):
     """``Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`` as every supported EnergyPlus version declares it."""
 
     water_to_refrigerant_hx_water_inlet_node_name: str | None
@@ -29802,7 +30339,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields(TypedDict, total=Fal
     heating_cop_function_of_water_flow_fraction_curve_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class _CoilWaterHeatingAirToWaterHeatPumpPumpedBase(IDFObject):
+class _CoilWaterHeatingAirToWaterHeatPumpPumpedBase(_TypedIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:Pumped`` as every supported EnergyPlus version declares it."""
 
     rated_heating_capacity: float | None
@@ -29901,7 +30438,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields(TypedDict, total=Fa
     heating_cop_function_of_air_flow_fraction_curve_name: str | None
     part_load_fraction_correlation_curve_name: str | None
 
-class _CoilWaterHeatingAirToWaterHeatPumpWrappedBase(IDFObject):
+class _CoilWaterHeatingAirToWaterHeatPumpWrappedBase(_TypedIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:Wrapped`` as every supported EnergyPlus version declares it."""
 
     rated_heating_capacity: float | None
@@ -30072,7 +30609,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields(TypedDict, to
     speed_10_cop_function_of_air_flow_fraction_curve_name: str | None
     speed_10_cop_function_of_water_flow_fraction_curve_name: str | None
 
-class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBase(IDFObject):
+class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBase(_TypedIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     number_of_speeds: float | int | None
@@ -30430,7 +30967,7 @@ class _CoilWaterHeatingDesuperheaterCommonFields(TypedDict, total=False):
     on_cycle_parasitic_electric_load: float | None
     off_cycle_parasitic_electric_load: float | None
 
-class _CoilWaterHeatingDesuperheaterBase(IDFObject):
+class _CoilWaterHeatingDesuperheaterBase(_TypedIDFObject):
     """``Coil:WaterHeating:Desuperheater`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -30546,7 +31083,7 @@ class _CoilSystemCoolingDXCommonFields(TypedDict, total=False):
     use_outdoor_air_dx_cooling_coil: Literal["", "No", "Yes"] | None
     outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None
 
-class _CoilSystemCoolingDXBase(IDFObject):
+class _CoilSystemCoolingDXBase(_TypedIDFObject):
     """``CoilSystem:Cooling:DX`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -30612,7 +31149,7 @@ class _CoilSystemCoolingDXFields(_CoilSystemCoolingDXCommonFields, total=False):
         | None
     )
 
-class CoilSystemHeatingDX(IDFObject):
+class CoilSystemHeatingDX(_TypedIDFObject):
     """Virtual container component that consists of a DX heating coil (heat pump) and its associated controls. This control ..."""
 
     availability_schedule_name: str | None
@@ -30629,7 +31166,7 @@ class _CoilSystemHeatingDXFields(TypedDict, total=False):
     heating_coil_object_type: Literal["Coil:Heating:DX:SingleSpeed", "Coil:Heating:DX:VariableSpeed"] | None
     heating_coil_name: str | None
 
-class CoilSystemCoolingWaterHeatExchangerAssisted(IDFObject):
+class CoilSystemCoolingWaterHeatExchangerAssisted(_TypedIDFObject):
     """Virtual component consisting of a chilled-water cooling coil and an air-to-air heat exchanger. The air-to-air heat ex..."""
 
     heat_exchanger_object_type: (
@@ -30666,7 +31203,7 @@ class _CoilSystemCoolingDXHeatExchangerAssistedCommonFields(TypedDict, total=Fal
     heat_exchanger_name: str | None
     cooling_coil_name: str | None
 
-class _CoilSystemCoolingDXHeatExchangerAssistedBase(IDFObject):
+class _CoilSystemCoolingDXHeatExchangerAssistedBase(_TypedIDFObject):
     """``CoilSystem:Cooling:DX:HeatExchangerAssisted`` as every supported EnergyPlus version declares it."""
 
     heat_exchanger_object_type: (
@@ -30721,7 +31258,7 @@ class _CoilSystemIntegratedHeatPumpAirSourceCommonFields(TypedDict, total=False)
     maximum_water_flow_volume_before_switching_from_scdwh_to_scwh_mode: float | None
     maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None
 
-class _CoilSystemIntegratedHeatPumpAirSourceBase(IDFObject):
+class _CoilSystemIntegratedHeatPumpAirSourceBase(_TypedIDFObject):
     """``CoilSystem:IntegratedHeatPump:AirSource`` as every supported EnergyPlus version declares it."""
 
     supply_hot_water_flow_sensor_node_name: str | None
@@ -30780,7 +31317,7 @@ class _CoilSystemIntegratedHeatPumpAirSourceFields(_CoilSystemIntegratedHeatPump
     minimum_speed_level_for_scdwh_mode: int | None
     minimum_speed_level_for_shdwh_mode: int | None
 
-class CoilCoolingDXSingleSpeedThermalStorage(IDFObject):
+class CoilCoolingDXSingleSpeedThermalStorage(_TypedIDFObject):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed..."""
 
     availability_schedule_name: str | None
@@ -31090,7 +31627,7 @@ class _CoilCoolingDXSingleSpeedThermalStorageFields(TypedDict, total=False):
     storage_tank_minimum_operating_limit_fluid_temperature: float | None
     storage_tank_maximum_operating_limit_fluid_temperature: float | None
 
-class EvaporativeCoolerDirectCelDekPad(IDFObject):
+class EvaporativeCoolerDirectCelDekPad(_TypedIDFObject):
     """Direct evaporative cooler with rigid media evaporative pad and recirculating water pump. This model has no controls o..."""
 
     availability_schedule_name: str | None
@@ -31121,7 +31658,7 @@ class _EvaporativeCoolerDirectCelDekPadFields(TypedDict, total=False):
     control_type: str | None
     water_supply_storage_tank_name: str | None
 
-class EvaporativeCoolerIndirectCelDekPad(IDFObject):
+class EvaporativeCoolerIndirectCelDekPad(_TypedIDFObject):
     """Indirect evaporative cooler with rigid media evaporative pad, recirculating water pump, and secondary air fan. This m..."""
 
     availability_schedule_name: str | None
@@ -31167,7 +31704,7 @@ class _EvaporativeCoolerIndirectCelDekPadFields(TypedDict, total=False):
     water_supply_storage_tank_name: str | None
     secondary_air_inlet_node_name: str | None
 
-class EvaporativeCoolerIndirectWetCoil(IDFObject):
+class EvaporativeCoolerIndirectWetCoil(_TypedIDFObject):
     """Indirect evaporative cooler with wetted coil, recirculating water pump, and secondary air fan. This model has no cont..."""
 
     availability_schedule_name: str | None
@@ -31209,7 +31746,7 @@ class _EvaporativeCoolerIndirectWetCoilFields(TypedDict, total=False):
     water_supply_storage_tank_name: str | None
     secondary_air_inlet_node_name: str | None
 
-class EvaporativeCoolerIndirectResearchSpecial(IDFObject):
+class EvaporativeCoolerIndirectResearchSpecial(_TypedIDFObject):
     """Indirect evaporative cooler with user-specified effectiveness (can represent rigid pad or wetted coil), recirculating..."""
 
     availability_schedule_name: str | None
@@ -31296,7 +31833,7 @@ class _EvaporativeCoolerIndirectResearchSpecialFields(TypedDict, total=False):
     evaporative_operation_maximum_limit_outdoor_wetbulb_temperature: float | None
     dry_operation_maximum_limit_outdoor_drybulb_temperature: float | None
 
-class EvaporativeCoolerDirectResearchSpecial(IDFObject):
+class EvaporativeCoolerDirectResearchSpecial(_TypedIDFObject):
     """Direct evaporative cooler with user-specified effectiveness (can represent rigid pad or similar media), and recircula..."""
 
     availability_schedule_name: str | None
@@ -31350,7 +31887,7 @@ class _EvaporativeCoolerDirectResearchSpecialFields(TypedDict, total=False):
     evaporative_operation_maximum_limit_wetbulb_temperature: float | None
     evaporative_operation_maximum_limit_drybulb_temperature: float | None
 
-class HumidifierSteamElectric(IDFObject):
+class HumidifierSteamElectric(_TypedIDFObject):
     """Electrically heated steam humidifier with fan."""
 
     availability_schedule_name: str | None
@@ -31381,7 +31918,7 @@ class _HumidifierSteamElectricFields(TypedDict, total=False):
     air_outlet_node_name: str | None
     water_storage_tank_name: str | None
 
-class HumidifierSteamGas(IDFObject):
+class HumidifierSteamGas(_TypedIDFObject):
     """Natural gas fired steam humidifier with optional blower fan."""
 
     availability_schedule_name: str | None
@@ -31421,7 +31958,7 @@ class _HumidifierSteamGasFields(TypedDict, total=False):
     water_storage_tank_name: str | None
     inlet_water_temperature_option: Literal["", "FixedInletWaterTemperature", "VariableInletWaterTemperature"] | None
 
-class DehumidifierDesiccantNoFans(IDFObject):
+class DehumidifierDesiccantNoFans(_TypedIDFObject):
     """This object models a solid desiccant dehumidifier. The process air stream is the air which is dehumidified. The regen..."""
 
     availability_schedule_name: str | None
@@ -31507,7 +32044,7 @@ class _DehumidifierDesiccantNoFansFields(TypedDict, total=False):
     regeneration_velocity_function_of_air_velocity_curve_name: str | None
     nominal_regeneration_temperature: float | None
 
-class DehumidifierDesiccantSystem(IDFObject):
+class DehumidifierDesiccantSystem(_TypedIDFObject):
     """This compound object models a desiccant heat exchanger, an optional heater, and associated fans. The process air stre..."""
 
     availability_schedule_name: str | None
@@ -31578,7 +32115,7 @@ class _DehumidifierDesiccantSystemFields(TypedDict, total=False):
     exhaust_fan_maximum_power: float | None
     exhaust_fan_power_curve_name: str | None
 
-class HeatExchangerAirToAirFlatPlate(IDFObject):
+class HeatExchangerAirToAirFlatPlate(_TypedIDFObject):
     """Flat plate air-to-air heat exchanger, typically used for exhaust or relief air heat recovery."""
 
     availability_schedule_name: str | None
@@ -31647,7 +32184,7 @@ class _HeatExchangerAirToAirSensibleAndLatentCommonFields(TypedDict, total=False
     rate_of_defrost_time_fraction_increase: float | None
     economizer_lockout: Literal["", "No", "Yes"] | None
 
-class _HeatExchangerAirToAirSensibleAndLatentBase(IDFObject):
+class _HeatExchangerAirToAirSensibleAndLatentBase(_TypedIDFObject):
     """``HeatExchanger:AirToAir:SensibleAndLatent`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -31707,7 +32244,7 @@ class _HeatExchangerAirToAirSensibleAndLatentFields(_HeatExchangerAirToAirSensib
     sensible_effectiveness_of_cooling_air_flow_curve_name: str | None
     latent_effectiveness_of_cooling_air_flow_curve_name: str | None
 
-class HeatExchangerDesiccantBalancedFlow(IDFObject):
+class HeatExchangerDesiccantBalancedFlow(_TypedIDFObject):
     """This object models a balanced desiccant heat exchanger. The heat exchanger transfers both sensible and latent energy ..."""
 
     availability_schedule_name: str | None
@@ -31740,7 +32277,7 @@ class _HeatExchangerDesiccantBalancedFlowFields(TypedDict, total=False):
     heat_exchanger_performance_name: str | None
     economizer_lockout: Literal["", "No", "Yes"] | None
 
-class HeatExchangerDesiccantBalancedFlowPerformanceDataType1(IDFObject):
+class HeatExchangerDesiccantBalancedFlowPerformanceDataType1(_TypedIDFObject):
     """RTO = B1 + B2*RWI + B3*RTI + B4*(RWI/RTI) + B5*PWI + B6*PTI + B7*(PWI/PTI) + B8*RFV RWO = C1 + C2*RWI + C3*RTI + C4*(..."""
 
     nominal_air_flow_rate: float | Literal["Autosize"] | None
@@ -31988,7 +32525,7 @@ class _AirLoopHVACUnitarySystemCommonFields(TypedDict, total=False):
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class _AirLoopHVACUnitarySystemBase(IDFObject):
+class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
     """``AirLoopHVAC:UnitarySystem`` as every supported EnergyPlus version declares it."""
 
     control_type: Literal["", "Load", "SetPoint", "SingleZoneVAV"] | None
@@ -32249,7 +32786,7 @@ class _UnitarySystemPerformanceMultispeedCommonFields(TypedDict, total=False):
     single_mode_operation: Literal["", "No", "Yes"] | None
     no_load_supply_air_flow_rate_ratio: float | None
 
-class _UnitarySystemPerformanceMultispeedBase(IDFObject):
+class _UnitarySystemPerformanceMultispeedBase(_TypedIDFObject):
     """``UnitarySystemPerformance:Multispeed`` as every supported EnergyPlus version declares it."""
 
     number_of_speeds_for_heating: float | int | None
@@ -32259,7 +32796,7 @@ class _UnitarySystemPerformanceMultispeedBase(IDFObject):
     no_load_supply_air_flow_rate_ratio: float | None
     """Used to define the no load operating air flow rate when the system fan is specified to operate continuously.; Default: 1.0; Range: >= 0.0, <= 1.0"""
 
-class UnitarySystemPerformanceMultispeedFlowRatiosGroup(ExtensibleGroup):
+class UnitarySystemPerformanceMultispeedFlowRatiosGroup(_TypedExtensibleGroup):
     """One flow_ratios group inside :class:`UnitarySystemPerformanceMultispeed`."""
 
     heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
@@ -32283,7 +32820,7 @@ class _UnitarySystemPerformanceMultispeedFields(_UnitarySystemPerformanceMultisp
     number_of_speeds_for_cooling: int | None
     flow_ratios: list[Any]
 
-class AirLoopHVACUnitaryFurnaceHeatOnly(IDFObject):
+class AirLoopHVACUnitaryFurnaceHeatOnly(_TypedIDFObject):
     """Unitary system, heating-only with constant volume supply fan (continuous or cycling) and heating coil (gas, electric,..."""
 
     availability_schedule_name: str | None
@@ -32359,7 +32896,7 @@ class _AirLoopHVACUnitaryFurnaceHeatCoolCommonFields(TypedDict, total=False):
     )
     reheat_coil_name: str | None
 
-class _AirLoopHVACUnitaryFurnaceHeatCoolBase(IDFObject):
+class _AirLoopHVACUnitaryFurnaceHeatCoolBase(_TypedIDFObject):
     """``AirLoopHVAC:Unitary:Furnace:HeatCool`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32439,7 +32976,7 @@ class _AirLoopHVACUnitaryFurnaceHeatCoolFields(_AirLoopHVACUnitaryFurnaceHeatCoo
         | None
     )
 
-class AirLoopHVACUnitaryHeatOnly(IDFObject):
+class AirLoopHVACUnitaryHeatOnly(_TypedIDFObject):
     """Unitary system, heating-only with constant volume supply fan (continuous or cycling) and heating coil (gas, electric,..."""
 
     availability_schedule_name: str | None
@@ -32484,7 +33021,7 @@ class _AirLoopHVACUnitaryHeatOnlyFields(TypedDict, total=False):
     )
     heating_coil_name: str | None
 
-class AirLoopHVACUnitaryHeatCool(IDFObject):
+class AirLoopHVACUnitaryHeatCool(_TypedIDFObject):
     """Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
 
     availability_schedule_name: str | None
@@ -32618,7 +33155,7 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirCommonFields(TypedDict, total=False):
     supply_air_fan_operating_mode_schedule_name: str | None
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
 
-class _AirLoopHVACUnitaryHeatPumpAirToAirBase(IDFObject):
+class _AirLoopHVACUnitaryHeatPumpAirToAirBase(_TypedIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32727,7 +33264,7 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields(TypedDict, total=False):
     dehumidification_control_type: Literal["", "CoolReheat", "None"] | None
     heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None
 
-class _AirLoopHVACUnitaryHeatPumpWaterToAirBase(IDFObject):
+class _AirLoopHVACUnitaryHeatPumpWaterToAirBase(_TypedIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:WaterToAir`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32843,7 +33380,7 @@ class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields(TypedDict, tota
     maximum_outlet_air_temperature_during_heating_operation: float | None
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
 
-class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBase(IDFObject):
+class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBase(_TypedIDFObject):
     """``AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -32984,7 +33521,7 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields(TypedDict, total
     cooling_speed_3_supply_air_flow_rate: float | Literal["Autosize"] | None
     cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None
 
-class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBase(IDFObject):
+class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBase(_TypedIDFObject):
     """``AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -33158,7 +33695,7 @@ class _AirConditionerVariableRefrigerantFlowCommonFields(TypedDict, total=False)
     initial_heat_recovery_heating_energy_fraction: float | None
     heat_recovery_heating_energy_time_constant: float | None
 
-class _AirConditionerVariableRefrigerantFlowBase(IDFObject):
+class _AirConditionerVariableRefrigerantFlowBase(_TypedIDFObject):
     """``AirConditioner:VariableRefrigerantFlow`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -33389,6 +33926,7 @@ class _AirConditionerVariableRefrigerantFlowFields(_AirConditionerVariableRefrig
     maximum_condenser_inlet_node_temperature_in_heat_recovery_mode: float | None
 
 class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields(TypedDict, total=False):
+    heat_pump_name: str | None
     availability_schedule_name: str | None
     zone_terminal_unit_list_name: str | None
     refrigerant_type: str | None
@@ -33429,16 +33967,18 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields(
     compressor_maximum_delta_pressure: float | None
     loading_indices: list[Any]
 
-class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup(ExtensibleGroup):
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`_AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase`."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
     loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
 
-class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase(IDFObject):
+class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase(_TypedIDFObject):
     """``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl`` as every supported EnergyPlus version declares it."""
 
+    heat_pump_name: str | None
+    """Enter a unique name for this variable refrigerant flow heat pump"""
     availability_schedule_name: str | None
     """Enter the name of a schedule that defines the availability of the unit Schedule values of 0 denote the unit is off. A..."""
     zone_terminal_unit_list_name: str | None
@@ -33600,14 +34140,14 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonField
     compressor_evaporative_capacity_correction_factor: float | None
     loading_indices: list[Any]
 
-class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup(ExtensibleGroup):
+class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup(_TypedExtensibleGroup):
     """One loading_indices group inside :class:`_AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase`."""
 
     compressor_speed_at_loading_index: float | None
     loading_index_evaporative_capacity_multiplier_function_of_temperature_curve_name: str | None
     loading_index_compressor_power_multiplier_function_of_temperature_curve_name: str | None
 
-class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase(IDFObject):
+class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase(_TypedIDFObject):
     """``AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -33747,14 +34287,15 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRFields(
     number_of_compressors: int | None
     number_of_compressor_loading_index_entries: int | None
 
-class ZoneTerminalUnitListTerminalUnitsGroup(ExtensibleGroup):
+class ZoneTerminalUnitListTerminalUnitsGroup(_TypedExtensibleGroup):
     """One terminal_units group inside :class:`ZoneTerminalUnitList`."""
 
     zone_terminal_unit_name: str | None
 
-class ZoneTerminalUnitList(IDFObject):
+class ZoneTerminalUnitList(_TypedIDFObject):
     """List of variable refrigerant flow (VRF) terminal units served by a given VRF condensing unit. See ZoneHVAC:TerminalUn..."""
 
+    zone_terminal_unit_list_name: str | None
     terminal_units: ExtensibleList[ZoneTerminalUnitListTerminalUnitsGroup]
 
     def update(
@@ -33762,6 +34303,7 @@ class ZoneTerminalUnitList(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ZoneTerminalUnitListFields(TypedDict, total=False):
+    zone_terminal_unit_list_name: str | None
     terminal_units: list[Any]
 
 class _ControllerWaterCoilCommonFields(TypedDict, total=False):
@@ -33773,7 +34315,7 @@ class _ControllerWaterCoilCommonFields(TypedDict, total=False):
     controller_convergence_tolerance: float | Literal["", "Autosize"] | None
     minimum_actuated_flow: float | None
 
-class _ControllerWaterCoilBase(IDFObject):
+class _ControllerWaterCoilBase(_TypedIDFObject):
     """``Controller:WaterCoil`` as every supported EnergyPlus version declares it."""
 
     control_variable: Literal["HumidityRatio", "Temperature", "TemperatureAndHumidityRatio"] | None
@@ -33844,7 +34386,7 @@ class _ControllerOutdoorAirCommonFields(TypedDict, total=False):
         Literal["", "BypassWhenOAFlowGreaterThanMinimum", "BypassWhenWithinEconomizerLimits"] | None
     )
 
-class _ControllerOutdoorAirBase(IDFObject):
+class _ControllerOutdoorAirBase(_TypedIDFObject):
     """``Controller:OutdoorAir`` as every supported EnergyPlus version declares it."""
 
     relief_air_outlet_node_name: str | None
@@ -33928,7 +34470,7 @@ class _ControllerMechanicalVentilationCommonFields(TypedDict, total=False):
     demand_controlled_ventilation: Literal["", "No", "Yes"] | None
     zone_maximum_outdoor_air_fraction: float | None
 
-class _ControllerMechanicalVentilationBase(IDFObject):
+class _ControllerMechanicalVentilationBase(_TypedIDFObject):
     """``Controller:MechanicalVentilation`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -33955,7 +34497,7 @@ class _ControllerMechanicalVentilationBase(IDFObject):
     zone_maximum_outdoor_air_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: > 0.0"""
 
-class ControllerMechanicalVentilationZoneSpecificationsGroup(ExtensibleGroup):
+class ControllerMechanicalVentilationZoneSpecificationsGroup(_TypedExtensibleGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation`."""
 
     zone_or_zonelist_name: str | None
@@ -34005,7 +34547,7 @@ class _ControllerMechanicalVentilationFields(_ControllerMechanicalVentilationCom
     )
     zone_specifications: list[Any]
 
-class AirLoopHVACControllerList(IDFObject):
+class AirLoopHVACControllerList(_TypedIDFObject):
     """List controllers in order of control sequence"""
 
     controller_1_object_type: Literal["Controller:OutdoorAir", "Controller:WaterCoil"] | None
@@ -34047,7 +34589,7 @@ class _AirLoopHVACControllerListFields(TypedDict, total=False):
     controller_8_object_type: Literal["Controller:OutdoorAir", "Controller:WaterCoil"] | None
     controller_8_name: str | None
 
-class AirLoopHVAC(IDFObject):
+class AirLoopHVAC(_TypedIDFObject):
     """Defines a central forced air system."""
 
     controller_list_name: str | None
@@ -34085,7 +34627,7 @@ class _AirLoopHVACFields(TypedDict, total=False):
     supply_side_outlet_node_names: str | None
     design_return_air_flow_fraction_of_supply_air_flow: float | None
 
-class AirLoopHVACOutdoorAirSystemEquipmentList(IDFObject):
+class AirLoopHVACOutdoorAirSystemEquipmentList(_TypedIDFObject):
     """List equipment in simulation order"""
 
     component_1_object_type: str | None
@@ -34138,7 +34680,7 @@ class _AirLoopHVACOutdoorAirSystemCommonFields(TypedDict, total=False):
     controller_list_name: str | None
     outdoor_air_equipment_list_name: str | None
 
-class _AirLoopHVACOutdoorAirSystemBase(IDFObject):
+class _AirLoopHVACOutdoorAirSystemBase(_TypedIDFObject):
     """``AirLoopHVAC:OutdoorAirSystem`` as every supported EnergyPlus version declares it."""
 
     controller_list_name: str | None
@@ -34155,7 +34697,7 @@ class AirLoopHVACOutdoorAirSystem(_AirLoopHVACOutdoorAirSystemBase):
 
 class _AirLoopHVACOutdoorAirSystemFields(_AirLoopHVACOutdoorAirSystemCommonFields, total=False): ...
 
-class OutdoorAirMixer(IDFObject):
+class OutdoorAirMixer(_TypedIDFObject):
     """Outdoor air mixer. Node names cannot be duplicated within a single OutdoorAir:Mixer object or across all outdoor air ..."""
 
     mixed_air_node_name: str | None
@@ -34175,12 +34717,12 @@ class _OutdoorAirMixerFields(TypedDict, total=False):
     relief_air_stream_node_name: str | None
     return_air_stream_node_name: str | None
 
-class AirLoopHVACZoneSplitterNodesGroup(ExtensibleGroup):
+class AirLoopHVACZoneSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneSplitter`."""
 
     outlet_node_name: str | None
 
-class AirLoopHVACZoneSplitter(IDFObject):
+class AirLoopHVACZoneSplitter(_TypedIDFObject):
     """Split one air stream into N outlet streams (currently 500 per air loop, but extensible). Node names cannot be duplica..."""
 
     inlet_node_name: str | None
@@ -34194,12 +34736,12 @@ class _AirLoopHVACZoneSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
     nodes: list[Any]
 
-class AirLoopHVACSupplyPlenumNodesGroup(ExtensibleGroup):
+class AirLoopHVACSupplyPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSupplyPlenum`."""
 
     outlet_node_name: str | None
 
-class AirLoopHVACSupplyPlenum(IDFObject):
+class AirLoopHVACSupplyPlenum(_TypedIDFObject):
     """Connects 1 zone inlet air stream, through zone supply plenum, to one or more outlets. Node names cannot be duplicated..."""
 
     zone_name: str | None
@@ -34217,13 +34759,13 @@ class _AirLoopHVACSupplyPlenumFields(TypedDict, total=False):
     inlet_node_name: str | None
     nodes: list[Any]
 
-class AirLoopHVACSupplyPathComponentsGroup(ExtensibleGroup):
+class AirLoopHVACSupplyPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACSupplyPath`."""
 
     component_object_type: Literal["AirLoopHVAC:SupplyPlenum", "AirLoopHVAC:ZoneSplitter"] | None
     component_name: str | None
 
-class AirLoopHVACSupplyPath(IDFObject):
+class AirLoopHVACSupplyPath(_TypedIDFObject):
     """A supply path can only contain AirLoopHVAC:ZoneSplitter and AirLoopHVAC:SupplyPlenum objects which may be in series o..."""
 
     supply_air_path_inlet_node_name: str | None
@@ -34237,12 +34779,12 @@ class _AirLoopHVACSupplyPathFields(TypedDict, total=False):
     supply_air_path_inlet_node_name: str | None
     components: list[Any]
 
-class AirLoopHVACZoneMixerNodesGroup(ExtensibleGroup):
+class AirLoopHVACZoneMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACZoneMixer`."""
 
     inlet_node_name: str | None
 
-class AirLoopHVACZoneMixer(IDFObject):
+class AirLoopHVACZoneMixer(_TypedIDFObject):
     """Mix N inlet air streams into one (currently 500 per air loop, but extensible). Node names cannot be duplicated within..."""
 
     outlet_node_name: str | None
@@ -34256,12 +34798,12 @@ class _AirLoopHVACZoneMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
     nodes: list[Any]
 
-class AirLoopHVACReturnPlenumNodesGroup(ExtensibleGroup):
+class AirLoopHVACReturnPlenumNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACReturnPlenum`."""
 
     inlet_node_name: str | None
 
-class AirLoopHVACReturnPlenum(IDFObject):
+class AirLoopHVACReturnPlenum(_TypedIDFObject):
     """Connects N zone inlet air streams, through zone return plenum, to outlet (currently 500 per air loop) Node names cann..."""
 
     zone_name: str | None
@@ -34281,13 +34823,13 @@ class _AirLoopHVACReturnPlenumFields(TypedDict, total=False):
     induced_air_outlet_node_or_nodelist_name: str | None
     nodes: list[Any]
 
-class AirLoopHVACReturnPathComponentsGroup(ExtensibleGroup):
+class AirLoopHVACReturnPathComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`AirLoopHVACReturnPath`."""
 
     component_object_type: Literal["AirLoopHVAC:ReturnPlenum", "AirLoopHVAC:ZoneMixer"] | None
     component_name: str | None
 
-class AirLoopHVACReturnPath(IDFObject):
+class AirLoopHVACReturnPath(_TypedIDFObject):
     """A return air path can only contain one AirLoopHVAC:ZoneMixer and one or more AirLoopHVAC:ReturnPlenum objects."""
 
     return_air_path_outlet_node_name: str | None
@@ -34301,7 +34843,7 @@ class _AirLoopHVACReturnPathFields(TypedDict, total=False):
     return_air_path_outlet_node_name: str | None
     components: list[Any]
 
-class AirLoopHVACExhaustSystem(IDFObject):
+class AirLoopHVACExhaustSystem(_TypedIDFObject):
     """Defines a general exhaust system with a central exhaust fan drawing from one or more ZoneHVAC:ExhaustControl outlet n...; Since: 22.1.0"""
 
     zone_mixer_name: str | None
@@ -34329,12 +34871,12 @@ class _AirLoopHVACDedicatedOutdoorAirSystemCommonFields(TypedDict, total=False):
     precool_design_humidity_ratio: float | None
     airloophvacs: list[Any]
 
-class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(ExtensibleGroup):
+class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(_TypedExtensibleGroup):
     """One airloophvacs group inside :class:`_AirLoopHVACDedicatedOutdoorAirSystemBase`."""
 
     airloophvac_name: str | None
 
-class _AirLoopHVACDedicatedOutdoorAirSystemBase(IDFObject):
+class _AirLoopHVACDedicatedOutdoorAirSystemBase(_TypedIDFObject):
     """``AirLoopHVAC:DedicatedOutdoorAirSystem`` as every supported EnergyPlus version declares it."""
 
     airloophvac_outdoorairsystem_name: str | None
@@ -34369,12 +34911,12 @@ class AirLoopHVACDedicatedOutdoorAirSystem(_AirLoopHVACDedicatedOutdoorAirSystem
 class _AirLoopHVACDedicatedOutdoorAirSystemFields(_AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False):
     number_of_airloophvac: int | None
 
-class AirLoopHVACMixerNodesGroup(ExtensibleGroup):
+class AirLoopHVACMixerNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACMixer`."""
 
     inlet_node_name: str | None
 
-class AirLoopHVACMixer(IDFObject):
+class AirLoopHVACMixer(_TypedIDFObject):
     """Mix N inlet air streams from Relief Air Stream Node in OutdoorAir:Mixer objects served by AirLoopHVAC objects listed ...; Since: 9.2.0"""
 
     outlet_node_name: str | None
@@ -34386,12 +34928,12 @@ class _AirLoopHVACMixerFields(TypedDict, total=False):
     outlet_node_name: str | None
     nodes: list[Any]
 
-class AirLoopHVACSplitterNodesGroup(ExtensibleGroup):
+class AirLoopHVACSplitterNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`AirLoopHVACSplitter`."""
 
     outlet_node_name: str | None
 
-class AirLoopHVACSplitter(IDFObject):
+class AirLoopHVACSplitter(_TypedIDFObject):
     """Split one air stream from AirLoopHVAC:DedicatedOutdoorAirSystem outlet node into N outlet streams (currently 10 as de...; Since: 9.2.0"""
 
     inlet_node_name: str | None
@@ -34408,13 +34950,13 @@ class _AirLoopHVACSplitterFields(TypedDict, total=False):
 class _BranchCommonFields(TypedDict, total=False):
     pressure_drop_curve_name: str | None
 
-class _BranchBase(IDFObject):
+class _BranchBase(_TypedIDFObject):
     """``Branch`` as every supported EnergyPlus version declares it."""
 
     pressure_drop_curve_name: str | None
     """Optional field to include this branch in plant pressure drop calculations This field is only relevant for branches in..."""
 
-class BranchComponentsGroup(ExtensibleGroup):
+class BranchComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`Branch`."""
 
     component_object_type: str | None
@@ -34432,12 +34974,12 @@ class Branch(_BranchBase):
 class _BranchFields(_BranchCommonFields, total=False):
     components: list[Any]
 
-class BranchListBranchesGroup(ExtensibleGroup):
+class BranchListBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`BranchList`."""
 
     branch_name: str | None
 
-class BranchList(IDFObject):
+class BranchList(_TypedIDFObject):
     """Branches MUST be listed in Flow order: Inlet branch, then parallel branches, then Outlet branch. Branches are simulat..."""
 
     branches: ExtensibleList[BranchListBranchesGroup]
@@ -34447,12 +34989,12 @@ class BranchList(IDFObject):
 class _BranchListFields(TypedDict, total=False):
     branches: list[Any]
 
-class ConnectorSplitterBranchesGroup(ExtensibleGroup):
+class ConnectorSplitterBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorSplitter`."""
 
     outlet_branch_name: str | None
 
-class ConnectorSplitter(IDFObject):
+class ConnectorSplitter(_TypedIDFObject):
     """Split one air/water stream into N outlet streams. Branch names cannot be duplicated within a single Splitter list."""
 
     inlet_branch_name: str | None
@@ -34464,12 +35006,12 @@ class _ConnectorSplitterFields(TypedDict, total=False):
     inlet_branch_name: str | None
     branches: list[Any]
 
-class ConnectorMixerBranchesGroup(ExtensibleGroup):
+class ConnectorMixerBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`ConnectorMixer`."""
 
     inlet_branch_name: str | None
 
-class ConnectorMixer(IDFObject):
+class ConnectorMixer(_TypedIDFObject):
     """Mix N inlet air/water streams into one. Branch names cannot be duplicated within a single mixer list."""
 
     outlet_branch_name: str | None
@@ -34481,7 +35023,7 @@ class _ConnectorMixerFields(TypedDict, total=False):
     outlet_branch_name: str | None
     branches: list[Any]
 
-class ConnectorList(IDFObject):
+class ConnectorList(_TypedIDFObject):
     """only two connectors allowed per loop if two entered, one must be Connector:Splitter and one must be Connector:Mixer"""
 
     connector_1_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
@@ -34497,12 +35039,12 @@ class _ConnectorListFields(TypedDict, total=False):
     connector_2_object_type: Literal["Connector:Mixer", "Connector:Splitter"] | None
     connector_2_name: str | None
 
-class NodeListNodesGroup(ExtensibleGroup):
+class NodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`NodeList`."""
 
     node_name: str | None
 
-class NodeList(IDFObject):
+class NodeList(_TypedIDFObject):
     """This object is used in places where lists of nodes may be needed, e.g. ZoneHVAC:EquipmentConnections field Zone Air I..."""
 
     nodes: ExtensibleList[NodeListNodesGroup]
@@ -34512,7 +35054,7 @@ class NodeList(IDFObject):
 class _NodeListFields(TypedDict, total=False):
     nodes: list[Any]
 
-class OutdoorAirNode(IDFObject):
+class OutdoorAirNode(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node. It allows the height above ground t..."""
 
     height_above_ground: float | None
@@ -34544,12 +35086,12 @@ class _OutdoorAirNodeFields(TypedDict, total=False):
     symmetric_wind_pressure_coefficient_curve: Literal["", "No", "Yes"] | None
     wind_angle_type: Literal["", "Absolute", "Relative"] | None
 
-class OutdoorAirNodeListNodesGroup(ExtensibleGroup):
+class OutdoorAirNodeListNodesGroup(_TypedExtensibleGroup):
     """One nodes group inside :class:`OutdoorAirNodeList`."""
 
     node_or_nodelist_name: str | None
 
-class OutdoorAirNodeList(IDFObject):
+class OutdoorAirNodeList(_TypedIDFObject):
     """This object sets the temperature and humidity conditions for an outdoor air node using the weather data values. to va..."""
 
     nodes: ExtensibleList[OutdoorAirNodeListNodesGroup]
@@ -34561,7 +35103,7 @@ class OutdoorAirNodeList(IDFObject):
 class _OutdoorAirNodeListFields(TypedDict, total=False):
     nodes: list[Any]
 
-class PipeAdiabatic(IDFObject):
+class PipeAdiabatic(_TypedIDFObject):
     """Passes Inlet Node state variables to Outlet Node state variables"""
 
     inlet_node_name: str | None
@@ -34573,7 +35115,7 @@ class _PipeAdiabaticFields(TypedDict, total=False):
     inlet_node_name: str | None
     outlet_node_name: str | None
 
-class PipeAdiabaticSteam(IDFObject):
+class PipeAdiabaticSteam(_TypedIDFObject):
     """Passes Inlet Node state variables to Outlet Node state variables"""
 
     inlet_node_name: str | None
@@ -34587,7 +35129,7 @@ class _PipeAdiabaticSteamFields(TypedDict, total=False):
     inlet_node_name: str | None
     outlet_node_name: str | None
 
-class PipeIndoor(IDFObject):
+class PipeIndoor(_TypedIDFObject):
     """Pipe model with transport delay and heat transfer to the environment."""
 
     construction_name: str | None
@@ -34616,7 +35158,7 @@ class _PipeIndoorFields(TypedDict, total=False):
     pipe_inside_diameter: float | None
     pipe_length: float | None
 
-class PipeOutdoor(IDFObject):
+class PipeOutdoor(_TypedIDFObject):
     """Pipe model with transport delay and heat transfer to the environment."""
 
     construction_name: str | None
@@ -34638,7 +35180,7 @@ class _PipeOutdoorFields(TypedDict, total=False):
     pipe_inside_diameter: float | None
     pipe_length: float | None
 
-class PipeUnderground(IDFObject):
+class PipeUnderground(_TypedIDFObject):
     """Buried Pipe model: For pipes buried at a depth less than one meter, this is an alternative object to: HeatExchanger:S..."""
 
     construction_name: str | None
@@ -34714,12 +35256,12 @@ class _PipingSystemUndergroundDomainCommonFields(TypedDict, total=False):
     evapotranspiration_ground_cover_parameter: float | None
     pipe_circuits: list[Any]
 
-class PipingSystemUndergroundDomainPipeCircuitsGroup(ExtensibleGroup):
+class PipingSystemUndergroundDomainPipeCircuitsGroup(_TypedExtensibleGroup):
     """One pipe_circuits group inside :class:`_PipingSystemUndergroundDomainBase`."""
 
     pipe_circuit: str | None
 
-class _PipingSystemUndergroundDomainBase(IDFObject):
+class _PipingSystemUndergroundDomainBase(_TypedIDFObject):
     """``PipingSystem:Underground:Domain`` as every supported EnergyPlus version declares it."""
 
     xmax: float | None
@@ -34817,12 +35359,12 @@ class _PipingSystemUndergroundPipeCircuitCommonFields(TypedDict, total=False):
     radial_thickness_of_inner_radial_near_pipe_mesh_region: float | None
     pipe_segments: list[Any]
 
-class PipingSystemUndergroundPipeCircuitPipeSegmentsGroup(ExtensibleGroup):
+class PipingSystemUndergroundPipeCircuitPipeSegmentsGroup(_TypedExtensibleGroup):
     """One pipe_segments group inside :class:`_PipingSystemUndergroundPipeCircuitBase`."""
 
     pipe_segment: str | None
 
-class _PipingSystemUndergroundPipeCircuitBase(IDFObject):
+class _PipingSystemUndergroundPipeCircuitBase(_TypedIDFObject):
     """``PipingSystem:Underground:PipeCircuit`` as every supported EnergyPlus version declares it."""
 
     pipe_thermal_conductivity: float | None
@@ -34867,7 +35409,7 @@ class _PipingSystemUndergroundPipeCircuitFields(_PipingSystemUndergroundPipeCirc
     number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: int | None
     number_of_pipe_segments_entered_for_this_pipe_circuit: int | None
 
-class PipingSystemUndergroundPipeSegment(IDFObject):
+class PipingSystemUndergroundPipeSegment(_TypedIDFObject):
     """The pipe segment to be used in an underground piping system This object represents a single pipe leg positioned axial..."""
 
     x_position: float | None
@@ -34886,7 +35428,7 @@ class _PipingSystemUndergroundPipeSegmentFields(TypedDict, total=False):
     y_position: float | None
     flow_direction: Literal["DecreasingZ", "IncreasingZ"] | None
 
-class Duct(IDFObject):
+class Duct(_TypedIDFObject):
     """Passes inlet node state variables to outlet node state variables"""
 
     inlet_node_name: str | None
@@ -34928,7 +35470,7 @@ class _PumpVariableSpeedCommonFields(TypedDict, total=False):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     design_minimum_flow_rate_fraction: float | None
 
-class _PumpVariableSpeedBase(IDFObject):
+class _PumpVariableSpeedBase(_TypedIDFObject):
     """``Pump:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35015,7 +35557,7 @@ class _PumpConstantSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class _PumpConstantSpeedBase(IDFObject):
+class _PumpConstantSpeedBase(_TypedIDFObject):
     """``Pump:ConstantSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35081,7 +35623,7 @@ class _PumpVariableSpeedCondensateCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class _PumpVariableSpeedCondensateBase(IDFObject):
+class _PumpVariableSpeedCondensateBase(_TypedIDFObject):
     """``Pump:VariableSpeed:Condensate`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35147,7 +35689,7 @@ class _HeaderedPumpsConstantSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class _HeaderedPumpsConstantSpeedBase(IDFObject):
+class _HeaderedPumpsConstantSpeedBase(_TypedIDFObject):
     """``HeaderedPumps:ConstantSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35217,7 +35759,7 @@ class _HeaderedPumpsVariableSpeedCommonFields(TypedDict, total=False):
     design_electric_power_per_unit_flow_rate: float | None
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
 
-class _HeaderedPumpsVariableSpeedBase(IDFObject):
+class _HeaderedPumpsVariableSpeedBase(_TypedIDFObject):
     """``HeaderedPumps:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35275,7 +35817,7 @@ class _HeaderedPumpsVariableSpeedFields(_HeaderedPumpsVariableSpeedCommonFields,
     number_of_pumps_in_bank: int | None
     end_use_subcategory: str | None
 
-class TemperingValve(IDFObject):
+class TemperingValve(_TypedIDFObject):
     """Temperature-controlled diversion valve used to divert flow around one or more plant components such as a hot water he..."""
 
     inlet_node_name: str | None
@@ -35304,7 +35846,7 @@ class _LoadProfilePlantCommonFields(TypedDict, total=False):
     peak_flow_rate: float | None
     flow_rate_fraction_schedule_name: str | None
 
-class _LoadProfilePlantBase(IDFObject):
+class _LoadProfilePlantBase(_TypedIDFObject):
     """``LoadProfile:Plant`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -35332,7 +35874,7 @@ class _LoadProfilePlantFields(_LoadProfilePlantCommonFields, total=False):
     degree_of_subcooling: float | None
     degree_of_loop_subcooling: float | None
 
-class SolarCollectorPerformanceFlatPlate(IDFObject):
+class SolarCollectorPerformanceFlatPlate(_TypedIDFObject):
     """Thermal and optical performance parameters for a single flat plate solar collector module. These parameters are based..."""
 
     gross_area: float | None
@@ -35368,7 +35910,7 @@ class _SolarCollectorPerformanceFlatPlateFields(TypedDict, total=False):
     coefficient_2_of_incident_angle_modifier: float | None
     coefficient_3_of_incident_angle_modifier: float | None
 
-class SolarCollectorFlatPlateWater(IDFObject):
+class SolarCollectorFlatPlateWater(_TypedIDFObject):
     """Flat plate water solar collector (single glazed, unglazed, or evacuated tube). Thermal and optical properties are tak..."""
 
     solarcollectorperformance_name: str | None
@@ -35389,7 +35931,7 @@ class _SolarCollectorFlatPlateWaterFields(TypedDict, total=False):
     outlet_node_name: str | None
     maximum_flow_rate: float | None
 
-class SolarCollectorFlatPlatePhotovoltaicThermal(IDFObject):
+class SolarCollectorFlatPlatePhotovoltaicThermal(_TypedIDFObject):
     """Models hybrid photovoltaic-thermal (PVT) solar collectors that convert incident solar energy into both electricity an..."""
 
     surface_name: str | None
@@ -35422,7 +35964,7 @@ class _SolarCollectorFlatPlatePhotovoltaicThermalFields(TypedDict, total=False):
     air_outlet_node_name: str | None
     design_flow_rate: float | Literal["Autosize"] | None
 
-class SolarCollectorPerformancePhotovoltaicThermalSimple(IDFObject):
+class SolarCollectorPerformancePhotovoltaicThermalSimple(_TypedIDFObject):
     """Thermal performance parameters for a hybrid photovoltaic-thermal (PVT) solar collector."""
 
     fraction_of_surface_area_with_active_thermal_collector: float | None
@@ -35448,7 +35990,7 @@ class _SolarCollectorPerformancePhotovoltaicThermalSimpleFields(TypedDict, total
     thermal_conversion_efficiency_schedule_name: str | None
     front_surface_emittance: float | None
 
-class SolarCollectorPerformancePhotovoltaicThermalBIPVT(IDFObject):
+class SolarCollectorPerformancePhotovoltaicThermalBIPVT(_TypedIDFObject):
     """Thermal performance parameters for Building-Integrated Photovoltaic-Thermal (BIPVT) solar collector.; Since: 23.1.0"""
 
     boundary_conditions_model_name: str | None
@@ -35506,7 +36048,7 @@ class _SolarCollectorPerformancePhotovoltaicThermalBIPVTFields(TypedDict, total=
     glass_refraction_index: float | None
     glass_extinction_coefficient: float | None
 
-class SolarCollectorIntegralCollectorStorage(IDFObject):
+class SolarCollectorIntegralCollectorStorage(_TypedIDFObject):
     """Glazed solar collector with integral storage unit. Thermal and optical properties are taken from the referenced Solar..."""
 
     integralcollectorstorageparameters_name: str | None
@@ -35552,7 +36094,7 @@ class _SolarCollectorPerformanceIntegralCollectorStorageCommonFields(TypedDict, 
     absorptance_of_absorber_plate: float | None
     emissivity_of_absorber_plate: float | None
 
-class _SolarCollectorPerformanceIntegralCollectorStorageBase(IDFObject):
+class _SolarCollectorPerformanceIntegralCollectorStorageBase(_TypedIDFObject):
     """``SolarCollectorPerformance:IntegralCollectorStorage`` as every supported EnergyPlus version declares it."""
 
     ics_collector_type: Literal["", "RectangularTank"] | None
@@ -35609,12 +36151,12 @@ class _SolarCollectorPerformanceIntegralCollectorStorageFields(
 ):
     number_of_covers: int | None
 
-class SolarCollectorUnglazedTranspiredSurfacesGroup(ExtensibleGroup):
+class SolarCollectorUnglazedTranspiredSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SolarCollectorUnglazedTranspired`."""
 
     surface_name: str | None
 
-class SolarCollectorUnglazedTranspired(IDFObject):
+class SolarCollectorUnglazedTranspired(_TypedIDFObject):
     """Unglazed transpired solar collector (UTSC) used to condition outdoor air. This type of collector is generally used to..."""
 
     boundary_conditions_model_name: str | None
@@ -35687,12 +36229,16 @@ class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
     surfaces: list[Any]
 
-class _SolarCollectorUnglazedTranspiredMultisystemCommonFields(TypedDict, total=False): ...
+class _SolarCollectorUnglazedTranspiredMultisystemCommonFields(TypedDict, total=False):
+    solar_collector_name: str | None
 
-class _SolarCollectorUnglazedTranspiredMultisystemBase(IDFObject):
+class _SolarCollectorUnglazedTranspiredMultisystemBase(_TypedIDFObject):
     """``SolarCollector:UnglazedTranspired:Multisystem`` as every supported EnergyPlus version declares it."""
 
-class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(ExtensibleGroup):
+    solar_collector_name: str | None
+    """Enter the name of a SolarCollector:UnglazedTranspired object."""
+
+class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(_TypedExtensibleGroup):
     """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
 
     outdoor_air_system_collector_inlet_node: str | None
@@ -35732,7 +36278,7 @@ class _BoilerHotWaterCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _BoilerHotWaterBase(IDFObject):
+class _BoilerHotWaterBase(_TypedIDFObject):
     """``Boiler:HotWater`` as every supported EnergyPlus version declares it."""
 
     fuel_type: (
@@ -35839,7 +36385,7 @@ class _BoilerSteamCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _BoilerSteamBase(IDFObject):
+class _BoilerSteamBase(_TypedIDFObject):
     """``Boiler:Steam`` as every supported EnergyPlus version declares it."""
 
     fuel_type: (
@@ -35922,7 +36468,7 @@ class _BoilerSteamFields(_BoilerSteamCommonFields, total=False):
         | None
     )
 
-class ChillerElectricASHRAE205(IDFObject):
+class ChillerElectricASHRAE205(_TypedIDFObject):
     """This chiller model utilizes ASHRAE Standard 205 compliant representations for chillers (Representation Specification ...; Since: 22.2.0"""
 
     representation_file_name: str | None
@@ -36032,7 +36578,7 @@ class _ChillerElectricEIRCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class _ChillerElectricEIRBase(IDFObject):
+class _ChillerElectricEIRBase(_TypedIDFObject):
     """``Chiller:Electric:EIR`` as every supported EnergyPlus version declares it."""
 
     reference_capacity: float | Literal["Autosize"] | None
@@ -36163,7 +36709,7 @@ class _ChillerElectricReformulatedEIRCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class _ChillerElectricReformulatedEIRBase(IDFObject):
+class _ChillerElectricReformulatedEIRBase(_TypedIDFObject):
     """``Chiller:Electric:ReformulatedEIR`` as every supported EnergyPlus version declares it."""
 
     reference_capacity: float | Literal["Autosize"] | None
@@ -36292,7 +36838,7 @@ class _ChillerElectricCommonFields(TypedDict, total=False):
     heat_recovery_leaving_temperature_setpoint_node_name: str | None
     end_use_subcategory: str | None
 
-class _ChillerElectricBase(IDFObject):
+class _ChillerElectricBase(_TypedIDFObject):
     """``Chiller:Electric`` as every supported EnergyPlus version declares it."""
 
     condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None
@@ -36369,7 +36915,7 @@ class _ChillerElectricFields(_ChillerElectricCommonFields, total=False):
     thermosiphon_capacity_fraction_curve_name: str | None
     thermosiphon_minimum_temperature_difference: float | None
 
-class ChillerAbsorptionIndirect(IDFObject):
+class ChillerAbsorptionIndirect(_TypedIDFObject):
     """This indirect absorption chiller model is an enhanced model from the Building Loads and System Thermodynamics (BLAST)..."""
 
     nominal_capacity: float | Literal["Autosize"] | None
@@ -36463,7 +37009,7 @@ class _ChillerAbsorptionIndirectFields(TypedDict, total=False):
     degree_of_subcooling_in_steam_condensate_loop: float | None
     sizing_factor: float | None
 
-class ChillerAbsorption(IDFObject):
+class ChillerAbsorption(_TypedIDFObject):
     """This indirect absorption chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAS..."""
 
     nominal_capacity: float | Literal["Autosize"] | None
@@ -36554,7 +37100,7 @@ class _ChillerConstantCOPCommonFields(TypedDict, total=False):
     basin_heater_setpoint_temperature: float | None
     basin_heater_operating_schedule_name: str | None
 
-class _ChillerConstantCOPBase(IDFObject):
+class _ChillerConstantCOPBase(_TypedIDFObject):
     """``Chiller:ConstantCOP`` as every supported EnergyPlus version declares it."""
 
     nominal_capacity: float | Literal["Autosize"] | None
@@ -36645,7 +37191,7 @@ class _ChillerEngineDrivenCommonFields(TypedDict, total=False):
     basin_heater_operating_schedule_name: str | None
     condenser_heat_recovery_relative_capacity_fraction: float | None
 
-class _ChillerEngineDrivenBase(IDFObject):
+class _ChillerEngineDrivenBase(_TypedIDFObject):
     """``Chiller:EngineDriven`` as every supported EnergyPlus version declares it."""
 
     condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None
@@ -36820,7 +37366,7 @@ class _ChillerCombustionTurbineCommonFields(TypedDict, total=False):
     condenser_heat_recovery_relative_capacity_fraction: float | None
     turbine_engine_efficiency: float | None
 
-class _ChillerCombustionTurbineBase(IDFObject):
+class _ChillerCombustionTurbineBase(_TypedIDFObject):
     """``Chiller:CombustionTurbine`` as every supported EnergyPlus version declares it."""
 
     condenser_type: Literal["", "AirCooled", "EvaporativelyCooled", "WaterCooled"] | None
@@ -36984,7 +37530,7 @@ class _ChillerHeaterAbsorptionDirectFiredCommonFields(TypedDict, total=False):
     fuel_higher_heating_value: float | None
     sizing_factor: float | None
 
-class _ChillerHeaterAbsorptionDirectFiredBase(IDFObject):
+class _ChillerHeaterAbsorptionDirectFiredBase(_TypedIDFObject):
     """``ChillerHeater:Absorption:DirectFired`` as every supported EnergyPlus version declares it."""
 
     nominal_cooling_capacity: float | Literal["", "Autosize"] | None
@@ -37087,7 +37633,7 @@ class _ChillerHeaterAbsorptionDirectFiredFields(_ChillerHeaterAbsorptionDirectFi
         | None
     )
 
-class ChillerHeaterAbsorptionDoubleEffect(IDFObject):
+class ChillerHeaterAbsorptionDoubleEffect(_TypedIDFObject):
     """Exhaust fired absorption chiller-heater using performance curves similar to DOE-2"""
 
     nominal_cooling_capacity: float | Literal["", "Autosize"] | None
@@ -37205,7 +37751,7 @@ class _HeatPumpPlantLoopEIRCoolingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
 
-class _HeatPumpPlantLoopEIRCoolingBase(IDFObject):
+class _HeatPumpPlantLoopEIRCoolingBase(_TypedIDFObject):
     """``HeatPump:PlantLoop:EIR:Cooling`` as every supported EnergyPlus version declares it."""
 
     load_side_inlet_node_name: str | None
@@ -37304,7 +37850,7 @@ class _HeatPumpPlantLoopEIRHeatingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
 
-class _HeatPumpPlantLoopEIRHeatingBase(IDFObject):
+class _HeatPumpPlantLoopEIRHeatingBase(_TypedIDFObject):
     """``HeatPump:PlantLoop:EIR:Heating`` as every supported EnergyPlus version declares it."""
 
     load_side_inlet_node_name: str | None
@@ -37457,7 +38003,7 @@ class _HeatPumpAirToWaterFuelFiredHeatingCommonFields(TypedDict, total=False):
     auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None
     standby_electric_power: float | None
 
-class _HeatPumpAirToWaterFuelFiredHeatingBase(IDFObject):
+class _HeatPumpAirToWaterFuelFiredHeatingBase(_TypedIDFObject):
     """``HeatPump:AirToWater:FuelFired:Heating`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -37589,7 +38135,7 @@ class _HeatPumpAirToWaterFuelFiredCoolingCommonFields(TypedDict, total=False):
     auxiliary_electric_energy_input_ratio_function_of_plr_curve_name: str | None
     standby_electric_power: float | None
 
-class _HeatPumpAirToWaterFuelFiredCoolingBase(IDFObject):
+class _HeatPumpAirToWaterFuelFiredCoolingBase(_TypedIDFObject):
     """``HeatPump:AirToWater:FuelFired:Cooling`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -37670,7 +38216,7 @@ class HeatPumpAirToWaterFuelFiredCooling(_HeatPumpAirToWaterFuelFiredCoolingBase
 class _HeatPumpAirToWaterFuelFiredCoolingFields(_HeatPumpAirToWaterFuelFiredCoolingCommonFields, total=False):
     minimum_unloading_ratio: float | None
 
-class HeatPumpAirToWater(IDFObject):
+class HeatPumpAirToWater(_TypedIDFObject):
     """air-to-water heat pump system which provides either chilled or hot water with single- or variable speed compressors.; Since: 25.2.0"""
 
     availability_schedule_name_heating: str | None
@@ -38009,7 +38555,7 @@ class _HeatPumpWaterToWaterEquationFitHeatingCommonFields(TypedDict, total=False
     sizing_factor: float | None
     companion_cooling_heat_pump_name: str | None
 
-class _HeatPumpWaterToWaterEquationFitHeatingBase(IDFObject):
+class _HeatPumpWaterToWaterEquationFitHeatingBase(_TypedIDFObject):
     """``HeatPump:WaterToWater:EquationFit:Heating`` as every supported EnergyPlus version declares it."""
 
     source_side_inlet_node_name: str | None
@@ -38059,7 +38605,7 @@ class _HeatPumpWaterToWaterEquationFitCoolingCommonFields(TypedDict, total=False
     sizing_factor: float | None
     companion_heating_heat_pump_name: str | None
 
-class _HeatPumpWaterToWaterEquationFitCoolingBase(IDFObject):
+class _HeatPumpWaterToWaterEquationFitCoolingBase(_TypedIDFObject):
     """``HeatPump:WaterToWater:EquationFit:Cooling`` as every supported EnergyPlus version declares it."""
 
     source_side_inlet_node_name: str | None
@@ -38097,7 +38643,7 @@ class _HeatPumpWaterToWaterEquationFitCoolingFields(_HeatPumpWaterToWaterEquatio
     cooling_capacity_curve_name: str | None
     cooling_compressor_power_curve_name: str | None
 
-class HeatPumpWaterToWaterParameterEstimationCooling(IDFObject):
+class HeatPumpWaterToWaterParameterEstimationCooling(_TypedIDFObject):
     """OSU parameter estimation model"""
 
     source_side_inlet_node_name: str | None
@@ -38169,7 +38715,7 @@ class _HeatPumpWaterToWaterParameterEstimationCoolingFields(TypedDict, total=Fal
     high_pressure_cut_off: float | None
     low_pressure_cut_off: float | None
 
-class HeatPumpWaterToWaterParameterEstimationHeating(IDFObject):
+class HeatPumpWaterToWaterParameterEstimationHeating(_TypedIDFObject):
     """OSU parameter estimation model"""
 
     source_side_inlet_node_name: str | None
@@ -38241,7 +38787,7 @@ class _HeatPumpWaterToWaterParameterEstimationHeatingFields(TypedDict, total=Fal
     high_pressure_cut_off: float | None
     low_pressure_cut_off: float | None
 
-class DistrictCooling(IDFObject):
+class DistrictCooling(_TypedIDFObject):
     """Centralized source of chilled water, such as a district cooling system."""
 
     chilled_water_inlet_node_name: str | None
@@ -38259,7 +38805,7 @@ class _DistrictCoolingFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
     capacity_fraction_schedule_name: str | None
 
-class DistrictHeatingWater(IDFObject):
+class DistrictHeatingWater(_TypedIDFObject):
     """Centralized source of hot water, such as a district heating system.; Since: 23.2.0"""
 
     hot_water_inlet_node_name: str | None
@@ -38279,7 +38825,7 @@ class _DistrictHeatingWaterFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
     capacity_fraction_schedule_name: str | None
 
-class DistrictHeatingSteam(IDFObject):
+class DistrictHeatingSteam(_TypedIDFObject):
     """Centralized source of Steam, such as a district heating system.; Since: 23.2.0"""
 
     steam_inlet_node_name: str | None
@@ -38299,7 +38845,7 @@ class _DistrictHeatingSteamFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
     capacity_fraction_schedule_name: str | None
 
-class PlantComponentTemperatureSource(IDFObject):
+class PlantComponentTemperatureSource(_TypedIDFObject):
     """Simulates an object of pre-determined (constant or scheduled) source temperature The object introduces fluid into the..."""
 
     inlet_node: str | None
@@ -38396,7 +38942,7 @@ class _CentralHeatPumpSystemCommonFields(TypedDict, total=False):
     chiller_heater_modules_performance_component_name_20: str | None
     chiller_heater_modules_control_schedule_name_20: str | None
 
-class _CentralHeatPumpSystemBase(IDFObject):
+class _CentralHeatPumpSystemBase(_TypedIDFObject):
     """``CentralHeatPumpSystem`` as every supported EnergyPlus version declares it."""
 
     cooling_loop_inlet_node_name: str | None
@@ -38593,7 +39139,7 @@ class _ChillerHeaterPerformanceElectricEIRCommonFields(TypedDict, total=False):
     heating_mode_cooling_capacity_optimum_part_load_ratio: float | None
     sizing_factor: float | None
 
-class _ChillerHeaterPerformanceElectricEIRBase(IDFObject):
+class _ChillerHeaterPerformanceElectricEIRBase(_TypedIDFObject):
     """``ChillerHeaterPerformance:Electric:EIR`` as every supported EnergyPlus version declares it."""
 
     reference_cooling_mode_evaporator_capacity: float | Literal["Autosize"] | None
@@ -38697,7 +39243,7 @@ class _CoolingTowerSingleSpeedCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _CoolingTowerSingleSpeedBase(IDFObject):
+class _CoolingTowerSingleSpeedBase(_TypedIDFObject):
     """``CoolingTower:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -38836,7 +39382,7 @@ class _CoolingTowerTwoSpeedCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _CoolingTowerTwoSpeedBase(IDFObject):
+class _CoolingTowerTwoSpeedBase(_TypedIDFObject):
     """``CoolingTower:TwoSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -38986,7 +39532,7 @@ class _CoolingTowerVariableSpeedMerkelCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _CoolingTowerVariableSpeedMerkelBase(IDFObject):
+class _CoolingTowerVariableSpeedMerkelBase(_TypedIDFObject):
     """``CoolingTower:VariableSpeed:Merkel`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -39122,7 +39668,7 @@ class _CoolingTowerVariableSpeedCommonFields(TypedDict, total=False):
     sizing_factor: float | None
     end_use_subcategory: str | None
 
-class _CoolingTowerVariableSpeedBase(IDFObject):
+class _CoolingTowerVariableSpeedBase(_TypedIDFObject):
     """``CoolingTower:VariableSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -39201,7 +39747,7 @@ class _CoolingTowerVariableSpeedFields(_CoolingTowerVariableSpeedCommonFields, t
     blowdown_calculation_mode: Literal["", "ConcentrationRatio", "ScheduledRate"] | None
     number_of_cells: int | None
 
-class CoolingTowerPerformanceCoolTools(IDFObject):
+class CoolingTowerPerformanceCoolTools(_TypedIDFObject):
     """This object is used to define coefficients for the approach temperature correlation for a variable speed cooling towe..."""
 
     minimum_inlet_air_wet_bulb_temperature: float | None
@@ -39305,7 +39851,7 @@ class _CoolingTowerPerformanceCoolToolsFields(TypedDict, total=False):
     coefficient_34: float | None
     coefficient_35: float | None
 
-class CoolingTowerPerformanceYorkCalc(IDFObject):
+class CoolingTowerPerformanceYorkCalc(_TypedIDFObject):
     """This object is used to define coefficients for the approach temperature correlation for a variable speed cooling towe..."""
 
     minimum_inlet_air_wet_bulb_temperature: float | None
@@ -39424,7 +39970,7 @@ class _EvaporativeFluidCoolerSingleSpeedCommonFields(TypedDict, total=False):
     blowdown_makeup_water_usage_schedule_name: str | None
     supply_water_storage_tank_name: str | None
 
-class _EvaporativeFluidCoolerSingleSpeedBase(IDFObject):
+class _EvaporativeFluidCoolerSingleSpeedBase(_TypedIDFObject):
     """``EvaporativeFluidCooler:SingleSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -39527,7 +40073,7 @@ class _EvaporativeFluidCoolerTwoSpeedCommonFields(TypedDict, total=False):
     blowdown_makeup_water_usage_schedule_name: str | None
     supply_water_storage_tank_name: str | None
 
-class _EvaporativeFluidCoolerTwoSpeedBase(IDFObject):
+class _EvaporativeFluidCoolerTwoSpeedBase(_TypedIDFObject):
     """``EvaporativeFluidCooler:TwoSpeed`` as every supported EnergyPlus version declares it."""
 
     water_inlet_node_name: str | None
@@ -39611,7 +40157,7 @@ class EvaporativeFluidCoolerTwoSpeed(_EvaporativeFluidCoolerTwoSpeedBase):
 class _EvaporativeFluidCoolerTwoSpeedFields(_EvaporativeFluidCoolerTwoSpeedCommonFields, total=False):
     design_entering_water_temperature: float | Literal["", "Autosize"] | None
 
-class FluidCoolerSingleSpeed(IDFObject):
+class FluidCoolerSingleSpeed(_TypedIDFObject):
     """The fluid cooler is modeled as a cross flow heat exchanger (both streams unmixed) with single-speed fans (induced dra..."""
 
     water_inlet_node_name: str | None
@@ -39657,7 +40203,7 @@ class _FluidCoolerSingleSpeedFields(TypedDict, total=False):
     design_air_flow_rate_fan_power: float | Literal["Autosize"] | None
     outdoor_air_inlet_node_name: str | None
 
-class FluidCoolerTwoSpeed(IDFObject):
+class FluidCoolerTwoSpeed(_TypedIDFObject):
     """The fluid cooler is modeled as a cross flow heat exchanger (both streams unmixed) with two-speed fans (induced draft ..."""
 
     water_inlet_node_name: str | None
@@ -39745,12 +40291,12 @@ class _GroundHeatExchangerSystemCommonFields(TypedDict, total=False):
     ghe_vertical_array_object_name: str | None
     vertical_well_locations: list[Any]
 
-class GroundHeatExchangerSystemVerticalWellLocationsGroup(ExtensibleGroup):
+class GroundHeatExchangerSystemVerticalWellLocationsGroup(_TypedExtensibleGroup):
     """One vertical_well_locations group inside :class:`_GroundHeatExchangerSystemBase`."""
 
     ghe_vertical_single_object_name: str | None
 
-class _GroundHeatExchangerSystemBase(IDFObject):
+class _GroundHeatExchangerSystemBase(_TypedIDFObject):
     """``GroundHeatExchanger:System`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -39793,7 +40339,7 @@ class _GroundHeatExchangerSystemFields(_GroundHeatExchangerSystemCommonFields, t
     ghe_vertical_sizing_object_type: Literal["GroundHeatExchanger:Vertical:Sizing:Rectangle"] | None
     ghe_vertical_sizing_object_name: str | None
 
-class GroundHeatExchangerVerticalSizingRectangle(IDFObject):
+class GroundHeatExchangerVerticalSizingRectangle(_TypedIDFObject):
     """Specifies parameters to be used for Ground Heat Exchanger borehole field design and sizing.; Since: 25.2.0"""
 
     sizingperiod_weatherfiledays_name: str | None
@@ -39839,7 +40385,7 @@ class _GroundHeatExchangerVerticalSizingRectangleFields(TypedDict, total=False):
     minimum_exiting_fluid_temperature_for_sizing: float | None
     maximum_exiting_fluid_temperature_for_sizing: float | None
 
-class GroundHeatExchangerVerticalProperties(IDFObject):
+class GroundHeatExchangerVerticalProperties(_TypedIDFObject):
     """Properties for vertical ground heat exchanger systems"""
 
     depth_of_top_of_borehole: float | None
@@ -39883,7 +40429,7 @@ class _GroundHeatExchangerVerticalArrayCommonFields(TypedDict, total=False):
     ghe_vertical_properties_object_name: str | None
     borehole_spacing: float | None
 
-class _GroundHeatExchangerVerticalArrayBase(IDFObject):
+class _GroundHeatExchangerVerticalArrayBase(_TypedIDFObject):
     """``GroundHeatExchanger:Vertical:Array`` as every supported EnergyPlus version declares it."""
 
     ghe_vertical_properties_object_name: str | None
@@ -39906,7 +40452,7 @@ class _GroundHeatExchangerVerticalArrayFields(_GroundHeatExchangerVerticalArrayC
     number_of_boreholes_in_x_direction: int | None
     number_of_boreholes_in_y_direction: int | None
 
-class GroundHeatExchangerVerticalSingle(IDFObject):
+class GroundHeatExchangerVerticalSingle(_TypedIDFObject):
     ghe_vertical_properties_object_name: str | None
     x_location: float | None
     """[m]"""
@@ -39926,7 +40472,7 @@ class _GroundHeatExchangerResponseFactorsCommonFields(TypedDict, total=False):
     ghe_vertical_properties_object_name: str | None
     g_function_reference_ratio: float | None
 
-class _GroundHeatExchangerResponseFactorsBase(IDFObject):
+class _GroundHeatExchangerResponseFactorsBase(_TypedIDFObject):
     """``GroundHeatExchanger:ResponseFactors`` as every supported EnergyPlus version declares it."""
 
     ghe_vertical_properties_object_name: str | None
@@ -39934,7 +40480,7 @@ class _GroundHeatExchangerResponseFactorsBase(IDFObject):
     g_function_reference_ratio: float | None
     """[dimensionless]; Default: 0.0005; Range: > 0.0"""
 
-class GroundHeatExchangerResponseFactorsGFunctionsGroup(ExtensibleGroup):
+class GroundHeatExchangerResponseFactorsGFunctionsGroup(_TypedExtensibleGroup):
     """One g_functions group inside :class:`GroundHeatExchangerResponseFactors`."""
 
     g_function_ln_t_ts_value: float | None
@@ -39965,7 +40511,7 @@ class _GroundHeatExchangerPondCommonFields(TypedDict, total=False):
     ground_thermal_conductivity: float | None
     length_of_each_tubing_circuit: float | None
 
-class _GroundHeatExchangerPondBase(IDFObject):
+class _GroundHeatExchangerPondBase(_TypedIDFObject):
     """``GroundHeatExchanger:Pond`` as every supported EnergyPlus version declares it."""
 
     fluid_inlet_node_name: str | None
@@ -40009,7 +40555,7 @@ class _GroundHeatExchangerSurfaceCommonFields(TypedDict, total=False):
     surface_width: float | None
     lower_surface_environment: Literal["", "Exposed", "Ground"] | None
 
-class _GroundHeatExchangerSurfaceBase(IDFObject):
+class _GroundHeatExchangerSurfaceBase(_TypedIDFObject):
     """``GroundHeatExchanger:Surface`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
@@ -40068,7 +40614,7 @@ class _GroundHeatExchangerHorizontalTrenchCommonFields(TypedDict, total=False):
     undisturbed_ground_temperature_model_name: str | None
     evapotranspiration_ground_cover_parameter: float | None
 
-class _GroundHeatExchangerHorizontalTrenchBase(IDFObject):
+class _GroundHeatExchangerHorizontalTrenchBase(_TypedIDFObject):
     """``GroundHeatExchanger:HorizontalTrench`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -40156,7 +40702,7 @@ class _GroundHeatExchangerSlinkyCommonFields(TypedDict, total=False):
     undisturbed_ground_temperature_model_name: str | None
     maximum_length_of_simulation: float | None
 
-class _GroundHeatExchangerSlinkyBase(IDFObject):
+class _GroundHeatExchangerSlinkyBase(_TypedIDFObject):
     """``GroundHeatExchanger:Slinky`` as every supported EnergyPlus version declares it."""
 
     inlet_node_name: str | None
@@ -40267,7 +40813,7 @@ class _HeatExchangerFluidToFluidCommonFields(TypedDict, total=False):
     operation_minimum_temperature_limit: float | None
     operation_maximum_temperature_limit: float | None
 
-class _HeatExchangerFluidToFluidBase(IDFObject):
+class _HeatExchangerFluidToFluidBase(_TypedIDFObject):
     """``HeatExchanger:FluidToFluid`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -40408,7 +40954,7 @@ class _WaterHeaterMixedCommonFields(TypedDict, total=False):
     indirect_alternate_setpoint_temperature_schedule_name: str | None
     end_use_subcategory: str | None
 
-class _WaterHeaterMixedBase(IDFObject):
+class _WaterHeaterMixedBase(_TypedIDFObject):
     """``WaterHeater:Mixed`` as every supported EnergyPlus version declares it."""
 
     tank_volume: float | Literal["", "Autosize"] | None
@@ -40721,7 +41267,7 @@ class _WaterHeaterStratifiedCommonFields(TypedDict, total=False):
     )
     indirect_alternate_setpoint_temperature_schedule_name: str | None
 
-class _WaterHeaterStratifiedBase(IDFObject):
+class _WaterHeaterStratifiedBase(_TypedIDFObject):
     """``WaterHeater:Stratified`` as every supported EnergyPlus version declares it."""
 
     end_use_subcategory: str | None
@@ -41025,6 +41571,7 @@ class _WaterHeaterStratifiedFields(_WaterHeaterStratifiedCommonFields, total=Fal
     number_of_nodes: int | None
 
 class _WaterHeaterSizingCommonFields(TypedDict, total=False):
+    waterheater_name: str | None
     design_mode: (
         Literal[
             "PeakDraw", "PerFloorArea", "PerPerson", "PerSolarCollectorArea", "PerUnit", "ResidentialHUD-FHAMinimum"
@@ -41044,9 +41591,10 @@ class _WaterHeaterSizingCommonFields(TypedDict, total=False):
     storage_capacity_per_collector_area: float | None
     height_aspect_ratio: float | None
 
-class _WaterHeaterSizingBase(IDFObject):
+class _WaterHeaterSizingBase(_TypedIDFObject):
     """``WaterHeater:Sizing`` as every supported EnergyPlus version declares it."""
 
+    waterheater_name: str | None
     design_mode: (
         Literal[
             "PeakDraw", "PerFloorArea", "PerPerson", "PerSolarCollectorArea", "PerUnit", "ResidentialHUD-FHAMinimum"
@@ -41094,7 +41642,7 @@ class _WaterHeaterSizingFields(_WaterHeaterSizingCommonFields, total=False):
     number_of_bedrooms: int | None
     number_of_bathrooms: int | None
 
-class WaterHeaterHeatPumpPumpedCondenser(IDFObject):
+class WaterHeaterHeatPumpPumpedCondenser(_TypedIDFObject):
     """This object models an air-source heat pump for water heating where the water is pumped out of the tank, through a hea..."""
 
     availability_schedule_name: str | None
@@ -41234,7 +41782,7 @@ class _WaterHeaterHeatPumpPumpedCondenserFields(TypedDict, total=False):
     control_sensor_1_weight: float | None
     control_sensor_2_height_in_stratified_tank: float | None
 
-class WaterHeaterHeatPumpWrappedCondenser(IDFObject):
+class WaterHeaterHeatPumpWrappedCondenser(_TypedIDFObject):
     """This object models an air-source heat pump for water heating where the heating coil is wrapped around the tank, which..."""
 
     availability_schedule_name: str | None
@@ -41360,7 +41908,7 @@ class _ThermalStorageIceSimpleCommonFields(TypedDict, total=False):
     inlet_node_name: str | None
     outlet_node_name: str | None
 
-class _ThermalStorageIceSimpleBase(IDFObject):
+class _ThermalStorageIceSimpleBase(_TypedIDFObject):
     """``ThermalStorage:Ice:Simple`` as every supported EnergyPlus version declares it."""
 
     ice_storage_type: Literal["IceOnCoilExternal", "IceOnCoilInternal"] | None
@@ -41398,7 +41946,7 @@ class _ThermalStorageIceDetailedCommonFields(TypedDict, total=False):
     freezing_temperature_of_storage_medium: float | None
     thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None
 
-class _ThermalStorageIceDetailedBase(IDFObject):
+class _ThermalStorageIceDetailedBase(_TypedIDFObject):
     """``ThermalStorage:Ice:Detailed`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -41451,7 +41999,7 @@ class _ThermalStorageIceDetailedFields(_ThermalStorageIceDetailedCommonFields, t
     )
     thermal_storage_sizing_object_name: str | None
 
-class ThermalStorageChilledWaterMixed(IDFObject):
+class ThermalStorageChilledWaterMixed(_TypedIDFObject):
     """Chilled water storage with a well-mixed, single-node tank. The chilled water is 'used' by drawing from the 'Use Side'..."""
 
     tank_volume: float | None
@@ -41558,7 +42106,7 @@ class _ThermalStorageChilledWaterStratifiedCommonFields(TypedDict, total=False):
     node_9_additional_loss_coefficient: float | None
     node_10_additional_loss_coefficient: float | None
 
-class _ThermalStorageChilledWaterStratifiedBase(IDFObject):
+class _ThermalStorageChilledWaterStratifiedBase(_TypedIDFObject):
     """``ThermalStorage:ChilledWater:Stratified`` as every supported EnergyPlus version declares it."""
 
     tank_volume: float | None
@@ -41652,7 +42200,7 @@ class _ThermalStorageChilledWaterStratifiedFields(_ThermalStorageChilledWaterStr
     nominal_cooling_capacity: float | Literal["", "Autosize"] | None
     number_of_nodes: int | None
 
-class ThermalStorageHotWaterStratified(IDFObject):
+class ThermalStorageHotWaterStratified(_TypedIDFObject):
     """Since: 25.2.0"""
 
     tank_volume: float | None
@@ -41791,7 +42339,7 @@ class _ThermalStorageHotWaterStratifiedFields(TypedDict, total=False):
     node_9_additional_loss_coefficient: float | None
     node_10_additional_loss_coefficient: float | None
 
-class ThermalStoragePCM(IDFObject):
+class ThermalStoragePCM(_TypedIDFObject):
     """This thermal storage model is PCM-based It requires PCM material property connection In addition to the object linkin...; Since: 25.2.0"""
 
     availability_schedule_name: str | None
@@ -41823,7 +42371,7 @@ class _ThermalStoragePCMFields(TypedDict, total=False):
     use_side_design_flow_rate: float | Literal["Autosize"] | None
     plant_side_design_flow_rate: float | Literal["Autosize"] | None
 
-class ThermalStorageSizing(IDFObject):
+class ThermalStorageSizing(_TypedIDFObject):
     """Sizing information for thermal energy stoarge capacity.; Since: 25.2.0"""
 
     on_peak_period_start_time: float | None
@@ -41842,7 +42390,7 @@ class _ThermalStorageSizingFields(TypedDict, total=False):
     on_peak_period_end_time: float | None
     sizing_factor: float | None
 
-class PlantLoop(IDFObject):
+class PlantLoop(_TypedIDFObject):
     """Defines a central plant loop."""
 
     fluid_type: Literal["", "Steam", "UserDefinedFluidType", "Water"] | None
@@ -41912,7 +42460,7 @@ class _PlantLoopFields(TypedDict, total=False):
     pressure_simulation_type: Literal["", "LoopFlowCorrection", "None", "PumpPowerCorrection"] | None
     loop_circulation_time: float | None
 
-class CondenserLoop(IDFObject):
+class CondenserLoop(_TypedIDFObject):
     """Defines a central plant condenser loop. CondenserLoop and PlantLoop are nearly identical except some components and o..."""
 
     fluid_type: Literal["", "UserDefinedFluidType", "Water"] | None
@@ -41976,10 +42524,10 @@ class _CondenserLoopFields(TypedDict, total=False):
 
 class _PlantEquipmentListCommonFields(TypedDict, total=False): ...
 
-class _PlantEquipmentListBase(IDFObject):
+class _PlantEquipmentListBase(_TypedIDFObject):
     """``PlantEquipmentList`` as every supported EnergyPlus version declares it."""
 
-class PlantEquipmentListEquipmentGroup(ExtensibleGroup):
+class PlantEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`PlantEquipmentList`."""
 
     equipment_object_type: str | None
@@ -41999,10 +42547,10 @@ class _PlantEquipmentListFields(_PlantEquipmentListCommonFields, total=False):
 
 class _CondenserEquipmentListCommonFields(TypedDict, total=False): ...
 
-class _CondenserEquipmentListBase(IDFObject):
+class _CondenserEquipmentListBase(_TypedIDFObject):
     """``CondenserEquipmentList`` as every supported EnergyPlus version declares it."""
 
-class CondenserEquipmentListEquipmentGroup(ExtensibleGroup):
+class CondenserEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`CondenserEquipmentList`."""
 
     equipment_object_type: str | None
@@ -42020,7 +42568,7 @@ class CondenserEquipmentList(_CondenserEquipmentListBase):
 class _CondenserEquipmentListFields(_CondenserEquipmentListCommonFields, total=False):
     equipment: list[Any]
 
-class PlantEquipmentOperationUncontrolled(IDFObject):
+class PlantEquipmentOperationUncontrolled(_TypedIDFObject):
     """Plant equipment operation scheme for uncontrolled operation. Specifies a group of equipment that runs if the loop is ..."""
 
     equipment_list_name: str | None
@@ -42032,7 +42580,7 @@ class PlantEquipmentOperationUncontrolled(IDFObject):
 class _PlantEquipmentOperationUncontrolledFields(TypedDict, total=False):
     equipment_list_name: str | None
 
-class PlantEquipmentOperationCoolingLoad(IDFObject):
+class PlantEquipmentOperationCoolingLoad(_TypedIDFObject):
     """Plant equipment operation scheme for cooling load range operation. Specifies one or more groups of equipment which ar..."""
 
     load_range_1_lower_limit: float | None
@@ -42122,7 +42670,7 @@ class _PlantEquipmentOperationCoolingLoadFields(TypedDict, total=False):
     load_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationHeatingLoad(IDFObject):
+class PlantEquipmentOperationHeatingLoad(_TypedIDFObject):
     """Plant equipment operation scheme for heating load range operation. Specifies one or more groups of equipment which ar..."""
 
     load_range_1_lower_limit: float | None
@@ -42212,7 +42760,7 @@ class _PlantEquipmentOperationHeatingLoadFields(TypedDict, total=False):
     load_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorDryBulb(IDFObject):
+class PlantEquipmentOperationOutdoorDryBulb(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor dry-bulb temperature range operation. Specifies one or more groups of eq..."""
 
     dry_bulb_temperature_range_1_lower_limit: float | None
@@ -42302,7 +42850,7 @@ class _PlantEquipmentOperationOutdoorDryBulbFields(TypedDict, total=False):
     dry_bulb_temperature_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorWetBulb(IDFObject):
+class PlantEquipmentOperationOutdoorWetBulb(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor wet-bulb temperature range operation. Specifies one or more groups of eq..."""
 
     wet_bulb_temperature_range_1_lower_limit: float | None
@@ -42392,7 +42940,7 @@ class _PlantEquipmentOperationOutdoorWetBulbFields(TypedDict, total=False):
     wet_bulb_temperature_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorRelativeHumidity(IDFObject):
+class PlantEquipmentOperationOutdoorRelativeHumidity(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor relative humidity range operation. Specifies one or more groups of equip..."""
 
     relative_humidity_range_1_lower_limit: float | None
@@ -42485,7 +43033,7 @@ class _PlantEquipmentOperationOutdoorRelativeHumidityFields(TypedDict, total=Fal
     relative_humidity_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorDewpoint(IDFObject):
+class PlantEquipmentOperationOutdoorDewpoint(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor dewpoint temperature range operation. Specifies one or more groups of eq..."""
 
     dewpoint_temperature_range_1_lower_limit: float | None
@@ -42575,7 +43123,7 @@ class _PlantEquipmentOperationOutdoorDewpointFields(TypedDict, total=False):
     dewpoint_temperature_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationComponentSetpoint(IDFObject):
+class PlantEquipmentOperationComponentSetpoint(_TypedIDFObject):
     """Plant equipment operation scheme for component setpoint operation. Specifies one or pieces of equipment which are con..."""
 
     equipment_1_object_type: str | None
@@ -42819,7 +43367,7 @@ class _PlantEquipmentOperationThermalEnergyStorageCommonFields(TypedDict, total=
     component_10_flow_rate: float | Literal["Autosize"] | None
     component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None
 
-class _PlantEquipmentOperationThermalEnergyStorageBase(IDFObject):
+class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
     """``PlantEquipmentOperation:ThermalEnergyStorage`` as every supported EnergyPlus version declares it."""
 
     on_peak_schedule: str | None
@@ -43290,7 +43838,7 @@ class _PlantEquipmentOperationThermalEnergyStorageFields(
         | None
     )
 
-class PlantEquipmentOperationOutdoorDryBulbDifference(IDFObject):
+class PlantEquipmentOperationOutdoorDryBulbDifference(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor dry-bulb temperature difference operation. Specifies one or more groups ..."""
 
     reference_temperature_node_name: str | None
@@ -43385,7 +43933,7 @@ class _PlantEquipmentOperationOutdoorDryBulbDifferenceFields(TypedDict, total=Fa
     dry_bulb_temperature_difference_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorWetBulbDifference(IDFObject):
+class PlantEquipmentOperationOutdoorWetBulbDifference(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor wet-bulb temperature difference operation. Specifies one or more groups ..."""
 
     reference_temperature_node_name: str | None
@@ -43480,7 +44028,7 @@ class _PlantEquipmentOperationOutdoorWetBulbDifferenceFields(TypedDict, total=Fa
     wet_bulb_temperature_difference_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationOutdoorDewpointDifference(IDFObject):
+class PlantEquipmentOperationOutdoorDewpointDifference(_TypedIDFObject):
     """Plant equipment operation scheme for outdoor dewpoint temperature difference operation. Specifies one or more groups ..."""
 
     reference_temperature_node_name: str | None
@@ -43575,7 +44123,7 @@ class _PlantEquipmentOperationOutdoorDewpointDifferenceFields(TypedDict, total=F
     dewpoint_temperature_difference_range_10_upper_limit: float | None
     range_10_equipment_list_name: str | None
 
-class PlantEquipmentOperationChillerHeaterChangeover(IDFObject):
+class PlantEquipmentOperationChillerHeaterChangeover(_TypedIDFObject):
     """Plant equipment operation object to control switchover between chiller and heater operation of chiller heater heat pu...; Since: 23.2.0"""
 
     primary_cooling_plant_setpoint_temperature: float | None
@@ -43652,7 +44200,7 @@ class _PlantEquipmentOperationSchemesCommonFields(TypedDict, total=False):
     control_scheme_8_name: str | None
     control_scheme_8_schedule_name: str | None
 
-class _PlantEquipmentOperationSchemesBase(IDFObject):
+class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
     """``PlantEquipmentOperationSchemes`` as every supported EnergyPlus version declares it."""
 
     control_scheme_1_object_type: (
@@ -44138,7 +44686,7 @@ class _PlantEquipmentOperationSchemesFields(_PlantEquipmentOperationSchemesCommo
         | None
     )
 
-class CondenserEquipmentOperationSchemes(IDFObject):
+class CondenserEquipmentOperationSchemes(_TypedIDFObject):
     """Operation schemes are listed in 'priority' order. Note that each scheme must address the entire load and/or condition..."""
 
     control_scheme_1_object_type: (
@@ -44436,7 +44984,7 @@ class _CondenserEquipmentOperationSchemesFields(TypedDict, total=False):
     control_scheme_8_name: str | None
     control_scheme_8_schedule_name: str | None
 
-class EnergyManagementSystemSensor(IDFObject):
+class EnergyManagementSystemSensor(_TypedIDFObject):
     """Declares EMS variable as a sensor a list of output variables and meters that can be reported are available after a ru..."""
 
     output_variable_or_output_meter_index_key_name: str | None
@@ -44450,7 +44998,7 @@ class _EnergyManagementSystemSensorFields(TypedDict, total=False):
     output_variable_or_output_meter_index_key_name: str | None
     output_variable_or_output_meter_name: str | None
 
-class EnergyManagementSystemActuator(IDFObject):
+class EnergyManagementSystemActuator(_TypedIDFObject):
     """Hardware portion of EMS used to set up actuators in the model"""
 
     actuated_component_unique_name: str | None
@@ -44469,12 +45017,12 @@ class _EnergyManagementSystemActuatorFields(TypedDict, total=False):
 class _EnergyManagementSystemProgramCallingManagerCommonFields(TypedDict, total=False):
     programs: list[Any]
 
-class EnergyManagementSystemProgramCallingManagerProgramsGroup(ExtensibleGroup):
+class EnergyManagementSystemProgramCallingManagerProgramsGroup(_TypedExtensibleGroup):
     """One programs group inside :class:`_EnergyManagementSystemProgramCallingManagerBase`."""
 
     program_name: str | None
 
-class _EnergyManagementSystemProgramCallingManagerBase(IDFObject):
+class _EnergyManagementSystemProgramCallingManagerBase(_TypedIDFObject):
     """``EnergyManagementSystem:ProgramCallingManager`` as every supported EnergyPlus version declares it."""
 
     energyplus_model_calling_point: (
@@ -44563,12 +45111,12 @@ class _EnergyManagementSystemProgramCallingManagerFields(
         | None
     )
 
-class EnergyManagementSystemProgramLinesGroup(ExtensibleGroup):
+class EnergyManagementSystemProgramLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`EnergyManagementSystemProgram`."""
 
     program_line: str | None
 
-class EnergyManagementSystemProgram(IDFObject):
+class EnergyManagementSystemProgram(_TypedIDFObject):
     """This input defines an Erl program Each field after the name is a line of EMS Runtime Language"""
 
     lines: ExtensibleList[EnergyManagementSystemProgramLinesGroup]
@@ -44580,12 +45128,12 @@ class EnergyManagementSystemProgram(IDFObject):
 class _EnergyManagementSystemProgramFields(TypedDict, total=False):
     lines: list[Any]
 
-class EnergyManagementSystemSubroutineLinesGroup(ExtensibleGroup):
+class EnergyManagementSystemSubroutineLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`EnergyManagementSystemSubroutine`."""
 
     program_line: str | None
 
-class EnergyManagementSystemSubroutine(IDFObject):
+class EnergyManagementSystemSubroutine(_TypedIDFObject):
     """This input defines an Erl program subroutine Each field after the name is a line of EMS Runtime Language"""
 
     lines: ExtensibleList[EnergyManagementSystemSubroutineLinesGroup]
@@ -44597,12 +45145,12 @@ class EnergyManagementSystemSubroutine(IDFObject):
 class _EnergyManagementSystemSubroutineFields(TypedDict, total=False):
     lines: list[Any]
 
-class EnergyManagementSystemGlobalVariableVariablesGroup(ExtensibleGroup):
+class EnergyManagementSystemGlobalVariableVariablesGroup(_TypedExtensibleGroup):
     """One variables group inside :class:`EnergyManagementSystemGlobalVariable`."""
 
     erl_variable_name: str | None
 
-class EnergyManagementSystemGlobalVariable(IDFObject):
+class EnergyManagementSystemGlobalVariable(_TypedIDFObject):
     """Declares Erl variable as having global scope No spaces allowed in names used for Erl variables"""
 
     variables: ExtensibleList[EnergyManagementSystemGlobalVariableVariablesGroup]
@@ -44614,7 +45162,7 @@ class EnergyManagementSystemGlobalVariable(IDFObject):
 class _EnergyManagementSystemGlobalVariableFields(TypedDict, total=False):
     variables: list[Any]
 
-class EnergyManagementSystemOutputVariable(IDFObject):
+class EnergyManagementSystemOutputVariable(_TypedIDFObject):
     """This object sets up an EnergyPlus output variable from an Erl variable"""
 
     ems_variable_name: str | None
@@ -44671,7 +45219,7 @@ class _EnergyManagementSystemMeteredOutputVariableCommonFields(TypedDict, total=
     end_use_subcategory: str | None
     units: str | None
 
-class _EnergyManagementSystemMeteredOutputVariableBase(IDFObject):
+class _EnergyManagementSystemMeteredOutputVariableBase(_TypedIDFObject):
     """``EnergyManagementSystem:MeteredOutputVariable`` as every supported EnergyPlus version declares it."""
 
     ems_variable_name: str | None
@@ -44820,7 +45368,7 @@ class _EnergyManagementSystemMeteredOutputVariableFields(
 class _EnergyManagementSystemTrendVariableCommonFields(TypedDict, total=False):
     ems_variable_name: str | None
 
-class _EnergyManagementSystemTrendVariableBase(IDFObject):
+class _EnergyManagementSystemTrendVariableBase(_TypedIDFObject):
     """``EnergyManagementSystem:TrendVariable`` as every supported EnergyPlus version declares it."""
 
     ems_variable_name: str | None
@@ -44840,7 +45388,7 @@ class EnergyManagementSystemTrendVariable(_EnergyManagementSystemTrendVariableBa
 class _EnergyManagementSystemTrendVariableFields(_EnergyManagementSystemTrendVariableCommonFields, total=False):
     number_of_timesteps_to_be_logged: int | None
 
-class EnergyManagementSystemInternalVariable(IDFObject):
+class EnergyManagementSystemInternalVariable(_TypedIDFObject):
     """Declares EMS variable as an internal data variable"""
 
     internal_data_index_key_name: str | None
@@ -44854,7 +45402,7 @@ class _EnergyManagementSystemInternalVariableFields(TypedDict, total=False):
     internal_data_index_key_name: str | None
     internal_data_type: str | None
 
-class EnergyManagementSystemCurveOrTableIndexVariable(IDFObject):
+class EnergyManagementSystemCurveOrTableIndexVariable(_TypedIDFObject):
     """Declares EMS variable that identifies a curve or table"""
 
     curve_or_table_object_name: str | None
@@ -44869,7 +45417,7 @@ class EnergyManagementSystemCurveOrTableIndexVariable(IDFObject):
 class _EnergyManagementSystemCurveOrTableIndexVariableFields(TypedDict, total=False):
     curve_or_table_object_name: str | None
 
-class EnergyManagementSystemConstructionIndexVariable(IDFObject):
+class EnergyManagementSystemConstructionIndexVariable(_TypedIDFObject):
     """Declares EMS variable that identifies a construction"""
 
     construction_object_name: str | None
@@ -44884,10 +45432,22 @@ class EnergyManagementSystemConstructionIndexVariable(IDFObject):
 class _EnergyManagementSystemConstructionIndexVariableFields(TypedDict, total=False):
     construction_object_name: str | None
 
-class ExternalInterface(IDFObject):
+class ExternalInterface(_TypedIDFObject):
     """This object activates the external interface of EnergyPlus. If the object ExternalInterface is present, then all Extn..."""
 
-class ExternalInterfaceSchedule(IDFObject):
+    name_of_external_interface: (
+        Literal["FunctionalMockupUnitExport", "FunctionalMockupUnitImport", "PtolemyServer"] | None
+    )
+    """Name of External Interface Currently, the only valid entries are PtolemyServer, FunctionalMockupUnitImport, and Funct..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ExternalInterfaceFields]) -> None: ...  # type: ignore[override]
+
+class _ExternalInterfaceFields(TypedDict, total=False):
+    name_of_external_interface: (
+        Literal["FunctionalMockupUnitExport", "FunctionalMockupUnitImport", "PtolemyServer"] | None
+    )
+
+class ExternalInterfaceSchedule(_TypedIDFObject):
     """A ExternalInterface:Schedule contains only one value, which is used during the warm-up period and the system sizing."""
 
     schedule_type_limits_name: str | None
@@ -44902,7 +45462,7 @@ class _ExternalInterfaceScheduleFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceVariable(IDFObject):
+class ExternalInterfaceVariable(_TypedIDFObject):
     """This input object is similar to EnergyManagementSystem:GlobalVariable. However, at the beginning of each zone time st..."""
 
     initial_value: float | None
@@ -44915,7 +45475,7 @@ class ExternalInterfaceVariable(IDFObject):
 class _ExternalInterfaceVariableFields(TypedDict, total=False):
     initial_value: float | None
 
-class ExternalInterfaceActuator(IDFObject):
+class ExternalInterfaceActuator(_TypedIDFObject):
     """Hardware portion of EMS used to set up actuators in the model"""
 
     actuated_component_unique_name: str | None
@@ -44935,11 +45495,13 @@ class _ExternalInterfaceActuatorFields(TypedDict, total=False):
     optional_initial_value: float | None
 
 class _ExternalInterfaceFunctionalMockupUnitImportCommonFields(TypedDict, total=False):
+    fmu_file_name: str | None
     fmu_timeout: float | None
 
-class _ExternalInterfaceFunctionalMockupUnitImportBase(IDFObject):
+class _ExternalInterfaceFunctionalMockupUnitImportBase(_TypedIDFObject):
     """``ExternalInterface:FunctionalMockupUnitImport`` as every supported EnergyPlus version declares it."""
 
+    fmu_file_name: str | None
     fmu_timeout: float | None
     """in milli-seconds; [ms]; Default: 0.0"""
     fmu_loggingon: float | int | None
@@ -44962,9 +45524,10 @@ class _ExternalInterfaceFunctionalMockupUnitImportFields(
 ):
     fmu_loggingon: int | None
 
-class ExternalInterfaceFunctionalMockupUnitImportFromVariable(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitImportFromVariable(_TypedIDFObject):
     """This object declares an FMU input variable"""
 
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_file_name: str | None
     fmu_instance_name: str | None
@@ -44978,12 +45541,13 @@ class ExternalInterfaceFunctionalMockupUnitImportFromVariable(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitImportFromVariableFields(TypedDict, total=False):
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_file_name: str | None
     fmu_instance_name: str | None
     fmu_variable_name: str | None
 
-class ExternalInterfaceFunctionalMockupUnitImportToSchedule(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitImportToSchedule(_TypedIDFObject):
     """This objects contains only one value, which is used during the first call of EnergyPlus"""
 
     schedule_type_limits_names: str | None
@@ -45007,7 +45571,7 @@ class _ExternalInterfaceFunctionalMockupUnitImportToScheduleFields(TypedDict, to
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitImportToActuator(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitImportToActuator(_TypedIDFObject):
     """Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU."""
 
     actuated_component_unique_name: str | None
@@ -45035,7 +45599,7 @@ class _ExternalInterfaceFunctionalMockupUnitImportToActuatorFields(TypedDict, to
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitImportToVariable(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitImportToVariable(_TypedIDFObject):
     """Declares Erl variable as having global scope No spaces allowed in names used for Erl variables"""
 
     fmu_file_name: str | None
@@ -45057,9 +45621,10 @@ class _ExternalInterfaceFunctionalMockupUnitImportToVariableFields(TypedDict, to
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitExportFromVariable(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitExportFromVariable(_TypedIDFObject):
     """This object declares an FMU input variable"""
 
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_variable_name: str | None
 
@@ -45071,12 +45636,14 @@ class ExternalInterfaceFunctionalMockupUnitExportFromVariable(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitExportFromVariableFields(TypedDict, total=False):
+    output_variable_index_key_name: str | None
     output_variable_name: str | None
     fmu_variable_name: str | None
 
-class ExternalInterfaceFunctionalMockupUnitExportToSchedule(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitExportToSchedule(_TypedIDFObject):
     """This objects contains only one value, which is used during the first call of EnergyPlus"""
 
+    schedule_name: str | None
     schedule_type_limits_names: str | None
     fmu_variable_name: str | None
     initial_value: float | None
@@ -45090,11 +45657,12 @@ class ExternalInterfaceFunctionalMockupUnitExportToSchedule(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ExternalInterfaceFunctionalMockupUnitExportToScheduleFields(TypedDict, total=False):
+    schedule_name: str | None
     schedule_type_limits_names: str | None
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitExportToActuator(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitExportToActuator(_TypedIDFObject):
     """Hardware portion of EMS used to set up actuators in the model that are dynamically updated from the FMU."""
 
     actuated_component_unique_name: str | None
@@ -45118,7 +45686,7 @@ class _ExternalInterfaceFunctionalMockupUnitExportToActuatorFields(TypedDict, to
     fmu_variable_name: str | None
     initial_value: float | None
 
-class ExternalInterfaceFunctionalMockupUnitExportToVariable(IDFObject):
+class ExternalInterfaceFunctionalMockupUnitExportToVariable(_TypedIDFObject):
     """Declares Erl variable as having global scope No spaces allowed in names used for Erl variables"""
 
     fmu_variable_name: str | None
@@ -45153,7 +45721,7 @@ class _ZoneHVACForcedAirUserDefinedCommonFields(TypedDict, total=False):
     collection_outlet_water_storage_tank_name: str | None
     ambient_zone_name: str | None
 
-class _ZoneHVACForcedAirUserDefinedBase(IDFObject):
+class _ZoneHVACForcedAirUserDefinedBase(_TypedIDFObject):
     """``ZoneHVAC:ForcedAir:UserDefined`` as every supported EnergyPlus version declares it."""
 
     overall_model_simulation_program_calling_manager_name: str | None
@@ -45210,7 +45778,7 @@ class _AirTerminalSingleDuctUserDefinedCommonFields(TypedDict, total=False):
     collection_outlet_water_storage_tank_name: str | None
     ambient_zone_name: str | None
 
-class _AirTerminalSingleDuctUserDefinedBase(IDFObject):
+class _AirTerminalSingleDuctUserDefinedBase(_TypedIDFObject):
     """``AirTerminal:SingleDuct:UserDefined`` as every supported EnergyPlus version declares it."""
 
     overall_model_simulation_program_calling_manager_name: str | None
@@ -45264,7 +45832,7 @@ class _CoilUserDefinedCommonFields(TypedDict, total=False):
     collection_outlet_water_storage_tank_name: str | None
     ambient_zone_name: str | None
 
-class _CoilUserDefinedBase(IDFObject):
+class _CoilUserDefinedBase(_TypedIDFObject):
     """``Coil:UserDefined`` as every supported EnergyPlus version declares it."""
 
     overall_model_simulation_program_calling_manager_name: str | None
@@ -45376,7 +45944,7 @@ class _PlantComponentUserDefinedCommonFields(TypedDict, total=False):
     collection_outlet_water_storage_tank_name: str | None
     ambient_zone_name: str | None
 
-class _PlantComponentUserDefinedBase(IDFObject):
+class _PlantComponentUserDefinedBase(_TypedIDFObject):
     """``PlantComponent:UserDefined`` as every supported EnergyPlus version declares it."""
 
     main_model_program_calling_manager_name: str | None
@@ -45476,7 +46044,7 @@ class PlantComponentUserDefined(_PlantComponentUserDefinedBase):
 class _PlantComponentUserDefinedFields(_PlantComponentUserDefinedCommonFields, total=False):
     number_of_plant_loop_connections: int | None
 
-class PlantEquipmentOperationUserDefined(IDFObject):
+class PlantEquipmentOperationUserDefined(_TypedIDFObject):
     """Defines a generic plant operation scheme for custom supervisory control using Energy Management System or External In..."""
 
     main_model_program_calling_manager_name: str | None
@@ -45530,7 +46098,7 @@ class _PlantEquipmentOperationUserDefinedFields(TypedDict, total=False):
     equipment_10_object_type: str | None
     equipment_10_name: str | None
 
-class AvailabilityManagerScheduled(IDFObject):
+class AvailabilityManagerScheduled(_TypedIDFObject):
     """Determines the availability of a loop or system: whether it is on or off. Schedule overrides fan/pump schedule."""
 
     schedule_name: str | None
@@ -45542,7 +46110,7 @@ class AvailabilityManagerScheduled(IDFObject):
 class _AvailabilityManagerScheduledFields(TypedDict, total=False):
     schedule_name: str | None
 
-class AvailabilityManagerScheduledOn(IDFObject):
+class AvailabilityManagerScheduledOn(_TypedIDFObject):
     """Determines the availability of a loop or system: only controls the turn on action. Schedule overrides fan/pump schedule."""
 
     schedule_name: str | None
@@ -45554,7 +46122,7 @@ class AvailabilityManagerScheduledOn(IDFObject):
 class _AvailabilityManagerScheduledOnFields(TypedDict, total=False):
     schedule_name: str | None
 
-class AvailabilityManagerScheduledOff(IDFObject):
+class AvailabilityManagerScheduledOff(_TypedIDFObject):
     """Determines the availability of a loop or system: only controls the turn off action. Schedule overrides fan/pump sched..."""
 
     schedule_name: str | None
@@ -45583,7 +46151,7 @@ class _AvailabilityManagerOptimumStartCommonFields(TypedDict, total=False):
     initial_temperature_gradient_during_heating: float | None
     constant_start_time: float | None
 
-class _AvailabilityManagerOptimumStartBase(IDFObject):
+class _AvailabilityManagerOptimumStartBase(_TypedIDFObject):
     """``AvailabilityManager:OptimumStart`` as every supported EnergyPlus version declares it."""
 
     applicability_schedule_name: str | None
@@ -45624,7 +46192,7 @@ class AvailabilityManagerOptimumStart(_AvailabilityManagerOptimumStartBase):
 class _AvailabilityManagerOptimumStartFields(_AvailabilityManagerOptimumStartCommonFields, total=False):
     number_of_previous_days: int | None
 
-class AvailabilityManagerNightCycle(IDFObject):
+class AvailabilityManagerNightCycle(_TypedIDFObject):
     """Determines the availability of a loop or system: whether it is on or off. Depending on zone temperatures, overrides S..."""
 
     applicability_schedule_name: str | None
@@ -45685,7 +46253,7 @@ class _AvailabilityManagerNightCycleFields(TypedDict, total=False):
     heating_control_zone_or_zone_list_name: str | None
     heating_zone_fans_only_zone_or_zone_list_name: str | None
 
-class AvailabilityManagerDifferentialThermostat(IDFObject):
+class AvailabilityManagerDifferentialThermostat(_TypedIDFObject):
     """Overrides fan/pump schedules depending on temperature difference between two nodes."""
 
     hot_node_name: str | None
@@ -45708,7 +46276,7 @@ class _AvailabilityManagerDifferentialThermostatFields(TypedDict, total=False):
     temperature_difference_on_limit: float | None
     temperature_difference_off_limit: float | None
 
-class AvailabilityManagerHighTemperatureTurnOff(IDFObject):
+class AvailabilityManagerHighTemperatureTurnOff(_TypedIDFObject):
     """Overrides fan/pump schedules depending on temperature at sensor node."""
 
     sensor_node_name: str | None
@@ -45726,7 +46294,7 @@ class _AvailabilityManagerHighTemperatureTurnOffFields(TypedDict, total=False):
     sensor_node_name: str | None
     temperature: float | None
 
-class AvailabilityManagerHighTemperatureTurnOn(IDFObject):
+class AvailabilityManagerHighTemperatureTurnOn(_TypedIDFObject):
     """Overrides fan/pump schedules depending on temperature at sensor node."""
 
     sensor_node_name: str | None
@@ -45744,7 +46312,7 @@ class _AvailabilityManagerHighTemperatureTurnOnFields(TypedDict, total=False):
     sensor_node_name: str | None
     temperature: float | None
 
-class AvailabilityManagerLowTemperatureTurnOff(IDFObject):
+class AvailabilityManagerLowTemperatureTurnOff(_TypedIDFObject):
     """Overrides fan/pump schedules depending on temperature at sensor node."""
 
     sensor_node_name: str | None
@@ -45765,7 +46333,7 @@ class _AvailabilityManagerLowTemperatureTurnOffFields(TypedDict, total=False):
     temperature: float | None
     applicability_schedule_name: str | None
 
-class AvailabilityManagerLowTemperatureTurnOn(IDFObject):
+class AvailabilityManagerLowTemperatureTurnOn(_TypedIDFObject):
     """Overrides fan/pump schedules depending on temperature at sensor node."""
 
     sensor_node_name: str | None
@@ -45783,7 +46351,7 @@ class _AvailabilityManagerLowTemperatureTurnOnFields(TypedDict, total=False):
     sensor_node_name: str | None
     temperature: float | None
 
-class AvailabilityManagerNightVentilation(IDFObject):
+class AvailabilityManagerNightVentilation(_TypedIDFObject):
     """depending on zone and outdoor conditions overrides fan schedule to do precooling with outdoor air"""
 
     applicability_schedule_name: str | None
@@ -45812,7 +46380,7 @@ class _AvailabilityManagerNightVentilationFields(TypedDict, total=False):
     night_venting_flow_fraction: float | None
     control_zone_name: str | None
 
-class AvailabilityManagerHybridVentilation(IDFObject):
+class AvailabilityManagerHybridVentilation(_TypedIDFObject):
     """Depending on zone and outdoor conditions overrides window/door opening controls to maximize natural ventilation and t..."""
 
     hvac_air_loop_name: str | None
@@ -45878,10 +46446,10 @@ class _AvailabilityManagerHybridVentilationFields(TypedDict, total=False):
 
 class _AvailabilityManagerAssignmentListCommonFields(TypedDict, total=False): ...
 
-class _AvailabilityManagerAssignmentListBase(IDFObject):
+class _AvailabilityManagerAssignmentListBase(_TypedIDFObject):
     """``AvailabilityManagerAssignmentList`` as every supported EnergyPlus version declares it."""
 
-class AvailabilityManagerAssignmentListManagersGroup(ExtensibleGroup):
+class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
     """One managers group inside :class:`AvailabilityManagerAssignmentList`."""
 
     availability_manager_object_type: (
@@ -45914,7 +46482,7 @@ class AvailabilityManagerAssignmentList(_AvailabilityManagerAssignmentListBase):
 class _AvailabilityManagerAssignmentListFields(_AvailabilityManagerAssignmentListCommonFields, total=False):
     managers: list[Any]
 
-class SetpointManagerScheduled(IDFObject):
+class SetpointManagerScheduled(_TypedIDFObject):
     """The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not ..."""
 
     control_variable: (
@@ -45957,7 +46525,7 @@ class _SetpointManagerScheduledFields(TypedDict, total=False):
     schedule_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerScheduledDualSetpoint(IDFObject):
+class SetpointManagerScheduledDualSetpoint(_TypedIDFObject):
     """This setpoint manager places a high and low schedule value on one or more nodes."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -45977,7 +46545,7 @@ class _SetpointManagerScheduledDualSetpointFields(TypedDict, total=False):
     low_setpoint_schedule_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerOutdoorAirReset(IDFObject):
+class SetpointManagerOutdoorAirReset(_TypedIDFObject):
     """This Setpoint Manager is used to place a setpoint temperature on system node according to the outdoor air temperature..."""
 
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -46020,7 +46588,7 @@ class _SetpointManagerOutdoorAirResetFields(TypedDict, total=False):
     setpoint_at_outdoor_high_temperature_2: float | None
     outdoor_high_temperature_2: float | None
 
-class SetpointManagerSingleZoneReheat(IDFObject):
+class SetpointManagerSingleZoneReheat(_TypedIDFObject):
     """This setpoint manager detects the control zone load, zone inlet node flow rate, and zone node temperature and calcula..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46048,7 +46616,7 @@ class _SetpointManagerSingleZoneReheatFields(TypedDict, total=False):
     zone_inlet_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSingleZoneHeating(IDFObject):
+class SetpointManagerSingleZoneHeating(_TypedIDFObject):
     """This setpoint manager detects the control zone load to meet the current heating setpoint, zone inlet node flow rate, ..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46076,7 +46644,7 @@ class _SetpointManagerSingleZoneHeatingFields(TypedDict, total=False):
     zone_inlet_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSingleZoneCooling(IDFObject):
+class SetpointManagerSingleZoneCooling(_TypedIDFObject):
     """This setpoint manager detects the control zone load to meet the current cooling setpoint, zone inlet node flow rate, ..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46104,7 +46672,7 @@ class _SetpointManagerSingleZoneCoolingFields(TypedDict, total=False):
     zone_inlet_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSingleZoneHumidityMinimum(IDFObject):
+class SetpointManagerSingleZoneHumidityMinimum(_TypedIDFObject):
     """The Single Zone Minimum Humidity Setpoint Manager allows the control of a single zone minimum humidity level. This se..."""
 
     setpoint_node_or_nodelist_name: str | None
@@ -46123,7 +46691,7 @@ class _SetpointManagerSingleZoneHumidityMinimumFields(TypedDict, total=False):
     setpoint_node_or_nodelist_name: str | None
     control_zone_air_node_name: str | None
 
-class SetpointManagerSingleZoneHumidityMaximum(IDFObject):
+class SetpointManagerSingleZoneHumidityMaximum(_TypedIDFObject):
     """The Single Zone Maximum Humidity Setpoint Manager allows the control of a single zone maximum humidity level. This se..."""
 
     setpoint_node_or_nodelist_name: str | None
@@ -46142,7 +46710,7 @@ class _SetpointManagerSingleZoneHumidityMaximumFields(TypedDict, total=False):
     setpoint_node_or_nodelist_name: str | None
     control_zone_air_node_name: str | None
 
-class SetpointManagerMixedAir(IDFObject):
+class SetpointManagerMixedAir(_TypedIDFObject):
     """The Mixed Air Setpoint Manager is meant to be used in conjunction with a Controller:OutdoorAir object. This setpoint ..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46173,7 +46741,7 @@ class _SetpointManagerMixedAirFields(TypedDict, total=False):
     cooling_coil_outlet_node_name: str | None
     minimum_temperature_at_cooling_coil_outlet_node: float | None
 
-class SetpointManagerOutdoorAirPretreat(IDFObject):
+class SetpointManagerOutdoorAirPretreat(_TypedIDFObject):
     """This setpoint manager determines the required conditions at the outdoor air stream node which will produce the refere..."""
 
     control_variable: Literal["HumidityRatio", "MaximumHumidityRatio", "MinimumHumidityRatio", "Temperature"] | None
@@ -46212,7 +46780,7 @@ class _SetpointManagerOutdoorAirPretreatFields(TypedDict, total=False):
     return_air_stream_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerWarmest(IDFObject):
+class SetpointManagerWarmest(_TypedIDFObject):
     """This SetpointManager resets the cooling supply air temperature of a central forced air HVAC system according to the c..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46240,7 +46808,7 @@ class _SetpointManagerWarmestFields(TypedDict, total=False):
     strategy: Literal["", "MaximumTemperature"] | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerColdest(IDFObject):
+class SetpointManagerColdest(_TypedIDFObject):
     """This SetpointManager is used in dual duct systems to reset the setpoint temperature of the air in the heating supply ..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46268,7 +46836,7 @@ class _SetpointManagerColdestFields(TypedDict, total=False):
     strategy: Literal["", "MinimumTemperature"] | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerReturnAirBypassFlow(IDFObject):
+class SetpointManagerReturnAirBypassFlow(_TypedIDFObject):
     """This setpoint manager determines the required mass flow rate through a return air bypass duct to meet the specified t..."""
 
     control_variable: Literal["", "Flow"] | None
@@ -46286,7 +46854,7 @@ class _SetpointManagerReturnAirBypassFlowFields(TypedDict, total=False):
     hvac_air_loop_name: str | None
     temperature_setpoint_schedule_name: str | None
 
-class SetpointManagerWarmestTemperatureFlow(IDFObject):
+class SetpointManagerWarmestTemperatureFlow(_TypedIDFObject):
     """This setpoint manager sets both the supply air temperature and the supply air flow rate."""
 
     control_variable: Literal["Temperature"] | None
@@ -46316,7 +46884,7 @@ class _SetpointManagerWarmestTemperatureFlowFields(TypedDict, total=False):
     setpoint_node_or_nodelist_name: str | None
     minimum_turndown_ratio: float | None
 
-class SetpointManagerMultiZoneHeatingAverage(IDFObject):
+class SetpointManagerMultiZoneHeatingAverage(_TypedIDFObject):
     """This setpoint manager sets the average supply air temperature based on the heating load requirements of all controlle..."""
 
     hvac_air_loop_name: str | None
@@ -46338,7 +46906,7 @@ class _SetpointManagerMultiZoneHeatingAverageFields(TypedDict, total=False):
     maximum_setpoint_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerMultiZoneCoolingAverage(IDFObject):
+class SetpointManagerMultiZoneCoolingAverage(_TypedIDFObject):
     """This setpoint manager sets the average supply air temperature based on the cooling load requirements of all controlle..."""
 
     hvac_air_loop_name: str | None
@@ -46360,7 +46928,7 @@ class _SetpointManagerMultiZoneCoolingAverageFields(TypedDict, total=False):
     maximum_setpoint_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerMultiZoneMinimumHumidityAverage(IDFObject):
+class SetpointManagerMultiZoneMinimumHumidityAverage(_TypedIDFObject):
     """This setpoint manager sets the average supply air minimum humidity ratio based on moisture load requirements of all c..."""
 
     hvac_air_loop_name: str | None
@@ -46385,7 +46953,7 @@ class _SetpointManagerMultiZoneMinimumHumidityAverageFields(TypedDict, total=Fal
     maximum_setpoint_humidity_ratio: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerMultiZoneMaximumHumidityAverage(IDFObject):
+class SetpointManagerMultiZoneMaximumHumidityAverage(_TypedIDFObject):
     """This setpoint manager sets the average supply air maximum humidity ratio based on moisture load requirements of all c..."""
 
     hvac_air_loop_name: str | None
@@ -46410,7 +46978,7 @@ class _SetpointManagerMultiZoneMaximumHumidityAverageFields(TypedDict, total=Fal
     maximum_setpoint_humidity_ratio: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerMultiZoneHumidityMinimum(IDFObject):
+class SetpointManagerMultiZoneHumidityMinimum(_TypedIDFObject):
     """This setpoint manager sets the minimum supply air humidity ratio based on humidification requirements of a controlled..."""
 
     hvac_air_loop_name: str | None
@@ -46435,7 +47003,7 @@ class _SetpointManagerMultiZoneHumidityMinimumFields(TypedDict, total=False):
     maximum_setpoint_humidity_ratio: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerMultiZoneHumidityMaximum(IDFObject):
+class SetpointManagerMultiZoneHumidityMaximum(_TypedIDFObject):
     """This setpoint manager sets the maximum supply air humidity ratio based on dehumidification requirements of a controll..."""
 
     hvac_air_loop_name: str | None
@@ -46460,7 +47028,7 @@ class _SetpointManagerMultiZoneHumidityMaximumFields(TypedDict, total=False):
     maximum_setpoint_humidity_ratio: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerFollowOutdoorAirTemperature(IDFObject):
+class SetpointManagerFollowOutdoorAirTemperature(_TypedIDFObject):
     """This setpoint manager is used to place a temperature setpoint on a system node that is derived from the current outdo..."""
 
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -46491,7 +47059,7 @@ class _SetpointManagerFollowOutdoorAirTemperatureFields(TypedDict, total=False):
     minimum_setpoint_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerFollowSystemNodeTemperature(IDFObject):
+class SetpointManagerFollowSystemNodeTemperature(_TypedIDFObject):
     """This setpoint manager is used to place a temperature setpoint on a system node that is derived from the current tempe..."""
 
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -46524,7 +47092,7 @@ class _SetpointManagerFollowSystemNodeTemperatureFields(TypedDict, total=False):
     minimum_limit_setpoint_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerFollowGroundTemperature(IDFObject):
+class SetpointManagerFollowGroundTemperature(_TypedIDFObject):
     """This setpoint manager is used to place a temperature setpoint on a system node that is derived from a current ground ..."""
 
     control_variable: Literal["", "MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -46567,7 +47135,7 @@ class _SetpointManagerFollowGroundTemperatureFields(TypedDict, total=False):
     minimum_setpoint_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerCondenserEnteringReset(IDFObject):
+class SetpointManagerCondenserEnteringReset(_TypedIDFObject):
     """This setpoint manager uses one curve to determine the optimum condenser entering water temperature for a given timest..."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46601,7 +47169,7 @@ class _SetpointManagerCondenserEnteringResetFields(TypedDict, total=False):
     cooling_tower_design_inlet_air_wet_bulb_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerCondenserEnteringResetIdeal(IDFObject):
+class SetpointManagerCondenserEnteringResetIdeal(_TypedIDFObject):
     """This setpoint manager determine the ideal optimum condenser entering water temperature setpoint for a given timestep."""
 
     control_variable: Literal["", "Temperature"] | None
@@ -46626,7 +47194,7 @@ class _SetpointManagerCondenserEnteringResetIdealFields(TypedDict, total=False):
     maximum_condenser_entering_water_temperature: float | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSingleZoneOneStageCooling(IDFObject):
+class SetpointManagerSingleZoneOneStageCooling(_TypedIDFObject):
     """This object can be used with CoilSystem:Cooling:DX to model on/off cycling control of single stage air systems. Setpo..."""
 
     cooling_stage_on_supply_air_setpoint_temperature: float | None
@@ -46650,7 +47218,7 @@ class _SetpointManagerSingleZoneOneStageCoolingFields(TypedDict, total=False):
     control_zone_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSingleZoneOneStageHeating(IDFObject):
+class SetpointManagerSingleZoneOneStageHeating(_TypedIDFObject):
     """This object can be used with CoilSystem:Heating:DX, Coil:Heating:Fuel, Coil:Heating:Electric to model on/off cycling ..."""
 
     heating_stage_on_supply_air_setpoint_temperature: float | None
@@ -46674,7 +47242,7 @@ class _SetpointManagerSingleZoneOneStageHeatingFields(TypedDict, total=False):
     control_zone_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerReturnTemperatureChilledWater(IDFObject):
+class SetpointManagerReturnTemperatureChilledWater(_TypedIDFObject):
     """This setpoint manager is used to place a temperature setpoint on a plant supply outlet node based on a target return ..."""
 
     plant_loop_supply_outlet_node: str | None
@@ -46708,7 +47276,7 @@ class _SetpointManagerReturnTemperatureChilledWaterFields(TypedDict, total=False
     return_temperature_setpoint_constant_value: float | None
     return_temperature_setpoint_schedule_name: str | None
 
-class SetpointManagerReturnTemperatureHotWater(IDFObject):
+class SetpointManagerReturnTemperatureHotWater(_TypedIDFObject):
     """This setpoint manager is used to place a temperature setpoint on a plant supply outlet node based on a target return ..."""
 
     plant_loop_supply_outlet_node: str | None
@@ -46742,7 +47310,7 @@ class _SetpointManagerReturnTemperatureHotWaterFields(TypedDict, total=False):
     return_temperature_setpoint_constant_value: float | None
     return_temperature_setpoint_schedule_name: str | None
 
-class SetpointManagerSystemNodeResetTemperature(IDFObject):
+class SetpointManagerSystemNodeResetTemperature(_TypedIDFObject):
     """This Setpoint Manager is used to place a temperature setpoint on a system node according to the reference (e.g., retu...; Since: 22.1.0"""
 
     control_variable: Literal["MaximumTemperature", "MinimumTemperature", "Temperature"] | None
@@ -46775,7 +47343,7 @@ class _SetpointManagerSystemNodeResetTemperatureFields(TypedDict, total=False):
     reference_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class SetpointManagerSystemNodeResetHumidity(IDFObject):
+class SetpointManagerSystemNodeResetHumidity(_TypedIDFObject):
     """This Setpoint Manager is used to place a humidity ratio setpoint on a system node according to the reference (e.g., r...; Since: 22.1.0"""
 
     control_variable: Literal["HumidityRatio", "MaximumHumidityRatio", "MinimumHumidityRatio"] | None
@@ -46805,7 +47373,7 @@ class _SetpointManagerSystemNodeResetHumidityFields(TypedDict, total=False):
     reference_node_name: str | None
     setpoint_node_or_nodelist_name: str | None
 
-class RefrigerationCase(IDFObject):
+class RefrigerationCase(_TypedIDFObject):
     """The Refrigeration Case object works in conjunction with a compressor rack, a refrigeration system, or a secondary loo..."""
 
     availability_schedule_name: str | None
@@ -46954,7 +47522,7 @@ class _RefrigerationCaseFields(TypedDict, total=False):
     average_refrigerant_charge_inventory: float | None
     under_case_hvac_return_air_node_name: str | None
 
-class RefrigerationCompressorRack(IDFObject):
+class RefrigerationCompressorRack(_TypedIDFObject):
     """Works in conjunction with the refrigeration case and walk-in objects to simulate the performance of a refrigerated ca..."""
 
     heat_rejection_location: Literal["", "Outdoors", "Zone"] | None
@@ -47036,12 +47604,12 @@ class _RefrigerationCompressorRackFields(TypedDict, total=False):
     refrigeration_case_name_or_walkin_name_or_caseandwalkinlist_name: str | None
     heat_rejection_zone_name: str | None
 
-class RefrigerationCaseAndWalkInListCasesAndWalkinsGroup(ExtensibleGroup):
+class RefrigerationCaseAndWalkInListCasesAndWalkinsGroup(_TypedExtensibleGroup):
     """One cases_and_walkins group inside :class:`RefrigerationCaseAndWalkInList`."""
 
     case_or_walkin_name: str | None
 
-class RefrigerationCaseAndWalkInList(IDFObject):
+class RefrigerationCaseAndWalkInList(_TypedIDFObject):
     """Provides a list of all the refrigerated cases, walk in coolers, or air chillers cooled by a single refrigeration syst..."""
 
     cases_and_walkins: ExtensibleList[RefrigerationCaseAndWalkInListCasesAndWalkinsGroup]
@@ -47053,7 +47621,7 @@ class RefrigerationCaseAndWalkInList(IDFObject):
 class _RefrigerationCaseAndWalkInListFields(TypedDict, total=False):
     cases_and_walkins: list[Any]
 
-class RefrigerationCondenserAirCooled(IDFObject):
+class RefrigerationCondenserAirCooled(_TypedIDFObject):
     """Air cooled condenser for a refrigeration system (Refrigeration:System)."""
 
     rated_effective_total_heat_rejection_rate_curve_name: str | None
@@ -47093,7 +47661,7 @@ class _RefrigerationCondenserAirCooledFields(TypedDict, total=False):
     condensate_receiver_refrigerant_inventory: float | None
     condensate_piping_refrigerant_inventory: float | None
 
-class RefrigerationCondenserEvaporativeCooled(IDFObject):
+class RefrigerationCondenserEvaporativeCooled(_TypedIDFObject):
     """Evaporative-cooled condenser for a refrigeration system (Refrigeration:System)."""
 
     rated_effective_total_heat_rejection_rate: float | None
@@ -47172,7 +47740,7 @@ class _RefrigerationCondenserEvaporativeCooledFields(TypedDict, total=False):
     condensate_receiver_refrigerant_inventory: float | None
     condensate_piping_refrigerant_inventory: float | None
 
-class RefrigerationCondenserWaterCooled(IDFObject):
+class RefrigerationCondenserWaterCooled(_TypedIDFObject):
     """Water cooled condenser for a refrigeration system (Refrigeration:System)."""
 
     rated_effective_total_heat_rejection_rate: float | None
@@ -47228,7 +47796,7 @@ class _RefrigerationCondenserWaterCooledFields(TypedDict, total=False):
     condensate_receiver_refrigerant_inventory: float | None
     condensate_piping_refrigerant_inventory: float | None
 
-class RefrigerationCondenserCascade(IDFObject):
+class RefrigerationCondenserCascade(_TypedIDFObject):
     """Cascade condenser for a refrigeration system (Refrigeration:System). The cascade condenser is unlike the other conden..."""
 
     rated_condensing_temperature: float | None
@@ -47259,7 +47827,7 @@ class _RefrigerationCondenserCascadeFields(TypedDict, total=False):
     condensate_receiver_refrigerant_inventory: float | None
     condensate_piping_refrigerant_inventory: float | None
 
-class RefrigerationGasCoolerAirCooled(IDFObject):
+class RefrigerationGasCoolerAirCooled(_TypedIDFObject):
     """The transcritical refrigeration system requires a single gas cooler to reject the system heat."""
 
     rated_total_heat_rejection_rate_curve_name: str | None
@@ -47308,12 +47876,12 @@ class _RefrigerationGasCoolerAirCooledFields(TypedDict, total=False):
     gas_cooler_receiver_refrigerant_inventory: float | None
     gas_cooler_outlet_piping_refrigerant_inventory: float | None
 
-class RefrigerationTransferLoadListTransferLoadsGroup(ExtensibleGroup):
+class RefrigerationTransferLoadListTransferLoadsGroup(_TypedExtensibleGroup):
     """One transfer_loads group inside :class:`RefrigerationTransferLoadList`."""
 
     cascade_condenser_name_or_secondary_system_name: str | None
 
-class RefrigerationTransferLoadList(IDFObject):
+class RefrigerationTransferLoadList(_TypedIDFObject):
     """A refrigeration system may provide cooling to other, secondary, systems through either a secondary loop or a cascade ..."""
 
     transfer_loads: ExtensibleList[RefrigerationTransferLoadListTransferLoadsGroup]
@@ -47325,7 +47893,7 @@ class RefrigerationTransferLoadList(IDFObject):
 class _RefrigerationTransferLoadListFields(TypedDict, total=False):
     transfer_loads: list[Any]
 
-class RefrigerationSubcooler(IDFObject):
+class RefrigerationSubcooler(_TypedIDFObject):
     """Two types of subcoolers are modeled by the detailed refrigeration system. The liquid suction heat exchanger uses cool..."""
 
     subcooler_type: Literal["", "LiquidSuction", "Mechanical"] | None
@@ -47353,7 +47921,7 @@ class _RefrigerationSubcoolerFields(TypedDict, total=False):
     capacity_providing_system: str | None
     outlet_control_temperature: float | None
 
-class RefrigerationCompressor(IDFObject):
+class RefrigerationCompressor(_TypedIDFObject):
     """Refrigeration system compressor. Data is available for many compressors in the RefrigerationCompressor.idf dataset"""
 
     refrigeration_compressor_power_curve_name: str | None
@@ -47391,12 +47959,12 @@ class _RefrigerationCompressorFields(TypedDict, total=False):
     transcritical_compressor_power_curve_name: str | None
     transcritical_compressor_capacity_curve_name: str | None
 
-class RefrigerationCompressorListCompressorsGroup(ExtensibleGroup):
+class RefrigerationCompressorListCompressorsGroup(_TypedExtensibleGroup):
     """One compressors group inside :class:`RefrigerationCompressorList`."""
 
     refrigeration_compressor_name: str | None
 
-class RefrigerationCompressorList(IDFObject):
+class RefrigerationCompressorList(_TypedIDFObject):
     """List of all the compressors included within a single refrigeration system (Refrigeration:System). Each list must cont..."""
 
     compressors: ExtensibleList[RefrigerationCompressorListCompressorsGroup]
@@ -47408,7 +47976,7 @@ class RefrigerationCompressorList(IDFObject):
 class _RefrigerationCompressorListFields(TypedDict, total=False):
     compressors: list[Any]
 
-class RefrigerationSystem(IDFObject):
+class RefrigerationSystem(_TypedIDFObject):
     """Simulates the performance of a supermarket refrigeration system when used along with other objects to define the refr..."""
 
     refrigerated_case_or_walkin_or_caseandwalkinlist_name: str | None
@@ -47463,7 +48031,7 @@ class _RefrigerationSystemFields(TypedDict, total=False):
     shell_and_coil_intercooler_effectiveness: float | None
     high_stage_compressor_or_compressorlist_name: str | None
 
-class RefrigerationTranscriticalSystem(IDFObject):
+class RefrigerationTranscriticalSystem(_TypedIDFObject):
     """Detailed transcritical carbon dioxide (CO2) booster refrigeration systems used in supermarkets. The object allows for..."""
 
     system_type: Literal["SingleStage", "TwoStage"] | None
@@ -47534,7 +48102,7 @@ class _RefrigerationSecondarySystemCommonFields(TypedDict, total=False):
     evaporator_refrigerant_inventory: float | None
     end_use_subcategory: str | None
 
-class _RefrigerationSecondarySystemBase(IDFObject):
+class _RefrigerationSecondarySystemBase(_TypedIDFObject):
     """``Refrigeration:SecondarySystem`` as every supported EnergyPlus version declares it."""
 
     refrigerated_case_or_walkin_or_caseandwalkinlist_name: str | None
@@ -47616,7 +48184,7 @@ class _RefrigerationWalkInCommonFields(TypedDict, total=False):
     insulated_floor_surface_area: float | None
     insulated_floor_u_value: float | None
 
-class _RefrigerationWalkInBase(IDFObject):
+class _RefrigerationWalkInBase(_TypedIDFObject):
     """``Refrigeration:WalkIn`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -47660,7 +48228,7 @@ class _RefrigerationWalkInBase(IDFObject):
     insulated_floor_u_value: float | None
     """The default value corresponds to R18 [ft2-F-hr/Btu] To convert other IP R-values to U, divide 5.678 by the R-value So...; [W/m2-K]; Default: 0.3154; Range: > 0.0"""
 
-class RefrigerationWalkInZoneDataGroup(ExtensibleGroup):
+class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
     """One zone_data group inside :class:`RefrigerationWalkIn`."""
 
     zone_name: str | None
@@ -47688,7 +48256,7 @@ class RefrigerationWalkIn(_RefrigerationWalkInBase):
 class _RefrigerationWalkInFields(_RefrigerationWalkInCommonFields, total=False):
     zone_data: list[Any]
 
-class RefrigerationAirChiller(IDFObject):
+class RefrigerationAirChiller(_TypedIDFObject):
     """Works in conjunction with a refrigeration chiller set, compressor rack, a refrigeration system, or a refrigeration se..."""
 
     availability_schedule_name: str | None
@@ -47813,12 +48381,12 @@ class _RefrigerationAirChillerFields(TypedDict, total=False):
     vertical_location: Literal["", "Ceiling", "Floor", "Middle"] | None
     average_refrigerant_charge_inventory: float | None
 
-class ZoneHVACRefrigerationChillerSetChillersGroup(ExtensibleGroup):
+class ZoneHVACRefrigerationChillerSetChillersGroup(_TypedExtensibleGroup):
     """One chillers group inside :class:`ZoneHVACRefrigerationChillerSet`."""
 
     air_chiller_name: str | None
 
-class ZoneHVACRefrigerationChillerSet(IDFObject):
+class ZoneHVACRefrigerationChillerSet(_TypedIDFObject):
     """Works in conjunction with one or multiple air chillers, compressor racks, refrigeration systems, or refrigeration sec..."""
 
     availability_schedule_name: str | None
@@ -47851,7 +48419,7 @@ class _DemandManagerAssignmentListCommonFields(TypedDict, total=False):
     demand_manager_priority: Literal["All", "Sequential"] | None
     manager_data: list[Any]
 
-class DemandManagerAssignmentListManagerDataGroup(ExtensibleGroup):
+class DemandManagerAssignmentListManagerDataGroup(_TypedExtensibleGroup):
     """One manager_data group inside :class:`_DemandManagerAssignmentListBase`."""
 
     demandmanager_object_type: (
@@ -47866,7 +48434,7 @@ class DemandManagerAssignmentListManagerDataGroup(ExtensibleGroup):
     )
     demandmanager_name: str | None
 
-class _DemandManagerAssignmentListBase(IDFObject):
+class _DemandManagerAssignmentListBase(_TypedIDFObject):
     """``DemandManagerAssignmentList`` as every supported EnergyPlus version declares it."""
 
     meter_name: str | None
@@ -47902,12 +48470,12 @@ class _DemandManagerExteriorLightsCommonFields(TypedDict, total=False):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     lights: list[Any]
 
-class DemandManagerExteriorLightsLightsGroup(ExtensibleGroup):
+class DemandManagerExteriorLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`_DemandManagerExteriorLightsBase`."""
 
     exterior_lights_name: str | None
 
-class _DemandManagerExteriorLightsBase(IDFObject):
+class _DemandManagerExteriorLightsBase(_TypedIDFObject):
     """``DemandManager:ExteriorLights`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -47946,12 +48514,12 @@ class _DemandManagerLightsCommonFields(TypedDict, total=False):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     lights: list[Any]
 
-class DemandManagerLightsLightsGroup(ExtensibleGroup):
+class DemandManagerLightsLightsGroup(_TypedExtensibleGroup):
     """One lights group inside :class:`_DemandManagerLightsBase`."""
 
     lights_name: str | None
 
-class _DemandManagerLightsBase(IDFObject):
+class _DemandManagerLightsBase(_TypedIDFObject):
     """``DemandManager:Lights`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -47990,12 +48558,12 @@ class _DemandManagerElectricEquipmentCommonFields(TypedDict, total=False):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     equipment: list[Any]
 
-class DemandManagerElectricEquipmentEquipmentGroup(ExtensibleGroup):
+class DemandManagerElectricEquipmentEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`_DemandManagerElectricEquipmentBase`."""
 
     electric_equipment_name: str | None
 
-class _DemandManagerElectricEquipmentBase(IDFObject):
+class _DemandManagerElectricEquipmentBase(_TypedIDFObject):
     """``DemandManager:ElectricEquipment`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -48035,12 +48603,12 @@ class _DemandManagerThermostatsCommonFields(TypedDict, total=False):
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
     thermostats: list[Any]
 
-class DemandManagerThermostatsThermostatsGroup(ExtensibleGroup):
+class DemandManagerThermostatsThermostatsGroup(_TypedExtensibleGroup):
     """One thermostats group inside :class:`_DemandManagerThermostatsBase`."""
 
     thermostat_name: str | None
 
-class _DemandManagerThermostatsBase(IDFObject):
+class _DemandManagerThermostatsBase(_TypedIDFObject):
     """``DemandManager:Thermostats`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -48082,12 +48650,12 @@ class _DemandManagerVentilationCommonFields(TypedDict, total=False):
     selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None
     controllers: list[Any]
 
-class DemandManagerVentilationControllersGroup(ExtensibleGroup):
+class DemandManagerVentilationControllersGroup(_TypedExtensibleGroup):
     """One controllers group inside :class:`_DemandManagerVentilationBase`."""
 
     controller_outdoor_air_name: str | None
 
-class _DemandManagerVentilationBase(IDFObject):
+class _DemandManagerVentilationBase(_TypedIDFObject):
     """``DemandManager:Ventilation`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -48142,7 +48710,7 @@ class _GeneratorInternalCombustionEngineCommonFields(TypedDict, total=False):
     heat_recovery_outlet_node_name: str | None
     heat_recovery_maximum_temperature: float | None
 
-class _GeneratorInternalCombustionEngineBase(IDFObject):
+class _GeneratorInternalCombustionEngineBase(_TypedIDFObject):
     """``Generator:InternalCombustionEngine`` as every supported EnergyPlus version declares it."""
 
     rated_power_output: float | None
@@ -48244,7 +48812,7 @@ class _GeneratorCombustionTurbineCommonFields(TypedDict, total=False):
     heat_recovery_maximum_temperature: float | None
     outdoor_air_inlet_node_name: str | None
 
-class _GeneratorCombustionTurbineBase(IDFObject):
+class _GeneratorCombustionTurbineBase(_TypedIDFObject):
     """``Generator:CombustionTurbine`` as every supported EnergyPlus version declares it."""
 
     rated_power_output: float | None
@@ -48386,7 +48954,7 @@ class _GeneratorMicroTurbineCommonFields(TypedDict, total=False):
     exhaust_air_temperature_function_of_temperature_curve_name: str | None
     exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None
 
-class _GeneratorMicroTurbineBase(IDFObject):
+class _GeneratorMicroTurbineBase(_TypedIDFObject):
     """``Generator:MicroTurbine`` as every supported EnergyPlus version declares it."""
 
     reference_electrical_power_output: float | None
@@ -48518,7 +49086,7 @@ class _GeneratorMicroTurbineFields(_GeneratorMicroTurbineCommonFields, total=Fal
         | None
     )
 
-class GeneratorPhotovoltaic(IDFObject):
+class GeneratorPhotovoltaic(_TypedIDFObject):
     """Describes an array of photovoltaic (PV) modules. A series of different PV arrays can be connected to a single electri..."""
 
     surface_name: str | None
@@ -48580,7 +49148,7 @@ class _GeneratorPhotovoltaicFields(TypedDict, total=False):
     number_of_series_strings_in_parallel: float | None
     number_of_modules_in_series: float | None
 
-class PhotovoltaicPerformanceSimple(IDFObject):
+class PhotovoltaicPerformanceSimple(_TypedIDFObject):
     """Describes a simple model of photovoltaics that may be useful for early phase design analysis. In this model the user ..."""
 
     fraction_of_surface_area_with_active_solar_cells: float | None
@@ -48620,7 +49188,7 @@ class _PhotovoltaicPerformanceEquivalentOneDiodeCommonFields(TypedDict, total=Fa
     module_heat_loss_coefficient: float | None
     total_heat_capacity: float | None
 
-class _PhotovoltaicPerformanceEquivalentOneDiodeBase(IDFObject):
+class _PhotovoltaicPerformanceEquivalentOneDiodeBase(_TypedIDFObject):
     """``PhotovoltaicPerformance:EquivalentOne-Diode`` as every supported EnergyPlus version declares it."""
 
     cell_type: Literal["AmorphousSilicon", "CrystallineSilicon"] | None
@@ -48716,8 +49284,9 @@ class _PhotovoltaicPerformanceSandiaCommonFields(TypedDict, total=False):
     sandia_database_parameter_ixx0: float | None
     sandia_database_parameter_c6: float | None
     sandia_database_parameter_c7: float | None
+    sandia_database_parameter_delta_tc: float | None
 
-class _PhotovoltaicPerformanceSandiaBase(IDFObject):
+class _PhotovoltaicPerformanceSandiaBase(_TypedIDFObject):
     """``PhotovoltaicPerformance:Sandia`` as every supported EnergyPlus version declares it."""
 
     active_area: float | None
@@ -48796,6 +49365,8 @@ class _PhotovoltaicPerformanceSandiaBase(IDFObject):
     """[dimensionless]"""
     sandia_database_parameter_c7: float | None
     """(non-dimensional); [dimensionless]"""
+    sandia_database_parameter_delta_tc: float | None
+    """Alias of :attr:`sandia_database_parameter_delta_tc_`, the same field without the trailing underscore."""
 
 class PhotovoltaicPerformanceSandia(_PhotovoltaicPerformanceSandiaBase):
     """Describes performance input data needed for specific makes and models of production PV panels using the empirical coe..."""
@@ -48813,7 +49384,7 @@ class _PhotovoltaicPerformanceSandiaFields(_PhotovoltaicPerformanceSandiaCommonF
     number_of_cells_in_series: int | None
     number_of_cells_in_parallel: int | None
 
-class GeneratorPVWatts(IDFObject):
+class GeneratorPVWatts(_TypedIDFObject):
     """Describes a simple set of inputs for an array of photovoltaic (PV) modules as described in the PVWatts software. A se..."""
 
     pvwatts_version: Literal["5"] | None
@@ -48847,7 +49418,7 @@ class _GeneratorPVWattsFields(TypedDict, total=False):
     surface_name: str | None
     ground_coverage_ratio: float | None
 
-class ElectricLoadCenterInverterPVWatts(IDFObject):
+class ElectricLoadCenterInverterPVWatts(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
 
     dc_to_ac_size_ratio: float | None
@@ -48863,7 +49434,7 @@ class _ElectricLoadCenterInverterPVWattsFields(TypedDict, total=False):
     dc_to_ac_size_ratio: float | None
     inverter_efficiency: float | None
 
-class GeneratorFuelCell(IDFObject):
+class GeneratorFuelCell(_TypedIDFObject):
     """This generator model is the FC model from IEA Annex 42"""
 
     power_module_name: str | None
@@ -48898,7 +49469,7 @@ class _GeneratorFuelCellFields(TypedDict, total=False):
     inverter_name: str | None
     stack_cooler_name: str | None
 
-class GeneratorFuelCellPowerModule(IDFObject):
+class GeneratorFuelCellPowerModule(_TypedIDFObject):
     """Describe the core power module subsystem of a fuel cell power generator. This includes the fuel cell stack, fuel refo..."""
 
     efficiency_curve_mode: Literal["Annex42", "Normalized"] | None
@@ -49000,13 +49571,13 @@ class _GeneratorFuelCellPowerModuleFields(TypedDict, total=False):
     minimum_operating_point: float | None
     maximum_operating_point: float | None
 
-class GeneratorFuelCellAirSupplyConstituentFractionsGroup(ExtensibleGroup):
+class GeneratorFuelCellAirSupplyConstituentFractionsGroup(_TypedExtensibleGroup):
     """One constituent_fractions group inside :class:`GeneratorFuelCellAirSupply`."""
 
     constituent_name: Literal["Argon", "CarbonDioxide", "Nitrogen", "Oxygen", "Water"] | None
     molar_fraction: float | None
 
-class GeneratorFuelCellAirSupply(IDFObject):
+class GeneratorFuelCellAirSupply(_TypedIDFObject):
     """Used to define details of the air supply subsystem for a fuel cell power generator."""
 
     air_inlet_node_name: str | None
@@ -49067,7 +49638,7 @@ class _GeneratorFuelCellAirSupplyFields(TypedDict, total=False):
     number_of_userdefined_constituents: float | None
     constituent_fractions: list[Any]
 
-class GeneratorFuelCellWaterSupply(IDFObject):
+class GeneratorFuelCellWaterSupply(_TypedIDFObject):
     """Used to provide details of the water supply subsystem for a fuel cell power generator. This water is used for steam r..."""
 
     reformer_water_flow_rate_function_of_fuel_rate_curve_name: str | None
@@ -49099,7 +49670,7 @@ class _GeneratorFuelCellWaterSupplyFields(TypedDict, total=False):
     water_temperature_reference_node_name: str | None
     water_temperature_schedule_name: str | None
 
-class GeneratorFuelCellAuxiliaryHeater(IDFObject):
+class GeneratorFuelCellAuxiliaryHeater(_TypedIDFObject):
     """Intended for modeling an auxiliary heater for a fuel cell power generator, however this portion of the model is not y..."""
 
     excess_air_ratio: float | None
@@ -49136,7 +49707,7 @@ class _GeneratorFuelCellAuxiliaryHeaterFields(TypedDict, total=False):
     maximum_heating_capacity_in_kmol_per_second: float | None
     minimum_heating_capacity_in_kmol_per_second: float | None
 
-class GeneratorFuelCellExhaustGasToWaterHeatExchanger(IDFObject):
+class GeneratorFuelCellExhaustGasToWaterHeatExchanger(_TypedIDFObject):
     """Describes the exhaust gas heat exchanger subsystem of a fuel cell power generator used to recovery thermal energy"""
 
     heat_recovery_water_inlet_node_name: str | None
@@ -49203,7 +49774,7 @@ class _GeneratorFuelCellExhaustGasToWaterHeatExchangerFields(TypedDict, total=Fa
     method_4_hxl2_coefficient: float | None
     method_4_condensation_threshold: float | None
 
-class GeneratorFuelCellElectricalStorage(IDFObject):
+class GeneratorFuelCellElectricalStorage(_TypedIDFObject):
     """Used to describe the electrical storage subsystem for a fuel cell power generator. The electrical storage model is a ..."""
 
     choice_of_model: Literal["SimpleEfficiencyWithConstraints"] | None
@@ -49233,7 +49804,7 @@ class _GeneratorFuelCellElectricalStorageFields(TypedDict, total=False):
     simple_maximum_power_store: float | None
     initial_charge_state: float | None
 
-class GeneratorFuelCellInverter(IDFObject):
+class GeneratorFuelCellInverter(_TypedIDFObject):
     """Used to describe the power condition unit subsystem of a fuel cell power generator. This object models an inverter sy..."""
 
     inverter_efficiency_calculation_mode: Literal["Constant", "Quadratic"] | None
@@ -49250,7 +49821,7 @@ class _GeneratorFuelCellInverterFields(TypedDict, total=False):
     inverter_efficiency: float | None
     efficiency_function_of_dc_power_curve_name: str | None
 
-class GeneratorFuelCellStackCooler(IDFObject):
+class GeneratorFuelCellStackCooler(_TypedIDFObject):
     """This object is optional and is used to define details needed to model the stack cooler on PEMFC."""
 
     heat_recovery_water_inlet_node_name: str | None
@@ -49309,7 +49880,7 @@ class _GeneratorFuelCellStackCoolerFields(TypedDict, total=False):
     stack_air_cooler_fan_coefficient_f1: float | None
     stack_air_cooler_fan_coefficient_f2: float | None
 
-class GeneratorMicroCHP(IDFObject):
+class GeneratorMicroCHP(_TypedIDFObject):
     """Small-scale combined heat and power (micro CHP) electric generator using the model developed by IEA/ECBCS Annex 42 se..."""
 
     performance_parameters_name: str | None
@@ -49336,7 +49907,7 @@ class _GeneratorMicroCHPFields(TypedDict, total=False):
     generator_fuel_supply_name: str | None
     availability_schedule_name: str | None
 
-class GeneratorMicroCHPNonNormalizedParameters(IDFObject):
+class GeneratorMicroCHPNonNormalizedParameters(_TypedIDFObject):
     """This object is referenced by a Generator:MicroCHP object and provides the non-normalized parameters for the MicroCHP ..."""
 
     maximum_electric_power: float | None
@@ -49419,7 +49990,7 @@ class _GeneratorMicroCHPNonNormalizedParametersFields(TypedDict, total=False):
     cool_down_delay_time: float | None
     restart_mode: Literal["MandatoryCoolDown", "OptionalCoolDown"] | None
 
-class GeneratorFuelSupply(IDFObject):
+class GeneratorFuelSupply(_TypedIDFObject):
     """Used only with Generator:FuelCell and Generator:MicroCHP"""
 
     fuel_temperature_modeling_mode: Literal["Scheduled", "TemperatureFromAirNode"] | None
@@ -49916,7 +50487,7 @@ class _GeneratorFuelSupplyFields(TypedDict, total=False):
     )
     constituent_12_molar_fraction: float | None
 
-class GeneratorWindTurbine(IDFObject):
+class GeneratorWindTurbine(_TypedIDFObject):
     """Wind turbine generator."""
 
     availability_schedule_name: str | None
@@ -50021,10 +50592,10 @@ class _GeneratorWindTurbineFields(TypedDict, total=False):
 
 class _ElectricLoadCenterGeneratorsCommonFields(TypedDict, total=False): ...
 
-class _ElectricLoadCenterGeneratorsBase(IDFObject):
+class _ElectricLoadCenterGeneratorsBase(_TypedIDFObject):
     """``ElectricLoadCenter:Generators`` as every supported EnergyPlus version declares it."""
 
-class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(ExtensibleGroup):
+class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
     """One generator_outputs group inside :class:`ElectricLoadCenterGenerators`."""
 
     generator_name: str | None
@@ -50057,7 +50628,7 @@ class ElectricLoadCenterGenerators(_ElectricLoadCenterGeneratorsBase):
 class _ElectricLoadCenterGeneratorsFields(_ElectricLoadCenterGeneratorsCommonFields, total=False):
     generator_outputs: list[Any]
 
-class ElectricLoadCenterInverterSimple(IDFObject):
+class ElectricLoadCenterInverterSimple(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
 
     availability_schedule_name: str | None
@@ -50079,7 +50650,7 @@ class _ElectricLoadCenterInverterSimpleFields(TypedDict, total=False):
     radiative_fraction: float | None
     inverter_efficiency: float | None
 
-class ElectricLoadCenterInverterFunctionOfPower(IDFObject):
+class ElectricLoadCenterInverterFunctionOfPower(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
 
     availability_schedule_name: str | None
@@ -50121,7 +50692,7 @@ class _ElectricLoadCenterInverterFunctionOfPowerFields(TypedDict, total=False):
     maximum_power_output: float | None
     ancillary_power_consumed_in_standby: float | None
 
-class ElectricLoadCenterInverterLookUpTable(IDFObject):
+class ElectricLoadCenterInverterLookUpTable(_TypedIDFObject):
     """California Energy Commission tests and publishes data on inverters This inverter model interpolates using CEC test da..."""
 
     availability_schedule_name: str | None
@@ -50167,7 +50738,7 @@ class _ElectricLoadCenterInverterLookUpTableFields(TypedDict, total=False):
     efficiency_at_75_power_and_nominal_voltage: float | None
     efficiency_at_100_power_and_nominal_voltage: float | None
 
-class ElectricLoadCenterStorageSimple(IDFObject):
+class ElectricLoadCenterStorageSimple(_TypedIDFObject):
     """Used to model storage of electricity in an electric load center. This is a simple model that does not attempt to repr..."""
 
     availability_schedule_name: str | None
@@ -50223,7 +50794,7 @@ class _ElectricLoadCenterStorageBatteryCommonFields(TypedDict, total=False):
     battery_life_calculation: Literal["", "No", "Yes"] | None
     battery_life_curve_name: str | None
 
-class _ElectricLoadCenterStorageBatteryBase(IDFObject):
+class _ElectricLoadCenterStorageBatteryBase(_TypedIDFObject):
     """``ElectricLoadCenter:Storage:Battery`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -50304,7 +50875,7 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryCommonFields(TypedDict, total=Fal
     charge_rate_at_which_voltage_vs_capacity_curve_was_generated: float | None
     battery_cell_internal_electrical_resistance: float | None
 
-class _ElectricLoadCenterStorageLiIonNMCBatteryBase(IDFObject):
+class _ElectricLoadCenterStorageLiIonNMCBatteryBase(_TypedIDFObject):
     """``ElectricLoadCenter:Storage:LiIonNMCBattery`` as every supported EnergyPlus version declares it."""
 
     availability_schedule_name: str | None
@@ -50369,12 +50940,12 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryFields(
     number_of_cells_in_series: int | None
     number_of_strings_in_parallel: int | None
 
-class ElectricLoadCenterTransformerMetersGroup(ExtensibleGroup):
+class ElectricLoadCenterTransformerMetersGroup(_TypedExtensibleGroup):
     """One meters group inside :class:`ElectricLoadCenterTransformer`."""
 
     meter_name: str | None
 
-class ElectricLoadCenterTransformer(IDFObject):
+class ElectricLoadCenterTransformer(_TypedIDFObject):
     """This object is used to model the energy losses of transformers when they are used to transfer electricity from the gr..."""
 
     availability_schedule_name: str | None
@@ -50437,7 +51008,7 @@ class _ElectricLoadCenterTransformerFields(TypedDict, total=False):
     consider_transformer_loss_for_utility_cost: Literal["", "No", "Yes"] | None
     meters: list[Any]
 
-class ElectricLoadCenterDistribution(IDFObject):
+class ElectricLoadCenterDistribution(_TypedIDFObject):
     """ElectricLoadCenter:Distribution objects are used to include on-site electricity generators and or storage in a simula..."""
 
     generator_list_name: str | None
@@ -50567,7 +51138,7 @@ class _ElectricLoadCenterDistributionFields(TypedDict, total=False):
     storage_control_utility_demand_target: float | None
     storage_control_utility_demand_target_fraction_schedule_name: str | None
 
-class ElectricLoadCenterStorageConverter(IDFObject):
+class ElectricLoadCenterStorageConverter(_TypedIDFObject):
     """This model is for converting AC to DC for grid-supplied charging of DC storage"""
 
     availability_schedule_name: str | None
@@ -50601,7 +51172,7 @@ class _ElectricLoadCenterStorageConverterFields(TypedDict, total=False):
     zone_name: str | None
     radiative_fraction: float | None
 
-class WaterUseEquipment(IDFObject):
+class WaterUseEquipment(_TypedIDFObject):
     """A generalized object for simulating all water end uses. Hot and cold water uses are included, as well as controlled m..."""
 
     end_use_subcategory: str | None
@@ -50635,12 +51206,12 @@ class _WaterUseEquipmentFields(TypedDict, total=False):
     sensible_fraction_schedule_name: str | None
     latent_fraction_schedule_name: str | None
 
-class WaterUseConnectionsConnectionsGroup(ExtensibleGroup):
+class WaterUseConnectionsConnectionsGroup(_TypedExtensibleGroup):
     """One connections group inside :class:`WaterUseConnections`."""
 
     water_use_equipment_name: str | None
 
-class WaterUseConnections(IDFObject):
+class WaterUseConnections(_TypedIDFObject):
     """A subsystem that groups together multiple WaterUse:Equipment components. As its name suggests, the object provides co..."""
 
     inlet_node_name: str | None
@@ -50676,7 +51247,7 @@ class _WaterUseConnectionsFields(TypedDict, total=False):
     drain_water_heat_exchanger_u_factor_times_area: float | None
     connections: list[Any]
 
-class WaterUseStorage(IDFObject):
+class WaterUseStorage(_TypedIDFObject):
     """A water storage tank. If the building model is to include any on-site water collection, wells, or storing and reuse o..."""
 
     water_quality_subcategory: str | None
@@ -50732,7 +51303,7 @@ class _WaterUseStorageFields(TypedDict, total=False):
     tank_u_value: float | None
     tank_outside_surface_material_name: str | None
 
-class WaterUseWell(IDFObject):
+class WaterUseWell(_TypedIDFObject):
     """Simulates on-site water supply from a well. Well water is pumped out of the ground into a WaterUse:Storage. The opera..."""
 
     storage_tank_name: str | None
@@ -50769,12 +51340,12 @@ class _WaterUseWellFields(TypedDict, total=False):
     water_table_depth: float | None
     water_table_depth_schedule_name: str | None
 
-class WaterUseRainCollectorSurfacesGroup(ExtensibleGroup):
+class WaterUseRainCollectorSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`WaterUseRainCollector`."""
 
     collection_surface_name: str | None
 
-class WaterUseRainCollector(IDFObject):
+class WaterUseRainCollector(_TypedIDFObject):
     """Used for harvesting rainwater falling on building surfaces. The rainwater is sent to a WaterUse:Storage object. In ve..."""
 
     storage_tank_name: str | None
@@ -50798,7 +51369,7 @@ class _WaterUseRainCollectorFields(TypedDict, total=False):
     maximum_collection_rate: float | None
     surfaces: list[Any]
 
-class FaultModelTemperatureSensorOffsetOutdoorAir(IDFObject):
+class FaultModelTemperatureSensorOffsetOutdoorAir(_TypedIDFObject):
     """This object describes outdoor air temperature sensor offset"""
 
     availability_schedule_name: str | None
@@ -50822,7 +51393,7 @@ class _FaultModelTemperatureSensorOffsetOutdoorAirFields(TypedDict, total=False)
     controller_object_name: str | None
     temperature_sensor_offset: float | None
 
-class FaultModelHumiditySensorOffsetOutdoorAir(IDFObject):
+class FaultModelHumiditySensorOffsetOutdoorAir(_TypedIDFObject):
     """This object describes outdoor air humidity sensor offset"""
 
     availability_schedule_name: str | None
@@ -50846,7 +51417,7 @@ class _FaultModelHumiditySensorOffsetOutdoorAirFields(TypedDict, total=False):
     controller_object_name: str | None
     humidity_sensor_offset: float | None
 
-class FaultModelEnthalpySensorOffsetOutdoorAir(IDFObject):
+class FaultModelEnthalpySensorOffsetOutdoorAir(_TypedIDFObject):
     """This object describes outdoor air enthalpy sensor offset"""
 
     availability_schedule_name: str | None
@@ -50870,7 +51441,7 @@ class _FaultModelEnthalpySensorOffsetOutdoorAirFields(TypedDict, total=False):
     controller_object_name: str | None
     enthalpy_sensor_offset: float | None
 
-class FaultModelTemperatureSensorOffsetReturnAir(IDFObject):
+class FaultModelTemperatureSensorOffsetReturnAir(_TypedIDFObject):
     """This object describes return air temperature sensor offset"""
 
     availability_schedule_name: str | None
@@ -50894,7 +51465,7 @@ class _FaultModelTemperatureSensorOffsetReturnAirFields(TypedDict, total=False):
     controller_object_name: str | None
     temperature_sensor_offset: float | None
 
-class FaultModelEnthalpySensorOffsetReturnAir(IDFObject):
+class FaultModelEnthalpySensorOffsetReturnAir(_TypedIDFObject):
     """This object describes return air enthalpy sensor offset"""
 
     availability_schedule_name: str | None
@@ -50918,7 +51489,7 @@ class _FaultModelEnthalpySensorOffsetReturnAirFields(TypedDict, total=False):
     controller_object_name: str | None
     enthalpy_sensor_offset: float | None
 
-class FaultModelTemperatureSensorOffsetChillerSupplyWater(IDFObject):
+class FaultModelTemperatureSensorOffsetChillerSupplyWater(_TypedIDFObject):
     """This object describes fault of chiller supply water temperature sensor offset"""
 
     availability_schedule_name: str | None
@@ -50968,7 +51539,7 @@ class _FaultModelTemperatureSensorOffsetChillerSupplyWaterFields(TypedDict, tota
     chiller_object_name: str | None
     reference_sensor_offset: float | None
 
-class FaultModelTemperatureSensorOffsetCoilSupplyAir(IDFObject):
+class FaultModelTemperatureSensorOffsetCoilSupplyAir(_TypedIDFObject):
     """This object describes fault of coil supply air temperature sensor offset"""
 
     availability_schedule_name: str | None
@@ -51025,7 +51596,7 @@ class _FaultModelTemperatureSensorOffsetCoilSupplyAirFields(TypedDict, total=Fal
     water_coil_controller_name: str | None
     reference_sensor_offset: float | None
 
-class FaultModelTemperatureSensorOffsetCondenserSupplyWater(IDFObject):
+class FaultModelTemperatureSensorOffsetCondenserSupplyWater(_TypedIDFObject):
     """This object describes fault of condenser supply water temperature sensor offset"""
 
     availability_schedule_name: str | None
@@ -51067,7 +51638,7 @@ class _FaultModelTemperatureSensorOffsetCondenserSupplyWaterFields(TypedDict, to
     cooling_tower_object_name: str | None
     reference_sensor_offset: float | None
 
-class FaultModelThermostatOffset(IDFObject):
+class FaultModelThermostatOffset(_TypedIDFObject):
     """This object describes fault of thermostat offset"""
 
     thermostat_name: str | None
@@ -51087,7 +51658,7 @@ class _FaultModelThermostatOffsetFields(TypedDict, total=False):
     severity_schedule_name: str | None
     reference_thermostat_offset: float | None
 
-class FaultModelHumidistatOffset(IDFObject):
+class FaultModelHumidistatOffset(_TypedIDFObject):
     """This object describes fault of humidistat offset"""
 
     humidistat_name: str | None
@@ -51115,7 +51686,7 @@ class _FaultModelHumidistatOffsetFields(TypedDict, total=False):
     reference_humidistat_offset: float | None
     related_thermostat_offset_fault_name: str | None
 
-class FaultModelFoulingAirFilter(IDFObject):
+class FaultModelFoulingAirFilter(_TypedIDFObject):
     """This object describes fault of dirty air filters"""
 
     fan_object_type: Literal["Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
@@ -51139,7 +51710,7 @@ class _FaultModelFoulingAirFilterFields(TypedDict, total=False):
     pressure_fraction_schedule_name: str | None
     fan_curve_name: str | None
 
-class FaultModelFoulingBoiler(IDFObject):
+class FaultModelFoulingBoiler(_TypedIDFObject):
     """This object describes the fouling fault of boilers with water-based heat exchangers"""
 
     availability_schedule_name: str | None
@@ -51162,7 +51733,7 @@ class _FaultModelFoulingBoilerFields(TypedDict, total=False):
     boiler_object_name: str | None
     fouling_factor: float | None
 
-class FaultModelFoulingEvaporativeCooler(IDFObject):
+class FaultModelFoulingEvaporativeCooler(_TypedIDFObject):
     """This object describes the fouling fault of the wetted coil evaporative cooler"""
 
     availability_schedule_name: str | None
@@ -51185,7 +51756,7 @@ class _FaultModelFoulingEvaporativeCoolerFields(TypedDict, total=False):
     evaporative_cooler_object_name: str | None
     fouling_factor: float | None
 
-class FaultModelFoulingChiller(IDFObject):
+class FaultModelFoulingChiller(_TypedIDFObject):
     """This object describes the fouling fault of chillers with water-cooled condensers"""
 
     availability_schedule_name: str | None
@@ -51228,7 +51799,7 @@ class _FaultModelFoulingChillerFields(TypedDict, total=False):
     chiller_object_name: str | None
     fouling_factor: float | None
 
-class FaultModelFoulingCoolingTower(IDFObject):
+class FaultModelFoulingCoolingTower(_TypedIDFObject):
     """This object describes the fault of fouling cooling towers"""
 
     availability_schedule_name: str | None
@@ -51255,7 +51826,7 @@ class _FaultModelFoulingCoolingTowerFields(TypedDict, total=False):
     cooling_tower_object_name: str | None
     reference_ua_reduction_factor: float | None
 
-class FaultModelFoulingCoil(IDFObject):
+class FaultModelFoulingCoil(_TypedIDFObject):
     """This object describes fouling water heating or cooling coils"""
 
     coil_name: str | None
@@ -51292,12 +51863,12 @@ class _FaultModelFoulingCoilFields(TypedDict, total=False):
 class _MatrixTwoDimensionCommonFields(TypedDict, total=False):
     values: list[Any]
 
-class MatrixTwoDimensionValuesGroup(ExtensibleGroup):
+class MatrixTwoDimensionValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`_MatrixTwoDimensionBase`."""
 
     value: float | None
 
-class _MatrixTwoDimensionBase(IDFObject):
+class _MatrixTwoDimensionBase(_TypedIDFObject):
     """``Matrix:TwoDimension`` as every supported EnergyPlus version declares it."""
 
     number_of_rows: float | int | None
@@ -51324,7 +51895,7 @@ class _HybridModelZoneCommonFields(TypedDict, total=False):
     calculate_zone_air_infiltration_rate: Literal["", "No", "Yes"] | None
     zone_measured_air_temperature_schedule_name: str | None
 
-class _HybridModelZoneBase(IDFObject):
+class _HybridModelZoneBase(_TypedIDFObject):
     """``HybridModel:Zone`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
@@ -51392,7 +51963,7 @@ class _HybridModelZoneFields(_HybridModelZoneCommonFields, total=False):
     end_month: int | None
     end_day_of_month: int | None
 
-class CurveLinear(IDFObject):
+class CurveLinear(_TypedIDFObject):
     """Linear curve with one independent variable. Input for the linear curve consists of a curve name, the two coefficients..."""
 
     coefficient1_constant: float | None
@@ -51426,7 +51997,7 @@ class _CurveLinearFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveQuadLinear(IDFObject):
+class CurveQuadLinear(_TypedIDFObject):
     """Linear curve with four independent variables. Input for the linear curve consists of a curve name, the two coefficien..."""
 
     coefficient1_constant: float | None
@@ -51574,7 +52145,7 @@ class _CurveQuadLinearFields(TypedDict, total=False):
         | None
     )
 
-class CurveQuintLinear(IDFObject):
+class CurveQuintLinear(_TypedIDFObject):
     """Linear curve with five independent variables. Input for the linear curve consists of a curve name, the two coefficien...; Since: 9.5.0"""
 
     coefficient1_constant: float | None
@@ -51755,7 +52326,7 @@ class _CurveQuintLinearFields(TypedDict, total=False):
         | None
     )
 
-class CurveQuadratic(IDFObject):
+class CurveQuadratic(_TypedIDFObject):
     """Quadratic curve with one independent variable. Input for a quadratic curve consists of the curve name, the three coef..."""
 
     coefficient1_constant: float | None
@@ -51789,7 +52360,7 @@ class _CurveQuadraticFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveCubic(IDFObject):
+class CurveCubic(_TypedIDFObject):
     """Cubic curve with one independent variable. Input for a cubic curve consists of the curve name, the 4 coefficients, an..."""
 
     coefficient1_constant: float | None
@@ -51825,7 +52396,7 @@ class _CurveCubicFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveQuartic(IDFObject):
+class CurveQuartic(_TypedIDFObject):
     """Quartic (fourth order polynomial) curve with one independent variable. Input for a Quartic curve consists of the curv..."""
 
     coefficient1_constant: float | None
@@ -51863,7 +52434,7 @@ class _CurveQuarticFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveExponent(IDFObject):
+class CurveExponent(_TypedIDFObject):
     """Exponent curve with one independent variable. Input for a exponent curve consists of the curve name, the 3 coefficien..."""
 
     coefficient1_constant: float | None
@@ -51899,7 +52470,7 @@ class _CurveExponentFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveBicubic(IDFObject):
+class CurveBicubic(_TypedIDFObject):
     """Cubic curve with two independent variables. Input consists of the curve name, the ten coefficients, and the minimum a..."""
 
     coefficient1_constant: float | None
@@ -51958,7 +52529,7 @@ class _CurveBicubicFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveBiquadratic(IDFObject):
+class CurveBiquadratic(_TypedIDFObject):
     """Quadratic curve with two independent variables. Input consists of the curve name, the six coefficients, and min and m..."""
 
     coefficient1_constant: float | None
@@ -52009,7 +52580,7 @@ class _CurveBiquadraticFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveQuadraticLinear(IDFObject):
+class CurveQuadraticLinear(_TypedIDFObject):
     """Quadratic-linear curve with two independent variables. Input consists of the curve name, the six coefficients, and mi..."""
 
     coefficient1_constant: float | None
@@ -52062,7 +52633,7 @@ class _CurveQuadraticLinearFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveCubicLinear(IDFObject):
+class CurveCubicLinear(_TypedIDFObject):
     """Cubic-linear curve with two independent variables. Input consists of the curve name, the six coefficients, and min an..."""
 
     coefficient1_constant: float | None
@@ -52105,7 +52676,7 @@ class _CurveCubicLinearFields(TypedDict, total=False):
     input_unit_type_for_y: Literal["", "Dimensionless", "Temperature"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveTriquadratic(IDFObject):
+class CurveTriquadratic(_TypedIDFObject):
     """Quadratic curve with three independent variables. Input consists of the curve name, the twenty seven coefficients, an..."""
 
     coefficient1_constant: float | None
@@ -52209,7 +52780,7 @@ class _CurveTriquadraticFields(TypedDict, total=False):
     )
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveFunctionalPressureDrop(IDFObject):
+class CurveFunctionalPressureDrop(_TypedIDFObject):
     """Sets up curve information for minor loss and/or friction calculations in plant pressure simulations Expression: Delta..."""
 
     diameter: float | None
@@ -52234,7 +52805,7 @@ class _CurveFunctionalPressureDropFields(TypedDict, total=False):
     roughness: float | None
     fixed_friction_factor: float | None
 
-class CurveFanPressureRise(IDFObject):
+class CurveFanPressureRise(_TypedIDFObject):
     """Special curve type with two independent variables. Input for the fan total pressure rise curve consists of the curve ..."""
 
     coefficient1_c1: float | None
@@ -52270,7 +52841,7 @@ class _CurveFanPressureRiseFields(TypedDict, total=False):
     minimum_curve_output: float | None
     maximum_curve_output: float | None
 
-class CurveExponentialSkewNormal(IDFObject):
+class CurveExponentialSkewNormal(_TypedIDFObject):
     """Exponential-modified skew normal curve with one independent variable. Input consists of the curve name, the four coef..."""
 
     coefficient1_c1: float | None
@@ -52304,7 +52875,7 @@ class _CurveExponentialSkewNormalFields(TypedDict, total=False):
     input_unit_type_for_x: Literal["", "Dimensionless"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveSigmoid(IDFObject):
+class CurveSigmoid(_TypedIDFObject):
     """Sigmoid curve with one independent variable. Input consists of the curve name, the five coefficients, and the maximum..."""
 
     coefficient1_c1: float | None
@@ -52338,7 +52909,7 @@ class _CurveSigmoidFields(TypedDict, total=False):
     input_unit_type_for_x: Literal["", "Dimensionless"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveRectangularHyperbola1(IDFObject):
+class CurveRectangularHyperbola1(_TypedIDFObject):
     """Rectangular hyperbola type 1 curve with one independent variable. Input consists of the curve name, the three coeffic..."""
 
     coefficient1_c1: float | None
@@ -52370,7 +52941,7 @@ class _CurveRectangularHyperbola1Fields(TypedDict, total=False):
     input_unit_type_for_x: Literal["", "Dimensionless"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveRectangularHyperbola2(IDFObject):
+class CurveRectangularHyperbola2(_TypedIDFObject):
     """Rectangular hyperbola type 2 curve with one independent variable. Input consists of the curve name, the three coeffic..."""
 
     coefficient1_c1: float | None
@@ -52402,7 +52973,7 @@ class _CurveRectangularHyperbola2Fields(TypedDict, total=False):
     input_unit_type_for_x: Literal["", "Dimensionless"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class CurveExponentialDecay(IDFObject):
+class CurveExponentialDecay(_TypedIDFObject):
     """Exponential decay curve with one independent variable. Input consists of the curve name, the three coefficients, and ..."""
 
     coefficient1_c1: float | None
@@ -52445,7 +53016,7 @@ class _CurveDoubleExponentialDecayCommonFields(TypedDict, total=False):
     input_unit_type_for_x: Literal["", "Dimensionless"] | None
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
 
-class _CurveDoubleExponentialDecayBase(IDFObject):
+class _CurveDoubleExponentialDecayBase(_TypedIDFObject):
     """``Curve:DoubleExponentialDecay`` as every supported EnergyPlus version declares it."""
 
     coefficient1_c1: float | None
@@ -52478,7 +53049,7 @@ class _CurveDoubleExponentialDecayFields(_CurveDoubleExponentialDecayCommonField
     coefficient4_c4: float | None
     coefficient5_c5: float | None
 
-class CurveChillerPartLoadWithLift(IDFObject):
+class CurveChillerPartLoadWithLift(_TypedIDFObject):
     """This chiller part-load performance curve has three independent variables. Input consists of the curve name, the twelv..."""
 
     coefficient1_c1: float | None
@@ -52554,12 +53125,12 @@ class _TableIndependentVariableCommonFields(TypedDict, total=False):
     external_file_name: str | None
     values: list[Any]
 
-class TableIndependentVariableValuesGroup(ExtensibleGroup):
+class TableIndependentVariableValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`_TableIndependentVariableBase`."""
 
     value: float | None
 
-class _TableIndependentVariableBase(IDFObject):
+class _TableIndependentVariableBase(_TypedIDFObject):
     """``Table:IndependentVariable`` as every supported EnergyPlus version declares it."""
 
     interpolation_method: Literal["", "Cubic", "Linear"] | None
@@ -52594,12 +53165,12 @@ class _TableIndependentVariableFields(_TableIndependentVariableCommonFields, tot
     external_file_column_number: int | None
     external_file_starting_row_number: int | None
 
-class TableIndependentVariableListIndependentVariablesGroup(ExtensibleGroup):
+class TableIndependentVariableListIndependentVariablesGroup(_TypedExtensibleGroup):
     """One independent_variables group inside :class:`TableIndependentVariableList`."""
 
     independent_variable_name: str | None
 
-class TableIndependentVariableList(IDFObject):
+class TableIndependentVariableList(_TypedIDFObject):
     """A sorted list of independent variables used by one or more Table:Lookup objects.; Since: 9.2.0"""
 
     independent_variables: ExtensibleList[TableIndependentVariableListIndependentVariablesGroup]
@@ -52621,12 +53192,12 @@ class _TableLookupCommonFields(TypedDict, total=False):
     external_file_name: str | None
     values: list[Any]
 
-class TableLookupValuesGroup(ExtensibleGroup):
+class TableLookupValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`_TableLookupBase`."""
 
     output_value: float | None
 
-class _TableLookupBase(IDFObject):
+class _TableLookupBase(_TypedIDFObject):
     """``Table:Lookup`` as every supported EnergyPlus version declares it."""
 
     independent_variable_list_name: str | None
@@ -52657,9 +53228,10 @@ class _TableLookupFields(_TableLookupCommonFields, total=False):
     external_file_column_number: int | None
     external_file_starting_row_number: int | None
 
-class FluidPropertiesName(IDFObject):
+class FluidPropertiesName(_TypedIDFObject):
     """potential fluid name/type in the input file repeat this object for each fluid"""
 
+    fluid_name: str | None
     fluid_type: Literal["Glycol", "Refrigerant"] | None
 
     def update(
@@ -52667,9 +53239,10 @@ class FluidPropertiesName(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesNameFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_type: Literal["Glycol", "Refrigerant"] | None
 
-class FluidPropertiesGlycolConcentration(IDFObject):
+class FluidPropertiesGlycolConcentration(_TypedIDFObject):
     """glycol and what concentration it is"""
 
     glycol_type: Literal["EthyleneGlycol", "PropyleneGlycol", "UserDefinedGlycolType"] | None
@@ -52687,7 +53260,7 @@ class _FluidPropertiesGlycolConcentrationFields(TypedDict, total=False):
     user_defined_glycol_name: str | None
     glycol_concentration: float | None
 
-class FluidPropertiesTemperatures(IDFObject):
+class FluidPropertiesTemperatures(_TypedIDFObject):
     """property values for fluid properties list of up to 250 temperatures, note that number of property values must match t..."""
 
     temperature_1: float | None
@@ -53447,9 +54020,10 @@ class _FluidPropertiesTemperaturesFields(TypedDict, total=False):
     temperature_249: float | None
     temperature_250: float | None
 
-class FluidPropertiesSaturated(IDFObject):
+class FluidPropertiesSaturated(_TypedIDFObject):
     """fluid properties for the saturated region"""
 
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy", "Pressure", "SpecificHeat"] | None
     """Enthalpy Units are J/kg Density Units are kg/m3 SpecificHeat Units are J/kg-K Pressure Units are Pa"""
     fluid_phase: Literal["Fluid", "FluidGas"] | None
@@ -53712,6 +54286,7 @@ class FluidPropertiesSaturated(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSaturatedFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy", "Pressure", "SpecificHeat"] | None
     fluid_phase: Literal["Fluid", "FluidGas"] | None
     temperature_values_name: str | None
@@ -53966,9 +54541,10 @@ class _FluidPropertiesSaturatedFields(TypedDict, total=False):
     property_value_249: float | None
     property_value_250: float | None
 
-class FluidPropertiesSuperheated(IDFObject):
+class FluidPropertiesSuperheated(_TypedIDFObject):
     """fluid properties for the superheated region"""
 
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy"] | None
     """Enthalpy Units are J/kg Density Units are kg/m3"""
     temperature_values_name: str | None
@@ -54231,6 +54807,7 @@ class FluidPropertiesSuperheated(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Density", "Enthalpy"] | None
     temperature_values_name: str | None
     pressure: float | None
@@ -54485,9 +55062,11 @@ class _FluidPropertiesSuperheatedFields(TypedDict, total=False):
     property_value_249: float | None
     property_value_250: float | None
 
-class FluidPropertiesConcentration(IDFObject):
+class FluidPropertiesConcentration(_TypedIDFObject):
     """fluid properties for water/other fluid mixtures"""
 
+    fluid_name: str | None
+    """should not be any of the defaults (Water, EthyleneGlycol, or PropyleneGlycol)"""
     fluid_property_type: Literal["Conductivity", "Density", "SpecificHeat", "Viscosity"] | None
     """Density Units are kg/m3 SpecificHeat Units are J/kg-K Conductivity Units are W/m-K Viscosity Units are N-s/m2"""
     temperature_values_name: str | None
@@ -54750,6 +55329,7 @@ class FluidPropertiesConcentration(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _FluidPropertiesConcentrationFields(TypedDict, total=False):
+    fluid_name: str | None
     fluid_property_type: Literal["Conductivity", "Density", "SpecificHeat", "Viscosity"] | None
     temperature_values_name: str | None
     concentration: float | None
@@ -55004,12 +55584,252 @@ class _FluidPropertiesConcentrationFields(TypedDict, total=False):
     property_value_249: float | None
     property_value_250: float | None
 
-class CurrencyType(IDFObject):
+class CurrencyType(_TypedIDFObject):
     """If CurrencyType is not specified, it will default to USD and produce $ in the reports."""
 
-class ComponentCostAdjustments(IDFObject):
+    monetary_unit: (
+        Literal[
+            "AFN",
+            "ALL",
+            "ANG",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BGN",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BWP",
+            "BYR",
+            "BZD",
+            "CAD",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CZK",
+            "DKK",
+            "DOP",
+            "EEK",
+            "EGP",
+            "EUR",
+            "FJD",
+            "GBP",
+            "GHC",
+            "GIP",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HRK",
+            "HUF",
+            "IDR",
+            "ILS",
+            "IMP",
+            "INR",
+            "IRR",
+            "ISK",
+            "JEP",
+            "JMD",
+            "JPY",
+            "KGS",
+            "KHR",
+            "KPW",
+            "KRW",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LTL",
+            "LVL",
+            "MKD",
+            "MNT",
+            "MUR",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SOS",
+            "SRD",
+            "SVC",
+            "SYP",
+            "THB",
+            "TRL",
+            "TRY",
+            "TTD",
+            "TVD",
+            "TWD",
+            "UAH",
+            "USD",
+            "UYU",
+            "UZS",
+            "VEF",
+            "VND",
+            "XCD",
+            "YER",
+            "ZAR",
+            "ZWD",
+        ]
+        | None
+    )
+    """The commonly used three letter currency code for the units of money for the country or region. Based on ISO 4217 curr..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_CurrencyTypeFields]) -> None: ...  # type: ignore[override]
+
+class _CurrencyTypeFields(TypedDict, total=False):
+    monetary_unit: (
+        Literal[
+            "AFN",
+            "ALL",
+            "ANG",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BGN",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BWP",
+            "BYR",
+            "BZD",
+            "CAD",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CZK",
+            "DKK",
+            "DOP",
+            "EEK",
+            "EGP",
+            "EUR",
+            "FJD",
+            "GBP",
+            "GHC",
+            "GIP",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HRK",
+            "HUF",
+            "IDR",
+            "ILS",
+            "IMP",
+            "INR",
+            "IRR",
+            "ISK",
+            "JEP",
+            "JMD",
+            "JPY",
+            "KGS",
+            "KHR",
+            "KPW",
+            "KRW",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LTL",
+            "LVL",
+            "MKD",
+            "MNT",
+            "MUR",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SOS",
+            "SRD",
+            "SVC",
+            "SYP",
+            "THB",
+            "TRL",
+            "TRY",
+            "TTD",
+            "TVD",
+            "TWD",
+            "UAH",
+            "USD",
+            "UYU",
+            "UZS",
+            "VEF",
+            "VND",
+            "XCD",
+            "YER",
+            "ZAR",
+            "ZWD",
+        ]
+        | None
+    )
+
+class ComponentCostAdjustments(_TypedIDFObject):
     """Used to perform various modifications to the construction costs to arrive at an estimate for total project costs. Thi..."""
 
+    miscellaneous_cost_per_conditioned_area: float | None
+    """based on conditioned floor area for cost not accounted for in current line item cost model; [$/m2]"""
     design_and_engineering_fees: float | None
     """[dimensionless]"""
     contractor_fee: float | None
@@ -55028,6 +55848,7 @@ class ComponentCostAdjustments(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostAdjustmentsFields(TypedDict, total=False):
+    miscellaneous_cost_per_conditioned_area: float | None
     design_and_engineering_fees: float | None
     contractor_fee: float | None
     contingency: float | None
@@ -55035,9 +55856,11 @@ class _ComponentCostAdjustmentsFields(TypedDict, total=False):
     commissioning_fee: float | None
     regional_adjustment_factor: float | None
 
-class ComponentCostReference(IDFObject):
+class ComponentCostReference(_TypedIDFObject):
     """Used to allow comparing the current cost estimate to the results of a previous estimate for a reference building. Thi..."""
 
+    reference_building_line_item_costs: float | None
+    """should be comparable to the components in current line item cost model; [$]"""
     reference_building_miscellaneous_cost_per_conditioned_area: float | None
     """based on conditioned floor area for cost not accounted for in reference line item costs; [$/m2]"""
     reference_building_design_and_engineering_fees: float | None
@@ -55057,6 +55880,7 @@ class ComponentCostReference(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _ComponentCostReferenceFields(TypedDict, total=False):
+    reference_building_line_item_costs: float | None
     reference_building_miscellaneous_cost_per_conditioned_area: float | None
     reference_building_design_and_engineering_fees: float | None
     reference_building_contractor_fee: float | None
@@ -55078,7 +55902,7 @@ class _ComponentCostLineItemCommonFields(TypedDict, total=False):
     cost_per_energy_per_temperature_difference: float | None
     quantity: float | None
 
-class _ComponentCostLineItemBase(IDFObject):
+class _ComponentCostLineItemBase(_TypedIDFObject):
     """``ComponentCost:LineItem`` as every supported EnergyPlus version declares it."""
 
     type: str | None
@@ -55162,7 +55986,7 @@ class _ComponentCostLineItemFields(_ComponentCostLineItemCommonFields, total=Fal
         | None
     )
 
-class UtilityCostTariff(IDFObject):
+class UtilityCostTariff(_TypedIDFObject):
     """Defines the name of a utility cost tariff, the type of tariff, and other details about the overall tariff. Each other..."""
 
     output_meter_name: str | None
@@ -55216,9 +56040,11 @@ class _UtilityCostTariffFields(TypedDict, total=False):
     group_name: str | None
     buy_or_sell: Literal["", "BuyFromUtility", "NetMetering", "SellToUtility"] | None
 
-class UtilityCostQualify(IDFObject):
+class UtilityCostQualify(_TypedIDFObject):
     """The qualify object allows only tariffs to be selected based on limits which may apply such as maximum or minimum dema..."""
 
+    utility_cost_qualify_name: str | None
+    """Displayed in the report if the tariff does not qualify"""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Qualify."""
     variable_name: str | None
@@ -55239,6 +56065,7 @@ class UtilityCostQualify(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostQualifyFields(TypedDict, total=False):
+    utility_cost_qualify_name: str | None
     tariff_name: str | None
     variable_name: str | None
     qualify_type: Literal["", "Maximum", "Minimum"] | None
@@ -55247,9 +56074,11 @@ class _UtilityCostQualifyFields(TypedDict, total=False):
     threshold_test: Literal["", "Consecutive", "Count"] | None
     number_of_months: float | None
 
-class UtilityCostChargeSimple(IDFObject):
+class UtilityCostChargeSimple(_TypedIDFObject):
     """UtilityCost:Charge:Simple is one of the most often used objects for tariff calculation. It is used to compute energy ..."""
 
+    utility_cost_charge_simple_name: str | None
+    """Charge Variable Name This is the name associated with the UtilityCost:Charge:Simple object and will appear in the rep..."""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Charge:Simple."""
     source_variable: str | None
@@ -55280,6 +56109,7 @@ class UtilityCostChargeSimple(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeSimpleFields(TypedDict, total=False):
+    utility_cost_charge_simple_name: str | None
     tariff_name: str | None
     source_variable: str | None
     season: Literal["Annual", "Fall", "Spring", "Summer", "Winter"] | None
@@ -55300,9 +56130,11 @@ class _UtilityCostChargeSimpleFields(TypedDict, total=False):
     )
     cost_per_unit_value_or_variable_name: float | str | None
 
-class UtilityCostChargeBlock(IDFObject):
+class UtilityCostChargeBlock(_TypedIDFObject):
     """Used to compute energy and demand charges (or any other charges) that are structured in blocks of charges. Multiple U..."""
 
+    utility_cost_charge_block_name: str | None
+    """Charge Variable Name This is the name associated with the UtilityCost:Charge:Block object and will appear in the repo..."""
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Charge:Block."""
     source_variable: str | None
@@ -55395,6 +56227,7 @@ class UtilityCostChargeBlock(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _UtilityCostChargeBlockFields(TypedDict, total=False):
+    utility_cost_charge_block_name: str | None
     tariff_name: str | None
     source_variable: str | None
     season: Literal["", "Annual", "Fall", "Spring", "Summer", "Winter"] | None
@@ -55446,7 +56279,7 @@ class _UtilityCostChargeBlockFields(TypedDict, total=False):
     block_size_15_value_or_variable_name: float | str | None
     block_15_cost_per_unit_value_or_variable_name: float | str | None
 
-class UtilityCostRatchet(IDFObject):
+class UtilityCostRatchet(_TypedIDFObject):
     """Allows the modeling of tariffs that include some type of seasonal ratcheting. Ratchets are most common when used with..."""
 
     tariff_name: str | None
@@ -55492,7 +56325,7 @@ class _UtilityCostVariableCommonFields(TypedDict, total=False):
     november_value: float | None
     december_value: float | None
 
-class _UtilityCostVariableBase(IDFObject):
+class _UtilityCostVariableBase(_TypedIDFObject):
     """``UtilityCost:Variable`` as every supported EnergyPlus version declares it."""
 
     tariff_name: str | None
@@ -55524,7 +56357,7 @@ class UtilityCostVariable(_UtilityCostVariableBase):
 class _UtilityCostVariableFields(_UtilityCostVariableCommonFields, total=False):
     variable_type: Literal["", "Currency", "Demand", "Dimensionless", "Energy"] | None
 
-class UtilityCostComputation(IDFObject):
+class UtilityCostComputation(_TypedIDFObject):
     """The object lists a series of computations that are used to perform the utility bill calculation. The object is only u..."""
 
     tariff_name: str | None
@@ -55659,7 +56492,7 @@ class _LifeCycleCostParametersCommonFields(TypedDict, total=False):
         | None
     )
 
-class _LifeCycleCostParametersBase(IDFObject):
+class _LifeCycleCostParametersBase(_TypedIDFObject):
     """``LifeCycleCost:Parameters`` as every supported EnergyPlus version declares it."""
 
     discounting_convention: Literal["", "BeginningOfYear", "EndOfYear", "MidYear"] | None
@@ -55771,7 +56604,7 @@ class _LifeCycleCostRecurringCostsCommonFields(TypedDict, total=False):
     start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None
     annual_escalation_rate: float | None
 
-class _LifeCycleCostRecurringCostsBase(IDFObject):
+class _LifeCycleCostRecurringCostsBase(_TypedIDFObject):
     """``LifeCycleCost:RecurringCosts`` as every supported EnergyPlus version declares it."""
 
     category: (
@@ -55826,7 +56659,7 @@ class _LifeCycleCostNonrecurringCostCommonFields(TypedDict, total=False):
     cost: float | None
     start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None
 
-class _LifeCycleCostNonrecurringCostBase(IDFObject):
+class _LifeCycleCostNonrecurringCostBase(_TypedIDFObject):
     """``LifeCycleCost:NonrecurringCost`` as every supported EnergyPlus version declares it."""
 
     category: Literal["", "Construction", "OtherCapital", "Salvage"] | None
@@ -55855,6 +56688,7 @@ class _LifeCycleCostNonrecurringCostFields(_LifeCycleCostNonrecurringCostCommonF
     months_from_start: int | None
 
 class _LifeCycleCostUsePriceEscalationCommonFields(TypedDict, total=False):
+    lcc_price_escalation_name: str | None
     escalation_start_month: (
         Literal[
             "",
@@ -55875,14 +56709,16 @@ class _LifeCycleCostUsePriceEscalationCommonFields(TypedDict, total=False):
     )
     escalations: list[Any]
 
-class LifeCycleCostUsePriceEscalationEscalationsGroup(ExtensibleGroup):
+class LifeCycleCostUsePriceEscalationEscalationsGroup(_TypedExtensibleGroup):
     """One escalations group inside :class:`_LifeCycleCostUsePriceEscalationBase`."""
 
     year_escalation: float | None
 
-class _LifeCycleCostUsePriceEscalationBase(IDFObject):
+class _LifeCycleCostUsePriceEscalationBase(_TypedIDFObject):
     """``LifeCycleCost:UsePriceEscalation`` as every supported EnergyPlus version declares it."""
 
+    lcc_price_escalation_name: str | None
+    """The identifier used for the object. The name usually identifies the location (such as the state or region or country ..."""
     resource: (
         str
         | Literal[
@@ -55992,12 +56828,12 @@ class _LifeCycleCostUsePriceEscalationFields(_LifeCycleCostUsePriceEscalationCom
 class _LifeCycleCostUseAdjustmentCommonFields(TypedDict, total=False):
     multipliers: list[Any]
 
-class LifeCycleCostUseAdjustmentMultipliersGroup(ExtensibleGroup):
+class LifeCycleCostUseAdjustmentMultipliersGroup(_TypedExtensibleGroup):
     """One multipliers group inside :class:`_LifeCycleCostUseAdjustmentBase`."""
 
     year_multiplier: float | None
 
-class _LifeCycleCostUseAdjustmentBase(IDFObject):
+class _LifeCycleCostUseAdjustmentBase(_TypedIDFObject):
     """``LifeCycleCost:UseAdjustment`` as every supported EnergyPlus version declares it."""
 
     resource: (
@@ -56084,12 +56920,12 @@ class _LifeCycleCostUseAdjustmentFields(_LifeCycleCostUseAdjustmentCommonFields,
         | None
     )
 
-class ParametricSetValueForRunValuesGroup(ExtensibleGroup):
+class ParametricSetValueForRunValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`ParametricSetValueForRun`."""
 
     value_for_run: str | None
 
-class ParametricSetValueForRun(IDFObject):
+class ParametricSetValueForRun(_TypedIDFObject):
     """Parametric objects allow a set of multiple simulations to be defined in a single idf file. The parametric preprocesso..."""
 
     values: ExtensibleList[ParametricSetValueForRunValuesGroup]
@@ -56101,12 +56937,12 @@ class ParametricSetValueForRun(IDFObject):
 class _ParametricSetValueForRunFields(TypedDict, total=False):
     values: list[Any]
 
-class ParametricLogicLinesGroup(ExtensibleGroup):
+class ParametricLogicLinesGroup(_TypedExtensibleGroup):
     """One lines group inside :class:`ParametricLogic`."""
 
     parametric_logic_line: str | None
 
-class ParametricLogic(IDFObject):
+class ParametricLogic(_TypedIDFObject):
     """This object allows some types of objects to be included for some parametric cases and not for others. For example, yo..."""
 
     lines: ExtensibleList[ParametricLogicLinesGroup]
@@ -56116,12 +56952,12 @@ class ParametricLogic(IDFObject):
 class _ParametricLogicFields(TypedDict, total=False):
     lines: list[Any]
 
-class ParametricRunControlRunsGroup(ExtensibleGroup):
+class ParametricRunControlRunsGroup(_TypedExtensibleGroup):
     """One runs group inside :class:`ParametricRunControl`."""
 
     perform_run: Literal["", "No", "Yes"] | None
 
-class ParametricRunControl(IDFObject):
+class ParametricRunControl(_TypedIDFObject):
     """Controls which parametric runs are simulated. This object is optional. If it is not included, then all parametric run..."""
 
     runs: ExtensibleList[ParametricRunControlRunsGroup]
@@ -56133,12 +56969,12 @@ class ParametricRunControl(IDFObject):
 class _ParametricRunControlFields(TypedDict, total=False):
     runs: list[Any]
 
-class ParametricFileNameSuffixSuffixesGroup(ExtensibleGroup):
+class ParametricFileNameSuffixSuffixesGroup(_TypedExtensibleGroup):
     """One suffixes group inside :class:`ParametricFileNameSuffix`."""
 
     suffix_for_file_name_in_run: str | None
 
-class ParametricFileNameSuffix(IDFObject):
+class ParametricFileNameSuffix(_TypedIDFObject):
     """Defines the suffixes to be appended to the idf and output file names for each parametric run. If this object is omitt..."""
 
     suffixes: ExtensibleList[ParametricFileNameSuffixSuffixesGroup]
@@ -56150,9 +56986,11 @@ class ParametricFileNameSuffix(IDFObject):
 class _ParametricFileNameSuffixFields(TypedDict, total=False):
     suffixes: list[Any]
 
-class OutputVariableDictionary(IDFObject):
+class OutputVariableDictionary(_TypedIDFObject):
     """Produces a list summarizing the output variables and meters that are available for reporting for the model being simu..."""
 
+    key_field: Literal["", "IDF", "regular"] | None
+    """Default: regular"""
     sort_option: Literal["Name", "Unsorted"] | None
 
     def update(
@@ -56160,11 +56998,24 @@ class OutputVariableDictionary(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputVariableDictionaryFields(TypedDict, total=False):
+    key_field: Literal["", "IDF", "regular"] | None
     sort_option: Literal["Name", "Unsorted"] | None
 
-class OutputSurfacesList(IDFObject):
+class OutputSurfacesList(_TypedIDFObject):
     """Produces a report summarizing the details of surfaces in the eio output file."""
 
+    report_type: (
+        Literal[
+            "CostInfo",
+            "DecayCurvesFromComponentLoadsSummary",
+            "Details",
+            "DetailsWithVertices",
+            "Lines",
+            "Vertices",
+            "ViewFactorInfo",
+        ]
+        | None
+    )
     report_specifications: Literal["IDF"] | None
     """(IDF, only for Output:Surfaces:List, Lines report -- will print transformed coordinates in IDF style)"""
 
@@ -56173,11 +57024,24 @@ class OutputSurfacesList(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesListFields(TypedDict, total=False):
+    report_type: (
+        Literal[
+            "CostInfo",
+            "DecayCurvesFromComponentLoadsSummary",
+            "Details",
+            "DetailsWithVertices",
+            "Lines",
+            "Vertices",
+            "ViewFactorInfo",
+        ]
+        | None
+    )
     report_specifications: Literal["IDF"] | None
 
-class OutputSurfacesDrawing(IDFObject):
+class OutputSurfacesDrawing(_TypedIDFObject):
     """Produces reports/files that are capable of rendering graphically or being imported into other programs. Rendering doe..."""
 
+    report_type: Literal["DXF", "DXF:WireFrame", "VRML"] | None
     report_specifications_1: Literal["", "RegularPolyline", "ThickPolyline", "Triangulate3DFace"] | None
     """Triangulate3DFace (default), ThickPolyline, RegularPolyline apply to DXF This field is ignored for DXF:WireFrame and ...; Default: Triangulate3DFace"""
     report_specifications_2: str | None
@@ -56188,15 +57052,24 @@ class OutputSurfacesDrawing(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputSurfacesDrawingFields(TypedDict, total=False):
+    report_type: Literal["DXF", "DXF:WireFrame", "VRML"] | None
     report_specifications_1: Literal["", "RegularPolyline", "ThickPolyline", "Triangulate3DFace"] | None
     report_specifications_2: str | None
 
-class OutputSchedules(IDFObject):
+class OutputSchedules(_TypedIDFObject):
     """Produces a condensed reporting that illustrates the full range of schedule values in the eio output file. In the styl..."""
 
-class OutputConstructions(IDFObject):
+    key_field: Literal["Hourly", "Timestep"] | None
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputSchedulesFields]) -> None: ...  # type: ignore[override]
+
+class _OutputSchedulesFields(TypedDict, total=False):
+    key_field: Literal["Hourly", "Timestep"] | None
+
+class OutputConstructions(_TypedIDFObject):
     """Adds a report to the eio output file which shows details for each construction, including overall properties, a list ..."""
 
+    details_type_1: Literal["Constructions", "Materials"] | None
     details_type_2: Literal["Constructions", "Materials"] | None
 
     def update(
@@ -56204,11 +57077,14 @@ class OutputConstructions(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputConstructionsFields(TypedDict, total=False):
+    details_type_1: Literal["Constructions", "Materials"] | None
     details_type_2: Literal["Constructions", "Materials"] | None
 
-class OutputEnergyManagementSystem(IDFObject):
+class OutputEnergyManagementSystem(_TypedIDFObject):
     """This object is used to control the output produced by the Energy Management System"""
 
+    actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
+    """Default: None"""
     internal_variable_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     """Default: None"""
     ems_runtime_language_debug_output_level: Literal["", "ErrorsOnly", "None", "Verbose"] | None
@@ -56219,6 +57095,7 @@ class OutputEnergyManagementSystem(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputEnergyManagementSystemFields(TypedDict, total=False):
+    actuator_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     internal_variable_availability_dictionary_reporting: Literal["", "None", "NotByUniqueKeyNames", "Verbose"] | None
     ems_runtime_language_debug_output_level: Literal["", "ErrorsOnly", "None", "Verbose"] | None
 
@@ -56524,7 +57401,7 @@ class _OutputControlSurfaceColorSchemeCommonFields(TypedDict, total=False):
         | None
     )
 
-class _OutputControlSurfaceColorSchemeBase(IDFObject):
+class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
     """``OutputControl:SurfaceColorScheme`` as every supported EnergyPlus version declares it."""
 
     drawing_element_1_type: (
@@ -56900,10 +57777,10 @@ class _OutputControlSurfaceColorSchemeFields(_OutputControlSurfaceColorSchemeCom
 
 class _OutputTableSummaryReportsCommonFields(TypedDict, total=False): ...
 
-class _OutputTableSummaryReportsBase(IDFObject):
+class _OutputTableSummaryReportsBase(_TypedIDFObject):
     """``Output:Table:SummaryReports`` as every supported EnergyPlus version declares it."""
 
-class OutputTableSummaryReportsReportsGroup(ExtensibleGroup):
+class OutputTableSummaryReportsReportsGroup(_TypedExtensibleGroup):
     """One reports group inside :class:`OutputTableSummaryReports`."""
 
     report_name: (
@@ -57027,15 +57904,18 @@ class _OutputTableSummaryReportsFields(_OutputTableSummaryReportsCommonFields, t
     reports: list[Any]
 
 class _OutputTableTimeBinsCommonFields(TypedDict, total=False):
+    key_value: str | None
     variable_name: str | None
     interval_start: float | None
     interval_size: float | None
     schedule_name: str | None
     variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None
 
-class _OutputTableTimeBinsBase(IDFObject):
+class _OutputTableTimeBinsBase(_TypedIDFObject):
     """``Output:Table:TimeBins`` as every supported EnergyPlus version declares it."""
 
+    key_value: str | None
+    """use '*' (without quotes) to apply this variable to all keys; Default: *"""
     variable_name: str | None
     interval_start: float | None
     """The lowest value for the intervals being binned into."""
@@ -57062,12 +57942,12 @@ class _OutputTableTimeBinsFields(_OutputTableTimeBinsCommonFields, total=False):
 
 class _OutputTableMonthlyCommonFields(TypedDict, total=False): ...
 
-class _OutputTableMonthlyBase(IDFObject):
+class _OutputTableMonthlyBase(_TypedIDFObject):
     """``Output:Table:Monthly`` as every supported EnergyPlus version declares it."""
 
     digits_after_decimal: float | int | None
 
-class OutputTableMonthlyVariableDetailsGroup(ExtensibleGroup):
+class OutputTableMonthlyVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableMonthly`."""
 
     variable_or_meter_name: str | None
@@ -57109,7 +57989,7 @@ class _OutputTableAnnualCommonFields(TypedDict, total=False):
     filter: str | None
     schedule_name: str | None
 
-class _OutputTableAnnualBase(IDFObject):
+class _OutputTableAnnualBase(_TypedIDFObject):
     """``Output:Table:Annual`` as every supported EnergyPlus version declares it."""
 
     filter: str | None
@@ -57117,7 +57997,7 @@ class _OutputTableAnnualBase(IDFObject):
     schedule_name: str | None
     """Optional schedule name. If left blank, aggregation is performed for all hours simulated. If a schedule is specified, ..."""
 
-class OutputTableAnnualVariableDetailsGroup(ExtensibleGroup):
+class OutputTableAnnualVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableAnnual`."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
@@ -57155,6 +58035,10 @@ class _OutputTableAnnualFields(_OutputTableAnnualCommonFields, total=False):
     variable_details: list[Any]
 
 class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
+    report_name: (
+        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
+        | None
+    )
     begin_year: int | None
     begin_month: int | None
     begin_day_of_month: int | None
@@ -57164,9 +58048,14 @@ class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
     end_day_of_month: int | None
     end_hour_of_day: int | None
 
-class _OutputTableReportPeriodBase(IDFObject):
+class _OutputTableReportPeriodBase(_TypedIDFObject):
     """``Output:Table:ReportPeriod`` as every supported EnergyPlus version declares it."""
 
+    report_name: (
+        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
+        | None
+    )
+    """currently only allow for these tables, could be extended in the future; Since: 25.2.0"""
     begin_year: int | None
     """start year of reporting, if specified"""
     begin_month: int | None
@@ -57187,27 +58076,30 @@ class _OutputTableReportPeriodBase(IDFObject):
 class OutputTableReportPeriod(_OutputTableReportPeriodBase):
     """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi...; Since: 22.2.0"""
 
-    report_name: (
-        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
-        | None
-    )
-    """currently only allow for these tables, could be extended in the future; Since: 25.2.0"""
-
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriodFields]
     ) -> None: ...  # type: ignore[override]
 
-class _OutputTableReportPeriodFields(_OutputTableReportPeriodCommonFields, total=False):
-    report_name: (
-        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
+class _OutputTableReportPeriodFields(_OutputTableReportPeriodCommonFields, total=False): ...
+
+class _OutputControlTableStyleCommonFields(TypedDict, total=False):
+    column_separator: (
+        Literal[
+            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+        ]
         | None
     )
 
-class _OutputControlTableStyleCommonFields(TypedDict, total=False): ...
-
-class _OutputControlTableStyleBase(IDFObject):
+class _OutputControlTableStyleBase(_TypedIDFObject):
     """``OutputControl:Table:Style`` as every supported EnergyPlus version declares it."""
 
+    column_separator: (
+        Literal[
+            "", "All", "Comma", "CommaAndHTML", "CommaAndXML", "Fixed", "HTML", "Tab", "TabAndHTML", "XML", "XMLandHTML"
+        ]
+        | None
+    )
+    """Default: Comma"""
     unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "InchPoundExceptElectricity"] | None
 
 class OutputControlTableStyle(_OutputControlTableStyleBase):
@@ -57226,9 +58118,11 @@ class _OutputControlTableStyleFields(_OutputControlTableStyleCommonFields, total
     unit_conversion: Literal["", "InchPound", "InchPoundExceptElectricity", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
     format_numeric_values: Literal["", "No", "Yes"] | None
 
-class OutputControlReportingTolerances(IDFObject):
+class OutputControlReportingTolerances(_TypedIDFObject):
     """Calculations of the time that setpoints are not met use a tolerance of 0.2C. This object allows changing the toleranc..."""
 
+    tolerance_for_time_heating_setpoint_not_met: float | None
+    """If the zone temperature is below the heating setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
     tolerance_for_time_cooling_setpoint_not_met: float | None
     """If the zone temperature is above the cooling setpoint by more than this value, the following output variables will in...; [deltaC]; Default: 0.2; Range: >= 0.0, <= 10.0"""
 
@@ -57237,14 +58131,27 @@ class OutputControlReportingTolerances(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlReportingTolerancesFields(TypedDict, total=False):
+    tolerance_for_time_heating_setpoint_not_met: float | None
     tolerance_for_time_cooling_setpoint_not_met: float | None
 
-class OutputControlResilienceSummaries(IDFObject):
+class OutputControlResilienceSummaries(_TypedIDFObject):
     """Specifies methods for resilience reporting variables; Since: 25.1.0"""
 
-class OutputVariable(IDFObject):
+    heat_index_algorithm: Literal["", "Extended", "Simplified"] | None
+    """Whether the simplified or the extended method should be used for heat index Simplified: based on regression analysis ...; Default: Simplified"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputControlResilienceSummariesFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputControlResilienceSummariesFields(TypedDict, total=False):
+    heat_index_algorithm: Literal["", "Extended", "Simplified"] | None
+
+class OutputVariable(_TypedIDFObject):
     """each Output:Variable command picks variables to be put onto the standard output file (.eso) some variables may not be..."""
 
+    key_value: str | None
+    """use '*' (without quotes) to apply this variable to all keys; Default: *"""
     variable_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
@@ -57255,17 +58162,21 @@ class OutputVariable(IDFObject):
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputVariableFields]) -> None: ...  # type: ignore[override]
 
 class _OutputVariableFields(TypedDict, total=False):
+    key_value: str | None
     variable_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
     schedule_name: str | None
 
-class _OutputMeterCommonFields(TypedDict, total=False): ...
+class _OutputMeterCommonFields(TypedDict, total=False):
+    key_name: str | None
 
-class _OutputMeterBase(IDFObject):
+class _OutputMeterBase(_TypedIDFObject):
     """``Output:Meter`` as every supported EnergyPlus version declares it."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -57285,9 +58196,11 @@ class _OutputMeterFields(_OutputMeterCommonFields, total=False):
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
 
-class OutputMeterMeterFileOnly(IDFObject):
+class OutputMeterMeterFileOnly(_TypedIDFObject):
     """Each Output:Meter:MeterFileOnly command picks meters to be put only onto meter file (.mtr). Not all meters are report..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -57298,13 +58211,16 @@ class OutputMeterMeterFileOnly(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterMeterFileOnlyFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
 
-class OutputMeterCumulative(IDFObject):
+class OutputMeterCumulative(_TypedIDFObject):
     """Each Output:Meter:Cumulative command picks meters to be reported cumulatively onto the standard output file (.eso) an..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -57315,13 +58231,16 @@ class OutputMeterCumulative(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
 
-class OutputMeterCumulativeMeterFileOnly(IDFObject):
+class OutputMeterCumulativeMeterFileOnly(_TypedIDFObject):
     """Each Output:Meter:Cumulative:MeterFileOnly command picks meters to be reported cumulatively onto the standard output ..."""
 
+    key_name: str | None
+    """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -57332,6 +58251,7 @@ class OutputMeterCumulativeMeterFileOnly(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
+    key_name: str | None
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -57339,13 +58259,13 @@ class _OutputMeterCumulativeMeterFileOnlyFields(TypedDict, total=False):
 class _MeterCustomCommonFields(TypedDict, total=False):
     variable_details: list[Any]
 
-class MeterCustomVariableDetailsGroup(ExtensibleGroup):
+class MeterCustomVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`_MeterCustomBase`."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
 
-class _MeterCustomBase(IDFObject):
+class _MeterCustomBase(_TypedIDFObject):
     """``Meter:Custom`` as every supported EnergyPlus version declares it."""
 
     variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
@@ -57403,13 +58323,13 @@ class _MeterCustomDecrementCommonFields(TypedDict, total=False):
     source_meter_name: str | None
     variable_details: list[Any]
 
-class MeterCustomDecrementVariableDetailsGroup(ExtensibleGroup):
+class MeterCustomDecrementVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`_MeterCustomDecrementBase`."""
 
     key_name: str | None
     output_variable_or_meter_name: str | None
 
-class _MeterCustomDecrementBase(IDFObject):
+class _MeterCustomDecrementBase(_TypedIDFObject):
     """``Meter:CustomDecrement`` as every supported EnergyPlus version declares it."""
 
     source_meter_name: str | None
@@ -57468,6 +58388,7 @@ class _MeterCustomDecrementFields(_MeterCustomDecrementCommonFields, total=False
     )
 
 class _OutputControlFilesCommonFields(TypedDict, total=False):
+    output_csv: Literal["", "No", "Yes"] | None
     output_mtr: Literal["", "No", "Yes"] | None
     output_eso: Literal["", "No", "Yes"] | None
     output_eio: Literal["", "No", "Yes"] | None
@@ -57499,9 +58420,11 @@ class _OutputControlFilesCommonFields(TypedDict, total=False):
     output_extshd: Literal["", "No", "Yes"] | None
     output_tarcog: Literal["", "No", "Yes"] | None
 
-class _OutputControlFilesBase(IDFObject):
+class _OutputControlFilesBase(_TypedIDFObject):
     """``OutputControl:Files`` as every supported EnergyPlus version declares it."""
 
+    output_csv: Literal["", "No", "Yes"] | None
+    """Default: No"""
     output_mtr: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_eso: Literal["", "No", "Yes"] | None
@@ -57579,9 +58502,11 @@ class _OutputControlFilesFields(_OutputControlFilesCommonFields, total=False):
     output_space_sizing: Literal["", "No", "Yes"] | None
     output_plant_component_sizing: Literal["", "No", "Yes"] | None
 
-class OutputControlTimestamp(IDFObject):
+class OutputControlTimestamp(_TypedIDFObject):
     """Control timestamp format, currently applies only to JSON and native CSV (not CSV via ReadVars); Since: 23.1.0"""
 
+    iso_8601_format: Literal["", "No", "Yes"] | None
+    """Use the ISO 8601 format YYYY-MM-DDThh:mm:ss; Default: No"""
     timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None
     """Determines where the timestamp is produced, either at the beginning (Yes) or end (No) of the interval; Default: No"""
 
@@ -57590,16 +58515,19 @@ class OutputControlTimestamp(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputControlTimestampFields(TypedDict, total=False):
+    iso_8601_format: Literal["", "No", "Yes"] | None
     timestamp_at_beginning_of_interval: Literal["", "No", "Yes"] | None
 
 class _OutputJSONCommonFields(TypedDict, total=False):
+    option_type: Literal["TimeSeries", "TimeSeriesAndTabular"] | None
     output_json: Literal["", "No", "Yes"] | None
     output_cbor: Literal["", "No", "Yes"] | None
     output_messagepack: Literal["", "No", "Yes"] | None
 
-class _OutputJSONBase(IDFObject):
+class _OutputJSONBase(_TypedIDFObject):
     """``Output:JSON`` as every supported EnergyPlus version declares it."""
 
+    option_type: Literal["TimeSeries", "TimeSeriesAndTabular"] | None
     output_json: Literal["", "No", "Yes"] | None
     """Default: Yes"""
     output_cbor: Literal["", "No", "Yes"] | None
@@ -57645,10 +58573,13 @@ class _OutputJSONFields(_OutputJSONCommonFields, total=False):
     )
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
 
-class _OutputSQLiteCommonFields(TypedDict, total=False): ...
+class _OutputSQLiteCommonFields(TypedDict, total=False):
+    option_type: Literal["Simple", "SimpleAndTabular"] | None
 
-class _OutputSQLiteBase(IDFObject):
+class _OutputSQLiteBase(_TypedIDFObject):
     """``Output:SQLite`` as every supported EnergyPlus version declares it."""
+
+    option_type: Literal["Simple", "SimpleAndTabular"] | None
 
 class OutputSQLite(_OutputSQLiteBase):
     """Output from EnergyPlus can be written to an SQLite format file."""
@@ -57688,8 +58619,18 @@ class _OutputSQLiteFields(_OutputSQLiteCommonFields, total=False):
     )
     format_numeric_values_for_tabular_data: Literal["", "No", "Yes"] | None
 
-class OutputEnvironmentalImpactFactors(IDFObject):
+class OutputEnvironmentalImpactFactors(_TypedIDFObject):
     """This is used to Automatically report the facility meters and turn on the Environmental Impact Report calculations for..."""
+
+    reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
+    """Timestep refers to the zone Timestep/Number of Timesteps in hour value RunPeriod and Environment are the same. Detail..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputEnvironmentalImpactFactorsFields]
+    ) -> None: ...  # type: ignore[override]
+
+class _OutputEnvironmentalImpactFactorsFields(TypedDict, total=False):
+    reporting_frequency: Literal["Annual", "Daily", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
 
 class _EnvironmentalImpactFactorsCommonFields(TypedDict, total=False):
     district_cooling_cop: float | None
@@ -57697,7 +58638,7 @@ class _EnvironmentalImpactFactorsCommonFields(TypedDict, total=False):
     total_carbon_equivalent_emission_factor_from_ch4: float | None
     total_carbon_equivalent_emission_factor_from_co2: float | None
 
-class _EnvironmentalImpactFactorsBase(IDFObject):
+class _EnvironmentalImpactFactorsBase(_TypedIDFObject):
     """``EnvironmentalImpactFactors`` as every supported EnergyPlus version declares it."""
 
     district_cooling_cop: float | None
@@ -57712,6 +58653,8 @@ class _EnvironmentalImpactFactorsBase(IDFObject):
 class EnvironmentalImpactFactors(_EnvironmentalImpactFactorsBase):
     """Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
 
+    district_heating_water_efficiency: float | None
+    """District heating efficiency used when converted to natural gas; Default: 0.3; Range: > 0.0; Since: 23.2.0"""
     district_heating_steam_conversion_efficiency: float | None
     """Steam conversion efficiency used to convert steam usage to natural gas; Default: 0.25; Range: > 0.0; Since: 23.2.0"""
 
@@ -57720,6 +58663,7 @@ class EnvironmentalImpactFactors(_EnvironmentalImpactFactorsBase):
     ) -> None: ...  # type: ignore[override]
 
 class _EnvironmentalImpactFactorsFields(_EnvironmentalImpactFactorsCommonFields, total=False):
+    district_heating_water_efficiency: float | None
     district_heating_steam_conversion_efficiency: float | None
 
 class _FuelFactorsCommonFields(TypedDict, total=False):
@@ -57758,9 +58702,25 @@ class _FuelFactorsCommonFields(TypedDict, total=False):
     nuclear_low_level_emission_factor: float | None
     nuclear_low_level_emission_factor_schedule_name: str | None
 
-class _FuelFactorsBase(IDFObject):
+class _FuelFactorsBase(_TypedIDFObject):
     """``FuelFactors`` as every supported EnergyPlus version declares it."""
 
+    existing_fuel_resource_name: (
+        str
+        | Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
     source_energy_factor: float | None
     """[J/J]"""
     source_energy_schedule_name: str | None
@@ -57816,15 +58776,47 @@ class _FuelFactorsBase(IDFObject):
 class FuelFactors(_FuelFactorsBase):
     """Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactorsFields]) -> None: ...  # type: ignore[override]
 
-class _FuelFactorsFields(_FuelFactorsCommonFields, total=False): ...
+class _FuelFactorsFields(_FuelFactorsCommonFields, total=False):
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+
 class _OutputDiagnosticsCommonFields(TypedDict, total=False): ...
 
-class _OutputDiagnosticsBase(IDFObject):
+class _OutputDiagnosticsBase(_TypedIDFObject):
     """``Output:Diagnostics`` as every supported EnergyPlus version declares it."""
 
-class OutputDiagnosticsDiagnosticsGroup(ExtensibleGroup):
+class OutputDiagnosticsDiagnosticsGroup(_TypedExtensibleGroup):
     """One diagnostics group inside :class:`OutputDiagnostics`."""
 
     key: (
@@ -57857,14 +58849,17 @@ class _OutputDiagnosticsFields(_OutputDiagnosticsCommonFields, total=False):
 
 class _OutputDebuggingDataCommonFields(TypedDict, total=False): ...
 
-class _OutputDebuggingDataBase(IDFObject):
+class _OutputDebuggingDataBase(_TypedIDFObject):
     """``Output:DebuggingData`` as every supported EnergyPlus version declares it."""
 
+    report_debugging_data: float | Literal["", "No", "Yes"] | None
     report_during_warmup: float | Literal["", "No", "Yes"] | None
 
 class OutputDebuggingData(_OutputDebuggingDataBase):
     """switch eplusout.dbg file on or off"""
 
+    report_debugging_data: Literal["", "No", "Yes"] | None
+    """Default: No"""
     report_during_warmup: Literal["", "No", "Yes"] | None
     """Default: No"""
 
@@ -57873,11 +58868,13 @@ class OutputDebuggingData(_OutputDebuggingDataBase):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputDebuggingDataFields(_OutputDebuggingDataCommonFields, total=False):
+    report_debugging_data: Literal["", "No", "Yes"] | None
     report_during_warmup: Literal["", "No", "Yes"] | None
 
-class OutputPreprocessorMessage(IDFObject):
+class OutputPreprocessorMessage(_TypedIDFObject):
     """This object does not come from a user input. This is generated by a pre-processor so that various conditions can be g..."""
 
+    preprocessor_name: str | None
     error_severity: Literal["Fatal", "Information", "Severe", "Warning"] | None
     """Depending on type, InputProcessor may terminate the program."""
     message_line_1: str | None
@@ -57896,6 +58893,7 @@ class OutputPreprocessorMessage(IDFObject):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputPreprocessorMessageFields(TypedDict, total=False):
+    preprocessor_name: str | None
     error_severity: Literal["Fatal", "Information", "Severe", "Warning"] | None
     message_line_1: str | None
     message_line_2: str | None
@@ -57912,7 +58910,7 @@ class _PythonPluginSearchPathsCommonFields(TypedDict, total=False):
     add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None
     add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None
 
-class _PythonPluginSearchPathsBase(IDFObject):
+class _PythonPluginSearchPathsBase(_TypedIDFObject):
     """``PythonPlugin:SearchPaths`` as every supported EnergyPlus version declares it."""
 
     add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None
@@ -57920,7 +58918,7 @@ class _PythonPluginSearchPathsBase(IDFObject):
     add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None
     """Enabling this will allow Python to find plugin scripts in the same directory as the running input file, even if that ...; Default: Yes"""
 
-class PythonPluginSearchPathsPySearchPathsGroup(ExtensibleGroup):
+class PythonPluginSearchPathsPySearchPathsGroup(_TypedExtensibleGroup):
     """One py_search_paths group inside :class:`PythonPluginSearchPaths`."""
 
     search_path: str | None
@@ -57940,7 +58938,7 @@ class _PythonPluginSearchPathsFields(_PythonPluginSearchPathsCommonFields, total
     add_epin_environment_variable_to_search_path: Literal["", "No", "Yes"] | None
     py_search_paths: list[Any]
 
-class PythonPluginInstance(IDFObject):
+class PythonPluginInstance(_TypedIDFObject):
     """A single plugin to be executed during the simulation, which can contain multiple calling points for the same class in...; Since: 9.3.0"""
 
     run_during_warmup_days: Literal["", "No", "Yes"] | None
@@ -57961,10 +58959,10 @@ class _PythonPluginInstanceFields(TypedDict, total=False):
 
 class _PythonPluginVariablesCommonFields(TypedDict, total=False): ...
 
-class _PythonPluginVariablesBase(IDFObject):
+class _PythonPluginVariablesBase(_TypedIDFObject):
     """``PythonPlugin:Variables`` as every supported EnergyPlus version declares it."""
 
-class PythonPluginVariablesGlobalPyVarsGroup(ExtensibleGroup):
+class PythonPluginVariablesGlobalPyVarsGroup(_TypedExtensibleGroup):
     """One global_py_vars group inside :class:`PythonPluginVariables`."""
 
     variable_name: str | None
@@ -57984,7 +58982,7 @@ class _PythonPluginVariablesFields(_PythonPluginVariablesCommonFields, total=Fal
 class _PythonPluginTrendVariableCommonFields(TypedDict, total=False):
     name_of_a_python_plugin_variable: str | None
 
-class _PythonPluginTrendVariableBase(IDFObject):
+class _PythonPluginTrendVariableBase(_TypedIDFObject):
     """``PythonPlugin:TrendVariable`` as every supported EnergyPlus version declares it."""
 
     name_of_a_python_plugin_variable: str | None
@@ -58037,7 +59035,7 @@ class _PythonPluginOutputVariableCommonFields(TypedDict, total=False):
     )
     end_use_subcategory: str | None
 
-class _PythonPluginOutputVariableBase(IDFObject):
+class _PythonPluginOutputVariableBase(_TypedIDFObject):
     """``PythonPlugin:OutputVariable`` as every supported EnergyPlus version declares it."""
 
     python_plugin_variable_name: str | None
@@ -59253,7 +60251,7 @@ _CommonTypeMap = TypedDict(
         "PerformancePrecisionTradeoffs": NotRequired[ReadOnly[IDFCollection[_PerformancePrecisionTradeoffsBase]]],
         "Building": ReadOnly[IDFCollection[_BuildingBase]],
         "ShadowCalculation": ReadOnly[IDFCollection[_ShadowCalculationBase]],
-        "SurfaceConvectionAlgorithm:Inside": ReadOnly[IDFCollection[SurfaceConvectionAlgorithmInside]],
+        "SurfaceConvectionAlgorithm:Inside": ReadOnly[IDFCollection[_SurfaceConvectionAlgorithmInsideBase]],
         "SurfaceConvectionAlgorithm:Outside": ReadOnly[IDFCollection[SurfaceConvectionAlgorithmOutside]],
         "HeatBalanceAlgorithm": ReadOnly[IDFCollection[HeatBalanceAlgorithm]],
         "HeatBalanceSettings:ConductionFiniteDifference": ReadOnly[
@@ -59261,9 +60259,9 @@ _CommonTypeMap = TypedDict(
         ],
         "ZoneAirHeatBalanceAlgorithm": ReadOnly[IDFCollection[_ZoneAirHeatBalanceAlgorithmBase]],
         "ZoneAirContaminantBalance": ReadOnly[IDFCollection[ZoneAirContaminantBalance]],
-        "ZoneAirMassFlowConservation": ReadOnly[IDFCollection[ZoneAirMassFlowConservation]],
+        "ZoneAirMassFlowConservation": ReadOnly[IDFCollection[_ZoneAirMassFlowConservationBase]],
         "ZoneCapacitanceMultiplier:ResearchSpecial": ReadOnly[IDFCollection[ZoneCapacitanceMultiplierResearchSpecial]],
-        "Timestep": ReadOnly[IDFCollection[Timestep]],
+        "Timestep": ReadOnly[IDFCollection[_TimestepBase]],
         "ConvergenceLimits": ReadOnly[IDFCollection[_ConvergenceLimitsBase]],
         "HVACSystemRootFindingAlgorithm": ReadOnly[IDFCollection[_HVACSystemRootFindingAlgorithmBase]],
         "Compliance:Building": ReadOnly[IDFCollection[ComplianceBuilding]],
@@ -59477,7 +60475,7 @@ _CommonTypeMap = TypedDict(
             IDFCollection[ComplexFenestrationPropertySolarAbsorbedLayers]
         ],
         "ZoneProperty:UserViewFactors:BySurfaceName": NotRequired[
-            ReadOnly[IDFCollection[ZonePropertyUserViewFactorsBySurfaceName]]
+            ReadOnly[IDFCollection[_ZonePropertyUserViewFactorsBySurfaceNameBase]]
         ],
         "ZoneMRTCalculation": NotRequired[ReadOnly[IDFCollection[ZoneMRTCalculation]]],
         "GroundHeatTransfer:Control": ReadOnly[IDFCollection[GroundHeatTransferControl]],

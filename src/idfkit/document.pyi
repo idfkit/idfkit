@@ -270,15 +270,19 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Args:
             obj_type: Object type (e.g., "Zone")
-            name: Object name (optional for object types without a name field,
-                such as Timestep, SimulationControl, GlobalGeometryRules)
+            name: The object's name. Must be empty ("" or omitted) for types without
+                a Name field, such as Output:Meter, Output:SQLite, Timestep or
+                SimulationControl; their first field is a normal field, passed by its
+                schema name (key_name=..., option_type=...).
             fields: Field values as a dict, useful when field names are
                 computed dynamically. Equivalent to passing the same keys
                 as ``**kwargs``; merged before ``kwargs`` so explicit
                 kwargs win on conflict.
             validate: If True (default), validate the object against schema before adding.
                 Raises ValidationFailedError if validation fails. Set to False for
-                bulk operations where performance matters.
+                bulk operations where performance matters: values, required fields
+                and ranges are then not checked, but a key the schema does not name
+                still raises InvalidFieldError, whatever its value.
             **kwargs: Additional field values
 
         Returns:
@@ -291,6 +295,14 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
                 schema ``maxProperties == 1``) already exists in the document
             ValidationFailedError: If validation fails (unknown fields, missing
                 required fields, invalid values)
+            InvalidFieldError: If ``validate=False`` and a key is not a field of
+                the object type, naming every such key (the name goes in ``name``,
+                not in ``fields``); or, in either mode, if ``name`` is not empty and
+                the type has no Name field (the message names the field to use
+                instead, e.g. ``key_name`` for Output:Meter)
+            TypeError: If the extensible wrapper value is not a list of groups,
+                or a group has a key the group does not name (in either mode,
+                as ``IDFObject.update`` refuses it)
 
         Examples:
             >>> from idfkit import new_document
@@ -5260,7 +5272,7 @@ class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # ty
         self,
     ) -> IDFCollection[SurfaceConvectionAlgorithmInsideUserCurve]: ...
     @property
-    def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside]: ...
+    def surface_convection_algorithm_insides(self) -> IDFCollection[_SurfaceConvectionAlgorithmInsideBase]: ...
     @property
     def surface_convection_algorithm_outside_adaptive_model_selections(
         self,
@@ -5358,9 +5370,9 @@ class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # ty
     @property
     def thermostats(self) -> IDFCollection[ThermostatSetpointDualSetpoint]: ...
     @property
-    def timestep(self) -> IDFCollection[Timestep]: ...
+    def timestep(self) -> IDFCollection[_TimestepBase]: ...
     @property
-    def timesteps(self) -> IDFCollection[Timestep]: ...
+    def timesteps(self) -> IDFCollection[_TimestepBase]: ...
     @property
     def unitary_system_performance_multispeeds(self) -> IDFCollection[_UnitarySystemPerformanceMultispeedBase]: ...
     @property
@@ -5480,7 +5492,7 @@ class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # ty
     @property
     def zone_air_heat_balance_algorithms(self) -> IDFCollection[_ZoneAirHeatBalanceAlgorithmBase]: ...
     @property
-    def zone_air_mass_flow_conservations(self) -> IDFCollection[ZoneAirMassFlowConservation]: ...
+    def zone_air_mass_flow_conservations(self) -> IDFCollection[_ZoneAirMassFlowConservationBase]: ...
     @property
     def zone_baseboard_outdoor_temperature_controlleds(
         self,

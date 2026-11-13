@@ -528,7 +528,7 @@ class TestEpJSONParserBranchCoverage:
         assert len(doc["Zone"]) == 1
 
     def test_build_field_order_skips_existing_base_fields(self, tmp_path: Path) -> None:
-        """255->254: group-0 extensible field already in base_set is not re-appended."""
+        """A fixed field that shares its name with an extensible field stays a fixed field."""
         from idfkit.epjson_parser import EpJSONParser
         from idfkit.schema import get_schema
 
@@ -548,7 +548,8 @@ class TestEpJSONParserBranchCoverage:
         filepath.write_text(json.dumps(data))
         parser = EpJSONParser(filepath, schema)
         doc = parser.parse((24, 1, 0), strict=False)
-        assert len(doc) >= 1
+        obj = doc["Site:SpectrumData"]["Solar"]
+        assert obj.data == {"spectrum_data_type": "Solar", "wavelength": 0.3, "spectrum": 0.8}
 
     def test_get_epjson_version_empty_identifier_raises(self, tmp_path: Path) -> None:
         """316->325 + 318->316: version_identifier empty → VersionNotFoundError in get_epjson_version."""

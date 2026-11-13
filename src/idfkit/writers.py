@@ -66,6 +66,11 @@ DEFAULT_INDENT = 2
 DEFAULT_COMMENT_COLUMN = 30
 
 
+def _field_label(field_name: str) -> str:
+    """The ``!-`` comment label the writer generates for a field: ``x_origin`` -> ``X Origin``."""
+    return field_name.replace("_", " ").title()
+
+
 def _resolve_version_identifier(doc: AnyIDFDocument[bool]) -> str:
     """Read version_identifier from the Version object, falling back to doc.version."""
     version_coll = doc.collections.get("Version")
@@ -666,7 +671,9 @@ class IDFWriter:
         Where there is no author at all, because the object gained this field, the label as always.
         """
         if annotation is None:
-            return f"!- {label}"
+            # A field with no label at all, the blank written into a GroundHeatTransfer face object,
+            # gets no comment rather than a bare ``!- `` and its trailing space.
+            return f"!- {label}" if label else ""
         if annotation.trailing is not None:
             return annotation.trailing
         return f"!- {label}" if self._field_comments == "generate" else ""
@@ -685,19 +692,20 @@ class IDFWriter:
         obj_type = obj.obj_type
         schema = self._doc.schema
 
-        obj_has_name = True
-        pc = None
-        if schema:
-            obj_has_name = schema.has_name(obj_type)
-            pc = schema.get_parsing_cache(obj_type)
+        # Everything about the type is read from its parsing cache, which resolves the type name the way
+        # the document does. ``schema.has_name`` and ``schema.get_all_field_names`` look the raw
+        # spelling up exactly, so an object filed as ``Timestep`` but spelled ``TIMESTEP`` lost its
+        # name and every field, and came out with nothing in it.
+        pc = schema.get_parsing_cache(obj_type) if schema else None
+        obj_has_name = pc.has_name if pc else True
 
         if obj.field_order:
             if obj_has_name:
                 field_names: list[str] = ["name", *list(obj.field_order)]
             else:
                 field_names = list(obj.field_order)
-        elif schema:
-            field_names = schema.get_all_field_names(obj_type)
+        elif pc:
+            field_names = list(pc.all_field_names)
         else:
             field_names = ["name", *list(obj.data.keys())] if obj_has_name else list(obj.data.keys())
 
@@ -715,8 +723,7 @@ class IDFWriter:
             else:
                 value = obj.data.get(field_name)
                 values.append(self._format_value(value))
-                comment = field_name.replace("_", " ").title()
-                comments.append(comment)
+                comments.append(_field_label(field_name))
 
         # Append extensible groups as positional tokens (legacy IDF layout).
         if wrapper_key and pc and pc.ext_field_names:
@@ -728,7 +735,7 @@ class IDFWriter:
                     suffix = "" if group_idx == 1 else f" {group_idx}"
                     for inner in inner_names:
                         values.append(self._format_value(item.get(inner)))
-                        comments.append(f"{inner.replace('_', ' ').title()}{suffix}")
+                        comments.append(f"{_field_label(inner)}{suffix}")
 
         # Trim trailing empty fields, but never below what the author actually wrote.
         #
@@ -748,6 +755,23 @@ class IDFWriter:
         while len(values) > max(1, keep_at_least) and values[-1] == "":
             values.pop()
             comments.pop()
+
+        # An object with nothing to write still needs one value to carry its terminator. Only a
+        # nameless type with no fixed fields gets here, when it holds no groups: Output:Diagnostics,
+        # Output:Table:SummaryReports, OutdoorAir:NodeList, EnergyManagementSystem:GlobalVariable and
+        # the GroundHeatTransfer face types. Without this the object came out as a bare
+        # ``Output:Diagnostics,`` that swallowed the object after it.
+        #
+        # IDF has no spelling EnergyPlus reads as such an object with nothing in it. ``Type;`` is not
+        # one: EnergyPlus reads on into the next object exactly as it does with no terminator, and
+        # idfkit's parser skips it. ``Type,;`` keeps the next object intact, but EnergyPlus reads it
+        # as one BLANK GROUP. That is a warning for Output:Diagnostics and a Severe for
+        # Output:Table:SummaryReports, and EnergyPlus refuses the input for OutdoorAir:NodeList and
+        # EnergyManagementSystem:GlobalVariable, whose group has a required field. Only epJSON can
+        # carry these objects empty.
+        if not values:
+            values.append("")
+            comments.append(_field_label(pc.ext_field_names[0]) if pc and pc.ext_field_names else "")
 
         return values, comments
 

@@ -17,6 +17,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from .document import AnyIDFDocument, IDFDocument
     from .objects import IDFObject
 
@@ -40,6 +42,7 @@ class EppyObjectMixin:
         _field_order: list[str] | None
 
         def _set_name(self, value: str) -> None: ...
+        def _field_key(self, key: str) -> str: ...
 
     # -- Properties ----------------------------------------------------------
 
@@ -102,14 +105,12 @@ class EppyObjectMixin:
 
     def get_field_idd(self, field_name: str) -> dict[str, Any] | None:
         """Get IDD/schema info for a field (eppy compatibility)."""
-        from .objects import to_python_name
-
         if not self._schema:
             return None
         pattern_props: dict[str, Any] = self._schema.get("patternProperties", {})
         default: dict[str, Any] = {}
         inner: dict[str, Any] = next(iter(pattern_props.values()), default) if pattern_props else default
-        return inner.get("properties", {}).get(to_python_name(field_name))
+        return inner.get("properties", {}).get(self._field_key(field_name))
 
     def getfieldidd(self, field_name: str) -> dict[str, Any] | None:
         """Alias for [get_field_idd][] (eppy compatibility).
@@ -153,10 +154,8 @@ class EppyObjectMixin:
             >>> rng["exclusiveMinimum"]
             0.0
         """
-        from .objects import to_python_name
-
         result: dict[str, Any] = {}
-        field_idd = self.get_field_idd(to_python_name(field_name))
+        field_idd = self.get_field_idd(field_name)
         if not field_idd:
             return result
 
@@ -256,13 +255,11 @@ class EppyObjectMixin:
             >>> wall.get_referenced_object("construction_name").name
             'Ext_Wall'
         """
-        from .objects import to_python_name
-
         doc = self._document
         if doc is None:
             return None
 
-        python_key = to_python_name(field_name)
+        python_key = self._field_key(field_name)
         ref_name = getattr(self, python_key, None)
         if not ref_name or not isinstance(ref_name, str):
             return None
@@ -333,11 +330,15 @@ class EppyObjectMixin:
             result = filtered
 
         if fields is not None:
-            fields_python = [to_python_name(f) for f in fields]
+            # Each referencing type's trailing-underscore spellings (cond_flag_..._conditioned_).
+            schema = doc.schema
             filtered = []
             for obj in result:
-                for fld in fields_python:
-                    value = obj.data.get(fld, "")
+                pc = schema.get_parsing_cache(obj.obj_type) if schema is not None else None
+                aliases: Mapping[str, str] = pc.field_aliases if pc is not None else {}
+                for fld in fields:
+                    python_fld = to_python_name(fld)
+                    value = obj.data.get(aliases.get(fld) or aliases.get(python_fld, python_fld), "")
                     if isinstance(value, str) and value.upper() == name.upper():
                         filtered.append(obj)
                         break

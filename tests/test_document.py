@@ -12,8 +12,9 @@ import pytest
 
 from idfkit import IDFDocument, load_idf, new_document, write_idf
 from idfkit.cst import DocumentCST
-from idfkit.exceptions import DuplicateObjectError, ValidationFailedError
+from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
+from idfkit.validation import ValidationError
 
 
 class TestIDFDocumentInit:
@@ -488,6 +489,139 @@ class TestGetIddGroupDict:
         assert "BuildingSurface:Detailed" in groups["Thermal Zones and Surfaces"]
 
 
+def _refused(exc: Exception) -> list[str]:
+    """The keys an add() refusal names, whichever validate mode raised it."""
+    if isinstance(exc, ValidationFailedError):
+        return [str(e.field) for e in exc.errors if isinstance(e, ValidationError) and e.code == "W003"]
+    assert isinstance(exc, InvalidFieldError)
+    return [entry.name for entry in exc.refused]
+
+
+# validate=True reports an unknown key as W003 in ValidationFailedError; validate=False, which
+# skips value checks, still refuses it with InvalidFieldError. Neither stores it.
+REFUSAL_MODES = [
+    pytest.param(True, ValidationFailedError, id="validate"),
+    pytest.param(False, InvalidFieldError, id="no-validate"),
+]
+
+
+class TestAddRefusesUnknownKeys:
+    """``add()`` never stores a key the type does not name: the writers would drop it."""
+
+    @pytest.mark.parametrize(("validate", "error"), REFUSAL_MODES)
+    def test_unknown_fields_are_all_named(self, empty_doc: IDFDocument, validate: bool, error: type[Exception]) -> None:
+        with pytest.raises(error) as exc_info:
+            empty_doc.add("Zone", "Z", x_orign=1.0, y_orign=2.0, validate=validate)
+        assert _refused(exc_info.value) == ["x_orign", "y_orign"]
+        assert len(empty_doc["Zone"]) == 0
+
+    @pytest.mark.parametrize(("validate", "error"), REFUSAL_MODES)
+    def test_nonexistent_extensible_spelling(
+        self, empty_doc: IDFDocument, validate: bool, error: type[Exception]
+    ) -> None:
+        with pytest.raises(error) as exc_info:
+            empty_doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=validate)
+        assert _refused(exc_info.value) == ["report_1"]
+        assert len(empty_doc["Output:Table:SummaryReports"]) == 0
+
+    @pytest.mark.parametrize(("validate", "error"), REFUSAL_MODES)
+    def test_unknown_key_beside_wrapper(self, empty_doc: IDFDocument, validate: bool, error: type[Exception]) -> None:
+        with pytest.raises(error) as exc_info:
+            empty_doc.add(
+                "Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], bogus="x", validate=validate
+            )
+        assert _refused(exc_info.value) == ["bogus"]
+
+    @pytest.mark.parametrize("value", [None, ""])
+    @pytest.mark.parametrize(("validate", "error"), REFUSAL_MODES)
+    def test_blank_unknown_key(
+        self, empty_doc: IDFDocument, validate: bool, error: type[Exception], value: str | None
+    ) -> None:
+        with pytest.raises(error) as exc_info:
+            empty_doc.add("Zone", "Z", bogus=value, validate=validate)
+        assert _refused(exc_info.value) == ["bogus"]
+
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_wrapper_list_is_stored_intact(self, empty_doc: IDFDocument, validate: bool) -> None:
+        obj = empty_doc.add(
+            "Output:Table:SummaryReports", "", reports=[{"report_name": "AllSummary"}], validate=validate
+        )
+        assert obj.data == {"reports": [{"report_name": "AllSummary"}]}
+
+    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_valid_flat_spellings_are_folded(self, empty_doc: IDFDocument, validate: bool) -> None:
+        obj = empty_doc.add(
+            "Output:Table:SummaryReports",
+            "",
+            report_name="AllSummary",
+            report_name_2="ZoneComponentLoadSummary",
+            validate=validate,
+        )
+        assert obj.data == {
+            "reports": [{"report_name": "AllSummary"}, {"report_name": "ZoneComponentLoadSummary"}],
+        }
+
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_unknown_key_inside_a_group(self, empty_doc: IDFDocument, validate: bool) -> None:
+        """Validation does not look inside groups, so add() refuses this in both modes, as update() does."""
+        with pytest.raises(TypeError, match="report_nme"):
+            empty_doc.add("Output:Table:SummaryReports", "", reports=[{"report_nme": "AllSummary"}], validate=validate)
+        assert len(empty_doc["Output:Table:SummaryReports"]) == 0
+
+    @pytest.mark.parametrize("validate", [True, False])
+    @pytest.mark.parametrize("reports", [["AllSummary"], [("report_name", "AllSummary")], "AllSummary"])
+    def test_wrapper_value_of_the_wrong_shape(self, empty_doc: IDFDocument, validate: bool, reports: object) -> None:
+        with pytest.raises(TypeError, match="wrapper-value"):
+            empty_doc.add("Output:Table:SummaryReports", "", reports=reports, validate=validate)
+
+    def test_live_group_view_is_refused(self, empty_doc: IDFDocument) -> None:
+        """Another object's ``vertices`` is a view, not a list; storing it would lose the groups."""
+        verts = [
+            {"vertex_x_coordinate": x, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": z}
+            for x, z in ((0, 1), (0, 0), (1, 0))
+        ]
+        w1 = empty_doc.add("BuildingSurface:Detailed", "W1", surface_type="Wall", vertices=verts, validate=False)
+        with pytest.raises(TypeError, match="expected a list"):
+            empty_doc.add("BuildingSurface:Detailed", "W2", surface_type="Wall", vertices=w1.vertices, validate=False)
+        w2 = empty_doc.add(
+            "BuildingSurface:Detailed", "W2", surface_type="Wall", vertices=w1.vertices.as_list(), validate=False
+        )
+        assert len(w2.vertices) == 3
+
+    def test_name_in_fields_points_to_the_name_argument(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(InvalidFieldError, match="name argument") as exc_info:
+            empty_doc.add("Zone", "", {"name": "Z"}, validate=False)
+        assert [(e.name, e.reason) for e in exc_info.value.refused] == [("name", "name")]
+
+    def test_display_spelling_names_the_field(self, empty_doc: IDFDocument) -> None:
+        """update() resolves "X Origin"; add() stores keys as given, so it refuses and names the field."""
+        with pytest.raises(InvalidFieldError, match="spell it 'x_origin'"):
+            empty_doc.add("Zone", "Z", {"X Origin": 1.0}, validate=False)
+
+    def test_error_lists_the_wrapper_key(self, empty_doc: IDFDocument) -> None:
+        with pytest.raises(InvalidFieldError) as exc_info:
+            empty_doc.add("Output:Table:SummaryReports", "", report_1="AllSummary", validate=False)
+        assert exc_info.value.available_fields == ["reports"]
+
+    def test_field_ending_in_underscore_is_known(self, empty_doc: IDFDocument) -> None:
+        """Some schema fields end in "_", which to_python_name would strip; they are still fields."""
+        obj = empty_doc.add(
+            "GroundHeatTransfer:Basement:Interior", "", cond_flag_is_the_basement_conditioned_="TRUE", validate=False
+        )
+        assert obj.data == {"cond_flag_is_the_basement_conditioned_": "TRUE"}
+
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_duplicate_singleton_is_reported_first(self, empty_doc: IDFDocument, validate: bool) -> None:
+        empty_doc.add("Building", "B1", validate=False)
+        with pytest.raises(DuplicateObjectError):
+            empty_doc.add("Building", "B2", bogus=1, validate=validate)
+
+    def test_validate_false_still_skips_value_checks(self, empty_doc: IDFDocument) -> None:
+        obj = empty_doc.add("Zone", "TestZone", multiplier="not-a-number", validate=False)
+        assert obj.data["multiplier"] == "not-a-number"
+
+
 class TestAddWithValidation:
     def test_add_valid_object_with_validation(self, empty_doc: IDFDocument) -> None:
         # Valid Zone object should succeed
@@ -502,12 +636,6 @@ class TestAddWithValidation:
 
         # Check the error message mentions the unknown field
         assert "fake_field" in str(exc_info.value)
-
-    def test_add_without_validation_allows_unknown_field(self, empty_doc: IDFDocument) -> None:
-        # With validate=False, unknown fields are silently accepted
-        obj = empty_doc.add("Zone", "TestZone", fake_field=123, validate=False)
-        assert obj.name == "TestZone"
-        assert obj.data.get("fake_field") == 123
 
     def test_add_material_missing_required_field(self, empty_doc: IDFDocument) -> None:
         # Material requires roughness, thickness, conductivity, density, specific_heat
@@ -648,29 +776,6 @@ class TestBuildFieldOrderForAdd:
     def test_returns_none_when_base_is_none(self) -> None:
         result = IDFDocument._build_field_order_for_add(None, {}, None)  # pyright: ignore[reportPrivateUsage]
         assert result is None
-
-    def test_extensible_with_user_extra_fields(self, empty_doc: IDFDocument) -> None:
-        # Vertices are bucketed into the canonical wrapper; an arbitrary
-        # non-schema field passes through into obj.data (writers ignore it).
-        obj = empty_doc.add(
-            "BuildingSurface:Detailed",
-            "Wall1",
-            {
-                "surface_type": "Wall",
-                "construction_name": "",
-                "zone_name": "",
-                "outside_boundary_condition": "Outdoors",
-                "number_of_vertices": 2,
-                "vertices": [
-                    {"vertex_x_coordinate": 0.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                    {"vertex_x_coordinate": 1.0, "vertex_y_coordinate": 0.0, "vertex_z_coordinate": 0.0},
-                ],
-                "extra_nonschema_field": 42.0,
-            },
-            validate=False,
-        )
-        assert obj.data["extra_nonschema_field"] == 42.0
-        assert len(obj.data["vertices"]) == 2
 
 
 class TestRemoveIdfObjectEdgeCases:
@@ -1136,3 +1241,82 @@ class TestIDFDocumentPickleAndDeepcopy:
             [sys.executable, "-c", script], input=pickle.dumps(simple_doc), capture_output=True, check=True
         )
         assert result.stdout.decode().strip() == f"{len(simple_doc)} {simple_doc.version} True"
+
+
+# ---------------------------------------------------------------------------
+# Names on types without a Name field
+# ---------------------------------------------------------------------------
+
+# (type, first field, value): Output:Meter's first field is required, Output:SQLite's is optional.
+_NAMELESS_CASES = [
+    ("Output:Meter", "key_name", "Electricity:Facility"),
+    ("Output:SQLite", "option_type", "SimpleAndTabular"),
+]
+
+
+class TestNameOnNamelessType:
+    """A name given to a type with no Name field would be dropped on write; it is refused."""
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    @pytest.mark.parametrize("validate", [True, False])
+    def test_add_refuses_a_name(self, obj_type: str, first_field: str, value: str, validate: bool) -> None:
+        doc = new_document()
+        with pytest.raises(InvalidFieldError, match=f'{first_field}="{value}"') as excinfo:
+            doc.add(obj_type, value, validate=validate)
+        assert f"{obj_type} has no Name field" in str(excinfo.value)
+        assert obj_type not in doc
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    def test_add_with_the_first_field_writes_it(self, obj_type: str, first_field: str, value: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, fields={first_field: value})
+        assert obj.name == ""
+        assert obj.data[first_field] == value
+        assert value in write_idf(doc)
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    def test_add_accepts_an_empty_name(self, obj_type: str, first_field: str, value: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, "", fields={first_field: value})
+        assert obj.name == ""
+        doc.removeidfobject(obj)
+        obj = doc.add(obj_type, None, fields={first_field: value})  # type: ignore[arg-type]
+        assert obj.name is None or obj.name == ""
+
+    @pytest.mark.parametrize(("obj_type", "first_field", "value"), _NAMELESS_CASES)
+    @pytest.mark.parametrize("attr", ["name", "Name"])
+    def test_name_assignment_is_refused(self, obj_type: str, first_field: str, value: str, attr: str) -> None:
+        doc = new_document()
+        obj = doc.add(obj_type, fields={first_field: value})
+        with pytest.raises(InvalidFieldError, match=f'{first_field}="Other"'):
+            setattr(obj, attr, "Other")
+        assert obj.name == ""
+        obj.name = ""  # clearing a name that is already empty is not a change
+
+    def test_eppy_paths_refuse_a_name(self) -> None:
+        doc = new_document()
+        with pytest.raises(InvalidFieldError):
+            doc.newidfobject("Output:Meter", Name="Electricity:Facility")
+        meter = doc.newidfobject("Output:Meter", key_name="Electricity:Facility")
+        with pytest.raises(InvalidFieldError):
+            doc.copyidfobject(meter, new_name="Gas:Facility")
+        detached = meter.copy()
+        object.__setattr__(detached, "_name", "Gas:Facility")
+        with pytest.raises(InvalidFieldError):
+            doc.addidfobject(detached)
+        assert len(doc["Output:Meter"]) == 1
+
+    def test_loading_nameless_objects_still_works(self, tmp_path: Path) -> None:
+        idf = tmp_path / "m.idf"
+        idf.write_text(
+            "Version, 24.1;\nOutput:Meter, Electricity:Facility, Hourly;\nOutput:SQLite, SimpleAndTabular;\n"
+            "Timestep, 4;\n"
+        )
+        doc = load_idf(str(idf))
+        meter = doc["Output:Meter"].first()
+        assert meter is not None
+        assert meter.name == ""
+        assert meter.key_name == "Electricity:Facility"
+        sqlite = doc["Output:SQLite"].first()
+        assert sqlite is not None
+        assert sqlite.option_type == "SimpleAndTabular"

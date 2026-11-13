@@ -134,28 +134,16 @@ class OutputVariableIndex:
             self.search(filter_pattern) if filter_pattern is not None else [*self.variables, *self.meters]
         )
 
-        count = 0
         for item in items:
-            if isinstance(item, OutputVariable):
-                # Use empty name to avoid DuplicateObjectError when multiple
-                # variables share the same key (e.g. "*"). EnergyPlus treats
-                # empty Key_Value the same as "*".
-                # validate=False for bulk performance
-                model.add(
-                    "Output:Variable",
-                    "",
-                    variable_name=item.name,
-                    reporting_frequency=frequency,
-                    validate=False,
-                )
-                count += 1
-            else:
-                # validate=False for bulk performance
-                model.add(
-                    "Output:Meter",
-                    item.name,
-                    reporting_frequency=frequency,
-                    validate=False,
-                )
-                count += 1
-        return count
+            # Neither type has a Name field, so the identifier goes in a field:
+            # Variable_Name for Output:Variable (Key_Value left blank means
+            # "*"), Key_Name for Output:Meter. A name passed to add() for these
+            # types is never written.
+            obj_type, field = (
+                ("Output:Variable", "variable_name")
+                if isinstance(item, OutputVariable)
+                else ("Output:Meter", "key_name")
+            )
+            # validate=False for bulk performance
+            model.add(obj_type, fields={field: item.name}, reporting_frequency=frequency, validate=False)
+        return len(items)

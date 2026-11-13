@@ -14,7 +14,7 @@ from typing_extensions import TypedDict, Unpack
 from . import _generated_types as _g
 from .document import AnyIDFDocument as AnyIDFDocument
 from .document import IDFDocument, Strict, _IDFDocumentMethods
-from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject
+from .objects import ExtensibleList, IDFCollection
 
 # =========================================================================
 # Object classes of the version ranges that end before the latest release
@@ -395,7 +395,7 @@ class _ChillerEngineDriven_v8_9_to_v9_2Fields(_g._ChillerEngineDrivenCommonField
         | None
     )
 
-class FanSystemModelSpeedFractionsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class FanSystemModelSpeedFractionsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One speed_fractions group inside :class:`FanSystemModel_v8_9_to_v9_2`."""
 
     speed_electric_power_fraction: float | None
@@ -419,7 +419,7 @@ class _FanSystemModel_v8_9_to_v9_2Fields(_g._FanSystemModelCommonFields, total=F
     number_of_speeds: float | None
     speed_fractions: list[Any]
 
-class FanSystemModelSpeedFractionsGroup_v9_3(ExtensibleGroup):
+class FanSystemModelSpeedFractionsGroup_v9_3(_g._TypedExtensibleGroup):
     """One speed_fractions group inside :class:`FanSystemModel_v9_3`."""
 
     speed_flow_fraction: float | None
@@ -443,7 +443,7 @@ class _FanSystemModel_v9_3Fields(_g._FanSystemModelCommonFields, total=False):
     number_of_speeds: float | None
     speed_fractions: list[Any]
 
-class FanSystemModelSpeedFractionsGroup_v9_4_to_v22_1(ExtensibleGroup):
+class FanSystemModelSpeedFractionsGroup_v9_4_to_v22_1(_g._TypedExtensibleGroup):
     """One speed_fractions group inside :class:`FanSystemModel_v9_4_to_v22_1`."""
 
     speed_flow_fraction: float | None
@@ -467,7 +467,7 @@ class _FanSystemModel_v9_4_to_v22_1Fields(_g._FanSystemModelCommonFields, total=
     number_of_speeds: float | None
     speed_fractions: list[Any]
 
-class RefrigerationWalkInZoneDataGroup_v8_9_to_v9_2(ExtensibleGroup):
+class RefrigerationWalkInZoneDataGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One zone_data group inside :class:`RefrigerationWalkIn_v8_9_to_v9_2`."""
 
     glass_reach_in_door_opening_schedule_name_facing_zone: str | None
@@ -532,7 +532,7 @@ class _GeneratorInternalCombustionEngine_v8_9_to_v9_2Fields(
         | None
     )
 
-class FoundationKivaBlocksGroup_v8_9_to_v9_1(ExtensibleGroup):
+class FoundationKivaBlocksGroup_v8_9_to_v9_1(_g._TypedExtensibleGroup):
     """One blocks group inside :class:`FoundationKiva_v8_9_to_v9_1`."""
 
     custom_block_x_position: float | None
@@ -552,7 +552,7 @@ class FoundationKiva_v8_9_to_v9_1(_g._FoundationKivaBase):
 class _FoundationKiva_v8_9_to_v9_1Fields(_g._FoundationKivaCommonFields, total=False):
     blocks: list[Any]
 
-class FoundationKivaBlocksGroup_v9_2(ExtensibleGroup):
+class FoundationKivaBlocksGroup_v9_2(_g._TypedExtensibleGroup):
     """One blocks group inside :class:`FoundationKiva_v9_2`."""
 
     custom_block_x_position: float | None
@@ -730,7 +730,7 @@ class _AirTerminalSingleDuctUserDefined_v8_9_to_v22_1Fields(
 ):
     number_of_plant_loop_connections: float | None
 
-class ShadingZoneDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ShadingZoneDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingZoneDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -789,7 +789,7 @@ class _AirflowNetworkDistributionNode_v8_9_to_v25_1Fields(_g._AirflowNetworkDist
         | None
     )
 
-class OutputTableMonthlyVariableDetailsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class OutputTableMonthlyVariableDetailsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableMonthly_v8_9_to_v9_2`."""
 
     aggregation_type_for_variable_or_meter: (
@@ -827,7 +827,7 @@ class _OutputTableMonthly_v8_9_to_v9_2Fields(_g._OutputTableMonthlyCommonFields,
     digits_after_decimal: float | None
     variable_details: list[Any]
 
-class OutputTableMonthlyVariableDetailsGroup_v9_3_to_v22_1(ExtensibleGroup):
+class OutputTableMonthlyVariableDetailsGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableMonthly_v9_3_to_v22_1`."""
 
     variable_or_meter_name: str | None
@@ -1002,7 +1002,7 @@ class _ElectricEquipmentITEAirCooled_v22_2_to_v23_2Fields(_g._ElectricEquipmentI
     watts_per_zone_floor_area: float | None
     environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "H1", "None"] | None
 
-class DistrictHeating_v8_9_to_v23_1(IDFObject):
+class DistrictHeating_v8_9_to_v23_1(_g._TypedIDFObject):
     """``DistrictHeating`` as declared in EnergyPlus 8.9.0 to 23.1.0. Centralized source of hot water, such as a district heating system."""
 
     hot_water_inlet_node_name: str | None
@@ -1152,7 +1152,7 @@ class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationO
         | None
     )
 
-class BuildingSurfaceDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class BuildingSurfaceDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`BuildingSurfaceDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -1213,7 +1213,7 @@ class _BuildingSurfaceDetailed_v8_9_to_v9_2Fields(_g._BuildingSurfaceDetailedCom
     )
     vertices: list[Any]
 
-class BuildingSurfaceDetailedVerticesGroup_v9_3_to_v9_5(ExtensibleGroup):
+class BuildingSurfaceDetailedVerticesGroup_v9_3_to_v9_5(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`BuildingSurfaceDetailed_v9_3_to_v9_5`."""
 
     vertex_x_coordinate: float | None
@@ -1274,7 +1274,7 @@ class _BuildingSurfaceDetailed_v9_3_to_v9_5Fields(_g._BuildingSurfaceDetailedCom
     )
     vertices: list[Any]
 
-class BuildingSurfaceDetailedVerticesGroup_v9_6_to_v24_2(ExtensibleGroup):
+class BuildingSurfaceDetailedVerticesGroup_v9_6_to_v24_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`BuildingSurfaceDetailed_v9_6_to_v24_2`."""
 
     vertex_x_coordinate: float | None
@@ -2431,7 +2431,7 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0(_g._PumpVariableSpeedCondensateBa
 
 class _PumpVariableSpeedCondensate_v8_9_to_v9_0Fields(_g._PumpVariableSpeedCondensateCommonFields, total=False): ...
 
-class ShadingSiteDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ShadingSiteDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingSiteDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -3914,7 +3914,7 @@ class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
     end_month_26: float | None
     end_day_26: float | None
 
-class ScheduleYearScheduleWeeksGroup_v9_0_to_v9_2(ExtensibleGroup):
+class ScheduleYearScheduleWeeksGroup_v9_0_to_v9_2(_g._TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear_v9_0_to_v9_2`."""
 
     start_month: float | None
@@ -3935,7 +3935,7 @@ class ScheduleYear_v9_0_to_v9_2(_g._ScheduleYearBase):
 class _ScheduleYear_v9_0_to_v9_2Fields(_g._ScheduleYearCommonFields, total=False):
     schedule_weeks: list[Any]
 
-class ScheduleYearScheduleWeeksGroup_v9_3_to_v22_1(ExtensibleGroup):
+class ScheduleYearScheduleWeeksGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear_v9_3_to_v22_1`."""
 
     schedule_week_name: str | None
@@ -3972,7 +3972,7 @@ class _ZoneControlHumidistat_v8_9_to_v26_1Fields(_g._ZoneControlHumidistatCommon
     humidifying_relative_humidity_setpoint_schedule_name: str | None
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
 
-class ZoneHVACVentilatedSlabSlabGroupDataGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ZoneHVACVentilatedSlabSlabGroupDataGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One data group inside :class:`ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2`."""
 
     surface_name: str | None
@@ -4190,7 +4190,7 @@ class _WaterHeaterMixed_v9_3_to_v23_1Fields(_g._WaterHeaterMixedCommonFields, to
         | None
     )
 
-class ZoneHVACHybridUnitaryHVACModesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ZoneHVACHybridUnitaryHVACModesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2`."""
 
     mode_minimum_outdoor_air_fraction: float | None
@@ -4357,7 +4357,7 @@ class _ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2Fields(_g._ZoneHVACHybridUnitaryHVA
     )
     modes: list[Any]
 
-class ZoneHVACHybridUnitaryHVACModesGroup_v9_3(ExtensibleGroup):
+class ZoneHVACHybridUnitaryHVACModesGroup_v9_3(_g._TypedExtensibleGroup):
     """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC_v9_3`."""
 
     mode_name: str | None
@@ -4524,7 +4524,7 @@ class _ZoneHVACHybridUnitaryHVAC_v9_3Fields(_g._ZoneHVACHybridUnitaryHVACCommonF
     )
     modes: list[Any]
 
-class ZoneHVACHybridUnitaryHVACModesGroup_v9_4_to_v23_1(ExtensibleGroup):
+class ZoneHVACHybridUnitaryHVACModesGroup_v9_4_to_v23_1(_g._TypedExtensibleGroup):
     """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1`."""
 
     mode_name: str | None
@@ -4700,7 +4700,7 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
     )
     modes: list[Any]
 
-class DaylightingControlsControlDataGroup_v8_9_to_v9_2(ExtensibleGroup):
+class DaylightingControlsControlDataGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_2`."""
 
     fraction_of_zone_controlled_by_reference_point: float | None
@@ -4724,7 +4724,7 @@ class _DaylightingControls_v8_9_to_v9_2Fields(_g._DaylightingControlsCommonField
     number_of_stepped_control_steps: float | None
     control_data: list[Any]
 
-class DaylightingControlsControlDataGroup_v9_3_to_v9_5(ExtensibleGroup):
+class DaylightingControlsControlDataGroup_v9_3_to_v9_5(_g._TypedExtensibleGroup):
     """One control_data group inside :class:`DaylightingControls_v9_3_to_v9_5`."""
 
     daylighting_reference_point_name: str | None
@@ -4748,7 +4748,7 @@ class _DaylightingControls_v9_3_to_v9_5Fields(_g._DaylightingControlsCommonField
     number_of_stepped_control_steps: float | None
     control_data: list[Any]
 
-class DaylightingControlsControlDataGroup_v9_6_to_v22_1(ExtensibleGroup):
+class DaylightingControlsControlDataGroup_v9_6_to_v22_1(_g._TypedExtensibleGroup):
     """One control_data group inside :class:`DaylightingControls_v9_6_to_v22_1`."""
 
     daylighting_reference_point_name: str | None
@@ -4984,7 +4984,7 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1Fields(
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class OutputTableAnnualVariableDetailsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class OutputTableAnnualVariableDetailsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableAnnual_v8_9_to_v9_2`."""
 
     digits_after_decimal: float | None
@@ -5023,7 +5023,7 @@ class OutputTableAnnual_v8_9_to_v9_2(_g._OutputTableAnnualBase):
 class _OutputTableAnnual_v8_9_to_v9_2Fields(_g._OutputTableAnnualCommonFields, total=False):
     variable_details: list[Any]
 
-class OutputTableAnnualVariableDetailsGroup_v9_3_to_v22_1(ExtensibleGroup):
+class OutputTableAnnualVariableDetailsGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableAnnual_v9_3_to_v22_1`."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
@@ -5075,9 +5075,27 @@ class WindowMaterialGasMixture_v8_9_to_v22_1(_g._WindowMaterialGasMixtureBase):
 class _WindowMaterialGasMixture_v8_9_to_v22_1Fields(_g._WindowMaterialGasMixtureCommonFields, total=False):
     number_of_gases_in_mixture: float | None
 
+class ZoneAirMassFlowConservation_v8_9_to_v9_4(_g._ZoneAirMassFlowConservationBase):
+    """``ZoneAirMassFlowConservation`` as declared in EnergyPlus 8.9.0 to 9.4.0. Enforces the zone air mass flow balance by adjusting zone mixing object and/or infiltration object mass flow rates. I..."""
+
+    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None
+    """If Yes, Zone mixing object flow rates are adjusted to balance the zone air mass flow and additional infiltration air ...; Default: No"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZoneAirMassFlowConservation_v8_9_to_v9_4Fields],
+    ) -> None: ...  # type: ignore[override]
+
+class _ZoneAirMassFlowConservation_v8_9_to_v9_4Fields(_g._ZoneAirMassFlowConservationCommonFields, total=False):
+    adjust_zone_mixing_for_zone_air_mass_flow_balance: Literal["", "No", "Yes"] | None
+
 class EnvironmentalImpactFactors_v8_9_to_v23_1(_g._EnvironmentalImpactFactorsBase):
     """``EnvironmentalImpactFactors`` as declared in EnergyPlus 8.9.0 to 23.1.0. Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
 
+    district_heating_efficiency: float | None
+    """District heating efficiency used when converted to natural gas; Default: 0.3; Range: > 0.0"""
     steam_conversion_efficiency: float | None
     """Steam conversion efficiency used to convert steam usage to natural gas; Default: 0.25; Range: > 0.0"""
 
@@ -5089,6 +5107,7 @@ class EnvironmentalImpactFactors_v8_9_to_v23_1(_g._EnvironmentalImpactFactorsBas
     ) -> None: ...  # type: ignore[override]
 
 class _EnvironmentalImpactFactors_v8_9_to_v23_1Fields(_g._EnvironmentalImpactFactorsCommonFields, total=False):
+    district_heating_efficiency: float | None
     steam_conversion_efficiency: float | None
 
 class PlantEquipmentOperationThermalEnergyStorage_v8_9_to_v22_1(_g._PlantEquipmentOperationThermalEnergyStorageBase):
@@ -6524,26 +6543,53 @@ class _LifeCycleCostUseAdjustment_v9_3_to_v23_1Fields(_g._LifeCycleCostUseAdjust
         | None
     )
 
-class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_3(ExtensibleGroup):
-    """One view_factors group inside :class:`ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3`."""
+class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1(_g._TypedExtensibleGroup):
+    """One view_factors group inside :class:`ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1`."""
 
     from_surface: str | None
     to_surface: str | None
     view_factor: float | None
 
-class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3(IDFObject):
-    """``ZoneProperty:UserViewFactors:bySurfaceName`` as declared in EnergyPlus 8.9.0 to 9.3.0. View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b..."""
+class ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1(_g._TypedIDFObject):
+    """``ZoneProperty:UserViewFactors:bySurfaceName`` as declared in EnergyPlus 8.9.0 to 9.1.0. View factors for Surface to Surface in a zone. (Number of Surfaces)**2 must be entered."""
 
-    view_factors: ExtensibleList[ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_3]
+    zone_name: str | None
+    view_factors: ExtensibleList[ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v8_9_to_v9_1]
 
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3Fields],
+        **kwargs: Unpack[_ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3Fields(TypedDict, total=False):
+class _ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1Fields(TypedDict, total=False):
+    zone_name: str | None
+    view_factors: list[Any]
+
+class ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3(_g._TypedExtensibleGroup):
+    """One view_factors group inside :class:`ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3`."""
+
+    from_surface: str | None
+    to_surface: str | None
+    view_factor: float | None
+
+class ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3(_g._TypedIDFObject):
+    """``ZoneProperty:UserViewFactors:bySurfaceName`` as declared in EnergyPlus 9.2.0 to 9.3.0. View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b..."""
+
+    zone_or_zonelist_name: str | None
+    """View factors may be entered for a single zone or for a group of zones connected by Construction:AirBoundary"""
+    view_factors: ExtensibleList[ZonePropertyUserViewFactorsbySurfaceNameViewFactorsGroup_v9_2_to_v9_3]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3Fields],
+    ) -> None: ...  # type: ignore[override]
+
+class _ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3Fields(TypedDict, total=False):
+    zone_or_zonelist_name: str | None
     view_factors: list[Any]
 
 class ZoneHVACForcedAirUserDefined_v8_9_to_v22_1(_g._ZoneHVACForcedAirUserDefinedBase):
@@ -6905,7 +6951,7 @@ class GroundHeatExchangerSurface_v8_9_to_v22_1(_g._GroundHeatExchangerSurfaceBas
 class _GroundHeatExchangerSurface_v8_9_to_v22_1Fields(_g._GroundHeatExchangerSurfaceCommonFields, total=False):
     number_of_tubing_circuits: float | None
 
-class RunPeriodCustomRange_v8_9(IDFObject):
+class RunPeriodCustomRange_v8_9(_g._TypedIDFObject):
     """``RunPeriod:CustomRange`` as declared in EnergyPlus 8.9.0. run simulation for a custom created weather file"""
 
     begin_month: float | None
@@ -6957,7 +7003,7 @@ class _RunPeriodCustomRange_v8_9Fields(TypedDict, total=False):
     use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None
     use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
 
-class ScheduleDayIntervalDataGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ScheduleDayIntervalDataGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One data group inside :class:`ScheduleDayInterval_v8_9_to_v9_2`."""
 
     value_until_time: float | None
@@ -7016,7 +7062,7 @@ class PumpConstantSpeed_v8_9_to_v9_0(_g._PumpConstantSpeedBase):
 
 class _PumpConstantSpeed_v8_9_to_v9_0Fields(_g._PumpConstantSpeedCommonFields, total=False): ...
 
-class ShadingBuildingDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ShadingBuildingDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingBuildingDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -7167,7 +7213,7 @@ class _CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilHeatingDXVariable
     speed_9_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
     speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
 
-class AvailabilityManagerAssignmentListManagersGroup_v8_9_to_v9_2(ExtensibleGroup):
+class AvailabilityManagerAssignmentListManagersGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One managers group inside :class:`AvailabilityManagerAssignmentList_v8_9_to_v9_2`."""
 
     availability_manager_name: str | None
@@ -7268,17 +7314,63 @@ class SizingParameters_v8_9_to_v22_1(_g._SizingParametersBase):
 class _SizingParameters_v8_9_to_v22_1Fields(_g._SizingParametersCommonFields, total=False):
     timesteps_in_averaging_window: float | None
 
-class FuelFactors_v8_9_to_v22_1(_g._FuelFactorsBase):
-    """``FuelFactors`` as declared in EnergyPlus 8.9.0 to 22.1.0. Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
+class FuelFactors_v8_9_to_v9_2(_g._FuelFactorsBase):
+    """``FuelFactors`` as declared in EnergyPlus 8.9.0 to 9.2.0. Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
+    existing_fuel_resource_name: str | None
     units_of_measure: str | None
     energy_per_unit_factor: float | None
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactors_v8_9_to_v22_1Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactors_v8_9_to_v9_2Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _FuelFactors_v8_9_to_v22_1Fields(_g._FuelFactorsCommonFields, total=False):
+class _FuelFactors_v8_9_to_v9_2Fields(_g._FuelFactorsCommonFields, total=False):
+    existing_fuel_resource_name: str | None
+    units_of_measure: str | None
+    energy_per_unit_factor: float | None
+
+class FuelFactors_v9_3_to_v22_1(_g._FuelFactorsBase):
+    """``FuelFactors`` as declared in EnergyPlus 9.3.0 to 22.1.0. Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
+
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+    units_of_measure: str | None
+    energy_per_unit_factor: float | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FuelFactors_v9_3_to_v22_1Fields]
+    ) -> None: ...  # type: ignore[override]
+
+class _FuelFactors_v9_3_to_v22_1Fields(_g._FuelFactorsCommonFields, total=False):
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
     units_of_measure: str | None
     energy_per_unit_factor: float | None
 
@@ -7303,7 +7395,7 @@ class _HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1Fields(
     heat_pump_time_constant: float | None
     fraction_of_on_cycle_power_use: float | None
 
-class SurfacePropertySurroundingSurfacesSurfacesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class SurfacePropertySurroundingSurfacesSurfacesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertySurroundingSurfaces_v8_9_to_v9_2`."""
 
     surrounding_surface_name: str | None
@@ -7333,7 +7425,7 @@ class _SurfacePropertySurroundingSurfaces_v8_9_to_v9_2Fields(
     ground_view_factor: float | None
     surfaces: list[Any]
 
-class SurfacePropertySurroundingSurfacesSurfacesGroup_v9_3_to_v26_1(ExtensibleGroup):
+class SurfacePropertySurroundingSurfacesSurfacesGroup_v9_3_to_v26_1(_g._TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertySurroundingSurfaces_v9_3_to_v26_1`."""
 
     surrounding_surface_name: str | None
@@ -7377,6 +7469,8 @@ class _Window_v8_9Fields(_g._WindowCommonFields, total=False):
 class ShadowCalculation_v8_9_to_v9_2(_g._ShadowCalculationBase):
     """``ShadowCalculation`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object is used to control details of the solar, shading, and daylighting models"""
 
+    calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"] | None
+    """choose calculation method. note that TimestepFrequency is only needed for certain cases and can increase execution ti...; Default: AverageOverDaysInFrequency"""
     calculation_frequency: float | None
     """enter number of days this field is only used if the previous field is set to AverageOverDaysInFrequency 0=Use Default...; Default: 20.0; Range: >= 1.0"""
     maximum_figures_in_shadow_overlap_calculations: float | None
@@ -7393,6 +7487,7 @@ class ShadowCalculation_v8_9_to_v9_2(_g._ShadowCalculationBase):
     ) -> None: ...  # type: ignore[override]
 
 class _ShadowCalculation_v8_9_to_v9_2Fields(_g._ShadowCalculationCommonFields, total=False):
+    calculation_method: Literal["", "AverageOverDaysInFrequency", "TimestepFrequency"] | None
     calculation_frequency: float | None
     maximum_figures_in_shadow_overlap_calculations: float | None
     polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"] | None
@@ -7403,6 +7498,8 @@ class _ShadowCalculation_v8_9_to_v9_2Fields(_g._ShadowCalculationCommonFields, t
 class ShadowCalculation_v9_3_to_v22_1(_g._ShadowCalculationBase):
     """``ShadowCalculation`` as declared in EnergyPlus 9.3.0 to 22.1.0. This object is used to control details of the solar, shading, and daylighting models"""
 
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
+    """Select between CPU-based polygon clipping method, the GPU-based pixel counting method, or importing from external sha...; Default: PolygonClipping"""
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     """choose calculation frequency method. note that Timestep is only needed for certain cases and can increase execution t...; Default: Periodic"""
     shading_calculation_update_frequency: float | None
@@ -7421,6 +7518,7 @@ class ShadowCalculation_v9_3_to_v22_1(_g._ShadowCalculationBase):
     ) -> None: ...  # type: ignore[override]
 
 class _ShadowCalculation_v9_3_to_v22_1Fields(_g._ShadowCalculationCommonFields, total=False):
+    shading_calculation_method: Literal["", "Imported", "PixelCounting", "PolygonClipping", "Scheduled"] | None
     shading_calculation_update_frequency_method: Literal["", "Periodic", "Timestep"] | None
     shading_calculation_update_frequency: float | None
     maximum_figures_in_shadow_overlap_calculations: float | None
@@ -7498,7 +7596,7 @@ class ChillerElectricEIR_v8_9_to_v24_1(_g._ChillerElectricEIRBase):
 
 class _ChillerElectricEIR_v8_9_to_v24_1Fields(_g._ChillerElectricEIRCommonFields, total=False): ...
 
-class WallDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class WallDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`WallDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -7559,7 +7657,7 @@ class _WallDetailed_v8_9_to_v9_2Fields(_g._WallDetailedCommonFields, total=False
     )
     vertices: list[Any]
 
-class WallDetailedVerticesGroup_v9_3_to_v9_5(ExtensibleGroup):
+class WallDetailedVerticesGroup_v9_3_to_v9_5(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`WallDetailed_v9_3_to_v9_5`."""
 
     vertex_x_coordinate: float | None
@@ -7620,7 +7718,7 @@ class _WallDetailed_v9_3_to_v9_5Fields(_g._WallDetailedCommonFields, total=False
     )
     vertices: list[Any]
 
-class WallDetailedVerticesGroup_v9_6_to_v24_2(ExtensibleGroup):
+class WallDetailedVerticesGroup_v9_6_to_v24_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`WallDetailed_v9_6_to_v24_2`."""
 
     vertex_x_coordinate: float | None
@@ -7822,7 +7920,7 @@ class _SteamEquipment_v9_6_to_v23_2Fields(_g._SteamEquipmentCommonFields, total=
     zone_or_zonelist_or_space_or_spacelist_name: str | None
     power_per_zone_floor_area: float | None
 
-class OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class OutputTableSummaryReportsReportsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One reports group inside :class:`OutputTableSummaryReports_v8_9_to_v9_2`."""
 
     report_name: str | None
@@ -7839,7 +7937,7 @@ class OutputTableSummaryReports_v8_9_to_v9_2(_g._OutputTableSummaryReportsBase):
 class _OutputTableSummaryReports_v8_9_to_v9_2Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
 
-class OutputTableSummaryReportsReportsGroup_v9_3(ExtensibleGroup):
+class OutputTableSummaryReportsReportsGroup_v9_3(_g._TypedExtensibleGroup):
     """One reports group inside :class:`OutputTableSummaryReports_v9_3`."""
 
     report_name: (
@@ -7958,7 +8056,7 @@ class OutputTableSummaryReports_v9_3(_g._OutputTableSummaryReportsBase):
 class _OutputTableSummaryReports_v9_3Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
 
-class OutputTableSummaryReportsReportsGroup_v9_4(ExtensibleGroup):
+class OutputTableSummaryReportsReportsGroup_v9_4(_g._TypedExtensibleGroup):
     """One reports group inside :class:`OutputTableSummaryReports_v9_4`."""
 
     report_name: (
@@ -8080,7 +8178,7 @@ class OutputTableSummaryReports_v9_4(_g._OutputTableSummaryReportsBase):
 class _OutputTableSummaryReports_v9_4Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
 
-class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2`."""
 
     surface_view_factor: float | None
@@ -8142,7 +8240,7 @@ class DaylightingReferencePoint_v8_9_to_v9_5(_g._DaylightingReferencePointBase):
 class _DaylightingReferencePoint_v8_9_to_v9_5Fields(_g._DaylightingReferencePointCommonFields, total=False):
     zone_name: str | None
 
-class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0(IDFObject):
+class FaultModelPressureSensorOffsetOutdoorAir_v8_9_to_v9_0(_g._TypedIDFObject):
     """``FaultModel:PressureSensorOffset:OutdoorAir`` as declared in EnergyPlus 8.9.0 to 9.0.1. This object describes outdoor air pressure sensor offset"""
 
     availability_schedule_name: str | None
@@ -8922,7 +9020,7 @@ class _PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1Fields(
 ):
     number_of_cells_in_series: float | None
 
-class GroundHeatExchangerResponseFactorsGFunctionsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class GroundHeatExchangerResponseFactorsGFunctionsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One g_functions group inside :class:`GroundHeatExchangerResponseFactors_v8_9_to_v9_2`."""
 
     g_function_g_value: float | None
@@ -8947,7 +9045,7 @@ class _GroundHeatExchangerResponseFactors_v8_9_to_v9_2Fields(
     number_of_boreholes: float | None
     g_functions: list[Any]
 
-class GroundHeatExchangerResponseFactorsGFunctionsGroup_v9_3_to_v22_1(ExtensibleGroup):
+class GroundHeatExchangerResponseFactorsGFunctionsGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One g_functions group inside :class:`GroundHeatExchangerResponseFactors_v9_3_to_v22_1`."""
 
     g_function_ln_t_ts_value: float | None
@@ -9408,7 +9506,7 @@ class _SurfacePropertyLocalEnvironment_v22_2_to_v23_1Fields(
     external_shading_fraction_schedule_name: str | None
     ground_surfaces_object_name: str | None
 
-class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2(IDFObject):
+class AirTerminalSingleDuctUncontrolled_v8_9_to_v9_2(_g._TypedIDFObject):
     """``AirTerminal:SingleDuct:Uncontrolled`` as declared in EnergyPlus 8.9.0 to 9.2.0. Central air system terminal unit, single duct, constant volume, no controls other than on/off schedule."""
 
     availability_schedule_name: str | None
@@ -9625,7 +9723,7 @@ class _OutputSQLite_v24_1_to_v25_1Fields(_g._OutputSQLiteCommonFields, total=Fal
         | None
     )
 
-class ElectricLoadCenterGeneratorsGeneratorOutputsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ElectricLoadCenterGeneratorsGeneratorOutputsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One generator_outputs group inside :class:`ElectricLoadCenterGenerators_v8_9_to_v9_2`."""
 
     generator_name: str | None
@@ -9661,7 +9759,7 @@ class ElectricLoadCenterGenerators_v8_9_to_v9_2(_g._ElectricLoadCenterGenerators
 class _ElectricLoadCenterGenerators_v8_9_to_v9_2Fields(_g._ElectricLoadCenterGeneratorsCommonFields, total=False):
     generator_outputs: list[Any]
 
-class SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2`."""
 
     surface_segment_exposed: Literal["No", "Yes"] | None
@@ -10104,17 +10202,33 @@ class _WindowPropertyStormWindow_v8_9_to_v22_1Fields(_g._WindowPropertyStormWind
     month_that_storm_glass_layer_is_taken_off: float | None
     day_of_month_that_storm_glass_layer_is_taken_off: float | None
 
-class SiteWaterMainsTemperature_v8_9_to_v25_1(_g._SiteWaterMainsTemperatureBase):
-    """``Site:WaterMainsTemperature`` as declared in EnergyPlus 8.9.0 to 25.1.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
+class SiteWaterMainsTemperature_v8_9(_g._SiteWaterMainsTemperatureBase):
+    """``Site:WaterMainsTemperature`` as declared in EnergyPlus 8.9.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
+
+    calculation_method: Literal["Correlation", "Schedule"] | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_SiteWaterMainsTemperature_v8_9Fields]
+    ) -> None: ...  # type: ignore[override]
+
+class _SiteWaterMainsTemperature_v8_9Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False):
+    calculation_method: Literal["Correlation", "Schedule"] | None
+
+class SiteWaterMainsTemperature_v9_0_to_v25_1(_g._SiteWaterMainsTemperatureBase):
+    """``Site:WaterMainsTemperature`` as declared in EnergyPlus 9.0.1 to 25.1.0. Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
+
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
+    """If calculation method is CorrelationFromWeatherFile, the two numeric input fields are ignored. Instead, EnergyPlus ca...; Default: CorrelationFromWeatherFile"""
 
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_SiteWaterMainsTemperature_v8_9_to_v25_1Fields],
+        **kwargs: Unpack[_SiteWaterMainsTemperature_v9_0_to_v25_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _SiteWaterMainsTemperature_v8_9_to_v25_1Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False): ...
+class _SiteWaterMainsTemperature_v9_0_to_v25_1Fields(_g._SiteWaterMainsTemperatureCommonFields, total=False):
+    calculation_method: Literal["", "Correlation", "CorrelationFromWeatherFile", "Schedule"] | None
 
 class MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1(
     _g._MaterialPropertyHeatAndMoistureTransferSuctionBase
@@ -10139,6 +10253,23 @@ class _MaterialPropertyHeatAndMoistureTransferSuction_v8_9_to_v22_1Fields(
 class OutputDiagnostics_v8_9_to_v9_3(_g._OutputDiagnosticsBase):
     """``Output:Diagnostics`` as declared in EnergyPlus 8.9.0 to 9.3.0. Special keys to produce certain warning messages or effect certain simulation characteristics."""
 
+    key_1: (
+        Literal[
+            "DisplayAdvancedReportVariables",
+            "DisplayAllWarnings",
+            "DisplayExtraWarnings",
+            "DisplayUnusedObjects",
+            "DisplayUnusedSchedules",
+            "DisplayWeatherMissingDataWarnings",
+            "DisplayZoneAirHeatBalanceOffBalance",
+            "DoNotMirrorAttachedShading",
+            "DoNotMirrorDetachedShading",
+            "ReportDetailedWarmupConvergence",
+            "ReportDuringHVACSizingSimulation",
+            "ReportDuringWarmup",
+        ]
+        | None
+    )
     key_2: (
         Literal[
             "DisplayAdvancedReportVariables",
@@ -10162,6 +10293,23 @@ class OutputDiagnostics_v8_9_to_v9_3(_g._OutputDiagnosticsBase):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputDiagnostics_v8_9_to_v9_3Fields(_g._OutputDiagnosticsCommonFields, total=False):
+    key_1: (
+        Literal[
+            "DisplayAdvancedReportVariables",
+            "DisplayAllWarnings",
+            "DisplayExtraWarnings",
+            "DisplayUnusedObjects",
+            "DisplayUnusedSchedules",
+            "DisplayWeatherMissingDataWarnings",
+            "DisplayZoneAirHeatBalanceOffBalance",
+            "DoNotMirrorAttachedShading",
+            "DoNotMirrorDetachedShading",
+            "ReportDetailedWarmupConvergence",
+            "ReportDuringHVACSizingSimulation",
+            "ReportDuringWarmup",
+        ]
+        | None
+    )
     key_2: (
         Literal[
             "DisplayAdvancedReportVariables",
@@ -10207,6 +10355,8 @@ class _PipingSystemUndergroundPipeCircuit_v8_9_to_v22_1Fields(
 class GlobalGeometryRules_v8_9_to_v9_2(_g._GlobalGeometryRulesBase):
     """``GlobalGeometryRules`` as declared in EnergyPlus 8.9.0 to 9.2.0. Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
 
+    starting_vertex_position: str | None
+    """Specified as entry for a 4 sided surface/rectangle Surfaces are specified as viewed from outside the surface Shading ..."""
     vertex_entry_direction: str | None
     coordinate_system: str | None
     """relative -- coordinates are entered relative to zone origin world -- all coordinates entered are 'absolute' for this ..."""
@@ -10220,6 +10370,7 @@ class GlobalGeometryRules_v8_9_to_v9_2(_g._GlobalGeometryRulesBase):
     ) -> None: ...  # type: ignore[override]
 
 class _GlobalGeometryRules_v8_9_to_v9_2Fields(_g._GlobalGeometryRulesCommonFields, total=False):
+    starting_vertex_position: str | None
     vertex_entry_direction: str | None
     coordinate_system: str | None
     daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
@@ -10975,7 +11126,7 @@ class _AirTerminalSingleDuctVAVHeatAndCoolReheat_v8_9_to_v9_2Fields(
     _g._AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields, total=False
 ): ...
 
-class ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class ControllerMechanicalVentilationZoneSpecificationsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v8_9_to_v9_2`."""
 
     design_specification_outdoor_air_object_name: str | None
@@ -11026,7 +11177,7 @@ class _ControllerMechanicalVentilation_v8_9_to_v9_2Fields(_g._ControllerMechanic
     )
     zone_specifications: list[Any]
 
-class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4(ExtensibleGroup):
+class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_3_to_v9_4(_g._TypedExtensibleGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_3_to_v9_4`."""
 
     zone_or_zonelist_name: str | None
@@ -11077,7 +11228,7 @@ class _ControllerMechanicalVentilation_v9_3_to_v9_4Fields(_g._ControllerMechanic
     )
     zone_specifications: list[Any]
 
-class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5(ExtensibleGroup):
+class ControllerMechanicalVentilationZoneSpecificationsGroup_v9_5(_g._TypedExtensibleGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation_v9_5`."""
 
     zone_or_zonelist_name: str | None
@@ -11798,13 +11949,13 @@ class _EnergyManagementSystemMeteredOutputVariable_v9_3_to_v23_1Fields(
         | None
     )
 
-class TableOneIndependentVariableValuesGroup_v8_9(ExtensibleGroup):
+class TableOneIndependentVariableValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v8_9`."""
 
     output_value_1: float | None
     x_value_1: float | None
 
-class TableOneIndependentVariable_v8_9(IDFObject):
+class TableOneIndependentVariable_v8_9(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 8.9.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
 
     curve_type: Literal["Cubic", "Exponent", "Linear", "Quadratic", "Quartic"] | None
@@ -11851,13 +12002,13 @@ class _TableOneIndependentVariable_v8_9Fields(TypedDict, total=False):
     normalization_reference: float | None
     values: list[Any]
 
-class TableOneIndependentVariableValuesGroup_v9_0_to_v9_1(ExtensibleGroup):
+class TableOneIndependentVariableValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableOneIndependentVariable_v9_0_to_v9_1`."""
 
     output_value_1: float | None
     x_value_1: float | None
 
-class TableOneIndependentVariable_v9_0_to_v9_1(IDFObject):
+class TableOneIndependentVariable_v9_0_to_v9_1(_g._TypedIDFObject):
     """``Table:OneIndependentVariable`` as declared in EnergyPlus 9.0.1 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
 
     curve_type: Literal["Cubic", "Linear", "Quadratic", "Quartic"] | None
@@ -11978,6 +12129,8 @@ class _Roof_v8_9_to_v9_5Fields(_g._RoofCommonFields, total=False): ...
 class OutputDebuggingData_v8_9_to_v9_3(_g._OutputDebuggingDataBase):
     """``Output:DebuggingData`` as declared in EnergyPlus 8.9.0 to 9.3.0. switch eplusout.dbg file on or off"""
 
+    report_debugging_data: float | None
+    """value=1 then yes all others no"""
     report_during_warmup: float | None
     """value=1 then always even during warmup all others no"""
 
@@ -11986,6 +12139,7 @@ class OutputDebuggingData_v8_9_to_v9_3(_g._OutputDebuggingDataBase):
     ) -> None: ...  # type: ignore[override]
 
 class _OutputDebuggingData_v8_9_to_v9_3Fields(_g._OutputDebuggingDataCommonFields, total=False):
+    report_debugging_data: float | None
     report_during_warmup: float | None
 
 class GeneratorCombustionTurbine_v8_9_to_v9_2(_g._GeneratorCombustionTurbineBase):
@@ -12199,6 +12353,8 @@ class _AirTerminalSingleDuctConstantVolumeCooledBeam_v8_9_to_v22_1Fields(
 class ConvergenceLimits_v8_9_to_v22_1(_g._ConvergenceLimitsBase):
     """``ConvergenceLimits`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be ..."""
 
+    minimum_system_timestep: float | None
+    """0 sets the minimum to the zone timestep (ref: Timestep) 1 is normal (ratchet down to 1 minute) setting greater than z...; [minutes]; Range: >= 0.0, <= 60.0"""
     maximum_hvac_iterations: float | None
     """Default: 20.0; Range: >= 1.0"""
     minimum_plant_iterations: float | None
@@ -12211,11 +12367,12 @@ class ConvergenceLimits_v8_9_to_v22_1(_g._ConvergenceLimitsBase):
     ) -> None: ...  # type: ignore[override]
 
 class _ConvergenceLimits_v8_9_to_v22_1Fields(_g._ConvergenceLimitsCommonFields, total=False):
+    minimum_system_timestep: float | None
     maximum_hvac_iterations: float | None
     minimum_plant_iterations: float | None
     maximum_plant_iterations: float | None
 
-class WindowPropertyShadingControl_v8_9(IDFObject):
+class WindowPropertyShadingControl_v8_9(_g._TypedIDFObject):
     """``WindowProperty:ShadingControl`` as declared in EnergyPlus 8.9.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referenced by th..."""
 
     shading_type: (
@@ -12331,7 +12488,7 @@ class _WindowPropertyShadingControl_v8_9Fields(TypedDict, total=False):
     slat_angle_schedule_name: str | None
     setpoint_2: float | None
 
-class BranchComponentsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class BranchComponentsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One components group inside :class:`Branch_v8_9_to_v9_2`."""
 
     component_outlet_node_name: str | None
@@ -12905,7 +13062,7 @@ class _CentralHeatPumpSystem_v22_2_to_v26_1Fields(_g._CentralHeatPumpSystemCommo
     number_of_chiller_heater_modules_19: int | None
     number_of_chiller_heater_modules_20: int | None
 
-class ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0(ExtensibleGroup):
+class ZoneHVACEquipmentListEquipmentGroup_v8_9_to_v9_0(_g._TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v8_9_to_v9_0`."""
 
     zone_equipment_object_type: (
@@ -12963,7 +13120,7 @@ class ZoneHVACEquipmentList_v8_9_to_v9_0(_g._ZoneHVACEquipmentListBase):
 class _ZoneHVACEquipmentList_v8_9_to_v9_0Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
 
-class ZoneHVACEquipmentListEquipmentGroup_v9_1(ExtensibleGroup):
+class ZoneHVACEquipmentListEquipmentGroup_v9_1(_g._TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_1`."""
 
     zone_equipment_cooling_sequence: float | None
@@ -13023,7 +13180,7 @@ class ZoneHVACEquipmentList_v9_1(_g._ZoneHVACEquipmentListBase):
 class _ZoneHVACEquipmentList_v9_1Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
 
-class ZoneHVACEquipmentListEquipmentGroup_v9_2(ExtensibleGroup):
+class ZoneHVACEquipmentListEquipmentGroup_v9_2(_g._TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_2`."""
 
     zone_equipment_cooling_sequence: float | None
@@ -13083,7 +13240,7 @@ class ZoneHVACEquipmentList_v9_2(_g._ZoneHVACEquipmentListBase):
 class _ZoneHVACEquipmentList_v9_2Fields(_g._ZoneHVACEquipmentListCommonFields, total=False):
     equipment: list[Any]
 
-class ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1(ExtensibleGroup):
+class ZoneHVACEquipmentListEquipmentGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList_v9_3_to_v22_1`."""
 
     zone_equipment_object_type: (
@@ -13364,12 +13521,12 @@ class GroundHeatExchangerPond_v8_9_to_v22_1(_g._GroundHeatExchangerPondBase):
 class _GroundHeatExchangerPond_v8_9_to_v22_1Fields(_g._GroundHeatExchangerPondCommonFields, total=False):
     number_of_tubing_circuits: float | None
 
-class TableMultiVariableLookupValuesGroup_v8_9(ExtensibleGroup):
+class TableMultiVariableLookupValuesGroup_v8_9(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableMultiVariableLookup_v8_9`."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
-class TableMultiVariableLookup_v8_9(IDFObject):
+class TableMultiVariableLookup_v8_9(_g._TypedIDFObject):
     """``Table:MultiVariableLookup`` as declared in EnergyPlus 8.9.0. The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent..."""
 
     interpolation_method: (
@@ -13522,12 +13679,12 @@ class _TableMultiVariableLookup_v8_9Fields(TypedDict, total=False):
     field_2_determined_by_the_number_of_independent_variables: float | None
     values: list[Any]
 
-class TableMultiVariableLookupValuesGroup_v9_0_to_v9_1(ExtensibleGroup):
+class TableMultiVariableLookupValuesGroup_v9_0_to_v9_1(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableMultiVariableLookup_v9_0_to_v9_1`."""
 
     field_determined_by_the_number_of_independent_variables: float | None
 
-class TableMultiVariableLookup_v9_0_to_v9_1(IDFObject):
+class TableMultiVariableLookup_v9_0_to_v9_1(_g._TypedIDFObject):
     """``Table:MultiVariableLookup`` as declared in EnergyPlus 9.0.1 to 9.1.0. The multi-variable lookup table can represent from 1 to 6 independent variables and can interpolate these independent..."""
 
     interpolation_method: (
@@ -13751,7 +13908,7 @@ class _ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields(_g._ZoneHVACWaterToAirHea
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class FloorDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class FloorDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`FloorDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -13812,7 +13969,7 @@ class _FloorDetailed_v8_9_to_v9_2Fields(_g._FloorDetailedCommonFields, total=Fal
     )
     vertices: list[Any]
 
-class FloorDetailedVerticesGroup_v9_3_to_v9_5(ExtensibleGroup):
+class FloorDetailedVerticesGroup_v9_3_to_v9_5(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`FloorDetailed_v9_3_to_v9_5`."""
 
     vertex_x_coordinate: float | None
@@ -13873,7 +14030,7 @@ class _FloorDetailed_v9_3_to_v9_5Fields(_g._FloorDetailedCommonFields, total=Fal
     )
     vertices: list[Any]
 
-class FloorDetailedVerticesGroup_v9_6_to_v24_2(ExtensibleGroup):
+class FloorDetailedVerticesGroup_v9_6_to_v24_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`FloorDetailed_v9_6_to_v24_2`."""
 
     vertex_x_coordinate: float | None
@@ -14622,7 +14779,7 @@ class _DemandManagerLights_v8_9_to_v22_1Fields(_g._DemandManagerLightsCommonFiel
     minimum_limit_duration: float | None
     rotation_duration: float | None
 
-class ConstructionInternalSource_v8_9_to_v9_3(IDFObject):
+class ConstructionInternalSource_v8_9_to_v9_3(_g._TypedIDFObject):
     """``Construction:InternalSource`` as declared in EnergyPlus 8.9.0 to 9.3.0. Start with outside layer and work your way to the inside Layer Up to 10 layers total, 8 for windows Enter the materia..."""
 
     source_present_after_layer_number: float | None
@@ -14667,7 +14824,7 @@ class _ConstructionInternalSource_v8_9_to_v9_3Fields(TypedDict, total=False):
     layer_9: str | None
     layer_10: str | None
 
-class ConstructionInternalSource_v9_4(IDFObject):
+class ConstructionInternalSource_v9_4(_g._TypedIDFObject):
     """``Construction:InternalSource`` as declared in EnergyPlus 9.4.0. Start with outside layer and work your way to the inside Layer Up to 10 layers total Enter the material name for each..."""
 
     source_present_after_layer_number: float | None
@@ -14746,7 +14903,7 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields(
     _g._AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
 ): ...
 
-class RoofCeilingDetailedVerticesGroup_v8_9_to_v9_2(ExtensibleGroup):
+class RoofCeilingDetailedVerticesGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`RoofCeilingDetailed_v8_9_to_v9_2`."""
 
     vertex_y_coordinate: float | None
@@ -14803,7 +14960,7 @@ class _RoofCeilingDetailed_v8_9_to_v9_2Fields(_g._RoofCeilingDetailedCommonField
     )
     vertices: list[Any]
 
-class RoofCeilingDetailedVerticesGroup_v9_3_to_v9_5(ExtensibleGroup):
+class RoofCeilingDetailedVerticesGroup_v9_3_to_v9_5(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`RoofCeilingDetailed_v9_3_to_v9_5`."""
 
     vertex_x_coordinate: float | None
@@ -14860,7 +15017,7 @@ class _RoofCeilingDetailed_v9_3_to_v9_5Fields(_g._RoofCeilingDetailedCommonField
     )
     vertices: list[Any]
 
-class RoofCeilingDetailedVerticesGroup_v9_6_to_v24_2(ExtensibleGroup):
+class RoofCeilingDetailedVerticesGroup_v9_6_to_v24_2(_g._TypedExtensibleGroup):
     """One vertices group inside :class:`RoofCeilingDetailed_v9_6_to_v24_2`."""
 
     vertex_x_coordinate: float | None
@@ -14920,7 +15077,7 @@ class _RoofCeilingDetailed_v9_6_to_v24_2Fields(_g._RoofCeilingDetailedCommonFiel
     )
     vertices: list[Any]
 
-class MaterialPropertyGlazingSpectralDataExtensionsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class MaterialPropertyGlazingSpectralDataExtensionsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One extensions group inside :class:`MaterialPropertyGlazingSpectralData_v8_9_to_v9_2`."""
 
     transmittance: float | None
@@ -15111,14 +15268,14 @@ class _CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5Fields(
     _g._CoilCoolingWaterDetailedGeometryCommonFields, total=False
 ): ...
 
-class TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1(ExtensibleGroup):
+class TableTwoIndependentVariablesValuesGroup_v8_9_to_v9_1(_g._TypedExtensibleGroup):
     """One values group inside :class:`TableTwoIndependentVariables_v8_9_to_v9_1`."""
 
     output_value_1: float | None
     y_value_1: float | None
     x_value_1: float | None
 
-class TableTwoIndependentVariables_v8_9_to_v9_1(IDFObject):
+class TableTwoIndependentVariables_v8_9_to_v9_1(_g._TypedIDFObject):
     """``Table:TwoIndependentVariables`` as declared in EnergyPlus 8.9.0 to 9.1.0. Allows entry of tabular data pairs as alternate input for performance curve objects. Performance curve objects can be..."""
 
     curve_type: Literal["BiQuadratic", "QuadraticLinear"] | None
@@ -15328,7 +15485,7 @@ class _HVACTemplateSystemVRF_v9_3_to_v22_1Fields(_g._HVACTemplateSystemVRFCommon
         | None
     )
 
-class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2`."""
 
     outdoor_air_system_collector_outlet_node: str | None
@@ -15451,6 +15608,19 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_v22_2_to_v25_1Fields(
     minimum_outdoor_dry_bulb_temperature_for_compressor_operation: float | None
     number_of_speeds_for_heating: int | None
     number_of_speeds_for_cooling: int | None
+
+class Timestep_v8_9_to_v22_1(_g._TimestepBase):
+    """``Timestep`` as declared in EnergyPlus 8.9.0 to 22.1.0. Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is..."""
+
+    number_of_timesteps_per_hour: float | None
+    """Number in hour: normal validity 4 to 60: 6 suggested Must be evenly divisible into 60 Allowable values include 1, 2, ...; Default: 6.0; Range: >= 1.0, <= 60.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Timestep_v8_9_to_v22_1Fields]
+    ) -> None: ...  # type: ignore[override]
+
+class _Timestep_v8_9_to_v22_1Fields(_g._TimestepCommonFields, total=False):
+    number_of_timesteps_per_hour: float | None
 
 class CoilCoolingDXTwoStageWithHumidityControlMode_v8_9_to_v22_1(_g._CoilCoolingDXTwoStageWithHumidityControlModeBase):
     """``Coil:Cooling:DX:TwoStageWithHumidityControlMode`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage wi..."""
@@ -16733,7 +16903,7 @@ class _CoilWaterHeatingAirToWaterHeatPumpWrapped_v23_2_to_v25_1Fields(
 ):
     crankcase_heater_capacity_function_of_temperature_curve_name: str | None
 
-class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2`."""
 
     fraction_of_output_or_supply_air_from_hvac_equipment: float | None
@@ -16799,7 +16969,7 @@ class _RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2Fields(
 ):
     equipment_fractions: list[Any]
 
-class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup_v9_3_to_v24_1(_g._TypedExtensibleGroup):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1`."""
 
     zonehvac_or_air_terminal_equipment_object_type: (
@@ -17502,7 +17672,7 @@ class _MeterCustom_v9_4_to_v23_1Fields(_g._MeterCustomCommonFields, total=False)
         | None
     )
 
-class UnitarySystemPerformanceMultispeedFlowRatiosGroup_v8_9_to_v9_2(ExtensibleGroup):
+class UnitarySystemPerformanceMultispeedFlowRatiosGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One flow_ratios group inside :class:`UnitarySystemPerformanceMultispeed_v8_9_to_v9_2`."""
 
     cooling_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
@@ -17531,7 +17701,7 @@ class _UnitarySystemPerformanceMultispeed_v8_9_to_v9_2Fields(
     number_of_speeds_for_cooling: float | None
     flow_ratios: list[Any]
 
-class UnitarySystemPerformanceMultispeedFlowRatiosGroup_v9_3_to_v22_1(ExtensibleGroup):
+class UnitarySystemPerformanceMultispeedFlowRatiosGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One flow_ratios group inside :class:`UnitarySystemPerformanceMultispeed_v9_3_to_v22_1`."""
 
     heating_speed_supply_air_flow_ratio: float | Literal["Autosize"] | None
@@ -17560,7 +17730,7 @@ class _UnitarySystemPerformanceMultispeed_v9_3_to_v22_1Fields(
     number_of_speeds_for_cooling: float | None
     flow_ratios: list[Any]
 
-class RoomAirTemperaturePatternNondimensionalHeightPairsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class RoomAirTemperaturePatternNondimensionalHeightPairsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One pairs group inside :class:`RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2`."""
 
     pair_delta_adjacent_air_temperature: float | None
@@ -17586,7 +17756,7 @@ class _RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2Fields(
     control_integer_for_pattern_control_schedule_name: float | None
     pairs: list[Any]
 
-class RoomAirTemperaturePatternNondimensionalHeightPairsGroup_v9_3_to_v22_1(ExtensibleGroup):
+class RoomAirTemperaturePatternNondimensionalHeightPairsGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     """One pairs group inside :class:`RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1`."""
 
     pair_zeta_nondimensional_height: float | None
@@ -17765,7 +17935,7 @@ class _AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1Fields(
 ):
     number_of_sets_of_opening_factor_data: float | None
 
-class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_2(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_2(_g._TypedExtensibleGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2`."""
 
     internal_gain_object_type: (
@@ -17838,7 +18008,7 @@ class _RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2Fields(
 ):
     gains: list[Any]
 
-class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v9_3_to_v9_4(ExtensibleGroup):
+class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v9_3_to_v9_4(_g._TypedExtensibleGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4`."""
 
     internal_gain_object_type: (
@@ -17911,6 +18081,24 @@ class _RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4Fields(
 ):
     gains: list[Any]
 
+class SurfaceConvectionAlgorithmInside_v8_9_to_v9_4(_g._SurfaceConvectionAlgorithmInsideBase):
+    """``SurfaceConvectionAlgorithm:Inside`` as declared in EnergyPlus 8.9.0 to 9.4.0. Default indoor surface heat transfer convection algorithm to be used for all zones"""
+
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    """Simple = constant value natural convection (ASHRAE) TARP = variable natural convection based on temperature differenc...; Default: TARP"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields],
+    ) -> None: ...  # type: ignore[override]
+
+class _SurfaceConvectionAlgorithmInside_v8_9_to_v9_4Fields(
+    _g._SurfaceConvectionAlgorithmInsideCommonFields, total=False
+):
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+
 class WindowShadingControl_v9_0_to_v9_1(_g._WindowShadingControlBase):
     """``WindowShadingControl`` as declared in EnergyPlus 9.0.1 to 9.1.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
 
@@ -17945,6 +18133,8 @@ class WindowShadingControl_v9_0_to_v9_1(_g._WindowShadingControlBase):
         | None
     )
     """OnIfScheduleAllows requires that Schedule Name be specified and Shading Control Is Scheduled = Yes. AlwaysOn, AlwaysO..."""
+    construction_with_shading_name: str | None
+    """Alias of :attr:`construction_with_shading_name_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WindowShadingControl_v9_0_to_v9_1Fields]
@@ -17979,14 +18169,13 @@ class _WindowShadingControl_v9_0_to_v9_1Fields(_g._WindowShadingControlCommonFie
         ]
         | None
     )
+    construction_with_shading_name: str | None
 
 class WindowShadingControl_v9_2_to_v22_1(_g._WindowShadingControlBase):
     """``WindowShadingControl`` as declared in EnergyPlus 9.2.0 to 22.1.0. Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ..."""
 
     shading_control_sequence_number: float | None
     """If multiple WindowShadingControl objects are used than the order that they deploy the window shades can be set with t...; Default: 1.0; Range: >= 1.0"""
-    construction_with_shading_name: str | None
-    """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter..."""
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -18021,7 +18210,6 @@ class WindowShadingControl_v9_2_to_v22_1(_g._WindowShadingControlBase):
 
 class _WindowShadingControl_v9_2_to_v22_1Fields(_g._WindowShadingControlCommonFields, total=False):
     shading_control_sequence_number: float | None
-    construction_with_shading_name: str | None
     shading_control_type: (
         Literal[
             "AlwaysOff",
@@ -18049,7 +18237,7 @@ class _WindowShadingControl_v9_2_to_v22_1Fields(_g._WindowShadingControlCommonFi
         | None
     )
 
-class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2(IDFObject):
+class HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2(_g._TypedIDFObject):
     """``HeatPump:WaterToWater:EIR:Heating`` as declared in EnergyPlus 9.1.0 to 9.2.0. An EIR formulated water to water heat pump model, heating operation"""
 
     load_side_inlet_node_name: str | None
@@ -18097,7 +18285,7 @@ class _HeatPumpWaterToWaterEIRHeating_v9_1_to_v9_2Fields(TypedDict, total=False)
     electric_input_to_output_ratio_modifier_function_of_temperature_curve_name: str | None
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
 
-class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2(IDFObject):
+class HeatPumpWaterToWaterEIRCooling_v9_1_to_v9_2(_g._TypedIDFObject):
     """``HeatPump:WaterToWater:EIR:Cooling`` as declared in EnergyPlus 9.1.0 to 9.2.0. An EIR formulated water to water heat pump model, cooling operation."""
 
     load_side_inlet_node_name: str | None
@@ -18484,7 +18672,7 @@ class _PythonPluginSearchPaths_v9_3Fields(_g._PythonPluginSearchPathsCommonField
     search_path_4: str | None
     search_path_5: str | None
 
-class PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6(ExtensibleGroup):
+class PythonPluginSearchPathsPySearchPathsGroup_v9_4_to_v9_6(_g._TypedExtensibleGroup):
     """One py_search_paths group inside :class:`PythonPluginSearchPaths_v9_4_to_v9_6`."""
 
     search_path: str | None
@@ -18675,6 +18863,24 @@ class _PythonPluginOutputVariable_v9_4_to_v23_1Fields(_g._PythonPluginOutputVari
         | None
     )
 
+class ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5(_g._ZonePropertyUserViewFactorsBySurfaceNameBase):
+    """``ZoneProperty:UserViewFactors:BySurfaceName`` as declared in EnergyPlus 9.4.0 to 9.5.0. View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b..."""
+
+    zone_or_zonelist_name: str | None
+    """View factors may be entered for a single zone or for a group of zones connected by Construction:AirBoundary"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[_ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5Fields],
+    ) -> None: ...  # type: ignore[override]
+
+class _ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5Fields(
+    _g._ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
+):
+    zone_or_zonelist_name: str | None
+
 class OutputControlFiles_v9_4_to_v24_1(_g._OutputControlFilesBase):
     """``OutputControl:Files`` as declared in EnergyPlus 9.4.0 to 24.1.0. Conditionally turn on/off output from EnergyPlus."""
 
@@ -18770,18 +18976,30 @@ class _Space_v22_2_to_v26_1Fields(_g._SpaceCommonFields, total=False):
 class OutputTableReportPeriod_v22_2_to_v25_1(_g._OutputTableReportPeriodBase):
     """``Output:Table:ReportPeriod`` as declared in EnergyPlus 22.2.0 to 25.1.0. This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi..."""
 
+    name_: str | None
+    """descriptive name cannot be blank and must be unique"""
     report_name_: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
         | None
     )
     """currently only allow for these tables, could be extended in the future"""
+    report_name: (
+        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
+        | None
+    )
+    """Alias of :attr:`report_name_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableReportPeriod_v22_2_to_v25_1Fields]
     ) -> None: ...  # type: ignore[override]
 
 class _OutputTableReportPeriod_v22_2_to_v25_1Fields(_g._OutputTableReportPeriodCommonFields, total=False):
+    name_: str | None
     report_name_: (
+        Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
+        | None
+    )
+    report_name: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
         | None
     )
@@ -18834,6 +19052,10 @@ class IndoorLivingWall_v24_1(_g._IndoorLivingWallBase):
     led_intensity_schedule_name_: str | None
     led_nominal_intensity_: float | None
     """The value represents photosynthetic photon flux density (PPFD) of LED grow light. PPFD is measured in micro-mole per ...; [umol/m2-s] (umol/ft2-s)"""
+    led_intensity_schedule_name: str | None
+    """Alias of :attr:`led_intensity_schedule_name_`, the same field without the trailing underscore."""
+    led_nominal_intensity: float | None
+    """Alias of :attr:`led_nominal_intensity_`, the same field without the trailing underscore."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_IndoorLivingWall_v24_1Fields]
@@ -18842,6 +19064,8 @@ class IndoorLivingWall_v24_1(_g._IndoorLivingWallBase):
 class _IndoorLivingWall_v24_1Fields(_g._IndoorLivingWallCommonFields, total=False):
     led_intensity_schedule_name_: str | None
     led_nominal_intensity_: float | None
+    led_intensity_schedule_name: str | None
+    led_nominal_intensity: float | None
 
 # =========================================================================
 # Object-type maps, one piece per version range
@@ -18866,6 +19090,7 @@ _Types_v8_9 = TypedDict(
         "RunPeriod": IDFCollection[RunPeriod_v8_9],
         "RunPeriod:CustomRange": IDFCollection[RunPeriodCustomRange_v8_9],
         "Schedule:Year": IDFCollection[ScheduleYear_v8_9],
+        "Site:WaterMainsTemperature": IDFCollection[SiteWaterMainsTemperature_v8_9],
         "SizingPeriod:DesignDay": IDFCollection[SizingPeriodDesignDay_v8_9],
         "Table:MultiVariableLookup": IDFCollection[TableMultiVariableLookup_v8_9],
         "Table:OneIndependentVariable": IDFCollection[TableOneIndependentVariable_v8_9],
@@ -18918,6 +19143,9 @@ _Types_v8_9_to_v9_1 = TypedDict(
             ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1
         ],
         "ZoneHVAC:WaterToAirHeatPump": IDFCollection[ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1],
+        "ZoneProperty:UserViewFactors:bySurfaceName": IDFCollection[
+            ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1
+        ],
     },
     total=True,
 )
@@ -18966,6 +19194,7 @@ _Types_v8_9_to_v9_2 = TypedDict(
         "Exterior:FuelEquipment": IDFCollection[ExteriorFuelEquipment_v8_9_to_v9_2],
         "Fan:SystemModel": IDFCollection[FanSystemModel_v8_9_to_v9_2],
         "Floor:Detailed": IDFCollection[FloorDetailed_v8_9_to_v9_2],
+        "FuelFactors": IDFCollection[FuelFactors_v8_9_to_v9_2],
         "Generator:CombustionTurbine": IDFCollection[GeneratorCombustionTurbine_v8_9_to_v9_2],
         "Generator:InternalCombustionEngine": IDFCollection[GeneratorInternalCombustionEngine_v8_9_to_v9_2],
         "Generator:MicroTurbine": IDFCollection[GeneratorMicroTurbine_v8_9_to_v9_2],
@@ -19030,9 +19259,6 @@ _Types_v8_9_to_v9_3 = TypedDict(
         "ZoneHVAC:LowTemperatureRadiant:VariableFlow": IDFCollection[
             ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3
         ],
-        "ZoneProperty:UserViewFactors:bySurfaceName": IDFCollection[
-            ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3
-        ],
     },
     total=True,
 )
@@ -19052,12 +19278,14 @@ _Types_v8_9_to_v9_4 = TypedDict(
         "HeatPump:WaterToWater:EquationFit:Heating": IDFCollection[HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4],
         "Output:SQLite": IDFCollection[OutputSQLite_v8_9_to_v9_4],
         "People": IDFCollection[People_v8_9_to_v9_4],
+        "SurfaceConvectionAlgorithm:Inside": IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4],
         "SurfaceProperty:ConvectionCoefficients": IDFCollection[SurfacePropertyConvectionCoefficients_v8_9_to_v9_4],
         "SurfaceProperty:ConvectionCoefficients:MultipleSurface": IDFCollection[
             SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4
         ],
         "UtilityCost:Variable": IDFCollection[UtilityCostVariable_v8_9_to_v9_4],
         "Zone": IDFCollection[Zone_v8_9_to_v9_4],
+        "ZoneAirMassFlowConservation": IDFCollection[ZoneAirMassFlowConservation_v8_9_to_v9_4],
         "ZoneHVAC:Baseboard:RadiantConvective:Steam": IDFCollection[
             ZoneHVACBaseboardRadiantConvectiveSteam_v8_9_to_v9_4
         ],
@@ -19172,7 +19400,6 @@ _Types_v8_9_to_v22_1 = TypedDict(
         "ExternalInterface:FunctionalMockupUnitImport": IDFCollection[
             ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1
         ],
-        "FuelFactors": IDFCollection[FuelFactors_v8_9_to_v22_1],
         "GroundHeatExchanger:HorizontalTrench": IDFCollection[GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1],
         "GroundHeatExchanger:Pond": IDFCollection[GroundHeatExchangerPond_v8_9_to_v22_1],
         "GroundHeatExchanger:Slinky": IDFCollection[GroundHeatExchangerSlinky_v8_9_to_v22_1],
@@ -19234,6 +19461,7 @@ _Types_v8_9_to_v22_1 = TypedDict(
         ],
         "SurfaceProperty:LocalEnvironment": IDFCollection[SurfacePropertyLocalEnvironment_v8_9_to_v22_1],
         "ThermalStorage:ChilledWater:Stratified": IDFCollection[ThermalStorageChilledWaterStratified_v8_9_to_v22_1],
+        "Timestep": IDFCollection[Timestep_v8_9_to_v22_1],
         "WaterHeater:Sizing": IDFCollection[WaterHeaterSizing_v8_9_to_v22_1],
         "WindowMaterial:GasMixture": IDFCollection[WindowMaterialGasMixture_v8_9_to_v22_1],
         "WindowProperty:StormWindow": IDFCollection[WindowPropertyStormWindow_v8_9_to_v22_1],
@@ -19326,7 +19554,6 @@ _Types_v8_9_to_v25_1 = TypedDict(
         "AirflowNetwork:Distribution:Node": IDFCollection[AirflowNetworkDistributionNode_v8_9_to_v25_1],
         "EvaporativeFluidCooler:SingleSpeed": IDFCollection[EvaporativeFluidCoolerSingleSpeed_v8_9_to_v25_1],
         "EvaporativeFluidCooler:TwoSpeed": IDFCollection[EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1],
-        "Site:WaterMainsTemperature": IDFCollection[SiteWaterMainsTemperature_v8_9_to_v25_1],
         "ThermalStorage:Ice:Simple": IDFCollection[ThermalStorageIceSimple_v8_9_to_v25_1],
         "ZoneHVAC:IdealLoadsAirSystem": IDFCollection[ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1],
     },
@@ -19874,7 +20101,6 @@ _Types_v8_9_to_v26_2 = TypedDict(
             _g.SurfaceContaminantSourceAndSinkGenericPressureDriven
         ],
         "SurfaceControl:MovableInsulation": IDFCollection[_g.SurfaceControlMovableInsulation],
-        "SurfaceConvectionAlgorithm:Inside": IDFCollection[_g.SurfaceConvectionAlgorithmInside],
         "SurfaceConvectionAlgorithm:Inside:AdaptiveModelSelections": IDFCollection[
             _g.SurfaceConvectionAlgorithmInsideAdaptiveModelSelections
         ],
@@ -19920,7 +20146,6 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling": IDFCollection[
             _g.ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling
         ],
-        "Timestep": IDFCollection[_g.Timestep],
         "UtilityCost:Charge:Block": IDFCollection[_g.UtilityCostChargeBlock],
         "UtilityCost:Charge:Simple": IDFCollection[_g.UtilityCostChargeSimple],
         "UtilityCost:Computation": IDFCollection[_g.UtilityCostComputation],
@@ -19958,7 +20183,6 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "WindowThermalModel:Params": IDFCollection[_g.WindowThermalModelParams],
         "ZoneAirBalance:OutdoorAir": IDFCollection[_g.ZoneAirBalanceOutdoorAir],
         "ZoneAirContaminantBalance": IDFCollection[_g.ZoneAirContaminantBalance],
-        "ZoneAirMassFlowConservation": IDFCollection[_g.ZoneAirMassFlowConservation],
         "ZoneCapacitanceMultiplier:ResearchSpecial": IDFCollection[_g.ZoneCapacitanceMultiplierResearchSpecial],
         "ZoneContaminantSourceAndSink:CarbonDioxide": IDFCollection[_g.ZoneContaminantSourceAndSinkCarbonDioxide],
         "ZoneContaminantSourceAndSink:Generic:Constant": IDFCollection[_g.ZoneContaminantSourceAndSinkGenericConstant],
@@ -20033,6 +20257,14 @@ class _Types_v9_0_to_v9_5(TypedDict, total=True):
 
 class _Types_v9_0_to_v23_1(TypedDict, total=True):
     PlantEquipmentOperationSchemes: IDFCollection[PlantEquipmentOperationSchemes_v9_0_to_v23_1]
+
+_Types_v9_0_to_v25_1 = TypedDict(
+    "_Types_v9_0_to_v25_1",
+    {
+        "Site:WaterMainsTemperature": IDFCollection[SiteWaterMainsTemperature_v9_0_to_v25_1],
+    },
+    total=True,
+)
 
 _Types_v9_0_to_v26_1 = TypedDict(
     "_Types_v9_0_to_v26_1",
@@ -20129,6 +20361,16 @@ _Types_v9_2 = TypedDict(
         "ZoneHVAC:EquipmentList": IDFCollection[ZoneHVACEquipmentList_v9_2],
         "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow": IDFCollection[
             ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2
+        ],
+    },
+    total=True,
+)
+
+_Types_v9_2_to_v9_3 = TypedDict(
+    "_Types_v9_2_to_v9_3",
+    {
+        "ZoneProperty:UserViewFactors:bySurfaceName": IDFCollection[
+            ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3
         ],
     },
     total=True,
@@ -20247,6 +20489,7 @@ _Types_v9_3_to_v22_1 = TypedDict(
         "Coil:Cooling:DX:CurveFit:Speed": IDFCollection[CoilCoolingDXCurveFitSpeed_v9_3_to_v22_1],
         "Coil:Cooling:DX:MultiSpeed": IDFCollection[CoilCoolingDXMultiSpeed_v9_3_to_v22_1],
         "Coil:Heating:DX:MultiSpeed": IDFCollection[CoilHeatingDXMultiSpeed_v9_3_to_v22_1],
+        "FuelFactors": IDFCollection[FuelFactors_v9_3_to_v22_1],
         "GroundHeatExchanger:ResponseFactors": IDFCollection[GroundHeatExchangerResponseFactors_v9_3_to_v22_1],
         "HVACTemplate:System:VRF": IDFCollection[HVACTemplateSystemVRF_v9_3_to_v22_1],
         "LifeCycleCost:UsePriceEscalation": IDFCollection[LifeCycleCostUsePriceEscalation_v9_3_to_v22_1],
@@ -20368,8 +20611,16 @@ _Types_v9_4 = TypedDict(
     total=True,
 )
 
-class _Types_v9_4_to_v9_5(TypedDict, total=True):
-    PerformancePrecisionTradeoffs: IDFCollection[PerformancePrecisionTradeoffs_v9_4_to_v9_5]
+_Types_v9_4_to_v9_5 = TypedDict(
+    "_Types_v9_4_to_v9_5",
+    {
+        "PerformancePrecisionTradeoffs": IDFCollection[PerformancePrecisionTradeoffs_v9_4_to_v9_5],
+        "ZoneProperty:UserViewFactors:BySurfaceName": IDFCollection[
+            ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5
+        ],
+    },
+    total=True,
+)
 
 _Types_v9_4_to_v9_6 = TypedDict(
     "_Types_v9_4_to_v9_6",
@@ -20417,7 +20668,6 @@ _Types_v9_4_to_v26_2 = TypedDict(
         "Output:Diagnostics": IDFCollection[_g.OutputDiagnostics],
         "PythonPlugin:Variables": IDFCollection[_g.PythonPluginVariables],
         "ZoneHVAC:LowTemperatureRadiant:Electric": IDFCollection[_g.ZoneHVACLowTemperatureRadiantElectric],
-        "ZoneProperty:UserViewFactors:BySurfaceName": IDFCollection[_g.ZonePropertyUserViewFactorsBySurfaceName],
     },
     total=True,
 )
@@ -20478,10 +20728,12 @@ _Types_v9_5_to_v26_2 = TypedDict(
         "HeatPump:WaterToWater:EquationFit:Heating": IDFCollection[_g.HeatPumpWaterToWaterEquationFitHeating],
         "Output:Table:SummaryReports": IDFCollection[_g.OutputTableSummaryReports],
         "RoomAir:Node:AirflowNetwork:InternalGains": IDFCollection[_g.RoomAirNodeAirflowNetworkInternalGains],
+        "SurfaceConvectionAlgorithm:Inside": IDFCollection[_g.SurfaceConvectionAlgorithmInside],
         "SurfaceProperty:ConvectionCoefficients:MultipleSurface": IDFCollection[
             _g.SurfacePropertyConvectionCoefficientsMultipleSurface
         ],
         "UtilityCost:Variable": IDFCollection[_g.UtilityCostVariable],
+        "ZoneAirMassFlowConservation": IDFCollection[_g.ZoneAirMassFlowConservation],
         "ZoneHVAC:Baseboard:RadiantConvective:Steam": IDFCollection[_g.ZoneHVACBaseboardRadiantConvectiveSteam],
         "ZoneHVAC:Baseboard:RadiantConvective:Steam:Design": IDFCollection[
             _g.ZoneHVACBaseboardRadiantConvectiveSteamDesign
@@ -20586,6 +20838,7 @@ _Types_v9_6_to_v26_2 = TypedDict(
         "Wall:Exterior": IDFCollection[_g.WallExterior],
         "Wall:Interzone": IDFCollection[_g.WallInterzone],
         "Wall:Underground": IDFCollection[_g.WallUnderground],
+        "ZoneProperty:UserViewFactors:BySurfaceName": IDFCollection[_g.ZonePropertyUserViewFactorsBySurfaceName],
     },
     total=True,
 )
@@ -20826,6 +21079,7 @@ _Types_v22_2_to_v26_2 = TypedDict(
         "SurfaceProperty:IncidentSolarMultiplier": IDFCollection[_g.SurfacePropertyIncidentSolarMultiplier],
         "Table:IndependentVariable": IDFCollection[_g.TableIndependentVariable],
         "Table:Lookup": IDFCollection[_g.TableLookup],
+        "Timestep": IDFCollection[_g.Timestep],
         "UnitarySystemPerformance:Multispeed": IDFCollection[_g.UnitarySystemPerformanceMultispeed],
         "WaterHeater:Sizing": IDFCollection[_g.WaterHeaterSizing],
         "WindowMaterial:GasMixture": IDFCollection[_g.WindowMaterialGasMixture],
@@ -21195,6 +21449,8 @@ class _Accessors_v8_9:
     @property
     def schedules_year(self) -> IDFCollection[ScheduleYear_v8_9]: ...
     @property
+    def site_water_mains_temperatures(self) -> IDFCollection[SiteWaterMainsTemperature_v8_9]: ...
+    @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v8_9]: ...
     @property
     def table_multi_variable_lookups(self) -> IDFCollection[TableMultiVariableLookup_v8_9]: ...
@@ -21274,6 +21530,10 @@ class _Accessors_v8_9_to_v9_1:
     ) -> IDFCollection[ZoneHVACTerminalUnitVariableRefrigerantFlow_v8_9_to_v9_1]: ...
     @property
     def zone_hvac_water_to_air_heat_pumps(self) -> IDFCollection[ZoneHVACWaterToAirHeatPump_v8_9_to_v9_1]: ...
+    @property
+    def zone_property_user_view_factors_by_surface_names(
+        self,
+    ) -> IDFCollection[ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_1]: ...
 
 class _Accessors_v8_9_to_v9_2:
     @property
@@ -21360,6 +21620,8 @@ class _Accessors_v8_9_to_v9_2:
     def fan_system_models(self) -> IDFCollection[FanSystemModel_v8_9_to_v9_2]: ...
     @property
     def floor_detaileds(self) -> IDFCollection[FloorDetailed_v8_9_to_v9_2]: ...
+    @property
+    def fuel_factors(self) -> IDFCollection[FuelFactors_v8_9_to_v9_2]: ...
     @property
     def generator_combustion_turbines(self) -> IDFCollection[GeneratorCombustionTurbine_v8_9_to_v9_2]: ...
     @property
@@ -21490,10 +21752,6 @@ class _Accessors_v8_9_to_v9_3:
     def zone_hvac_low_temperature_radiant_variable_flows(
         self,
     ) -> IDFCollection[ZoneHVACLowTemperatureRadiantVariableFlow_v8_9_to_v9_3]: ...
-    @property
-    def zone_property_user_view_factors_by_surface_names(
-        self,
-    ) -> IDFCollection[ZonePropertyUserViewFactorsbySurfaceName_v8_9_to_v9_3]: ...
 
 class _Accessors_v8_9_to_v9_4:
     @property
@@ -21521,6 +21779,8 @@ class _Accessors_v8_9_to_v9_4:
     @property
     def people(self) -> IDFCollection[People_v8_9_to_v9_4]: ...
     @property
+    def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4]: ...
+    @property
     def surface_property_convection_coefficients(
         self,
     ) -> IDFCollection[SurfacePropertyConvectionCoefficients_v8_9_to_v9_4]: ...
@@ -21530,6 +21790,8 @@ class _Accessors_v8_9_to_v9_4:
     ) -> IDFCollection[SurfacePropertyConvectionCoefficientsMultipleSurface_v8_9_to_v9_4]: ...
     @property
     def utility_cost_variables(self) -> IDFCollection[UtilityCostVariable_v8_9_to_v9_4]: ...
+    @property
+    def zone_air_mass_flow_conservations(self) -> IDFCollection[ZoneAirMassFlowConservation_v8_9_to_v9_4]: ...
     @property
     def zone_hvac_baseboard_radiant_convective_steams(
         self,
@@ -21719,8 +21981,6 @@ class _Accessors_v8_9_to_v22_1:
         self,
     ) -> IDFCollection[ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1]: ...
     @property
-    def fuel_factors(self) -> IDFCollection[FuelFactors_v8_9_to_v22_1]: ...
-    @property
     def ground_heat_exchanger_horizontal_trenches(
         self,
     ) -> IDFCollection[GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1]: ...
@@ -21840,6 +22100,10 @@ class _Accessors_v8_9_to_v22_1:
     def thermal_storage_chilled_water_stratifieds(
         self,
     ) -> IDFCollection[ThermalStorageChilledWaterStratified_v8_9_to_v22_1]: ...
+    @property
+    def timestep(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
+    @property
+    def timesteps(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
     @property
     def ventilation(self) -> IDFCollection[ZoneVentilationDesignFlowRate_v8_9_to_v22_1]: ...
     @property
@@ -21988,8 +22252,6 @@ class _Accessors_v8_9_to_v25_1:
     def evaporative_fluid_cooler_two_speeds(self) -> IDFCollection[EvaporativeFluidCoolerTwoSpeed_v8_9_to_v25_1]: ...
     @property
     def ideal_loads(self) -> IDFCollection[ZoneHVACIdealLoadsAirSystem_v8_9_to_v25_1]: ...
-    @property
-    def site_water_mains_temperatures(self) -> IDFCollection[SiteWaterMainsTemperature_v8_9_to_v25_1]: ...
     @property
     def thermal_storage_ice_simples(self) -> IDFCollection[ThermalStorageIceSimple_v8_9_to_v25_1]: ...
     @property
@@ -23075,8 +23337,6 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.SurfaceConvectionAlgorithmInsideUserCurve]: ...
     @property
-    def surface_convection_algorithm_insides(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmInside]: ...
-    @property
     def surface_convection_algorithm_outside_adaptive_model_selections(
         self,
     ) -> IDFCollection[_g.SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections]: ...
@@ -23152,10 +23412,6 @@ class _Accessors_v8_9_to_v26_2:
     ) -> IDFCollection[_g.ThermostatSetpointThermalComfortFangerSingleHeating]: ...
     @property
     def thermostats(self) -> IDFCollection[_g.ThermostatSetpointDualSetpoint]: ...
-    @property
-    def timestep(self) -> IDFCollection[_g.Timestep]: ...
-    @property
-    def timesteps(self) -> IDFCollection[_g.Timestep]: ...
     @property
     def utility_cost_charge_blocks(self) -> IDFCollection[_g.UtilityCostChargeBlock]: ...
     @property
@@ -23236,8 +23492,6 @@ class _Accessors_v8_9_to_v26_2:
     def zone_air_balance_outdoor_airs(self) -> IDFCollection[_g.ZoneAirBalanceOutdoorAir]: ...
     @property
     def zone_air_contaminant_balances(self) -> IDFCollection[_g.ZoneAirContaminantBalance]: ...
-    @property
-    def zone_air_mass_flow_conservations(self) -> IDFCollection[_g.ZoneAirMassFlowConservation]: ...
     @property
     def zone_capacitance_multiplier_research_specials(
         self,
@@ -23355,6 +23609,10 @@ class _Accessors_v9_0_to_v23_1:
     @property
     def plant_equipment_operation_schemes(self) -> IDFCollection[PlantEquipmentOperationSchemes_v9_0_to_v23_1]: ...
 
+class _Accessors_v9_0_to_v25_1:
+    @property
+    def site_water_mains_temperatures(self) -> IDFCollection[SiteWaterMainsTemperature_v9_0_to_v25_1]: ...
+
 class _Accessors_v9_0_to_v26_1:
     @property
     def fenestration_surface_detaileds(self) -> IDFCollection[FenestrationSurfaceDetailed_v9_0_to_v26_1]: ...
@@ -23440,6 +23698,12 @@ class _Accessors_v9_2:
     def zone_hvac_terminal_unit_variable_refrigerant_flows(
         self,
     ) -> IDFCollection[ZoneHVACTerminalUnitVariableRefrigerantFlow_v9_2]: ...
+
+class _Accessors_v9_2_to_v9_3:
+    @property
+    def zone_property_user_view_factors_by_surface_names(
+        self,
+    ) -> IDFCollection[ZonePropertyUserViewFactorsbySurfaceName_v9_2_to_v9_3]: ...
 
 class _Accessors_v9_2_to_v9_4:
     @property
@@ -23568,6 +23832,8 @@ class _Accessors_v9_3_to_v22_1:
     def coil_cooling_dx_multi_speeds(self) -> IDFCollection[CoilCoolingDXMultiSpeed_v9_3_to_v22_1]: ...
     @property
     def coil_heating_dx_multi_speeds(self) -> IDFCollection[CoilHeatingDXMultiSpeed_v9_3_to_v22_1]: ...
+    @property
+    def fuel_factors(self) -> IDFCollection[FuelFactors_v9_3_to_v22_1]: ...
     @property
     def ground_heat_exchanger_response_factors(
         self,
@@ -23754,6 +24020,10 @@ class _Accessors_v9_4:
 class _Accessors_v9_4_to_v9_5:
     @property
     def performance_precision_tradeoffs(self) -> IDFCollection[PerformancePrecisionTradeoffs_v9_4_to_v9_5]: ...
+    @property
+    def zone_property_user_view_factors_by_surface_names(
+        self,
+    ) -> IDFCollection[ZonePropertyUserViewFactorsBySurfaceName_v9_4_to_v9_5]: ...
 
 class _Accessors_v9_4_to_v9_6:
     @property
@@ -23798,10 +24068,6 @@ class _Accessors_v9_4_to_v26_2:
     def zone_hvac_low_temperature_radiant_electrics(
         self,
     ) -> IDFCollection[_g.ZoneHVACLowTemperatureRadiantElectric]: ...
-    @property
-    def zone_property_user_view_factors_by_surface_names(
-        self,
-    ) -> IDFCollection[_g.ZonePropertyUserViewFactorsBySurfaceName]: ...
 
 class _Accessors_v9_5:
     @property
@@ -23869,11 +24135,15 @@ class _Accessors_v9_5_to_v26_2:
         self,
     ) -> IDFCollection[_g.RoomAirNodeAirflowNetworkInternalGains]: ...
     @property
+    def surface_convection_algorithm_insides(self) -> IDFCollection[_g.SurfaceConvectionAlgorithmInside]: ...
+    @property
     def surface_property_convection_coefficients_multiple_surfaces(
         self,
     ) -> IDFCollection[_g.SurfacePropertyConvectionCoefficientsMultipleSurface]: ...
     @property
     def utility_cost_variables(self) -> IDFCollection[_g.UtilityCostVariable]: ...
+    @property
+    def zone_air_mass_flow_conservations(self) -> IDFCollection[_g.ZoneAirMassFlowConservation]: ...
     @property
     def zone_hvac_baseboard_radiant_convective_steam_designs(
         self,
@@ -24028,6 +24298,10 @@ class _Accessors_v9_6_to_v26_2:
     def wall_interzones(self) -> IDFCollection[_g.WallInterzone]: ...
     @property
     def wall_undergrounds(self) -> IDFCollection[_g.WallUnderground]: ...
+    @property
+    def zone_property_user_view_factors_by_surface_names(
+        self,
+    ) -> IDFCollection[_g.ZonePropertyUserViewFactorsBySurfaceName]: ...
 
 class _Accessors_v22_1:
     @property
@@ -24408,6 +24682,10 @@ class _Accessors_v22_2_to_v26_2:
     def table_independent_variables(self) -> IDFCollection[_g.TableIndependentVariable]: ...
     @property
     def table_lookups(self) -> IDFCollection[_g.TableLookup]: ...
+    @property
+    def timestep(self) -> IDFCollection[_g.Timestep]: ...
+    @property
+    def timesteps(self) -> IDFCollection[_g.Timestep]: ...
     @property
     def unitary_system_performance_multispeeds(self) -> IDFCollection[_g.UnitarySystemPerformanceMultispeed]: ...
     @property
@@ -24959,6 +25237,7 @@ class _ObjectTypeMapV9_0(
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     closed=True,
@@ -24987,6 +25266,7 @@ class IDFDocumentV9_0(
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _IDFDocumentMethods[Strict],
@@ -25013,6 +25293,7 @@ class _ObjectTypeMapV9_1(
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1,
@@ -25045,6 +25326,7 @@ class IDFDocumentV9_1(
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1,
@@ -25075,6 +25357,7 @@ class _ObjectTypeMapV9_2(
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v9_2,
@@ -25083,6 +25366,7 @@ class _ObjectTypeMapV9_2(
     _Types_v9_1_to_v25_1,
     _Types_v9_1_to_v26_2,
     _Types_v9_2,
+    _Types_v9_2_to_v9_3,
     _Types_v9_2_to_v9_4,
     _Types_v9_2_to_v9_5,
     _Types_v9_2_to_v9_6,
@@ -25112,6 +25396,7 @@ class IDFDocumentV9_2(
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v9_2,
@@ -25120,6 +25405,7 @@ class IDFDocumentV9_2(
     _Accessors_v9_1_to_v25_1,
     _Accessors_v9_1_to_v26_2,
     _Accessors_v9_2,
+    _Accessors_v9_2_to_v9_3,
     _Accessors_v9_2_to_v9_4,
     _Accessors_v9_2_to_v9_5,
     _Accessors_v9_2_to_v9_6,
@@ -25147,12 +25433,14 @@ class _ObjectTypeMapV9_3(
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v9_3,
     _Types_v9_1_to_v22_1,
     _Types_v9_1_to_v25_1,
     _Types_v9_1_to_v26_2,
+    _Types_v9_2_to_v9_3,
     _Types_v9_2_to_v9_4,
     _Types_v9_2_to_v9_5,
     _Types_v9_2_to_v9_6,
@@ -25189,12 +25477,14 @@ class IDFDocumentV9_3(
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v9_3,
     _Accessors_v9_1_to_v22_1,
     _Accessors_v9_1_to_v25_1,
     _Accessors_v9_1_to_v26_2,
+    _Accessors_v9_2_to_v9_3,
     _Accessors_v9_2_to_v9_4,
     _Accessors_v9_2_to_v9_5,
     _Accessors_v9_2_to_v9_6,
@@ -25230,6 +25520,7 @@ class _ObjectTypeMapV9_4(
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v22_1,
@@ -25276,6 +25567,7 @@ class IDFDocumentV9_4(
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v22_1,
@@ -25321,6 +25613,7 @@ class _ObjectTypeMapV9_5(
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v22_1,
@@ -25368,6 +25661,7 @@ class IDFDocumentV9_5(
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v22_1,
@@ -25413,6 +25707,7 @@ class _ObjectTypeMapV9_6(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v22_1,
@@ -25461,6 +25756,7 @@ class IDFDocumentV9_6(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v22_1,
@@ -25508,6 +25804,7 @@ class _ObjectTypeMapV22_1(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v22_1,
@@ -25555,6 +25852,7 @@ class IDFDocumentV22_1(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v22_1,
@@ -25601,6 +25899,7 @@ class _ObjectTypeMapV22_2(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -25647,6 +25946,7 @@ class IDFDocumentV22_2(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,
@@ -25692,6 +25992,7 @@ class _ObjectTypeMapV23_1(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v23_1,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -25740,6 +26041,7 @@ class IDFDocumentV23_1(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v23_1,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,
@@ -25786,6 +26088,7 @@ class _ObjectTypeMapV23_2(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -25831,6 +26134,7 @@ class IDFDocumentV23_2(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,
@@ -25875,6 +26179,7 @@ class _ObjectTypeMapV24_1(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -25918,6 +26223,7 @@ class IDFDocumentV24_1(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,
@@ -25960,6 +26266,7 @@ class _ObjectTypeMapV24_2(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -26000,6 +26307,7 @@ class IDFDocumentV24_2(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,
@@ -26040,6 +26348,7 @@ class _ObjectTypeMapV25_1(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v25_1,
@@ -26078,6 +26387,7 @@ class IDFDocumentV25_1(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v25_1,

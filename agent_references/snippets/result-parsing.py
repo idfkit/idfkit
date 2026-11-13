@@ -163,7 +163,7 @@ if idx:
 # --8<-- [start:prep-outputs]
 from idfkit.simulation import prep_outputs
 
-prep_outputs(doc)  # adds Output:VariableDictionary (and Output:SQLite)
+prep_outputs(doc)  # adds Output:SQLite, Output:Table:SummaryReports (AllSummary), Output:VariableDictionary
 result = simulate(doc, "weather.epw")
 # --8<-- [end:prep-outputs]
 

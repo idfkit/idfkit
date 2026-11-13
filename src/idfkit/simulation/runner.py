@@ -239,9 +239,13 @@ def simulate(
             "without a weather file" if weather_path is None else f"with weather {weather_path.name}",
         )
 
+        # Copy the model first, so the cache key and the simulated model describe the same state even
+        # if another thread edits the caller's model meanwhile (the async runner does the same).
+        sim_model = sim_input_model.copy()
+
         cache_key = runner_cache_key(
             cache,
-            sim_input_model,
+            sim_model,
             weather_path,
             output_dir=local_output_dir,
             config=config,
@@ -260,13 +264,10 @@ def simulate(
                 return cached
             logger.debug("Cache miss for key %s", cache_key.hex_digest[:12])
 
-        # Copy model to avoid mutation
-        sim_model = sim_input_model.copy()
         ensure_sql_output(sim_model)
 
         # Auto-preprocess ground heat-transfer objects when needed.
         sim_model, ep_expand = maybe_preprocess(
-            sim_input_model,
             sim_model,
             config,
             weather_path,

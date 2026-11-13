@@ -13,13 +13,13 @@ import json
 import logging
 import os
 import time
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
 
+from ._forksafe import ForkSafeLock
 from .exceptions import SchemaNotFoundError
 from .versions import (
     ENERGYPLUS_VERSIONS,
@@ -89,6 +89,30 @@ def _choice_spellings(field_schema: dict[str, Any]) -> dict[str, str]:
     return table
 
 
+def trailing_underscore_aliases(field_names: Iterable[str]) -> dict[str, str]:
+    """Map the spellings of a type's trailing-underscore fields to their epJSON keys.
+
+    EnergyPlus derives an epJSON key from the IDD field name without trimming, so a name that
+    ends in punctuation or a space ends in ``_``: ``"COND: Flag: Is the basement conditioned?"``
+    is ``cond_flag_is_the_basement_conditioned_``. :func:`~idfkit.objects.to_python_name` trims
+    that underscore, so both the key itself and the spelling without it are mapped here, the
+    latter only when it is not a field of its own. ``name`` is never mapped: it means the
+    object's name everywhere, including on the nameless ``Output:Table:ReportPeriod`` of
+    22.2 to 25.1, whose IDD ``Name,`` field is ``name_``.
+
+    The result is empty for nearly every type. It is shared by every object of the type and
+    must not be changed; it is a plain dict so that objects holding it can be pickled.
+    """
+    names = set(field_names)
+    aliases: dict[str, str] = {}
+    for key in names:
+        if key.endswith("_") and key[:-1] not in names:
+            aliases[key] = key
+            if key[:-1] != "name":
+                aliases[key[:-1]] = key
+    return aliases
+
+
 def _spelling_tables(properties: Mapping[str, Any]) -> Mapping[str, ChoiceSpellings]:
     """The non-empty spelling tables of a set of field schemas, keyed by field name."""
     tables = {
@@ -109,6 +133,8 @@ class ParsingCache:
 
     obj_schema: dict[str, Any]
     has_name: bool
+    #: The positional fields after the name: ``all_field_names[1:]`` for a named type, and all
+    #: of them for a type without a Name field, whose first field is an ordinary field.
     field_names: tuple[str, ...]
     all_field_names: tuple[str, ...]
     field_types: dict[str, str | None]
@@ -118,9 +144,14 @@ class ParsingCache:
     ext_field_names: tuple[str, ...]
     ext_wrapper_key: str | None
     ext_inner_props: Mapping[str, dict[str, Any]]
+    #: Every key the type's epJSON properties name: the fixed fields plus the extensible wrapper
+    #: key, never ``name``. The same set validation reports ``W003`` against.
+    known_keys: frozenset[str] = frozenset()
     #: Choice spellings of the positional fields and of one extensible group (idfkit#180).
     choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
     ext_choice_spellings: Mapping[str, ChoiceSpellings] = field(default_factory=_no_spellings)
+    #: Trailing-underscore field spellings to their keys (see :func:`trailing_underscore_aliases`).
+    field_aliases: Mapping[str, str] = field(default_factory=dict[str, str])
 
 
 def _resolve_field_type(
@@ -334,9 +365,10 @@ class EpJSONSchema:
         if not obj_schema:
             return []
         legacy = obj_schema.get("legacy_idd", {})
-        fields = legacy.get("fields", [])
-        # First field is 'name', return the rest
-        return fields[1:] if fields else []
+        fields: list[str] = list(legacy.get("fields", []))
+        # The first legacy field is the name only for a type that has one; for a type without
+        # a Name field (Output:Meter, Timestep, ...) it is an ordinary field and stays.
+        return fields[1:] if "name" in obj_schema else fields
 
     def get_all_field_names(self, obj_type: str) -> list[str]:
         """Get all field names including 'name'."""
@@ -467,7 +499,7 @@ class EpJSONSchema:
         legacy: dict[str, Any] = obj_schema.get("legacy_idd", {})
         all_fields_list: list[str] = legacy.get("fields", [])
         all_field_names = tuple(all_fields_list)
-        field_names = tuple(all_fields_list[1:]) if all_fields_list else ()
+        field_names = tuple(all_fields_list[1:]) if has_name else all_field_names
 
         # Extract inner schema properties
         pattern_props: dict[str, Any] = obj_schema.get("patternProperties", {})
@@ -554,8 +586,10 @@ class EpJSONSchema:
             ext_field_names=tuple(ext_field_names_list),
             ext_wrapper_key=ext_wrapper_key,
             ext_inner_props=MappingProxyType(ext_inner_props),
+            known_keys=frozenset(name for name, spec in props.items() if spec),
             choice_spellings=_spelling_tables(props),
             ext_choice_spellings=_spelling_tables(ext_inner_props),
+            field_aliases=trailing_underscore_aliases(all_fields_list),
         )
 
     def get_types_providing_reference(self, ref_list: str) -> list[str]:
@@ -760,6 +794,32 @@ class SchemaManager:
         self._bundled_dir = bundled_schema_dir
         self._cache_dir = cache_dir
         self._cache: dict[tuple[int, int, int], EpJSONSchema] = {}
+        self._init_locks()
+
+    def _init_locks(self) -> None:
+        """Give this manager fresh locks and a fresh generation: at construction, copy and unpickle."""
+        # One load lock per version: a miss loads once however many threads ask at the same time,
+        # while two different versions still load in parallel. Reentrant, because the load runs
+        # logging handlers, and one that asks for the same version again must not deadlock.
+        self._load_locks: dict[tuple[int, int, int], ForkSafeLock] = {}
+        # Bumped by `clear_cache`, under `_publish_lock`. A load that began before a clear must not
+        # publish what it read: the clear would be undone, and a request made after the clear would
+        # be handed the pre-clear schema.
+        self._generation = 0
+        self._publish_lock = ForkSafeLock()
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Copy and pickle the paths and a snapshot of the cache, not the locks."""
+        state = dict(self.__dict__)
+        state["_cache"] = dict(self._cache)
+        for name in ("_load_locks", "_generation", "_publish_lock"):
+            state.pop(name, None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore with locks of its own; state pickled by idfkit 1.2.0 has none to drop."""
+        self.__dict__.update(state)
+        self._init_locks()
 
     @property
     def bundled_dir(self) -> Path:
@@ -771,7 +831,6 @@ class SchemaManager:
         """Path to the user cache directory for schemas."""
         return self._cache_dir
 
-    @lru_cache(maxsize=8)  # noqa: B019
     def get_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
         """
         Load and return schema for a specific version.
@@ -788,12 +847,41 @@ class SchemaManager:
         Raises:
             SchemaNotFoundError: If schema cannot be found
         """
-        if version in self._cache:
-            logger.debug("Schema cache hit for version %d.%d.%d", *version)
-            return self._cache[version]
+        cached = self._cache.get(version)
+        if cached is not None:
+            return cached
 
-        t0 = time.perf_counter()
+        # Without this, threads that miss at the same time each load and build their own copy, and
+        # each walks away with a different instance: the one-schema-per-version invariant breaks,
+        # and pickling (see ``owns``) sends all but the last-cached by content.
+        # ``dict.setdefault`` is atomic, with or without the GIL, so the lock table needs no lock.
+        load_lock = self._load_locks.get(version)
+        if load_lock is None:
+            load_lock = self._load_locks.setdefault(version, ForkSafeLock(reentrant=True))
+        with load_lock.lock:
+            cached = self._cache.get(version)
+            if cached is not None:
+                return cached
+            generation = self._generation
+            t0 = time.perf_counter()
+            schema = self._load_schema(version)
+            with self._publish_lock.lock:
+                if generation == self._generation:
+                    # A re-entrant request for this version (from code the load ran) may have
+                    # published first; keep its instance, so every caller holds the cached one.
+                    schema = self._cache.setdefault(version, schema)
+            # Logged only once published: a logging handler that asks for this version gets the
+            # cached schema instead of starting another load.
+            logger.info(
+                "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
+                *version,
+                len(schema),
+                time.perf_counter() - t0,
+            )
+            return schema
 
+    def _load_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
+        """Load *version* from disk. The caller holds that version's load lock, publishes the result and logs it."""
         # Try exact version first
         schema_path = self._find_schema_file(version)
         if schema_path is None:
@@ -814,17 +902,7 @@ class SchemaManager:
         logger.debug("Loading schema from %s", schema_path)
         data = load_schema_json(schema_path)
 
-        schema = EpJSONSchema(version, data)
-        self._cache[version] = schema
-
-        elapsed = time.perf_counter() - t0
-        logger.info(
-            "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
-            *version,
-            len(schema),
-            elapsed,
-        )
-        return schema
+        return EpJSONSchema(version, data)
 
     def _find_schema_file(self, version: tuple[int, int, int]) -> Path | None:
         """
@@ -979,9 +1057,14 @@ class SchemaManager:
         return self._cache.get(schema.version) is schema
 
     def clear_cache(self) -> None:
-        """Clear the schema cache."""
-        self._cache.clear()
-        self.get_schema.cache_clear()
+        """Clear the schema cache.
+
+        A load still in flight when this is called returns its schema to its caller but does not
+        cache it, so every request made after the call loads afresh.
+        """
+        with self._publish_lock.lock:
+            self._generation += 1
+            self._cache.clear()
 
     def get_supported_versions(self) -> list[tuple[int, int, int]]:
         """Get list of all EnergyPlus versions that idfkit supports.
@@ -994,14 +1077,21 @@ class SchemaManager:
 
 # Global schema manager instance
 _schema_manager: SchemaManager | None = None
+_schema_manager_lock = ForkSafeLock()
 
 
 def get_schema_manager() -> SchemaManager:
     """Get the global schema manager instance."""
     global _schema_manager
-    if _schema_manager is None:
-        _schema_manager = SchemaManager()
-    return _schema_manager
+    manager = _schema_manager
+    if manager is None:
+        # Checked again under the lock: without it, threads racing the first call on a
+        # free-threaded build each create a manager, and each manager loads its own schemas.
+        with _schema_manager_lock.lock:
+            if _schema_manager is None:
+                _schema_manager = SchemaManager()
+            manager = _schema_manager
+    return manager
 
 
 def _rebuild_schema(cls: type[EpJSONSchema], state: dict[str, Any]) -> EpJSONSchema:
