@@ -836,6 +836,45 @@ def _merge_types(type_texts: list[str]) -> str:
     return " | ".join(others)
 
 
+def _admits(parts: list[str], value: str) -> bool:
+    """Whether a value type, split at its ``|``, admits *value*: a member type or one ``Literal`` member."""
+    if value in parts:
+        return True
+    if value == "int" and "float" in parts:
+        return True
+    literals = [m for p in parts if p.startswith("Literal[") for m in _split_literal(p[len("Literal[") : -1])]
+    if value in literals:
+        return True
+    if value.startswith('"'):
+        return "str" in parts
+    if value.lstrip("-").replace(".", "", 1).isdigit():
+        return "float" in parts or ("int" in parts and "." not in value)
+    return False
+
+
+def _intersect_types(type_texts: list[str]) -> str:
+    """The values every one of the generated value types admits, as one value type.
+
+    What is safe to write into a document of any supported version: a ``Literal`` member that every
+    version lists or admits through a plain ``str``/``float``, and a plain type every version has.
+    ``Never`` when nothing is admitted everywhere (the caller adds ``| None``, which clears a field).
+    """
+    split = [_split_union(text) for text in type_texts]
+    candidates: list[str] = []
+    literals: list[str] = []
+    for parts in split:
+        for part in parts:
+            if part.startswith("Literal[") and part.endswith("]"):
+                literals.extend(m for m in _split_literal(part[len("Literal[") : -1]) if m not in literals)
+            elif part not in candidates:
+                candidates.append(part)
+    others = [part for part in candidates if all(_admits(parts, part) for parts in split)]
+    kept = [m for m in literals if all(_admits(parts, m) for parts in split) and not _admits(others, m)]
+    if kept:
+        others.append(f"Literal[{', '.join(kept)}]")
+    return " | ".join(others) if others else "Never"
+
+
 def _split_literal(members: str) -> list[str]:
     """Split the members of a generated ``Literal[...]``; string members never contain a quote."""
     out: list[str] = []
@@ -859,12 +898,16 @@ class _SharedLayout:
     """What every supported version of one object type has in common.
 
     Attributes:
-        fields: Every field present in all versions, with the union of its value types.
+        fields: Every field present in all versions, with the union of its value types: what
+            reading it can give.
+        writable: Every field present in all versions, with the intersection of its value types:
+            what every version accepts, so what is safe to write.
         identical: The fields declared identically in all versions; only the shared base declares them.
         group: Whether the extensible group is identical in all versions.
     """
 
     fields: dict[str, str]
+    writable: dict[str, str]
     identical: frozenset[str]
     group: bool
 
@@ -892,9 +935,10 @@ def _shared_layout() -> dict[str, _SharedLayout]:
         decls = [_field_decls(sc, obj_type) for sc in schemas]
         latest = decls[-1]
         fields = {name: _merge_types([d[name] for d in decls]) for name in latest if all(name in d for d in decls)}
+        writable = {name: _intersect_types([d[name] for d in decls]) for name in fields}
         identical = frozenset(name for name in fields if all(d[name] == latest[name] for d in decls))
         groups = {_group_decl(sc, obj_type) for sc in schemas}
-        layout[obj_type] = _SharedLayout(fields, identical, len(groups) == 1 and None not in groups)
+        layout[obj_type] = _SharedLayout(fields, writable, identical, len(groups) == 1 and None not in groups)
     return layout
 
 
@@ -917,11 +961,14 @@ def _generate_base_class(
     type_since: dict[str, tuple[int, int, int]],
     field_since: dict[tuple[str, str], tuple[int, int, int]],
 ) -> list[str]:
-    """Generate ``_<Class>Base``: the fields of *obj_type* present in every supported version.
+    r"""Generate ``_<Class>Base``: the fields of *obj_type* present in every supported version.
 
-    A field whose value type differs between versions is declared here with the union of them,
-    and narrowed again, with its docstring, by each version's class. ``update`` is typed on those
-    classes only: their keyword ``TypedDict`` extends ``_<Class>CommonFields``, which holds the
+    A field whose value type differs between versions is a property here: reading it gives the
+    union of the versions' value types, since a document of any of them can hold any of those
+    values, and assigning to it accepts only their intersection, the values every version accepts.
+    Each version's class narrows it again, with its docstring, to that version's own type, which it
+    both reads and writes. ``update`` on the base takes the same intersection; each version's class
+    types its own. Their keyword ``TypedDict``\ s extend ``_<Class>CommonFields``, which holds the
     fields declared identically everywhere, so those are written once.
     """
     base = _shared_class_name(obj_type)
@@ -947,10 +994,29 @@ def _generate_base_class(
         emit_update=False,
         undocumented=layout.varying,
     )
-    widened = {
-        f"    {name}: {latest[name]} | None": f"    {name}: {merged} | None" for name, merged in layout.fields.items()
+    as_property = {
+        f"    {name}: {latest[name]} | None": [
+            "    @property",
+            f"    def {name}(self) -> {merged} | None: ...",
+            f"    @{name}.setter",
+            f"    def {name}(self, value: {_or_none(layout.writable[name])}) -> None: ...",
+        ]
+        for name, merged in layout.fields.items()
+        if name in layout.varying
     }
-    return [widened.get(line, line) for line in lines]
+    out: list[str] = []
+    for line in lines:
+        out.extend(as_property.get(line, [line]))
+    if out[-1].startswith("class ") and out[-1].endswith(": ..."):
+        out[-1] = out[-1][: -len(" ...")]  # update is about to give the class a body
+    varying = [(name, _or_none(layout.writable[name])) for name in layout.fields if name in layout.varying]
+    out.extend(_generate_update(base, varying, "", _common_fields_name(obj_type)))
+    return out
+
+
+def _or_none(value_type: str) -> str:
+    """*value_type* or ``None``, the value that clears a field; just ``None`` when nothing else is safe."""
+    return "None" if value_type == "Never" else f"{value_type} | None"
 
 
 def _run_suffix(run: list[Version]) -> str:
@@ -1390,7 +1456,8 @@ _ANY_DOCUMENT_DOC = """A document of any supported EnergyPlus version.
 :mod:`idfkit.versioned` are assignable to it, so annotate with it to accept a document whatever
 its version. Through it, a document offers what every supported version has: the object types
 present in all of them, each typed as all of them declare it, so a field whose choices changed
-between releases reads as the union of them and a field some release lacks is not offered.
+between releases reads as the union of them, accepts only their intersection, and a field some
+release lacks is not offered.
 """
 
 _ANY_VERSION_DOCUMENT_DOC = """A document as every supported EnergyPlus version has it.

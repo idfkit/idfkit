@@ -5959,5 +5959,6 @@ AnyIDFDocument: TypeAlias = IDFDocument[Strict] | IDFDocumentAllVersions[Strict]
 :mod:`idfkit.versioned` are assignable to it, so annotate with it to accept a document whatever
 its version. Through it, a document offers what every supported version has: the object types
 present in all of them, each typed as all of them declare it, so a field whose choices changed
-between releases reads as the union of them and a field some release lacks is not offered.
+between releases reads as the union of them, accepts only their intersection, and a field some
+release lacks is not offered.
 """

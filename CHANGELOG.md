@@ -207,7 +207,10 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   regeneration ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 - `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) was added. It accepts a
   document of any supported release and, through it, offers what every release has: the object
-  types present in all of them, each field typed to admit every release's values. idfkit's own
+  types present in all of them. A field whose value type changed between releases reads as any
+  release's value and, through assignment and `update()`, accepts only a value every release
+  accepts: `heater_fuel_type` can be set to `"NaturalGas"` but not to `"DistrictHeatingWater"`,
+  which releases before 23.2 reject. idfkit's own
   functions were retyped to take it, so `save_idf`, `simulate`, the geometry and zoning helpers
   and the rest accept a document typed for any release; `expand_objects` and the ground
   heat-transfer preprocessors return the type they were given. An object type or accessor that

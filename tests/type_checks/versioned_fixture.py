@@ -48,6 +48,15 @@ def people_count(doc: AnyIDFDocument) -> int:
 def latest_only(doc: IDFDocument[Any]) -> None: ...
 
 
+def write_safe_fuel(doc: AnyIDFDocument) -> None:
+    heater = doc["WaterHeater:Mixed"]["Heater"]
+    fuel = heater.heater_fuel_type  # whatever the document's version holds, DistrictHeating included
+    print(fuel)
+    heater.heater_fuel_type = "NaturalGas"  # every version accepts it
+    heater.update(heater_fuel_type="Electricity")
+    heater.heater_fuel_type = None
+
+
 def correct_calls() -> None:
     legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
     assert_type(legacy, IDFDocumentV9_4)
@@ -60,6 +69,9 @@ def correct_calls() -> None:
     # Library functions and version-agnostic code accept a document of any version ...
     save_idf(legacy, "legacy.idf")
     people_count(legacy)
+    # Through AnyIDFDocument a field whose choices changed reads as any version's value and accepts
+    # a value every version accepts.
+    write_safe_fuel(legacy)
     # ... and a latest-release document, typed as before.
     model = load_idf("model.idf")
     assert_type(model, IDFDocument[Literal[True]])
@@ -85,3 +97,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     print(any_doc.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (not in every version)
     any_doc["People"]["Office"].update(zone_or_zonelist_name="Office")  # pyright: ignore[reportCallIssue]  (renamed in 9.6)
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "Plutonium"  # pyright: ignore[reportAttributeAccessIssue]  (no version)
+    # Writing takes only what every version accepts: 9.3 to 23.1 reject DistrictHeatingWater, 23.2 on reject Steam.
+    any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "DistrictHeatingWater"  # pyright: ignore[reportAttributeAccessIssue]  (not before 23.2)
+    any_doc["WaterHeater:Mixed"]["Heater"].update(heater_fuel_type="Steam")  # pyright: ignore[reportArgumentType]  (not from 23.2)
+    any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)

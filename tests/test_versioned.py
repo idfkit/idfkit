@@ -156,6 +156,13 @@ class TestCommittedStubs:
             ),
             # A private shared base left to the star import, which skips it: the accessor is Unknown.
             (1, r"(?m)^    _ZoneBase,\n", "", "_ZoneBase is not imported"),
+            # A value only some versions accept, made writable through the shared base.
+            (
+                0,
+                r'(?ms)(@heater_fuel_type\.setter.*?value: Literal\[\n\s+)"Coal",',
+                r'\1"Coal",\n            "Steam",',
+                "heater_fuel_type: writable values some version rejects",
+            ),
             # A type every version has, dropped from AnyIDFDocument.
             (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n', "", "AnyIDFDocument"),
         ],

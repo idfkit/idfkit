@@ -63,7 +63,16 @@ class _SimulationControlBase(_TypedIDFObject):
     """If Yes, RunPeriod:* objects are executed and results from those may be displayed..; Default: Yes"""
     do_hvac_sizing_simulation_for_sizing_periods: Literal["", "No", "Yes"] | None
     """If Yes, SizingPeriod:* objects are executed additional times for advanced sizing. Currently limited to use with coinc...; Default: No"""
-    maximum_number_of_hvac_sizing_simulation_passes: float | int | None
+    @property
+    def maximum_number_of_hvac_sizing_simulation_passes(self) -> float | int | None: ...
+    @maximum_number_of_hvac_sizing_simulation_passes.setter
+    def maximum_number_of_hvac_sizing_simulation_passes(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SimulationControlBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SimulationControlBaseFields(_SimulationControlCommonFields, total=False):
+    maximum_number_of_hvac_sizing_simulation_passes: int | None
 
 class SimulationControl(_SimulationControlBase):
     """Note that the following 3 fields are related to the Sizing:Zone, Sizing:System, and Sizing:Plant objects. Having thes..."""
@@ -84,6 +93,12 @@ class _PerformancePrecisionTradeoffsBase(_TypedIDFObject):
 
     use_coil_direct_solutions: Literal["", "No", "Yes"] | None
     """If Yes, an analytical or empirical solution will be used to replace iterations in the coil performance calculations.; Default: No"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PerformancePrecisionTradeoffsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PerformancePrecisionTradeoffsBaseFields(_PerformancePrecisionTradeoffsCommonFields, total=False): ...
 
 class PerformancePrecisionTradeoffs(_PerformancePrecisionTradeoffsBase):
     """This object enables users to choose certain options that speed up EnergyPlus simulation, but may lead to small decrea...; Since: 9.2.0"""
@@ -160,8 +175,19 @@ class _BuildingBase(_TypedIDFObject):
         | None
     )
     """MinimalShadowing | FullExterior | FullInteriorAndExterior | FullExteriorWithReflections | FullInteriorAndExteriorWith...; Default: FullExterior"""
-    maximum_number_of_warmup_days: float | int | None
-    minimum_number_of_warmup_days: float | int | None
+    @property
+    def maximum_number_of_warmup_days(self) -> float | int | None: ...
+    @maximum_number_of_warmup_days.setter
+    def maximum_number_of_warmup_days(self, value: int | None) -> None: ...
+    @property
+    def minimum_number_of_warmup_days(self) -> float | int | None: ...
+    @minimum_number_of_warmup_days.setter
+    def minimum_number_of_warmup_days(self, value: int | None) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__BuildingBaseFields]) -> None: ...  # type: ignore[override]
+
+class __BuildingBaseFields(_BuildingCommonFields, total=False):
+    maximum_number_of_warmup_days: int | None
+    minimum_number_of_warmup_days: int | None
 
 class Building(_BuildingBase):
     """Describes parameters that are used during the simulation of the building. There are necessary correlations between th..."""
@@ -194,11 +220,18 @@ class ShadowCalculationShadingZoneGroupsGroup(_TypedExtensibleGroup):
 
 class _ShadowCalculationBase(_TypedIDFObject):
     """``ShadowCalculation`` as every supported EnergyPlus version declares it."""
-
-    maximum_figures_in_shadow_overlap_calculations: float | int | None
-    polygon_clipping_algorithm: (
-        Literal["", "ConvexWeilerAtherton", "SutherlandHodgman", "SlaterBarskyandSutherlandHodgman"] | None
-    )
+    @property
+    def maximum_figures_in_shadow_overlap_calculations(self) -> float | int | None: ...
+    @maximum_figures_in_shadow_overlap_calculations.setter
+    def maximum_figures_in_shadow_overlap_calculations(self, value: int | None) -> None: ...
+    @property
+    def polygon_clipping_algorithm(
+        self,
+    ) -> Literal["", "ConvexWeilerAtherton", "SutherlandHodgman", "SlaterBarskyandSutherlandHodgman"] | None: ...
+    @polygon_clipping_algorithm.setter
+    def polygon_clipping_algorithm(
+        self, value: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"] | None
+    ) -> None: ...
     sky_diffuse_modeling_algorithm: Literal["", "DetailedSkyDiffuseModeling", "SimpleSkyDiffuseModeling"] | None
     """Advanced Feature. Internal default is SimpleSkyDiffuseModeling If you have shading elements that change transmittance...; Default: SimpleSkyDiffuseModeling"""
     output_external_shading_calculation_results: Literal["", "No", "Yes"] | None
@@ -208,6 +241,14 @@ class _ShadowCalculationBase(_TypedIDFObject):
     disable_self_shading_from_shading_zone_groups_to_other_zones: Literal["", "No", "Yes"] | None
     """If Yes, self-shading will be disabled from all exterior surfaces in a given Shading Zone Group to all other zones in ...; Default: No"""
     shading_zone_groups: ExtensibleList[ShadowCalculationShadingZoneGroupsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ShadowCalculationBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ShadowCalculationBaseFields(_ShadowCalculationCommonFields, total=False):
+    maximum_figures_in_shadow_overlap_calculations: int | None
+    polygon_clipping_algorithm: Literal["", "ConvexWeilerAtherton", "SutherlandHodgman"] | None
 
 class ShadowCalculation(_ShadowCalculationBase):
     """This object is used to control details of the solar, shading, and daylighting models"""
@@ -243,8 +284,20 @@ class _SurfaceConvectionAlgorithmInsideCommonFields(TypedDict, total=False): ...
 
 class _SurfaceConvectionAlgorithmInsideBase(_TypedIDFObject):
     """``SurfaceConvectionAlgorithm:Inside`` as every supported EnergyPlus version declares it."""
+    @property
+    def algorithm(
+        self,
+    ) -> Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "ASTMC1340"] | None: ...
+    @algorithm.setter
+    def algorithm(
+        self, value: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
+    ) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SurfaceConvectionAlgorithmInsideBaseFields]
+    ) -> None: ...  # type: ignore[override]
 
-    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "ASTMC1340"] | None
+class __SurfaceConvectionAlgorithmInsideBaseFields(_SurfaceConvectionAlgorithmInsideCommonFields, total=False):
+    algorithm: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP"] | None
 
 class SurfaceConvectionAlgorithmInside(_SurfaceConvectionAlgorithmInsideBase):
     """Default indoor surface heat transfer convection algorithm to be used for all zones"""
@@ -346,6 +399,12 @@ class _ZoneAirHeatBalanceAlgorithmBase(_TypedIDFObject):
     algorithm: Literal["", "AnalyticalSolution", "EulerMethod", "ThirdOrderBackwardDifference"] | None
     """Determines which algorithm will be used to solve the air heat balance.; Default: ThirdOrderBackwardDifference"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneAirHeatBalanceAlgorithmBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneAirHeatBalanceAlgorithmBaseFields(_ZoneAirHeatBalanceAlgorithmCommonFields, total=False): ...
+
 class ZoneAirHeatBalanceAlgorithm(_ZoneAirHeatBalanceAlgorithmBase):
     """Controls the zone/space air heat balance."""
 
@@ -395,6 +454,12 @@ class _ZoneAirMassFlowConservationBase(_TypedIDFObject):
     """This input field allows user to choose how zone infiltration flow is treated during the zone air mass flow balance ca...; Default: AddInfiltrationFlow"""
     infiltration_balancing_zones: Literal["", "AllZones", "MixingSourceZonesOnly"] | None
     """This input field allows user to choose which zones are included in infiltration balancing. MixingSourceZonesOnly allo...; Default: MixingSourceZonesOnly"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneAirMassFlowConservationBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneAirMassFlowConservationBaseFields(_ZoneAirMassFlowConservationCommonFields, total=False): ...
 
 class ZoneAirMassFlowConservation(_ZoneAirMassFlowConservationBase):
     """Enforces the zone air mass flow balance by either adjusting zone mixing object flow only, adjusting zone total return..."""
@@ -447,8 +512,14 @@ class _TimestepCommonFields(TypedDict, total=False): ...
 
 class _TimestepBase(_TypedIDFObject):
     """``Timestep`` as every supported EnergyPlus version declares it."""
+    @property
+    def number_of_timesteps_per_hour(self) -> float | int | None: ...
+    @number_of_timesteps_per_hour.setter
+    def number_of_timesteps_per_hour(self, value: int | None) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__TimestepBaseFields]) -> None: ...  # type: ignore[override]
 
-    number_of_timesteps_per_hour: float | int | None
+class __TimestepBaseFields(_TimestepCommonFields, total=False):
+    number_of_timesteps_per_hour: int | None
 
 class Timestep(_TimestepBase):
     """Specifies the 'basic' timestep for the simulation. The value entered here is also known as the Zone Timestep. This is..."""
@@ -465,11 +536,31 @@ class _ConvergenceLimitsCommonFields(TypedDict, total=False): ...
 
 class _ConvergenceLimitsBase(_TypedIDFObject):
     """``ConvergenceLimits`` as every supported EnergyPlus version declares it."""
+    @property
+    def minimum_system_timestep(self) -> float | int | None: ...
+    @minimum_system_timestep.setter
+    def minimum_system_timestep(self, value: int | None) -> None: ...
+    @property
+    def maximum_hvac_iterations(self) -> float | int | None: ...
+    @maximum_hvac_iterations.setter
+    def maximum_hvac_iterations(self, value: int | None) -> None: ...
+    @property
+    def minimum_plant_iterations(self) -> float | int | None: ...
+    @minimum_plant_iterations.setter
+    def minimum_plant_iterations(self, value: int | None) -> None: ...
+    @property
+    def maximum_plant_iterations(self) -> float | int | None: ...
+    @maximum_plant_iterations.setter
+    def maximum_plant_iterations(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ConvergenceLimitsBaseFields]
+    ) -> None: ...  # type: ignore[override]
 
-    minimum_system_timestep: float | int | None
-    maximum_hvac_iterations: float | int | None
-    minimum_plant_iterations: float | int | None
-    maximum_plant_iterations: float | int | None
+class __ConvergenceLimitsBaseFields(_ConvergenceLimitsCommonFields, total=False):
+    minimum_system_timestep: int | None
+    maximum_hvac_iterations: int | None
+    minimum_plant_iterations: int | None
+    maximum_plant_iterations: int | None
 
 class ConvergenceLimits(_ConvergenceLimitsBase):
     """Specifies limits on HVAC system simulation timesteps and iterations. This item is an advanced feature that should be ..."""
@@ -505,7 +596,16 @@ class _HVACSystemRootFindingAlgorithmBase(_TypedIDFObject):
         | None
     )
     """Default: RegulaFalsi"""
-    number_of_iterations_before_algorithm_switch: float | int | None
+    @property
+    def number_of_iterations_before_algorithm_switch(self) -> float | int | None: ...
+    @number_of_iterations_before_algorithm_switch.setter
+    def number_of_iterations_before_algorithm_switch(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACSystemRootFindingAlgorithmBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACSystemRootFindingAlgorithmBaseFields(_HVACSystemRootFindingAlgorithmCommonFields, total=False):
+    number_of_iterations_before_algorithm_switch: int | None
 
 class HVACSystemRootFindingAlgorithm(_HVACSystemRootFindingAlgorithmBase):
     """Specifies a HVAC system solver algorithm to find a root"""
@@ -550,6 +650,10 @@ class _SiteLocationBase(_TypedIDFObject):
     """basic these limits on the WorldTimeZone Map (2003) Time relative to GMT. Decimal hours.; [hr]; Default: 0.0; Range: >= -12.0, <= 14.0"""
     elevation: float | None
     """[m]; Default: 0.0; Range: >= -300.0, < 8900.0"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SiteLocationBaseFields]) -> None: ...  # type: ignore[override]
+
+class __SiteLocationBaseFields(_SiteLocationCommonFields, total=False): ...
 
 class SiteLocation(_SiteLocationBase):
     """Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will overr..."""
@@ -641,9 +745,14 @@ class _SizingPeriodDesignDayCommonFields(TypedDict, total=False):
 
 class _SizingPeriodDesignDayBase(_TypedIDFObject):
     """``SizingPeriod:DesignDay`` as every supported EnergyPlus version declares it."""
-
-    month: float | int | None
-    day_of_month: float | int | None
+    @property
+    def month(self) -> float | int | None: ...
+    @month.setter
+    def month(self, value: int | None) -> None: ...
+    @property
+    def day_of_month(self) -> float | int | None: ...
+    @day_of_month.setter
+    def day_of_month(self, value: int | None) -> None: ...
     day_type: (
         Literal[
             "CustomDay1",
@@ -710,7 +819,14 @@ class _SizingPeriodDesignDayBase(_TypedIDFObject):
     """Yes is Snow on Ground, No is no Snow on Ground; Default: No"""
     daylight_saving_time_indicator: Literal["", "No", "Yes"] | None
     """Yes -- use schedules modified for Daylight Saving Time Schedules. No - do not use schedules modified for Daylight Sav...; Default: No"""
-    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang", "ASHRAETau2017"] | None
+    @property
+    def solar_model_indicator(
+        self,
+    ) -> Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang", "ASHRAETau2017"] | None: ...
+    @solar_model_indicator.setter
+    def solar_model_indicator(
+        self, value: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
+    ) -> None: ...
     beam_solar_day_schedule_name: str | None
     """if Solar Model Indicator = Schedule, then beam schedule name (for day)"""
     diffuse_solar_day_schedule_name: str | None
@@ -725,6 +841,15 @@ class _SizingPeriodDesignDayBase(_TypedIDFObject):
     """Alias of :attr:`ashrae_clear_sky_optical_depth_for_beam_irradiance_taub_`, the same field without the trailing underscore."""
     ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud: float | None
     """Alias of :attr:`ashrae_clear_sky_optical_depth_for_diffuse_irradiance_taud_`, the same field without the trailing underscore."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingPeriodDesignDayBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SizingPeriodDesignDayBaseFields(_SizingPeriodDesignDayCommonFields, total=False):
+    month: int | None
+    day_of_month: int | None
+    solar_model_indicator: Literal["", "ASHRAEClearSky", "ASHRAETau", "Schedule", "ZhangHuang"] | None
 
 class SizingPeriodDesignDay(_SizingPeriodDesignDayBase):
     """The design day object creates the parameters for the program to create the 24 hour weather profile that can be used f..."""
@@ -774,11 +899,22 @@ class _SizingPeriodWeatherFileDaysCommonFields(TypedDict, total=False):
 
 class _SizingPeriodWeatherFileDaysBase(_TypedIDFObject):
     """``SizingPeriod:WeatherFileDays`` as every supported EnergyPlus version declares it."""
-
-    begin_month: float | int | None
-    begin_day_of_month: float | int | None
-    end_month: float | int | None
-    end_day_of_month: float | int | None
+    @property
+    def begin_month(self) -> float | int | None: ...
+    @begin_month.setter
+    def begin_month(self, value: int | None) -> None: ...
+    @property
+    def begin_day_of_month(self) -> float | int | None: ...
+    @begin_day_of_month.setter
+    def begin_day_of_month(self, value: int | None) -> None: ...
+    @property
+    def end_month(self) -> float | int | None: ...
+    @end_month.setter
+    def end_month(self, value: int | None) -> None: ...
+    @property
+    def end_day_of_month(self) -> float | int | None: ...
+    @end_day_of_month.setter
+    def end_day_of_month(self, value: int | None) -> None: ...
     day_of_week_for_start_day: (
         Literal[
             "",
@@ -801,6 +937,16 @@ class _SizingPeriodWeatherFileDaysBase(_TypedIDFObject):
     """If yes or blank, use daylight saving period as specified on Weatherfile. If no, do not use the daylight saving period...; Default: Yes"""
     use_weather_file_rain_and_snow_indicators: Literal["", "No", "Yes"] | None
     """Default: Yes"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingPeriodWeatherFileDaysBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SizingPeriodWeatherFileDaysBaseFields(_SizingPeriodWeatherFileDaysCommonFields, total=False):
+    begin_month: int | None
+    begin_day_of_month: int | None
+    end_month: int | None
+    end_day_of_month: int | None
 
 class SizingPeriodWeatherFileDays(_SizingPeriodWeatherFileDaysBase):
     """Use a weather file period for design sizing calculations."""
@@ -927,15 +1073,33 @@ class _RunPeriodCommonFields(TypedDict, total=False):
 
 class _RunPeriodBase(_TypedIDFObject):
     """``RunPeriod`` as every supported EnergyPlus version declares it."""
-
-    begin_month: float | int | None
-    begin_day_of_month: float | int | None
-    end_month: float | int | None
-    end_day_of_month: float | int | None
-    day_of_week_for_start_day: (
+    @property
+    def begin_month(self) -> float | int | None: ...
+    @begin_month.setter
+    def begin_month(self, value: int | None) -> None: ...
+    @property
+    def begin_day_of_month(self) -> float | int | None: ...
+    @begin_day_of_month.setter
+    def begin_day_of_month(self, value: int | None) -> None: ...
+    @property
+    def end_month(self) -> float | int | None: ...
+    @end_month.setter
+    def end_month(self, value: int | None) -> None: ...
+    @property
+    def end_day_of_month(self) -> float | int | None: ...
+    @end_day_of_month.setter
+    def end_day_of_month(self, value: int | None) -> None: ...
+    @property
+    def day_of_week_for_start_day(
+        self,
+    ) -> (
         Literal["", "Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "UseWeatherFile", "Wednesday"]
         | None
-    )
+    ): ...
+    @day_of_week_for_start_day.setter
+    def day_of_week_for_start_day(
+        self, value: Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
+    ) -> None: ...
     use_weather_file_holidays_and_special_days: Literal["", "No", "Yes"] | None
     """If yes or blank, use holidays as specified on Weatherfile. If no, do not use the holidays specified on the Weatherfil...; Default: Yes"""
     use_weather_file_daylight_saving_period: Literal["", "No", "Yes"] | None
@@ -946,6 +1110,17 @@ class _RunPeriodBase(_TypedIDFObject):
     """Default: Yes"""
     use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
     """Default: Yes"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__RunPeriodBaseFields]) -> None: ...  # type: ignore[override]
+
+class __RunPeriodBaseFields(_RunPeriodCommonFields, total=False):
+    begin_month: int | None
+    begin_day_of_month: int | None
+    end_month: int | None
+    end_day_of_month: int | None
+    day_of_week_for_start_day: (
+        Literal["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"] | None
+    )
 
 class RunPeriod(_RunPeriodBase):
     """Specify a range of dates and other parameters for a simulation. Multiple run periods may be input, but they may not o..."""
@@ -1025,8 +1200,10 @@ class _WeatherPropertySkyTemperatureCommonFields(TypedDict, total=False):
 
 class _WeatherPropertySkyTemperatureBase(_TypedIDFObject):
     """``WeatherProperty:SkyTemperature`` as every supported EnergyPlus version declares it."""
-
-    calculation_type: (
+    @property
+    def calculation_type(
+        self,
+    ) -> (
         Literal[
             "DifferenceScheduleDewPointValue",
             "DifferenceScheduleDryBulbValue",
@@ -1038,9 +1215,23 @@ class _WeatherPropertySkyTemperatureBase(_TypedIDFObject):
             "Idso",
         ]
         | None
-    )
+    ): ...
+    @calculation_type.setter
+    def calculation_type(
+        self,
+        value: Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"] | None,
+    ) -> None: ...
     schedule_name: str | None
     """if name matches a SizingPeriod:DesignDay, put in a day schedule of this name if name is for a SizingPeriod:WeatherFil..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WeatherPropertySkyTemperatureBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WeatherPropertySkyTemperatureBaseFields(_WeatherPropertySkyTemperatureCommonFields, total=False):
+    calculation_type: (
+        Literal["DifferenceScheduleDewPointValue", "DifferenceScheduleDryBulbValue", "ScheduleValue"] | None
+    )
 
 class WeatherPropertySkyTemperature(_WeatherPropertySkyTemperatureBase):
     """This object is used to override internal sky temperature calculations."""
@@ -1396,6 +1587,17 @@ class _SiteGroundTemperatureUndisturbedXingBase(_TypedIDFObject):
     phase_shift_of_temperature_amplitude_2: float | None
     """[days]; Range: < 365.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SiteGroundTemperatureUndisturbedXingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SiteGroundTemperatureUndisturbedXingBaseFields(
+    _SiteGroundTemperatureUndisturbedXingCommonFields, total=False
+): ...
+
 class SiteGroundTemperatureUndisturbedXing(_SiteGroundTemperatureUndisturbedXingBase):
     """Undisturbed ground temperature object using the Xing 2014 2 harmonic parameter model."""
 
@@ -1494,7 +1696,16 @@ class _SiteGroundDomainSlabBase(_TypedIDFObject):
     """This field specifies the ground domain simulation timestep.; Default: Hourly"""
     geometric_mesh_coefficient: float | None
     """Default: 1.6; Range: >= 1.0, <= 2.0"""
-    mesh_density_parameter: float | int | None
+    @property
+    def mesh_density_parameter(self) -> float | int | None: ...
+    @mesh_density_parameter.setter
+    def mesh_density_parameter(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SiteGroundDomainSlabBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SiteGroundDomainSlabBaseFields(_SiteGroundDomainSlabCommonFields, total=False):
+    mesh_density_parameter: int | None
 
 class SiteGroundDomainSlab(_SiteGroundDomainSlabBase):
     """Ground-coupled slab model for on-grade and in-grade cases with or without insulation."""
@@ -1588,7 +1799,16 @@ class _SiteGroundDomainBasementBase(_TypedIDFObject):
     """Depth measured from the ground surface.; [m]; Range: > 0.0"""
     simulation_timestep: Literal["", "Hourly", "Timestep"] | None
     """This field specifies the basement domain simulation interval.; Default: Hourly"""
-    mesh_density_parameter: float | int | None
+    @property
+    def mesh_density_parameter(self) -> float | int | None: ...
+    @mesh_density_parameter.setter
+    def mesh_density_parameter(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SiteGroundDomainBasementBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SiteGroundDomainBasementBaseFields(_SiteGroundDomainBasementCommonFields, total=False):
+    mesh_density_parameter: int | None
 
 class SiteGroundDomainBasement(_SiteGroundDomainBasementBase):
     """Ground-coupled basement model for simulating basements or other underground zones."""
@@ -1672,13 +1892,22 @@ class _SiteWaterMainsTemperatureCommonFields(TypedDict, total=False):
 
 class _SiteWaterMainsTemperatureBase(_TypedIDFObject):
     """``Site:WaterMainsTemperature`` as every supported EnergyPlus version declares it."""
-
-    calculation_method: Literal["Correlation", "Schedule", "", "CorrelationFromWeatherFile"] | None
+    @property
+    def calculation_method(self) -> Literal["Correlation", "Schedule", "", "CorrelationFromWeatherFile"] | None: ...
+    @calculation_method.setter
+    def calculation_method(self, value: Literal["Correlation", "Schedule"] | None) -> None: ...
     temperature_schedule_name: str | None
     annual_average_outdoor_air_temperature: float | None
     """If calculation method is CorrelationFromWeatherFile or Schedule, this input field is ignored.; [C]"""
     maximum_difference_in_monthly_average_outdoor_air_temperatures: float | None
     """If calculation method is CorrelationFromWeatherFile or Schedule, this input field is ignored.; [deltaC]; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SiteWaterMainsTemperatureBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SiteWaterMainsTemperatureBaseFields(_SiteWaterMainsTemperatureCommonFields, total=False):
+    calculation_method: Literal["Correlation", "Schedule"] | None
 
 class SiteWaterMainsTemperature(_SiteWaterMainsTemperatureBase):
     """Used to calculate water mains temperatures delivered by underground water main pipes. Water mains temperatures are a ..."""
@@ -1933,6 +2162,12 @@ class _ScheduleDayIntervalBase(_TypedIDFObject):
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
     """when the interval does not match the user specified timestep a Average choice will average between the intervals requ...; Default: No"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ScheduleDayIntervalBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ScheduleDayIntervalBaseFields(_ScheduleDayIntervalCommonFields, total=False): ...
+
 class ScheduleDayIntervalDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ScheduleDayInterval`."""
 
@@ -1967,8 +2202,18 @@ class _ScheduleDayListBase(_TypedIDFObject):
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
     """when the interval does not match the user specified timestep a 'Average' choice will average between the intervals re...; Default: No"""
-    minutes_per_item: float | int | None
+    @property
+    def minutes_per_item(self) -> float | int | None: ...
+    @minutes_per_item.setter
+    def minutes_per_item(self, value: int | None) -> None: ...
     extensions: ExtensibleList[ScheduleDayListExtensionsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ScheduleDayListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ScheduleDayListBaseFields(_ScheduleDayListCommonFields, total=False):
+    minutes_per_item: int | None
 
 class ScheduleDayList(_ScheduleDayListBase):
     """Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature."""
@@ -2038,6 +2283,10 @@ class _ScheduleYearBase(_TypedIDFObject):
     """``Schedule:Year`` as every supported EnergyPlus version declares it."""
 
     schedule_type_limits_name: str | None
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ScheduleYearBaseFields]) -> None: ...  # type: ignore[override]
+
+class __ScheduleYearBaseFields(_ScheduleYearCommonFields, total=False): ...
 
 class ScheduleYearScheduleWeeksGroup(_TypedExtensibleGroup):
     """One schedule_weeks group inside :class:`ScheduleYear`."""
@@ -2185,14 +2434,33 @@ class _ScheduleFileBase(_TypedIDFObject):
 
     schedule_type_limits_name: str | None
     file_name: str | None
-    column_number: float | int | None
-    rows_to_skip_at_top: float | int | None
+    @property
+    def column_number(self) -> float | int | None: ...
+    @column_number.setter
+    def column_number(self, value: int | None) -> None: ...
+    @property
+    def rows_to_skip_at_top(self) -> float | int | None: ...
+    @rows_to_skip_at_top.setter
+    def rows_to_skip_at_top(self, value: int | None) -> None: ...
     number_of_hours_of_data: float | None
     """8760 hours does not account for leap years, 8784 does. should be either 8760 or 8784; Default: 8760.0; Range: >= 8760.0, <= 8784.0"""
-    column_separator: Literal["", "Comma", "Fixed", "Semicolon", "Tab", "Space"] | None
+    @property
+    def column_separator(self) -> Literal["", "Comma", "Fixed", "Semicolon", "Tab", "Space"] | None: ...
+    @column_separator.setter
+    def column_separator(self, value: Literal["", "Comma", "Semicolon", "Tab"] | None) -> None: ...
     interpolate_to_timestep: Literal["", "No", "Yes"] | None
     """when the interval does not match the user specified timestep a 'Yes' choice will average between the intervals reques...; Default: No"""
-    minutes_per_item: float | int | None
+    @property
+    def minutes_per_item(self) -> float | int | None: ...
+    @minutes_per_item.setter
+    def minutes_per_item(self, value: int | None) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ScheduleFileBaseFields]) -> None: ...  # type: ignore[override]
+
+class __ScheduleFileBaseFields(_ScheduleFileCommonFields, total=False):
+    column_number: int | None
+    rows_to_skip_at_top: int | None
+    column_separator: Literal["", "Comma", "Semicolon", "Tab"] | None
+    minutes_per_item: int | None
 
 class ScheduleFile(_ScheduleFileBase):
     """A Schedule:File points to a text computer file that has 8760-8784 hours of data."""
@@ -2246,6 +2514,10 @@ class _MaterialBase(_TypedIDFObject):
     visible_absorptance: float | None
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MaterialBaseFields]) -> None: ...  # type: ignore[override]
+
+class __MaterialBaseFields(_MaterialCommonFields, total=False): ...
+
 class Material(_MaterialBase):
     """Regular materials described with full set of thermal properties"""
 
@@ -2282,6 +2554,12 @@ class _MaterialNoMassBase(_TypedIDFObject):
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
     visible_absorptance: float | None
     """Default: 0.7; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MaterialNoMassBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialNoMassBaseFields(_MaterialNoMassCommonFields, total=False): ...
 
 class MaterialNoMass(_MaterialNoMassBase):
     """Regular materials properties described whose principal description is R (Thermal Resistance)"""
@@ -2627,7 +2905,10 @@ class _WindowMaterialGasMixtureBase(_TypedIDFObject):
 
     thickness: float | None
     """[m]; Range: > 0.0"""
-    number_of_gases_in_mixture: float | int | None
+    @property
+    def number_of_gases_in_mixture(self) -> float | int | None: ...
+    @number_of_gases_in_mixture.setter
+    def number_of_gases_in_mixture(self, value: int | None) -> None: ...
     gas_1_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None
     gas_1_fraction: float | None
     """Range: > 0.0, <= 1.0"""
@@ -2640,6 +2921,13 @@ class _WindowMaterialGasMixtureBase(_TypedIDFObject):
     gas_4_type: Literal["Air", "Argon", "Krypton", "Xenon"] | None
     gas_4_fraction: float | None
     """Range: > 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowMaterialGasMixtureBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowMaterialGasMixtureBaseFields(_WindowMaterialGasMixtureCommonFields, total=False):
+    number_of_gases_in_mixture: int | None
 
 class WindowMaterialGasMixture(_WindowMaterialGasMixtureBase):
     """Gas mixtures that are used in Windows or Glass Doors"""
@@ -2752,13 +3040,17 @@ class _WindowMaterialComplexShadeCommonFields(TypedDict, total=False):
 
 class _WindowMaterialComplexShadeBase(_TypedIDFObject):
     """``WindowMaterial:ComplexShade`` as every supported EnergyPlus version declares it."""
-
-    layer_type: (
+    @property
+    def layer_type(
+        self,
+    ) -> (
         Literal[
             "", "BSDF", "OtherShadingType", "Perforated", "Venetian", "Woven", "VenetianHorizontal", "VenetianVertical"
         ]
         | None
-    )
+    ): ...
+    @layer_type.setter
+    def layer_type(self, value: Literal["", "BSDF", "OtherShadingType", "Perforated", "Woven"] | None) -> None: ...
     thickness: float | None
     """[m]; Default: 0.002; Range: > 0.0"""
     conductivity: float | None
@@ -2791,6 +3083,13 @@ class _WindowMaterialComplexShadeBase(_TypedIDFObject):
     """[W/m-K]; Default: 160.0; Range: > 0.0"""
     slat_curve: float | None
     """this value represents curvature radius of the slat. if the slat is flat use zero. if this value is not zero, then it ...; [m]; Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowMaterialComplexShadeBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowMaterialComplexShadeBaseFields(_WindowMaterialComplexShadeCommonFields, total=False):
+    layer_type: Literal["", "BSDF", "OtherShadingType", "Perforated", "Woven"] | None
 
 class WindowMaterialComplexShade(_WindowMaterialComplexShadeBase):
     """Complex window shading layer thermal properties"""
@@ -3257,6 +3556,17 @@ class _WindowMaterialGlazingEquivalentLayerBase(_TypedIDFObject):
     infrared_transmittance_applies_to_front_and_back: float | None
     """Alias of :attr:`infrared_transmittance_applies_to_front_and_back_`, the same field without the trailing underscore."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__WindowMaterialGlazingEquivalentLayerBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowMaterialGlazingEquivalentLayerBaseFields(
+    _WindowMaterialGlazingEquivalentLayerCommonFields, total=False
+): ...
+
 class WindowMaterialGlazingEquivalentLayer(_WindowMaterialGlazingEquivalentLayerBase):
     """Glass material properties for Windows or Glass Doors Transmittance/Reflectance input method."""
 
@@ -3370,6 +3680,12 @@ class _MaterialPropertyPhaseChangeBase(_TypedIDFObject):
     temperature_coefficient_for_thermal_conductivity: float | None
     """The base temperature is 20C. This is the thermal conductivity change per degree excursion from 20C. This variable con...; [W/m-K2]; Default: 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MaterialPropertyPhaseChangeBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyPhaseChangeBaseFields(_MaterialPropertyPhaseChangeCommonFields, total=False): ...
+
 class MaterialPropertyPhaseChangeValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyPhaseChange`."""
 
@@ -3442,6 +3758,17 @@ class _MaterialPropertyVariableThermalConductivityCommonFields(TypedDict, total=
 class _MaterialPropertyVariableThermalConductivityBase(_TypedIDFObject):
     """``MaterialProperty:VariableThermalConductivity`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyVariableThermalConductivityBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyVariableThermalConductivityBaseFields(
+    _MaterialPropertyVariableThermalConductivityCommonFields, total=False
+): ...
+
 class MaterialPropertyVariableThermalConductivityValuesGroup(_TypedExtensibleGroup):
     """One values group inside :class:`MaterialPropertyVariableThermalConductivity`."""
 
@@ -3494,6 +3821,17 @@ class _MaterialPropertyVariableAbsorptanceBase(_TypedIDFObject):
     """A Curve:* or Table:Lookup object encoding the relationship between the control signal value and the outside-face surf..."""
     solar_absorptance_schedule_name: str | None
     """only used for the outside face when Control Signal = 'Scheduled'"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyVariableAbsorptanceBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyVariableAbsorptanceBaseFields(
+    _MaterialPropertyVariableAbsorptanceCommonFields, total=False
+): ...
 
 class MaterialPropertyVariableAbsorptance(_MaterialPropertyVariableAbsorptanceBase):
     """Since: 23.1.0"""
@@ -3604,7 +3942,10 @@ class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermBase(_TypedIDFObje
 
     material_name: str | None
     """The Material Name that the moisture sorption isotherm will be added to."""
-    number_of_isotherm_coordinates: float | int | None
+    @property
+    def number_of_isotherm_coordinates(self) -> float | int | None: ...
+    @number_of_isotherm_coordinates.setter
+    def number_of_isotherm_coordinates(self, value: int | None) -> None: ...
     relative_humidity_fraction_1: float | None
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
     moisture_content_1: float | None
@@ -3705,6 +4046,18 @@ class _MaterialPropertyHeatAndMoistureTransferSorptionIsothermBase(_TypedIDFObje
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
     moisture_content_25: float | None
     """[kg/m3]; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyHeatAndMoistureTransferSorptionIsothermBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyHeatAndMoistureTransferSorptionIsothermBaseFields(
+    _MaterialPropertyHeatAndMoistureTransferSorptionIsothermCommonFields, total=False
+):
+    number_of_isotherm_coordinates: int | None
 
 class MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(
     _MaterialPropertyHeatAndMoistureTransferSorptionIsothermBase
@@ -3784,7 +4137,10 @@ class _MaterialPropertyHeatAndMoistureTransferSuctionBase(_TypedIDFObject):
 
     material_name: str | None
     """Material Name that the moisture properties will be added to."""
-    number_of_suction_points: float | int | None
+    @property
+    def number_of_suction_points(self) -> float | int | None: ...
+    @number_of_suction_points.setter
+    def number_of_suction_points(self, value: int | None) -> None: ...
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
     liquid_transport_coefficient_1: float | None
@@ -3885,6 +4241,18 @@ class _MaterialPropertyHeatAndMoistureTransferSuctionBase(_TypedIDFObject):
     """[kg/m3]; Range: >= 0.0"""
     liquid_transport_coefficient_25: float | None
     """[m2/s]; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyHeatAndMoistureTransferSuctionBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyHeatAndMoistureTransferSuctionBaseFields(
+    _MaterialPropertyHeatAndMoistureTransferSuctionCommonFields, total=False
+):
+    number_of_suction_points: int | None
 
 class MaterialPropertyHeatAndMoistureTransferSuction(_MaterialPropertyHeatAndMoistureTransferSuctionBase):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid suct..."""
@@ -3962,7 +4330,10 @@ class _MaterialPropertyHeatAndMoistureTransferRedistributionBase(_TypedIDFObject
 
     material_name: str | None
     """Moisture Material Name that the moisture properties will be added to."""
-    number_of_redistribution_points: float | int | None
+    @property
+    def number_of_redistribution_points(self) -> float | int | None: ...
+    @number_of_redistribution_points.setter
+    def number_of_redistribution_points(self, value: int | None) -> None: ...
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
     liquid_transport_coefficient_1: float | None
@@ -4064,6 +4435,18 @@ class _MaterialPropertyHeatAndMoistureTransferRedistributionBase(_TypedIDFObject
     liquid_transport_coefficient_25: float | None
     """[m2/s]; Range: >= 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyHeatAndMoistureTransferRedistributionBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyHeatAndMoistureTransferRedistributionBaseFields(
+    _MaterialPropertyHeatAndMoistureTransferRedistributionCommonFields, total=False
+):
+    number_of_redistribution_points: int | None
+
 class MaterialPropertyHeatAndMoistureTransferRedistribution(_MaterialPropertyHeatAndMoistureTransferRedistributionBase):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between liquid tran..."""
 
@@ -4140,7 +4523,10 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusionBase(_TypedIDFObject):
 
     material_name: str | None
     """Moisture Material Name that the moisture properties will be added to."""
-    number_of_data_pairs: float | int | None
+    @property
+    def number_of_data_pairs(self) -> float | int | None: ...
+    @number_of_data_pairs.setter
+    def number_of_data_pairs(self, value: int | None) -> None: ...
     relative_humidity_fraction_1: float | None
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
     water_vapor_diffusion_resistance_factor_1: float | None
@@ -4241,6 +4627,18 @@ class _MaterialPropertyHeatAndMoistureTransferDiffusionBase(_TypedIDFObject):
     """The relative humidity is entered as a fraction.; [dimensionless]; Range: >= 0.0, <= 1.0"""
     water_vapor_diffusion_resistance_factor_25: float | None
     """[dimensionless]; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyHeatAndMoistureTransferDiffusionBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyHeatAndMoistureTransferDiffusionBaseFields(
+    _MaterialPropertyHeatAndMoistureTransferDiffusionCommonFields, total=False
+):
+    number_of_data_pairs: int | None
 
 class MaterialPropertyHeatAndMoistureTransferDiffusion(_MaterialPropertyHeatAndMoistureTransferDiffusionBase):
     """HeatBalanceAlgorithm = CombinedHeatAndMoistureFiniteElement solution algorithm only. Relationship between water vapor..."""
@@ -4318,7 +4716,10 @@ class _MaterialPropertyHeatAndMoistureTransferThermalConductivityBase(_TypedIDFO
 
     material_name: str | None
     """Moisture Material Name that the Thermal Conductivity will be added to."""
-    number_of_thermal_coordinates: float | int | None
+    @property
+    def number_of_thermal_coordinates(self) -> float | int | None: ...
+    @number_of_thermal_coordinates.setter
+    def number_of_thermal_coordinates(self, value: int | None) -> None: ...
     moisture_content_1: float | None
     """[kg/m3]; Range: >= 0.0"""
     thermal_conductivity_1: float | None
@@ -4420,6 +4821,18 @@ class _MaterialPropertyHeatAndMoistureTransferThermalConductivityBase(_TypedIDFO
     thermal_conductivity_25: float | None
     """[W/m-K]; Range: > 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyHeatAndMoistureTransferThermalConductivityBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyHeatAndMoistureTransferThermalConductivityBaseFields(
+    _MaterialPropertyHeatAndMoistureTransferThermalConductivityCommonFields, total=False
+):
+    number_of_thermal_coordinates: int | None
+
 class MaterialPropertyHeatAndMoistureTransferThermalConductivity(
     _MaterialPropertyHeatAndMoistureTransferThermalConductivityBase
 ):
@@ -4481,6 +4894,17 @@ class _MaterialPropertyGlazingSpectralDataBase(_TypedIDFObject):
     transmittance_4: float | None
     front_reflectance_4: float | None
     back_reflectance_4: float | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__MaterialPropertyGlazingSpectralDataBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __MaterialPropertyGlazingSpectralDataBaseFields(
+    _MaterialPropertyGlazingSpectralDataCommonFields, total=False
+): ...
 
 class MaterialPropertyGlazingSpectralDataExtensionsGroup(_TypedExtensibleGroup):
     """One extensions group inside :class:`MaterialPropertyGlazingSpectralData`."""
@@ -4574,13 +4998,36 @@ class _ConstructionPropertyInternalHeatSourceBase(_TypedIDFObject):
     """``ConstructionProperty:InternalHeatSource`` as every supported EnergyPlus version declares it."""
 
     construction_name: str | None
-    thermal_source_present_after_layer_number: float | int | None
-    temperature_calculation_requested_after_layer_number: float | int | None
-    dimensions_for_the_ctf_calculation: float | int | None
+    @property
+    def thermal_source_present_after_layer_number(self) -> float | int | None: ...
+    @thermal_source_present_after_layer_number.setter
+    def thermal_source_present_after_layer_number(self, value: int | None) -> None: ...
+    @property
+    def temperature_calculation_requested_after_layer_number(self) -> float | int | None: ...
+    @temperature_calculation_requested_after_layer_number.setter
+    def temperature_calculation_requested_after_layer_number(self, value: int | None) -> None: ...
+    @property
+    def dimensions_for_the_ctf_calculation(self) -> float | int | None: ...
+    @dimensions_for_the_ctf_calculation.setter
+    def dimensions_for_the_ctf_calculation(self, value: int | None) -> None: ...
     tube_spacing: float | None
     """uniform spacing between tubes or resistance wires in direction perpendicular to main intended direction of heat transfer; [m]; Range: >= 0.01, <= 1.0"""
     two_dimensional_temperature_calculation_position: float | None
     """used in conjunction with field Temperature Calculation Requested After Layer Number this field is the location perpen...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ConstructionPropertyInternalHeatSourceBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ConstructionPropertyInternalHeatSourceBaseFields(
+    _ConstructionPropertyInternalHeatSourceCommonFields, total=False
+):
+    thermal_source_present_after_layer_number: int | None
+    temperature_calculation_requested_after_layer_number: int | None
+    dimensions_for_the_ctf_calculation: int | None
 
 class ConstructionPropertyInternalHeatSource(_ConstructionPropertyInternalHeatSourceBase):
     """Internal heat source to be attached to a construction layer; Since: 9.5.0"""
@@ -4615,6 +5062,12 @@ class _ConstructionAirBoundaryBase(_TypedIDFObject):
     """If the Air Exchange Method is SimpleMixing then this field specifies the air changes per hour using the volume of the...; [1/hr]; Default: 0.5; Range: >= 0.0"""
     simple_mixing_schedule_name: str | None
     """If the Air Exchange Method is SimpleMixing then this field specifies the air exchange schedule. If this field is blan..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ConstructionAirBoundaryBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ConstructionAirBoundaryBaseFields(_ConstructionAirBoundaryCommonFields, total=False): ...
 
 class ConstructionAirBoundary(_ConstructionAirBoundaryBase):
     """Indicates an open boundary between two zones. It may be used for base surfaces and fenestration surfaces. The two adj...; Since: 9.2.0"""
@@ -4726,6 +5179,17 @@ class _ConstructionComplexFenestrationStateBase(_TypedIDFObject):
     layer_4_name: str | None
     gap_4_name: str | None
     layer_5_name: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ConstructionComplexFenestrationStateBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ConstructionComplexFenestrationStateBaseFields(
+    _ConstructionComplexFenestrationStateCommonFields, total=False
+): ...
 
 class ConstructionComplexFenestrationState(_ConstructionComplexFenestrationStateBase):
     """Describes one state for a complex glazing system These input objects are typically generated by using WINDOW software..."""
@@ -4916,14 +5380,42 @@ class _GlobalGeometryRulesCommonFields(TypedDict, total=False): ...
 
 class _GlobalGeometryRulesBase(_TypedIDFObject):
     """``GlobalGeometryRules`` as every supported EnergyPlus version declares it."""
+    @property
+    def starting_vertex_position(
+        self,
+    ) -> str | Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None: ...
+    @starting_vertex_position.setter
+    def starting_vertex_position(
+        self, value: Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+    ) -> None: ...
+    @property
+    def vertex_entry_direction(self) -> str | Literal["Clockwise", "Counterclockwise"] | None: ...
+    @vertex_entry_direction.setter
+    def vertex_entry_direction(self, value: Literal["Clockwise", "Counterclockwise"] | None) -> None: ...
+    @property
+    def coordinate_system(self) -> str | Literal["Relative", "World"] | None: ...
+    @coordinate_system.setter
+    def coordinate_system(self, value: Literal["Relative", "World"] | None) -> None: ...
+    @property
+    def daylighting_reference_point_coordinate_system(self) -> Literal["", "Absolute", "Relative", "World"] | None: ...
+    @daylighting_reference_point_coordinate_system.setter
+    def daylighting_reference_point_coordinate_system(self, value: Literal["", "Relative", "World"] | None) -> None: ...
+    @property
+    def rectangular_surface_coordinate_system(self) -> Literal["", "Absolute", "Relative", "World"] | None: ...
+    @rectangular_surface_coordinate_system.setter
+    def rectangular_surface_coordinate_system(self, value: Literal["", "Relative", "World"] | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GlobalGeometryRulesBaseFields]
+    ) -> None: ...  # type: ignore[override]
 
+class __GlobalGeometryRulesBaseFields(_GlobalGeometryRulesCommonFields, total=False):
     starting_vertex_position: (
-        str | Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
+        Literal["LowerLeftCorner", "LowerRightCorner", "UpperLeftCorner", "UpperRightCorner"] | None
     )
-    vertex_entry_direction: str | Literal["Clockwise", "Counterclockwise"] | None
-    coordinate_system: str | Literal["Relative", "World"] | None
-    daylighting_reference_point_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
-    rectangular_surface_coordinate_system: Literal["", "Absolute", "Relative", "World"] | None
+    vertex_entry_direction: Literal["Clockwise", "Counterclockwise"] | None
+    coordinate_system: Literal["Relative", "World"] | None
+    daylighting_reference_point_coordinate_system: Literal["", "Relative", "World"] | None
+    rectangular_surface_coordinate_system: Literal["", "Relative", "World"] | None
 
 class GlobalGeometryRules(_GlobalGeometryRulesBase):
     """Specifies the geometric rules used to describe the input of surface vertices and daylighting reference points."""
@@ -4991,6 +5483,10 @@ class _SpaceBase(_TypedIDFObject):
     """Space type is used to tag spaces by activity type, such as office, classroom, storage, etc.; Default: General"""
     tags: ExtensibleList[SpaceTagsGroup]
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SpaceBaseFields]) -> None: ...  # type: ignore[override]
+
+class __SpaceBaseFields(_SpaceCommonFields, total=False): ...
+
 class Space(_SpaceBase):
     """Defines a space (room) in the building. All Spaces are part of a Zone. Every Zone contains one or more spaces. Space ...; Since: 9.6.0"""
 
@@ -5047,24 +5543,47 @@ class _ZoneBase(_TypedIDFObject):
     """[m]; Default: 0.0"""
     z_origin: float | None
     """[m]; Default: 0.0"""
-    type: float | int | None
-    multiplier: float | int | None
+    @property
+    def type(self) -> float | int | None: ...
+    @type.setter
+    def type(self, value: int | None) -> None: ...
+    @property
+    def multiplier(self) -> float | int | None: ...
+    @multiplier.setter
+    def multiplier(self, value: int | None) -> None: ...
     ceiling_height: float | Literal["", "Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the average height of the zone is automatically calculated and ...; [m]; Default: Autocalculate"""
     volume: float | Literal["", "Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the volume of the zone is automatically calculated and used in ...; [m3]; Default: Autocalculate"""
     floor_area: float | Literal["", "Autocalculate"] | None
     """If this field is 0.0, negative or autocalculate, then the floor area of the zone is automatically calculated and used...; [m2]; Default: Autocalculate"""
-    zone_inside_convection_algorithm: (
+    @property
+    def zone_inside_convection_algorithm(
+        self,
+    ) -> (
         Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall", "ASTMC1340"]
         | None
-    )
+    ): ...
+    @zone_inside_convection_algorithm.setter
+    def zone_inside_convection_algorithm(
+        self,
+        value: Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None,
+    ) -> None: ...
     zone_outside_convection_algorithm: (
         Literal["", "AdaptiveConvectionAlgorithm", "DOE-2", "MoWiTT", "SimpleCombined", "TARP"] | None
     )
     """Will default to same value as SurfaceConvectionAlgorithm:Outside object setting this field overrides the default Surf..."""
     part_of_total_floor_area: Literal["", "No", "Yes"] | None
     """Default: Yes"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneBaseFields]) -> None: ...  # type: ignore[override]
+
+class __ZoneBaseFields(_ZoneCommonFields, total=False):
+    type: int | None
+    multiplier: int | None
+    zone_inside_convection_algorithm: (
+        Literal["", "AdaptiveConvectionAlgorithm", "CeilingDiffuser", "Simple", "TARP", "TrombeWall"] | None
+    )
 
 class Zone(_ZoneBase):
     """Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone..."""
@@ -5111,7 +5630,14 @@ class _ZoneGroupBase(_TypedIDFObject):
     """``ZoneGroup`` as every supported EnergyPlus version declares it."""
 
     zone_list_name: str | None
-    zone_list_multiplier: float | int | None
+    @property
+    def zone_list_multiplier(self) -> float | int | None: ...
+    @zone_list_multiplier.setter
+    def zone_list_multiplier(self, value: int | None) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneGroupBaseFields]) -> None: ...  # type: ignore[override]
+
+class __ZoneGroupBaseFields(_ZoneGroupCommonFields, total=False):
+    zone_list_multiplier: int | None
 
 class ZoneGroup(_ZoneGroupBase):
     """Adds a multiplier to a ZoneList. This can be used to reduce the amount of input necessary for simulating repetitive s..."""
@@ -5142,7 +5668,10 @@ class _BuildingSurfaceDetailedBase(_TypedIDFObject):
     """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     zone_name: str | None
     """Zone the surface is a part of."""
-    outside_boundary_condition: (
+    @property
+    def outside_boundary_condition(
+        self,
+    ) -> (
         Literal[
             "Adiabatic",
             "Foundation",
@@ -5163,7 +5692,30 @@ class _BuildingSurfaceDetailedBase(_TypedIDFObject):
             "Space",
         ]
         | None
-    )
+    ): ...
+    @outside_boundary_condition.setter
+    def outside_boundary_condition(
+        self,
+        value: Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None,
+    ) -> None: ...
     outside_boundary_condition_object: str | None
     """Non-blank only if the field Outside Boundary Condition is Surface, Zone, Space, OtherSideCoefficients or OtherSideCon..."""
     sun_exposure: Literal["", "NoSun", "SunExposed"] | None
@@ -5174,6 +5726,33 @@ class _BuildingSurfaceDetailedBase(_TypedIDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 120 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates (last ...; Default: Autocalculate"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__BuildingSurfaceDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __BuildingSurfaceDetailedBaseFields(_BuildingSurfaceDetailedCommonFields, total=False):
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
 
 class BuildingSurfaceDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`BuildingSurfaceDetailed`."""
@@ -5257,7 +5836,10 @@ class _WallDetailedBase(_TypedIDFObject):
     """To be matched with a construction in this input file"""
     zone_name: str | None
     """Zone the surface is a part of."""
-    outside_boundary_condition: (
+    @property
+    def outside_boundary_condition(
+        self,
+    ) -> (
         Literal[
             "Adiabatic",
             "Foundation",
@@ -5278,7 +5860,30 @@ class _WallDetailedBase(_TypedIDFObject):
             "Space",
         ]
         | None
-    )
+    ): ...
+    @outside_boundary_condition.setter
+    def outside_boundary_condition(
+        self,
+        value: Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None,
+    ) -> None: ...
     outside_boundary_condition_object: str | None
     """Non-blank only if the field Outside Boundary Condition is Surface, Zone, Space, OtherSideCoefficients or OtherSideCon..."""
     sun_exposure: Literal["", "NoSun", "SunExposed"] | None
@@ -5289,6 +5894,31 @@ class _WallDetailedBase(_TypedIDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WallDetailedBaseFields]) -> None: ...  # type: ignore[override]
+
+class __WallDetailedBaseFields(_WallDetailedCommonFields, total=False):
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
 
 class WallDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`WallDetailed`."""
@@ -5370,7 +6000,10 @@ class _RoofCeilingDetailedBase(_TypedIDFObject):
     """To be matched with a construction in this input file"""
     zone_name: str | None
     """Zone the surface is a part of."""
-    outside_boundary_condition: (
+    @property
+    def outside_boundary_condition(
+        self,
+    ) -> (
         Literal[
             "Adiabatic",
             "Ground",
@@ -5389,7 +6022,28 @@ class _RoofCeilingDetailedBase(_TypedIDFObject):
             "Space",
         ]
         | None
-    )
+    ): ...
+    @outside_boundary_condition.setter
+    def outside_boundary_condition(
+        self,
+        value: Literal[
+            "Adiabatic",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None,
+    ) -> None: ...
     outside_boundary_condition_object: str | None
     """Non-blank only if the field Outside Boundary Condition is Surface, Zone, Space, OtherSideCoefficients or OtherSideCon..."""
     sun_exposure: Literal["", "NoSun", "SunExposed"] | None
@@ -5400,6 +6054,31 @@ class _RoofCeilingDetailedBase(_TypedIDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__RoofCeilingDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __RoofCeilingDetailedBaseFields(_RoofCeilingDetailedCommonFields, total=False):
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
 
 class RoofCeilingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`RoofCeilingDetailed`."""
@@ -5479,7 +6158,10 @@ class _FloorDetailedBase(_TypedIDFObject):
     """To be matched with a construction in this input file"""
     zone_name: str | None
     """Zone the surface is a part of."""
-    outside_boundary_condition: (
+    @property
+    def outside_boundary_condition(
+        self,
+    ) -> (
         Literal[
             "Adiabatic",
             "Foundation",
@@ -5500,7 +6182,30 @@ class _FloorDetailedBase(_TypedIDFObject):
             "Space",
         ]
         | None
-    )
+    ): ...
+    @outside_boundary_condition.setter
+    def outside_boundary_condition(
+        self,
+        value: Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None,
+    ) -> None: ...
     outside_boundary_condition_object: str | None
     """Non-blank only if the field Outside Boundary Condition is Surface, Zone, Space, OtherSideCoefficients or OtherSideCon..."""
     sun_exposure: Literal["", "NoSun", "SunExposed"] | None
@@ -5511,6 +6216,33 @@ class _FloorDetailedBase(_TypedIDFObject):
     """From the exterior of the surface Unused if one uses the 'reflections' options in Solar Distribution in Building input...; Default: Autocalculate"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 10 vertex coordinates -- extensible object 'extensible' -- duplicate last set of x,y,z coordinates, renumb...; Default: Autocalculate"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FloorDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FloorDetailedBaseFields(_FloorDetailedCommonFields, total=False):
+    outside_boundary_condition: (
+        Literal[
+            "Adiabatic",
+            "Foundation",
+            "Ground",
+            "GroundBasementPreprocessorAverageFloor",
+            "GroundBasementPreprocessorAverageWall",
+            "GroundBasementPreprocessorLowerWall",
+            "GroundBasementPreprocessorUpperWall",
+            "GroundFCfactorMethod",
+            "GroundSlabPreprocessorAverage",
+            "GroundSlabPreprocessorCore",
+            "GroundSlabPreprocessorPerimeter",
+            "OtherSideCoefficients",
+            "OtherSideConditionsModel",
+            "Outdoors",
+            "Surface",
+            "Zone",
+        ]
+        | None
+    )
 
 class FloorDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`FloorDetailed`."""
@@ -5609,6 +6341,10 @@ class _WallExteriorBase(_TypedIDFObject):
     height: float | None
     """[m]"""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WallExteriorBaseFields]) -> None: ...  # type: ignore[override]
+
+class __WallExteriorBaseFields(_WallExteriorCommonFields, total=False): ...
+
 class WallExterior(_WallExteriorBase):
     """Allows for simplified entry of exterior walls. View Factor to Ground is automatically calculated."""
 
@@ -5653,6 +6389,12 @@ class _WallAdiabaticBase(_TypedIDFObject):
     height: float | None
     """[m]"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WallAdiabaticBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WallAdiabaticBaseFields(_WallAdiabaticCommonFields, total=False): ...
+
 class WallAdiabatic(_WallAdiabaticBase):
     """Allows for simplified entry of interior walls."""
 
@@ -5696,6 +6438,12 @@ class _WallUndergroundBase(_TypedIDFObject):
     """[m]"""
     height: float | None
     """[m]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WallUndergroundBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WallUndergroundBaseFields(_WallUndergroundCommonFields, total=False): ...
 
 class WallUnderground(_WallUndergroundBase):
     """Allows for simplified entry of underground walls."""
@@ -5744,6 +6492,12 @@ class _WallInterzoneBase(_TypedIDFObject):
     height: float | None
     """[m]"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WallInterzoneBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WallInterzoneBaseFields(_WallInterzoneCommonFields, total=False): ...
+
 class WallInterzone(_WallInterzoneBase):
     """Allows for simplified entry of interzone walls (walls between zones)."""
 
@@ -5788,6 +6542,10 @@ class _RoofBase(_TypedIDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__RoofBaseFields]) -> None: ...  # type: ignore[override]
+
+class __RoofBaseFields(_RoofCommonFields, total=False): ...
+
 class Roof(_RoofBase):
     """Allows for simplified entry of roofs (exterior). View Factor to Ground is automatically calculated."""
 
@@ -5831,6 +6589,12 @@ class _CeilingAdiabaticBase(_TypedIDFObject):
     """Along X Axis; [m]"""
     width: float | None
     """Along Y Axis; [m]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CeilingAdiabaticBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CeilingAdiabaticBaseFields(_CeilingAdiabaticCommonFields, total=False): ...
 
 class CeilingAdiabatic(_CeilingAdiabaticBase):
     """Allows for simplified entry of interior ceilings."""
@@ -5879,6 +6643,12 @@ class _CeilingInterzoneBase(_TypedIDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CeilingInterzoneBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CeilingInterzoneBaseFields(_CeilingInterzoneCommonFields, total=False): ...
+
 class CeilingInterzone(_CeilingInterzoneBase):
     """Allows for simplified entry of ceilings using adjacent zone (interzone) heat transfer - adjacent surface should be a ..."""
 
@@ -5922,6 +6692,12 @@ class _FloorGroundContactBase(_TypedIDFObject):
     """Along X Axis; [m]"""
     width: float | None
     """Along Y Axis; [m]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FloorGroundContactBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FloorGroundContactBaseFields(_FloorGroundContactCommonFields, total=False): ...
 
 class FloorGroundContact(_FloorGroundContactBase):
     """Allows for simplified entry of exterior floors with ground contact. View Factors to Ground is automatically calculated."""
@@ -5968,6 +6744,12 @@ class _FloorAdiabaticBase(_TypedIDFObject):
     """Along X Axis; [m]"""
     width: float | None
     """Along Y Axis; [m]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FloorAdiabaticBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FloorAdiabaticBaseFields(_FloorAdiabaticCommonFields, total=False): ...
 
 class FloorAdiabatic(_FloorAdiabaticBase):
     """Allows for simplified entry of exterior floors ignoring ground contact or interior floors. View Factor to Ground is a..."""
@@ -6016,6 +6798,12 @@ class _FloorInterzoneBase(_TypedIDFObject):
     width: float | None
     """Along Y Axis; [m]"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FloorInterzoneBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FloorInterzoneBaseFields(_FloorInterzoneCommonFields, total=False): ...
+
 class FloorInterzone(_FloorInterzoneBase):
     """Allows for simplified entry of floors using adjacent zone (interzone) heat transfer - adjacent surface should be a ce..."""
 
@@ -6050,8 +6838,10 @@ class _FenestrationSurfaceDetailedCommonFields(TypedDict, total=False):
 
 class _FenestrationSurfaceDetailedBase(_TypedIDFObject):
     """``FenestrationSurface:Detailed`` as every supported EnergyPlus version declares it."""
-
-    surface_type: (
+    @property
+    def surface_type(
+        self,
+    ) -> (
         Literal[
             "Door",
             "GlassDoor",
@@ -6064,7 +6854,11 @@ class _FenestrationSurfaceDetailedBase(_TypedIDFObject):
             "Skylight",
         ]
         | None
-    )
+    ): ...
+    @surface_type.setter
+    def surface_type(
+        self, value: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
+    ) -> None: ...
     construction_name: str | None
     """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     building_surface_name: str | None
@@ -6102,6 +6896,13 @@ class _FenestrationSurfaceDetailedBase(_TypedIDFObject):
     """Not used for triangles; [m]"""
     vertex_4_z_coordinate: float | None
     """Not used for triangles; [m]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FenestrationSurfaceDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FenestrationSurfaceDetailedBaseFields(_FenestrationSurfaceDetailedCommonFields, total=False):
+    surface_type: Literal["Door", "GlassDoor", "TubularDaylightDiffuser", "TubularDaylightDome", "Window"] | None
 
 class FenestrationSurfaceDetailed(_FenestrationSurfaceDetailedBase):
     """Allows for detailed entry of subsurfaces (windows, doors, glass doors, tubular daylighting devices)."""
@@ -6172,6 +6973,10 @@ class _WindowBase(_TypedIDFObject):
     height: float | None
     """[m]"""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowBaseFields]) -> None: ...  # type: ignore[override]
+
+class __WindowBaseFields(_WindowCommonFields, total=False): ...
+
 class Window(_WindowBase):
     """Allows for simplified entry of Windows."""
 
@@ -6237,6 +7042,10 @@ class _GlazedDoorBase(_TypedIDFObject):
     """[m]"""
     height: float | None
     """[m]"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GlazedDoorBaseFields]) -> None: ...  # type: ignore[override]
+
+class __GlazedDoorBaseFields(_GlazedDoorCommonFields, total=False): ...
 
 class GlazedDoor(_GlazedDoorBase):
     """Allows for simplified entry of glass Doors."""
@@ -6380,7 +7189,10 @@ class _WindowShadingControlBase(_TypedIDFObject):
     """``WindowShadingControl`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
-    shading_control_sequence_number: float | int | None
+    @property
+    def shading_control_sequence_number(self) -> float | int | None: ...
+    @shading_control_sequence_number.setter
+    def shading_control_sequence_number(self, value: int | None) -> None: ...
     shading_type: (
         Literal[
             "BetweenGlassBlind",
@@ -6396,7 +7208,10 @@ class _WindowShadingControlBase(_TypedIDFObject):
     )
     construction_with_shading_name: str | None
     """Required if Shading Type = SwitchableGlazing Required if Shading Type = interior or exterior shade or blind, or exter...; Since: 9.2.0"""
-    shading_control_type: (
+    @property
+    def shading_control_type(
+        self,
+    ) -> (
         Literal[
             "AlwaysOff",
             "AlwaysOn",
@@ -6424,7 +7239,35 @@ class _WindowShadingControlBase(_TypedIDFObject):
             "OnIfHighSolarOrHighLuminanceTillSunset",
         ]
         | None
-    )
+    ): ...
+    @shading_control_type.setter
+    def shading_control_type(
+        self,
+        value: Literal[
+            "AlwaysOff",
+            "AlwaysOn",
+            "MeetDaylightIlluminanceSetpoint",
+            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+            "OnIfHighGlare",
+            "OnIfHighHorizontalSolar",
+            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+            "OnIfHighOutdoorAirTemperature",
+            "OnIfHighSolarOnWindow",
+            "OnIfHighZoneAirTempAndHighHorizontalSolar",
+            "OnIfHighZoneAirTempAndHighSolarOnWindow",
+            "OnIfHighZoneAirTemperature",
+            "OnIfHighZoneCooling",
+            "OnIfScheduleAllows",
+            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+            "OnNightIfHeatingAndOffDay",
+            "OnNightIfHeatingAndOnDayIfCooling",
+            "OnNightIfLowInsideTempAndOffDay",
+            "OnNightIfLowOutdoorTempAndOffDay",
+            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+        ]
+        | None,
+    ) -> None: ...
     schedule_name: str | None
     """Required if Shading Control Is Scheduled = Yes. If schedule value = 1, shading control is active, i.e., shading can t..."""
     setpoint: float | None
@@ -6446,6 +7289,39 @@ class _WindowShadingControlBase(_TypedIDFObject):
     multiple_surface_control_type: Literal["", "Group", "Sequential"] | None
     """When Sequential is used the list of fenestration surfaces are controlled individually in the order specified When Gro...; Default: Sequential"""
     fenestration_surfaces: ExtensibleList[WindowShadingControlFenestrationSurfacesGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowShadingControlBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowShadingControlBaseFields(_WindowShadingControlCommonFields, total=False):
+    shading_control_sequence_number: int | None
+    shading_control_type: (
+        Literal[
+            "AlwaysOff",
+            "AlwaysOn",
+            "MeetDaylightIlluminanceSetpoint",
+            "OffNightAndOnDayIfCoolingAndHighSolarOnWindow",
+            "OnIfHighGlare",
+            "OnIfHighHorizontalSolar",
+            "OnIfHighOutdoorAirTempAndHighHorizontalSolar",
+            "OnIfHighOutdoorAirTempAndHighSolarOnWindow",
+            "OnIfHighOutdoorAirTemperature",
+            "OnIfHighSolarOnWindow",
+            "OnIfHighZoneAirTempAndHighHorizontalSolar",
+            "OnIfHighZoneAirTempAndHighSolarOnWindow",
+            "OnIfHighZoneAirTemperature",
+            "OnIfHighZoneCooling",
+            "OnIfScheduleAllows",
+            "OnNightAndOnDayIfCoolingAndHighSolarOnWindow",
+            "OnNightIfHeatingAndOffDay",
+            "OnNightIfHeatingAndOnDayIfCooling",
+            "OnNightIfLowInsideTempAndOffDay",
+            "OnNightIfLowOutdoorTempAndOffDay",
+            "OnNightIfLowOutdoorTempAndOnDayIfCooling",
+        ]
+        | None
+    )
 
 class WindowShadingControl(_WindowShadingControlBase):
     """Specifies the type, location, and controls for window shades, window blinds, and switchable glazing. Referencing the ...; Since: 9.0.1"""
@@ -6566,8 +7442,14 @@ class _WindowPropertyFrameAndDividerBase(_TypedIDFObject):
     """Default: DividedLite"""
     divider_width: float | None
     """Width of dividers in plane of window Width assumed the same for all dividers; [m]; Default: 0.0; Range: >= 0.0, <= 0.5"""
-    number_of_horizontal_dividers: float | int | None
-    number_of_vertical_dividers: float | int | None
+    @property
+    def number_of_horizontal_dividers(self) -> float | int | None: ...
+    @number_of_horizontal_dividers.setter
+    def number_of_horizontal_dividers(self, value: int | None) -> None: ...
+    @property
+    def number_of_vertical_dividers(self) -> float | int | None: ...
+    @number_of_vertical_dividers.setter
+    def number_of_vertical_dividers(self, value: int | None) -> None: ...
     divider_outside_projection: float | None
     """Amount that divider projects outward from the outside face of the glazing Outside projection assumed the same for all...; [m]; Default: 0.0; Range: >= 0.0, <= 0.5"""
     divider_inside_projection: float | None
@@ -6592,6 +7474,14 @@ class _WindowPropertyFrameAndDividerBase(_TypedIDFObject):
     """Distance from plane of inside surface of glazing to plane of inside surface of wall. Outside reveal depth is determin...; [m]; Default: 0.0; Range: >= 0.0, <= 2.0"""
     inside_reveal_solar_absorptance: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowPropertyFrameAndDividerBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowPropertyFrameAndDividerBaseFields(_WindowPropertyFrameAndDividerCommonFields, total=False):
+    number_of_horizontal_dividers: int | None
+    number_of_vertical_dividers: int | None
 
 class WindowPropertyFrameAndDivider(_WindowPropertyFrameAndDividerBase):
     """Specifies the dimensions of a window frame, dividers, and inside reveal surfaces. Referenced by the surface objects f..."""
@@ -6711,10 +7601,31 @@ class _WindowPropertyStormWindowBase(_TypedIDFObject):
     """Must be a WindowMaterial:Glazing or WindowMaterial:Glazing:RefractionExtinctionMethod Gap between storm glass layer a..."""
     distance_between_storm_glass_layer_and_adjacent_glass: float | None
     """[m]; Default: 0.05; Range: > 0.0, <= 0.5"""
-    month_that_storm_glass_layer_is_put_on: float | int | None
-    day_of_month_that_storm_glass_layer_is_put_on: float | int | None
-    month_that_storm_glass_layer_is_taken_off: float | int | None
-    day_of_month_that_storm_glass_layer_is_taken_off: float | int | None
+    @property
+    def month_that_storm_glass_layer_is_put_on(self) -> float | int | None: ...
+    @month_that_storm_glass_layer_is_put_on.setter
+    def month_that_storm_glass_layer_is_put_on(self, value: int | None) -> None: ...
+    @property
+    def day_of_month_that_storm_glass_layer_is_put_on(self) -> float | int | None: ...
+    @day_of_month_that_storm_glass_layer_is_put_on.setter
+    def day_of_month_that_storm_glass_layer_is_put_on(self, value: int | None) -> None: ...
+    @property
+    def month_that_storm_glass_layer_is_taken_off(self) -> float | int | None: ...
+    @month_that_storm_glass_layer_is_taken_off.setter
+    def month_that_storm_glass_layer_is_taken_off(self, value: int | None) -> None: ...
+    @property
+    def day_of_month_that_storm_glass_layer_is_taken_off(self) -> float | int | None: ...
+    @day_of_month_that_storm_glass_layer_is_taken_off.setter
+    def day_of_month_that_storm_glass_layer_is_taken_off(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WindowPropertyStormWindowBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WindowPropertyStormWindowBaseFields(_WindowPropertyStormWindowCommonFields, total=False):
+    month_that_storm_glass_layer_is_put_on: int | None
+    day_of_month_that_storm_glass_layer_is_put_on: int | None
+    month_that_storm_glass_layer_is_taken_off: int | None
+    day_of_month_that_storm_glass_layer_is_taken_off: int | None
 
 class WindowPropertyStormWindow(_WindowPropertyStormWindowBase):
     """This is a movable exterior glass layer that is usually applied in the winter and removed in the summer."""
@@ -6749,6 +7660,10 @@ class _InternalMassBase(_TypedIDFObject):
     """To be matched with a construction in this input file. If blank, a ConstructionAssignmentSet assigned to the surface's..."""
     surface_area: float | None
     """[m2]; Range: > 0.0"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__InternalMassBaseFields]) -> None: ...  # type: ignore[override]
+
+class __InternalMassBaseFields(_InternalMassCommonFields, total=False): ...
 
 class InternalMass(_InternalMassBase):
     """Used to describe internal zone surface area that does not need to be part of geometric representation. This should be..."""
@@ -6834,6 +7749,12 @@ class _ShadingSiteDetailedBase(_TypedIDFObject):
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ShadingSiteDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ShadingSiteDetailedBaseFields(_ShadingSiteDetailedCommonFields, total=False): ...
+
 class ShadingSiteDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingSiteDetailed`."""
 
@@ -6864,6 +7785,12 @@ class _ShadingBuildingDetailedBase(_TypedIDFObject):
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object Rules for vertices are given in GlobalGeometryRules coordinates ...; Default: Autocalculate"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ShadingBuildingDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ShadingBuildingDetailedBaseFields(_ShadingBuildingDetailedCommonFields, total=False): ...
 
 class ShadingBuildingDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingBuildingDetailed`."""
@@ -7031,6 +7958,12 @@ class _ShadingZoneDetailedBase(_TypedIDFObject):
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     """shown with 6 vertex coordinates -- extensible object vertices are given in GlobalGeometryRules coordinates -- if rela...; Default: Autocalculate"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ShadingZoneDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ShadingZoneDetailedBaseFields(_ShadingZoneDetailedCommonFields, total=False): ...
 
 class ShadingZoneDetailedVerticesGroup(_TypedExtensibleGroup):
     """One vertices group inside :class:`ShadingZoneDetailed`."""
@@ -7431,6 +8364,12 @@ class _FoundationKivaBase(_TypedIDFObject):
     footing_depth: float | None
     """Top-to-bottom dimension of the footing (not to be confused with its depth in the ground). The width of the footing is...; [m]; Default: 0.3; Range: > 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FoundationKivaBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FoundationKivaBaseFields(_FoundationKivaCommonFields, total=False): ...
+
 class FoundationKivaBlocksGroup(_TypedExtensibleGroup):
     """One blocks group inside :class:`FoundationKiva`."""
 
@@ -7518,6 +8457,17 @@ class _SurfacePropertyExposedFoundationPerimeterBase(_TypedIDFObject):
     """[m]; Range: >= 0.0"""
     exposed_perimeter_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SurfacePropertyExposedFoundationPerimeterBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SurfacePropertyExposedFoundationPerimeterBaseFields(
+    _SurfacePropertyExposedFoundationPerimeterCommonFields, total=False
+): ...
 
 class SurfacePropertyExposedFoundationPerimeterSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertyExposedFoundationPerimeter`."""
@@ -8742,6 +9692,236 @@ class _SurfacePropertyConvectionCoefficientsBase(_TypedIDFObject):
 
     surface_name: str | None
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
+    @property
+    def convection_coefficient_1_type(
+        self,
+    ) -> (
+        Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+            "ASTMC1340",
+            "BlockenWindard",
+        ]
+        | None
+    ): ...
+    @convection_coefficient_1_type.setter
+    def convection_coefficient_1_type(
+        self,
+        value: Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+        ]
+        | None,
+    ) -> None: ...
+    convection_coefficient_1: float | None
+    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]"""
+    convection_coefficient_1_schedule_name: str | None
+    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
+    convection_coefficient_1_user_curve_name: str | None
+    """used if Convection Type = UserCurve"""
+    convection_coefficient_2_location: Literal["Inside", "Outside"] | None
+    @property
+    def convection_coefficient_2_type(
+        self,
+    ) -> (
+        Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+            "ASTMC1340",
+            "BlockenWindard",
+        ]
+        | None
+    ): ...
+    @convection_coefficient_2_type.setter
+    def convection_coefficient_2_type(
+        self,
+        value: Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+        ]
+        | None,
+    ) -> None: ...
+    convection_coefficient_2: float | None
+    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]; Default: 0.1"""
+    convection_coefficient_2_schedule_name: str | None
+    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
+    convection_coefficient_2_user_curve_name: str | None
+    """used if Convection Type = UserCurve"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SurfacePropertyConvectionCoefficientsBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SurfacePropertyConvectionCoefficientsBaseFields(
+    _SurfacePropertyConvectionCoefficientsCommonFields, total=False
+):
     convection_coefficient_1_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -8787,18 +9967,9 @@ class _SurfacePropertyConvectionCoefficientsBase(_TypedIDFObject):
             "Value",
             "WaltonStableHorizontalOrTilt",
             "WaltonUnstableHorizontalOrTilt",
-            "ASTMC1340",
-            "BlockenWindard",
         ]
         | None
     )
-    convection_coefficient_1: float | None
-    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]"""
-    convection_coefficient_1_schedule_name: str | None
-    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
-    convection_coefficient_1_user_curve_name: str | None
-    """used if Convection Type = UserCurve"""
-    convection_coefficient_2_location: Literal["Inside", "Outside"] | None
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -8844,17 +10015,9 @@ class _SurfacePropertyConvectionCoefficientsBase(_TypedIDFObject):
             "Value",
             "WaltonStableHorizontalOrTilt",
             "WaltonUnstableHorizontalOrTilt",
-            "ASTMC1340",
-            "BlockenWindard",
         ]
         | None
     )
-    convection_coefficient_2: float | None
-    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]; Default: 0.1"""
-    convection_coefficient_2_schedule_name: str | None
-    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
-    convection_coefficient_2_user_curve_name: str | None
-    """used if Convection Type = UserCurve"""
 
 class SurfacePropertyConvectionCoefficients(_SurfacePropertyConvectionCoefficientsBase):
     """Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
@@ -9110,6 +10273,238 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceBase(_TypedIDFObject)
         | None
     )
     convection_coefficient_1_location: Literal["Inside", "Outside"] | None
+    @property
+    def convection_coefficient_1_type(
+        self,
+    ) -> (
+        Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "BlockenWindard",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+            "ASTMC1340",
+        ]
+        | None
+    ): ...
+    @convection_coefficient_1_type.setter
+    def convection_coefficient_1_type(
+        self,
+        value: Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "BlockenWindard",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+        ]
+        | None,
+    ) -> None: ...
+    convection_coefficient_1: float | None
+    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]"""
+    convection_coefficient_1_schedule_name: str | None
+    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
+    convection_coefficient_1_user_curve_name: str | None
+    """used if Convection Type = UserCurve"""
+    convection_coefficient_2_location: Literal["Inside", "Outside"] | None
+    @property
+    def convection_coefficient_2_type(
+        self,
+    ) -> (
+        Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "BlockenWindard",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+            "ASTMC1340",
+        ]
+        | None
+    ): ...
+    @convection_coefficient_2_type.setter
+    def convection_coefficient_2_type(
+        self,
+        value: Literal[
+            "ASHRAEVerticalWall",
+            "AdaptiveConvectionAlgorithm",
+            "AlamdariHammondStableHorizontal",
+            "AlamdariHammondUnstableHorizontal",
+            "AlamdariHammondVerticalWall",
+            "AwbiHattonHeatedFloor",
+            "AwbiHattonHeatedWall",
+            "BeausoleilMorrisonMixedAssistedWall",
+            "BeausoleilMorrisonMixedOpposingWall",
+            "BeausoleilMorrisonMixedStableCeiling",
+            "BeausoleilMorrisonMixedStableFloor",
+            "BeausoleilMorrisonMixedUnstableCeiling",
+            "BeausoleilMorrisonMixedUnstableFloor",
+            "BlockenWindard",
+            "ClearRoof",
+            "DOE-2",
+            "EmmelRoof",
+            "EmmelVertical",
+            "FisherPedersenCeilingDiffuserCeiling",
+            "FisherPedersenCeilingDiffuserFloor",
+            "FisherPedersenCeilingDiffuserWalls",
+            "FohannoPolidoriVerticalWall",
+            "GoldsteinNovoselacCeilingDiffuserFloor",
+            "GoldsteinNovoselacCeilingDiffuserWalls",
+            "GoldsteinNovoselacCeilingDiffuserWindow",
+            "ISO15099Windows",
+            "KaradagChilledCeiling",
+            "KhalifaEq3WallAwayFromHeat",
+            "KhalifaEq4CeilingAwayFromHeat",
+            "KhalifaEq5WallNearHeat",
+            "KhalifaEq6NonHeatedWalls",
+            "KhalifaEq7Ceiling",
+            "McAdams",
+            "Mitchell",
+            "MoWitt",
+            "NusseltJurges",
+            "Schedule",
+            "Simple",
+            "SimpleCombined",
+            "TARP",
+            "UserCurve",
+            "Value",
+            "WaltonStableHorizontalOrTilt",
+            "WaltonUnstableHorizontalOrTilt",
+        ]
+        | None,
+    ) -> None: ...
+    convection_coefficient_2: float | None
+    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]; Default: 0.1"""
+    convection_coefficient_2_schedule_name: str | None
+    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
+    convection_coefficient_2_user_curve_name: str | None
+    """used if Convection Type = UserCurve"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SurfacePropertyConvectionCoefficientsMultipleSurfaceBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SurfacePropertyConvectionCoefficientsMultipleSurfaceBaseFields(
+    _SurfacePropertyConvectionCoefficientsMultipleSurfaceCommonFields, total=False
+):
     convection_coefficient_1_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -9156,17 +10551,9 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceBase(_TypedIDFObject)
             "Value",
             "WaltonStableHorizontalOrTilt",
             "WaltonUnstableHorizontalOrTilt",
-            "ASTMC1340",
         ]
         | None
     )
-    convection_coefficient_1: float | None
-    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]"""
-    convection_coefficient_1_schedule_name: str | None
-    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
-    convection_coefficient_1_user_curve_name: str | None
-    """used if Convection Type = UserCurve"""
-    convection_coefficient_2_location: Literal["Inside", "Outside"] | None
     convection_coefficient_2_type: (
         Literal[
             "ASHRAEVerticalWall",
@@ -9213,16 +10600,9 @@ class _SurfacePropertyConvectionCoefficientsMultipleSurfaceBase(_TypedIDFObject)
             "Value",
             "WaltonStableHorizontalOrTilt",
             "WaltonUnstableHorizontalOrTilt",
-            "ASTMC1340",
         ]
         | None
     )
-    convection_coefficient_2: float | None
-    """used if Convection Type=Value, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minimum ...; [W/m2-K]; Default: 0.1"""
-    convection_coefficient_2_schedule_name: str | None
-    """used if Convection Type=Schedule, min and max limits are set in HeatBalanceAlgorithm object. Default limits are Minim..."""
-    convection_coefficient_2_user_curve_name: str | None
-    """used if Convection Type = UserCurve"""
 
 class SurfacePropertyConvectionCoefficientsMultipleSurface(_SurfacePropertyConvectionCoefficientsMultipleSurfaceBase):
     """Allow user settable interior and/or exterior convection coefficients. Note that some other factors may limit the lowe..."""
@@ -9567,6 +10947,12 @@ class _SurfacePropertyLocalEnvironmentBase(_TypedIDFObject):
     outdoor_air_node_name: str | None
     """Enter the name of an OutdoorAir:Node object"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SurfacePropertyLocalEnvironmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SurfacePropertyLocalEnvironmentBaseFields(_SurfacePropertyLocalEnvironmentCommonFields, total=False): ...
+
 class SurfacePropertyLocalEnvironment(_SurfacePropertyLocalEnvironmentBase):
     """This object defines the local environment properties of an exterior surface. One or more environment properties have ..."""
 
@@ -9605,13 +10991,29 @@ class _SurfacePropertySurroundingSurfacesCommonFields(TypedDict, total=False):
 
 class _SurfacePropertySurroundingSurfacesBase(_TypedIDFObject):
     """``SurfaceProperty:SurroundingSurfaces`` as every supported EnergyPlus version declares it."""
-
-    sky_view_factor: float | Literal["", "Autocalculate"] | None
+    @property
+    def sky_view_factor(self) -> float | Literal["", "Autocalculate"] | None: ...
+    @sky_view_factor.setter
+    def sky_view_factor(self, value: float | None) -> None: ...
     sky_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
-    ground_view_factor: float | Literal["", "Autocalculate"] | None
+    @property
+    def ground_view_factor(self) -> float | Literal["", "Autocalculate"] | None: ...
+    @ground_view_factor.setter
+    def ground_view_factor(self, value: float | None) -> None: ...
     ground_temperature_schedule_name: str | None
     """Schedule values are real numbers, -100.0 to 100.0, units C optional"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SurfacePropertySurroundingSurfacesBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SurfacePropertySurroundingSurfacesBaseFields(_SurfacePropertySurroundingSurfacesCommonFields, total=False):
+    sky_view_factor: float | None
+    ground_view_factor: float | None
 
 class SurfacePropertySurroundingSurfacesSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`SurfacePropertySurroundingSurfaces`."""
@@ -9704,6 +11106,17 @@ class _ZonePropertyUserViewFactorsBySurfaceNameBase(_TypedIDFObject):
     """``ZoneProperty:UserViewFactors:BySurfaceName`` as every supported EnergyPlus version declares it."""
 
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZonePropertyUserViewFactorsBySurfaceNameBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZonePropertyUserViewFactorsBySurfaceNameBaseFields(
+    _ZonePropertyUserViewFactorsBySurfaceNameCommonFields, total=False
+): ...
 
 class ZonePropertyUserViewFactorsBySurfaceName(_ZonePropertyUserViewFactorsBySurfaceNameBase):
     """View factors for Surface to Surface in a zone. (Number of Surfaces)**2 are expected. Any omitted surface pairs will b...; Since: 9.4.0"""
@@ -10468,7 +11881,10 @@ class _RoomAirTemperaturePatternConstantGradientBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:ConstantGradient`` as every supported EnergyPlus version declares it."""
 
     room_air_temperature_pattern_constant_gradient_name: str | None
-    control_integer_for_pattern_control_schedule_name: float | int | None
+    @property
+    def control_integer_for_pattern_control_schedule_name(self) -> float | int | None: ...
+    @control_integer_for_pattern_control_schedule_name.setter
+    def control_integer_for_pattern_control_schedule_name(self, value: int | None) -> None: ...
     thermostat_offset: float | None
     """= (Temp at thermostat- Mean Air Temp); [deltaC]"""
     return_air_offset: float | None
@@ -10477,6 +11893,18 @@ class _RoomAirTemperaturePatternConstantGradientBase(_TypedIDFObject):
     """= (Texhaust - Mean Air Temp) deg C; [deltaC]"""
     temperature_gradient: float | None
     """Slope of temperature change in vertical direction; [K/m]"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirTemperaturePatternConstantGradientBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirTemperaturePatternConstantGradientBaseFields(
+    _RoomAirTemperaturePatternConstantGradientCommonFields, total=False
+):
+    control_integer_for_pattern_control_schedule_name: int | None
 
 class RoomAirTemperaturePatternConstantGradient(_RoomAirTemperaturePatternConstantGradientBase):
     """Used to model room air with a fixed temperature gradient in the vertical direction. Used in combination with RoomAir:..."""
@@ -10522,7 +11950,10 @@ class _RoomAirTemperaturePatternTwoGradientBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:TwoGradient`` as every supported EnergyPlus version declares it."""
 
     room_air_temperature_pattern_two_gradient_name: str | None
-    control_integer_for_pattern_control_schedule_name: float | int | None
+    @property
+    def control_integer_for_pattern_control_schedule_name(self) -> float | int | None: ...
+    @control_integer_for_pattern_control_schedule_name.setter
+    def control_integer_for_pattern_control_schedule_name(self, value: int | None) -> None: ...
     thermostat_height: float | None
     """= Distance from floor of zone; [m]"""
     return_air_height: float | None
@@ -10552,6 +11983,16 @@ class _RoomAirTemperaturePatternTwoGradientBase(_TypedIDFObject):
     lower_heat_rate_bound: float | None
     """[W]"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirTemperaturePatternTwoGradientBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirTemperaturePatternTwoGradientBaseFields(_RoomAirTemperaturePatternTwoGradientCommonFields, total=False):
+    control_integer_for_pattern_control_schedule_name: int | None
+
 class RoomAirTemperaturePatternTwoGradient(_RoomAirTemperaturePatternTwoGradientBase):
     """Used to model room air with two temperature gradients in the vertical direction. Used in combination with RoomAir:Tem..."""
 
@@ -10572,14 +12013,28 @@ class _RoomAirTemperaturePatternNondimensionalHeightCommonFields(TypedDict, tota
 
 class _RoomAirTemperaturePatternNondimensionalHeightBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:NondimensionalHeight`` as every supported EnergyPlus version declares it."""
-
-    control_integer_for_pattern_control_schedule_name: float | int | None
+    @property
+    def control_integer_for_pattern_control_schedule_name(self) -> float | int | None: ...
+    @control_integer_for_pattern_control_schedule_name.setter
+    def control_integer_for_pattern_control_schedule_name(self, value: int | None) -> None: ...
     thermostat_offset: float | None
     """= (Temp at thermostat- Mean Air Temp); [deltaC]"""
     return_air_offset: float | None
     """= (Temp leaving - Mean Air Temp ) deg C; [deltaC]"""
     exhaust_air_offset: float | None
     """= (Temp exhaust - Mean Air Temp) deg C the remaining fields have pairs that describe the relative temperature pattern...; [deltaC]"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirTemperaturePatternNondimensionalHeightBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirTemperaturePatternNondimensionalHeightBaseFields(
+    _RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
+):
+    control_integer_for_pattern_control_schedule_name: int | None
 
 class RoomAirTemperaturePatternNondimensionalHeightPairsGroup(_TypedExtensibleGroup):
     """One pairs group inside :class:`RoomAirTemperaturePatternNondimensionalHeight`."""
@@ -10621,8 +12076,10 @@ class RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup(_TypedExtensible
 
 class _RoomAirTemperaturePatternSurfaceMappingBase(_TypedIDFObject):
     """``RoomAir:TemperaturePattern:SurfaceMapping`` as every supported EnergyPlus version declares it."""
-
-    control_integer_for_pattern_control_schedule_name: float | int | None
+    @property
+    def control_integer_for_pattern_control_schedule_name(self) -> float | int | None: ...
+    @control_integer_for_pattern_control_schedule_name.setter
+    def control_integer_for_pattern_control_schedule_name(self, value: int | None) -> None: ...
     thermostat_offset: float | None
     """= (Temp at thermostat- Mean Air Temp); [deltaC]"""
     return_air_offset: float | None
@@ -10630,6 +12087,18 @@ class _RoomAirTemperaturePatternSurfaceMappingBase(_TypedIDFObject):
     exhaust_air_offset: float | None
     """= (Texhaust - Mean Air Temp) deg C; [deltaC]"""
     surface_deltas: ExtensibleList[RoomAirTemperaturePatternSurfaceMappingSurfaceDeltasGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirTemperaturePatternSurfaceMappingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirTemperaturePatternSurfaceMappingBaseFields(
+    _RoomAirTemperaturePatternSurfaceMappingCommonFields, total=False
+):
+    control_integer_for_pattern_control_schedule_name: int | None
 
 class RoomAirTemperaturePatternSurfaceMapping(_RoomAirTemperaturePatternSurfaceMappingBase):
     """Defines a distribution pattern for the air temperatures adjacent to individual surfaces. This allows controlling the ..."""
@@ -10935,6 +12404,17 @@ class _RoomAirNodeAirflowNetworkInternalGainsCommonFields(TypedDict, total=False
 class _RoomAirNodeAirflowNetworkInternalGainsBase(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:InternalGains`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirNodeAirflowNetworkInternalGainsBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirNodeAirflowNetworkInternalGainsBaseFields(
+    _RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
+): ...
+
 class RoomAirNodeAirflowNetworkInternalGainsGainsGroup(_TypedExtensibleGroup):
     """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains`."""
 
@@ -11008,6 +12488,17 @@ class _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields(TypedDict, total=False
 
 class _RoomAirNodeAirflowNetworkHVACEquipmentBase(_TypedIDFObject):
     """``RoomAir:Node:AirflowNetwork:HVACEquipment`` as every supported EnergyPlus version declares it."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__RoomAirNodeAirflowNetworkHVACEquipmentBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __RoomAirNodeAirflowNetworkHVACEquipmentBaseFields(
+    _RoomAirNodeAirflowNetworkHVACEquipmentCommonFields, total=False
+): ...
 
 class RoomAirNodeAirflowNetworkHVACEquipmentEquipmentFractionsGroup(_TypedExtensibleGroup):
     """One equipment_fractions group inside :class:`RoomAirNodeAirflowNetworkHVACEquipment`."""
@@ -11130,9 +12621,14 @@ class _PeopleBase(_TypedIDFObject):
     """CO2 generation rate per unit of activity level. The default value is obtained from ASHRAE Std 62.1 at 0.0084 cfm/met/...; [m3/s-W]; Default: 3.82e-08; Range: >= 0.0, <= 3.82e-07"""
     enable_ashrae_55_comfort_warnings: Literal["", "No", "Yes"] | None
     """Default: No"""
-    mean_radiant_temperature_calculation_type: (
-        Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged", "EnclosureAveraged"] | None
-    )
+    @property
+    def mean_radiant_temperature_calculation_type(
+        self,
+    ) -> Literal["", "AngleFactor", "SurfaceWeighted", "ZoneAveraged", "EnclosureAveraged"] | None: ...
+    @mean_radiant_temperature_calculation_type.setter
+    def mean_radiant_temperature_calculation_type(
+        self, value: Literal["", "AngleFactor", "SurfaceWeighted"] | None
+    ) -> None: ...
     surface_name_angle_factor_list_name: str | None
     """optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)"""
     work_efficiency_schedule_name: str | None
@@ -11147,26 +12643,70 @@ class _PeopleBase(_TypedIDFObject):
     """use 'Clo' from ASHRAE or Thermal Comfort guides optional (only required for runs of thermal comfort models: Fanger, P..."""
     air_velocity_schedule_name: str | None
     """units in the schedule are m/s optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, Coolin..."""
-    thermal_comfort_model_1_type: (
+    @property
+    def thermal_comfort_model_1_type(
+        self,
+    ) -> (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce", "AnkleDraftASH55", "CoolingEffectASH55"]
         | None
-    )
-    thermal_comfort_model_2_type: (
+    ): ...
+    @thermal_comfort_model_1_type.setter
+    def thermal_comfort_model_1_type(
+        self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    ) -> None: ...
+    @property
+    def thermal_comfort_model_2_type(
+        self,
+    ) -> (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce", "AnkleDraftASH55", "CoolingEffectASH55"]
         | None
-    )
-    thermal_comfort_model_3_type: (
+    ): ...
+    @thermal_comfort_model_2_type.setter
+    def thermal_comfort_model_2_type(
+        self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    ) -> None: ...
+    @property
+    def thermal_comfort_model_3_type(
+        self,
+    ) -> (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce", "AnkleDraftASH55", "CoolingEffectASH55"]
         | None
-    )
-    thermal_comfort_model_4_type: (
+    ): ...
+    @thermal_comfort_model_3_type.setter
+    def thermal_comfort_model_3_type(
+        self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    ) -> None: ...
+    @property
+    def thermal_comfort_model_4_type(
+        self,
+    ) -> (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce", "AnkleDraftASH55", "CoolingEffectASH55"]
         | None
-    )
-    thermal_comfort_model_5_type: (
+    ): ...
+    @thermal_comfort_model_4_type.setter
+    def thermal_comfort_model_4_type(
+        self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    ) -> None: ...
+    @property
+    def thermal_comfort_model_5_type(
+        self,
+    ) -> (
         Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce", "AnkleDraftASH55", "CoolingEffectASH55"]
         | None
-    )
+    ): ...
+    @thermal_comfort_model_5_type.setter
+    def thermal_comfort_model_5_type(
+        self, value: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    ) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PeopleBaseFields]) -> None: ...  # type: ignore[override]
+
+class __PeopleBaseFields(_PeopleCommonFields, total=False):
+    mean_radiant_temperature_calculation_type: Literal["", "AngleFactor", "SurfaceWeighted"] | None
+    thermal_comfort_model_1_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    thermal_comfort_model_2_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    thermal_comfort_model_3_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    thermal_comfort_model_4_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
+    thermal_comfort_model_5_type: Literal["AdaptiveASH55", "AdaptiveCEN15251", "Fanger", "KSU", "Pierce"] | None
 
 class People(_PeopleBase):
     """Sets internal gains and contaminant rates for occupants in the zone. If a ZoneList, SpaceList, or a Zone comprised of..."""
@@ -11415,6 +12955,12 @@ class _ComfortViewFactorAnglesCommonFields(TypedDict, total=False): ...
 class _ComfortViewFactorAnglesBase(_TypedIDFObject):
     """``ComfortViewFactorAngles`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ComfortViewFactorAnglesBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ComfortViewFactorAnglesBaseFields(_ComfortViewFactorAnglesCommonFields, total=False): ...
+
 class ComfortViewFactorAnglesAnglesGroup(_TypedExtensibleGroup):
     """One angles group inside :class:`ComfortViewFactorAngles`."""
 
@@ -11477,6 +13023,10 @@ class _LightsBase(_TypedIDFObject):
     """Used only if Return Air Fraction Is Calculated from Plenum Temperature = Yes Equation is Return Air Fraction = Coeffi...; [1/K]; Default: 0.0; Range: >= 0.0"""
     return_air_heat_gain_node_name: str | None
     """Name of the return air node for this heat gain. If left blank, defaults to the first return air node for the zone. Le..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LightsBaseFields]) -> None: ...  # type: ignore[override]
+
+class __LightsBaseFields(_LightsCommonFields, total=False): ...
 
 class Lights(_LightsBase):
     """Sets internal gains for lights in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one Space is s..."""
@@ -11593,6 +13143,12 @@ class _ElectricEquipmentBase(_TypedIDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ElectricEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ElectricEquipmentBaseFields(_ElectricEquipmentCommonFields, total=False): ...
+
 class ElectricEquipment(_ElectricEquipmentBase):
     """Sets internal gains for electric equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than on..."""
 
@@ -11697,6 +13253,10 @@ class _GasEquipmentBase(_TypedIDFObject):
     """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented. For unvented equ...; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GasEquipmentBaseFields]) -> None: ...  # type: ignore[override]
+
+class __GasEquipmentBaseFields(_GasEquipmentCommonFields, total=False): ...
 
 class GasEquipment(_GasEquipmentBase):
     """Sets internal gains and contaminant rates for gas equipment in the zone. If a ZoneList, SpaceList, or a Zone comprise..."""
@@ -11807,6 +13367,12 @@ class _HotWaterEquipmentBase(_TypedIDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HotWaterEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HotWaterEquipmentBaseFields(_HotWaterEquipmentCommonFields, total=False): ...
+
 class HotWaterEquipment(_HotWaterEquipmentBase):
     """Sets internal gains for hot water equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than o..."""
 
@@ -11913,6 +13479,12 @@ class _SteamEquipmentBase(_TypedIDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SteamEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SteamEquipmentBaseFields(_SteamEquipmentCommonFields, total=False): ...
+
 class SteamEquipment(_SteamEquipmentBase):
     """Sets internal gains for steam equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of more than one S..."""
 
@@ -12000,8 +13572,10 @@ class _OtherEquipmentCommonFields(TypedDict, total=False):
 
 class _OtherEquipmentBase(_TypedIDFObject):
     """``OtherEquipment`` as every supported EnergyPlus version declares it."""
-
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Coal",
@@ -12026,7 +13600,24 @@ class _OtherEquipmentBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None,
+    ) -> None: ...
     schedule_name: str | None
     """units in Schedule should be fraction applied to design level of other equipment, generally (0.0 - 1.0)"""
     design_level_calculation_method: (
@@ -12047,6 +13638,27 @@ class _OtherEquipmentBase(_TypedIDFObject):
     """CO2 generation rate per unit of power input The default value assumes the equipment is fully vented.; [m3/s-W] ((ft3/min)/(Btu/h)); Default: 0.0; Range: >= 0.0, <= 4e-07"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OtherEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OtherEquipmentBaseFields(_OtherEquipmentCommonFields, total=False):
+    fuel_type: (
+        Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None
+    )
 
 class OtherEquipment(_OtherEquipmentBase):
     """Sets internal gains or losses for 'other' equipment in the zone. If a ZoneList, SpaceList, or a Zone comprised of mor..."""
@@ -12244,6 +13856,12 @@ class _IndoorLivingWallBase(_TypedIDFObject):
     radiant_fraction_of_led_lights: float | None
     """This field defines the fraction of radiation from LED lights; Default: 0.6; Range: >= 0.0, <= 1.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__IndoorLivingWallBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __IndoorLivingWallBaseFields(_IndoorLivingWallCommonFields, total=False): ...
+
 class IndoorLivingWall(_IndoorLivingWallBase):
     """Indoor greenery systems such as indoor living walls are panels of plants, which grow hydroponically or from substrate...; Since: 24.1.0"""
 
@@ -12308,7 +13926,10 @@ class _ElectricEquipmentITEAirCooledBase(_TypedIDFObject):
     """The name of a single-variable curve or table lookup object which modifies the cooling fan power as a function of flow..."""
     design_entering_air_temperature: float | None
     """The entering air temperature at design conditions.; [C]; Default: 15.0"""
-    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None", "H1"] | None
+    @property
+    def environmental_class(self) -> Literal["", "A1", "A2", "A3", "A4", "B", "C", "None", "H1"] | None: ...
+    @environmental_class.setter
+    def environmental_class(self, value: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None) -> None: ...
     air_inlet_connection_type: Literal["", "AdjustedSupply", "RoomAirModel", "ZoneAirNode"] | None
     """Specifies the type of connection between the zone and the ITE air inlet node. AdjustedSupply = ITE inlet temperature ...; Default: AdjustedSupply"""
     air_inlet_room_air_model_node_name: str | None
@@ -12341,6 +13962,13 @@ class _ElectricEquipmentITEAirCooledBase(_TypedIDFObject):
     """The difference of the the actual AHU return air temperature to the IT equipment outlet temperature. Either Return Tem...; [deltaC]"""
     return_temperature_difference_schedule: str | None
     """The difference schedule of the actual AHU return air temperature to the IT equipment outlet temperature. Either Retur..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ElectricEquipmentITEAirCooledBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ElectricEquipmentITEAirCooledBaseFields(_ElectricEquipmentITEAirCooledCommonFields, total=False):
+    environmental_class: Literal["", "A1", "A2", "A3", "A4", "B", "C", "None"] | None
 
 class ElectricEquipmentITEAirCooled(_ElectricEquipmentITEAirCooledBase):
     """This object describes air-cooled electric information technology equipment (ITE) which has variable power consumption..."""
@@ -12489,14 +14117,41 @@ class _ZoneBaseboardOutdoorTemperatureControlledBase(_TypedIDFObject):
 
     schedule_name: str | None
     """units in Schedule should be fraction applied to capacity of the baseboard heat equipment, generally (0.0 - 1.0)"""
-    capacity_at_low_temperature: float | Literal["", "Autosize"] | None
-    low_temperature: float | Literal["", "Autosize"] | None
-    capacity_at_high_temperature: float | Literal["", "Autosize"] | None
-    high_temperature: float | Literal["", "Autosize"] | None
+    @property
+    def capacity_at_low_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @capacity_at_low_temperature.setter
+    def capacity_at_low_temperature(self, value: float | None) -> None: ...
+    @property
+    def low_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @low_temperature.setter
+    def low_temperature(self, value: float | None) -> None: ...
+    @property
+    def capacity_at_high_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @capacity_at_high_temperature.setter
+    def capacity_at_high_temperature(self, value: float | None) -> None: ...
+    @property
+    def high_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @high_temperature.setter
+    def high_temperature(self, value: float | None) -> None: ...
     fraction_radiant: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneBaseboardOutdoorTemperatureControlledBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneBaseboardOutdoorTemperatureControlledBaseFields(
+    _ZoneBaseboardOutdoorTemperatureControlledCommonFields, total=False
+):
+    capacity_at_low_temperature: float | None
+    low_temperature: float | None
+    capacity_at_high_temperature: float | None
+    high_temperature: float | None
 
 class ZoneBaseboardOutdoorTemperatureControlled(_ZoneBaseboardOutdoorTemperatureControlledBase):
     """Specifies outside temperature-controlled electric baseboard heating. If a ZoneList, SpaceList, or a Zone comprised of..."""
@@ -12794,7 +14449,10 @@ class _DaylightingControlsBase(_TypedIDFObject):
     """Default: 0.3; Range: >= 0.0, <= 0.6"""
     minimum_light_output_fraction_for_continuous_or_continuousoff_dimming_control: float | None
     """Default: 0.2; Range: >= 0.0, <= 0.6"""
-    number_of_stepped_control_steps: float | int | None
+    @property
+    def number_of_stepped_control_steps(self) -> float | int | None: ...
+    @number_of_stepped_control_steps.setter
+    def number_of_stepped_control_steps(self, value: int | None) -> None: ...
     probability_lighting_will_be_reset_when_needed_in_manual_stepped_control: float | None
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
     glare_calculation_daylighting_reference_point_name: str | None
@@ -12804,6 +14462,13 @@ class _DaylightingControlsBase(_TypedIDFObject):
     """The default is for general office work; Default: 22.0; Range: >= 1.0"""
     delight_gridding_resolution: float | None
     """Maximum surface area for nodes in gridding all surfaces in the DElight zone. All reflective and transmitting surfaces...; [m2]; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DaylightingControlsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DaylightingControlsBaseFields(_DaylightingControlsCommonFields, total=False):
+    number_of_stepped_control_steps: int | None
 
 class DaylightingControlsControlDataGroup(_TypedExtensibleGroup):
     """One control_data group inside :class:`DaylightingControls`."""
@@ -12844,6 +14509,12 @@ class _DaylightingReferencePointBase(_TypedIDFObject):
     """[m]"""
     z_coordinate_of_reference_point: float | None
     """[m]; Default: 0.8"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DaylightingReferencePointBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DaylightingReferencePointBaseFields(_DaylightingReferencePointCommonFields, total=False): ...
 
 class DaylightingReferencePoint(_DaylightingReferencePointBase):
     """Used by Daylighting:Controls to identify the reference point coordinates for each sensor. Reference points are given ..."""
@@ -12991,12 +14662,25 @@ class _OutputIlluminanceMapBase(_TypedIDFObject):
     """[m]; Default: 0.0"""
     x_maximum_coordinate: float | None
     """[m]; Default: 1.0"""
-    number_of_x_grid_points: float | int | None
+    @property
+    def number_of_x_grid_points(self) -> float | int | None: ...
+    @number_of_x_grid_points.setter
+    def number_of_x_grid_points(self, value: int | None) -> None: ...
     y_minimum_coordinate: float | None
     """[m]; Default: 0.0"""
     y_maximum_coordinate: float | None
     """[m]; Default: 1.0"""
-    number_of_y_grid_points: float | int | None
+    @property
+    def number_of_y_grid_points(self) -> float | int | None: ...
+    @number_of_y_grid_points.setter
+    def number_of_y_grid_points(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputIlluminanceMapBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputIlluminanceMapBaseFields(_OutputIlluminanceMapCommonFields, total=False):
+    number_of_x_grid_points: int | None
+    number_of_y_grid_points: int | None
 
 class OutputIlluminanceMap(_OutputIlluminanceMapBase):
     """reference points are given in coordinates specified in the GlobalGeometryRules object Daylighting Reference Point Coo..."""
@@ -13064,6 +14748,12 @@ class _ZoneInfiltrationDesignFlowRateBase(_TypedIDFObject):
     velocity_squared_term_coefficient: float | None
     """'D' in Equation; Default: 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneInfiltrationDesignFlowRateBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneInfiltrationDesignFlowRateBaseFields(_ZoneInfiltrationDesignFlowRateCommonFields, total=False): ...
+
 class ZoneInfiltrationDesignFlowRate(_ZoneInfiltrationDesignFlowRateBase):
     """Infiltration is specified as a design level which is modified by a Schedule fraction, temperature difference and wind..."""
 
@@ -13104,6 +14794,17 @@ class _ZoneInfiltrationEffectiveLeakageAreaBase(_TypedIDFObject):
     wind_coefficient: float | None
     """'Cw' in Equation; Range: > 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneInfiltrationEffectiveLeakageAreaBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneInfiltrationEffectiveLeakageAreaBaseFields(
+    _ZoneInfiltrationEffectiveLeakageAreaCommonFields, total=False
+): ...
+
 class ZoneInfiltrationEffectiveLeakageArea(_ZoneInfiltrationEffectiveLeakageAreaBase):
     """Infiltration is specified as effective leakage area at 4 Pa, schedule fraction, stack and wind coefficients, and is a..."""
 
@@ -13140,6 +14841,12 @@ class _ZoneInfiltrationFlowCoefficientBase(_TypedIDFObject):
     """'Cw' in Equation; Range: > 0.0"""
     shelter_factor: float | None
     """'s' in Equation; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneInfiltrationFlowCoefficientBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneInfiltrationFlowCoefficientBaseFields(_ZoneInfiltrationFlowCoefficientCommonFields, total=False): ...
 
 class ZoneInfiltrationFlowCoefficient(_ZoneInfiltrationFlowCoefficientBase):
     """Infiltration is specified as flow coefficient, schedule fraction, stack and wind coefficients, and is a function of t..."""
@@ -13229,6 +14936,12 @@ class _ZoneVentilationDesignFlowRateBase(_TypedIDFObject):
     maximum_wind_speed: float | None
     """this is the outdoor wind speed above which ventilation is shutoff; [m/s]; Default: 40.0; Range: >= 0.0, <= 40.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneVentilationDesignFlowRateBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneVentilationDesignFlowRateBaseFields(_ZoneVentilationDesignFlowRateCommonFields, total=False): ...
+
 class ZoneVentilationDesignFlowRate(_ZoneVentilationDesignFlowRateBase):
     """Ventilation is specified as a design level which is modified by a schedule fraction, temperature difference and wind ..."""
 
@@ -13305,6 +15018,17 @@ class _ZoneVentilationWindandStackOpenAreaBase(_TypedIDFObject):
     maximum_wind_speed: float | None
     """This is the outdoor wind speed above which ventilation is shutoff.; [m/s]; Default: 40.0; Range: >= 0.0, <= 40.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneVentilationWindandStackOpenAreaBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneVentilationWindandStackOpenAreaBaseFields(
+    _ZoneVentilationWindandStackOpenAreaCommonFields, total=False
+): ...
+
 class ZoneVentilationWindandStackOpenArea(_ZoneVentilationWindandStackOpenAreaBase):
     """This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
 
@@ -13372,6 +15096,10 @@ class _ZoneMixingBase(_TypedIDFObject):
     maximum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time above which mixing is shutoff."""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneMixingBaseFields]) -> None: ...  # type: ignore[override]
+
+class __ZoneMixingBaseFields(_ZoneMixingCommonFields, total=False): ...
+
 class ZoneMixing(_ZoneMixingBase):
     """ZoneMixing is a simple air exchange from one zone or space to another. Note that this statement only affects the ener..."""
 
@@ -13434,6 +15162,12 @@ class _ZoneCrossMixingBase(_TypedIDFObject):
     maximum_outdoor_temperature_schedule_name: str | None
     """This schedule contains the outdoor temperature versus time above which cross mixing is shutoff."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneCrossMixingBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneCrossMixingBaseFields(_ZoneCrossMixingCommonFields, total=False): ...
+
 class ZoneCrossMixing(_ZoneCrossMixingBase):
     """ZoneCrossMixing exchanges an equal amount of air between two zones or spaces. Note that this statement affects the en..."""
 
@@ -13480,6 +15214,12 @@ class _ZoneRefrigerationDoorMixingBase(_TypedIDFObject):
     """[m2]; Default: 9.0; Range: >= 0.0, <= 400.0"""
     door_protection_type: Literal["", "AirCurtain", "None", "StripCurtain"] | None
     """Door protection can reduce the air flow through a refrigeration door The default value is 'None' Choices: 'None', 'Ai...; Default: None"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneRefrigerationDoorMixingBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneRefrigerationDoorMixingBaseFields(_ZoneRefrigerationDoorMixingCommonFields, total=False): ...
 
 class ZoneRefrigerationDoorMixing(_ZoneRefrigerationDoorMixingBase):
     """Refrigeration Door Mixing is used for an opening between two zones (or spaces) that are at the same elevation but hav..."""
@@ -13567,6 +15307,12 @@ class _ZoneEarthtubeBase(_TypedIDFObject):
     velocity_squared_term_flow_coefficient: float | None
     """'D' in Equation; Default: 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneEarthtubeBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneEarthtubeBaseFields(_ZoneEarthtubeCommonFields, total=False): ...
+
 class ZoneEarthtube(_ZoneEarthtubeBase):
     """Earth Tube is specified as a design level which is modified by a Schedule fraction, temperature difference and wind s..."""
 
@@ -13648,6 +15394,12 @@ class _ZoneCoolTowerShowerBase(_TypedIDFObject):
     """Range: >= 0.0, <= 1.0"""
     rated_power_consumption: float | None
     """[W]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneCoolTowerShowerBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneCoolTowerShowerBaseFields(_ZoneCoolTowerShowerCommonFields, total=False): ...
 
 class ZoneCoolTowerShower(_ZoneCoolTowerShowerBase):
     """A cooltower (sometimes referred to as a wind tower or a shower cooling tower) models passive downdraught evaporative ..."""
@@ -13802,6 +15554,12 @@ class _ZoneThermalChimneyBase(_TypedIDFObject):
     """[m]; Range: >= 0.0"""
     cross_sectional_areas_of_air_channel_inlet_20: float | None
     """[m2]; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneThermalChimneyBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneThermalChimneyBaseFields(_ZoneThermalChimneyCommonFields, total=False): ...
 
 class ZoneThermalChimney(_ZoneThermalChimneyBase):
     """A thermal chimney is a vertical shaft utilizing solar radiation to enhance natural ventilation. It consists of an abs..."""
@@ -13976,7 +15734,10 @@ class _AirflowNetworkSimulationControlBase(_TypedIDFObject):
     """If ExternalNode is selected, the height given in the AirflowNetwork:MultiZone:ExternalNode object will be used. If Op...; Default: OpeningHeight"""
     building_type: Literal["", "HighRise", "LowRise"] | None
     """Used only if Wind Pressure Coefficient Type = SurfaceAverageCalculation, otherwise this field may be left blank.; Default: LowRise"""
-    maximum_number_of_iterations: float | int | None
+    @property
+    def maximum_number_of_iterations(self) -> float | int | None: ...
+    @maximum_number_of_iterations.setter
+    def maximum_number_of_iterations(self, value: int | None) -> None: ...
     initialization_type: Literal["", "LinearInitializationMethod", "ZeroNodePressures"] | None
     """Default: ZeroNodePressures"""
     relative_airflow_convergence_tolerance: float | None
@@ -13993,6 +15754,13 @@ class _AirflowNetworkSimulationControlBase(_TypedIDFObject):
     """If Yes, external node temperature is height dependent. If No, external node temperature is based on zero height.; Default: No"""
     solver: Literal["", "ConjugateGradient", "SkylineLU"] | None
     """Select the solver to use for the pressure network solution; Default: SkylineLU"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirflowNetworkSimulationControlBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkSimulationControlBaseFields(_AirflowNetworkSimulationControlCommonFields, total=False):
+    maximum_number_of_iterations: int | None
 
 class AirflowNetworkSimulationControl(_AirflowNetworkSimulationControlBase):
     """This object defines the global parameters used in an Airflow Network simulation."""
@@ -14269,7 +16037,10 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningBase(_TypedIDFObject):
     """Select the type of vertical opening: Non-pivoted opening or Horizontally pivoted opening.; Default: NonPivoted"""
     extra_crack_length_or_height_of_pivoting_axis: float | None
     """Extra crack length is used for LVO Non-pivoted type with multiple openable parts. Height of pivoting axis is used for...; [m]; Default: 0.0; Range: >= 0.0"""
-    number_of_sets_of_opening_factor_data: float | int | None
+    @property
+    def number_of_sets_of_opening_factor_data(self) -> float | int | None: ...
+    @number_of_sets_of_opening_factor_data.setter
+    def number_of_sets_of_opening_factor_data(self, value: int | None) -> None: ...
     opening_factor_1: float | None
     """This value must be specified as 0.; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 0.0"""
     discharge_coefficient_for_opening_factor_1: float | None
@@ -14312,6 +16083,18 @@ class _AirflowNetworkMultiZoneComponentDetailedOpeningBase(_TypedIDFObject):
     """The Start Height Factor is the Start Height divided by the window or door height. Start Height is the distance betwee...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 1.0"""
     type_of_rectangular_large_vertical_opening_lvo: Literal["", "HorizontallyPivoted", "NonPivoted"] | None
     """Alias of :attr:`type_of_rectangular_large_vertical_opening_lvo_`, the same field without the trailing underscore."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkMultiZoneComponentDetailedOpeningBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkMultiZoneComponentDetailedOpeningBaseFields(
+    _AirflowNetworkMultiZoneComponentDetailedOpeningCommonFields, total=False
+):
+    number_of_sets_of_opening_factor_data: int | None
 
 class AirflowNetworkMultiZoneComponentDetailedOpening(_AirflowNetworkMultiZoneComponentDetailedOpeningBase):
     """This object specifies the properties of airflow through windows and doors (window, door and glass door heat transfer ..."""
@@ -14715,7 +16498,10 @@ class _AirflowNetworkDistributionNodeBase(_TypedIDFObject):
 
     component_name_or_node_name: str | None
     """Designates node names defined in another object. The node name may occur in air branches. Enter a node name to repres..."""
-    component_object_type_or_node_type: (
+    @property
+    def component_object_type_or_node_type(
+        self,
+    ) -> (
         Literal[
             "",
             "AirLoopHVAC:OutdoorAirSystem",
@@ -14728,9 +16514,43 @@ class _AirflowNetworkDistributionNodeBase(_TypedIDFObject):
             "Zone",
         ]
         | None
-    )
+    ): ...
+    @component_object_type_or_node_type.setter
+    def component_object_type_or_node_type(
+        self,
+        value: Literal[
+            "",
+            "AirLoopHVAC:OutdoorAirSystem",
+            "AirLoopHVAC:ZoneMixer",
+            "AirLoopHVAC:ZoneSplitter",
+            "OAMixerOutdoorAirStreamNode",
+            "Other",
+            "OutdoorAir:Node",
+            "OutdoorAir:NodeList",
+        ]
+        | None,
+    ) -> None: ...
     node_height: float | None
     """Enter the reference height used to calculate the relative pressure.; [m]; Default: 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirflowNetworkDistributionNodeBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionNodeBaseFields(_AirflowNetworkDistributionNodeCommonFields, total=False):
+    component_object_type_or_node_type: (
+        Literal[
+            "",
+            "AirLoopHVAC:OutdoorAirSystem",
+            "AirLoopHVAC:ZoneMixer",
+            "AirLoopHVAC:ZoneSplitter",
+            "OAMixerOutdoorAirStreamNode",
+            "Other",
+            "OutdoorAir:Node",
+            "OutdoorAir:NodeList",
+        ]
+        | None
+    )
 
 class AirflowNetworkDistributionNode(_AirflowNetworkDistributionNodeBase):
     """This object represents an air distribution node in the AirflowNetwork model."""
@@ -14863,9 +16683,25 @@ class _AirflowNetworkDistributionComponentFanBase(_TypedIDFObject):
 
     fan_name: str | None
     """Enter the name of the fan in the primary air loop."""
-    supply_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume", "Fan:SystemModel"] | None
-    )
+    @property
+    def supply_fan_object_type(
+        self,
+    ) -> Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume", "Fan:SystemModel"] | None: ...
+    @supply_fan_object_type.setter
+    def supply_fan_object_type(
+        self, value: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
+    ) -> None: ...
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkDistributionComponentFanBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionComponentFanBaseFields(
+    _AirflowNetworkDistributionComponentFanCommonFields, total=False
+):
+    supply_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:VariableVolume"] | None
 
 class AirflowNetworkDistributionComponentFan(_AirflowNetworkDistributionComponentFanBase):
     """This object defines the name of the supply Air Fan used in an Air loop."""
@@ -14894,7 +16730,10 @@ class _AirflowNetworkDistributionComponentCoilBase(_TypedIDFObject):
 
     coil_name: str | None
     """Enter the name of a cooling or heating coil in the primary Air loop."""
-    coil_object_type: (
+    @property
+    def coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:MultiSpeed",
             "Coil:Cooling:DX:SingleSpeed",
@@ -14919,11 +16758,58 @@ class _AirflowNetworkDistributionComponentCoilBase(_TypedIDFObject):
             "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit",
         ]
         | None
-    )
+    ): ...
+    @coil_object_type.setter
+    def coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:MultiSpeed",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:DX:MultiSpeed",
+            "Coil:Heating:DX:SingleSpeed",
+            "Coil:Heating:Desuperheater",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Water",
+        ]
+        | None,
+    ) -> None: ...
     air_path_length: float | None
     """Enter the air path length (depth) for the coil.; [m]; Range: > 0.0"""
     air_path_hydraulic_diameter: float | None
     """Enter the hydraulic diameter of this coil. The hydraulic diameter is defined as 4 multiplied by the cross section are...; [m]; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkDistributionComponentCoilBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionComponentCoilBaseFields(
+    _AirflowNetworkDistributionComponentCoilCommonFields, total=False
+):
+    coil_object_type: (
+        Literal[
+            "Coil:Cooling:DX:MultiSpeed",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:DX:MultiSpeed",
+            "Coil:Heating:DX:SingleSpeed",
+            "Coil:Heating:Desuperheater",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Water",
+        ]
+        | None
+    )
 
 class AirflowNetworkDistributionComponentCoil(_AirflowNetworkDistributionComponentCoilBase):
     """This object defines the name of a coil used in an air loop."""
@@ -15090,6 +16976,17 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlowBase(_TypedIDFObject):
     reference_crack_conditions: str | None
     """Select a AirflowNetwork:MultiZone:ReferenceCrackConditions name associated with the air mass flow coefficient entered..."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkDistributionComponentOutdoorAirFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionComponentOutdoorAirFlowBaseFields(
+    _AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
+): ...
+
 class AirflowNetworkDistributionComponentOutdoorAirFlow(_AirflowNetworkDistributionComponentOutdoorAirFlowBase):
     """This object includes the outdoor air flow rate set by the Controller:OutdoorAir object in the airflow network."""
 
@@ -15122,6 +17019,17 @@ class _AirflowNetworkDistributionComponentReliefAirFlowBase(_TypedIDFObject):
     """Enter the exponent used in the following equation: Mass Flow Rate = Air Mass Flow Coefficient * (dP)^Air Mass Flow Ex...; [dimensionless]; Default: 0.65; Range: >= 0.5, <= 1.0"""
     reference_crack_conditions: str | None
     """Select a AirflowNetwork:MultiZone:ReferenceCrackConditions name associated with the air mass flow coefficient entered..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkDistributionComponentReliefAirFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionComponentReliefAirFlowBaseFields(
+    _AirflowNetworkDistributionComponentReliefAirFlowCommonFields, total=False
+): ...
 
 class AirflowNetworkDistributionComponentReliefAirFlow(_AirflowNetworkDistributionComponentReliefAirFlowBase):
     """This object allows variation of air flow rate to perform pressure."""
@@ -15176,6 +17084,17 @@ class _AirflowNetworkDistributionDuctViewFactorsBase(_TypedIDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     duct_surface_emittance: float | None
     """Default: 0.9; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirflowNetworkDistributionDuctViewFactorsBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirflowNetworkDistributionDuctViewFactorsBaseFields(
+    _AirflowNetworkDistributionDuctViewFactorsCommonFields, total=False
+): ...
 
 class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(_TypedExtensibleGroup):
     """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors`."""
@@ -15386,8 +17305,10 @@ class _ExteriorFuelEquipmentCommonFields(TypedDict, total=False):
 
 class _ExteriorFuelEquipmentBase(_TypedIDFObject):
     """``Exterior:FuelEquipment`` as every supported EnergyPlus version declares it."""
-
-    fuel_use_type: (
+    @property
+    def fuel_use_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -15410,13 +17331,49 @@ class _ExteriorFuelEquipmentBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @fuel_use_type.setter
+    def fuel_use_type(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Water",
+        ]
+        | None,
+    ) -> None: ...
     schedule_name: str | None
     """units in schedule should be fraction applied to capacity of the exterior fuel equipment, generally (0.0 - 1.0)"""
     design_level: float | None
     """[W] (W); Range: >= 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ExteriorFuelEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ExteriorFuelEquipmentBaseFields(_ExteriorFuelEquipmentCommonFields, total=False):
+    fuel_use_type: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Water",
+        ]
+        | None
+    )
 
 class ExteriorFuelEquipment(_ExteriorFuelEquipmentBase):
     """only used for Meter type reporting, does not affect building loads"""
@@ -15743,14 +17700,20 @@ class _HVACTemplateZoneFanCoilBase(_TypedIDFObject):
     """Default: 0.9; Range: > 0.0, <= 1.0"""
     supply_fan_motor_in_air_stream_fraction: float | None
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
-    cooling_coil_type: (
-        Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel", "HeatExchangerAssistedChilledWater"] | None
-    )
+    @property
+    def cooling_coil_type(
+        self,
+    ) -> Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel", "HeatExchangerAssistedChilledWater"] | None: ...
+    @cooling_coil_type.setter
+    def cooling_coil_type(self, value: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None) -> None: ...
     cooling_coil_availability_schedule_name: str | None
     """If blank, always on"""
     cooling_coil_design_setpoint: float | None
     """Used for sizing when Zone Cooling Design Supply Air Temperature Input Method = SupplyAirTemperature; [C]; Default: 14.0"""
-    heating_coil_type: Literal["", "HotWater", "Electric"] | None
+    @property
+    def heating_coil_type(self) -> Literal["", "HotWater", "Electric"] | None: ...
+    @heating_coil_type.setter
+    def heating_coil_type(self, value: Literal["", "HotWater"] | None) -> None: ...
     heating_coil_availability_schedule_name: str | None
     """If blank, always on"""
     heating_coil_design_setpoint: float | None
@@ -15773,7 +17736,10 @@ class _HVACTemplateZoneFanCoilBase(_TypedIDFObject):
     """This field is used only when Outdoor Air Method=DetailedSpecification."""
     design_specification_zone_air_distribution_object_name: str | None
     """This field is used only when Outdoor Air Method=DetailedSpecification."""
-    capacity_control_method: (
+    @property
+    def capacity_control_method(
+        self,
+    ) -> (
         Literal[
             "ConstantFanVariableFlow",
             "CyclingFan",
@@ -15783,7 +17749,13 @@ class _HVACTemplateZoneFanCoilBase(_TypedIDFObject):
             "MultiSpeedFan",
         ]
         | None
-    )
+    ): ...
+    @capacity_control_method.setter
+    def capacity_control_method(
+        self,
+        value: Literal["ConstantFanVariableFlow", "CyclingFan", "VariableFanConstantFlow", "VariableFanVariableFlow"]
+        | None,
+    ) -> None: ...
     low_speed_supply_air_flow_ratio: float | None
     """Default: 0.33; Range: > 0.0"""
     medium_speed_supply_air_flow_ratio: float | None
@@ -15796,6 +17768,17 @@ class _HVACTemplateZoneFanCoilBase(_TypedIDFObject):
     """If blank, always on"""
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplateZoneFanCoilBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateZoneFanCoilBaseFields(_HVACTemplateZoneFanCoilCommonFields, total=False):
+    cooling_coil_type: Literal["", "ChilledWater", "ChilledWaterDetailedFlatModel"] | None
+    heating_coil_type: Literal["", "HotWater"] | None
+    capacity_control_method: (
+        Literal["ConstantFanVariableFlow", "CyclingFan", "VariableFanConstantFlow", "VariableFanVariableFlow"] | None
+    )
 
 class HVACTemplateZoneFanCoil(_HVACTemplateZoneFanCoilBase):
     """4 pipe fan coil unit with optional outdoor air."""
@@ -15975,6 +17958,12 @@ class _HVACTemplateZonePTACBase(_TypedIDFObject):
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplateZonePTACBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateZonePTACBaseFields(_HVACTemplateZonePTACCommonFields, total=False): ...
+
 class HVACTemplateZonePTAC(_HVACTemplateZonePTACBase):
     """Packaged Terminal Air Conditioner"""
 
@@ -16153,6 +18142,12 @@ class _HVACTemplateZonePTHPBase(_TypedIDFObject):
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplateZonePTHPBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateZonePTHPBaseFields(_HVACTemplateZonePTHPCommonFields, total=False): ...
+
 class HVACTemplateZonePTHP(_HVACTemplateZonePTHPBase):
     """Packaged Terminal Heat Pump"""
 
@@ -16309,6 +18304,15 @@ class _HVACTemplateZoneWaterToAirHeatPumpBase(_TypedIDFObject):
     """If blank, always on"""
     baseboard_heating_capacity: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HVACTemplateZoneWaterToAirHeatPumpBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateZoneWaterToAirHeatPumpBaseFields(_HVACTemplateZoneWaterToAirHeatPumpCommonFields, total=False): ...
 
 class HVACTemplateZoneWaterToAirHeatPump(_HVACTemplateZoneWaterToAirHeatPumpBase):
     """Water to Air Heat Pump to be used with HVACTemplate:Plant:MixedWaterLoop"""
@@ -17199,7 +19203,10 @@ class _HVACTemplateSystemVRFBase(_TypedIDFObject):
     """Enter the equivalent length of the farthest terminal unit from the condenser; [m]; Default: 30.0"""
     crankcase_heater_power_per_compressor: float | None
     """Enter the value of the resistive heater located in the compressor(s). This heater is used to warm the refrigerant and...; [W]; Default: 33.0"""
-    number_of_compressors: float | int | None
+    @property
+    def number_of_compressors(self) -> float | int | None: ...
+    @number_of_compressors.setter
+    def number_of_compressors(self, value: int | None) -> None: ...
     ratio_of_compressor_size_to_total_compressor_capacity: float | None
     """Enter the ratio of the first stage compressor to total compressor capacity. All other compressors are assumed to be e...; [W/W]; Default: 0.5"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None
@@ -17230,7 +19237,10 @@ class _HVACTemplateSystemVRFBase(_TypedIDFObject):
     """This field is only used for Condenser Type = EvaporativelyCooled. Enter the outdoor dry-bulb temperature when the bas...; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -17247,11 +19257,23 @@ class _HVACTemplateSystemVRFBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     minimum_outdoor_temperature_in_heat_recovery_mode: float | None
     """The minimum outdoor temperature below which heat recovery mode will not operate.; [C]; Default: -15.0"""
     maximum_outdoor_temperature_in_heat_recovery_mode: float | None
     """The maximum outdoor temperature above which heat recovery mode will not operate.; [C]; Default: 45.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplateSystemVRFBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateSystemVRFBaseFields(_HVACTemplateSystemVRFCommonFields, total=False):
+    number_of_compressors: int | None
+    fuel_type: Literal["", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class HVACTemplateSystemVRF(_HVACTemplateSystemVRFBase):
     """Variable refrigerant flow (VRF) heat pump condensing unit. Serves one or more VRF zone terminal units (HVACTemplate:Z..."""
@@ -17859,7 +19881,10 @@ class _HVACTemplateSystemUnitarySystemBase(_TypedIDFObject):
         | None
     )
     """Default: SingleSpeedDX"""
-    number_of_speeds_for_cooling: float | int | None
+    @property
+    def number_of_speeds_for_cooling(self) -> float | int | None: ...
+    @number_of_speeds_for_cooling.setter
+    def number_of_speeds_for_cooling(self, value: int | None) -> None: ...
     cooling_coil_availability_schedule_name: str | None
     """If blank, always on"""
     cooling_design_supply_air_temperature: float | None
@@ -17886,7 +19911,10 @@ class _HVACTemplateSystemUnitarySystemBase(_TypedIDFObject):
         | None
     )
     """Default: Gas"""
-    number_of_speeds_or_stages_for_heating: float | int | None
+    @property
+    def number_of_speeds_or_stages_for_heating(self) -> float | int | None: ...
+    @number_of_speeds_or_stages_for_heating.setter
+    def number_of_speeds_or_stages_for_heating(self, value: int | None) -> None: ...
     heating_coil_availability_schedule_name: str | None
     """If blank, always on"""
     heating_design_supply_air_temperature: float | None
@@ -18000,6 +20028,14 @@ class _HVACTemplateSystemUnitarySystemBase(_TypedIDFObject):
     """Default: 0.9; Range: > 0.0, <= 1.0"""
     return_fan_motor_in_air_stream_fraction: float | None
     """Default: 1.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplateSystemUnitarySystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplateSystemUnitarySystemBaseFields(_HVACTemplateSystemUnitarySystemCommonFields, total=False):
+    number_of_speeds_for_cooling: int | None
+    number_of_speeds_or_stages_for_heating: int | None
 
 class HVACTemplateSystemUnitarySystem(_HVACTemplateSystemUnitarySystemBase):
     """Unitary HVAC system with optional cooling and heating. Supports DX and chilled water, cooling, gas, electric, and hot..."""
@@ -19855,7 +21891,10 @@ class _HVACTemplatePlantBoilerBase(_TypedIDFObject):
     """[W]; Default: Autosize"""
     efficiency: float | None
     """Not applicable if Boiler Type is DistrictHotWater; Default: 0.8; Range: >= 0.0, <= 1.0"""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -19872,7 +21911,12 @@ class _HVACTemplatePlantBoilerBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     priority: str | None
     """If Hot Water Plant Operation Scheme Type=Default in HVACTemplate:Plant:HotWaterLoop, then equipment operates in prior..."""
     sizing_factor: float | None
@@ -19887,6 +21931,13 @@ class _HVACTemplatePlantBoilerBase(_TypedIDFObject):
     """[C]; Default: 100.0"""
     template_plant_loop_type: Literal["HotWater", "MixedWater"] | None
     """Specifies if this boiler serves a template hot water loop or mixed water loop If left blank, will serve a hot water l..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HVACTemplatePlantBoilerBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HVACTemplatePlantBoilerBaseFields(_HVACTemplatePlantBoilerCommonFields, total=False):
+    fuel_type: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class HVACTemplatePlantBoiler(_HVACTemplatePlantBoilerBase):
     """This object adds a boiler to an HVACTemplate:Plant:HotWaterLoop or MixedWaterLoop."""
@@ -20073,8 +22124,10 @@ class _DesignSpecificationOutdoorAirCommonFields(TypedDict, total=False):
 
 class _DesignSpecificationOutdoorAirBase(_TypedIDFObject):
     """``DesignSpecification:OutdoorAir`` as every supported EnergyPlus version declares it."""
-
-    outdoor_air_method: (
+    @property
+    def outdoor_air_method(
+        self,
+    ) -> (
         Literal[
             "",
             "AirChanges/Hour",
@@ -20089,7 +22142,23 @@ class _DesignSpecificationOutdoorAirBase(_TypedIDFObject):
             "ProportionalControlBasedOnOccupancySchedule",
         ]
         | None
-    )
+    ): ...
+    @outdoor_air_method.setter
+    def outdoor_air_method(
+        self,
+        value: Literal[
+            "",
+            "AirChanges/Hour",
+            "Flow/Area",
+            "Flow/Person",
+            "Flow/Zone",
+            "IndoorAirQualityProcedure",
+            "Maximum",
+            "ProportionalControlBasedOnDesignOccupancy",
+            "Sum",
+        ]
+        | None,
+    ) -> None: ...
     outdoor_air_flow_per_person: float | None
     """0.00944 m3/s is equivalent to 20 cfm per person This input is only used if the field Outdoor Air Method is Flow/Perso...; [m3/s-person]; Default: 0.00944; Range: >= 0.0"""
     outdoor_air_flow_per_zone_floor_area: float | None
@@ -20102,6 +22171,26 @@ class _DesignSpecificationOutdoorAirBase(_TypedIDFObject):
     """Schedule values are multiplied by the Outdoor Air Flow rate calculated using the previous four inputs. Schedule value..."""
     proportional_control_minimum_outdoor_air_flow_rate_schedule_name: str | None
     """This input is only used to calculate the minimum outdoor air flow rate when the field System Outdoor Air Method = Pro..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DesignSpecificationOutdoorAirBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DesignSpecificationOutdoorAirBaseFields(_DesignSpecificationOutdoorAirCommonFields, total=False):
+    outdoor_air_method: (
+        Literal[
+            "",
+            "AirChanges/Hour",
+            "Flow/Area",
+            "Flow/Person",
+            "Flow/Zone",
+            "IndoorAirQualityProcedure",
+            "Maximum",
+            "ProportionalControlBasedOnDesignOccupancy",
+            "Sum",
+        ]
+        | None
+    )
 
 class DesignSpecificationOutdoorAir(_DesignSpecificationOutdoorAirBase):
     """This object is used to describe general outdoor air requirements which are referenced by other objects."""
@@ -20198,7 +22287,16 @@ class _SizingParametersBase(_TypedIDFObject):
     """Default: 1.0; Range: > 0.0"""
     cooling_sizing_factor: float | None
     """Default: 1.0; Range: > 0.0"""
-    timesteps_in_averaging_window: float | int | None
+    @property
+    def timesteps_in_averaging_window(self) -> float | int | None: ...
+    @timesteps_in_averaging_window.setter
+    def timesteps_in_averaging_window(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingParametersBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __SizingParametersBaseFields(_SizingParametersCommonFields, total=False):
+    timesteps_in_averaging_window: int | None
 
 class SizingParameters(_SizingParametersBase):
     """Specifies global heating and cooling sizing factors/ratios. These ratios are applied at the zone level to all of the ..."""
@@ -20307,6 +22405,10 @@ class _SizingZoneBase(_TypedIDFObject):
     """[C]; Default: Autosize"""
     dedicated_outdoor_air_high_setpoint_temperature_for_design: float | Literal["", "Autosize"] | None
     """[C]; Default: Autosize"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingZoneBaseFields]) -> None: ...  # type: ignore[override]
+
+class __SizingZoneBaseFields(_SizingZoneCommonFields, total=False): ...
 
 class SizingZone(_SizingZoneBase):
     """Specifies the data needed to perform a zone design air flow calculation. The calculation is done for every sizing per..."""
@@ -20612,7 +22714,14 @@ class _SizingSystemBase(_TypedIDFObject):
     """``Sizing:System`` as every supported EnergyPlus version declares it."""
 
     airloop_name: str | None
-    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement", "Latent"] | None
+    @property
+    def type_of_load_to_size_on(
+        self,
+    ) -> Literal["", "Sensible", "Total", "VentilationRequirement", "Latent"] | None: ...
+    @type_of_load_to_size_on.setter
+    def type_of_load_to_size_on(
+        self, value: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
+    ) -> None: ...
     design_outdoor_air_flow_rate: float | Literal["", "Autosize"] | None
     """[m3/s]; Default: Autosize"""
     central_heating_maximum_system_air_flow_ratio: float | Literal["", "Autosize"] | None
@@ -20678,7 +22787,10 @@ class _SizingSystemBase(_TypedIDFObject):
     """Enter the supply air volume flow rate as a fraction of the cooling supply air flow rate. Required field when Heating ...; Range: >= 0.0"""
     heating_supply_air_flow_rate_per_unit_heating_capacity: float | None
     """Enter the heating supply air volume flow rate per unit heating capacity. Required field when Heating Supply Air Flow ...; [m3/s-W]; Range: >= 0.0"""
-    system_outdoor_air_method: (
+    @property
+    def system_outdoor_air_method(
+        self,
+    ) -> (
         Literal[
             "",
             "VentilationRateProcedure",
@@ -20687,7 +22799,9 @@ class _SizingSystemBase(_TypedIDFObject):
             "Standard62.1VentilationRateProcedure",
         ]
         | None
-    )
+    ): ...
+    @system_outdoor_air_method.setter
+    def system_outdoor_air_method(self, value: Literal["", "ZoneSum"] | None) -> None: ...
     zone_maximum_outdoor_air_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: > 0.0"""
     cooling_design_capacity_method: (
@@ -20714,6 +22828,12 @@ class _SizingSystemBase(_TypedIDFObject):
     """Enter the fraction of auto-sized heating design capacity. Required field when capacity the heating design capacity me...; Range: >= 0.0"""
     central_cooling_capacity_control_method: Literal["", "Bypass", "OnOff", "VAV", "VT"] | None
     """Method used to control the coil's output; Default: OnOff"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingSystemBaseFields]) -> None: ...  # type: ignore[override]
+
+class __SizingSystemBaseFields(_SizingSystemCommonFields, total=False):
+    type_of_load_to_size_on: Literal["", "Sensible", "Total", "VentilationRequirement"] | None
+    system_outdoor_air_method: Literal["", "ZoneSum"] | None
 
 class SizingSystem(_SizingSystemBase):
     """Specifies the input needed to perform sizing calculations for a central forced air system. System design air flow, he..."""
@@ -20768,11 +22888,19 @@ class _SizingPlantBase(_TypedIDFObject):
     """[deltaC]; Range: > 0.0"""
     sizing_option: Literal["", "Coincident", "NonCoincident"] | None
     """if Coincident is chosen, then sizing is based on HVAC Sizing Simulations and the input field called Do HVAC Sizing Si...; Default: NonCoincident"""
-    zone_timesteps_in_averaging_window: float | int | None
+    @property
+    def zone_timesteps_in_averaging_window(self) -> float | int | None: ...
+    @zone_timesteps_in_averaging_window.setter
+    def zone_timesteps_in_averaging_window(self, value: int | None) -> None: ...
     coincident_sizing_factor_mode: (
         Literal["GlobalCoolingSizingFactor", "GlobalHeatingSizingFactor", "LoopComponentSizingFactor", "None"] | None
     )
     """this is used to adjust the result for coincident sizing by applying a sizing factor"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__SizingPlantBaseFields]) -> None: ...  # type: ignore[override]
+
+class __SizingPlantBaseFields(_SizingPlantCommonFields, total=False):
+    zone_timesteps_in_averaging_window: int | None
 
 class SizingPlant(_SizingPlantBase):
     """Specifies the input needed to autosize plant loop flow rates and equipment capacities. This information is initially ..."""
@@ -20804,6 +22932,12 @@ class _ZoneControlHumidistatBase(_TypedIDFObject):
     """``ZoneControl:Humidistat`` as every supported EnergyPlus version declares it."""
 
     zone_name: str | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneControlHumidistatBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneControlHumidistatBaseFields(_ZoneControlHumidistatCommonFields, total=False): ...
 
 class ZoneControlHumidistat(_ZoneControlHumidistatBase):
     """Specifies zone relative humidity setpoint schedules for humidifying and dehumidifying."""
@@ -21263,7 +23397,10 @@ class _ZoneControlThermostatStagedDualSetpointBase(_TypedIDFObject):
     """``ZoneControl:Thermostat:StagedDualSetpoint`` as every supported EnergyPlus version declares it."""
 
     zone_or_zonelist_name: str | None
-    number_of_heating_stages: float | int | None
+    @property
+    def number_of_heating_stages(self) -> float | int | None: ...
+    @number_of_heating_stages.setter
+    def number_of_heating_stages(self, value: int | None) -> None: ...
     heating_temperature_setpoint_schedule_name: str | None
     heating_throttling_temperature_range: float | None
     """[deltaC]; Default: 1.1; Range: >= 0.0"""
@@ -21275,7 +23412,10 @@ class _ZoneControlThermostatStagedDualSetpointBase(_TypedIDFObject):
     """The heating temperature offset is used to determine heating stage number for multi stage equipment. When the temperat...; [deltaC]; Range: <= 0.0"""
     stage_4_heating_temperature_offset: float | None
     """The heating temperature offset is used to determine heating stage number for multi stage equipment. When the temperat...; [deltaC]; Range: <= 0.0"""
-    number_of_cooling_stages: float | int | None
+    @property
+    def number_of_cooling_stages(self) -> float | int | None: ...
+    @number_of_cooling_stages.setter
+    def number_of_cooling_stages(self, value: int | None) -> None: ...
     cooling_temperature_setpoint_base_schedule_name: str | None
     cooling_throttling_temperature_range: float | None
     """[deltaC]; Default: 1.1; Range: >= 0.0"""
@@ -21287,6 +23427,19 @@ class _ZoneControlThermostatStagedDualSetpointBase(_TypedIDFObject):
     """The cooling temperature offset is used to determine cooling stage number for multi stage equipment. When the temperat...; [deltaC]; Range: >= 0.0"""
     stage_4_cooling_temperature_offset: float | None
     """The cooling temperature offset is used to determine cooling stage number for multi stage equipment. When the temperat...; [deltaC]; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneControlThermostatStagedDualSetpointBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneControlThermostatStagedDualSetpointBaseFields(
+    _ZoneControlThermostatStagedDualSetpointCommonFields, total=False
+):
+    number_of_heating_stages: int | None
+    number_of_cooling_stages: int | None
 
 class ZoneControlThermostatStagedDualSetpoint(_ZoneControlThermostatStagedDualSetpointBase):
     """Define the Thermostat StagedDualSetpoint settings for a zone or list of zones. If you use a ZoneList in the Zone or Z..."""
@@ -21427,6 +23580,12 @@ class _ZoneHVACIdealLoadsAirSystemBase(_TypedIDFObject):
     """Applicable only if Heat Recovery Type is Enthalpy.; [dimensionless]; Default: 0.65; Range: >= 0.0, <= 1.0"""
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACIdealLoadsAirSystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACIdealLoadsAirSystemBaseFields(_ZoneHVACIdealLoadsAirSystemCommonFields, total=False): ...
 
 class ZoneHVACIdealLoadsAirSystem(_ZoneHVACIdealLoadsAirSystemBase):
     """Ideal system used to calculate loads without modeling a full HVAC system. All that is required for the ideal system a..."""
@@ -21774,7 +23933,10 @@ class _ZoneHVACPackagedTerminalAirConditionerBase(_TypedIDFObject):
     """Select the type of heating coil."""
     heating_coil_name: str | None
     """Needs to match in the heating coil object."""
-    cooling_coil_object_type: (
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "Coil:Cooling:DX:VariableSpeed",
@@ -21782,7 +23944,17 @@ class _ZoneHVACPackagedTerminalAirConditionerBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None,
+    ) -> None: ...
     cooling_coil_name: str | None
     """Needs to match a DX cooling coil object."""
     fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None
@@ -21799,6 +23971,25 @@ class _ZoneHVACPackagedTerminalAirConditionerBase(_TypedIDFObject):
     """For Capacity Control Method = SingleZoneVAV, enter the minimum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
     """For Capacity Control Method = SingleZoneVAV, enter the maximum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACPackagedTerminalAirConditionerBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACPackagedTerminalAirConditionerBaseFields(
+    _ZoneHVACPackagedTerminalAirConditionerCommonFields, total=False
+):
+    cooling_coil_object_type: (
+        Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None
+    )
 
 class ZoneHVACPackagedTerminalAirConditioner(_ZoneHVACPackagedTerminalAirConditionerBase):
     """Packaged terminal air conditioner (PTAC). Forced-convection heating-cooling unit with supply fan, direct expansion (D..."""
@@ -21900,7 +24091,10 @@ class _ZoneHVACPackagedTerminalHeatPumpBase(_TypedIDFObject):
     """Needs to match in the DX Heating Coil object."""
     heating_convergence_tolerance: float | None
     """Defines Heating convergence tolerance as a fraction of Heating load to be met.; [dimensionless]; Default: 0.001; Range: > 0.0"""
-    cooling_coil_object_type: (
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "Coil:Cooling:DX:VariableSpeed",
@@ -21908,7 +24102,17 @@ class _ZoneHVACPackagedTerminalHeatPumpBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None,
+    ) -> None: ...
     cooling_coil_name: str | None
     """Needs to match in the DX Cooling Coil object."""
     cooling_convergence_tolerance: float | None
@@ -21937,6 +24141,20 @@ class _ZoneHVACPackagedTerminalHeatPumpBase(_TypedIDFObject):
     """For Capacity Control Method = SingleZoneVAV, enter the minimum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
     maximum_supply_air_temperature_in_heating_mode: float | Literal["", "Autosize"] | None
     """For Capacity Control Method = SingleZoneVAV, enter the maximum air temperature limit for reduced fan speed.; [C]; Default: Autosize"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACPackagedTerminalHeatPumpBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACPackagedTerminalHeatPumpBaseFields(_ZoneHVACPackagedTerminalHeatPumpCommonFields, total=False):
+    cooling_coil_object_type: (
+        Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None
+    )
 
 class ZoneHVACPackagedTerminalHeatPump(_ZoneHVACPackagedTerminalHeatPumpBase):
     """Packaged terminal heat pump (PTHP). Forced-convection heating-cooling unit with supply fan, direct expansion (DX) coo..."""
@@ -22061,7 +24279,12 @@ class _ZoneHVACWaterToAirHeatPumpBase(_TypedIDFObject):
     """works with gas, electric, hot water and steam heating coils"""
     supplemental_heating_coil_name: str | None
     """Needs to match in the supplemental heating coil object"""
-    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize", ""] | None
+    @property
+    def maximum_supply_air_temperature_from_supplemental_heater(self) -> float | Literal["Autosize", ""] | None: ...
+    @maximum_supply_air_temperature_from_supplemental_heater.setter
+    def maximum_supply_air_temperature_from_supplemental_heater(
+        self, value: float | Literal["Autosize"] | None
+    ) -> None: ...
     maximum_outdoor_dry_bulb_temperature_for_supplemental_heater_operation: float | None
     """[C]; Default: 21.0; Range: <= 21.0"""
     outdoor_dry_bulb_temperature_sensor_node_name: str | None
@@ -22075,6 +24298,13 @@ class _ZoneHVACWaterToAirHeatPumpBase(_TypedIDFObject):
     """used only when the heat pump coils are of the type WaterToAirHeatPump:EquationFit Constant results in 100% water flow...; Default: Cycling"""
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACWaterToAirHeatPumpBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACWaterToAirHeatPumpBaseFields(_ZoneHVACWaterToAirHeatPumpCommonFields, total=False):
+    maximum_supply_air_temperature_from_supplemental_heater: float | Literal["Autosize"] | None
 
 class ZoneHVACWaterToAirHeatPump(_ZoneHVACWaterToAirHeatPumpBase):
     """Water-to-air heat pump. Forced-convection heating-cooling unit with supply fan, water-to-air cooling and heating coil..."""
@@ -22491,6 +24721,12 @@ class _ZoneHVACEvaporativeCoolerUnitBase(_TypedIDFObject):
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACEvaporativeCoolerUnitBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACEvaporativeCoolerUnitBaseFields(_ZoneHVACEvaporativeCoolerUnitCommonFields, total=False): ...
+
 class ZoneHVACEvaporativeCoolerUnit(_ZoneHVACEvaporativeCoolerUnitBase):
     """Zone evaporative cooler. Forced-convection cooling-only unit with supply fan, 100% outdoor air supply. Optional relie..."""
 
@@ -22569,7 +24805,10 @@ class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
     """The value in this field scales all extensive performance variables including: supply air mass flow rate, fuel uses, a...; Default: 1.0; Range: > 0.0"""
     minimum_time_between_mode_change: float | None
     """Any mode selected will not operate for less time than the value input in this field. If the value in this field is la...; [minutes]; Default: 10.0; Range: >= 1.0"""
-    first_fuel_type: (
+    @property
+    def first_fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Coal",
@@ -22593,8 +24832,28 @@ class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
-    second_fuel_type: (
+    ): ...
+    @first_fuel_type.setter
+    def first_fuel_type(
+        self,
+        value: Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None,
+    ) -> None: ...
+    @property
+    def second_fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Coal",
@@ -22618,8 +24877,28 @@ class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
-    third_fuel_type: (
+    ): ...
+    @second_fuel_type.setter
+    def second_fuel_type(
+        self,
+        value: Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None,
+    ) -> None: ...
+    @property
+    def third_fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Coal",
@@ -22643,7 +24922,24 @@ class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @third_fuel_type.setter
+    def third_fuel_type(
+        self,
+        value: Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None,
+    ) -> None: ...
     objective_function_to_minimize: (
         Literal["", "Electricity Use", "Second Fuel Use", "Third Fuel Use", "Water Use"] | None
     )
@@ -22672,6 +24968,57 @@ class _ZoneHVACHybridUnitaryHVACBase(_TypedIDFObject):
     """Enter the outdoor air fraction for Mode 0. If this field is blank, the outdoor air fraction for Mode 0 will be 0.00.; Default: 0.0; Range: >= 0.0, <= 1.0"""
     mode_0_supply_air_mass_flow_rate_ratio: float | None
     """Enter the supply air mass flow rate ratio for Mode 0. The value in this field will be used to determine the supply ai...; Default: 0.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACHybridUnitaryHVACBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACHybridUnitaryHVACBaseFields(_ZoneHVACHybridUnitaryHVACCommonFields, total=False):
+    first_fuel_type: (
+        Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None
+    )
+    second_fuel_type: (
+        Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None
+    )
+    third_fuel_type: (
+        Literal[
+            "",
+            "Coal",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "Gasoline",
+            "NaturalGas",
+            "None",
+            "OtherFuel1",
+            "OtherFuel2",
+        ]
+        | None
+    )
 
 class ZoneHVACHybridUnitaryHVACModesGroup(_TypedExtensibleGroup):
     """One modes group inside :class:`ZoneHVACHybridUnitaryHVAC`."""
@@ -22917,7 +25264,343 @@ class _ZoneHVACOutdoorAirUnitEquipmentListCommonFields(TypedDict, total=False):
 
 class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
     """``ZoneHVAC:OutdoorAirUnit:EquipmentList`` as every supported EnergyPlus version declares it."""
+    @property
+    def component_1_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_1_object_type.setter
+    def component_1_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_1_name: str | None
+    @property
+    def component_2_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_2_object_type.setter
+    def component_2_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_2_name: str | None
+    @property
+    def component_3_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_3_object_type.setter
+    def component_3_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_3_name: str | None
+    @property
+    def component_4_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_4_object_type.setter
+    def component_4_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_4_name: str | None
+    @property
+    def component_5_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_5_object_type.setter
+    def component_5_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_5_name: str | None
+    @property
+    def component_6_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_6_object_type.setter
+    def component_6_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_6_name: str | None
+    @property
+    def component_7_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_7_object_type.setter
+    def component_7_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_7_name: str | None
+    @property
+    def component_8_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+            "AirLoopHVAC:UnitarySystem",
+        ]
+        | None
+    ): ...
+    @component_8_object_type.setter
+    def component_8_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "CoilSystem:Cooling:DX",
+            "CoilSystem:Cooling:Water:HeatexchangerAssisted",
+            "CoilSystem:Heating:DX",
+            "Dehumidifier:Desiccant:NoFans",
+            "HeatExchanger:AirToAir:FlatPlate",
+            "HeatExchanger:AirToAir:SensibleAndLatent",
+        ]
+        | None,
+    ) -> None: ...
+    component_8_name: str | None
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACOutdoorAirUnitEquipmentListBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACOutdoorAirUnitEquipmentListBaseFields(_ZoneHVACOutdoorAirUnitEquipmentListCommonFields, total=False):
     component_1_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -22932,11 +25615,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_1_name: str | None
     component_2_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -22951,11 +25632,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_2_name: str | None
     component_3_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -22970,11 +25649,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_3_name: str | None
     component_4_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -22989,11 +25666,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_4_name: str | None
     component_5_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -23008,11 +25683,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_5_name: str | None
     component_6_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -23027,11 +25700,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_6_name: str | None
     component_7_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -23046,11 +25717,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_7_name: str | None
     component_8_object_type: (
         Literal[
             "Coil:Cooling:Water",
@@ -23065,11 +25734,9 @@ class _ZoneHVACOutdoorAirUnitEquipmentListBase(_TypedIDFObject):
             "Dehumidifier:Desiccant:NoFans",
             "HeatExchanger:AirToAir:FlatPlate",
             "HeatExchanger:AirToAir:SensibleAndLatent",
-            "AirLoopHVAC:UnitarySystem",
         ]
         | None
     )
-    component_8_name: str | None
 
 class ZoneHVACOutdoorAirUnitEquipmentList(_ZoneHVACOutdoorAirUnitEquipmentListBase):
     """Equipment list for components in a ZoneHVAC:OutdoorAirUnit. Components are simulated sequentially in the order given ..."""
@@ -23432,9 +26099,14 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlowBase(_TypedIDFObject):
     """Required for zone equipment. Leave blank if terminal unit is used in AirLoopHVAC:OutdoorAirSystem:EquipmentList. Also..."""
     supply_air_fan_placement: Literal["", "BlowThrough", "DrawThrough"] | None
     """Select fan placement as either blow through or draw through. Required for zone equipment. This field is ignored if th...; Default: BlowThrough"""
-    supply_air_fan_object_type: (
-        Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None
-    )
+    @property
+    def supply_air_fan_object_type(
+        self,
+    ) -> Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel", "Fan:VariableVolume"] | None: ...
+    @supply_air_fan_object_type.setter
+    def supply_air_fan_object_type(
+        self, value: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"] | None
+    ) -> None: ...
     supply_air_fan_object_name: str | None
     outside_air_mixer_object_type: Literal["OutdoorAir:Mixer"] | None
     """Currently only one type OutdoorAir:Mixer object is available. If this field is blank, and outside air mixer is not us..."""
@@ -23468,6 +26140,18 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlowBase(_TypedIDFObject):
     """Enter the name of an AvailabilityManagerAssignmentList object."""
     design_specification_zonehvac_sizing_object_name: str | None
     """Enter the name of a DesignSpecificationZoneHVACSizing object."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACTerminalUnitVariableRefrigerantFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACTerminalUnitVariableRefrigerantFlowBaseFields(
+    _ZoneHVACTerminalUnitVariableRefrigerantFlowCommonFields, total=False
+):
+    supply_air_fan_object_type: Literal["", "Fan:ConstantVolume", "Fan:OnOff", "Fan:SystemModel"] | None
 
 class ZoneHVACTerminalUnitVariableRefrigerantFlow(_ZoneHVACTerminalUnitVariableRefrigerantFlowBase):
     """A terminal unit with variable refrigerant flow (VRF) DX cooling and heating coils (air-to-air heat pump). The VRF ter..."""
@@ -23580,6 +26264,17 @@ class _ZoneHVACBaseboardRadiantConvectiveWaterBase(_TypedIDFObject):
     """[m3/s] (gal/min)"""
     surface_fractions: ExtensibleList[ZoneHVACBaseboardRadiantConvectiveWaterSurfaceFractionsGroup]
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACBaseboardRadiantConvectiveWaterBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACBaseboardRadiantConvectiveWaterBaseFields(
+    _ZoneHVACBaseboardRadiantConvectiveWaterCommonFields, total=False
+): ...
+
 class ZoneHVACBaseboardRadiantConvectiveWater(_ZoneHVACBaseboardRadiantConvectiveWaterBase):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
 
@@ -23660,6 +26355,17 @@ class _ZoneHVACBaseboardRadiantConvectiveSteamBase(_TypedIDFObject):
     maximum_steam_flow_rate: float | Literal["Autosize"] | None
     """[m3/s]"""
     surface_fractions: ExtensibleList[ZoneHVACBaseboardRadiantConvectiveSteamSurfaceFractionsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACBaseboardRadiantConvectiveSteamBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACBaseboardRadiantConvectiveSteamBaseFields(
+    _ZoneHVACBaseboardRadiantConvectiveSteamCommonFields, total=False
+): ...
 
 class ZoneHVACBaseboardRadiantConvectiveSteam(_ZoneHVACBaseboardRadiantConvectiveSteamBase):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list."""
@@ -23780,6 +26486,60 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterBase(_TypedIDFObject):
     """Enter the fraction of auto-sized cooling design capacity. Required field when the cooling design capacity method fiel...; Range: >= 0.0"""
     maximum_chilled_water_flow_rate: float | Literal["Autosize"] | None
     """[m3/s]"""
+    @property
+    def control_type(
+        self,
+    ) -> (
+        Literal[
+            "",
+            "MeanAirTemperature",
+            "MeanRadiantTemperature",
+            "OperativeTemperature",
+            "OutdoorDryBulbTemperature",
+            "OutdoorWetBulbTemperature",
+            "ZoneTotalLoad",
+            "ZoneConvectiveLoad",
+        ]
+        | None
+    ): ...
+    @control_type.setter
+    def control_type(
+        self,
+        value: Literal[
+            "",
+            "MeanAirTemperature",
+            "MeanRadiantTemperature",
+            "OperativeTemperature",
+            "OutdoorDryBulbTemperature",
+            "OutdoorWetBulbTemperature",
+            "ZoneTotalLoad",
+            "ZoneConvectiveLoad",
+        ]
+        | None,
+    ) -> None: ...
+    cooling_control_throttling_range: float | None
+    """[deltaC]; Default: 0.5; Range: >= 0.5"""
+    cooling_control_temperature_schedule_name: str | None
+    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
+    """Default: SimpleOff"""
+    condensation_control_dewpoint_offset: float | None
+    """[C]; Default: 1.0"""
+    fraction_radiant: float | None
+    """Range: >= 0.0, <= 1.0"""
+    fraction_of_radiant_energy_incident_on_people: float | None
+    """Range: >= 0.0, <= 1.0"""
+    surface_fractions: ExtensibleList[ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACCoolingPanelRadiantConvectiveWaterBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACCoolingPanelRadiantConvectiveWaterBaseFields(
+    _ZoneHVACCoolingPanelRadiantConvectiveWaterCommonFields, total=False
+):
     control_type: (
         Literal[
             "",
@@ -23793,18 +26553,6 @@ class _ZoneHVACCoolingPanelRadiantConvectiveWaterBase(_TypedIDFObject):
         ]
         | None
     )
-    cooling_control_throttling_range: float | None
-    """[deltaC]; Default: 0.5; Range: >= 0.5"""
-    cooling_control_temperature_schedule_name: str | None
-    condensation_control_type: Literal["", "Off", "SimpleOff", "VariableOff"] | None
-    """Default: SimpleOff"""
-    condensation_control_dewpoint_offset: float | None
-    """[C]; Default: 1.0"""
-    fraction_radiant: float | None
-    """Range: >= 0.0, <= 1.0"""
-    fraction_of_radiant_energy_incident_on_people: float | None
-    """Range: >= 0.0, <= 1.0"""
-    surface_fractions: ExtensibleList[ZoneHVACCoolingPanelRadiantConvectiveWaterSurfaceFractionsGroup]
 
 class ZoneHVACCoolingPanelRadiantConvectiveWater(_ZoneHVACCoolingPanelRadiantConvectiveWaterBase):
     """The number of surfaces can be expanded beyond 100, if necessary, by adding more groups to the end of the list"""
@@ -23965,6 +26713,17 @@ class _ZoneHVACLowTemperatureRadiantVariableFlowBase(_TypedIDFObject):
     """Default: OnePerSurface"""
     circuit_length: float | None
     """[m]; Default: 106.7"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACLowTemperatureRadiantVariableFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACLowTemperatureRadiantVariableFlowBaseFields(
+    _ZoneHVACLowTemperatureRadiantVariableFlowCommonFields, total=False
+): ...
 
 class ZoneHVACLowTemperatureRadiantVariableFlow(_ZoneHVACLowTemperatureRadiantVariableFlowBase):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
@@ -24148,6 +26907,17 @@ class _ZoneHVACLowTemperatureRadiantConstantFlowBase(_TypedIDFObject):
     circuit_length: float | None
     """[m]; Default: 106.7"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACLowTemperatureRadiantConstantFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACLowTemperatureRadiantConstantFlowBaseFields(
+    _ZoneHVACLowTemperatureRadiantConstantFlowCommonFields, total=False
+): ...
+
 class ZoneHVACLowTemperatureRadiantConstantFlow(_ZoneHVACLowTemperatureRadiantConstantFlowBase):
     """Low temperature hydronic radiant heating and/or cooling system embedded in a building surface (wall, ceiling, or floo..."""
 
@@ -24270,7 +27040,10 @@ class _ZoneHVACLowTemperatureRadiantElectricBase(_TypedIDFObject):
     """Enter the heating design capacity per zone floor area. Required field when the heating design capacity method field i...; [W/m2]; Range: >= 0.0"""
     fraction_of_autosized_heating_design_capacity: float | None
     """Enter the fraction of autosized heating design capacity. Required field when capacity the heating design capacity met...; Default: 1.0; Range: >= 0.0"""
-    temperature_control_type: (
+    @property
+    def temperature_control_type(
+        self,
+    ) -> (
         Literal[
             "",
             "MeanAirTemperature",
@@ -24282,10 +27055,45 @@ class _ZoneHVACLowTemperatureRadiantElectricBase(_TypedIDFObject):
             "SurfaceInteriorTemperature",
         ]
         | None
-    )
+    ): ...
+    @temperature_control_type.setter
+    def temperature_control_type(
+        self,
+        value: Literal[
+            "",
+            "MeanAirTemperature",
+            "MeanRadiantTemperature",
+            "OperativeTemperature",
+            "OutdoorDryBulbTemperature",
+            "OutdoorWetBulbTemperature",
+        ]
+        | None,
+    ) -> None: ...
     heating_throttling_range: float | None
     """[deltaC]; Default: 0.0; Range: >= 0.0"""
     heating_setpoint_temperature_schedule_name: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ZoneHVACLowTemperatureRadiantElectricBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACLowTemperatureRadiantElectricBaseFields(
+    _ZoneHVACLowTemperatureRadiantElectricCommonFields, total=False
+):
+    temperature_control_type: (
+        Literal[
+            "",
+            "MeanAirTemperature",
+            "MeanRadiantTemperature",
+            "OperativeTemperature",
+            "OutdoorDryBulbTemperature",
+            "OutdoorWetBulbTemperature",
+        ]
+        | None
+    )
 
 class ZoneHVACLowTemperatureRadiantElectric(_ZoneHVACLowTemperatureRadiantElectricBase):
     """Electric resistance low temperature radiant system"""
@@ -24596,6 +27404,12 @@ class _ZoneHVACVentilatedSlabSlabGroupCommonFields(TypedDict, total=False): ...
 class _ZoneHVACVentilatedSlabSlabGroupBase(_TypedIDFObject):
     """``ZoneHVAC:VentilatedSlab:SlabGroup`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACVentilatedSlabSlabGroupBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACVentilatedSlabSlabGroupBaseFields(_ZoneHVACVentilatedSlabSlabGroupCommonFields, total=False): ...
+
 class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
     """One data group inside :class:`ZoneHVACVentilatedSlabSlabGroup`."""
 
@@ -24724,6 +27538,12 @@ class _AirTerminalSingleDuctVAVNoReheatBase(_TypedIDFObject):
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirTerminalSingleDuctVAVNoReheatBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctVAVNoReheatBaseFields(_AirTerminalSingleDuctVAVNoReheatCommonFields, total=False): ...
+
 class AirTerminalSingleDuctVAVNoReheat(_AirTerminalSingleDuctVAVNoReheatBase):
     """Central air system terminal unit, single duct, variable volume, with no reheat coil."""
 
@@ -24802,6 +27622,12 @@ class _AirTerminalSingleDuctVAVReheatBase(_TypedIDFObject):
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirTerminalSingleDuctVAVReheatBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctVAVReheatBaseFields(_AirTerminalSingleDuctVAVReheatCommonFields, total=False): ...
+
 class AirTerminalSingleDuctVAVReheat(_AirTerminalSingleDuctVAVReheatBase):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)."""
 
@@ -24860,6 +27686,17 @@ class _AirTerminalSingleDuctVAVReheatVariableSpeedFanBase(_TypedIDFObject):
     heating_convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctVAVReheatVariableSpeedFanBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctVAVReheatVariableSpeedFanBaseFields(
+    _AirTerminalSingleDuctVAVReheatVariableSpeedFanCommonFields, total=False
+): ...
+
 class AirTerminalSingleDuctVAVReheatVariableSpeedFan(_AirTerminalSingleDuctVAVReheatVariableSpeedFanBase):
     """Central air system terminal unit, single duct, variable volume, with reheat coil (hot water, electric, gas, or steam)..."""
 
@@ -24897,6 +27734,17 @@ class _AirTerminalSingleDuctVAVHeatAndCoolNoReheatBase(_TypedIDFObject):
     """[m3/s]"""
     zone_minimum_air_flow_fraction: float | None
     """fraction of maximum air flow; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctVAVHeatAndCoolNoReheatBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctVAVHeatAndCoolNoReheatBaseFields(
+    _AirTerminalSingleDuctVAVHeatAndCoolNoReheatCommonFields, total=False
+): ...
 
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat(_AirTerminalSingleDuctVAVHeatAndCoolNoReheatBase):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with no reheat coil."""
@@ -24959,6 +27807,17 @@ class _AirTerminalSingleDuctVAVHeatAndCoolReheatBase(_TypedIDFObject):
     """Default: 0.001; Range: > 0.0"""
     maximum_reheat_air_temperature: float | None
     """Specifies the maximum allowable supply air temperature leaving the reheat coil. If left blank, there is no limit and ...; [C]; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctVAVHeatAndCoolReheatBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctVAVHeatAndCoolReheatBaseFields(
+    _AirTerminalSingleDuctVAVHeatAndCoolReheatCommonFields, total=False
+): ...
 
 class AirTerminalSingleDuctVAVHeatAndCoolReheat(_AirTerminalSingleDuctVAVHeatAndCoolReheatBase):
     """Central air system terminal unit, single duct, variable volume for both cooling and heating, with reheat coil (hot wa..."""
@@ -25023,6 +27882,17 @@ class _AirTerminalSingleDuctSeriesPIUReheatBase(_TypedIDFObject):
     """Not used when reheat coil type is gas or electric; [m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctSeriesPIUReheatBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctSeriesPIUReheatBaseFields(
+    _AirTerminalSingleDuctSeriesPIUReheatCommonFields, total=False
+): ...
 
 class AirTerminalSingleDuctSeriesPIUReheat(_AirTerminalSingleDuctSeriesPIUReheatBase):
     """Central air system terminal unit, single duct, variable volume, series powered induction unit (PIU), with reheat coil..."""
@@ -25097,6 +27967,17 @@ class _AirTerminalSingleDuctParallelPIUReheatBase(_TypedIDFObject):
     """Not used when reheat coil type is gas or electric; [m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     convergence_tolerance: float | None
     """Default: 0.001; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctParallelPIUReheatBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctParallelPIUReheatBaseFields(
+    _AirTerminalSingleDuctParallelPIUReheatCommonFields, total=False
+): ...
 
 class AirTerminalSingleDuctParallelPIUReheat(_AirTerminalSingleDuctParallelPIUReheatBase):
     """Central air system terminal unit, single duct, variable volume, parallel powered induction unit (PIU), with reheat co..."""
@@ -25315,7 +28196,10 @@ class _AirTerminalSingleDuctConstantVolumeCooledBeamBase(_TypedIDFObject):
     """[m3/s]; Default: Autosize"""
     maximum_total_chilled_water_volumetric_flow_rate: float | Literal["", "Autosize"] | None
     """[m3/s] (gal/min); Default: Autosize"""
-    number_of_beams: float | int | Literal["", "Autosize"] | None
+    @property
+    def number_of_beams(self) -> float | int | Literal["", "Autosize"] | None: ...
+    @number_of_beams.setter
+    def number_of_beams(self, value: int | Literal["", "Autosize"] | None) -> None: ...
     beam_length: float | Literal["", "Autosize"] | None
     """Length of an individual beam unit; [m]; Default: Autosize"""
     design_inlet_water_temperature: float | None
@@ -25342,6 +28226,18 @@ class _AirTerminalSingleDuctConstantVolumeCooledBeamBase(_TypedIDFObject):
     """Default: Autocalculate"""
     leaving_pipe_inside_diameter: float | None
     """[m]; Default: 0.0145; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirTerminalSingleDuctConstantVolumeCooledBeamBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctConstantVolumeCooledBeamBaseFields(
+    _AirTerminalSingleDuctConstantVolumeCooledBeamCommonFields, total=False
+):
+    number_of_beams: int | Literal["", "Autosize"] | None
 
 class AirTerminalSingleDuctConstantVolumeCooledBeam(_AirTerminalSingleDuctConstantVolumeCooledBeamBase):
     """Central air system terminal unit, single duct, constant volume, with cooled beam (active or passive)."""
@@ -25464,6 +28360,12 @@ class _AirTerminalDualDuctVAVBase(_TypedIDFObject):
     """fraction of maximum air flow; Default: 0.2; Range: >= 0.0, <= 1.0"""
     design_specification_outdoor_air_object_name: str | None
     """When the name of a DesignSpecification:OutdoorAir object is entered, the terminal unit will increase flow as needed t..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirTerminalDualDuctVAVBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalDualDuctVAVBaseFields(_AirTerminalDualDuctVAVCommonFields, total=False): ...
 
 class AirTerminalDualDuctVAV(_AirTerminalDualDuctVAVBase):
     """Central air system terminal unit, dual duct, variable volume."""
@@ -25625,6 +28527,12 @@ class _ZoneHVACEquipmentListBase(_TypedIDFObject):
 
     load_distribution_scheme: Literal["", "SequentialLoad", "SequentialUniformPLR", "UniformLoad", "UniformPLR"] | None
     """Default: SequentialLoad"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACEquipmentListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACEquipmentListBaseFields(_ZoneHVACEquipmentListCommonFields, total=False): ...
 
 class ZoneHVACEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`ZoneHVACEquipmentList`."""
@@ -25952,7 +28860,10 @@ class _FanSystemModelBase(_TypedIDFObject):
     """Default: 0.9; Range: > 0.0, <= 1.0"""
     motor_in_air_stream_fraction: float | None
     """0.0 means fan motor outside of air stream, 1.0 means motor inside of air stream; Default: 1.0; Range: >= 0.0, <= 1.0"""
-    design_electric_power_consumption: float | Literal["Autosize", ""] | None
+    @property
+    def design_electric_power_consumption(self) -> float | Literal["Autosize", ""] | None: ...
+    @design_electric_power_consumption.setter
+    def design_electric_power_consumption(self, value: float | Literal["Autosize"] | None) -> None: ...
     design_power_sizing_method: (
         Literal["", "PowerPerFlow", "PowerPerFlowPerPressure", "TotalEfficiencyAndPressure"] | None
     )
@@ -25975,7 +28886,17 @@ class _FanSystemModelBase(_TypedIDFObject):
     """optional. If zone identified in previous field then this determines the split between convection and radiation for th...; Range: >= 0.0, <= 1.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
-    number_of_speeds: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FanSystemModelBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __FanSystemModelBaseFields(_FanSystemModelCommonFields, total=False):
+    design_electric_power_consumption: float | Literal["Autosize"] | None
+    number_of_speeds: int | None
 
 class FanSystemModelSpeedFractionsGroup(_TypedExtensibleGroup):
     """One speed_fractions group inside :class:`FanSystemModel`."""
@@ -26423,6 +29344,12 @@ class _CoilCoolingWaterDetailedGeometryBase(_TypedIDFObject):
     design_water_temperature_difference: float | None
     """This input field is optional. If specified, it is used for sizing the Design Water Flow Rate. If blank or omitted, th...; [deltaC]; Range: > 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingWaterDetailedGeometryBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingWaterDetailedGeometryBaseFields(_CoilCoolingWaterDetailedGeometryCommonFields, total=False): ...
+
 class CoilCoolingWaterDetailedGeometry(_CoilCoolingWaterDetailedGeometryBase):
     """Chilled water cooling coil, detailed flat fin coil model for continuous plate fins, with inputs for detailed coil geo..."""
 
@@ -26592,6 +29519,12 @@ class _CoilCoolingDXCurveFitPerformanceBase(_TypedIDFObject):
     alternative_operating_mode_2: str | None
     """The alternative operating mode is used for enhanced dehumidification. If this is blank, the coil will always operate ..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXCurveFitPerformanceBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXCurveFitPerformanceBaseFields(_CoilCoolingDXCurveFitPerformanceCommonFields, total=False): ...
+
 class CoilCoolingDXCurveFitPerformance(_CoilCoolingDXCurveFitPerformanceBase):
     """DX cooling coil performance specification referencing one or more operating modes. Mode 1 is always the base design o...; Since: 9.3.0"""
 
@@ -26650,7 +29583,10 @@ class _CoilCoolingDXCurveFitOperatingModeBase(_TypedIDFObject):
     """Default: AirCooled"""
     nominal_evaporative_condenser_pump_power: float | Literal["", "Autosize"] | None
     """Rated power consumed by the evaporative condenser's water pump; [W]; Default: 0.0"""
-    nominal_speed_number: float | int | None
+    @property
+    def nominal_speed_number(self) -> float | int | None: ...
+    @nominal_speed_number.setter
+    def nominal_speed_number(self, value: int | None) -> None: ...
     speed_1_name: str | None
     speed_2_name: str | None
     speed_3_name: str | None
@@ -26661,6 +29597,16 @@ class _CoilCoolingDXCurveFitOperatingModeBase(_TypedIDFObject):
     speed_8_name: str | None
     speed_9_name: str | None
     speed_10_name: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilCoolingDXCurveFitOperatingModeBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXCurveFitOperatingModeBaseFields(_CoilCoolingDXCurveFitOperatingModeCommonFields, total=False):
+    nominal_speed_number: int | None
 
 class CoilCoolingDXCurveFitOperatingMode(_CoilCoolingDXCurveFitOperatingModeBase):
     """DX cooling coil performance for a single operating mode which may have one or more speeds.; Since: 9.3.0"""
@@ -26734,6 +29680,12 @@ class _CoilCoolingDXCurveFitSpeedBase(_TypedIDFObject):
     """curve = a + b*wb + c*wb**2 + d*db + e*db**2 + f*wb*db wb = entering wet-bulb temperature seen by the DX cooling coil ..."""
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow I..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXCurveFitSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXCurveFitSpeedBaseFields(_CoilCoolingDXCurveFitSpeedCommonFields, total=False): ...
 
 class CoilCoolingDXCurveFitSpeed(_CoilCoolingDXCurveFitSpeedBase):
     """DX cooling coil performance for a single speed within a single operating mode.; Since: 9.3.0"""
@@ -26867,6 +29819,12 @@ class _CoilCoolingDXSingleSpeedBase(_TypedIDFObject):
     zone_name_for_condenser_placement: str | None
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXSingleSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXSingleSpeedBaseFields(_CoilCoolingDXSingleSpeedCommonFields, total=False): ...
+
 class CoilCoolingDXSingleSpeed(_CoilCoolingDXSingleSpeedBase):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), single-speed..."""
 
@@ -26995,6 +29953,12 @@ class _CoilCoolingDXTwoSpeedBase(_TypedIDFObject):
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = fraction of the full load flow"""
     zone_name_for_condenser_placement: str | None
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXTwoSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXTwoSpeedBaseFields(_CoilCoolingDXTwoSpeedCommonFields, total=False): ...
 
 class CoilCoolingDXTwoSpeed(_CoilCoolingDXTwoSpeedBase):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-speed (o..."""
@@ -27137,7 +30101,10 @@ class _CoilCoolingDXMultiSpeedBase(_TypedIDFObject):
     """This field is only used for Condenser Type = EvaporativelyCooled. Enter the outdoor dry-bulb temperature when the bas...; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "Diesel",
             "Electricity",
@@ -27152,8 +30119,16 @@ class _CoilCoolingDXMultiSpeedBase(_TypedIDFObject):
             "FuelOilNo2",
         ]
         | None
-    )
-    number_of_speeds: float | int | None
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None,
+    ) -> None: ...
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
     speed_1_gross_rated_total_cooling_capacity: float | Literal["Autosize"] | None
     """Total cooling capacity not accounting for the effect of supply air fan heat Gross capacity excluding supply air fan h...; [W]"""
     speed_1_gross_rated_sensible_heat_ratio: float | Literal["Autosize"] | None
@@ -27300,6 +30275,14 @@ class _CoilCoolingDXMultiSpeedBase(_TypedIDFObject):
     """Rated power consumed by the evaporative condenser's water pump at Speed 4; [W]"""
     zone_name_for_condenser_placement: str | None
     """This input field is name of a conditioned or unconditioned zone where the secondary coil (condenser) of DX system or ..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXMultiSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXMultiSpeedBaseFields(_CoilCoolingDXMultiSpeedCommonFields, total=False):
+    fuel_type: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
+    number_of_speeds: int | None
 
 class CoilCoolingDXMultiSpeed(_CoilCoolingDXMultiSpeedBase):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric or engine-driven compressor and condenser f..."""
@@ -27465,8 +30448,14 @@ class _CoilCoolingDXVariableSpeedBase(_TypedIDFObject):
 
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
-    number_of_speeds: float | int | None
-    nominal_speed_level: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    @property
+    def nominal_speed_level(self) -> float | int | None: ...
+    @nominal_speed_level.setter
+    def nominal_speed_level(self, value: int | None) -> None: ...
     gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
     """Total cooling capacity not accounting for the effect of supply air fan heat; [W]; Default: Autosize"""
     rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
@@ -27688,6 +30677,14 @@ class _CoilCoolingDXVariableSpeedBase(_TypedIDFObject):
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
     """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilCoolingDXVariableSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXVariableSpeedBaseFields(_CoilCoolingDXVariableSpeedCommonFields, total=False):
+    number_of_speeds: int | None
+    nominal_speed_level: int | None
+
 class CoilCoolingDXVariableSpeed(_CoilCoolingDXVariableSpeedBase):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), variable-spe..."""
 
@@ -27766,8 +30763,14 @@ class _CoilCoolingDXTwoStageWithHumidityControlModeBase(_TypedIDFObject):
     """[W] (W); Default: 0.0; Range: >= 0.0"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation: float | None
     """[C]; Default: 10.0; Range: >= 0.0"""
-    number_of_capacity_stages: float | int | None
-    number_of_enhanced_dehumidification_modes: float | int | None
+    @property
+    def number_of_capacity_stages(self) -> float | int | None: ...
+    @number_of_capacity_stages.setter
+    def number_of_capacity_stages(self, value: int | None) -> None: ...
+    @property
+    def number_of_enhanced_dehumidification_modes(self) -> float | int | None: ...
+    @number_of_enhanced_dehumidification_modes.setter
+    def number_of_enhanced_dehumidification_modes(self, value: int | None) -> None: ...
     normal_mode_stage_1_coil_performance_object_type: Literal["CoilPerformance:DX:Cooling"] | None
     normal_mode_stage_1_coil_performance_name: str | None
     normal_mode_stage_1_2_coil_performance_object_type: Literal["CoilPerformance:DX:Cooling"] | None
@@ -27786,6 +30789,19 @@ class _CoilCoolingDXTwoStageWithHumidityControlModeBase(_TypedIDFObject):
     """This field is only used for Condenser Type = EvaporativelyCooled. Enter the outdoor dry-bulb temperature when the bas...; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilCoolingDXTwoStageWithHumidityControlModeBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingDXTwoStageWithHumidityControlModeBaseFields(
+    _CoilCoolingDXTwoStageWithHumidityControlModeCommonFields, total=False
+):
+    number_of_capacity_stages: int | None
+    number_of_enhanced_dehumidification_modes: int | None
 
 class CoilCoolingDXTwoStageWithHumidityControlMode(_CoilCoolingDXTwoStageWithHumidityControlModeBase):
     """Direct expansion (DX) cooling coil and condensing unit (includes electric compressor and condenser fan), two-stage wi..."""
@@ -28142,7 +31158,10 @@ class _CoilHeatingElectricMultiStageBase(_TypedIDFObject):
     air_outlet_node_name: str | None
     temperature_setpoint_node_name: str | None
     """Required if coil is temperature controlled. controlled"""
-    number_of_stages: float | int | None
+    @property
+    def number_of_stages(self) -> float | int | None: ...
+    @number_of_stages.setter
+    def number_of_stages(self, value: int | None) -> None: ...
     stage_1_efficiency: float | None
     """[W/W]; Range: > 0.0"""
     stage_1_nominal_capacity: float | Literal["Autosize"] | None
@@ -28159,6 +31178,13 @@ class _CoilHeatingElectricMultiStageBase(_TypedIDFObject):
     """[W/W]; Range: > 0.0"""
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingElectricMultiStageBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingElectricMultiStageBaseFields(_CoilHeatingElectricMultiStageCommonFields, total=False):
+    number_of_stages: int | None
 
 class CoilHeatingElectricMultiStage(_CoilHeatingElectricMultiStageBase):
     """Electric heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment li..."""
@@ -28187,7 +31213,10 @@ class _CoilHeatingFuelBase(_TypedIDFObject):
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -28204,7 +31233,11 @@ class _CoilHeatingFuelBase(_TypedIDFObject):
             "Coal",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
+    ) -> None: ...
     burner_efficiency: float | None
     """Default: 0.8; Range: >= 0.0, <= 1.0"""
     nominal_capacity: float | Literal["Autosize"] | None
@@ -28215,6 +31248,13 @@ class _CoilHeatingFuelBase(_TypedIDFObject):
     """optional, used if coil is temperature control and not load-base controlled"""
     part_load_fraction_correlation_curve_name: str | None
     """quadratic curve, PLF = a + b*PLR + c*PLR**2 cubic curve, PLF = a + b*PLR + c*PLR**2 + d*PLR**3 PLF = part load fracti..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingFuelBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingFuelBaseFields(_CoilHeatingFuelCommonFields, total=False):
+    fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
 
 class CoilHeatingFuel(_CoilHeatingFuelBase):
     """Gas or other fuel heating coil. If the coil is located directly in an air loop branch or outdoor air equipment list, ..."""
@@ -28287,7 +31327,10 @@ class _CoilHeatingGasMultiStageBase(_TypedIDFObject):
     """optional, used if coil is temperature control and not load-base controlled."""
     part_load_fraction_correlation_curve_name: str | None
     """quadratic curve, PLF = a + b*PLR + c*PLR**2 cubic curve, PLF = a + b*PLR + c*PLR**2 + d*PLR**3 PLF = part load fracti..."""
-    number_of_stages: float | int | None
+    @property
+    def number_of_stages(self) -> float | int | None: ...
+    @number_of_stages.setter
+    def number_of_stages(self, value: int | None) -> None: ...
     stage_1_gas_burner_efficiency: float | None
     """[W/W]; Range: > 0.0"""
     stage_1_nominal_capacity: float | Literal["Autosize"] | None
@@ -28304,6 +31347,13 @@ class _CoilHeatingGasMultiStageBase(_TypedIDFObject):
     """[W/W]; Range: > 0.0"""
     stage_4_nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingGasMultiStageBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingGasMultiStageBaseFields(_CoilHeatingGasMultiStageCommonFields, total=False):
+    number_of_stages: int | None
 
 class CoilHeatingGasMultiStage(_CoilHeatingGasMultiStageBase):
     """Gas heating coil, multi-stage. If the coil is located directly in an air loop branch or outdoor air equipment list, t..."""
@@ -28350,7 +31400,10 @@ class _CoilHeatingDesuperheaterBase(_TypedIDFObject):
     """Range: >= 0.0"""
     air_inlet_node_name: str | None
     air_outlet_node_name: str | None
-    heating_source_object_type: (
+    @property
+    def heating_source_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "Coil:Cooling:DX:TwoSpeed",
@@ -28363,10 +31416,44 @@ class _CoilHeatingDesuperheaterBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @heating_source_object_type.setter
+    def heating_source_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:Condenser:AirCooled",
+            "Refrigeration:Condenser:EvaporativeCooled",
+            "Refrigeration:Condenser:WaterCooled",
+        ]
+        | None,
+    ) -> None: ...
     heating_source_name: str | None
     temperature_setpoint_node_name: str | None
     """Required if coil is temperature controlled. Temperature-based control requires the use of a SetpointManager object"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingDesuperheaterBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingDesuperheaterBaseFields(_CoilHeatingDesuperheaterCommonFields, total=False):
+    heating_source_object_type: (
+        Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:Condenser:AirCooled",
+            "Refrigeration:Condenser:EvaporativeCooled",
+            "Refrigeration:Condenser:WaterCooled",
+        ]
+        | None
+    )
 
 class CoilHeatingDesuperheater(_CoilHeatingDesuperheaterBase):
     """Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
@@ -28482,7 +31569,10 @@ class _CoilHeatingDXSingleSpeedBase(_TypedIDFObject):
     """Fraction of time in defrost mode only applicable if timed defrost control is specified; Default: 0.058333; Range: >= 0.0"""
     resistive_defrost_heater_capacity: float | Literal["", "Autosize"] | None
     """only applicable if resistive defrost strategy is specified; [W] (W); Default: 0.0"""
-    region_number_for_calculating_hspf: float | int | None
+    @property
+    def region_number_for_calculating_hspf(self) -> float | int | None: ...
+    @region_number_for_calculating_hspf.setter
+    def region_number_for_calculating_hspf(self, value: int | None) -> None: ...
     evaporator_air_inlet_node_name: str | None
     """Enter the name of an outdoor air node. This node name is also specified in an OutdoorAir:Node or OutdoorAir:NodeList ..."""
     zone_name_for_evaporator_placement: str | None
@@ -28497,6 +31587,13 @@ class _CoilHeatingDXSingleSpeedBase(_TypedIDFObject):
     """curve = a + b*wb + c*wb**2 + d*db + e*db**2 + f*wb*db wb = entering wet-bulb temperature seen by the secondary DX coi..."""
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = secondary air flow fraction of t..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingDXSingleSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingDXSingleSpeedBaseFields(_CoilHeatingDXSingleSpeedCommonFields, total=False):
+    region_number_for_calculating_hspf: int | None
 
 class CoilHeatingDXSingleSpeed(_CoilHeatingDXSingleSpeedBase):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
@@ -28620,7 +31717,10 @@ class _CoilHeatingDXMultiSpeedBase(_TypedIDFObject):
     """only applicable if resistive defrost strategy is specified; [W] (W); Default: 0.0"""
     apply_part_load_fraction_to_speeds_greater_than_1: Literal["", "No", "Yes"] | None
     """Default: No"""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "Diesel",
             "Electricity",
@@ -28635,9 +31735,20 @@ class _CoilHeatingDXMultiSpeedBase(_TypedIDFObject):
             "FuelOilNo2",
         ]
         | None
-    )
-    region_number_for_calculating_hspf: float | int | None
-    number_of_speeds: float | int | None
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None,
+    ) -> None: ...
+    @property
+    def region_number_for_calculating_hspf(self) -> float | int | None: ...
+    @region_number_for_calculating_hspf.setter
+    def region_number_for_calculating_hspf(self, value: int | None) -> None: ...
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
     speed_1_gross_rated_heating_capacity: float | Literal["Autosize"] | None
     """Heating capacity not accounting for the effect of supply air fan heat capacity excluding supply air fan heat rating p...; [W]"""
     speed_1_gross_rated_heating_cop: float | None
@@ -28760,6 +31871,15 @@ class _CoilHeatingDXMultiSpeedBase(_TypedIDFObject):
     """curve = a + b*wb + c*wb**2 + d*db + e*db**2 + f*wb*db wb = entering wet-bulb temperature seen by the secondary DX coi..."""
     speed_4_sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
     """quadratic curve = a + b*ff + c*ff**2 cubic curve = a + b*ff + c*ff**2 + d*ff**3 ff = secondary air flow fraction of t..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingDXMultiSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingDXMultiSpeedBaseFields(_CoilHeatingDXMultiSpeedCommonFields, total=False):
+    fuel_type: Literal["Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2", "Propane"] | None
+    region_number_for_calculating_hspf: int | None
+    number_of_speeds: int | None
 
 class CoilHeatingDXMultiSpeed(_CoilHeatingDXMultiSpeedBase):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric or engine-driven com..."""
@@ -28893,8 +32013,14 @@ class _CoilHeatingDXVariableSpeedBase(_TypedIDFObject):
 
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
-    number_of_speeds: float | int | None
-    nominal_speed_level: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    @property
+    def nominal_speed_level(self) -> float | int | None: ...
+    @nominal_speed_level.setter
+    def nominal_speed_level(self, value: int | None) -> None: ...
     rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
@@ -29048,6 +32174,14 @@ class _CoilHeatingDXVariableSpeedBase(_TypedIDFObject):
     speed_10_energy_input_ratio_function_of_air_flow_fraction_curve_name: str | None
     """quadratic curve = a + b*ffa + c*ffa**2 cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3 ffa = Fraction of the full load ..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilHeatingDXVariableSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingDXVariableSpeedBaseFields(_CoilHeatingDXVariableSpeedCommonFields, total=False):
+    number_of_speeds: int | None
+    nominal_speed_level: int | None
+
 class CoilHeatingDXVariableSpeed(_CoilHeatingDXVariableSpeedBase):
     """Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
@@ -29171,6 +32305,17 @@ class _CoilCoolingWaterToAirHeatPumpParameterEstimationBase(_TypedIDFObject):
     source_side_heat_transfer_resistance2: float | None
     """Use when Source Side Fluid Name is an antifreeze Leave this field blank for Source Side Fluid is Water Previously par...; [W/K]; Range: >= 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilCoolingWaterToAirHeatPumpParameterEstimationBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingWaterToAirHeatPumpParameterEstimationBaseFields(
+    _CoilCoolingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
+): ...
+
 class CoilCoolingWaterToAirHeatPumpParameterEstimation(_CoilCoolingWaterToAirHeatPumpParameterEstimationBase):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
@@ -29272,6 +32417,17 @@ class _CoilHeatingWaterToAirHeatPumpParameterEstimationBase(_TypedIDFObject):
     source_side_heat_transfer_resistance2: float | None
     """Use when Source Side Fluid Name is an antifreeze Leave this field blank for Source Side Fluid is Water Previously par...; [W/K]; Range: >= 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilHeatingWaterToAirHeatPumpParameterEstimationBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingWaterToAirHeatPumpParameterEstimationBaseFields(
+    _CoilHeatingWaterToAirHeatPumpParameterEstimationCommonFields, total=False
+): ...
+
 class CoilHeatingWaterToAirHeatPumpParameterEstimation(_CoilHeatingWaterToAirHeatPumpParameterEstimationBase):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, parameter..."""
 
@@ -29327,6 +32483,17 @@ class _CoilCoolingWaterToAirHeatPumpEquationFitBase(_TypedIDFObject):
     """The nominal time for condensate to begin leaving the coil's condensate drain line at the coil's rated air flow and te...; [s]; Default: 0.0; Range: >= 0.0, <= 3000.0"""
     ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity: float | None
     """Ratio of the initial moisture evaporation rate from the cooling coil (when the compressor first turns off) and the co...; [dimensionless]; Default: 0.0; Range: >= 0.0, <= 5.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilCoolingWaterToAirHeatPumpEquationFitBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingWaterToAirHeatPumpEquationFitBaseFields(
+    _CoilCoolingWaterToAirHeatPumpEquationFitCommonFields, total=False
+): ...
 
 class CoilCoolingWaterToAirHeatPumpEquationFit(_CoilCoolingWaterToAirHeatPumpEquationFitBase):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -29526,8 +32693,14 @@ class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject
     water_to_refrigerant_hx_water_outlet_node_name: str | None
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
-    number_of_speeds: float | int | None
-    nominal_speed_level: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    @property
+    def nominal_speed_level(self) -> float | int | None: ...
+    @nominal_speed_level.setter
+    def nominal_speed_level(self, value: int | None) -> None: ...
     gross_rated_total_cooling_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
     """Total cooling capacity not accounting for the effect of supply air fan heat; [W]; Default: Autosize"""
     rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
@@ -29803,6 +32976,19 @@ class _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
     """optional curve = a + b*wb + c*wb**2 + d*ewt + e*ewt**2 + f*wb*ewt wb = entering wet-bulb temperature (C) ewt = water ..."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBaseFields(
+    _CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
+):
+    number_of_speeds: int | None
+    nominal_speed_level: int | None
+
 class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(_CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitBase):
     """Direct expansion (DX) cooling coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
@@ -29861,6 +33047,17 @@ class _CoilHeatingWaterToAirHeatPumpEquationFitBase(_TypedIDFObject):
     """Heating capacity at rated conditions not accounting for the effect of supply air fan heat; [W]"""
     gross_rated_heating_cop: float | None
     """Gross heating COP at rated conditions; [W/W]; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilHeatingWaterToAirHeatPumpEquationFitBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingWaterToAirHeatPumpEquationFitBaseFields(
+    _CoilHeatingWaterToAirHeatPumpEquationFitCommonFields, total=False
+): ...
 
 class CoilHeatingWaterToAirHeatPumpEquationFit(_CoilHeatingWaterToAirHeatPumpEquationFitBase):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), single-speed, equation-..."""
@@ -30034,8 +33231,14 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject
     water_to_refrigerant_hx_water_outlet_node_name: str | None
     indoor_air_inlet_node_name: str | None
     indoor_air_outlet_node_name: str | None
-    number_of_speeds: float | int | None
-    nominal_speed_level: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    @property
+    def nominal_speed_level(self) -> float | int | None: ...
+    @nominal_speed_level.setter
+    def nominal_speed_level(self, value: int | None) -> None: ...
     rated_heating_capacity_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
     """[W]; Default: Autosize"""
     rated_air_flow_rate_at_selected_nominal_speed_level: float | Literal["", "Autosize"] | None
@@ -30283,6 +33486,19 @@ class _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBase(_TypedIDFObject
     speed_10_waste_heat_function_of_temperature_curve_name: str | None
     """optional curve = a + b*db + c*db**2 + d*ewt + e*ewt**2 + f*db*ewt db = entering air dry-bulb temperature (C) ewt = wa..."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBaseFields(
+    _CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitCommonFields, total=False
+):
+    number_of_speeds: int | None
+    nominal_speed_level: int | None
+
 class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(_CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitBase):
     """Direct expansion (DX) heating coil for water-to-air heat pump (includes electric compressor), variable-speed, equatio..."""
 
@@ -30397,6 +33613,17 @@ class _CoilWaterHeatingAirToWaterHeatPumpPumpedBase(_TypedIDFObject):
     part_load_fraction_correlation_curve_name: str | None
     """Part Load Fraction Correlation (function of part load ratio) should be quadratic or cubic. Quadratic curve = a + b(PL..."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilWaterHeatingAirToWaterHeatPumpPumpedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilWaterHeatingAirToWaterHeatPumpPumpedBaseFields(
+    _CoilWaterHeatingAirToWaterHeatPumpPumpedCommonFields, total=False
+): ...
+
 class CoilWaterHeatingAirToWaterHeatPumpPumped(_CoilWaterHeatingAirToWaterHeatPumpPumpedBase):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
 
@@ -30477,6 +33704,17 @@ class _CoilWaterHeatingAirToWaterHeatPumpWrappedBase(_TypedIDFObject):
     """Heating COP modifier curve (function of air flow fraction) should be quadratic or cubic. Quadratic curve = a + b(ff) ..."""
     part_load_fraction_correlation_curve_name: str | None
     """Part Load Fraction Correlation (function of part load ratio) should be quadratic or cubic. Quadratic curve = a + b(PL..."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilWaterHeatingAirToWaterHeatPumpWrappedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilWaterHeatingAirToWaterHeatPumpWrappedBaseFields(
+    _CoilWaterHeatingAirToWaterHeatPumpWrappedCommonFields, total=False
+): ...
 
 class CoilWaterHeatingAirToWaterHeatPumpWrapped(_CoilWaterHeatingAirToWaterHeatPumpWrappedBase):
     """Heat pump water heater (HPWH) heating coil, air-to-water direct-expansion (DX) system which includes a water heating ..."""
@@ -30611,9 +33849,14 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields(TypedDict, to
 
 class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBase(_TypedIDFObject):
     """``Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed`` as every supported EnergyPlus version declares it."""
-
-    number_of_speeds: float | int | None
-    nominal_speed_level: float | int | None
+    @property
+    def number_of_speeds(self) -> float | int | None: ...
+    @number_of_speeds.setter
+    def number_of_speeds(self, value: int | None) -> None: ...
+    @property
+    def nominal_speed_level(self) -> float | int | None: ...
+    @nominal_speed_level.setter
+    def nominal_speed_level(self, value: int | None) -> None: ...
     rated_water_heating_capacity: float | None
     """Water Heating capacity at the rated inlet air temperatures, rated condenser inlet water temperature, rated air flow r...; [W]; Range: > 0.0"""
     rated_evaporator_inlet_air_dry_bulb_temperature: float | None
@@ -30831,6 +34074,19 @@ class _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBase(_TypedIDFObject):
     speed_10_cop_function_of_water_flow_fraction_curve_name: str | None
     """Table:Lookup object can also be used quadratic curve = a + b*ffw + c*ffw**2 cubic curve = a + b*ffw + c*ffw**2 + d*ff..."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBaseFields(
+    _CoilWaterHeatingAirToWaterHeatPumpVariableSpeedCommonFields, total=False
+):
+    number_of_speeds: int | None
+    nominal_speed_level: int | None
+
 class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(_CoilWaterHeatingAirToWaterHeatPumpVariableSpeedBase):
     """variable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX) system which includes..."""
 
@@ -30990,10 +34246,16 @@ class _CoilWaterHeatingDesuperheaterBase(_TypedIDFObject):
     """The node from which the desuperheater heating coil draws its inlet water. This name should match the source side outl..."""
     water_outlet_node_name: str | None
     """The node to which the desuperheater heating coil sends its outlet water. This name should match the source side inlet..."""
-    tank_object_type: Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None
+    @property
+    def tank_object_type(self) -> Literal["", "WaterHeater:Mixed", "WaterHeater:Stratified"] | None: ...
+    @tank_object_type.setter
+    def tank_object_type(self, value: Literal["", "WaterHeater:Mixed"] | None) -> None: ...
     tank_name: str | None
     """The name of the water heater tank used by this desuperheater water heating coil. Needs to match the name used in the ..."""
-    heating_source_object_type: (
+    @property
+    def heating_source_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "Coil:Cooling:DX:TwoSpeed",
@@ -31009,7 +34271,22 @@ class _CoilWaterHeatingDesuperheaterBase(_TypedIDFObject):
             "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
         ]
         | None
-    )
+    ): ...
+    @heating_source_object_type.setter
+    def heating_source_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:Condenser:AirCooled",
+            "Refrigeration:Condenser:EvaporativeCooled",
+            "Refrigeration:Condenser:WaterCooled",
+        ]
+        | None,
+    ) -> None: ...
     heating_source_name: str | None
     """The name of the DX system used for heat reclaim."""
     water_flow_rate: float | None
@@ -31022,6 +34299,26 @@ class _CoilWaterHeatingDesuperheaterBase(_TypedIDFObject):
     """Parasitic electric power consumed when the desuperheater water heating coil operates. Parasitic electric load does no...; [W] (W); Default: 0.0; Range: >= 0.0"""
     off_cycle_parasitic_electric_load: float | None
     """Parasitic electric load consumed when the desuperheater water heating coil is off. Parasitic electric load does not c...; [W] (W); Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilWaterHeatingDesuperheaterBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilWaterHeatingDesuperheaterBaseFields(_CoilWaterHeatingDesuperheaterCommonFields, total=False):
+    tank_object_type: Literal["", "WaterHeater:Mixed"] | None
+    heating_source_object_type: (
+        Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Refrigeration:CompressorRack",
+            "Refrigeration:Condenser:AirCooled",
+            "Refrigeration:Condenser:EvaporativeCooled",
+            "Refrigeration:Condenser:WaterCooled",
+        ]
+        | None
+    )
 
 class CoilWaterHeatingDesuperheater(_CoilWaterHeatingDesuperheaterBase):
     """Desuperheater air heating coil. The heating energy provided by this coil is reclaimed from the superheated refrigeran..."""
@@ -31091,7 +34388,10 @@ class _CoilSystemCoolingDXBase(_TypedIDFObject):
     dx_cooling_coil_system_inlet_node_name: str | None
     dx_cooling_coil_system_outlet_node_name: str | None
     dx_cooling_coil_system_sensor_node_name: str | None
-    cooling_coil_object_type: (
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
@@ -31102,7 +34402,20 @@ class _CoilSystemCoolingDXBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None,
+    ) -> None: ...
     cooling_coil_name: str | None
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only Multimode = activate enhanced dehumidification mode as needed and meet sensible load. ...; Default: None"""
@@ -31114,6 +34427,23 @@ class _CoilSystemCoolingDXBase(_TypedIDFObject):
     """This input field is designed for use with DX cooling coils with low air flow to capacity ratio range (100 - 300 cfm/t...; Default: No"""
     outdoor_air_dx_cooling_coil_leaving_minimum_air_temperature: float | None
     """DX cooling coil leaving minimum air temperature defines the minimum DX cooling coil leaving air temperature that shou...; [C]; Default: 2.0; Range: >= 0.0, <= 7.2"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilSystemCoolingDXBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilSystemCoolingDXBaseFields(_CoilSystemCoolingDXCommonFields, total=False):
+    cooling_coil_object_type: (
+        Literal[
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+        ]
+        | None
+    )
 
 class CoilSystemCoolingDX(_CoilSystemCoolingDXBase):
     """Virtual container component that consists of a DX cooling coil and its associated controls. This control object suppo..."""
@@ -31215,10 +34545,27 @@ class _CoilSystemCoolingDXHeatExchangerAssistedBase(_TypedIDFObject):
         | None
     )
     heat_exchanger_name: str | None
-    cooling_coil_object_type: (
-        Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "Coil:Cooling:DX"] | None
-    )
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed", "Coil:Cooling:DX"] | None: ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self, value: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"] | None
+    ) -> None: ...
     cooling_coil_name: str | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilSystemCoolingDXHeatExchangerAssistedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilSystemCoolingDXHeatExchangerAssistedBaseFields(
+    _CoilSystemCoolingDXHeatExchangerAssistedCommonFields, total=False
+):
+    cooling_coil_object_type: Literal["Coil:Cooling:DX:SingleSpeed", "Coil:Cooling:DX:VariableSpeed"] | None
 
 class CoilSystemCoolingDXHeatExchangerAssisted(_CoilSystemCoolingDXHeatExchangerAssistedBase):
     """Virtual component consisting of a direct expansion (DX) cooling coil and an air-to-air heat exchanger. The air-to-air..."""
@@ -31286,14 +34633,40 @@ class _CoilSystemIntegratedHeatPumpAirSourceBase(_TypedIDFObject):
     """Indoor Temperature above which Water Heating has the higher priority and Space Heating Call Can be ignored.; [C]; Default: 20.0; Range: > 15.0"""
     ambient_temperature_above_which_wh_has_higher_priority: float | None
     """Ambient Temperature above which Water Heating has the higher priority and Space Heating Call Can be ignored.; [C]; Default: 20.0; Range: > 15.0"""
-    flag_to_indicate_load_control_in_scwh_mode: float | int | None
-    minimum_speed_level_for_scwh_mode: float | int | None
+    @property
+    def flag_to_indicate_load_control_in_scwh_mode(self) -> float | int | None: ...
+    @flag_to_indicate_load_control_in_scwh_mode.setter
+    def flag_to_indicate_load_control_in_scwh_mode(self, value: int | None) -> None: ...
+    @property
+    def minimum_speed_level_for_scwh_mode(self) -> float | int | None: ...
+    @minimum_speed_level_for_scwh_mode.setter
+    def minimum_speed_level_for_scwh_mode(self, value: int | None) -> None: ...
     maximum_water_flow_volume_before_switching_from_scdwh_to_scwh_mode: float | None
     """[m3]; Default: 0.0"""
-    minimum_speed_level_for_scdwh_mode: float | int | None
+    @property
+    def minimum_speed_level_for_scdwh_mode(self) -> float | int | None: ...
+    @minimum_speed_level_for_scdwh_mode.setter
+    def minimum_speed_level_for_scdwh_mode(self, value: int | None) -> None: ...
     maximum_running_time_before_allowing_electric_resistance_heat_use_during_shdwh_mode: float | None
     """[s]; Default: 360.0; Range: > 0.0"""
-    minimum_speed_level_for_shdwh_mode: float | int | None
+    @property
+    def minimum_speed_level_for_shdwh_mode(self) -> float | int | None: ...
+    @minimum_speed_level_for_shdwh_mode.setter
+    def minimum_speed_level_for_shdwh_mode(self, value: int | None) -> None: ...
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__CoilSystemIntegratedHeatPumpAirSourceBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilSystemIntegratedHeatPumpAirSourceBaseFields(
+    _CoilSystemIntegratedHeatPumpAirSourceCommonFields, total=False
+):
+    flag_to_indicate_load_control_in_scwh_mode: int | None
+    minimum_speed_level_for_scwh_mode: int | None
+    minimum_speed_level_for_scdwh_mode: int | None
+    minimum_speed_level_for_shdwh_mode: int | None
 
 class CoilSystemIntegratedHeatPumpAirSource(_CoilSystemIntegratedHeatPumpAirSourceBase):
     """This object is used for air-source integrated heat pump, a collection of its working modes."""
@@ -32222,6 +35595,17 @@ class _HeatExchangerAirToAirSensibleAndLatentBase(_TypedIDFObject):
     economizer_lockout: Literal["", "No", "Yes"] | None
     """Yes means that the heat exchanger will be locked out (off) when the economizer is operating or high humidity control ...; Default: Yes"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HeatExchangerAirToAirSensibleAndLatentBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatExchangerAirToAirSensibleAndLatentBaseFields(
+    _HeatExchangerAirToAirSensibleAndLatentCommonFields, total=False
+): ...
+
 class HeatExchangerAirToAirSensibleAndLatent(_HeatExchangerAirToAirSensibleAndLatentBase):
     """This object models an air-to-air heat exchanger using effectiveness relationships. The heat exchanger can transfer se..."""
 
@@ -32574,7 +35958,10 @@ class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
     """Enter the name of the heating coil if included in the unitary system."""
     dx_heating_coil_sizing_ratio: float | None
     """Used to adjust heat pump heating capacity with respect to DX cooling capacity used only for heat pump configurations ...; Default: 1.0; Range: > 0.0"""
-    cooling_coil_object_type: (
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:MultiSpeed",
             "Coil:Cooling:DX:SingleSpeed",
@@ -32593,7 +35980,28 @@ class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Cooling:DX:MultiSpeed",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+            "Coil:Cooling:WaterToAirHeatPump:ParameterEstimation",
+            "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
+            "Coil:UserDefined",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+            "CoilSystem:Cooling:Water:HeatExchangerAssisted",
+        ]
+        | None,
+    ) -> None: ...
     cooling_coil_name: str | None
     """Enter the name of the cooling coil if included in the unitary system."""
     use_doas_dx_cooling_coil: Literal["", "No", "Yes"] | None
@@ -32611,7 +36019,10 @@ class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
         | None
     )
     """SensibleOnlyLoadControl is selected when thermostat or SingleZoneVAV control is used. LatentOnlyLoadControl is select...; Default: SensibleOnlyLoadControl"""
-    supplemental_heating_coil_object_type: (
+    @property
+    def supplemental_heating_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Heating:Desuperheater",
             "Coil:Heating:Electric",
@@ -32622,7 +36033,20 @@ class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
             "Coil:Heating:Electric:Multistage",
         ]
         | None
-    )
+    ): ...
+    @supplemental_heating_coil_object_type.setter
+    def supplemental_heating_coil_object_type(
+        self,
+        value: Literal[
+            "Coil:Heating:Desuperheater",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "Coil:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
     supplemental_heating_coil_name: str | None
     """Enter the name of the supplemental heating coil if included in the unitary system. Only required if dehumidification ..."""
     cooling_supply_air_flow_rate_method: (
@@ -32702,6 +36126,42 @@ class _AirLoopHVACUnitarySystemBase(_TypedIDFObject):
     """Enter the type of performance specification object used to describe the multispeed coil."""
     design_specification_multispeed_object_name: str | None
     """The name of the performance specification object used to describe the multispeed coil."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirLoopHVACUnitarySystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitarySystemBaseFields(_AirLoopHVACUnitarySystemCommonFields, total=False):
+    cooling_coil_object_type: (
+        Literal[
+            "Coil:Cooling:DX:MultiSpeed",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
+            "Coil:Cooling:DX:TwoSpeed",
+            "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
+            "Coil:Cooling:DX:VariableSpeed",
+            "Coil:Cooling:Water",
+            "Coil:Cooling:Water:DetailedGeometry",
+            "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+            "Coil:Cooling:WaterToAirHeatPump:ParameterEstimation",
+            "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
+            "Coil:UserDefined",
+            "CoilSystem:Cooling:DX:HeatExchangerAssisted",
+            "CoilSystem:Cooling:Water:HeatExchangerAssisted",
+        ]
+        | None
+    )
+    supplemental_heating_coil_object_type: (
+        Literal[
+            "Coil:Heating:Desuperheater",
+            "Coil:Heating:Electric",
+            "Coil:Heating:Fuel",
+            "Coil:Heating:Steam",
+            "Coil:Heating:Water",
+            "Coil:UserDefined",
+        ]
+        | None
+    )
 
 class AirLoopHVACUnitarySystem(_AirLoopHVACUnitarySystemBase):
     """AirloopHVAC:UnitarySystem is a generic HVAC system type that allows any configuration of coils and/or fan. This objec..."""
@@ -32788,13 +36248,29 @@ class _UnitarySystemPerformanceMultispeedCommonFields(TypedDict, total=False):
 
 class _UnitarySystemPerformanceMultispeedBase(_TypedIDFObject):
     """``UnitarySystemPerformance:Multispeed`` as every supported EnergyPlus version declares it."""
-
-    number_of_speeds_for_heating: float | int | None
-    number_of_speeds_for_cooling: float | int | None
+    @property
+    def number_of_speeds_for_heating(self) -> float | int | None: ...
+    @number_of_speeds_for_heating.setter
+    def number_of_speeds_for_heating(self, value: int | None) -> None: ...
+    @property
+    def number_of_speeds_for_cooling(self) -> float | int | None: ...
+    @number_of_speeds_for_cooling.setter
+    def number_of_speeds_for_cooling(self, value: int | None) -> None: ...
     single_mode_operation: Literal["", "No", "Yes"] | None
     """Controls coil operation during each HVAC timestep. This choice does not apply to speed 1 operation. Yes = operate at ...; Default: No"""
     no_load_supply_air_flow_rate_ratio: float | None
     """Used to define the no load operating air flow rate when the system fan is specified to operate continuously.; Default: 1.0; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__UnitarySystemPerformanceMultispeedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __UnitarySystemPerformanceMultispeedBaseFields(_UnitarySystemPerformanceMultispeedCommonFields, total=False):
+    number_of_speeds_for_heating: int | None
+    number_of_speeds_for_cooling: int | None
 
 class UnitarySystemPerformanceMultispeedFlowRatiosGroup(_TypedExtensibleGroup):
     """One flow_ratios group inside :class:`UnitarySystemPerformanceMultispeed`."""
@@ -32924,14 +36400,21 @@ class _AirLoopHVACUnitaryFurnaceHeatCoolBase(_TypedIDFObject):
     )
     """works with gas, electric, hot water and steam heating coils"""
     heating_coil_name: str | None
-    cooling_coil_object_type: (
+    @property
+    def cooling_coil_object_type(
+        self,
+    ) -> (
         Literal[
             "Coil:Cooling:DX:SingleSpeed",
             "CoilSystem:Cooling:DX:HeatExchangerAssisted",
             "Coil:Cooling:DX:VariableSpeed",
         ]
         | None
-    )
+    ): ...
+    @cooling_coil_object_type.setter
+    def cooling_coil_object_type(
+        self, value: Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"] | None
+    ) -> None: ...
     cooling_coil_name: str | None
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only Multimode = activate enhanced dehumidification mode as needed and meet sensible load. ...; Default: None"""
@@ -32948,6 +36431,15 @@ class _AirLoopHVACUnitaryFurnaceHeatCoolBase(_TypedIDFObject):
     """Only required if dehumidification control type is 'CoolReheat' works with gas, electric, hot water and steam heating ..."""
     reheat_coil_name: str | None
     """Only required if dehumidification control type is 'CoolReheat'"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirLoopHVACUnitaryFurnaceHeatCoolBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitaryFurnaceHeatCoolBaseFields(_AirLoopHVACUnitaryFurnaceHeatCoolCommonFields, total=False):
+    cooling_coil_object_type: (
+        Literal["Coil:Cooling:DX:SingleSpeed", "CoilSystem:Cooling:DX:HeatExchangerAssisted"] | None
+    )
 
 class AirLoopHVACUnitaryFurnaceHeatCool(_AirLoopHVACUnitaryFurnaceHeatCoolBase):
     """Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
@@ -33211,6 +36703,15 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirBase(_TypedIDFObject):
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only Multimode = activate enhanced dehumidification mode as needed and meet sensible load. ...; Default: None"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirLoopHVACUnitaryHeatPumpAirToAirBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitaryHeatPumpAirToAirBaseFields(_AirLoopHVACUnitaryHeatPumpAirToAirCommonFields, total=False): ...
+
 class AirLoopHVACUnitaryHeatPumpAirToAir(_AirLoopHVACUnitaryHeatPumpAirToAirBase):
     """Unitary heat pump system, heating and cooling, single-speed with supply fan, direct expansion (DX) cooling coil, DX h..."""
 
@@ -33321,6 +36822,17 @@ class _AirLoopHVACUnitaryHeatPumpWaterToAirBase(_TypedIDFObject):
     """None = meet sensible load only CoolReheat = cool beyond the dry-bulb setpoint. as required to meet the humidity setpo...; Default: None"""
     heat_pump_coil_water_flow_mode: Literal["", "Constant", "ConstantOnDemand", "Cycling"] | None
     """used only when the heat pump coils are of the type WaterToAirHeatPump:EquationFit Constant results in 100% water flow...; Default: Cycling"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirLoopHVACUnitaryHeatPumpWaterToAirBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitaryHeatPumpWaterToAirBaseFields(
+    _AirLoopHVACUnitaryHeatPumpWaterToAirCommonFields, total=False
+): ...
 
 class AirLoopHVACUnitaryHeatPumpWaterToAir(_AirLoopHVACUnitaryHeatPumpWaterToAirBase):
     """Unitary heat pump system, heating and cooling, single-speed with constant volume supply fan (continuous or cycling), ..."""
@@ -33445,13 +36957,32 @@ class _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBase(_TypedIDFObject):
     """works with DX, gas, electric, hot water and steam heating coils Specify the type of heating coil used in this unitary..."""
     heating_coil_name: str | None
     """Enter the name of the heating coil used in this unitary system."""
-    priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority", "LoadPriority"] | None
+    @property
+    def priority_control_mode(
+        self,
+    ) -> Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority", "LoadPriority"] | None: ...
+    @priority_control_mode.setter
+    def priority_control_mode(
+        self, value: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"] | None
+    ) -> None: ...
     minimum_outlet_air_temperature_during_cooling_operation: float | None
     """Specify the minimum outlet air temperature allowed for this unitary system during cooling operation. This value shoul...; [C]; Default: 8.0; Range: > 0.0"""
     maximum_outlet_air_temperature_during_heating_operation: float | None
     """Specify the maximum outlet air temperature allowed for this unitary system during heating operation. This value shoul...; [C]; Default: 50.0; Range: > 0.0"""
     dehumidification_control_type: Literal["", "CoolReheat", "Multimode", "None"] | None
     """None = meet sensible load only. Multimode = activate enhanced dehumidification mode as needed and meet sensible load....; Default: None"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBaseFields(
+    _AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassCommonFields, total=False
+):
+    priority_control_mode: Literal["", "CoolingPriority", "HeatingPriority", "ZonePriority"] | None
 
 class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(_AirLoopHVACUnitaryHeatCoolVAVChangeoverBypassBase):
     """Unitary system, heating and cooling with constant volume supply fan (continuous or cycling), direct expansion (DX) co..."""
@@ -33575,8 +37106,14 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBase(_TypedIDFObject):
     heat_recovery_water_outlet_node_name: str | None
     no_load_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Only used when the supply air fan operating mode is continuous (see field Supply Air Fan Operating Mode Schedule Name...; [m3/s]"""
-    number_of_speeds_for_heating: float | int | None
-    number_of_speeds_for_cooling: float | int | None
+    @property
+    def number_of_speeds_for_heating(self) -> float | int | None: ...
+    @number_of_speeds_for_heating.setter
+    def number_of_speeds_for_heating(self, value: int | None) -> None: ...
+    @property
+    def number_of_speeds_for_cooling(self) -> float | int | None: ...
+    @number_of_speeds_for_cooling.setter
+    def number_of_speeds_for_cooling(self, value: int | None) -> None: ...
     heating_speed_1_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Enter the operating supply air flow rate during heating operation or specify autosize.; [m3/s]"""
     heating_speed_2_supply_air_flow_rate: float | Literal["Autosize"] | None
@@ -33593,6 +37130,19 @@ class _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBase(_TypedIDFObject):
     """Enter the operating supply air flow rate during cooling operation or specify autosize.; [m3/s]"""
     cooling_speed_4_supply_air_flow_rate: float | Literal["Autosize"] | None
     """Enter the operating supply air flow rate during cooling operation or specify autosize.; [m3/s]"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBaseFields(
+    _AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedCommonFields, total=False
+):
+    number_of_speeds_for_heating: int | None
+    number_of_speeds_for_cooling: int | None
 
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(_AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeedBase):
     """Unitary system, heating and cooling, multi-speed with constant volume supply fan (continuous or cycling), direct expa..."""
@@ -33783,7 +37333,10 @@ class _AirConditionerVariableRefrigerantFlowBase(_TypedIDFObject):
     """PCF = a0 + a1*L + a2*L^2 + a3*L^3 + a4*H PCF = a0 + a1*L + a2*L^2 + a3*CR + a4*CR^2 + a5*(L)(CR) + a6*H where L = len...; [1/m]; Default: 0.0"""
     crankcase_heater_power_per_compressor: float | None
     """Enter the value of the resistive heater located in the compressor(s). This heater is used to warm the refrigerant and...; [W]; Default: 33.0"""
-    number_of_compressors: float | int | None
+    @property
+    def number_of_compressors(self) -> float | int | None: ...
+    @number_of_compressors.setter
+    def number_of_compressors(self, value: int | None) -> None: ...
     ratio_of_compressor_size_to_total_compressor_capacity: float | None
     """Enter the ratio of the first stage compressor to total compressor capacity. All other compressors are assumed to be e...; [W/W]; Default: 0.5"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None
@@ -33822,7 +37375,10 @@ class _AirConditionerVariableRefrigerantFlowBase(_TypedIDFObject):
     """This field is only used for Condenser Type = EvaporativelyCooled. Enter the outdoor dry-bulb temperature when the bas...; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         str
         | Literal[
             "",
@@ -33837,7 +37393,24 @@ class _AirConditionerVariableRefrigerantFlowBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal[
+            "",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None,
+    ) -> None: ...
     heat_recovery_cooling_capacity_modifier_curve_name: str | None
     """Enter the name of a performance curve which represents the change in cooling capacity when heat recovery is active A ..."""
     initial_heat_recovery_cooling_capacity_fraction: float | None
@@ -33862,6 +37435,33 @@ class _AirConditionerVariableRefrigerantFlowBase(_TypedIDFObject):
     """Enter the fractional electric consumption rate at the start of heat recovery mode. The electric consumption rate expo...; [W/W]; Default: 1.0"""
     heat_recovery_heating_energy_time_constant: float | None
     """Enter the time constant used to model the transition from cooling only mode to heat recovery mode; [hr]; Default: 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirConditionerVariableRefrigerantFlowBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirConditionerVariableRefrigerantFlowBaseFields(
+    _AirConditionerVariableRefrigerantFlowCommonFields, total=False
+):
+    number_of_compressors: int | None
+    fuel_type: (
+        Literal[
+            "",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
 
 class AirConditionerVariableRefrigerantFlow(_AirConditionerVariableRefrigerantFlowBase):
     """Variable refrigerant flow (VRF) air-to-air heat pump condensing unit (includes one or more electric compressors and o..."""
@@ -34035,7 +37635,10 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase(_TypedID
     """[W/m-K]; Default: 0.032; Range: >= 0.0"""
     crankcase_heater_power_per_compressor: float | None
     """Enter the value of the resistive heater located in the compressor(s). This heater is used to warm the refrigerant and...; [W]; Default: 33.0"""
-    number_of_compressors: float | int | None
+    @property
+    def number_of_compressors(self) -> float | int | None: ...
+    @number_of_compressors.setter
+    def number_of_compressors(self, value: int | None) -> None: ...
     ratio_of_compressor_size_to_total_compressor_capacity: float | None
     """Enter the ratio of the first stage compressor to total compressor capacity All other compressors are assumed to be eq...; [W/W]; Default: 0.5"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None
@@ -34054,8 +37657,24 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase(_TypedID
     """Enter the maximum outdoor temperature above which the defrost operation is disabled; [C]; Default: 5.0"""
     compressor_maximum_delta_pressure: float | None
     """[Pa]; Default: 4500000.0; Range: >= 0.0, <= 50000000.0"""
-    number_of_compressor_loading_index_entries: float | int | None
+    @property
+    def number_of_compressor_loading_index_entries(self) -> float | int | None: ...
+    @number_of_compressor_loading_index_entries.setter
+    def number_of_compressor_loading_index_entries(self, value: int | None) -> None: ...
     loading_indices: ExtensibleList[AirConditionerVariableRefrigerantFlowFluidTemperatureControlLoadingIndicesGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirConditionerVariableRefrigerantFlowFluidTemperatureControlBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirConditionerVariableRefrigerantFlowFluidTemperatureControlBaseFields(
+    _AirConditionerVariableRefrigerantFlowFluidTemperatureControlCommonFields, total=False
+):
+    number_of_compressors: int | None
+    number_of_compressor_loading_index_entries: int | None
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlBase
@@ -34222,7 +37841,10 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase(_Typed
     """[W/m-K]; Default: 0.032; Range: >= 0.0"""
     crankcase_heater_power_per_compressor: float | None
     """Enter the value of the resistive heater located in the compressor(s). This heater is used to warm the refrigerant and...; [W]; Default: 33.0"""
-    number_of_compressors: float | int | None
+    @property
+    def number_of_compressors(self) -> float | int | None: ...
+    @number_of_compressors.setter
+    def number_of_compressors(self, value: int | None) -> None: ...
     ratio_of_compressor_size_to_total_compressor_capacity: float | None
     """Enter the ratio of the first stage compressor to total compressor capacity All other compressors are assumed to be eq...; [W/W]; Default: 0.5"""
     maximum_outdoor_dry_bulb_temperature_for_crankcase_heater: float | None
@@ -34261,8 +37883,24 @@ class _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase(_Typed
     """Efficiency of the compressor inverter; [dimensionless]; Default: 0.95; Range: > 0.0, <= 1.0"""
     compressor_evaporative_capacity_correction_factor: float | None
     """Describe the evaporative capacity difference because of system configuration difference between test bed and real sys...; [dimensionless]; Default: 1.0; Range: > 0.0"""
-    number_of_compressor_loading_index_entries: float | int | None
+    @property
+    def number_of_compressor_loading_index_entries(self) -> float | int | None: ...
+    @number_of_compressor_loading_index_entries.setter
+    def number_of_compressor_loading_index_entries(self, value: int | None) -> None: ...
     loading_indices: ExtensibleList[AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRLoadingIndicesGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBaseFields(
+    _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRCommonFields, total=False
+):
+    number_of_compressors: int | None
+    number_of_compressor_loading_index_entries: int | None
 
 class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(
     _AirConditionerVariableRefrigerantFlowFluidTemperatureControlHRBase
@@ -34327,9 +37965,19 @@ class _ControllerWaterCoilBase(_TypedIDFObject):
     actuator_node_name: str | None
     controller_convergence_tolerance: float | Literal["", "Autosize"] | None
     """[deltaC]; Default: Autosize"""
-    maximum_actuated_flow: float | Literal["Autosize", ""] | None
+    @property
+    def maximum_actuated_flow(self) -> float | Literal["Autosize", ""] | None: ...
+    @maximum_actuated_flow.setter
+    def maximum_actuated_flow(self, value: float | Literal["Autosize"] | None) -> None: ...
     minimum_actuated_flow: float | None
     """[m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ControllerWaterCoilBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ControllerWaterCoilBaseFields(_ControllerWaterCoilCommonFields, total=False):
+    maximum_actuated_flow: float | Literal["Autosize"] | None
 
 class ControllerWaterCoil(_ControllerWaterCoilBase):
     """Controller for a water coil which is located directly in an air loop branch or outdoor air equipment list. Controls t..."""
@@ -34452,6 +38100,12 @@ class _ControllerOutdoorAirBase(_TypedIDFObject):
     )
     """BypassWhenWithinEconomizerLimits specifies that heat recovery is active only when the economizer is off because condi...; Default: BypassWhenWithinEconomizerLimits"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ControllerOutdoorAirBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ControllerOutdoorAirBaseFields(_ControllerOutdoorAirCommonFields, total=False): ...
+
 class ControllerOutdoorAir(_ControllerOutdoorAirBase):
     """Controller to set the outdoor air flow rate for an air loop. Control options include fixed, proportional, scheduled, ..."""
 
@@ -34477,7 +38131,10 @@ class _ControllerMechanicalVentilationBase(_TypedIDFObject):
     """If this field is blank, the controller uses the values from the associated Controller:OutdoorAir. Schedule values gre..."""
     demand_controlled_ventilation: Literal["", "No", "Yes"] | None
     """Default: No"""
-    system_outdoor_air_method: (
+    @property
+    def system_outdoor_air_method(
+        self,
+    ) -> (
         Literal[
             "",
             "IndoorAirQualityProcedure",
@@ -34493,9 +38150,41 @@ class _ControllerMechanicalVentilationBase(_TypedIDFObject):
             "Standard62.1VentilationRateProcedureWithLimit",
         ]
         | None
-    )
+    ): ...
+    @system_outdoor_air_method.setter
+    def system_outdoor_air_method(
+        self,
+        value: Literal[
+            "",
+            "IndoorAirQualityProcedure",
+            "IndoorAirQualityProcedureCombined",
+            "IndoorAirQualityProcedureGenericContaminant",
+            "ProportionalControlBasedOnDesignOARate",
+            "ProportionalControlBasedOnDesignOccupancy",
+            "ZoneSum",
+        ]
+        | None,
+    ) -> None: ...
     zone_maximum_outdoor_air_fraction: float | None
     """[dimensionless]; Default: 1.0; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ControllerMechanicalVentilationBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ControllerMechanicalVentilationBaseFields(_ControllerMechanicalVentilationCommonFields, total=False):
+    system_outdoor_air_method: (
+        Literal[
+            "",
+            "IndoorAirQualityProcedure",
+            "IndoorAirQualityProcedureCombined",
+            "IndoorAirQualityProcedureGenericContaminant",
+            "ProportionalControlBasedOnDesignOARate",
+            "ProportionalControlBasedOnDesignOccupancy",
+            "ZoneSum",
+        ]
+        | None
+    )
 
 class ControllerMechanicalVentilationZoneSpecificationsGroup(_TypedExtensibleGroup):
     """One zone_specifications group inside :class:`ControllerMechanicalVentilation`."""
@@ -34687,6 +38376,12 @@ class _AirLoopHVACOutdoorAirSystemBase(_TypedIDFObject):
     """Enter the name of an AirLoopHVAC:ControllerList object or blank if this object is used in AirLoopHVAC:DedicatedOutdoo..."""
     outdoor_air_equipment_list_name: str | None
     """Enter the name of an AirLoopHVAC:OutdoorAirSystem:EquipmentList object."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirLoopHVACOutdoorAirSystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACOutdoorAirSystemBaseFields(_AirLoopHVACOutdoorAirSystemCommonFields, total=False): ...
 
 class AirLoopHVACOutdoorAirSystem(_AirLoopHVACOutdoorAirSystemBase):
     """Outdoor air subsystem for an AirLoopHVAC. Includes an outdoor air mixing box and optional outdoor air conditioning eq..."""
@@ -34895,8 +38590,21 @@ class _AirLoopHVACDedicatedOutdoorAirSystemBase(_TypedIDFObject):
     """[C]"""
     precool_design_humidity_ratio: float | None
     """[kgWater/kgDryAir]"""
-    number_of_airloophvac: float | int | None
+    @property
+    def number_of_airloophvac(self) -> float | int | None: ...
+    @number_of_airloophvac.setter
+    def number_of_airloophvac(self, value: int | None) -> None: ...
     airloophvacs: ExtensibleList[AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__AirLoopHVACDedicatedOutdoorAirSystemBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __AirLoopHVACDedicatedOutdoorAirSystemBaseFields(_AirLoopHVACDedicatedOutdoorAirSystemCommonFields, total=False):
+    number_of_airloophvac: int | None
 
 class AirLoopHVACDedicatedOutdoorAirSystem(_AirLoopHVACDedicatedOutdoorAirSystemBase):
     """Defines a central forced air system to provide dedicated outdoor air to multiple AirLoopHVACs.; Since: 9.2.0"""
@@ -34955,6 +38663,10 @@ class _BranchBase(_TypedIDFObject):
 
     pressure_drop_curve_name: str | None
     """Optional field to include this branch in plant pressure drop calculations This field is only relevant for branches in..."""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__BranchBaseFields]) -> None: ...  # type: ignore[override]
+
+class __BranchBaseFields(_BranchCommonFields, total=False): ...
 
 class BranchComponentsGroup(_TypedExtensibleGroup):
     """One components group inside :class:`Branch`."""
@@ -35270,15 +38982,24 @@ class _PipingSystemUndergroundDomainBase(_TypedIDFObject):
     """Domain extent in the local 'Y' direction; [m]; Range: > 0.0"""
     zmax: float | None
     """Domain extent in the local 'Y' direction; [m]; Range: > 0.0"""
-    x_direction_mesh_density_parameter: float | int | None
+    @property
+    def x_direction_mesh_density_parameter(self) -> float | int | None: ...
+    @x_direction_mesh_density_parameter.setter
+    def x_direction_mesh_density_parameter(self, value: int | None) -> None: ...
     x_direction_mesh_type: Literal["SymmetricGeometric", "Uniform"] | None
     x_direction_geometric_coefficient: float | None
     """optional Only used if mesh type is symmetric geometric; Default: 1.3; Range: >= 1.0, <= 2.0"""
-    y_direction_mesh_density_parameter: float | int | None
+    @property
+    def y_direction_mesh_density_parameter(self) -> float | int | None: ...
+    @y_direction_mesh_density_parameter.setter
+    def y_direction_mesh_density_parameter(self, value: int | None) -> None: ...
     y_direction_mesh_type: Literal["SymmetricGeometric", "Uniform"] | None
     y_direction_geometric_coefficient: float | None
     """optional Only used if mesh type is symmetric geometric; Default: 1.3; Range: >= 1.0, <= 2.0"""
-    z_direction_mesh_density_parameter: float | int | None
+    @property
+    def z_direction_mesh_density_parameter(self) -> float | int | None: ...
+    @z_direction_mesh_density_parameter.setter
+    def z_direction_mesh_density_parameter(self, value: int | None) -> None: ...
     z_direction_mesh_type: Literal["SymmetricGeometric", "Uniform"] | None
     z_direction_geometric_coefficient: float | None
     """optional Only used if mesh type is symmetric geometric; Default: 1.3; Range: >= 1.0, <= 2.0"""
@@ -35315,11 +39036,28 @@ class _PipingSystemUndergroundDomainBase(_TypedIDFObject):
     """Required only if Domain Has Basement Interaction"""
     convergence_criterion_for_the_outer_cartesian_domain_iteration_loop: float | None
     """[deltaC]; Default: 0.001; Range: >= 1e-06, <= 0.5"""
-    maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: float | int | None
+    @property
+    def maximum_iterations_in_the_outer_cartesian_domain_iteration_loop(self) -> float | int | None: ...
+    @maximum_iterations_in_the_outer_cartesian_domain_iteration_loop.setter
+    def maximum_iterations_in_the_outer_cartesian_domain_iteration_loop(self, value: int | None) -> None: ...
     evapotranspiration_ground_cover_parameter: float | None
     """This specifies the ground cover effects during evapotranspiration calculations. The value roughly represents the foll...; Default: 0.4; Range: >= 0.0, <= 1.5"""
-    number_of_pipe_circuits_entered_for_this_domain: float | int | None
+    @property
+    def number_of_pipe_circuits_entered_for_this_domain(self) -> float | int | None: ...
+    @number_of_pipe_circuits_entered_for_this_domain.setter
+    def number_of_pipe_circuits_entered_for_this_domain(self, value: int | None) -> None: ...
     pipe_circuits: ExtensibleList[PipingSystemUndergroundDomainPipeCircuitsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PipingSystemUndergroundDomainBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PipingSystemUndergroundDomainBaseFields(_PipingSystemUndergroundDomainCommonFields, total=False):
+    x_direction_mesh_density_parameter: int | None
+    y_direction_mesh_density_parameter: int | None
+    z_direction_mesh_density_parameter: int | None
+    maximum_iterations_in_the_outer_cartesian_domain_iteration_loop: int | None
+    number_of_pipe_circuits_entered_for_this_domain: int | None
 
 class PipingSystemUndergroundDomain(_PipingSystemUndergroundDomainBase):
     """The ground domain object for underground piping system simulation."""
@@ -35383,12 +39121,33 @@ class _PipingSystemUndergroundPipeCircuitBase(_TypedIDFObject):
     circuit_outlet_node: str | None
     convergence_criterion_for_the_inner_radial_iteration_loop: float | None
     """[deltaC]; Default: 0.001; Range: >= 1e-06, <= 0.5"""
-    maximum_iterations_in_the_inner_radial_iteration_loop: float | int | None
-    number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: float | int | None
+    @property
+    def maximum_iterations_in_the_inner_radial_iteration_loop(self) -> float | int | None: ...
+    @maximum_iterations_in_the_inner_radial_iteration_loop.setter
+    def maximum_iterations_in_the_inner_radial_iteration_loop(self, value: int | None) -> None: ...
+    @property
+    def number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region(self) -> float | int | None: ...
+    @number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region.setter
+    def number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region(self, value: int | None) -> None: ...
     radial_thickness_of_inner_radial_near_pipe_mesh_region: float | None
     """Required because it must be selected by user instead of being inferred from circuit/domain object inputs.; Range: > 0.0"""
-    number_of_pipe_segments_entered_for_this_pipe_circuit: float | int | None
+    @property
+    def number_of_pipe_segments_entered_for_this_pipe_circuit(self) -> float | int | None: ...
+    @number_of_pipe_segments_entered_for_this_pipe_circuit.setter
+    def number_of_pipe_segments_entered_for_this_pipe_circuit(self, value: int | None) -> None: ...
     pipe_segments: ExtensibleList[PipingSystemUndergroundPipeCircuitPipeSegmentsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__PipingSystemUndergroundPipeCircuitBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __PipingSystemUndergroundPipeCircuitBaseFields(_PipingSystemUndergroundPipeCircuitCommonFields, total=False):
+    maximum_iterations_in_the_inner_radial_iteration_loop: int | None
+    number_of_soil_nodes_in_the_inner_radial_near_pipe_mesh_region: int | None
+    number_of_pipe_segments_entered_for_this_pipe_circuit: int | None
 
 class PipingSystemUndergroundPipeCircuit(_PipingSystemUndergroundPipeCircuitBase):
     """The pipe circuit object in an underground piping system. This object is simulated within an underground piping domain..."""
@@ -35527,6 +39286,12 @@ class _PumpVariableSpeedBase(_TypedIDFObject):
     design_minimum_flow_rate_fraction: float | None
     """Used to size Design Minimum Flow Rate; Default: 0.0; Range: >= 0.0, <= 1.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PumpVariableSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PumpVariableSpeedBaseFields(_PumpVariableSpeedCommonFields, total=False): ...
+
 class PumpVariableSpeed(_PumpVariableSpeedBase):
     """This pump model is described in the ASHRAE secondary HVAC toolkit."""
 
@@ -35592,6 +39357,12 @@ class _PumpConstantSpeedBase(_TypedIDFObject):
     """Used to size Design Power Consumption from design flow rate; [W/(m3/s)] (W/(gal/min)); Default: 348701.1; Range: > 0.0"""
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PumpConstantSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PumpConstantSpeedBaseFields(_PumpConstantSpeedCommonFields, total=False): ...
 
 class PumpConstantSpeed(_PumpConstantSpeedBase):
     """This pump model is described in the ASHRAE secondary HVAC toolkit."""
@@ -35659,6 +39430,12 @@ class _PumpVariableSpeedCondensateBase(_TypedIDFObject):
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PumpVariableSpeedCondensateBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PumpVariableSpeedCondensateBaseFields(_PumpVariableSpeedCondensateCommonFields, total=False): ...
+
 class PumpVariableSpeedCondensate(_PumpVariableSpeedCondensateBase):
     """This pump model is described in the ASHRAE secondary HVAC toolkit. Variable Speed Condensate pump for Steam Systems"""
 
@@ -35696,7 +39473,10 @@ class _HeaderedPumpsConstantSpeedBase(_TypedIDFObject):
     outlet_node_name: str | None
     total_design_flow_rate: float | Literal["Autosize"] | None
     """If the field is not autosized set to the flow rate to the total flow when all pumps are running at full load; [m3/s] (gal/min)"""
-    number_of_pumps_in_bank: float | int | None
+    @property
+    def number_of_pumps_in_bank(self) -> float | int | None: ...
+    @number_of_pumps_in_bank.setter
+    def number_of_pumps_in_bank(self, value: int | None) -> None: ...
     flow_sequencing_control_scheme: Literal["", "Sequential"] | None
     """Default: Sequential"""
     design_pump_head: float | None
@@ -35721,6 +39501,13 @@ class _HeaderedPumpsConstantSpeedBase(_TypedIDFObject):
     """Used to size Design Power Consumption from design flow rate; [W/(m3/s)] (W/(gal/min)); Default: 348701.1; Range: > 0.0"""
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HeaderedPumpsConstantSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HeaderedPumpsConstantSpeedBaseFields(_HeaderedPumpsConstantSpeedCommonFields, total=False):
+    number_of_pumps_in_bank: int | None
 
 class HeaderedPumpsConstantSpeed(_HeaderedPumpsConstantSpeedBase):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
@@ -35766,7 +39553,10 @@ class _HeaderedPumpsVariableSpeedBase(_TypedIDFObject):
     outlet_node_name: str | None
     total_design_flow_rate: float | Literal["Autosize"] | None
     """If the field is not autosized set to the flow rate to the total flow when all pumps are running at full load; [m3/s] (gal/min)"""
-    number_of_pumps_in_bank: float | int | None
+    @property
+    def number_of_pumps_in_bank(self) -> float | int | None: ...
+    @number_of_pumps_in_bank.setter
+    def number_of_pumps_in_bank(self, value: int | None) -> None: ...
     flow_sequencing_control_scheme: Literal["", "Sequential"] | None
     """Default: Sequential"""
     design_pump_head: float | None
@@ -35801,6 +39591,13 @@ class _HeaderedPumpsVariableSpeedBase(_TypedIDFObject):
     """Used to size Design Power Consumption from design flow rate; [W/(m3/s)] (W/(gal/min)); Default: 348701.1; Range: > 0.0"""
     design_shaft_power_per_unit_flow_rate_per_unit_head: float | None
     """Used to size Design Power Consumption from design flow rate for head and motor efficiency; [W/((m3/s)-Pa)] (W/((gal/min)-ftH20)); Default: 1.282051282; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HeaderedPumpsVariableSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HeaderedPumpsVariableSpeedBaseFields(_HeaderedPumpsVariableSpeedCommonFields, total=False):
+    number_of_pumps_in_bank: int | None
 
 class HeaderedPumpsVariableSpeed(_HeaderedPumpsVariableSpeedBase):
     """This Headered pump object describes a pump bank with more than 1 pump in parallel"""
@@ -35856,6 +39653,12 @@ class _LoadProfilePlantBase(_TypedIDFObject):
     peak_flow_rate: float | None
     """[m3/s] (gal/min)"""
     flow_rate_fraction_schedule_name: str | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LoadProfilePlantBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LoadProfilePlantBaseFields(_LoadProfilePlantCommonFields, total=False): ...
 
 class LoadProfilePlant(_LoadProfilePlantBase):
     """Used to simulate a scheduled plant loop demand profile. Load and flow rate are specified using schedules. Positive va..."""
@@ -36113,7 +39916,10 @@ class _SolarCollectorPerformanceIntegralCollectorStorageBase(_TypedIDFObject):
     """This value is used to estimate collector side area for the heat loss calculation through the collector side; [m]; Default: 0.2; Range: > 0.0, < 0.3"""
     thermal_mass_of_absorber_plate: float | None
     """Calculated from the specific heat, density and thickness of the absorber plate.; [J/m2-K]; Default: 0.0; Range: >= 0.0"""
-    number_of_covers: float | int | None
+    @property
+    def number_of_covers(self) -> float | int | None: ...
+    @number_of_covers.setter
+    def number_of_covers(self, value: int | None) -> None: ...
     cover_spacing: float | None
     """The gap between the transparent covers and between the inner cover and the absorber plate; [m]; Default: 0.05; Range: > 0.0, <= 0.2"""
     refractive_index_of_outer_cover: float | None
@@ -36132,6 +39938,18 @@ class _SolarCollectorPerformanceIntegralCollectorStorageBase(_TypedIDFObject):
     """The absorber plate solar absorptance. Copper is assumed as the default absorber plate.; [dimensionless]; Default: 0.96; Range: > 0.0, < 1.0"""
     emissivity_of_absorber_plate: float | None
     """Thermal emissivity of the absorber plate; [dimensionless]; Default: 0.3; Range: > 0.0, < 1.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SolarCollectorPerformanceIntegralCollectorStorageBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SolarCollectorPerformanceIntegralCollectorStorageBaseFields(
+    _SolarCollectorPerformanceIntegralCollectorStorageCommonFields, total=False
+):
+    number_of_covers: int | None
 
 class SolarCollectorPerformanceIntegralCollectorStorage(_SolarCollectorPerformanceIntegralCollectorStorageBase):
     """Thermal and optical performance parameters for a single glazed solar collector with integral storage unit."""
@@ -36238,6 +40056,17 @@ class _SolarCollectorUnglazedTranspiredMultisystemBase(_TypedIDFObject):
     solar_collector_name: str | None
     """Enter the name of a SolarCollector:UnglazedTranspired object."""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__SolarCollectorUnglazedTranspiredMultisystemBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __SolarCollectorUnglazedTranspiredMultisystemBaseFields(
+    _SolarCollectorUnglazedTranspiredMultisystemCommonFields, total=False
+): ...
+
 class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(_TypedExtensibleGroup):
     """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
 
@@ -36280,8 +40109,10 @@ class _BoilerHotWaterCommonFields(TypedDict, total=False):
 
 class _BoilerHotWaterBase(_TypedIDFObject):
     """``Boiler:HotWater`` as every supported EnergyPlus version declares it."""
-
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         str
         | Literal[
             "Coal",
@@ -36296,7 +40127,24 @@ class _BoilerHotWaterBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None,
+    ) -> None: ...
     nominal_capacity: float | Literal["Autosize"] | None
     """[W]"""
     nominal_thermal_efficiency: float | None
@@ -36304,7 +40152,10 @@ class _BoilerHotWaterBase(_TypedIDFObject):
     efficiency_curve_temperature_evaluation_variable: Literal["EnteringBoiler", "LeavingBoiler"] | None
     normalized_boiler_efficiency_curve_name: str | None
     """Linear, Quadratic and Cubic efficiency curves are solely a function of PLR. All other efficiency curve types are a fu..."""
-    design_water_flow_rate: float | Literal["Autosize", ""] | None
+    @property
+    def design_water_flow_rate(self) -> float | Literal["Autosize", ""] | None: ...
+    @design_water_flow_rate.setter
+    def design_water_flow_rate(self, value: float | Literal["Autosize"] | None) -> None: ...
     minimum_part_load_ratio: float | None
     """Default: 0.0; Range: >= 0.0"""
     maximum_part_load_ratio: float | None
@@ -36321,6 +40172,28 @@ class _BoilerHotWaterBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__BoilerHotWaterBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __BoilerHotWaterBaseFields(_BoilerHotWaterCommonFields, total=False):
+    fuel_type: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+    design_water_flow_rate: float | Literal["Autosize"] | None
 
 class BoilerHotWater(_BoilerHotWaterBase):
     """This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
@@ -36387,8 +40260,10 @@ class _BoilerSteamCommonFields(TypedDict, total=False):
 
 class _BoilerSteamBase(_TypedIDFObject):
     """``Boiler:Steam`` as every supported EnergyPlus version declares it."""
-
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -36405,7 +40280,12 @@ class _BoilerSteamBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     maximum_operating_pressure: float | None
     """[Pa]; Default: 160000.0"""
     theoretical_efficiency: float | None
@@ -36429,6 +40309,11 @@ class _BoilerSteamBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__BoilerSteamBaseFields]) -> None: ...  # type: ignore[override]
+
+class __BoilerSteamBaseFields(_BoilerSteamCommonFields, total=False):
+    fuel_type: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class BoilerSteam(_BoilerSteamBase):
     """This boiler model is an adaptation of the empirical model from the Building Loads and System Thermodynamics (BLAST) p..."""
@@ -36644,6 +40529,12 @@ class _ChillerElectricEIRBase(_TypedIDFObject):
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerElectricEIRBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerElectricEIRBaseFields(_ChillerElectricEIRCommonFields, total=False): ...
+
 class ChillerElectricEIR(_ChillerElectricEIRBase):
     """This chiller model is the empirical model from the DOE-2 building Energy simulation program. Chiller performance at o..."""
 
@@ -36766,6 +40657,12 @@ class _ChillerElectricReformulatedEIRBase(_TypedIDFObject):
     """This optional field provides control over the heat recovery Using this triggers a model more suited to series bundle ..."""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerElectricReformulatedEIRBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerElectricReformulatedEIRBaseFields(_ChillerElectricReformulatedEIRCommonFields, total=False): ...
 
 class ChillerElectricReformulatedEIR(_ChillerElectricReformulatedEIRBase):
     """This chiller model is an empirical model, a reformulated version of Chiller:Electric:EIR where the performance is a f..."""
@@ -36900,6 +40797,12 @@ class _ChillerElectricBase(_TypedIDFObject):
     """This optional field provides control over the heat recovery Using this triggers a model more suited to series bundle ..."""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerElectricBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerElectricBaseFields(_ChillerElectricCommonFields, total=False): ...
 
 class ChillerElectric(_ChillerElectricBase):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
@@ -37128,6 +41031,12 @@ class _ChillerConstantCOPBase(_TypedIDFObject):
     basin_heater_operating_schedule_name: str | None
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerConstantCOPBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerConstantCOPBaseFields(_ChillerConstantCOPCommonFields, total=False): ...
+
 class ChillerConstantCOP(_ChillerConstantCOPBase):
     """This constant COP chiller model provides a means of quickly specifying a Chiller where performance data is not availa..."""
 
@@ -37249,7 +41158,10 @@ class _ChillerEngineDrivenBase(_TypedIDFObject):
     """[(kg/s)/W]; Range: >= 0.0"""
     design_minimum_exhaust_temperature: float | None
     """[C]"""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "Diesel",
             "FuelOil#1",
@@ -37264,7 +41176,11 @@ class _ChillerEngineDrivenBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     fuel_higher_heating_value: float | None
     """[kJ/kg]"""
     design_heat_recovery_water_flow_rate: float | Literal["", "Autosize"] | None
@@ -37285,6 +41201,13 @@ class _ChillerEngineDrivenBase(_TypedIDFObject):
     """This field is only used for Condenser Type = EvaporativelyCooled. Schedule values greater than 0 allow the basin heat..."""
     condenser_heat_recovery_relative_capacity_fraction: float | None
     """This optional field is the fraction of total rejected heat that can be recovered at full load. Also used to autosize ...; Range: >= 0.0, <= 1.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerEngineDrivenBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerEngineDrivenBaseFields(_ChillerEngineDrivenCommonFields, total=False):
+    fuel_type: Literal["Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class ChillerEngineDriven(_ChillerEngineDrivenBase):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
@@ -37441,7 +41364,10 @@ class _ChillerCombustionTurbineBase(_TypedIDFObject):
     heat_recovery_outlet_node_name: str | None
     chiller_flow_mode: Literal["", "ConstantFlow", "LeavingSetpointModulated", "NotModulated"] | None
     """Select operating mode for fluid flow through the chiller. 'NotModulated' is for either variable or constant pumping w...; Default: NotModulated"""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -37457,7 +41383,11 @@ class _ChillerCombustionTurbineBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     heat_recovery_maximum_temperature: float | None
     """[C]; Default: 80.0; Range: >= 0.0, <= 100.0"""
     sizing_factor: float | None
@@ -37472,6 +41402,13 @@ class _ChillerCombustionTurbineBase(_TypedIDFObject):
     """This optional field is the fraction of total rejected heat that can be recovered at full load. Also used to autosize ...; Range: >= 0.0, <= 1.0"""
     turbine_engine_efficiency: float | None
     """This optional field is the nominal turbine engine efficiency and is used when Gas Turbine Engine Capacity is set to A...; Default: 0.35"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ChillerCombustionTurbineBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerCombustionTurbineBaseFields(_ChillerCombustionTurbineCommonFields, total=False):
+    fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class ChillerCombustionTurbine(_ChillerCombustionTurbineBase):
     """This chiller model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Chiller ..."""
@@ -37590,7 +41527,10 @@ class _ChillerHeaterAbsorptionDirectFiredBase(_TypedIDFObject):
     """The chilled water supply temperature below which the chiller will shut off.; [C]; Default: 2.0"""
     fuel_higher_heating_value: float | None
     """Not currently used.; [kJ/kg]; Default: 0.0"""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -37606,9 +41546,23 @@ class _ChillerHeaterAbsorptionDirectFiredBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ChillerHeaterAbsorptionDirectFiredBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerHeaterAbsorptionDirectFiredBaseFields(_ChillerHeaterAbsorptionDirectFiredCommonFields, total=False):
+    fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class ChillerHeaterAbsorptionDirectFired(_ChillerHeaterAbsorptionDirectFiredBase):
     """Direct fired gas absorption chiller-heater using performance curves similar to DOE-2"""
@@ -37779,6 +41733,12 @@ class _HeatPumpPlantLoopEIRCoolingBase(_TypedIDFObject):
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HeatPumpPlantLoopEIRCoolingBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpPlantLoopEIRCoolingBaseFields(_HeatPumpPlantLoopEIRCoolingCommonFields, total=False): ...
+
 class HeatPumpPlantLoopEIRCooling(_HeatPumpPlantLoopEIRCoolingBase):
     """An EIR formulated water to water heat pump model, cooling operation.; Since: 9.3.0"""
 
@@ -37877,6 +41837,12 @@ class _HeatPumpPlantLoopEIRHeatingBase(_TypedIDFObject):
     """Electric Input Ratio (EIR) modifier as a function of temperature EIR = 1/COP curve = a + b*CWS + c*CWS**2 + d*ECT + e..."""
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
     """Electric Input Ratio (EIR) modifier as a function of Part Load Ratio (PLR) EIR = 1/COP quadratic curve = a + b*PLR + ..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HeatPumpPlantLoopEIRHeatingBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpPlantLoopEIRHeatingBaseFields(_HeatPumpPlantLoopEIRHeatingCommonFields, total=False): ...
 
 class HeatPumpPlantLoopEIRHeating(_HeatPumpPlantLoopEIRHeatingBase):
     """An EIR formulated water to water heat pump model, heating operation; Since: 9.3.0"""
@@ -38081,6 +42047,15 @@ class _HeatPumpAirToWaterFuelFiredHeatingBase(_TypedIDFObject):
     standby_electric_power: float | None
     """Standby Electric Power in [W]; [W]; Default: 0.0; Range: >= 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HeatPumpAirToWaterFuelFiredHeatingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpAirToWaterFuelFiredHeatingBaseFields(_HeatPumpAirToWaterFuelFiredHeatingCommonFields, total=False): ...
+
 class HeatPumpAirToWaterFuelFiredHeating(_HeatPumpAirToWaterFuelFiredHeatingBase):
     """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
 
@@ -38202,6 +42177,15 @@ class _HeatPumpAirToWaterFuelFiredCoolingBase(_TypedIDFObject):
     """Auxiliary Electric EIRFPLR - Auxiliary Electric Energy Input Ratio Function of PLR (Part Load Ratio) Curve Name, whic..."""
     standby_electric_power: float | None
     """Standby Electric Power in [W]; [W]; Default: 0.0; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HeatPumpAirToWaterFuelFiredCoolingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpAirToWaterFuelFiredCoolingBaseFields(_HeatPumpAirToWaterFuelFiredCoolingCommonFields, total=False): ...
 
 class HeatPumpAirToWaterFuelFiredCooling(_HeatPumpAirToWaterFuelFiredCoolingBase):
     """The object defines a fuel-fired absorption heat pump based on equation-fit models.; Since: 23.1.0"""
@@ -38576,6 +42560,17 @@ class _HeatPumpWaterToWaterEquationFitHeatingBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     companion_cooling_heat_pump_name: str | None
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HeatPumpWaterToWaterEquationFitHeatingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpWaterToWaterEquationFitHeatingBaseFields(
+    _HeatPumpWaterToWaterEquationFitHeatingCommonFields, total=False
+): ...
+
 class HeatPumpWaterToWaterEquationFitHeating(_HeatPumpWaterToWaterEquationFitHeatingBase):
     """simple water-water hp curve-fit model"""
 
@@ -38626,6 +42621,17 @@ class _HeatPumpWaterToWaterEquationFitCoolingBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     companion_heating_heat_pump_name: str | None
     """This optional field is used to coordinate sizing calculations between heating and cooling modes."""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__HeatPumpWaterToWaterEquationFitCoolingBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatPumpWaterToWaterEquationFitCoolingBaseFields(
+    _HeatPumpWaterToWaterEquationFitCoolingCommonFields, total=False
+): ...
 
 class HeatPumpWaterToWaterEquationFitCooling(_HeatPumpWaterToWaterEquationFitCoolingBase):
     """simple water-water heat pump curve-fit model"""
@@ -38958,83 +42964,168 @@ class _CentralHeatPumpSystemBase(_TypedIDFObject):
     chiller_heater_modules_performance_component_object_type_1: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_1: str | None
     chiller_heater_modules_control_schedule_name_1: str | None
-    number_of_chiller_heater_modules_1: float | int | None
+    @property
+    def number_of_chiller_heater_modules_1(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_1.setter
+    def number_of_chiller_heater_modules_1(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_2: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_2: str | None
     chiller_heater_modules_control_schedule_name_2: str | None
-    number_of_chiller_heater_modules_2: float | int | None
+    @property
+    def number_of_chiller_heater_modules_2(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_2.setter
+    def number_of_chiller_heater_modules_2(self, value: int | None) -> None: ...
     chiller_heater_performance_component_object_type_3: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_performance_component_name_3: str | None
     chiller_heater_modules_control_schedule_name_3: str | None
-    number_of_chiller_heater_modules_3: float | int | None
+    @property
+    def number_of_chiller_heater_modules_3(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_3.setter
+    def number_of_chiller_heater_modules_3(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_4: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_4: str | None
     chiller_heater_modules_control_schedule_name_4: str | None
-    number_of_chiller_heater_modules_4: float | int | None
+    @property
+    def number_of_chiller_heater_modules_4(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_4.setter
+    def number_of_chiller_heater_modules_4(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_5: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_models_performance_component_name_5: str | None
     chiller_heater_modules_control_schedule_name_5: str | None
-    number_of_chiller_heater_modules_5: float | int | None
+    @property
+    def number_of_chiller_heater_modules_5(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_5.setter
+    def number_of_chiller_heater_modules_5(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_6: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_6: str | None
     chiller_heater_modules_control_schedule_name_6: str | None
-    number_of_chiller_heater_modules_6: float | int | None
+    @property
+    def number_of_chiller_heater_modules_6(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_6.setter
+    def number_of_chiller_heater_modules_6(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_7: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_7: str | None
     chiller_heater_modules_control_schedule_name_7: str | None
-    number_of_chiller_heater_modules_7: float | int | None
+    @property
+    def number_of_chiller_heater_modules_7(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_7.setter
+    def number_of_chiller_heater_modules_7(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_8: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_8: str | None
     chiller_heater_modules_control_schedule_name_8: str | None
-    number_of_chiller_heater_modules_8: float | int | None
+    @property
+    def number_of_chiller_heater_modules_8(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_8.setter
+    def number_of_chiller_heater_modules_8(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_9: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_9: str | None
     chiller_heater_modules_control_schedule_name_9: str | None
-    number_of_chiller_heater_modules_9: float | int | None
+    @property
+    def number_of_chiller_heater_modules_9(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_9.setter
+    def number_of_chiller_heater_modules_9(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_10: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_10: str | None
     chiller_heater_modules_control_schedule_name_10: str | None
-    number_of_chiller_heater_modules_10: float | int | None
+    @property
+    def number_of_chiller_heater_modules_10(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_10.setter
+    def number_of_chiller_heater_modules_10(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_11: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_11: str | None
     chiller_heater_module_control_schedule_name_11: str | None
-    number_of_chiller_heater_modules_11: float | int | None
+    @property
+    def number_of_chiller_heater_modules_11(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_11.setter
+    def number_of_chiller_heater_modules_11(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_12: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_12: str | None
     chiller_heater_modules_control_schedule_name_12: str | None
-    number_of_chiller_heater_modules_12: float | int | None
+    @property
+    def number_of_chiller_heater_modules_12(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_12.setter
+    def number_of_chiller_heater_modules_12(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_13: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_13: str | None
     chiller_heater_modules_control_schedule_name_13: str | None
-    number_of_chiller_heater_modules_13: float | int | None
+    @property
+    def number_of_chiller_heater_modules_13(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_13.setter
+    def number_of_chiller_heater_modules_13(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_14: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_14: str | None
     chiller_heater_modules_control_schedule_name_14: str | None
-    number_of_chiller_heater_modules_14: float | int | None
+    @property
+    def number_of_chiller_heater_modules_14(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_14.setter
+    def number_of_chiller_heater_modules_14(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_15: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_15: str | None
     chiller_heater_modules_control_schedule_name_15: str | None
-    number_of_chiller_heater_modules_15: float | int | None
+    @property
+    def number_of_chiller_heater_modules_15(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_15.setter
+    def number_of_chiller_heater_modules_15(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_16: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_16: str | None
     chiller_heater_modules_control_schedule_name_16: str | None
-    number_of_chiller_heater_modules_16: float | int | None
+    @property
+    def number_of_chiller_heater_modules_16(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_16.setter
+    def number_of_chiller_heater_modules_16(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_17: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_17: str | None
     chiller_heater_modules_control_schedule_name_17: str | None
-    number_of_chiller_heater_modules_17: float | int | None
+    @property
+    def number_of_chiller_heater_modules_17(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_17.setter
+    def number_of_chiller_heater_modules_17(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_18: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_18: str | None
     chiller_heater_modules_control_control_schedule_name_18: str | None
-    number_of_chiller_heater_modules_18: float | int | None
+    @property
+    def number_of_chiller_heater_modules_18(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_18.setter
+    def number_of_chiller_heater_modules_18(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_19: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_19: str | None
     chiller_heater_modules_control_schedule_name_19: str | None
-    number_of_chiller_heater_modules_19: float | int | None
+    @property
+    def number_of_chiller_heater_modules_19(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_19.setter
+    def number_of_chiller_heater_modules_19(self, value: int | None) -> None: ...
     chiller_heater_modules_performance_component_object_type_20: Literal["ChillerHeaterPerformance:Electric:EIR"] | None
     chiller_heater_modules_performance_component_name_20: str | None
     chiller_heater_modules_control_schedule_name_20: str | None
-    number_of_chiller_heater_modules_20: float | int | None
+    @property
+    def number_of_chiller_heater_modules_20(self) -> float | int | None: ...
+    @number_of_chiller_heater_modules_20.setter
+    def number_of_chiller_heater_modules_20(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CentralHeatPumpSystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CentralHeatPumpSystemBaseFields(_CentralHeatPumpSystemCommonFields, total=False):
+    number_of_chiller_heater_modules_1: int | None
+    number_of_chiller_heater_modules_2: int | None
+    number_of_chiller_heater_modules_3: int | None
+    number_of_chiller_heater_modules_4: int | None
+    number_of_chiller_heater_modules_5: int | None
+    number_of_chiller_heater_modules_6: int | None
+    number_of_chiller_heater_modules_7: int | None
+    number_of_chiller_heater_modules_8: int | None
+    number_of_chiller_heater_modules_9: int | None
+    number_of_chiller_heater_modules_10: int | None
+    number_of_chiller_heater_modules_11: int | None
+    number_of_chiller_heater_modules_12: int | None
+    number_of_chiller_heater_modules_13: int | None
+    number_of_chiller_heater_modules_14: int | None
+    number_of_chiller_heater_modules_15: int | None
+    number_of_chiller_heater_modules_16: int | None
+    number_of_chiller_heater_modules_17: int | None
+    number_of_chiller_heater_modules_18: int | None
+    number_of_chiller_heater_modules_19: int | None
+    number_of_chiller_heater_modules_20: int | None
 
 class CentralHeatPumpSystem(_CentralHeatPumpSystemBase):
     """This chiller bank can contain multiple chiller heaters and heat pump performance objects. Its function is to encapsul..."""
@@ -39201,6 +43292,17 @@ class _ChillerHeaterPerformanceElectricEIRBase(_TypedIDFObject):
     sizing_factor: float | None
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
 
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ChillerHeaterPerformanceElectricEIRBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ChillerHeaterPerformanceElectricEIRBaseFields(
+    _ChillerHeaterPerformanceElectricEIRCommonFields, total=False
+): ...
+
 class ChillerHeaterPerformanceElectricEIR(_ChillerHeaterPerformanceElectricEIRBase):
     """This chiller model is a generic chiller-heater where the cooling mode performance is a function of condenser entering..."""
 
@@ -39284,12 +43386,18 @@ class _CoolingTowerSingleSpeedBase(_TypedIDFObject):
     """Enter the outdoor dry-bulb temperature when the basin heater turns on; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """Schedule values greater than 0 allow the basin heater to operate whenever the outdoor air dry-bulb temperature is bel..."""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit", ""] | None
+    @property
+    def evaporation_loss_mode(self) -> Literal["LossFactor", "SaturatedExit", ""] | None: ...
+    @evaporation_loss_mode.setter
+    def evaporation_loss_mode(self, value: Literal["LossFactor", "SaturatedExit"] | None) -> None: ...
     evaporation_loss_factor: float | None
     """Rate of water evaporation from the cooling tower and lost to the outdoor air [%/K] Evaporation loss is calculated as ...; [percent/K]; Default: 0.2"""
     drift_loss_percent: float | None
     """Rate of drift loss as a percentage of circulating condenser water flow rate Typical values are between 0.002 and 0.2%...; [percent]; Default: 0.008"""
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate", ""] | None
+    @property
+    def blowdown_calculation_mode(self) -> Literal["ConcentrationRatio", "ScheduledRate", ""] | None: ...
+    @blowdown_calculation_mode.setter
+    def blowdown_calculation_mode(self, value: Literal["ConcentrationRatio", "ScheduledRate"] | None) -> None: ...
     blowdown_concentration_ratio: float | None
     """Characterizes the rate of blowdown in the cooling tower. Blowdown is water intentionally drained from the tower in or...; Default: 3.0; Range: >= 2.0"""
     blowdown_makeup_water_usage_schedule_name: str | None
@@ -39299,7 +43407,10 @@ class _CoolingTowerSingleSpeedBase(_TypedIDFObject):
     """Enter the name of an outdoor air node"""
     capacity_control: Literal["", "FanCycling", "FluidBypass"] | None
     """Default: FanCycling"""
-    number_of_cells: float | int | None
+    @property
+    def number_of_cells(self) -> float | int | None: ...
+    @number_of_cells.setter
+    def number_of_cells(self, value: int | None) -> None: ...
     cell_control: Literal["", "MaximalCell", "MinimalCell"] | None
     """Default: MaximalCell"""
     cell_minimum_water_flow_rate_fraction: float | None
@@ -39310,6 +43421,15 @@ class _CoolingTowerSingleSpeedBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoolingTowerSingleSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoolingTowerSingleSpeedBaseFields(_CoolingTowerSingleSpeedCommonFields, total=False):
+    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
+    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    number_of_cells: int | None
 
 class CoolingTowerSingleSpeed(_CoolingTowerSingleSpeedBase):
     """This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
@@ -39445,12 +43565,18 @@ class _CoolingTowerTwoSpeedBase(_TypedIDFObject):
     """Enter the outdoor dry-bulb temperature when the basin heater turns on; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """Schedule values greater than 0 allow the basin heater to operate whenever the outdoor air dry-bulb temperature is bel..."""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit", ""] | None
+    @property
+    def evaporation_loss_mode(self) -> Literal["LossFactor", "SaturatedExit", ""] | None: ...
+    @evaporation_loss_mode.setter
+    def evaporation_loss_mode(self, value: Literal["LossFactor", "SaturatedExit"] | None) -> None: ...
     evaporation_loss_factor: float | None
     """Rate of water evaporated from the cooling tower and lost to the outdoor air [%/K] Evaporation loss is calculated as p...; [percent/K]; Default: 0.2"""
     drift_loss_percent: float | None
     """Rate of drift loss as a percentage of circulating condenser water flow rate Typical values are between 0.002 and 0.2%...; [percent]; Default: 0.008"""
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate", ""] | None
+    @property
+    def blowdown_calculation_mode(self) -> Literal["ConcentrationRatio", "ScheduledRate", ""] | None: ...
+    @blowdown_calculation_mode.setter
+    def blowdown_calculation_mode(self, value: Literal["ConcentrationRatio", "ScheduledRate"] | None) -> None: ...
     blowdown_concentration_ratio: float | None
     """Characterizes the rate of blowdown in the cooling tower. Blowdown is water intentionally drained from the tower in or...; Default: 3.0; Range: >= 2.0"""
     blowdown_makeup_water_usage_schedule_name: str | None
@@ -39458,7 +43584,10 @@ class _CoolingTowerTwoSpeedBase(_TypedIDFObject):
     supply_water_storage_tank_name: str | None
     outdoor_air_inlet_node_name: str | None
     """Enter the name of an outdoor air node"""
-    number_of_cells: float | int | None
+    @property
+    def number_of_cells(self) -> float | int | None: ...
+    @number_of_cells.setter
+    def number_of_cells(self, value: int | None) -> None: ...
     cell_control: Literal["", "MaximalCell", "MinimalCell"] | None
     """Default: MaximalCell"""
     cell_minimum_water_flow_rate_fraction: float | None
@@ -39469,6 +43598,15 @@ class _CoolingTowerTwoSpeedBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoolingTowerTwoSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoolingTowerTwoSpeedBaseFields(_CoolingTowerTwoSpeedCommonFields, total=False):
+    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
+    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    number_of_cells: int | None
 
 class CoolingTowerTwoSpeed(_CoolingTowerTwoSpeedBase):
     """This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
@@ -39595,12 +43733,18 @@ class _CoolingTowerVariableSpeedMerkelBase(_TypedIDFObject):
     """Enter the outdoor dry-bulb temperature when the basin heater turns on; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """Schedule values greater than 0 allow the basin heater to operate whenever the outdoor air dry-bulb temperature is bel..."""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit", ""] | None
+    @property
+    def evaporation_loss_mode(self) -> Literal["LossFactor", "SaturatedExit", ""] | None: ...
+    @evaporation_loss_mode.setter
+    def evaporation_loss_mode(self, value: Literal["LossFactor", "SaturatedExit"] | None) -> None: ...
     evaporation_loss_factor: float | None
     """Rate of water evaporated from the cooling tower and lost to the outdoor air [%/K] Evaporation loss is calculated as p...; [percent/K]; Default: 0.2"""
     drift_loss_percent: float | None
     """Rate of drift loss as a percentage of circulating condenser water flow rate Typical values are between 0.002 and 0.2%...; [percent]; Default: 0.008"""
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate", ""] | None
+    @property
+    def blowdown_calculation_mode(self) -> Literal["ConcentrationRatio", "ScheduledRate", ""] | None: ...
+    @blowdown_calculation_mode.setter
+    def blowdown_calculation_mode(self, value: Literal["ConcentrationRatio", "ScheduledRate"] | None) -> None: ...
     blowdown_concentration_ratio: float | None
     """Characterizes the rate of blowdown in the cooling tower. Blowdown is water intentionally drained from the tower in or...; Default: 3.0; Range: >= 2.0"""
     blowdown_makeup_water_usage_schedule_name: str | None
@@ -39608,7 +43752,10 @@ class _CoolingTowerVariableSpeedMerkelBase(_TypedIDFObject):
     supply_water_storage_tank_name: str | None
     outdoor_air_inlet_node_name: str | None
     """Enter the name of an outdoor air node"""
-    number_of_cells: float | int | None
+    @property
+    def number_of_cells(self) -> float | int | None: ...
+    @number_of_cells.setter
+    def number_of_cells(self, value: int | None) -> None: ...
     cell_control: Literal["", "MaximalCell", "MinimalCell"] | None
     """Default: MaximalCell"""
     cell_minimum_water_flow_rate_fraction: float | None
@@ -39619,6 +43766,15 @@ class _CoolingTowerVariableSpeedMerkelBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoolingTowerVariableSpeedMerkelBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoolingTowerVariableSpeedMerkelBaseFields(_CoolingTowerVariableSpeedMerkelCommonFields, total=False):
+    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
+    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    number_of_cells: int | None
 
 class CoolingTowerVariableSpeedMerkel(_CoolingTowerVariableSpeedMerkelBase):
     """This tower model is based on Merkel's theory, which is also the basis for the tower model in ASHRAE's HVAC1 Toolkit. ..."""
@@ -39703,12 +43859,18 @@ class _CoolingTowerVariableSpeedBase(_TypedIDFObject):
     """Enter the outdoor dry-bulb temperature when the basin heater turns on; [C]; Default: 2.0; Range: >= 2.0"""
     basin_heater_operating_schedule_name: str | None
     """Schedule values greater than 0 allow the basin heater to operate whenever the outdoor air dry-bulb temperature is bel..."""
-    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit", ""] | None
+    @property
+    def evaporation_loss_mode(self) -> Literal["LossFactor", "SaturatedExit", ""] | None: ...
+    @evaporation_loss_mode.setter
+    def evaporation_loss_mode(self, value: Literal["LossFactor", "SaturatedExit"] | None) -> None: ...
     evaporation_loss_factor: float | None
     """Rate of water evaporated from the cooling tower and lost to the outdoor air [%/K] Evaporation loss is calculated as p...; [percent/K]; Default: 0.2"""
     drift_loss_percent: float | None
     """Rate of drift loss as a percentage of circulating condenser water flow rate Typical values are between 0.002 and 0.2%...; [percent]; Default: 0.008"""
-    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate", ""] | None
+    @property
+    def blowdown_calculation_mode(self) -> Literal["ConcentrationRatio", "ScheduledRate", ""] | None: ...
+    @blowdown_calculation_mode.setter
+    def blowdown_calculation_mode(self, value: Literal["ConcentrationRatio", "ScheduledRate"] | None) -> None: ...
     blowdown_concentration_ratio: float | None
     """Characterizes the rate of blowdown in the cooling tower. Blowdown is water intentionally drained from the tower in or...; Default: 3.0; Range: >= 2.0"""
     blowdown_makeup_water_usage_schedule_name: str | None
@@ -39716,7 +43878,10 @@ class _CoolingTowerVariableSpeedBase(_TypedIDFObject):
     supply_water_storage_tank_name: str | None
     outdoor_air_inlet_node_name: str | None
     """Enter the name of an outdoor air node"""
-    number_of_cells: float | int | None
+    @property
+    def number_of_cells(self) -> float | int | None: ...
+    @number_of_cells.setter
+    def number_of_cells(self, value: int | None) -> None: ...
     cell_control: Literal["", "MaximalCell", "MinimalCell"] | None
     """Default: MaximalCell"""
     cell_minimum_water_flow_rate_fraction: float | None
@@ -39727,6 +43892,15 @@ class _CoolingTowerVariableSpeedBase(_TypedIDFObject):
     """Multiplies the autosized capacity and flow rates; Default: 1.0; Range: > 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoolingTowerVariableSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoolingTowerVariableSpeedBaseFields(_CoolingTowerVariableSpeedCommonFields, total=False):
+    evaporation_loss_mode: Literal["LossFactor", "SaturatedExit"] | None
+    blowdown_calculation_mode: Literal["ConcentrationRatio", "ScheduledRate"] | None
+    number_of_cells: int | None
 
 class CoolingTowerVariableSpeed(_CoolingTowerVariableSpeedBase):
     """This open wet tower model is based on purely empirical algorithms derived from manufacturer's performance data or fie..."""
@@ -40000,7 +44174,10 @@ class _EvaporativeFluidCoolerSingleSpeedBase(_TypedIDFObject):
     """Input value is ignored if fluid cooler Performance Input Method= StandardDesignCapacity.; [m3/s] (gal/min)"""
     user_specified_design_capacity: float | None
     """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [W]; Range: > 0.0"""
-    design_entering_water_temperature: float | Literal["", "Autosize"] | None
+    @property
+    def design_entering_water_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @design_entering_water_temperature.setter
+    def design_entering_water_temperature(self, value: float | None) -> None: ...
     design_entering_air_temperature: float | None
     """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [C] (F); Default: 35.0; Range: > 0.0"""
     design_entering_air_wet_bulb_temperature: float | None
@@ -40022,6 +44199,13 @@ class _EvaporativeFluidCoolerSingleSpeedBase(_TypedIDFObject):
     blowdown_makeup_water_usage_schedule_name: str | None
     """Makeup water usage due to blowdown results from occasionally draining a small amount of water in the Fluid Cooler bas..."""
     supply_water_storage_tank_name: str | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__EvaporativeFluidCoolerSingleSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __EvaporativeFluidCoolerSingleSpeedBaseFields(_EvaporativeFluidCoolerSingleSpeedCommonFields, total=False):
+    design_entering_water_temperature: float | None
 
 class EvaporativeFluidCoolerSingleSpeed(_EvaporativeFluidCoolerSingleSpeedBase):
     """This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
@@ -40123,7 +44307,10 @@ class _EvaporativeFluidCoolerTwoSpeedBase(_TypedIDFObject):
     """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [W]"""
     low_speed_user_specified_design_capacity_sizing_factor: float | None
     """This field is only used if the previous field is set to autocalculate; Default: 0.5"""
-    design_entering_water_temperature: float | Literal["", "Autosize"] | None
+    @property
+    def design_entering_water_temperature(self) -> float | Literal["", "Autosize"] | None: ...
+    @design_entering_water_temperature.setter
+    def design_entering_water_temperature(self, value: float | None) -> None: ...
     design_entering_air_temperature: float | None
     """Only used for Performance Input Method = UserSpecifiedDesignCapacity; for other Performance Input Methods, this field...; [C] (F); Default: 35.0; Range: > 0.0"""
     design_entering_air_wet_bulb_temperature: float | None
@@ -40143,6 +44330,13 @@ class _EvaporativeFluidCoolerTwoSpeedBase(_TypedIDFObject):
     blowdown_makeup_water_usage_schedule_name: str | None
     """Makeup water usage due to blowdown results from occasionally draining some amount of water in the Evaporative Fluid C..."""
     supply_water_storage_tank_name: str | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__EvaporativeFluidCoolerTwoSpeedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __EvaporativeFluidCoolerTwoSpeedBaseFields(_EvaporativeFluidCoolerTwoSpeedCommonFields, total=False):
+    design_entering_water_temperature: float | None
 
 class EvaporativeFluidCoolerTwoSpeed(_EvaporativeFluidCoolerTwoSpeedBase):
     """This model is based on Merkel's theory, which is also the basis for the cooling tower model in EnergyPlus. The Evapor..."""
@@ -40320,6 +44514,12 @@ class _GroundHeatExchangerSystemBase(_TypedIDFObject):
     ghe_vertical_array_object_name: str | None
     vertical_well_locations: ExtensibleList[GroundHeatExchangerSystemVerticalWellLocationsGroup]
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GroundHeatExchangerSystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerSystemBaseFields(_GroundHeatExchangerSystemCommonFields, total=False): ...
+
 class GroundHeatExchangerSystem(_GroundHeatExchangerSystemBase):
     """Models vertical ground heat exchangers systems using the response factor approach developed by Eskilson. Response fac..."""
 
@@ -40433,10 +44633,24 @@ class _GroundHeatExchangerVerticalArrayBase(_TypedIDFObject):
     """``GroundHeatExchanger:Vertical:Array`` as every supported EnergyPlus version declares it."""
 
     ghe_vertical_properties_object_name: str | None
-    number_of_boreholes_in_x_direction: float | int | None
-    number_of_boreholes_in_y_direction: float | int | None
+    @property
+    def number_of_boreholes_in_x_direction(self) -> float | int | None: ...
+    @number_of_boreholes_in_x_direction.setter
+    def number_of_boreholes_in_x_direction(self, value: int | None) -> None: ...
+    @property
+    def number_of_boreholes_in_y_direction(self) -> float | int | None: ...
+    @number_of_boreholes_in_y_direction.setter
+    def number_of_boreholes_in_y_direction(self, value: int | None) -> None: ...
     borehole_spacing: float | None
     """[m]; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GroundHeatExchangerVerticalArrayBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerVerticalArrayBaseFields(_GroundHeatExchangerVerticalArrayCommonFields, total=False):
+    number_of_boreholes_in_x_direction: int | None
+    number_of_boreholes_in_y_direction: int | None
 
 class GroundHeatExchangerVerticalArray(_GroundHeatExchangerVerticalArrayBase):
     number_of_boreholes_in_x_direction: int | None
@@ -40476,9 +44690,22 @@ class _GroundHeatExchangerResponseFactorsBase(_TypedIDFObject):
     """``GroundHeatExchanger:ResponseFactors`` as every supported EnergyPlus version declares it."""
 
     ghe_vertical_properties_object_name: str | None
-    number_of_boreholes: float | int | None
+    @property
+    def number_of_boreholes(self) -> float | int | None: ...
+    @number_of_boreholes.setter
+    def number_of_boreholes(self, value: int | None) -> None: ...
     g_function_reference_ratio: float | None
     """[dimensionless]; Default: 0.0005; Range: > 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__GroundHeatExchangerResponseFactorsBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerResponseFactorsBaseFields(_GroundHeatExchangerResponseFactorsCommonFields, total=False):
+    number_of_boreholes: int | None
 
 class GroundHeatExchangerResponseFactorsGFunctionsGroup(_TypedExtensibleGroup):
     """One g_functions group inside :class:`GroundHeatExchangerResponseFactors`."""
@@ -40528,9 +44755,19 @@ class _GroundHeatExchangerPondBase(_TypedIDFObject):
     """[W/m-K]; Range: > 0.0"""
     ground_thermal_conductivity: float | None
     """[W/m2-K]; Range: > 0.0"""
-    number_of_tubing_circuits: float | int | None
+    @property
+    def number_of_tubing_circuits(self) -> float | int | None: ...
+    @number_of_tubing_circuits.setter
+    def number_of_tubing_circuits(self, value: int | None) -> None: ...
     length_of_each_tubing_circuit: float | None
     """[m]; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GroundHeatExchangerPondBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerPondBaseFields(_GroundHeatExchangerPondCommonFields, total=False):
+    number_of_tubing_circuits: int | None
 
 class GroundHeatExchangerPond(_GroundHeatExchangerPondBase):
     """A model of a shallow pond with immersed pipe loops. Typically used in hybrid geothermal systems and included in the c..."""
@@ -40563,7 +44800,10 @@ class _GroundHeatExchangerSurfaceBase(_TypedIDFObject):
     fluid_outlet_node_name: str | None
     hydronic_tubing_inside_diameter: float | None
     """[m] (in); Range: > 0.0"""
-    number_of_tubing_circuits: float | int | None
+    @property
+    def number_of_tubing_circuits(self) -> float | int | None: ...
+    @number_of_tubing_circuits.setter
+    def number_of_tubing_circuits(self, value: int | None) -> None: ...
     hydronic_tube_spacing: float | None
     """[m]; Range: > 0.0"""
     surface_length: float | None
@@ -40572,6 +44812,13 @@ class _GroundHeatExchangerSurfaceBase(_TypedIDFObject):
     """[m]; Range: > 0.0"""
     lower_surface_environment: Literal["", "Exposed", "Ground"] | None
     """Default: Ground"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GroundHeatExchangerSurfaceBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerSurfaceBaseFields(_GroundHeatExchangerSurfaceCommonFields, total=False):
+    number_of_tubing_circuits: int | None
 
 class GroundHeatExchangerSurface(_GroundHeatExchangerSurfaceBase):
     """A hydronic surface/panel consisting of a multi-layer construction with embedded rows of tubes. Typically used in hybr..."""
@@ -40623,7 +44870,10 @@ class _GroundHeatExchangerHorizontalTrenchBase(_TypedIDFObject):
     """[m3/s] (gal/min); Range: > 0.0"""
     trench_length_in_pipe_axial_direction: float | None
     """This is the total pipe axial length of the heat exchanger If all pipe trenches are parallel, this is the length of a ...; [m] (ft); Default: 50.0; Range: > 0.0"""
-    number_of_trenches: float | int | None
+    @property
+    def number_of_trenches(self) -> float | int | None: ...
+    @number_of_trenches.setter
+    def number_of_trenches(self, value: int | None) -> None: ...
     horizontal_spacing_between_pipes: float | None
     """This represents the average horizontal spacing between any two trenches for heat exchangers that have multiple trenches; [m]; Default: 1.0; Range: > 0.0"""
     pipe_inner_diameter: float | None
@@ -40659,6 +44909,16 @@ class _GroundHeatExchangerHorizontalTrenchBase(_TypedIDFObject):
     undisturbed_ground_temperature_model_name: str | None
     evapotranspiration_ground_cover_parameter: float | None
     """This specifies the ground cover effects during evapotranspiration calculations. The value roughly represents the foll...; Default: 0.4; Range: >= 0.0, <= 1.5"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__GroundHeatExchangerHorizontalTrenchBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerHorizontalTrenchBaseFields(_GroundHeatExchangerHorizontalTrenchCommonFields, total=False):
+    number_of_trenches: int | None
 
 class GroundHeatExchangerHorizontalTrench(_GroundHeatExchangerHorizontalTrenchBase):
     """This models a horizontal heat exchanger placed in a series of trenches The model uses the PipingSystem:Underground un..."""
@@ -40735,7 +44995,10 @@ class _GroundHeatExchangerSlinkyBase(_TypedIDFObject):
     """This is the distance from the ground surface to the trench bottom; [m] (ft); Default: 1.8; Range: > 0.0"""
     trench_length: float | None
     """This is the total length of a single trench This assumes the heat exchanger runs the full length of the trench; [m] (ft); Default: 10.0; Range: > 0.0"""
-    number_of_trenches: float | int | None
+    @property
+    def number_of_trenches(self) -> float | int | None: ...
+    @number_of_trenches.setter
+    def number_of_trenches(self, value: int | None) -> None: ...
     horizontal_spacing_between_pipes: float | None
     """This represents the average horizontal spacing between any two trenches for heat exchangers that have multiple trenches; [m] (ft); Default: 2.0; Range: > 0.0"""
     undisturbed_ground_temperature_model_type: (
@@ -40749,6 +45012,13 @@ class _GroundHeatExchangerSlinkyBase(_TypedIDFObject):
     undisturbed_ground_temperature_model_name: str | None
     maximum_length_of_simulation: float | None
     """[years]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GroundHeatExchangerSlinkyBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GroundHeatExchangerSlinkyBaseFields(_GroundHeatExchangerSlinkyCommonFields, total=False):
+    number_of_trenches: int | None
 
 class GroundHeatExchangerSlinky(_GroundHeatExchangerSlinkyBase):
     """This models a slinky horizontal heat exchanger placed in a series of trenches The model uses the model developed by: ..."""
@@ -40866,7 +45136,10 @@ class _HeatExchangerFluidToFluidBase(_TypedIDFObject):
     """Setpoint node is needed with any Control Type that is '*Setpoint*'"""
     minimum_temperature_difference_to_activate_heat_exchanger: float | None
     """Tolerance between control temperatures used to determine if heat exchanger should run.; [deltaC]; Default: 0.01; Range: >= 0.0, <= 50.0"""
-    heat_transfer_metering_end_use_type: (
+    @property
+    def heat_transfer_metering_end_use_type(
+        self,
+    ) -> (
         Literal[
             "",
             "FreeCooling",
@@ -40877,7 +45150,15 @@ class _HeatExchangerFluidToFluidBase(_TypedIDFObject):
             "LoopToLoop",
         ]
         | None
-    )
+    ): ...
+    @heat_transfer_metering_end_use_type.setter
+    def heat_transfer_metering_end_use_type(
+        self,
+        value: Literal[
+            "", "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"
+        ]
+        | None,
+    ) -> None: ...
     component_override_loop_supply_side_inlet_node_name: str | None
     """This field is only used if Control Type is set to CoolingSetpointOnOffWithComponentOverride"""
     component_override_loop_demand_side_inlet_node_name: str | None
@@ -40892,6 +45173,16 @@ class _HeatExchangerFluidToFluidBase(_TypedIDFObject):
     """Lower limit on inlet temperatures, heat exchanger will not operate if either inlet is below this limit; [C]"""
     operation_maximum_temperature_limit: float | None
     """Upper limit on inlet temperatures, heat exchanger will not operate if either inlet is above this limit; [C]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HeatExchangerFluidToFluidBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HeatExchangerFluidToFluidBaseFields(_HeatExchangerFluidToFluidCommonFields, total=False):
+    heat_transfer_metering_end_use_type: (
+        Literal["", "FreeCooling", "HeatRecoveryForCooling", "HeatRecoveryForHeating", "HeatRejection", "LoopToLoop"]
+        | None
+    )
 
 class HeatExchangerFluidToFluid(_HeatExchangerFluidToFluidBase):
     """A fluid/fluid heat exchanger designed to couple the supply side of one loop to the demand side of another loop Loops ..."""
@@ -40974,7 +45265,10 @@ class _WaterHeaterMixedBase(_TypedIDFObject):
     """Not yet implemented; [m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     heater_ignition_delay: float | None
     """Not yet implemented; [s]; Default: 0.0; Range: >= 0.0"""
-    heater_fuel_type: (
+    @property
+    def heater_fuel_type(
+        self,
+    ) -> (
         str
         | Literal[
             "Coal",
@@ -40993,13 +45287,33 @@ class _WaterHeaterMixedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @heater_fuel_type.setter
+    def heater_fuel_type(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None,
+    ) -> None: ...
     heater_thermal_efficiency: float | None
     """Range: > 0.0"""
     part_load_factor_curve_name: str | None
     off_cycle_parasitic_fuel_consumption_rate: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
-    off_cycle_parasitic_fuel_type: (
+    @property
+    def off_cycle_parasitic_fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -41020,12 +45334,20 @@ class _WaterHeaterMixedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @off_cycle_parasitic_fuel_type.setter
+    def off_cycle_parasitic_fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     off_cycle_parasitic_heat_fraction_to_tank: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     on_cycle_parasitic_fuel_consumption_rate: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
-    on_cycle_parasitic_fuel_type: (
+    @property
+    def on_cycle_parasitic_fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -41046,7 +45368,12 @@ class _WaterHeaterMixedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @on_cycle_parasitic_fuel_type.setter
+    def on_cycle_parasitic_fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     on_cycle_parasitic_heat_fraction_to_tank: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"] | None
@@ -41090,6 +45417,33 @@ class _WaterHeaterMixedBase(_TypedIDFObject):
     """This field is only used if the previous is set to IndirectHeatAlternateSetpoint"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WaterHeaterMixedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WaterHeaterMixedBaseFields(_WaterHeaterMixedCommonFields, total=False):
+    heater_fuel_type: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+    off_cycle_parasitic_fuel_type: (
+        Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    )
+    on_cycle_parasitic_fuel_type: (
+        Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    )
 
 class WaterHeaterMixed(_WaterHeaterMixedBase):
     """Water heater with well-mixed, single-node water tank. May be used to model a tankless water heater (small tank volume..."""
@@ -41298,7 +45652,10 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
     """[W]; Range: >= 0.0"""
     heater_2_height: float | None
     """[m]; Range: >= 0.0"""
-    heater_fuel_type: (
+    @property
+    def heater_fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -41319,12 +45676,20 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @heater_fuel_type.setter
+    def heater_fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     heater_thermal_efficiency: float | None
     """Range: > 0.0"""
     off_cycle_parasitic_fuel_consumption_rate: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
-    off_cycle_parasitic_fuel_type: (
+    @property
+    def off_cycle_parasitic_fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -41345,14 +45710,22 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @off_cycle_parasitic_fuel_type.setter
+    def off_cycle_parasitic_fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     off_cycle_parasitic_heat_fraction_to_tank: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     off_cycle_parasitic_height: float | None
     """[m]; Default: 0.0; Range: >= 0.0"""
     on_cycle_parasitic_fuel_consumption_rate: float | None
     """[W]; Default: 0.0; Range: >= 0.0"""
-    on_cycle_parasitic_fuel_type: (
+    @property
+    def on_cycle_parasitic_fuel_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -41373,7 +45746,12 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @on_cycle_parasitic_fuel_type.setter
+    def on_cycle_parasitic_fuel_type(
+        self,
+        value: Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None,
+    ) -> None: ...
     on_cycle_parasitic_heat_fraction_to_tank: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     on_cycle_parasitic_height: float | None
@@ -41421,7 +45799,10 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
     """[m3/s] (gal/min); Default: Autosize"""
     indirect_water_heating_recovery_time: float | None
     """Parameter for autosizing design flow rates for indirectly heated water tanks time required to raise temperature of en...; [hr]; Default: 1.5; Range: > 0.0"""
-    number_of_nodes: float | int | None
+    @property
+    def number_of_nodes(self) -> float | int | None: ...
+    @number_of_nodes.setter
+    def number_of_nodes(self, value: int | None) -> None: ...
     additional_destratification_conductivity: float | None
     """[W/m-K]; Default: 0.0; Range: >= 0.0"""
     node_1_additional_loss_coefficient: float | None
@@ -41454,6 +45835,22 @@ class _WaterHeaterStratifiedBase(_TypedIDFObject):
     """StorageTank mode always requests flow unless tank is at its Maximum Temperature Limit IndirectHeatPrimarySetpoint mod...; Default: IndirectHeatPrimarySetpoint"""
     indirect_alternate_setpoint_temperature_schedule_name: str | None
     """This field is only used if the previous is set to IndirectHeatAlternateSetpoint"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WaterHeaterStratifiedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WaterHeaterStratifiedBaseFields(_WaterHeaterStratifiedCommonFields, total=False):
+    heater_fuel_type: (
+        Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    )
+    off_cycle_parasitic_fuel_type: (
+        Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    )
+    on_cycle_parasitic_fuel_type: (
+        Literal["Coal", "Diesel", "Electricity", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    )
+    number_of_nodes: int | None
 
 class WaterHeaterStratified(_WaterHeaterStratifiedBase):
     """Water heater with stratified, multi-node water tank. May be used to model a tankless water heater (small tank volume)..."""
@@ -41607,8 +46004,14 @@ class _WaterHeaterSizingBase(_TypedIDFObject):
     """Only used for Design Mode = PeakDraw; [hr]; Range: >= 0.0"""
     nominal_tank_volume_for_autosizing_plant_connections: float | None
     """Only used if Design Mode = PeakDraw and the water heater also has autosized flow rates for connections on the demand ...; [m3] (gal)"""
-    number_of_bedrooms: float | int | None
-    number_of_bathrooms: float | int | None
+    @property
+    def number_of_bedrooms(self) -> float | int | None: ...
+    @number_of_bedrooms.setter
+    def number_of_bedrooms(self, value: int | None) -> None: ...
+    @property
+    def number_of_bathrooms(self) -> float | int | None: ...
+    @number_of_bathrooms.setter
+    def number_of_bathrooms(self, value: int | None) -> None: ...
     storage_capacity_per_person: float | None
     """Only used for Design Mode = PerPerson; [m3/person] (gal/person); Range: >= 0.0"""
     recovery_capacity_per_person: float | None
@@ -41627,6 +46030,14 @@ class _WaterHeaterSizingBase(_TypedIDFObject):
     """Only used for Design Mode = PerSolarCollectorArea; [m3/m2] (gal/ft2); Range: >= 0.0"""
     height_aspect_ratio: float | None
     """only used if for WaterHeater:Stratified; Range: >= 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__WaterHeaterSizingBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __WaterHeaterSizingBaseFields(_WaterHeaterSizingCommonFields, total=False):
+    number_of_bedrooms: int | None
+    number_of_bathrooms: int | None
 
 class WaterHeaterSizing(_WaterHeaterSizingBase):
     """This input object is used with WaterHeater:Mixed or with WaterHeater:Stratified to autosize tank volume and heater ca..."""
@@ -41913,9 +46324,19 @@ class _ThermalStorageIceSimpleBase(_TypedIDFObject):
 
     ice_storage_type: Literal["IceOnCoilExternal", "IceOnCoilInternal"] | None
     """IceOnCoilInternal = Ice-on-Coil, internal melt IceOnCoilExternal = Ice-on-Coil, external melt"""
-    capacity: float | Literal["Autosize"] | None
+    @property
+    def capacity(self) -> float | Literal["Autosize"] | None: ...
+    @capacity.setter
+    def capacity(self, value: float | None) -> None: ...
     inlet_node_name: str | None
     outlet_node_name: str | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ThermalStorageIceSimpleBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ThermalStorageIceSimpleBaseFields(_ThermalStorageIceSimpleCommonFields, total=False):
+    capacity: float | None
 
 class ThermalStorageIceSimple(_ThermalStorageIceSimpleBase):
     """This ice storage model is a simplified model It requires a setpoint placed on the Chilled Water Side Outlet Node It s..."""
@@ -41951,7 +46372,10 @@ class _ThermalStorageIceDetailedBase(_TypedIDFObject):
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
-    capacity: float | Literal["Autosize"] | None
+    @property
+    def capacity(self) -> float | Literal["Autosize"] | None: ...
+    @capacity.setter
+    def capacity(self, value: float | None) -> None: ...
     inlet_node_name: str | None
     outlet_node_name: str | None
     discharging_curve_name: str | None
@@ -41968,6 +46392,13 @@ class _ThermalStorageIceDetailedBase(_TypedIDFObject):
     """This temperature is typically 0C for water. Simply changing this temperature without adjusting the performance parame...; [C]; Default: 0.0"""
     thaw_process_indicator: Literal["", "InsideMelt", "OutsideMelt"] | None
     """This field determines whether the system uses internal or external melt during discharging. This will then have an im...; Default: OutsideMelt"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ThermalStorageIceDetailedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ThermalStorageIceDetailedBaseFields(_ThermalStorageIceDetailedCommonFields, total=False):
+    capacity: float | None
 
 class ThermalStorageIceDetailed(_ThermalStorageIceDetailedBase):
     """This input syntax is intended to describe a thermal storage system that includes smaller containers filled with water..."""
@@ -42124,7 +46555,10 @@ class _ThermalStorageChilledWaterStratifiedBase(_TypedIDFObject):
     """[m]; Range: >= 0.0"""
     minimum_temperature_limit: float | None
     """[C]"""
-    nominal_cooling_capacity: float | Literal["", "Autosize"] | None
+    @property
+    def nominal_cooling_capacity(self) -> float | Literal["", "Autosize"] | None: ...
+    @nominal_cooling_capacity.setter
+    def nominal_cooling_capacity(self, value: float | None) -> None: ...
     ambient_temperature_indicator: Literal["Outdoors", "Schedule", "Zone"] | None
     ambient_temperature_schedule_name: str | None
     ambient_temperature_zone_name: str | None
@@ -42160,7 +46594,10 @@ class _ThermalStorageChilledWaterStratifiedBase(_TypedIDFObject):
     """Parameter for autosizing design flow rates for indirectly cooled water tanks time required to lower temperature of en...; [hr]; Default: 4.0; Range: > 0.0"""
     inlet_mode: Literal["", "Fixed", "Seeking"] | None
     """Default: Fixed"""
-    number_of_nodes: float | int | None
+    @property
+    def number_of_nodes(self) -> float | int | None: ...
+    @number_of_nodes.setter
+    def number_of_nodes(self, value: int | None) -> None: ...
     additional_destratification_conductivity: float | None
     """[W/m-K]; Default: 0.0; Range: >= 0.0"""
     node_1_additional_loss_coefficient: float | None
@@ -42183,6 +46620,17 @@ class _ThermalStorageChilledWaterStratifiedBase(_TypedIDFObject):
     """[W/K]; Default: 0.0"""
     node_10_additional_loss_coefficient: float | None
     """[W/K]; Default: 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ThermalStorageChilledWaterStratifiedBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ThermalStorageChilledWaterStratifiedBaseFields(_ThermalStorageChilledWaterStratifiedCommonFields, total=False):
+    nominal_cooling_capacity: float | None
+    number_of_nodes: int | None
 
 class ThermalStorageChilledWaterStratified(_ThermalStorageChilledWaterStratifiedBase):
     """Chilled water storage with a stratified, multi-node tank. The chilled water is 'used' by drawing from the 'Use Side' ..."""
@@ -42527,6 +46975,12 @@ class _PlantEquipmentListCommonFields(TypedDict, total=False): ...
 class _PlantEquipmentListBase(_TypedIDFObject):
     """``PlantEquipmentList`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PlantEquipmentListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PlantEquipmentListBaseFields(_PlantEquipmentListCommonFields, total=False): ...
+
 class PlantEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`PlantEquipmentList`."""
 
@@ -42549,6 +47003,12 @@ class _CondenserEquipmentListCommonFields(TypedDict, total=False): ...
 
 class _CondenserEquipmentListBase(_TypedIDFObject):
     """``CondenserEquipmentList`` as every supported EnergyPlus version declares it."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CondenserEquipmentListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CondenserEquipmentListBaseFields(_CondenserEquipmentListCommonFields, total=False): ...
 
 class CondenserEquipmentListEquipmentGroup(_TypedExtensibleGroup):
     """One equipment group inside :class:`CondenserEquipmentList`."""
@@ -43444,6 +47904,311 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
     component_3_flow_rate: float | Literal["Autosize"] | None
     """[m3/s]"""
     component_3_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_4_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_4_object_type.setter
+    def component_4_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_4_name: str | None
+    component_4_demand_calculation_node_name: str | None
+    component_4_setpoint_node_name: str | None
+    component_4_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_4_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_5_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_5_object_type.setter
+    def component_5_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_5_name: str | None
+    component_5_demand_calculation_node_name: str | None
+    component_5_setpoint_node_name: str | None
+    component_5_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_5_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_6_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_6_object_type.setter
+    def component_6_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_6_name: str | None
+    component_6_demand_calculation_node_name: str | None
+    component_6_setpoint_node_name: str | None
+    component_6_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_6_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_7_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_7_object_type.setter
+    def component_7_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_7_name: str | None
+    component_7_demand_calculation_node_name: str | None
+    component_7_setpoint_node_name: str | None
+    component_7_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_7_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_8_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_8_object_type.setter
+    def component_8_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_8_name: str | None
+    component_8_demand_calculation_node_name: str | None
+    component_8_setpoint_node_name: str | None
+    component_8_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_8_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_9_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_9_object_type.setter
+    def component_9_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_9_name: str | None
+    component_9_demand_calculation_node_name: str | None
+    component_9_setpoint_node_name: str | None
+    component_9_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_9_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+    @property
+    def component_10_object_type(
+        self,
+    ) -> (
+        Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+            "Chiller:Electric:ASHRAE205",
+        ]
+        | None
+    ): ...
+    @component_10_object_type.setter
+    def component_10_object_type(
+        self,
+        value: Literal[
+            "Chiller:Absorption",
+            "Chiller:Absorption:Indirect",
+            "Chiller:CombustionTurbine",
+            "Chiller:ConstantCOP",
+            "Chiller:Electric",
+            "Chiller:Electric:EIR",
+            "Chiller:Electric:ReformulatedEIR",
+            "Chiller:EngineDriven",
+            "ThermalStorage:Ice:Detailed",
+            "ThermalStorage:Ice:Simple",
+        ]
+        | None,
+    ) -> None: ...
+    component_10_name: str | None
+    component_10_demand_calculation_node_name: str | None
+    component_10_setpoint_node_name: str | None
+    component_10_flow_rate: float | Literal["Autosize"] | None
+    """[m3/s]"""
+    component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__PlantEquipmentOperationThermalEnergyStorageBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __PlantEquipmentOperationThermalEnergyStorageBaseFields(
+    _PlantEquipmentOperationThermalEnergyStorageCommonFields, total=False
+):
     component_4_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43456,16 +48221,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_4_name: str | None
-    component_4_demand_calculation_node_name: str | None
-    component_4_setpoint_node_name: str | None
-    component_4_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_4_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_5_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43478,16 +48236,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_5_name: str | None
-    component_5_demand_calculation_node_name: str | None
-    component_5_setpoint_node_name: str | None
-    component_5_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_5_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_6_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43500,16 +48251,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_6_name: str | None
-    component_6_demand_calculation_node_name: str | None
-    component_6_setpoint_node_name: str | None
-    component_6_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_6_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_7_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43522,16 +48266,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_7_name: str | None
-    component_7_demand_calculation_node_name: str | None
-    component_7_setpoint_node_name: str | None
-    component_7_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_7_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_8_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43544,16 +48281,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_8_name: str | None
-    component_8_demand_calculation_node_name: str | None
-    component_8_setpoint_node_name: str | None
-    component_8_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_8_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_9_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43566,16 +48296,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_9_name: str | None
-    component_9_demand_calculation_node_name: str | None
-    component_9_setpoint_node_name: str | None
-    component_9_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_9_operation_type: Literal["Cooling", "Dual", "Heating"] | None
     component_10_object_type: (
         Literal[
             "Chiller:Absorption",
@@ -43588,16 +48311,9 @@ class _PlantEquipmentOperationThermalEnergyStorageBase(_TypedIDFObject):
             "Chiller:EngineDriven",
             "ThermalStorage:Ice:Detailed",
             "ThermalStorage:Ice:Simple",
-            "Chiller:Electric:ASHRAE205",
         ]
         | None
     )
-    component_10_name: str | None
-    component_10_demand_calculation_node_name: str | None
-    component_10_setpoint_node_name: str | None
-    component_10_flow_rate: float | Literal["Autosize"] | None
-    """[m3/s]"""
-    component_10_operation_type: Literal["Cooling", "Dual", "Heating"] | None
 
 class PlantEquipmentOperationThermalEnergyStorage(_PlantEquipmentOperationThermalEnergyStorageBase):
     """Plant equipment operation scheme for simpler input to control thermal (ice) energy storage systems. It replaces a hos..."""
@@ -44202,7 +48918,308 @@ class _PlantEquipmentOperationSchemesCommonFields(TypedDict, total=False):
 
 class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
     """``PlantEquipmentOperationSchemes`` as every supported EnergyPlus version declares it."""
+    @property
+    def control_scheme_1_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_1_object_type.setter
+    def control_scheme_1_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_1_name: str | None
+    control_scheme_1_schedule_name: str | None
+    @property
+    def control_scheme_2_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_2_object_type.setter
+    def control_scheme_2_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_2_name: str | None
+    control_scheme_2_schedule_name: str | None
+    @property
+    def control_scheme_3_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_3_object_type.setter
+    def control_scheme_3_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_3_name: str | None
+    control_scheme_3_schedule_name: str | None
+    @property
+    def control_scheme_4_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_4_object_type.setter
+    def control_scheme_4_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_4_name: str | None
+    control_scheme_4_schedule_name: str | None
+    @property
+    def control_scheme_5_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_5_object_type.setter
+    def control_scheme_5_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_5_name: str | None
+    control_scheme_5_schedule_name: str | None
+    @property
+    def control_scheme_6_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_6_object_type.setter
+    def control_scheme_6_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_6_name: str | None
+    control_scheme_6_schedule_name: str | None
+    @property
+    def control_scheme_7_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_7_object_type.setter
+    def control_scheme_7_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_7_name: str | None
+    control_scheme_7_schedule_name: str | None
+    @property
+    def control_scheme_8_object_type(
+        self,
+    ) -> (
+        Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+            "PlantEquipmentOperation:OutdoorDewpoint",
+            "PlantEquipmentOperation:OutdoorDewpointDifference",
+            "PlantEquipmentOperation:OutdoorDryBulb",
+            "PlantEquipmentOperation:OutdoorDryBulbDifference",
+            "PlantEquipmentOperation:OutdoorRelativeHumidity",
+            "PlantEquipmentOperation:OutdoorWetBulb",
+            "PlantEquipmentOperation:OutdoorWetBulbDifference",
+            "PlantEquipmentOperation:ChillerHeaterChangeover",
+        ]
+        | None
+    ): ...
+    @control_scheme_8_object_type.setter
+    def control_scheme_8_object_type(
+        self,
+        value: Literal[
+            "PlantEquipmentOperation:ComponentSetpoint",
+            "PlantEquipmentOperation:CoolingLoad",
+            "PlantEquipmentOperation:HeatingLoad",
+            "PlantEquipmentOperation:ThermalEnergyStorage",
+            "PlantEquipmentOperation:Uncontrolled",
+            "PlantEquipmentOperation:UserDefined",
+        ]
+        | None,
+    ) -> None: ...
+    control_scheme_8_name: str | None
+    control_scheme_8_schedule_name: str | None
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PlantEquipmentOperationSchemesBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PlantEquipmentOperationSchemesBaseFields(_PlantEquipmentOperationSchemesCommonFields, total=False):
     control_scheme_1_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44211,19 +49228,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_1_name: str | None
-    control_scheme_1_schedule_name: str | None
     control_scheme_2_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44232,19 +49239,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_2_name: str | None
-    control_scheme_2_schedule_name: str | None
     control_scheme_3_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44253,19 +49250,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_3_name: str | None
-    control_scheme_3_schedule_name: str | None
     control_scheme_4_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44274,19 +49261,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_4_name: str | None
-    control_scheme_4_schedule_name: str | None
     control_scheme_5_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44295,19 +49272,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_5_name: str | None
-    control_scheme_5_schedule_name: str | None
     control_scheme_6_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44316,19 +49283,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_6_name: str | None
-    control_scheme_6_schedule_name: str | None
     control_scheme_7_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44337,19 +49294,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_7_name: str | None
-    control_scheme_7_schedule_name: str | None
     control_scheme_8_object_type: (
         Literal[
             "PlantEquipmentOperation:ComponentSetpoint",
@@ -44358,19 +49305,9 @@ class _PlantEquipmentOperationSchemesBase(_TypedIDFObject):
             "PlantEquipmentOperation:ThermalEnergyStorage",
             "PlantEquipmentOperation:Uncontrolled",
             "PlantEquipmentOperation:UserDefined",
-            "PlantEquipmentOperation:OutdoorDewpoint",
-            "PlantEquipmentOperation:OutdoorDewpointDifference",
-            "PlantEquipmentOperation:OutdoorDryBulb",
-            "PlantEquipmentOperation:OutdoorDryBulbDifference",
-            "PlantEquipmentOperation:OutdoorRelativeHumidity",
-            "PlantEquipmentOperation:OutdoorWetBulb",
-            "PlantEquipmentOperation:OutdoorWetBulbDifference",
-            "PlantEquipmentOperation:ChillerHeaterChangeover",
         ]
         | None
     )
-    control_scheme_8_name: str | None
-    control_scheme_8_schedule_name: str | None
 
 class PlantEquipmentOperationSchemes(_PlantEquipmentOperationSchemesBase):
     """Operation schemes are listed in 'priority' order. Note that each scheme must address the entire load and/or condition..."""
@@ -45024,8 +49961,10 @@ class EnergyManagementSystemProgramCallingManagerProgramsGroup(_TypedExtensibleG
 
 class _EnergyManagementSystemProgramCallingManagerBase(_TypedIDFObject):
     """``EnergyManagementSystem:ProgramCallingManager`` as every supported EnergyPlus version declares it."""
-
-    energyplus_model_calling_point: (
+    @property
+    def energyplus_model_calling_point(
+        self,
+    ) -> (
         Literal[
             "AfterComponentInputReadIn",
             "AfterNewEnvironmentWarmUpIsComplete",
@@ -45047,8 +49986,61 @@ class _EnergyManagementSystemProgramCallingManagerBase(_TypedIDFObject):
             "BeginZoneTimestepBeforeSetCurrentWeather",
         ]
         | None
-    )
+    ): ...
+    @energyplus_model_calling_point.setter
+    def energyplus_model_calling_point(
+        self,
+        value: Literal[
+            "AfterComponentInputReadIn",
+            "AfterNewEnvironmentWarmUpIsComplete",
+            "AfterPredictorAfterHVACManagers",
+            "AfterPredictorBeforeHVACManagers",
+            "BeginNewEnvironment",
+            "BeginTimestepBeforePredictor",
+            "EndOfSystemSizing",
+            "EndOfSystemTimestepAfterHVACReporting",
+            "EndOfSystemTimestepBeforeHVACReporting",
+            "EndOfZoneSizing",
+            "EndOfZoneTimestepAfterZoneReporting",
+            "EndOfZoneTimestepBeforeZoneReporting",
+            "InsideHVACSystemIterationLoop",
+            "UnitarySystemSizing",
+            "UserDefinedComponentModel",
+        ]
+        | None,
+    ) -> None: ...
     programs: ExtensibleList[EnergyManagementSystemProgramCallingManagerProgramsGroup]
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__EnergyManagementSystemProgramCallingManagerBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __EnergyManagementSystemProgramCallingManagerBaseFields(
+    _EnergyManagementSystemProgramCallingManagerCommonFields, total=False
+):
+    energyplus_model_calling_point: (
+        Literal[
+            "AfterComponentInputReadIn",
+            "AfterNewEnvironmentWarmUpIsComplete",
+            "AfterPredictorAfterHVACManagers",
+            "AfterPredictorBeforeHVACManagers",
+            "BeginNewEnvironment",
+            "BeginTimestepBeforePredictor",
+            "EndOfSystemSizing",
+            "EndOfSystemTimestepAfterHVACReporting",
+            "EndOfSystemTimestepBeforeHVACReporting",
+            "EndOfZoneSizing",
+            "EndOfZoneTimestepAfterZoneReporting",
+            "EndOfZoneTimestepBeforeZoneReporting",
+            "InsideHVACSystemIterationLoop",
+            "UnitarySystemSizing",
+            "UserDefinedComponentModel",
+        ]
+        | None
+    )
 
 class EnergyManagementSystemProgramCallingManager(_EnergyManagementSystemProgramCallingManagerBase):
     """Input EMS program. a program needs a name a description of when it should be called and then lines of program code fo..."""
@@ -45227,7 +50219,10 @@ class _EnergyManagementSystemMeteredOutputVariableBase(_TypedIDFObject):
     update_frequency: Literal["SystemTimestep", "ZoneTimestep"] | None
     ems_program_or_subroutine_name: str | None
     """optional for global scope variables, required for local scope variables"""
-    resource_type: (
+    @property
+    def resource_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "CondensateWaterCollected",
@@ -45258,7 +50253,33 @@ class _EnergyManagementSystemMeteredOutputVariableBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @resource_type.setter
+    def resource_type(
+        self,
+        value: Literal[
+            "Coal",
+            "CondensateWaterCollected",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "ElectricityProducedOnSite",
+            "EnergyTransfer",
+            "Gasoline",
+            "MainsWaterSupply",
+            "NaturalGas",
+            "OnSiteWaterProduced",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "RainWaterCollected",
+            "SolarAirHeating",
+            "SolarWaterHeating",
+            "WaterUse",
+            "WellWaterDrawn",
+        ]
+        | None,
+    ) -> None: ...
     group_type: Literal["Building", "HVAC", "Plant", "System"] | None
     """choose a general classification, building (internal services), HVAC (air systems), or plant (hydronic systems), or sy..."""
     end_use_category: (
@@ -45292,6 +50313,41 @@ class _EnergyManagementSystemMeteredOutputVariableBase(_TypedIDFObject):
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table. enter a user-defined..."""
     units: str | None
     """optional but will result in dimensionless units for blank EnergyPlus units are standard SI units"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__EnergyManagementSystemMeteredOutputVariableBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __EnergyManagementSystemMeteredOutputVariableBaseFields(
+    _EnergyManagementSystemMeteredOutputVariableCommonFields, total=False
+):
+    resource_type: (
+        Literal[
+            "Coal",
+            "CondensateWaterCollected",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "ElectricityProducedOnSite",
+            "EnergyTransfer",
+            "Gasoline",
+            "MainsWaterSupply",
+            "NaturalGas",
+            "OnSiteWaterProduced",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "RainWaterCollected",
+            "SolarAirHeating",
+            "SolarWaterHeating",
+            "WaterUse",
+            "WellWaterDrawn",
+        ]
+        | None
+    )
 
 class EnergyManagementSystemMeteredOutputVariable(_EnergyManagementSystemMeteredOutputVariableBase):
     """This object sets up an EnergyPlus output variable from an Erl variable"""
@@ -45373,7 +50429,19 @@ class _EnergyManagementSystemTrendVariableBase(_TypedIDFObject):
 
     ems_variable_name: str | None
     """must be a global scope EMS variable"""
-    number_of_timesteps_to_be_logged: float | int | None
+    @property
+    def number_of_timesteps_to_be_logged(self) -> float | int | None: ...
+    @number_of_timesteps_to_be_logged.setter
+    def number_of_timesteps_to_be_logged(self, value: int | None) -> None: ...
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__EnergyManagementSystemTrendVariableBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __EnergyManagementSystemTrendVariableBaseFields(_EnergyManagementSystemTrendVariableCommonFields, total=False):
+    number_of_timesteps_to_be_logged: int | None
 
 class EnergyManagementSystemTrendVariable(_EnergyManagementSystemTrendVariableBase):
     """This object sets up an EMS trend variable from an Erl variable A trend variable logs values across timesteps"""
@@ -45504,7 +50572,21 @@ class _ExternalInterfaceFunctionalMockupUnitImportBase(_TypedIDFObject):
     fmu_file_name: str | None
     fmu_timeout: float | None
     """in milli-seconds; [ms]; Default: 0.0"""
-    fmu_loggingon: float | int | None
+    @property
+    def fmu_loggingon(self) -> float | int | None: ...
+    @fmu_loggingon.setter
+    def fmu_loggingon(self, value: int | None) -> None: ...
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ExternalInterfaceFunctionalMockupUnitImportBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ExternalInterfaceFunctionalMockupUnitImportBaseFields(
+    _ExternalInterfaceFunctionalMockupUnitImportCommonFields, total=False
+):
+    fmu_loggingon: int | None
 
 class ExternalInterfaceFunctionalMockupUnitImport(_ExternalInterfaceFunctionalMockupUnitImportBase):
     """This object declares an FMU"""
@@ -45736,7 +50818,10 @@ class _ZoneHVACForcedAirUserDefinedBase(_TypedIDFObject):
     """Inlet air used for heat rejection or air source"""
     secondary_air_outlet_node_name: str | None
     """Outlet air used for heat rejection or air source"""
-    number_of_plant_loop_connections: float | int | None
+    @property
+    def number_of_plant_loop_connections(self) -> float | int | None: ...
+    @number_of_plant_loop_connections.setter
+    def number_of_plant_loop_connections(self, value: int | None) -> None: ...
     plant_connection_1_inlet_node_name: str | None
     plant_connection_1_outlet_node_name: str | None
     plant_connection_2_inlet_node_name: str | None
@@ -45749,6 +50834,13 @@ class _ZoneHVACForcedAirUserDefinedBase(_TypedIDFObject):
     """Water use storage tank for collection of condensate by device"""
     ambient_zone_name: str | None
     """Used for modeling device losses to surrounding zone"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ZoneHVACForcedAirUserDefinedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ZoneHVACForcedAirUserDefinedBaseFields(_ZoneHVACForcedAirUserDefinedCommonFields, total=False):
+    number_of_plant_loop_connections: int | None
 
 class ZoneHVACForcedAirUserDefined(_ZoneHVACForcedAirUserDefinedBase):
     """Defines a generic zone air unit for custom modeling using Energy Management System or External Interface"""
@@ -45793,7 +50885,10 @@ class _AirTerminalSingleDuctUserDefinedBase(_TypedIDFObject):
     """Inlet air used for heat rejection or air source"""
     secondary_air_outlet_node_name: str | None
     """Outlet air used for heat rejection or air source"""
-    number_of_plant_loop_connections: float | int | None
+    @property
+    def number_of_plant_loop_connections(self) -> float | int | None: ...
+    @number_of_plant_loop_connections.setter
+    def number_of_plant_loop_connections(self, value: int | None) -> None: ...
     plant_connection_1_inlet_node_name: str | None
     plant_connection_1_outlet_node_name: str | None
     plant_connection_2_inlet_node_name: str | None
@@ -45804,6 +50899,13 @@ class _AirTerminalSingleDuctUserDefinedBase(_TypedIDFObject):
     """Water use storage tank for collection of condensate by device"""
     ambient_zone_name: str | None
     """Used for modeling device losses to surrounding zone"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AirTerminalSingleDuctUserDefinedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AirTerminalSingleDuctUserDefinedBaseFields(_AirTerminalSingleDuctUserDefinedCommonFields, total=False):
+    number_of_plant_loop_connections: int | None
 
 class AirTerminalSingleDuctUserDefined(_AirTerminalSingleDuctUserDefinedBase):
     """Defines a generic single duct air terminal unit for custom modeling using Energy Management System or External Interface"""
@@ -45838,7 +50940,10 @@ class _CoilUserDefinedBase(_TypedIDFObject):
     overall_model_simulation_program_calling_manager_name: str | None
     """This is the name of a program to run that defines the user-defined functionality for this component. This can match t..."""
     model_setup_and_sizing_program_calling_manager_name: str | None
-    number_of_air_connections: float | int | None
+    @property
+    def number_of_air_connections(self) -> float | int | None: ...
+    @number_of_air_connections.setter
+    def number_of_air_connections(self, value: int | None) -> None: ...
     air_connection_1_inlet_node_name: str | None
     """Inlet air for primary air stream"""
     air_connection_1_outlet_node_name: str | None
@@ -45856,6 +50961,13 @@ class _CoilUserDefinedBase(_TypedIDFObject):
     """Water use storage tank for collection of condensate by device"""
     ambient_zone_name: str | None
     """Used for modeling device losses to surrounding zone"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CoilUserDefinedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CoilUserDefinedBaseFields(_CoilUserDefinedCommonFields, total=False):
+    number_of_air_connections: int | None
 
 class CoilUserDefined(_CoilUserDefinedBase):
     """Defines a generic air system component for custom modeling using Energy Management System or External Interface"""
@@ -45949,7 +51061,10 @@ class _PlantComponentUserDefinedBase(_TypedIDFObject):
 
     main_model_program_calling_manager_name: str | None
     """For use with the API (Library, Callback) workflow, this field should be the same string that the user provides when r..."""
-    number_of_plant_loop_connections: float | int | None
+    @property
+    def number_of_plant_loop_connections(self) -> float | int | None: ...
+    @number_of_plant_loop_connections.setter
+    def number_of_plant_loop_connections(self, value: int | None) -> None: ...
     plant_connection_1_inlet_node_name: str | None
     plant_connection_1_outlet_node_name: str | None
     plant_connection_1_loading_mode: (
@@ -46030,6 +51145,13 @@ class _PlantComponentUserDefinedBase(_TypedIDFObject):
     """Water use storage tank for collection of condensate by device"""
     ambient_zone_name: str | None
     """Used for modeling device losses to surrounding zone"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PlantComponentUserDefinedBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PlantComponentUserDefinedBaseFields(_PlantComponentUserDefinedCommonFields, total=False):
+    number_of_plant_loop_connections: int | None
 
 class PlantComponentUserDefined(_PlantComponentUserDefinedBase):
     """Defines a generic plant component for custom modeling using Energy Management System or External Interface"""
@@ -46177,7 +51299,16 @@ class _AvailabilityManagerOptimumStartBase(_TypedIDFObject):
     """[deltaC/hr]"""
     constant_start_time: float | None
     """this is the number of hours before occupancy for a system; [hr]"""
-    number_of_previous_days: float | int | None
+    @property
+    def number_of_previous_days(self) -> float | int | None: ...
+    @number_of_previous_days.setter
+    def number_of_previous_days(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AvailabilityManagerOptimumStartBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AvailabilityManagerOptimumStartBaseFields(_AvailabilityManagerOptimumStartCommonFields, total=False):
+    number_of_previous_days: int | None
 
 class AvailabilityManagerOptimumStart(_AvailabilityManagerOptimumStartBase):
     """Determines the optimal start of HVAC systems before occupancy."""
@@ -46448,6 +51579,12 @@ class _AvailabilityManagerAssignmentListCommonFields(TypedDict, total=False): ..
 
 class _AvailabilityManagerAssignmentListBase(_TypedIDFObject):
     """``AvailabilityManagerAssignmentList`` as every supported EnergyPlus version declares it."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__AvailabilityManagerAssignmentListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __AvailabilityManagerAssignmentListBaseFields(_AvailabilityManagerAssignmentListCommonFields, total=False): ...
 
 class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
     """One managers group inside :class:`AvailabilityManagerAssignmentList`."""
@@ -48121,7 +53258,10 @@ class _RefrigerationSecondarySystemBase(_TypedIDFObject):
     """For 'FluidAlwaysLiquid', this is the rated difference between the temperature of the circulating fluid leaving the he...; [deltaC]"""
     evaporator_range_temperature_difference: float | None
     """For 'FluidAlwaysLiquid', this is the rated difference between the temperature of the circulating fluid entering the h...; [deltaC]"""
-    number_of_pumps_in_loop: float | int | None
+    @property
+    def number_of_pumps_in_loop(self) -> float | int | None: ...
+    @number_of_pumps_in_loop.setter
+    def number_of_pumps_in_loop(self, value: int | None) -> None: ...
     total_pump_flow_rate: float | None
     """For 'FluidAlwaysLiquid',if not input, Evaporator Flow Rate for Secondary Fluid will be used. For 'FluidPhaseChange', ...; [m3/s] (gal/min); Range: >= 0.0"""
     total_pump_power: float | None
@@ -48148,6 +53288,13 @@ class _RefrigerationSecondarySystemBase(_TypedIDFObject):
     """This value refers to the refrigerant circulating within the primary system providing cooling to the chiller for the s...; [kg]; Default: 0.0"""
     end_use_subcategory: str | None
     """Any text may be used here to categorize the end-uses in the ABUPS End Uses by Subcategory table.; Default: General"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__RefrigerationSecondarySystemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __RefrigerationSecondarySystemBaseFields(_RefrigerationSecondarySystemCommonFields, total=False):
+    number_of_pumps_in_loop: int | None
 
 class RefrigerationSecondarySystem(_RefrigerationSecondarySystemBase):
     """Works in conjunction with refrigerated cases and walkins to simulate the performance of a secondary loop supermarket ..."""
@@ -48227,6 +53374,12 @@ class _RefrigerationWalkInBase(_TypedIDFObject):
     """floor area of walk-in cooler; [m2]; Range: > 0.0"""
     insulated_floor_u_value: float | None
     """The default value corresponds to R18 [ft2-F-hr/Btu] To convert other IP R-values to U, divide 5.678 by the R-value So...; [W/m2-K]; Default: 0.3154; Range: > 0.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__RefrigerationWalkInBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __RefrigerationWalkInBaseFields(_RefrigerationWalkInCommonFields, total=False): ...
 
 class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
     """One zone_data group inside :class:`RefrigerationWalkIn`."""
@@ -48445,9 +53598,19 @@ class _DemandManagerAssignmentListBase(_TypedIDFObject):
     """This field should reference the same schedule as the month schedule name field of the UtilityCost:Tariff object, if u..."""
     peak_period_schedule_name: str | None
     """This field should reference the same schedule as the period schedule name field of the UtilityCost:Tariff object, if ..."""
-    demand_window_length: float | int | None
+    @property
+    def demand_window_length(self) -> float | int | None: ...
+    @demand_window_length.setter
+    def demand_window_length(self, value: int | None) -> None: ...
     demand_manager_priority: Literal["All", "Sequential"] | None
     manager_data: ExtensibleList[DemandManagerAssignmentListManagerDataGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerAssignmentListBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerAssignmentListBaseFields(_DemandManagerAssignmentListCommonFields, total=False):
+    demand_window_length: int | None
 
 class DemandManagerAssignmentList(_DemandManagerAssignmentListBase):
     """A high level control that makes demand limiting decisions based on a list of possible demand limiting strategies."""
@@ -48481,14 +53644,28 @@ class _DemandManagerExteriorLightsBase(_TypedIDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     limit_control: Literal["Fixed", "Off"] | None
-    minimum_limit_duration: float | int | None
+    @property
+    def minimum_limit_duration(self) -> float | int | None: ...
+    @minimum_limit_duration.setter
+    def minimum_limit_duration(self, value: int | None) -> None: ...
     maximum_limit_fraction: float | None
     """Range: >= 0.0, <= 1.0"""
     limit_step_change: float | None
     """Not yet implemented"""
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    rotation_duration: float | int | None
+    @property
+    def rotation_duration(self) -> float | int | None: ...
+    @rotation_duration.setter
+    def rotation_duration(self, value: int | None) -> None: ...
     lights: ExtensibleList[DemandManagerExteriorLightsLightsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerExteriorLightsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerExteriorLightsBaseFields(_DemandManagerExteriorLightsCommonFields, total=False):
+    minimum_limit_duration: int | None
+    rotation_duration: int | None
 
 class DemandManagerExteriorLights(_DemandManagerExteriorLightsBase):
     """used for demand limiting Exterior:Lights objects."""
@@ -48525,14 +53702,28 @@ class _DemandManagerLightsBase(_TypedIDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     limit_control: Literal["Fixed", "Off"] | None
-    minimum_limit_duration: float | int | None
+    @property
+    def minimum_limit_duration(self) -> float | int | None: ...
+    @minimum_limit_duration.setter
+    def minimum_limit_duration(self, value: int | None) -> None: ...
     maximum_limit_fraction: float | None
     """Range: >= 0.0, <= 1.0"""
     limit_step_change: float | None
     """Not yet implemented"""
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    rotation_duration: float | int | None
+    @property
+    def rotation_duration(self) -> float | int | None: ...
+    @rotation_duration.setter
+    def rotation_duration(self, value: int | None) -> None: ...
     lights: ExtensibleList[DemandManagerLightsLightsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerLightsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerLightsBaseFields(_DemandManagerLightsCommonFields, total=False):
+    minimum_limit_duration: int | None
+    rotation_duration: int | None
 
 class DemandManagerLights(_DemandManagerLightsBase):
     """used for demand limiting Lights objects."""
@@ -48569,14 +53760,28 @@ class _DemandManagerElectricEquipmentBase(_TypedIDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     limit_control: Literal["Fixed", "Off"] | None
-    minimum_limit_duration: float | int | None
+    @property
+    def minimum_limit_duration(self) -> float | int | None: ...
+    @minimum_limit_duration.setter
+    def minimum_limit_duration(self, value: int | None) -> None: ...
     maximum_limit_fraction: float | None
     """Range: >= 0.0, <= 1.0"""
     limit_step_change: float | None
     """Not yet implemented"""
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    rotation_duration: float | int | None
+    @property
+    def rotation_duration(self) -> float | int | None: ...
+    @rotation_duration.setter
+    def rotation_duration(self, value: int | None) -> None: ...
     equipment: ExtensibleList[DemandManagerElectricEquipmentEquipmentGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerElectricEquipmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerElectricEquipmentBaseFields(_DemandManagerElectricEquipmentCommonFields, total=False):
+    minimum_limit_duration: int | None
+    rotation_duration: int | None
 
 class DemandManagerElectricEquipment(_DemandManagerElectricEquipmentBase):
     """used for demand limiting ElectricEquipment objects."""
@@ -48614,7 +53819,10 @@ class _DemandManagerThermostatsBase(_TypedIDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
     reset_control: Literal["Fixed", "Off"] | None
-    minimum_reset_duration: float | int | None
+    @property
+    def minimum_reset_duration(self) -> float | int | None: ...
+    @minimum_reset_duration.setter
+    def minimum_reset_duration(self, value: int | None) -> None: ...
     maximum_heating_setpoint_reset: float | None
     """[C]"""
     maximum_cooling_setpoint_reset: float | None
@@ -48622,8 +53830,19 @@ class _DemandManagerThermostatsBase(_TypedIDFObject):
     reset_step_change: float | None
     """Not yet implemented"""
     selection_control: Literal["All", "RotateMany", "RotateOne"] | None
-    rotation_duration: float | int | None
+    @property
+    def rotation_duration(self) -> float | int | None: ...
+    @rotation_duration.setter
+    def rotation_duration(self, value: int | None) -> None: ...
     thermostats: ExtensibleList[DemandManagerThermostatsThermostatsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerThermostatsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerThermostatsBaseFields(_DemandManagerThermostatsCommonFields, total=False):
+    minimum_reset_duration: int | None
+    rotation_duration: int | None
 
 class DemandManagerThermostats(_DemandManagerThermostatsBase):
     """used for demand limiting ZoneControl:Thermostat objects."""
@@ -48661,7 +53880,10 @@ class _DemandManagerVentilationBase(_TypedIDFObject):
     availability_schedule_name: str | None
     """Availability schedule name for this demand manager. Schedule value > 0 means the demand manager is available. If this..."""
     limit_control: Literal["FixedRate", "Off", "ReductionRatio"] | None
-    minimum_limit_duration: float | int | None
+    @property
+    def minimum_limit_duration(self) -> float | int | None: ...
+    @minimum_limit_duration.setter
+    def minimum_limit_duration(self, value: int | None) -> None: ...
     fixed_rate: float | None
     """Used in case when Limit strategy is set to FixedRate; [m3/s]; Range: >= 0.0"""
     reduction_ratio: float | None
@@ -48670,8 +53892,19 @@ class _DemandManagerVentilationBase(_TypedIDFObject):
     """Not yet implemented"""
     selection_control: Literal["", "All", "RotateMany", "RotateOne"] | None
     """Default: All"""
-    rotation_duration: float | int | None
+    @property
+    def rotation_duration(self) -> float | int | None: ...
+    @rotation_duration.setter
+    def rotation_duration(self, value: int | None) -> None: ...
     controllers: ExtensibleList[DemandManagerVentilationControllersGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__DemandManagerVentilationBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __DemandManagerVentilationBaseFields(_DemandManagerVentilationCommonFields, total=False):
+    minimum_limit_duration: int | None
+    rotation_duration: int | None
 
 class DemandManagerVentilation(_DemandManagerVentilationBase):
     """used for demand limiting Controller:OutdoorAir objects."""
@@ -48745,7 +53978,10 @@ class _GeneratorInternalCombustionEngineBase(_TypedIDFObject):
     """if non-zero, then inlet, outlet nodes must be entered.; [m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     heat_recovery_inlet_node_name: str | None
     heat_recovery_outlet_node_name: str | None
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -48761,9 +53997,20 @@ class _GeneratorInternalCombustionEngineBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     heat_recovery_maximum_temperature: float | None
     """[C]; Default: 80.0; Range: >= 0.0, <= 100.0"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GeneratorInternalCombustionEngineBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GeneratorInternalCombustionEngineBaseFields(_GeneratorInternalCombustionEngineCommonFields, total=False):
+    fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class GeneratorInternalCombustionEngine(_GeneratorInternalCombustionEngineBase):
     """This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Engine..."""
@@ -48851,7 +54098,10 @@ class _GeneratorCombustionTurbineBase(_TypedIDFObject):
     """if non-zero, then inlet, outlet nodes must be entered.; [m3/s] (gal/min); Default: 0.0; Range: >= 0.0"""
     heat_recovery_inlet_node_name: str | None
     heat_recovery_outlet_node_name: str | None
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "Diesel",
@@ -48868,11 +54118,22 @@ class _GeneratorCombustionTurbineBase(_TypedIDFObject):
             "Coal",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(
+        self, value: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
+    ) -> None: ...
     heat_recovery_maximum_temperature: float | None
     """[C]; Default: 80.0; Range: >= 0.0, <= 100.0"""
     outdoor_air_inlet_node_name: str | None
     """Enter the name of an outdoor air node"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GeneratorCombustionTurbineBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GeneratorCombustionTurbineBaseFields(_GeneratorCombustionTurbineCommonFields, total=False):
+    fuel_type: Literal["", "Diesel", "Gasoline", "NaturalGas", "OtherFuel1", "OtherFuel2"] | None
 
 class GeneratorCombustionTurbine(_GeneratorCombustionTurbineBase):
     """This generator model is the empirical model from the Building Loads and System Thermodynamics (BLAST) program. Genera..."""
@@ -48977,7 +54238,10 @@ class _GeneratorMicroTurbineBase(_TypedIDFObject):
     """Quadratic curve = a + b*T + c*T**2 Cubic curve = a + b*T + c*T**2 + d*T**3 T = combustion air inlet temperature (C)"""
     electrical_efficiency_function_of_part_load_ratio_curve_name: str | None
     """Quadratic curve = a + b*PLR + c*PLR**2 Cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = ratio of Generator Load to..."""
-    fuel_type: (
+    @property
+    def fuel_type(
+        self,
+    ) -> (
         Literal[
             "",
             "NaturalGas",
@@ -48992,7 +54256,9 @@ class _GeneratorMicroTurbineBase(_TypedIDFObject):
             "OtherFuel2",
         ]
         | None
-    )
+    ): ...
+    @fuel_type.setter
+    def fuel_type(self, value: Literal["", "NaturalGas"] | None) -> None: ...
     fuel_higher_heating_value: float | None
     """[kJ/kg]; Default: 50000.0; Range: > 0.0"""
     fuel_lower_heating_value: float | None
@@ -49044,6 +54310,13 @@ class _GeneratorMicroTurbineBase(_TypedIDFObject):
     """Quadratic curve = a + b*T + c*T**2 Cubic curve = a + b*T + c*T**2 + d*T**3 T = combustion air inlet temperature (C) I..."""
     exhaust_air_temperature_function_of_part_load_ratio_curve_name: str | None
     """Quadratic curve = a + b*PLR + c*PLR**2 Cubic curve = a + b*PLR + c*PLR**2 + d*PLR**3 PLR = ratio of Generator Load to..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__GeneratorMicroTurbineBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __GeneratorMicroTurbineBaseFields(_GeneratorMicroTurbineCommonFields, total=False):
+    fuel_type: Literal["", "NaturalGas"] | None
 
 class GeneratorMicroTurbine(_GeneratorMicroTurbineBase):
     """MicroTurbine generators are small combustion turbines (e.g., 25kW to 500kW). The model calculates electrical power ou..."""
@@ -49192,7 +54465,10 @@ class _PhotovoltaicPerformanceEquivalentOneDiodeBase(_TypedIDFObject):
     """``PhotovoltaicPerformance:EquivalentOne-Diode`` as every supported EnergyPlus version declares it."""
 
     cell_type: Literal["AmorphousSilicon", "CrystallineSilicon"] | None
-    number_of_cells_in_series: float | int | None
+    @property
+    def number_of_cells_in_series(self) -> float | int | None: ...
+    @number_of_cells_in_series.setter
+    def number_of_cells_in_series(self, value: int | None) -> None: ...
     active_area: float | None
     """The total power output of the array is determined by the number of modules (see above). The Active Area is only used ...; [m2]; Default: 0.89; Range: >= 0.1"""
     transmittance_absorptance_product: float | None
@@ -49227,6 +54503,18 @@ class _PhotovoltaicPerformanceEquivalentOneDiodeBase(_TypedIDFObject):
     """[W/m2-K]; Default: 30.0; Range: >= 0.0"""
     total_heat_capacity: float | None
     """[J/m2-K]; Default: 50000.0; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__PhotovoltaicPerformanceEquivalentOneDiodeBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __PhotovoltaicPerformanceEquivalentOneDiodeBaseFields(
+    _PhotovoltaicPerformanceEquivalentOneDiodeCommonFields, total=False
+):
+    number_of_cells_in_series: int | None
 
 class PhotovoltaicPerformanceEquivalentOneDiode(_PhotovoltaicPerformanceEquivalentOneDiodeBase):
     """Describes the performance characteristics of Photovoltaic (PV) modules to be modeled using an equivalent one-diode ci..."""
@@ -49291,8 +54579,14 @@ class _PhotovoltaicPerformanceSandiaBase(_TypedIDFObject):
 
     active_area: float | None
     """(m2, single module); [m2]; Default: 1.0; Range: >= 0.0"""
-    number_of_cells_in_series: float | int | None
-    number_of_cells_in_parallel: float | int | None
+    @property
+    def number_of_cells_in_series(self) -> float | int | None: ...
+    @number_of_cells_in_series.setter
+    def number_of_cells_in_series(self, value: int | None) -> None: ...
+    @property
+    def number_of_cells_in_parallel(self) -> float | int | None: ...
+    @number_of_cells_in_parallel.setter
+    def number_of_cells_in_parallel(self, value: int | None) -> None: ...
     short_circuit_current: float | None
     """(Amps); [A]"""
     open_circuit_voltage: float | None
@@ -49367,6 +54661,14 @@ class _PhotovoltaicPerformanceSandiaBase(_TypedIDFObject):
     """(non-dimensional); [dimensionless]"""
     sandia_database_parameter_delta_tc: float | None
     """Alias of :attr:`sandia_database_parameter_delta_tc_`, the same field without the trailing underscore."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PhotovoltaicPerformanceSandiaBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PhotovoltaicPerformanceSandiaBaseFields(_PhotovoltaicPerformanceSandiaCommonFields, total=False):
+    number_of_cells_in_series: int | None
+    number_of_cells_in_parallel: int | None
 
 class PhotovoltaicPerformanceSandia(_PhotovoltaicPerformanceSandiaBase):
     """Describes performance input data needed for specific makes and models of production PV panels using the empirical coe..."""
@@ -50595,6 +55897,12 @@ class _ElectricLoadCenterGeneratorsCommonFields(TypedDict, total=False): ...
 class _ElectricLoadCenterGeneratorsBase(_TypedIDFObject):
     """``ElectricLoadCenter:Generators`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ElectricLoadCenterGeneratorsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ElectricLoadCenterGeneratorsBaseFields(_ElectricLoadCenterGeneratorsCommonFields, total=False): ...
+
 class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
     """One generator_outputs group inside :class:`ElectricLoadCenterGenerators`."""
 
@@ -50803,8 +56111,14 @@ class _ElectricLoadCenterStorageBatteryBase(_TypedIDFObject):
     """Enter name of zone to receive electrical storage losses as heat if blank then electrical storage losses are dissipate..."""
     radiative_fraction: float | None
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
-    number_of_battery_modules_in_parallel: float | int | None
-    number_of_battery_modules_in_series: float | int | None
+    @property
+    def number_of_battery_modules_in_parallel(self) -> float | int | None: ...
+    @number_of_battery_modules_in_parallel.setter
+    def number_of_battery_modules_in_parallel(self, value: int | None) -> None: ...
+    @property
+    def number_of_battery_modules_in_series(self) -> float | int | None: ...
+    @number_of_battery_modules_in_series.setter
+    def number_of_battery_modules_in_series(self, value: int | None) -> None: ...
     maximum_module_capacity: float | None
     """The capacity is for each module. A model parameter from manufacturer's data or test data.; [Ah]; Range: >= 0.0"""
     initial_fractional_state_of_charge: float | None
@@ -50831,9 +56145,21 @@ class _ElectricLoadCenterStorageBatteryBase(_TypedIDFObject):
     """units 1/hr Charge rate limit is the division between charging current the remaining capacity. The constraint on charg...; Default: 1.0; Range: >= 0.0"""
     battery_life_calculation: Literal["", "No", "Yes"] | None
     """Default: No"""
-    number_of_cycle_bins: float | int | None
+    @property
+    def number_of_cycle_bins(self) -> float | int | None: ...
+    @number_of_cycle_bins.setter
+    def number_of_cycle_bins(self, value: int | None) -> None: ...
     battery_life_curve_name: str | None
     """Determines the number of cycles to failure in relation to cycle range. Only required when battery life calculation is..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ElectricLoadCenterStorageBatteryBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ElectricLoadCenterStorageBatteryBaseFields(_ElectricLoadCenterStorageBatteryCommonFields, total=False):
+    number_of_battery_modules_in_parallel: int | None
+    number_of_battery_modules_in_series: int | None
+    number_of_cycle_bins: int | None
 
 class ElectricLoadCenterStorageBattery(_ElectricLoadCenterStorageBatteryBase):
     """Uses the kinetic battery model (KiBaM) to simulate rechargeable battery banks in an electrical load center. The batte..."""
@@ -50886,8 +56212,14 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryBase(_TypedIDFObject):
     """Default: 0.0; Range: >= 0.0, <= 1.0"""
     lifetime_model: Literal["", "KandlerSmith", "None"] | None
     """Default: KandlerSmith"""
-    number_of_cells_in_series: float | int | None
-    number_of_strings_in_parallel: float | int | None
+    @property
+    def number_of_cells_in_series(self) -> float | int | None: ...
+    @number_of_cells_in_series.setter
+    def number_of_cells_in_series(self, value: int | None) -> None: ...
+    @property
+    def number_of_strings_in_parallel(self) -> float | int | None: ...
+    @number_of_strings_in_parallel.setter
+    def number_of_strings_in_parallel(self, value: int | None) -> None: ...
     initial_fractional_state_of_charge: float | None
     """The state of charge is evaluated based on the maximum capacity defined in the next field.; Default: 0.5; Range: >= 0.0, <= 1.0"""
     dc_to_dc_charging_efficiency: float | None
@@ -50918,6 +56250,19 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryBase(_TypedIDFObject):
     """Most users should not need to change this value.; Default: 1.0; Range: > 0.0"""
     battery_cell_internal_electrical_resistance: float | None
     """for a single cell Most users should not need to change this value.; [ohms]; Default: 0.09; Range: >= 0.0"""
+
+    def update(
+        self,
+        values: Mapping[str, Any] | None = ...,
+        /,
+        **kwargs: Unpack[__ElectricLoadCenterStorageLiIonNMCBatteryBaseFields],
+    ) -> None: ...  # type: ignore[override]
+
+class __ElectricLoadCenterStorageLiIonNMCBatteryBaseFields(
+    _ElectricLoadCenterStorageLiIonNMCBatteryCommonFields, total=False
+):
+    number_of_cells_in_series: int | None
+    number_of_strings_in_parallel: int | None
 
 class ElectricLoadCenterStorageLiIonNMCBattery(_ElectricLoadCenterStorageLiIonNMCBatteryBase):
     """Uses Lithium Ion NMC model to simulate rechargeable battery banks in an electrical load center. The battery bank is a...; Since: 9.5.0"""
@@ -51870,10 +57215,23 @@ class MatrixTwoDimensionValuesGroup(_TypedExtensibleGroup):
 
 class _MatrixTwoDimensionBase(_TypedIDFObject):
     """``Matrix:TwoDimension`` as every supported EnergyPlus version declares it."""
-
-    number_of_rows: float | int | None
-    number_of_columns: float | int | None
+    @property
+    def number_of_rows(self) -> float | int | None: ...
+    @number_of_rows.setter
+    def number_of_rows(self, value: int | None) -> None: ...
+    @property
+    def number_of_columns(self) -> float | int | None: ...
+    @number_of_columns.setter
+    def number_of_columns(self, value: int | None) -> None: ...
     values: ExtensibleList[MatrixTwoDimensionValuesGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MatrixTwoDimensionBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __MatrixTwoDimensionBaseFields(_MatrixTwoDimensionCommonFields, total=False):
+    number_of_rows: int | None
+    number_of_columns: int | None
 
 class MatrixTwoDimension(_MatrixTwoDimensionBase):
     """matrix data in row-major order list each row keeping the columns in order number of values must equal N1 x N2"""
@@ -51905,10 +57263,31 @@ class _HybridModelZoneBase(_TypedIDFObject):
     """Use measured temperature data (temperature, humidity ratio, or CO2 concentration) to calculate zone air infiltration ...; Default: No"""
     zone_measured_air_temperature_schedule_name: str | None
     """from Schedule:File"""
-    begin_month: float | int | None
-    begin_day_of_month: float | int | None
-    end_month: float | int | None
-    end_day_of_month: float | int | None
+    @property
+    def begin_month(self) -> float | int | None: ...
+    @begin_month.setter
+    def begin_month(self, value: int | None) -> None: ...
+    @property
+    def begin_day_of_month(self) -> float | int | None: ...
+    @begin_day_of_month.setter
+    def begin_day_of_month(self, value: int | None) -> None: ...
+    @property
+    def end_month(self) -> float | int | None: ...
+    @end_month.setter
+    def end_month(self, value: int | None) -> None: ...
+    @property
+    def end_day_of_month(self) -> float | int | None: ...
+    @end_day_of_month.setter
+    def end_day_of_month(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__HybridModelZoneBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __HybridModelZoneBaseFields(_HybridModelZoneCommonFields, total=False):
+    begin_month: int | None
+    begin_day_of_month: int | None
+    end_month: int | None
+    end_day_of_month: int | None
 
 class HybridModelZone(_HybridModelZoneBase):
     """Zones with measured air temperature data and a range of dates. If the range of temperature measurement dates includes..."""
@@ -53033,6 +58412,12 @@ class _CurveDoubleExponentialDecayBase(_TypedIDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__CurveDoubleExponentialDecayBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __CurveDoubleExponentialDecayBaseFields(_CurveDoubleExponentialDecayCommonFields, total=False): ...
+
 class CurveDoubleExponentialDecay(_CurveDoubleExponentialDecayBase):
     """Double exponential decay curve with one independent variable. Input consists of the curve name, the five coefficients..."""
 
@@ -53145,9 +58530,23 @@ class _TableIndependentVariableBase(_TypedIDFObject):
     )
     """Default: Dimensionless"""
     external_file_name: str | None
-    external_file_column_number: float | int | None
-    external_file_starting_row_number: float | int | None
+    @property
+    def external_file_column_number(self) -> float | int | None: ...
+    @external_file_column_number.setter
+    def external_file_column_number(self, value: int | None) -> None: ...
+    @property
+    def external_file_starting_row_number(self) -> float | int | None: ...
+    @external_file_starting_row_number.setter
+    def external_file_starting_row_number(self, value: int | None) -> None: ...
     values: ExtensibleList[TableIndependentVariableValuesGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__TableIndependentVariableBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __TableIndependentVariableBaseFields(_TableIndependentVariableCommonFields, total=False):
+    external_file_column_number: int | None
+    external_file_starting_row_number: int | None
 
 class TableIndependentVariable(_TableIndependentVariableBase):
     """An independent variable representing a single dimension of a Table:Lookup object.; Since: 9.2.0"""
@@ -53210,9 +58609,21 @@ class _TableLookupBase(_TypedIDFObject):
     output_unit_type: Literal["", "Capacity", "Dimensionless", "Power", "Pressure", "Temperature"] | None
     """Default: Dimensionless"""
     external_file_name: str | None
-    external_file_column_number: float | int | None
-    external_file_starting_row_number: float | int | None
+    @property
+    def external_file_column_number(self) -> float | int | None: ...
+    @external_file_column_number.setter
+    def external_file_column_number(self, value: int | None) -> None: ...
+    @property
+    def external_file_starting_row_number(self) -> float | int | None: ...
+    @external_file_starting_row_number.setter
+    def external_file_starting_row_number(self, value: int | None) -> None: ...
     values: ExtensibleList[TableLookupValuesGroup]
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__TableLookupBaseFields]) -> None: ...  # type: ignore[override]
+
+class __TableLookupBaseFields(_TableLookupCommonFields, total=False):
+    external_file_column_number: int | None
+    external_file_starting_row_number: int | None
 
 class TableLookup(_TableLookupBase):
     """Lookup tables are used in place of curves and can represent any number of independent variables (defined as Table:Ind...; Since: 9.2.0"""
@@ -55906,7 +61317,10 @@ class _ComponentCostLineItemBase(_TypedIDFObject):
     """``ComponentCost:LineItem`` as every supported EnergyPlus version declares it."""
 
     type: str | None
-    line_item_type: (
+    @property
+    def line_item_type(
+        self,
+    ) -> (
         Literal[
             "Chiller:Electric",
             "Coil:Cooling:DX:SingleSpeed",
@@ -55921,7 +61335,24 @@ class _ComponentCostLineItemBase(_TypedIDFObject):
             "Coil:Cooling:DX",
         ]
         | None
-    )
+    ): ...
+    @line_item_type.setter
+    def line_item_type(
+        self,
+        value: Literal[
+            "Chiller:Electric",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:DX",
+            "Coil:Heating:Fuel",
+            "Construction",
+            "Daylighting:Controls",
+            "General",
+            "Generator:Photovoltaic",
+            "Lights",
+            "Shading:Zone:Detailed",
+        ]
+        | None,
+    ) -> None: ...
     item_name: str | None
     """wildcard '*' is acceptable for some components"""
     object_end_use_key: str | None
@@ -55942,6 +61373,27 @@ class _ComponentCostLineItemBase(_TypedIDFObject):
     """as in for use with UA sizing of Coils; [$/(W/K)]"""
     quantity: float | None
     """optional for use with Cost per Each and 'General' object Type; [dimensionless]"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__ComponentCostLineItemBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __ComponentCostLineItemBaseFields(_ComponentCostLineItemCommonFields, total=False):
+    line_item_type: (
+        Literal[
+            "Chiller:Electric",
+            "Coil:Cooling:DX:SingleSpeed",
+            "Coil:DX",
+            "Coil:Heating:Fuel",
+            "Construction",
+            "Daylighting:Controls",
+            "General",
+            "Generator:Photovoltaic",
+            "Lights",
+            "Shading:Zone:Detailed",
+        ]
+        | None
+    )
 
 class ComponentCostLineItem(_ComponentCostLineItemBase):
     """Each instance of this object creates a cost line item and will contribute to the total for a cost estimate."""
@@ -56330,7 +61782,10 @@ class _UtilityCostVariableBase(_TypedIDFObject):
 
     tariff_name: str | None
     """The name of the UtilityCost:Tariff that is associated with this UtilityCost:Variable."""
-    variable_type: Literal["", "Currency", "Dimensionless", "Energy", "Power", "Demand"] | None
+    @property
+    def variable_type(self) -> Literal["", "Currency", "Dimensionless", "Energy", "Power", "Demand"] | None: ...
+    @variable_type.setter
+    def variable_type(self, value: Literal["", "Currency", "Dimensionless", "Energy"] | None) -> None: ...
     january_value: float | None
     february_value: float | None
     march_value: float | None
@@ -56343,6 +61798,13 @@ class _UtilityCostVariableBase(_TypedIDFObject):
     october_value: float | None
     november_value: float | None
     december_value: float | None
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__UtilityCostVariableBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __UtilityCostVariableBaseFields(_UtilityCostVariableCommonFields, total=False):
+    variable_type: Literal["", "Currency", "Dimensionless", "Energy"] | None
 
 class UtilityCostVariable(_UtilityCostVariableBase):
     """Allows for the direct entry of monthly values into a utility tariff variable."""
@@ -56524,7 +61986,10 @@ class _LifeCycleCostParametersBase(_TypedIDFObject):
         | None
     )
     """Enter the month that is the beginning of study period also known as the beginning of the base period.; Default: January"""
-    base_date_year: float | int | None
+    @property
+    def base_date_year(self) -> float | int | None: ...
+    @base_date_year.setter
+    def base_date_year(self, value: int | None) -> None: ...
     service_date_month: (
         Literal[
             "",
@@ -56544,8 +62009,14 @@ class _LifeCycleCostParametersBase(_TypedIDFObject):
         | None
     )
     """Enter the month that is the beginning of building occupancy. Energy costs computed by EnergyPlus are assumed to occur...; Default: January"""
-    service_date_year: float | int | None
-    length_of_study_period_in_years: float | int | None
+    @property
+    def service_date_year(self) -> float | int | None: ...
+    @service_date_year.setter
+    def service_date_year(self, value: int | None) -> None: ...
+    @property
+    def length_of_study_period_in_years(self) -> float | int | None: ...
+    @length_of_study_period_in_years.setter
+    def length_of_study_period_in_years(self, value: int | None) -> None: ...
     tax_rate: float | None
     """Enter the overall marginal tax rate for the project costs. This does not include energy or water taxes. The tax rate ...; Range: >= 0.0"""
     depreciation_method: (
@@ -56566,6 +62037,15 @@ class _LifeCycleCostParametersBase(_TypedIDFObject):
         | None
     )
     """For an analysis that includes income tax impacts this entry describes how capital costs are depreciated. Only one dep...; Default: None"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LifeCycleCostParametersBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LifeCycleCostParametersBaseFields(_LifeCycleCostParametersCommonFields, total=False):
+    base_date_year: int | None
+    service_date_year: int | None
+    length_of_study_period_in_years: int | None
 
 class LifeCycleCostParameters(_LifeCycleCostParametersBase):
     """Provides inputs related to the overall life-cycle analysis. It establishes many of the assumptions used in computing ..."""
@@ -56625,12 +62105,34 @@ class _LifeCycleCostRecurringCostsBase(_TypedIDFObject):
     """Enter the cost in dollars (or the appropriate monetary unit) for the recurring costs. Enter the cost for each time it..."""
     start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None
     """Enter when the costs start. The First Year of Cost is based on the number of years past the Start of Costs. For most ...; Default: ServicePeriod"""
-    years_from_start: float | int | None
-    months_from_start: float | int | None
-    repeat_period_years: float | int | None
-    repeat_period_months: float | int | None
+    @property
+    def years_from_start(self) -> float | int | None: ...
+    @years_from_start.setter
+    def years_from_start(self, value: int | None) -> None: ...
+    @property
+    def months_from_start(self) -> float | int | None: ...
+    @months_from_start.setter
+    def months_from_start(self, value: int | None) -> None: ...
+    @property
+    def repeat_period_years(self) -> float | int | None: ...
+    @repeat_period_years.setter
+    def repeat_period_years(self, value: int | None) -> None: ...
+    @property
+    def repeat_period_months(self) -> float | int | None: ...
+    @repeat_period_months.setter
+    def repeat_period_months(self, value: int | None) -> None: ...
     annual_escalation_rate: float | None
     """Enter the annual escalation rate as a decimal. For a 1% rate enter the value 0.01. This input is used when the Inflat...; Range: >= -0.3, <= 0.3"""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LifeCycleCostRecurringCostsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LifeCycleCostRecurringCostsBaseFields(_LifeCycleCostRecurringCostsCommonFields, total=False):
+    years_from_start: int | None
+    months_from_start: int | None
+    repeat_period_years: int | None
+    repeat_period_months: int | None
 
 class LifeCycleCostRecurringCosts(_LifeCycleCostRecurringCostsBase):
     """Recurring costs are costs that repeat over time on a regular schedule during the study period. If costs associated wi..."""
@@ -56668,8 +62170,21 @@ class _LifeCycleCostNonrecurringCostBase(_TypedIDFObject):
     """Enter the non-recurring cost value. For construction and other capital costs the value entered is typically a positiv..."""
     start_of_costs: Literal["", "BasePeriod", "ServicePeriod"] | None
     """Enter when the costs start. The First Year of Cost is based on the number of years past the Start of Costs. For most ...; Default: ServicePeriod"""
-    years_from_start: float | int | None
-    months_from_start: float | int | None
+    @property
+    def years_from_start(self) -> float | int | None: ...
+    @years_from_start.setter
+    def years_from_start(self, value: int | None) -> None: ...
+    @property
+    def months_from_start(self) -> float | int | None: ...
+    @months_from_start.setter
+    def months_from_start(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LifeCycleCostNonrecurringCostBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LifeCycleCostNonrecurringCostBaseFields(_LifeCycleCostNonrecurringCostCommonFields, total=False):
+    years_from_start: int | None
+    months_from_start: int | None
 
 class LifeCycleCostNonrecurringCost(_LifeCycleCostNonrecurringCostBase):
     """A non-recurring cost happens only once during the study period. For costs that occur more than once during the study ..."""
@@ -56719,7 +62234,10 @@ class _LifeCycleCostUsePriceEscalationBase(_TypedIDFObject):
 
     lcc_price_escalation_name: str | None
     """The identifier used for the object. The name usually identifies the location (such as the state or region or country ..."""
-    resource: (
+    @property
+    def resource(
+        self,
+    ) -> (
         str
         | Literal[
             "Coal",
@@ -56743,8 +62261,33 @@ class _LifeCycleCostUsePriceEscalationBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
-    escalation_start_year: float | int | None
+    ): ...
+    @resource.setter
+    def resource(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "ElectricityNet",
+            "ElectricityProduced",
+            "ElectricityPurchased",
+            "ElectricitySurplusSold",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "Water",
+        ]
+        | None,
+    ) -> None: ...
+    @property
+    def escalation_start_year(self) -> float | int | None: ...
+    @escalation_start_year.setter
+    def escalation_start_year(self, value: int | None) -> None: ...
     escalation_start_month: (
         Literal[
             "",
@@ -56765,6 +62308,33 @@ class _LifeCycleCostUsePriceEscalationBase(_TypedIDFObject):
     )
     """This field and the Escalation Start Year define the time that corresponds to Year 1 Escalation such as 2010 when the ...; Default: January"""
     escalations: ExtensibleList[LifeCycleCostUsePriceEscalationEscalationsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LifeCycleCostUsePriceEscalationBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LifeCycleCostUsePriceEscalationBaseFields(_LifeCycleCostUsePriceEscalationCommonFields, total=False):
+    resource: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "ElectricityNet",
+            "ElectricityProduced",
+            "ElectricityPurchased",
+            "ElectricitySurplusSold",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "Water",
+        ]
+        | None
+    )
+    escalation_start_year: int | None
 
 class LifeCycleCostUsePriceEscalation(_LifeCycleCostUsePriceEscalationBase):
     """Life cycle cost escalation factors. The values for this object may be found in the annual supplement to NIST Handbook..."""
@@ -56835,8 +62405,10 @@ class LifeCycleCostUseAdjustmentMultipliersGroup(_TypedExtensibleGroup):
 
 class _LifeCycleCostUseAdjustmentBase(_TypedIDFObject):
     """``LifeCycleCost:UseAdjustment`` as every supported EnergyPlus version declares it."""
-
-    resource: (
+    @property
+    def resource(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "Diesel",
@@ -56861,8 +62433,52 @@ class _LifeCycleCostUseAdjustmentBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @resource.setter
+    def resource(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "ElectricityNet",
+            "ElectricityProduced",
+            "ElectricityPurchased",
+            "ElectricitySurplusSold",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "Water",
+        ]
+        | None,
+    ) -> None: ...
     multipliers: ExtensibleList[LifeCycleCostUseAdjustmentMultipliersGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__LifeCycleCostUseAdjustmentBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __LifeCycleCostUseAdjustmentBaseFields(_LifeCycleCostUseAdjustmentCommonFields, total=False):
+    resource: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "ElectricityNet",
+            "ElectricityProduced",
+            "ElectricityPurchased",
+            "ElectricitySurplusSold",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "Water",
+        ]
+        | None
+    )
 
 class LifeCycleCostUseAdjustment(_LifeCycleCostUseAdjustmentBase):
     """Used by advanced users to adjust the energy or water use costs for future years. This should not be used for compensa..."""
@@ -57424,7 +63040,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_1: float | int | None
+    @property
+    def color_for_drawing_element_1(self) -> float | int | None: ...
+    @color_for_drawing_element_1.setter
+    def color_for_drawing_element_1(self, value: int | None) -> None: ...
     drawing_element_2_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57445,7 +63064,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_2: float | int | None
+    @property
+    def color_for_drawing_element_2(self) -> float | int | None: ...
+    @color_for_drawing_element_2.setter
+    def color_for_drawing_element_2(self, value: int | None) -> None: ...
     drawing_element_3_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57466,7 +63088,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_3: float | int | None
+    @property
+    def color_for_drawing_element_3(self) -> float | int | None: ...
+    @color_for_drawing_element_3.setter
+    def color_for_drawing_element_3(self, value: int | None) -> None: ...
     drawing_element_4_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57487,7 +63112,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_4: float | int | None
+    @property
+    def color_for_drawing_element_4(self) -> float | int | None: ...
+    @color_for_drawing_element_4.setter
+    def color_for_drawing_element_4(self, value: int | None) -> None: ...
     drawing_element_5_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57508,7 +63136,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_5: float | int | None
+    @property
+    def color_for_drawing_element_5(self) -> float | int | None: ...
+    @color_for_drawing_element_5.setter
+    def color_for_drawing_element_5(self, value: int | None) -> None: ...
     drawing_element_6_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57529,7 +63160,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_6: float | int | None
+    @property
+    def color_for_drawing_element_6(self) -> float | int | None: ...
+    @color_for_drawing_element_6.setter
+    def color_for_drawing_element_6(self, value: int | None) -> None: ...
     drawing_element_7_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57550,7 +63184,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_7: float | int | None
+    @property
+    def color_for_drawing_element_7(self) -> float | int | None: ...
+    @color_for_drawing_element_7.setter
+    def color_for_drawing_element_7(self, value: int | None) -> None: ...
     drawing_element_8_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57571,7 +63208,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_8: float | int | None
+    @property
+    def color_for_drawing_element_8(self) -> float | int | None: ...
+    @color_for_drawing_element_8.setter
+    def color_for_drawing_element_8(self, value: int | None) -> None: ...
     drawing_element_9_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57592,7 +63232,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_9: float | int | None
+    @property
+    def color_for_drawing_element_9(self) -> float | int | None: ...
+    @color_for_drawing_element_9.setter
+    def color_for_drawing_element_9(self, value: int | None) -> None: ...
     drawing_element_10_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57613,7 +63256,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_10: float | int | None
+    @property
+    def color_for_drawing_element_10(self) -> float | int | None: ...
+    @color_for_drawing_element_10.setter
+    def color_for_drawing_element_10(self, value: int | None) -> None: ...
     drawing_element_11_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57634,7 +63280,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_11: float | int | None
+    @property
+    def color_for_drawing_element_11(self) -> float | int | None: ...
+    @color_for_drawing_element_11.setter
+    def color_for_drawing_element_11(self, value: int | None) -> None: ...
     drawing_element_12_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57655,7 +63304,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_12: float | int | None
+    @property
+    def color_for_drawing_element_12(self) -> float | int | None: ...
+    @color_for_drawing_element_12.setter
+    def color_for_drawing_element_12(self, value: int | None) -> None: ...
     drawing_element_13_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57676,7 +63328,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_13: float | int | None
+    @property
+    def color_for_drawing_element_13(self) -> float | int | None: ...
+    @color_for_drawing_element_13.setter
+    def color_for_drawing_element_13(self, value: int | None) -> None: ...
     drawing_element_14_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57697,7 +63352,10 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_14: float | int | None
+    @property
+    def color_for_drawing_element_14(self) -> float | int | None: ...
+    @color_for_drawing_element_14.setter
+    def color_for_drawing_element_14(self, value: int | None) -> None: ...
     drawing_element_15_type: (
         Literal[
             "AttachedBuildingShades",
@@ -57718,7 +63376,30 @@ class _OutputControlSurfaceColorSchemeBase(_TypedIDFObject):
         ]
         | None
     )
-    color_for_drawing_element_15: float | int | None
+    @property
+    def color_for_drawing_element_15(self) -> float | int | None: ...
+    @color_for_drawing_element_15.setter
+    def color_for_drawing_element_15(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputControlSurfaceColorSchemeBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputControlSurfaceColorSchemeBaseFields(_OutputControlSurfaceColorSchemeCommonFields, total=False):
+    color_for_drawing_element_1: int | None
+    color_for_drawing_element_2: int | None
+    color_for_drawing_element_3: int | None
+    color_for_drawing_element_4: int | None
+    color_for_drawing_element_5: int | None
+    color_for_drawing_element_6: int | None
+    color_for_drawing_element_7: int | None
+    color_for_drawing_element_8: int | None
+    color_for_drawing_element_9: int | None
+    color_for_drawing_element_10: int | None
+    color_for_drawing_element_11: int | None
+    color_for_drawing_element_12: int | None
+    color_for_drawing_element_13: int | None
+    color_for_drawing_element_14: int | None
+    color_for_drawing_element_15: int | None
 
 class OutputControlSurfaceColorScheme(_OutputControlSurfaceColorSchemeBase):
     """This object is used to set colors for reporting on various building elements particularly for the DXF reports. We kno..."""
@@ -57779,6 +63460,12 @@ class _OutputTableSummaryReportsCommonFields(TypedDict, total=False): ...
 
 class _OutputTableSummaryReportsBase(_TypedIDFObject):
     """``Output:Table:SummaryReports`` as every supported EnergyPlus version declares it."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputTableSummaryReportsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputTableSummaryReportsBaseFields(_OutputTableSummaryReportsCommonFields, total=False): ...
 
 class OutputTableSummaryReportsReportsGroup(_TypedExtensibleGroup):
     """One reports group inside :class:`OutputTableSummaryReports`."""
@@ -57921,11 +63608,21 @@ class _OutputTableTimeBinsBase(_TypedIDFObject):
     """The lowest value for the intervals being binned into."""
     interval_size: float | None
     """The size of the bins starting with Interval start."""
-    interval_count: float | int | None
+    @property
+    def interval_count(self) -> float | int | None: ...
+    @interval_count.setter
+    def interval_count(self, value: int | None) -> None: ...
     schedule_name: str | None
     """Optional schedule name. Binning is performed for non-zero hours. Binning always performed if left blank."""
     variable_type: Literal["Energy", "Power", "Temperature", "VolumetricFlow"] | None
     """Optional input on the type of units for the variable used by other fields in the object."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputTableTimeBinsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputTableTimeBinsBaseFields(_OutputTableTimeBinsCommonFields, total=False):
+    interval_count: int | None
 
 class OutputTableTimeBins(_OutputTableTimeBinsBase):
     """Produces a bin report in the table output file which shows the amount of time in hours that occurs in different bins ..."""
@@ -57944,8 +63641,16 @@ class _OutputTableMonthlyCommonFields(TypedDict, total=False): ...
 
 class _OutputTableMonthlyBase(_TypedIDFObject):
     """``Output:Table:Monthly`` as every supported EnergyPlus version declares it."""
+    @property
+    def digits_after_decimal(self) -> float | int | None: ...
+    @digits_after_decimal.setter
+    def digits_after_decimal(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputTableMonthlyBaseFields]
+    ) -> None: ...  # type: ignore[override]
 
-    digits_after_decimal: float | int | None
+class __OutputTableMonthlyBaseFields(_OutputTableMonthlyCommonFields, total=False):
+    digits_after_decimal: int | None
 
 class OutputTableMonthlyVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableMonthly`."""
@@ -57996,6 +63701,12 @@ class _OutputTableAnnualBase(_TypedIDFObject):
     """An optional text string that is compared to the names of the objects referenced by the variables and if they match ar..."""
     schedule_name: str | None
     """Optional schedule name. If left blank, aggregation is performed for all hours simulated. If a schedule is specified, ..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputTableAnnualBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputTableAnnualBaseFields(_OutputTableAnnualCommonFields, total=False): ...
 
 class OutputTableAnnualVariableDetailsGroup(_TypedExtensibleGroup):
     """One variable_details group inside :class:`OutputTableAnnual`."""
@@ -58073,6 +63784,12 @@ class _OutputTableReportPeriodBase(_TypedIDFObject):
     end_hour_of_day: int | None
     """Range: >= 1, <= 24"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputTableReportPeriodBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputTableReportPeriodBaseFields(_OutputTableReportPeriodCommonFields, total=False): ...
+
 class OutputTableReportPeriod(_OutputTableReportPeriodBase):
     """This object allows the user to generate the resilience tabular reports over a subset of a run period. When it is defi...; Since: 22.2.0"""
 
@@ -58100,7 +63817,18 @@ class _OutputControlTableStyleBase(_TypedIDFObject):
         | None
     )
     """Default: Comma"""
-    unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "InchPoundExceptElectricity"] | None
+    @property
+    def unit_conversion(
+        self,
+    ) -> Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None", "InchPoundExceptElectricity"] | None: ...
+    @unit_conversion.setter
+    def unit_conversion(self, value: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputControlTableStyleBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputControlTableStyleBaseFields(_OutputControlTableStyleCommonFields, total=False):
+    unit_conversion: Literal["", "InchPound", "JtoGJ", "JtoKWH", "JtoMJ", "None"] | None
 
 class OutputControlTableStyle(_OutputControlTableStyleBase):
     """default style for the OutputControl:Table:Style is comma -- this works well for importing into spreadsheet programs s..."""
@@ -58177,6 +63905,21 @@ class _OutputMeterBase(_TypedIDFObject):
 
     key_name: str | None
     """Form is EnergyUseType:..., e.g. Electricity:* for all Electricity meters or EndUse:..., e.g. GeneralLights:* for all ..."""
+    @property
+    def reporting_frequency(
+        self,
+    ) -> (
+        Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
+    ): ...
+    @reporting_frequency.setter
+    def reporting_frequency(
+        self,
+        value: Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"]
+        | None,
+    ) -> None: ...
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputMeterBaseFields]) -> None: ...  # type: ignore[override]
+
+class __OutputMeterBaseFields(_OutputMeterCommonFields, total=False):
     reporting_frequency: (
         Literal["", "Annual", "Daily", "Detailed", "Environment", "Hourly", "Monthly", "RunPeriod", "Timestep"] | None
     )
@@ -58270,6 +64013,10 @@ class _MeterCustomBase(_TypedIDFObject):
 
     variable_details: ExtensibleList[MeterCustomVariableDetailsGroup]
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MeterCustomBaseFields]) -> None: ...  # type: ignore[override]
+
+class __MeterCustomBaseFields(_MeterCustomCommonFields, total=False): ...
+
 class MeterCustom(_MeterCustomBase):
     """Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
 
@@ -58335,6 +64082,12 @@ class _MeterCustomDecrementBase(_TypedIDFObject):
     source_meter_name: str | None
     """Cannot reference another Meter:CustomDecrement."""
     variable_details: ExtensibleList[MeterCustomDecrementVariableDetailsGroup]
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__MeterCustomDecrementBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __MeterCustomDecrementBaseFields(_MeterCustomDecrementCommonFields, total=False): ...
 
 class MeterCustomDecrement(_MeterCustomDecrementBase):
     """Used to allow users to combine specific variables and/or meters into 'custom' meter configurations. To access these m..."""
@@ -58486,6 +64239,12 @@ class _OutputControlFilesBase(_TypedIDFObject):
     output_tarcog: Literal["", "No", "Yes"] | None
     """Not Implemented Yet; Default: Yes"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputControlFilesBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputControlFilesBaseFields(_OutputControlFilesCommonFields, total=False): ...
+
 class OutputControlFiles(_OutputControlFilesBase):
     """Conditionally turn on/off output from EnergyPlus.; Since: 9.4.0"""
 
@@ -58535,6 +64294,10 @@ class _OutputJSONBase(_TypedIDFObject):
     output_messagepack: Literal["", "No", "Yes"] | None
     """Default: No"""
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputJSONBaseFields]) -> None: ...  # type: ignore[override]
+
+class __OutputJSONBaseFields(_OutputJSONCommonFields, total=False): ...
+
 class OutputJSON(_OutputJSONBase):
     """Output from EnergyPlus can be written to JSON format files.; Since: 9.1.0"""
 
@@ -58580,6 +64343,10 @@ class _OutputSQLiteBase(_TypedIDFObject):
     """``Output:SQLite`` as every supported EnergyPlus version declares it."""
 
     option_type: Literal["Simple", "SimpleAndTabular"] | None
+
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputSQLiteBaseFields]) -> None: ...  # type: ignore[override]
+
+class __OutputSQLiteBaseFields(_OutputSQLiteCommonFields, total=False): ...
 
 class OutputSQLite(_OutputSQLiteBase):
     """Output from EnergyPlus can be written to an SQLite format file."""
@@ -58650,6 +64417,12 @@ class _EnvironmentalImpactFactorsBase(_TypedIDFObject):
     total_carbon_equivalent_emission_factor_from_co2: float | None
     """[kg/kg]; Default: 0.2727"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__EnvironmentalImpactFactorsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __EnvironmentalImpactFactorsBaseFields(_EnvironmentalImpactFactorsCommonFields, total=False): ...
+
 class EnvironmentalImpactFactors(_EnvironmentalImpactFactorsBase):
     """Used to help convert district and ideal energy use to a fuel type and provide total carbon equivalent with coefficien..."""
 
@@ -58704,8 +64477,10 @@ class _FuelFactorsCommonFields(TypedDict, total=False):
 
 class _FuelFactorsBase(_TypedIDFObject):
     """``FuelFactors`` as every supported EnergyPlus version declares it."""
-
-    existing_fuel_resource_name: (
+    @property
+    def existing_fuel_resource_name(
+        self,
+    ) -> (
         str
         | Literal[
             "Coal",
@@ -58720,7 +64495,24 @@ class _FuelFactorsBase(_TypedIDFObject):
             "Propane",
         ]
         | None
-    )
+    ): ...
+    @existing_fuel_resource_name.setter
+    def existing_fuel_resource_name(
+        self,
+        value: Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None,
+    ) -> None: ...
     source_energy_factor: float | None
     """[J/J]"""
     source_energy_schedule_name: str | None
@@ -58773,6 +64565,25 @@ class _FuelFactorsBase(_TypedIDFObject):
     """[m3/MJ]"""
     nuclear_low_level_emission_factor_schedule_name: str | None
 
+    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__FuelFactorsBaseFields]) -> None: ...  # type: ignore[override]
+
+class __FuelFactorsBaseFields(_FuelFactorsCommonFields, total=False):
+    existing_fuel_resource_name: (
+        Literal[
+            "Coal",
+            "Diesel",
+            "Electricity",
+            "FuelOilNo1",
+            "FuelOilNo2",
+            "Gasoline",
+            "NaturalGas",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+        ]
+        | None
+    )
+
 class FuelFactors(_FuelFactorsBase):
     """Provides Fuel Factors for Emissions as well as Source=>Site conversions. OtherFuel1, OtherFuel2 provide options for u..."""
 
@@ -58816,6 +64627,12 @@ class _OutputDiagnosticsCommonFields(TypedDict, total=False): ...
 class _OutputDiagnosticsBase(_TypedIDFObject):
     """``Output:Diagnostics`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputDiagnosticsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __OutputDiagnosticsBaseFields(_OutputDiagnosticsCommonFields, total=False): ...
+
 class OutputDiagnosticsDiagnosticsGroup(_TypedExtensibleGroup):
     """One diagnostics group inside :class:`OutputDiagnostics`."""
 
@@ -58851,9 +64668,21 @@ class _OutputDebuggingDataCommonFields(TypedDict, total=False): ...
 
 class _OutputDebuggingDataBase(_TypedIDFObject):
     """``Output:DebuggingData`` as every supported EnergyPlus version declares it."""
+    @property
+    def report_debugging_data(self) -> float | Literal["", "No", "Yes"] | None: ...
+    @report_debugging_data.setter
+    def report_debugging_data(self, value: None) -> None: ...
+    @property
+    def report_during_warmup(self) -> float | Literal["", "No", "Yes"] | None: ...
+    @report_during_warmup.setter
+    def report_during_warmup(self, value: None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__OutputDebuggingDataBaseFields]
+    ) -> None: ...  # type: ignore[override]
 
-    report_debugging_data: float | Literal["", "No", "Yes"] | None
-    report_during_warmup: float | Literal["", "No", "Yes"] | None
+class __OutputDebuggingDataBaseFields(_OutputDebuggingDataCommonFields, total=False):
+    report_debugging_data: None
+    report_during_warmup: None
 
 class OutputDebuggingData(_OutputDebuggingDataBase):
     """switch eplusout.dbg file on or off"""
@@ -58918,6 +64747,12 @@ class _PythonPluginSearchPathsBase(_TypedIDFObject):
     add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None
     """Enabling this will allow Python to find plugin scripts in the same directory as the running input file, even if that ...; Default: Yes"""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PythonPluginSearchPathsBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PythonPluginSearchPathsBaseFields(_PythonPluginSearchPathsCommonFields, total=False): ...
+
 class PythonPluginSearchPathsPySearchPathsGroup(_TypedExtensibleGroup):
     """One py_search_paths group inside :class:`PythonPluginSearchPaths`."""
 
@@ -58962,6 +64797,12 @@ class _PythonPluginVariablesCommonFields(TypedDict, total=False): ...
 class _PythonPluginVariablesBase(_TypedIDFObject):
     """``PythonPlugin:Variables`` as every supported EnergyPlus version declares it."""
 
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PythonPluginVariablesBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PythonPluginVariablesBaseFields(_PythonPluginVariablesCommonFields, total=False): ...
+
 class PythonPluginVariablesGlobalPyVarsGroup(_TypedExtensibleGroup):
     """One global_py_vars group inside :class:`PythonPluginVariables`."""
 
@@ -58986,7 +64827,16 @@ class _PythonPluginTrendVariableBase(_TypedIDFObject):
     """``PythonPlugin:TrendVariable`` as every supported EnergyPlus version declares it."""
 
     name_of_a_python_plugin_variable: str | None
-    number_of_timesteps_to_be_logged: float | int | None
+    @property
+    def number_of_timesteps_to_be_logged(self) -> float | int | None: ...
+    @number_of_timesteps_to_be_logged.setter
+    def number_of_timesteps_to_be_logged(self, value: int | None) -> None: ...
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PythonPluginTrendVariableBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PythonPluginTrendVariableBaseFields(_PythonPluginTrendVariableCommonFields, total=False):
+    number_of_timesteps_to_be_logged: int | None
 
 class PythonPluginTrendVariable(_PythonPluginTrendVariableBase):
     """This object sets up a Python plugin trend variable from an Python plugin variable A trend variable logs values across...; Since: 9.3.0"""
@@ -59045,7 +64895,10 @@ class _PythonPluginOutputVariableBase(_TypedIDFObject):
     update_frequency: Literal["SystemTimestep", "ZoneTimestep"] | None
     units: str | None
     """optional but will result in dimensionless units for blank EnergyPlus units are standard SI units"""
-    resource_type: (
+    @property
+    def resource_type(
+        self,
+    ) -> (
         Literal[
             "Coal",
             "CondensateWaterCollected",
@@ -59076,7 +64929,33 @@ class _PythonPluginOutputVariableBase(_TypedIDFObject):
             "DistrictHeatingWater",
         ]
         | None
-    )
+    ): ...
+    @resource_type.setter
+    def resource_type(
+        self,
+        value: Literal[
+            "Coal",
+            "CondensateWaterCollected",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "ElectricityProducedOnSite",
+            "EnergyTransfer",
+            "Gasoline",
+            "MainsWaterSupply",
+            "NaturalGas",
+            "OnSiteWaterProduced",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "RainWaterCollected",
+            "SolarAirHeating",
+            "SolarWaterHeating",
+            "WaterUse",
+            "WellWaterDrawn",
+        ]
+        | None,
+    ) -> None: ...
     group_type: Literal["Building", "HVAC", "Plant", "System"] | None
     """This field is optional for regular output variables with 'Type of Data in Variable' set to either Averaged or Summed...."""
     end_use_category: (
@@ -59108,6 +64987,36 @@ class _PythonPluginOutputVariableBase(_TypedIDFObject):
     """This field is optional for regular output variables with 'Type of Data in Variable' set to either Averaged or Summed...."""
     end_use_subcategory: str | None
     """This field is always optional. For regular output variables with 'Type of Data in Variable' set to either Averaged or..."""
+
+    def update(
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[__PythonPluginOutputVariableBaseFields]
+    ) -> None: ...  # type: ignore[override]
+
+class __PythonPluginOutputVariableBaseFields(_PythonPluginOutputVariableCommonFields, total=False):
+    resource_type: (
+        Literal[
+            "Coal",
+            "CondensateWaterCollected",
+            "Diesel",
+            "DistrictCooling",
+            "Electricity",
+            "ElectricityProducedOnSite",
+            "EnergyTransfer",
+            "Gasoline",
+            "MainsWaterSupply",
+            "NaturalGas",
+            "OnSiteWaterProduced",
+            "OtherFuel1",
+            "OtherFuel2",
+            "Propane",
+            "RainWaterCollected",
+            "SolarAirHeating",
+            "SolarWaterHeating",
+            "WaterUse",
+            "WellWaterDrawn",
+        ]
+        | None
+    )
 
 class PythonPluginOutputVariable(_PythonPluginOutputVariableBase):
     """This object sets up an EnergyPlus output variable from a Python Plugin variable; Since: 9.3.0"""

@@ -37,6 +37,9 @@ class _Class:
     bases: list[str]
     fields: dict[str, str]
     properties: dict[str, str]
+    # A property with a setter is a field: its getter's type is what reading it gives, and is in
+    # ``fields``; its setter's value type, what assigning to it accepts, is here.
+    setters: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 
 
 @dataclasses.dataclass
@@ -67,6 +70,15 @@ def _read(source: str, module: _Module | None = None) -> _Module:
                     and any(ast.unparse(d) == "property" for d in item.decorator_list)
                 ):
                     cls.properties[item.name] = _norm(ast.unparse(item.returns))
+                elif (
+                    isinstance(item, ast.FunctionDef)
+                    and any(ast.unparse(d) == f"{item.name}.setter" for d in item.decorator_list)
+                    and len(item.args.args) == 2
+                    and item.args.args[1].annotation is not None
+                ):
+                    cls.setters[item.name] = _norm(ast.unparse(item.args.args[1].annotation))
+            for name in cls.setters:
+                cls.fields[name] = cls.properties.pop(name)
             module.classes[node.name] = cls
         elif (
             isinstance(node, ast.Assign)
@@ -233,6 +245,52 @@ def verify(types_source: str, document_source: str, versioned_source: str, versi
     return problems
 
 
+def _admitted(member: str, members: frozenset[str]) -> bool:
+    """Whether a value type, given as its union members, admits one member of another."""
+    if member in members:
+        return True
+    if member == "int" and "float" in members:
+        return True
+    if member.startswith("Literal["):
+        value = member[len("Literal[") : -1]
+        if value.startswith(("'", '"')):
+            return "str" in members
+        return "float" in members or ("int" in members and "." not in value)
+    return False
+
+
+def _check_writable(module: _Module, cls: str, obj_type: str, decls: list[dict[str, str]], problems: list[str]) -> None:
+    """A shared base's assignable values are ones every version accepts, and ``update`` takes them.
+
+    Each field that is a property is written through its setter: every member of the setter's value
+    type must be admitted by every version's declaration of the field, or writing it into a document
+    of some version would be accepted by the type checker and rejected by the version.
+    """
+    klass = module.classes[cls]
+    for name, setter in klass.setters.items():
+        members = _union_members(setter) - {"Never"}  # Never admits nothing: only clearing is safe
+        for decl in decls:
+            admitted = _union_members(_norm(f"{decl[name]} | None"))
+            if not all(_admitted(m, admitted) for m in members):
+                problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: writable values some version rejects")
+                break
+    if not klass.setters:
+        return
+    groups = set(_group_names(module, cls))
+    keywords = {
+        k: "list[Any]" if k in groups else klass.setters.get(k, v)
+        for k, v in _fields(module, cls).items()
+        if k != "name"
+    }
+    fields_cls = f"_{cls}Fields"
+    if fields_cls not in module.classes:
+        problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): update is not typed")
+    elif _fields(module, fields_cls) != keywords:
+        problems.append(
+            f"AnyIDFDocument[{obj_type!r}] ({cls}): update keywords ({fields_cls}) differ from its writable fields"
+        )
+
+
 def _check_private_imports(document_source: str, module: _Module, problems: list[str]) -> None:
     """Every private class ``document.pyi`` names must be imported by name.
 
@@ -316,6 +374,7 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
         cls = _collection_class(_collection_class(annotation))
         decls = [_field_decls(s, obj_type) for s in schemas if obj_type in s.object_types]
         shared = _intersection([set(d) for d in decls])
+        _check_writable(module, cls, obj_type, decls, problems)
         actual = {k: v for k, v in _fields(module, cls).items() if k not in _group_names(module, cls)}
         if set(actual) != shared:
             problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): fields are not those every version has")
