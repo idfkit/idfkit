@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+import stat
+import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -604,3 +606,44 @@ class TestSanitizeDdyFile:
 
         assert patched == []
         assert "N/A" in ddy.read_text()
+
+
+class TestSanitizeDdyFileEditsInPlace:
+    """sanitize_ddy_file edits the user's file itself, as a plain write would."""
+
+    _DIRTY = (
+        "SizingPeriod:DesignDay,\n    Boston January .4% Condns DB=>MCWB,  !- Name\n    1,  !- Month\n"
+        "    21,  !- Day of Month\n    SummerDesignDay,  !- Day Type\n    12.3,  !- Maximum Dry-Bulb\n"
+        "    0.0,  !- Range\n    DefaultMultipliers,  !- Range Modifier Type\n    ,  !- Schedule\n"
+        "    Wetbulb,  !- Humidity Condition Type\n    N,  !- Wetbulb at Maximum Dry-Bulb {C}\n"
+        "    101325.,  !- Barometric Pressure {Pa}\n    4.9,  !- Wind Speed\n    270;  !- Wind Direction\n"
+    )
+
+    @pytest.mark.skipif(sys.platform == "win32", reason="POSIX symlinks and permission bits")
+    def test_a_symlink_keeps_pointing_at_the_cleaned_file(self, tmp_path: Path) -> None:
+        real = tmp_path / "shared.ddy"
+        real.write_text(self._DIRTY)
+        real.chmod(0o664)
+        link = tmp_path / "project.ddy"
+        link.symlink_to(real)
+
+        assert sanitize_ddy_file(link)
+
+        assert link.is_symlink()
+        assert " N," not in real.read_text()
+        assert stat.S_IMODE(real.stat().st_mode) == 0o664
+
+    def test_a_file_that_cannot_be_written_raises_without_claiming_success(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        path = tmp_path / "locked.ddy"
+        path.write_text(self._DIRTY)
+
+        with (
+            patch.object(Path, "write_bytes", side_effect=PermissionError(13, "Permission denied")),
+            caplog.at_level("WARNING", logger="idfkit.weather.designday"),
+            pytest.raises(PermissionError),
+        ):
+            sanitize_ddy_file(path)
+
+        assert not any("Sanitized" in r.message for r in caplog.records)

@@ -15,11 +15,11 @@ import os
 import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
 
+from ._forksafe import ForkSafeLock
 from .exceptions import SchemaNotFoundError
 from .versions import (
     ENERGYPLUS_VERSIONS,
@@ -794,6 +794,32 @@ class SchemaManager:
         self._bundled_dir = bundled_schema_dir
         self._cache_dir = cache_dir
         self._cache: dict[tuple[int, int, int], EpJSONSchema] = {}
+        self._init_locks()
+
+    def _init_locks(self) -> None:
+        """Give this manager fresh locks and a fresh generation: at construction, copy and unpickle."""
+        # One load lock per version: a miss loads once however many threads ask at the same time,
+        # while two different versions still load in parallel. Reentrant, because the load runs
+        # logging handlers, and one that asks for the same version again must not deadlock.
+        self._load_locks: dict[tuple[int, int, int], ForkSafeLock] = {}
+        # Bumped by `clear_cache`, under `_publish_lock`. A load that began before a clear must not
+        # publish what it read: the clear would be undone, and a request made after the clear would
+        # be handed the pre-clear schema.
+        self._generation = 0
+        self._publish_lock = ForkSafeLock()
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Copy and pickle the paths and a snapshot of the cache, not the locks."""
+        state = dict(self.__dict__)
+        state["_cache"] = dict(self._cache)
+        for name in ("_load_locks", "_generation", "_publish_lock"):
+            state.pop(name, None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore with locks of its own; state pickled by idfkit 1.2.0 has none to drop."""
+        self.__dict__.update(state)
+        self._init_locks()
 
     @property
     def bundled_dir(self) -> Path:
@@ -805,7 +831,6 @@ class SchemaManager:
         """Path to the user cache directory for schemas."""
         return self._cache_dir
 
-    @lru_cache(maxsize=8)  # noqa: B019
     def get_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
         """
         Load and return schema for a specific version.
@@ -822,12 +847,41 @@ class SchemaManager:
         Raises:
             SchemaNotFoundError: If schema cannot be found
         """
-        if version in self._cache:
-            logger.debug("Schema cache hit for version %d.%d.%d", *version)
-            return self._cache[version]
+        cached = self._cache.get(version)
+        if cached is not None:
+            return cached
 
-        t0 = time.perf_counter()
+        # Without this, threads that miss at the same time each load and build their own copy, and
+        # each walks away with a different instance: the one-schema-per-version invariant breaks,
+        # and pickling (see ``owns``) sends all but the last-cached by content.
+        # ``dict.setdefault`` is atomic, with or without the GIL, so the lock table needs no lock.
+        load_lock = self._load_locks.get(version)
+        if load_lock is None:
+            load_lock = self._load_locks.setdefault(version, ForkSafeLock(reentrant=True))
+        with load_lock.lock:
+            cached = self._cache.get(version)
+            if cached is not None:
+                return cached
+            generation = self._generation
+            t0 = time.perf_counter()
+            schema = self._load_schema(version)
+            with self._publish_lock.lock:
+                if generation == self._generation:
+                    # A re-entrant request for this version (from code the load ran) may have
+                    # published first; keep its instance, so every caller holds the cached one.
+                    schema = self._cache.setdefault(version, schema)
+            # Logged only once published: a logging handler that asks for this version gets the
+            # cached schema instead of starting another load.
+            logger.info(
+                "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
+                *version,
+                len(schema),
+                time.perf_counter() - t0,
+            )
+            return schema
 
+    def _load_schema(self, version: tuple[int, int, int]) -> EpJSONSchema:
+        """Load *version* from disk. The caller holds that version's load lock, publishes the result and logs it."""
         # Try exact version first
         schema_path = self._find_schema_file(version)
         if schema_path is None:
@@ -848,17 +902,7 @@ class SchemaManager:
         logger.debug("Loading schema from %s", schema_path)
         data = load_schema_json(schema_path)
 
-        schema = EpJSONSchema(version, data)
-        self._cache[version] = schema
-
-        elapsed = time.perf_counter() - t0
-        logger.info(
-            "Loaded schema for version %d.%d.%d (%d object types) in %.3fs",
-            *version,
-            len(schema),
-            elapsed,
-        )
-        return schema
+        return EpJSONSchema(version, data)
 
     def _find_schema_file(self, version: tuple[int, int, int]) -> Path | None:
         """
@@ -1013,9 +1057,14 @@ class SchemaManager:
         return self._cache.get(schema.version) is schema
 
     def clear_cache(self) -> None:
-        """Clear the schema cache."""
-        self._cache.clear()
-        self.get_schema.cache_clear()
+        """Clear the schema cache.
+
+        A load still in flight when this is called returns its schema to its caller but does not
+        cache it, so every request made after the call loads afresh.
+        """
+        with self._publish_lock.lock:
+            self._generation += 1
+            self._cache.clear()
 
     def get_supported_versions(self) -> list[tuple[int, int, int]]:
         """Get list of all EnergyPlus versions that idfkit supports.
@@ -1028,14 +1077,21 @@ class SchemaManager:
 
 # Global schema manager instance
 _schema_manager: SchemaManager | None = None
+_schema_manager_lock = ForkSafeLock()
 
 
 def get_schema_manager() -> SchemaManager:
     """Get the global schema manager instance."""
     global _schema_manager
-    if _schema_manager is None:
-        _schema_manager = SchemaManager()
-    return _schema_manager
+    manager = _schema_manager
+    if manager is None:
+        # Checked again under the lock: without it, threads racing the first call on a
+        # free-threaded build each create a manager, and each manager loads its own schemas.
+        with _schema_manager_lock.lock:
+            if _schema_manager is None:
+                _schema_manager = SchemaManager()
+            manager = _schema_manager
+    return manager
 
 
 def _rebuild_schema(cls: type[EpJSONSchema], state: dict[str, Any]) -> EpJSONSchema:

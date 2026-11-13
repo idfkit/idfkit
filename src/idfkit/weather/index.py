@@ -14,12 +14,14 @@ import tempfile
 import time
 import unicodedata
 import xml.etree.ElementTree as ET
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Final
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .._atomic import write_bytes_atomically
 from .spatial import haversine_km
 from .station import SearchResult, SpatialResult, WeatherStation
 
@@ -171,7 +173,10 @@ def _download_file(url: str, dest: Path) -> str | None:
     req = Request(url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
     with urlopen(req, timeout=60) as resp:  # noqa: S310
         last_modified: str | None = resp.headers.get("Last-Modified")
-        dest.write_bytes(resp.read())
+        payload = resp.read()
+    # Published in one rename: a KML that exists is trusted by ``_ensure_index_file``, so a
+    # truncated one must never appear under its name.
+    write_bytes_atomically(dest, payload)
     return last_modified
 
 
@@ -390,8 +395,10 @@ def _save_compressed_index(
         "stations": [s.to_dict() for s in stations],
     }
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with gzip.open(dest, "wt", encoding="utf-8") as f:
-        json.dump(data, f, separators=(",", ":"))
+    # Compressed in memory and published in one rename, so a concurrent ``StationIndex.load()``
+    # never reads a half-written index (and never quarantines one a refresh is still writing).
+    payload = gzip.compress(json.dumps(data, separators=(",", ":")).encode("utf-8"), mtime=0)
+    write_bytes_atomically(dest, payload)
 
 
 def _head_last_modified(url: str) -> str | None:
@@ -737,7 +744,7 @@ class StationIndex:
         if cached_path.is_file():
             try:
                 stations, last_modified, _ = _load_compressed_index(cached_path)
-            except (KeyError, ValueError, TypeError, json.JSONDecodeError, OSError, gzip.BadGzipFile) as exc:
+            except (KeyError, ValueError, TypeError, OSError, EOFError, zlib.error) as exc:
                 quarantine = cached_path.with_suffix(cached_path.suffix + ".stale")
                 logger.warning(
                     "Cached station index at %s could not be loaded (%s: %s). "

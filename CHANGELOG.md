@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stubs name only the schema's key. ([60c47cc](https://github.com/idfkit/idfkit/commit/60c47cc),
   [9b208de](https://github.com/idfkit/idfkit/commit/9b208de))
 - Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
+- Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
 
 ### Changed
 
@@ -68,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   groups (a string, a list of strings or tuples, or another object's live `vertices` view).
   Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
   values or crashed. ([b415635](https://github.com/idfkit/idfkit/commit/b415635))
+
+### Removed
+
+- **Breaking:** `SchemaManager.get_schema` is no longer wrapped in `functools.lru_cache`, so `get_schema.cache_clear()`, `get_schema.cache_info()` and `get_schema.cache_parameters()` are gone. The manager's own cache already held every loaded version; call `SchemaManager.clear_cache()` to drop it ([#254](https://github.com/idfkit/idfkit/pull/254)).
 
 ### Fixed
 
@@ -166,15 +172,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to the one passed instead of that object. Two objects of a type with no Name field are equal
   when their fields match, so removing one `Output:Meter` could remove another and leave the
   one passed in the document ([c6514d0](https://github.com/idfkit/idfkit/commit/c6514d0)).
-
-### Fixed
-
 - The `hvac-loops` and `reference-tracking` agent references no longer state that
   `validate_document` reports node-name typos. It reports a dangling object-name reference as
   `E009`, not `E004`, and does not check node names at all. They also no longer list setpoint
   managers among the objects `get_referencing` returns for a coil, and the node walk under
   "Common mistakes" now finds a node in any field, including branch components and outdoor-air
   mixer streams, so it no longer fails on correct models such as `5ZoneAirCooled`.
+- Threads asking for the same schema version at the same moment each loaded and built their own copy, so a cold start with 16 threads read the schema file 16 times and handed out 16 different `EpJSONSchema` instances. All but one were then pickled by content instead of by version. The manager now loads each version once and gives every thread the same instance, and on a free-threaded build the first calls to `get_schema_manager()` no longer create several managers ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `ScheduleFileCache.get_values` could raise `KeyError` when another thread cleared or invalidated the cache between its store and its read, and `ScheduleFileCache.invalidate` could raise `RuntimeError: dictionary changed size during iteration` when another thread added an entry while it ran. A read still in flight when another thread called `invalidate` or `clear` also cached what it had read before the call, which silently undid the invalidation; such a read is now returned but not cached ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `SchemaManager.clear_cache` did not stop a load already in flight from caching its schema afterwards, so the clear was undone and a request made after it could be handed the pre-clear instance. Such a load now returns its schema to its caller without caching it. A logging handler or other code that asks for the version being loaded no longer deadlocks on the new load lock ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `copy.deepcopy` of a `ScheduleFileCache` or `SchemaManager` that other threads were using could raise `RuntimeError: dictionary changed size during iteration`, and `copy.copy` of a cache returned an alias that shared its entries but not its invalidations. Both now copy a consistent snapshot into an independent object, and instances pickled by idfkit 1.2.0 still load and work ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `ScheduleFileCache.invalidate` discarded every read in flight, of any file, so a steady stream of invalidations of one file stopped the cache caching the others. It now discards only reads of the file it invalidates. A child forked while another thread was inside `invalidate` or `clear` no longer inherits a half-invalidated cache ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- The weather cache is now safe to share between threads and processes. `WeatherDownloader.download` wrote the archive, the extracted files and the cleaned DDY in place, so callers downloading the same station at once could read a truncated file or raise "Downloaded file is not a valid ZIP archive", and a truncated file could stay in the cache for good; `StationIndex.refresh()` likewise rewrote `stations.json.gz` and its KML sources in place, so a concurrent `StationIndex.load()` raised `EOFError` or moved the half-written index aside. Every weather cache file, the IP-location cache and downloaded schemas are now written under a temporary name and renamed into place, with the permissions an in-place write would have given them. Extracted files carry their archive's modification time and size, so a file left truncated by an older version, or extracted from an archive that has since been replaced, is extracted again, and a corrupt archive is downloaded again on the next call. Threads of one process download a station once. Files inside folders of an archive, such as macOS `__MACOSX` resource forks, are no longer extracted beside the weather files ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- A child process forked while another thread was waiting out the geocoding rate limit hung on its first `geocode()` or `detect_location()` call ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `simulate` computed the cache key from the caller's model before copying it, so an edit made on another thread in between could store one model's results under another model's key. `async_simulate` read the caller's model on a worker thread after copying it, which raised on a free-threaded build when another coroutine edited the model meanwhile. Both now work only from their copy ([#254](https://github.com/idfkit/idfkit/pull/254)).
 
 ## [1.2.0] - 2026-10-28
 

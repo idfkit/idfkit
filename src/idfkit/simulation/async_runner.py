@@ -287,7 +287,8 @@ async def async_simulate(
         # thread so we don't block the event loop.
         sim_model, ep_expand = await asyncio.to_thread(
             maybe_preprocess,
-            sim_input_model,
+            # The copy, not the caller's model: this runs on a worker thread, which must not read a
+            # model another coroutine may be editing meanwhile.
             sim_model,
             config,
             weather_path,

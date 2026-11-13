@@ -8,8 +8,9 @@ from __future__ import annotations
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
+from idfkit._forksafe import ForkSafeLock
 from idfkit.schedules.types import Interpolation
 from idfkit.simulation.fs import FileSystem, LocalFileSystem
 
@@ -39,6 +40,36 @@ class ScheduleFileCache:
     def __init__(self) -> None:
         """Initialize an empty cache."""
         self._cache: dict[str, list[float]] = {}
+        # A read that began before a `clear`, or before an `invalidate` of its file, must not store
+        # what it read: the file may have been rewritten in between, and storing would undo the
+        # invalidation. `clear` bumps `_generation`; `invalidate` bumps its path's entry in
+        # `_path_generations`, so invalidating one file leaves reads of other files cacheable.
+        # The lock makes "check the generations, then store" one step against both.
+        self._generation = 0
+        self._path_generations: dict[str, int] = {}
+        self._lock = ForkSafeLock()
+
+    def __getstate__(self) -> dict[str, object]:
+        """Copy and pickle a consistent snapshot, taken under the lock, without the lock itself."""
+        with self._lock.lock:
+            return {
+                "_cache": dict(self._cache),
+                "_generation": self._generation,
+                "_path_generations": dict(self._path_generations),
+            }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore a snapshot with a lock of its own; state pickled by idfkit 1.2.0 holds only ``_cache``."""
+        self._cache = cast("dict[str, list[float]]", state.get("_cache", {}))
+        self._generation = cast("int", state.get("_generation", 0))
+        self._path_generations = cast("dict[str, int]", state.get("_path_generations", {}))
+        self._lock = ForkSafeLock()
+
+    def __copy__(self) -> ScheduleFileCache:
+        """A copy is an independent cache holding the same entries, never an alias of this one's state."""
+        new = ScheduleFileCache.__new__(ScheduleFileCache)
+        new.__setstate__(self.__getstate__())
+        return new
 
     def get_values(
         self,
@@ -59,10 +90,19 @@ class ScheduleFileCache:
         file_path = self._resolve_path(obj, base_path)
         cache_key = self._make_cache_key(obj, file_path)
 
-        if cache_key not in self._cache:
-            self._cache[cache_key] = _read_schedule_file(obj, fs, file_path)
+        # Held in a local rather than read back from the dict: another thread may clear or
+        # invalidate between the store and the read, which would turn a hit into a KeyError.
+        values = self._cache.get(cache_key)
+        if values is None:
+            path_key = str(file_path)
+            generation = self._generation
+            path_generation = self._path_generations.get(path_key, 0)
+            values = _read_schedule_file(obj, fs, file_path)
+            with self._lock.lock:
+                if generation == self._generation and path_generation == self._path_generations.get(path_key, 0):
+                    self._cache[cache_key] = values
 
-        return self._cache[cache_key]
+        return values
 
     @staticmethod
     def _make_cache_key(obj: IDFObject, file_path: Path) -> str:
@@ -104,7 +144,11 @@ class ScheduleFileCache:
 
     def clear(self) -> None:
         """Clear the cache."""
-        self._cache.clear()
+        with self._lock.lock:
+            # A fresh dict swapped in by one store, not cleared in place, so a child forked mid-call
+            # sees the whole cache or none of it.
+            self._cache = {}
+            self._generation += 1
 
     def invalidate(self, path: str | Path) -> None:
         """Invalidate all cache entries whose key starts with *path*.
@@ -113,10 +157,14 @@ class ScheduleFileCache:
             path: File path to invalidate.  All entries for this file
                 (regardless of column / separator settings) are removed.
         """
-        prefix = str(path) + "|"
-        keys_to_remove = [k for k in self._cache if k.startswith(prefix)]
-        for k in keys_to_remove:
-            del self._cache[k]
+        path_key = str(path)
+        prefix = path_key + "|"
+        # Every store and removal holds the lock, so the dict cannot change under this iteration.
+        with self._lock.lock:
+            # Built aside and swapped in by one store, so a child forked mid-call never inherits a
+            # half-invalidated cache that nothing would finish invalidating.
+            self._cache = {k: v for k, v in self._cache.items() if not k.startswith(prefix)}
+            self._path_generations[path_key] = self._path_generations.get(path_key, 0) + 1
 
 
 # Global cache instance

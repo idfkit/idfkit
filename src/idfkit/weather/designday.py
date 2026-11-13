@@ -85,6 +85,27 @@ def _sanitize_ddy_text(text: str) -> tuple[str, list[str]]:
     return new_text, patched
 
 
+def sanitize_ddy_bytes(data: bytes, name: str) -> tuple[bytes, list[str]]:
+    """Return *data*, the bytes of a DDY file called *name*, with placeholder values blanked.
+
+    The in-memory form of :func:`sanitize_ddy_file`: the weather downloader uses it to clean a DDY
+    before the DDY is first written to the cache, so a cached DDY never has to be rewritten under
+    a reader. Logs the same warning as :func:`sanitize_ddy_file`, naming *name*.
+
+    Args:
+        data: The content of a ``.ddy`` file.
+        name: The file name to report in the warning.
+
+    Returns:
+        The cleaned bytes (*data* itself if nothing needed cleaning) and the names of the design
+        days that had at least one field blanked.
+    """
+    cleaned, patched = _clean_ddy_bytes(data)
+    if patched:
+        _warn_sanitized(name, patched)
+    return cleaned, patched
+
+
 def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
     """Blank placeholder values in ``SizingPeriod:DesignDay`` fields of a DDY file.
 
@@ -95,6 +116,11 @@ def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
     place, replacing each placeholder with an empty field (which EnergyPlus
     treats as defaulted) so the surrounding design day object remains usable.
 
+    The file is edited in place: a symlink's target is cleaned, and the file keeps its inode,
+    owner and permissions. A file nobody else is reading at the same time is the expected case;
+    to clean a DDY other threads or processes may be reading, use :func:`sanitize_ddy_bytes` and
+    publish the result with an atomic rename.
+
     Args:
         ddy_path: Path to a ``.ddy`` file.
 
@@ -103,19 +129,30 @@ def sanitize_ddy_file(ddy_path: Path | str) -> list[str]:
         if the file was already clean.
     """
     path = Path(ddy_path)
-    # Use binary I/O so original line endings (CRLF on OneBuilding archives,
-    # LF elsewhere) are preserved verbatim across the round-trip.
-    text = path.read_bytes().decode("utf-8", errors="replace")
-    new_text, patched = _sanitize_ddy_text(text)
+    cleaned, patched = _clean_ddy_bytes(path.read_bytes())
     if patched:
-        path.write_bytes(new_text.encode("utf-8"))
-        logger.warning(
-            "Sanitized %s: blanked non-numeric placeholder values in %d SizingPeriod:DesignDay object(s): %s",
-            path.name,
-            len(patched),
-            ", ".join(patched),
-        )
+        path.write_bytes(cleaned)
+        _warn_sanitized(path.name, patched)
     return patched
+
+
+def _clean_ddy_bytes(data: bytes) -> tuple[bytes, list[str]]:
+    """Blank the placeholders in *data*; return the result and the design days changed."""
+    # Bytes in and out, so original line endings (CRLF on OneBuilding archives, LF elsewhere) are
+    # preserved verbatim across the round-trip.
+    new_text, patched = _sanitize_ddy_text(data.decode("utf-8", errors="replace"))
+    if not patched:
+        return data, patched
+    return new_text.encode("utf-8"), patched
+
+
+def _warn_sanitized(name: str, patched: list[str]) -> None:
+    logger.warning(
+        "Sanitized %s: blanked non-numeric placeholder values in %d SizingPeriod:DesignDay object(s): %s",
+        name,
+        len(patched),
+        ", ".join(patched),
+    )
 
 
 class DesignDayType(Enum):
