@@ -30,38 +30,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `IDFDocumentV<major>_<minor>` from `IDFDocumentV8_9` to `IDFDocumentV26_2` (which is
   `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)`, which returns the document under that
   type after checking its release at run time. Given a tuple of those types, as `isinstance`
-  takes one, `as_version` accepts a document of any of them and types it as their union, which
+  takes one, `as_version` accepts a document of any of them and types it as their union (mypy reduces
+  the union to what those releases share), which
   narrows a model of unknown release into a range such as the releases that have `Space`. Such a document is indexed, completed and checked
   with that release's object types, field value types and choices, accessors and `update()`
   keywords: on a 9.4 model `doc["Space"]` is a type error and `People` has
   `zone_or_zonelist_name`. Documents stay typed for the latest release unless their version is
   stated this way. The stubs encode each object type's declaration once per contiguous range of
   releases that share it, and `python -m idfkit.codegen.generate_stubs` now checks what it wrote
-  against every bundled schema before finishing, so adopting a release only needs a
-  regeneration ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
+  against every bundled schema before finishing, so adopting a release needs no hand edit of
+  the stubs, and a regeneration that would misdescribe a release fails ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 - `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) was added. It accepts a
   document of any supported release and, through it, offers what every release has: the object
   types present in all of them. A field whose value type changed between releases reads as any
   release's value and, through assignment and `update()`, accepts only a value every release
   accepts: `heater_fuel_type` can be set to `"NaturalGas"` but not to `"DistrictHeatingWater"`,
-  which releases before 23.2 reject. idfkit's own
+  which 9.3 to 23.1 reject. idfkit's own
   functions were retyped to take it, so `save_idf`, `simulate`, the geometry and zoning helpers
   and the rest accept a document typed for any release; `expand_objects` and the ground
   heat-transfer preprocessors return the type they were given. An object type or accessor that
   some release lacks is reported against the type that lacks it, for example
   `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`, and through `AnyIDFDocument` as
-  `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"`. Naming a release's type costs
-  a type checker no more than naming `IDFDocument`
+  `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"`. Naming one release's type costs
+  pyright about what naming `IDFDocument` does, 2 to 3 seconds for a file; a file naming every
+  release's type takes about 7 seconds
   ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
-- Every object type gained an `Any<Class>` type, importable from `idfkit.document` inside
+- Every object type of the latest release gained an `Any<Class>` type, importable from `idfkit.document` inside
   `if TYPE_CHECKING:`, for annotating code that takes an object of any supported release:
   `def floor_area(zone: AnyZone)` accepts a latest-release zone, a 9.4 zone and a zone reached
   through `AnyIDFDocument`, where `Zone` accepts only the first. Through it, fields follow the
   `AnyIDFDocument` rules, extensible groups included, so `AnyBuildingSurfaceDetailed.vertices` is
   typed. For a type no release changed, `Any<Class>` is the latest class itself (`AnyZoneList` is
   `ZoneList`). For a type that arrived after 8.9, it covers the releases that have it:
-  `AnySpace` accepts a `Space` of any release from 9.6, and its docstring says so. It covers the releases idfkit supports, so adopting a release that drops or renames
-  a field removes that field from it
+  `AnySpace` accepts a `Space` of any release from 9.6, and its docstring says so. A type that
+  a release before the latest removed, such as `DistrictHeating`, has none: its classes are
+  named for the releases that have it (`DistrictHeating_v8_9_to_v23_1`). `Any<Class>` covers the
+  releases idfkit supports, so adopting a release that drops or renames a field removes that
+  field from it
   ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 
 ### Changed
