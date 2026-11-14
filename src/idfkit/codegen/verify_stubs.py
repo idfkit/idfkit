@@ -4,7 +4,9 @@ The per-version typing in ``versioned.pyi`` is assembled from pieces: classes sh
 versions, classes of one version range, and maps and accessors filed under the range of versions
 they hold over. This module does not trust that assembly. It reads the generated sources back,
 resolves what a type checker would see for each object type in each supported version, and
-compares it with that version's schema:
+compares it with that version's schema. What a field may hold is read from the schema here, not
+taken from the generator, so a fault in how the generator maps a schema type is reported rather
+than repeated:
 
 * the object types a version's document can be indexed with are exactly the version's types;
 * every type's class has exactly the version's fields, each with the version's value type, and
@@ -26,7 +28,7 @@ import ast
 import dataclasses
 import functools
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from idfkit.schema import EpJSONSchema
@@ -191,17 +193,86 @@ def _union_members(annotation: str) -> frozenset[str]:
     return frozenset(members)
 
 
-def _expected_fields(ver: Version, obj_type: str) -> tuple[dict[str, str], tuple[str, dict[str, str]] | None]:
+_SCALARS = {"number": "float", "integer": "int", "string": "str", "array": "list[Any]"}
+
+
+def _literal(value: object) -> str:
+    return f"Literal[{value!r}]"
+
+
+def _value_members(field_schema: dict[str, Any] | None, field_type: str | None) -> frozenset[str]:
+    """What a field may hold, as union members with ``None``, read from its schema.
+
+    Derived here rather than taken from the generator, so a fault in how the generator maps a schema
+    to a value type is a disagreement this module reports, not one it repeats. A field restricted to
+    an ``enum`` holds those values; an ``anyOf`` holds each branch's values, an ``enum`` branch's
+    listed and any other branch's by its type; and a field with no usable type holds a string or a
+    number, as EnergyPlus reads it.
+    """
+    members: set[str] = {"None"}
+    if field_schema is not None and "enum" in field_schema:
+        return frozenset(members | {_literal(v) for v in field_schema["enum"]})
+    if field_schema is not None and "anyOf" in field_schema:
+        for branch in field_schema["anyOf"]:
+            kind = branch.get("type")
+            if kind not in ("number", "integer", "string"):
+                continue
+            if "enum" in branch:
+                members.update(_literal(v) for v in branch["enum"])
+            else:
+                members.add(_SCALARS[kind])
+        return frozenset(members if len(members) > 1 else {"None", "str", "float"})
+    scalar = _SCALARS.get(field_type) if field_type is not None else None
+    return frozenset(members | ({scalar} if scalar else {"str", "float"}))
+
+
+def _schema_fields(schema: EpJSONSchema, obj_type: str) -> dict[str, frozenset[str]]:
+    """Each attribute a typed object of *obj_type* has, with the values it may hold.
+
+    The schema's identifier fields, then the spelling without the trailing underscore of each that
+    has one, as :class:`~idfkit.objects.IDFObject` resolves it at run time.
+    """
+    from idfkit.schema import trailing_underscore_aliases
+
+    inner = schema.get_inner_schema(obj_type)
+    properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    names = schema.get_field_names(obj_type)
+    fields = {
+        name: _value_members(properties.get(name), schema.get_field_type(obj_type, name))
+        for name in names
+        if name.isidentifier()
+    }
+    for alias, key in trailing_underscore_aliases(names).items():
+        if alias != key and alias.isidentifier() and alias not in fields and key in fields:
+            fields[alias] = fields[key]
+    return fields
+
+
+def _schema_group(schema: EpJSONSchema, obj_type: str) -> tuple[str, dict[str, frozenset[str]]] | None:
+    """The extensible wrapper key of *obj_type* and the values each inner field may hold, or ``None``."""
+    pc = schema.get_parsing_cache(obj_type)
+    if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
+        return None
+    inner = {
+        name: _value_members(sub, sub.get("type") if isinstance(sub.get("type"), str) else None)
+        for name, sub in pc.ext_inner_props.items()
+        if name.isidentifier()
+    }
+    return pc.ext_wrapper_key, inner
+
+
+def _members_of(fields: dict[str, str]) -> dict[str, frozenset[str]]:
+    return {name: _union_members(annotation) for name, annotation in fields.items()}
+
+
+def _expected_fields(
+    ver: Version, obj_type: str
+) -> tuple[dict[str, frozenset[str]], tuple[str, dict[str, frozenset[str]]] | None]:
     """The fields of *obj_type* in *ver* as the stubs must declare them, and its group if any."""
-    from idfkit.codegen.generate_stubs import _field_decls, _group_decl  # pyright: ignore[reportPrivateUsage]
     from idfkit.schema import get_schema
 
     schema = get_schema(ver)
-    fields = {name: _norm(f"{py_type} | None") for name, py_type in _field_decls(schema, obj_type).items()}
-    group = _group_decl(schema, obj_type)
-    if group is None:
-        return fields, None
-    return fields, (group[0], {name: _norm(f"{py_type} | None") for name, py_type in group[1]})
+    return _schema_fields(schema, obj_type), _schema_group(schema, obj_type)
 
 
 def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problems: list[str]) -> None:
@@ -210,18 +281,19 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
         problems.append(f"{where}: class not defined")
         return
     expected, group = _expected_fields(ver, obj_type)
-    actual = _fields(module, cls)
+    actual = _members_of(_fields(module, cls))
     keywords = dict(expected)
     if group is not None:
         wrapper, inner = group
-        annotation = actual.pop(wrapper, None)
+        annotation = _fields(module, cls).get(wrapper)
+        actual.pop(wrapper, None)
         if annotation is None:
             problems.append(f"{where}: no {wrapper} attribute")
         else:
             group_cls = _collection_class(annotation)
-            if group_cls not in module.classes or _fields(module, group_cls) != inner:
+            if group_cls not in module.classes or _members_of(_fields(module, group_cls)) != inner:
                 problems.append(f"{where}: group {group_cls} does not hold the version's inner fields")
-        keywords[wrapper] = "list[Any]"
+        keywords[wrapper] = frozenset({"list[Any]"})
     if actual != expected:
         missing = sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
@@ -230,7 +302,9 @@ def _check_class(module: _Module, cls: str, ver: Version, obj_type: str, problem
     _check_update(module, cls, keywords, where, problems)
 
 
-def _check_update(module: _Module, cls: str, keywords: dict[str, str], where: str, problems: list[str]) -> None:
+def _check_update(
+    module: _Module, cls: str, keywords: dict[str, frozenset[str]], where: str, problems: list[str]
+) -> None:
     """The ``update`` keywords of *cls*: those of the nearest class in its line that types them.
 
     A class with no keyword to type keeps ``IDFObject.update``, as the latest classes always have.
@@ -241,7 +315,7 @@ def _check_update(module: _Module, cls: str, keywords: dict[str, str], where: st
         fields_cls = f"_{item}Fields"
         if fields_cls in module.classes:
             expected = {k: v for k, v in keywords.items() if k != "name"}
-            if _fields(module, fields_cls) != expected:
+            if _members_of(_fields(module, fields_cls)) != expected:
                 problems.append(f"{where}: update keywords ({fields_cls}) differ from its fields")
             return
     problems.append(f"{where}: update is not typed")
@@ -263,7 +337,6 @@ def verify(types_source: str, document_source: str, versioned_source: str, versi
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
-    _check_private_imports(document_source, module, problems)
     _check_any_names(module, versions[-1], problems)
     return problems
 
@@ -305,7 +378,9 @@ def _admitted(member: str, members: frozenset[str]) -> bool:
     return False
 
 
-def _check_writable(module: _Module, cls: str, obj_type: str, decls: list[dict[str, str]], problems: list[str]) -> None:
+def _check_writable(
+    module: _Module, cls: str, obj_type: str, decls: list[dict[str, frozenset[str]]], problems: list[str]
+) -> None:
     """A shared base's assignable values are ones every version accepts, and ``update`` takes them.
 
     Each field that is a property is written through its setter: every member of the setter's value
@@ -316,7 +391,7 @@ def _check_writable(module: _Module, cls: str, obj_type: str, decls: list[dict[s
     for name, setter in klass.setters.items():
         members = _union_members(setter) - {"Never"}  # Never admits nothing: only clearing is safe
         for decl in decls:
-            admitted = _union_members(_norm(f"{decl[name]} | None"))
+            admitted = decl[name]
             if not all(_admitted(m, admitted) for m in members):
                 problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: writable values some version rejects")
                 break
@@ -345,9 +420,7 @@ def _check_any_group(
     Its fields must be ones every version's group has; reading one admits every version's values,
     and assigning one accepts only values every version accepts.
     """
-    from idfkit.codegen.generate_stubs import _group_decl  # pyright: ignore[reportPrivateUsage]
-
-    decls = [_group_decl(s, obj_type) for s in schemas]
+    decls = [_schema_group(s, obj_type) for s in schemas]
     shared = [d for d in decls if d is not None]
     if len(shared) != len(decls) or len({d[0] for d in shared}) != 1:
         return
@@ -360,45 +433,18 @@ def _check_any_group(
     if group_cls not in module.classes:
         problems.append(f"{cls}.{wrapper}: group class {group_cls} not defined")
         return
-    inner = [{name: _norm(f"{t} | None") for name, t in d[1]} for d in shared]
+    inner = [d[1] for d in shared]
     setters = module.classes[group_cls].setters
     for name, read in _fields(module, group_cls).items():
         if not all(name in i for i in inner):
             problems.append(f"{group_cls}.{name}: not a field of every version's {wrapper} group")
             continue
         admitted = _union_members(read)
-        if not all(_union_members(i[name]) <= admitted for i in inner):
+        if not all(i[name] <= admitted for i in inner):
             problems.append(f"{group_cls}.{name}: does not admit every version's values")
         writable = _union_members(setters.get(name, read)) - {"Never"}
-        if not all(all(_admitted(m, _union_members(i[name])) for m in writable) for i in inner):
+        if not all(all(_admitted(m, i[name]) for m in writable) for i in inner):
             problems.append(f"{group_cls}.{name}: writable values some version rejects")
-
-
-def _check_private_imports(document_source: str, module: _Module, problems: list[str]) -> None:
-    """Every private class ``document.pyi`` names must be imported by name.
-
-    ``document.pyi`` takes the generated classes through ``from ._generated_types import *``, which
-    skips names that start with an underscore. A private class reached only that way resolves to
-    ``Unknown``, so an ``AnyIDFDocument`` accessor returning one would be partially unknown.
-    """
-    imported: set[str] = set()
-    for node in ast.parse(document_source).body:
-        if isinstance(node, ast.ImportFrom):
-            imported.update(alias.asname or alias.name for alias in node.names)
-    defined = {node.name for node in ast.parse(document_source).body if isinstance(node, ast.ClassDef)}
-    for cls_name in ("IDFDocument", "IDFDocumentAllVersions"):
-        if cls_name not in module.classes:
-            continue
-        for name, annotation in _properties(module, cls_name).items():
-            node = ast.parse(annotation, mode="eval").body
-            for sub in ast.walk(node):
-                if (
-                    isinstance(sub, ast.Name)
-                    and sub.id.startswith("_")
-                    and sub.id not in imported
-                    and sub.id not in defined
-                ):
-                    problems.append(f"{cls_name}.{name}: {sub.id} is not imported into document.pyi by name")
 
 
 def _check_version(module: _Module, ver: Version, is_latest: bool, problems: list[str]) -> None:
@@ -437,7 +483,6 @@ def _check_version(module: _Module, ver: Version, is_latest: bool, problems: lis
 
 
 def _check_any_document(module: _Module, versions: tuple[Version, ...], problems: list[str]) -> None:
-    from idfkit.codegen.generate_stubs import _field_decls  # pyright: ignore[reportPrivateUsage]
     from idfkit.schema import get_schema
 
     schemas = [get_schema(ver) for ver in versions]
@@ -455,7 +500,7 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
             problems.append(f"AnyIDFDocument[{obj_type!r}]: not ReadOnly[IDFCollection[...]]: {annotation}")
             continue
         cls = _collection_class(_collection_class(annotation))
-        decls = [_field_decls(s, obj_type) for s in schemas if obj_type in s.object_types]
+        decls = [_schema_fields(s, obj_type) for s in schemas if obj_type in s.object_types]
         shared = _intersection([set(d) for d in decls])
         _check_writable(module, cls, obj_type, decls, problems)
         _check_any_group(module, cls, obj_type, [s for s in schemas if obj_type in s.object_types], problems)
@@ -466,7 +511,7 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
         for name in shared:
             admitted = _union_members(actual[name])
             for decl in decls:
-                if not _union_members(_norm(f"{decl[name]} | None")) <= admitted:
+                if not decl[name] <= admitted:
                     problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
                     break
 

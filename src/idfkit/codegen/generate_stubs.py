@@ -1409,7 +1409,8 @@ def generate_versioned_pyi() -> str:
         "@overload",
         *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
         "@overload",
-        "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: ...",
+        # Non-empty: an empty tuple raises at run time, so the checker reports it.
+        "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
     ])
     parts.append("")
     return "\n".join(parts)
@@ -1461,6 +1462,11 @@ Returns *doc* itself. A document's version is read from its file, so a type chec
 know it; this states it, and checks it at run time. Given a tuple of document types, as
 ``isinstance`` takes one, it accepts a document of any of them and types it as their union:
 a range of releases, such as those that have ``Space``.
+
+Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
+a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
+document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
+any release already is one.
 
 Args:
     doc: A document of any supported version.
@@ -1684,12 +1690,8 @@ def _generate_document_module() -> str:
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
-    # A star import skips names that start with an underscore, so the private shared bases the
-    # AnyIDFDocument accessors return are imported by name; without them those accessors are Unknown.
-    # Case-insensitive, as ruff's import sorting (run by pre-commit, not by this generator) orders them.
-    private = {cls for cls in _any_accessor_types().values() if cls.startswith("_")}
-    names = sorted({"_CommonTypeMap", "_ObjectTypeMap", *private}, key=str.lower)
-    lines.append(f"from ._generated_types import {', '.join(names)}")
+    # A star import skips names that start with an underscore, so the private maps are imported by name.
+    lines.append("from ._generated_types import _CommonTypeMap, _ObjectTypeMap")
     # Alphabetical, because the formatter that runs after this sorts them and the stub gate then
     # regenerates and diffs. An import emitted out of order is reordered on the way in and never
     # matches on the way back, which fails the gate everywhere except the machine that committed it.

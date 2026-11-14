@@ -1197,6 +1197,10 @@ class IDFObject(EppyObjectMixin):
 # Covariant: an IDFCollection[Zone] is an IDFCollection[IDFObject]. That is what lets a document of
 # any EnergyPlus version be passed where AnyIDFDocument is expected (see document.pyi), and what lets
 # a typed collection be passed to code that takes IDFCollection[IDFObject].
+#
+# The usual cost of covariance: through IDFCollection[IDFObject], add() takes any object, so a
+# function typed that way can add a Material to doc["Zone"] without a type error, and add() does not
+# check the type at run time either. Add through IDFDocument.add, which files an object by its type.
 _T_co = TypeVar("_T_co", bound=IDFObject, covariant=True)
 _ObjT = TypeVar("_ObjT", bound=IDFObject)
 _D = TypeVar("_D")

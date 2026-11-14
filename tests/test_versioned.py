@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import get_origin
+from typing import Any, get_origin
 
 import pytest
 
@@ -136,7 +136,7 @@ class TestAsVersion:
 
     def test_refuses_an_empty_tuple(self) -> None:
         with pytest.raises(TypeError, match="at least one"):
-            versioned.as_version(new_document(), ())  # pyright: ignore[reportArgumentType, reportUnknownVariableType]
+            versioned.as_version(new_document(), ())  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +192,6 @@ class TestCommittedStubs:
                 r'\g<0>\1"Space": ReadOnly[IDFCollection[Space]],\n',
                 "extra ['Space']",
             ),
-            # A private shared base left to the star import, which skips it: the accessor is Unknown.
             # A group every version has, dropped from the any-release class.
             (
                 0,
@@ -227,6 +226,24 @@ class TestCommittedStubs:
         sources[source] = mutated
         problems = verify(sources[0], sources[1], sources[2], ENERGYPLUS_VERSIONS)
         assert any(expected in problem for problem in problems), problems
+
+    def test_a_fault_in_the_generators_type_mapping_is_reported(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # The check derives each field's values from the schema itself, so a generator that maps a
+        # schema type wrongly is caught rather than repeated: here every integer becomes a float.
+        real = gen._schema_type_to_python  # pyright: ignore[reportPrivateUsage]
+
+        def faulty(field_schema: dict[str, Any] | None, field_type: str | None, has_any_of: bool = False) -> str:
+            return "float" if field_type == "integer" else real(field_schema, field_type, has_any_of)
+
+        monkeypatch.setattr(gen, "_schema_type_to_python", faulty)
+        gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
+        try:
+            sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
+        finally:
+            monkeypatch.undo()
+            gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
+        problems = verify(*sources, gen.SUPPORTED.versions)
+        assert any("mistyped" in problem for problem in problems), problems
 
 
 class TestAdoption:
