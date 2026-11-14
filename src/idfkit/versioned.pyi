@@ -23945,6 +23945,7 @@ class _ObjectTypeMapV8_9(
 ): ...
 
 class IDFDocumentV8_9(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV8_9,
     _Accessors_v8_9,
     _Accessors_v8_9_to_v9_0,
@@ -23963,7 +23964,6 @@ class IDFDocumentV8_9(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 8.9.0."""
 
@@ -23996,6 +23996,7 @@ class _ObjectTypeMapV9_0(
 ): ...
 
 class IDFDocumentV9_0(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_0,
     _Accessors_v8_9_to_v9_0,
     _Accessors_v8_9_to_v9_1,
@@ -24022,7 +24023,6 @@ class IDFDocumentV9_0(
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
     _Accessors_v9_0_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.0.1."""
 
@@ -24059,6 +24059,7 @@ class _ObjectTypeMapV9_1(
 ): ...
 
 class IDFDocumentV9_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_1,
     _Accessors_v8_9_to_v9_1,
     _Accessors_v8_9_to_v9_2,
@@ -24089,7 +24090,6 @@ class IDFDocumentV9_1(
     _Accessors_v9_1_to_v22_1,
     _Accessors_v9_1_to_v25_1,
     _Accessors_v9_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.1.0."""
 
@@ -24132,6 +24132,7 @@ class _ObjectTypeMapV9_2(
 ): ...
 
 class IDFDocumentV9_2(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_2,
     _Accessors_v8_9_to_v9_2,
     _Accessors_v8_9_to_v9_3,
@@ -24168,7 +24169,6 @@ class IDFDocumentV9_2(
     _Accessors_v9_2_to_v23_1,
     _Accessors_v9_2_to_v25_1,
     _Accessors_v9_2_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.2.0."""
 
@@ -24215,6 +24215,7 @@ class _ObjectTypeMapV9_3(
 ): ...
 
 class IDFDocumentV9_3(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_3,
     _Accessors_v8_9_to_v9_3,
     _Accessors_v8_9_to_v9_4,
@@ -24255,7 +24256,6 @@ class IDFDocumentV9_3(
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
     _Accessors_v9_3_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.3.0."""
 
@@ -24305,6 +24305,7 @@ class _ObjectTypeMapV9_4(
 ): ...
 
 class IDFDocumentV9_4(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_4,
     _Accessors_v8_9_to_v9_4,
     _Accessors_v8_9_to_v9_5,
@@ -24348,7 +24349,6 @@ class IDFDocumentV9_4(
     _Accessors_v9_4_to_v23_1,
     _Accessors_v9_4_to_v24_1,
     _Accessors_v9_4_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.4.0."""
 
@@ -24399,6 +24399,7 @@ class _ObjectTypeMapV9_5(
 ): ...
 
 class IDFDocumentV9_5(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_5,
     _Accessors_v8_9_to_v9_5,
     _Accessors_v8_9_to_v9_6,
@@ -24443,7 +24444,6 @@ class IDFDocumentV9_5(
     _Accessors_v9_5_to_v22_1,
     _Accessors_v9_5_to_v23_2,
     _Accessors_v9_5_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.5.0."""
 
@@ -24495,6 +24495,7 @@ class _ObjectTypeMapV9_6(
 ): ...
 
 class IDFDocumentV9_6(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV9_6,
     _Accessors_v8_9_to_v9_6,
     _Accessors_v8_9_to_v22_1,
@@ -24540,7 +24541,6 @@ class IDFDocumentV9_6(
     _Accessors_v9_6_to_v25_1,
     _Accessors_v9_6_to_v26_1,
     _Accessors_v9_6_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9.6.0."""
 
@@ -24591,6 +24591,7 @@ class _ObjectTypeMapV22_1(
 ): ...
 
 class IDFDocumentV22_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV22_1,
     _Accessors_v8_9_to_v22_1,
     _Accessors_v8_9_to_v22_2,
@@ -24635,7 +24636,6 @@ class IDFDocumentV22_1(
     _Accessors_v22_1,
     _Accessors_v22_1_to_v26_1,
     _Accessors_v22_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 22.1.0."""
 
@@ -24684,6 +24684,7 @@ class _ObjectTypeMapV22_2(
 ): ...
 
 class IDFDocumentV22_2(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV22_2,
     _Accessors_v8_9_to_v22_2,
     _Accessors_v8_9_to_v23_1,
@@ -24726,7 +24727,6 @@ class IDFDocumentV22_2(
     _Accessors_v22_2_to_v25_1,
     _Accessors_v22_2_to_v26_1,
     _Accessors_v22_2_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 22.2.0."""
 
@@ -24777,6 +24777,7 @@ class _ObjectTypeMapV23_1(
 ): ...
 
 class IDFDocumentV23_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV23_1,
     _Accessors_v8_9_to_v23_1,
     _Accessors_v8_9_to_v23_2,
@@ -24821,7 +24822,6 @@ class IDFDocumentV23_1(
     _Accessors_v23_1_to_v25_1,
     _Accessors_v23_1_to_v26_1,
     _Accessors_v23_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 23.1.0."""
 
@@ -24869,6 +24869,7 @@ class _ObjectTypeMapV23_2(
 ): ...
 
 class IDFDocumentV23_2(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV23_2,
     _Accessors_v8_9_to_v23_2,
     _Accessors_v8_9_to_v24_1,
@@ -24910,7 +24911,6 @@ class IDFDocumentV23_2(
     _Accessors_v23_2_to_v24_1,
     _Accessors_v23_2_to_v25_1,
     _Accessors_v23_2_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 23.2.0."""
 
@@ -24956,6 +24956,7 @@ class _ObjectTypeMapV24_1(
 ): ...
 
 class IDFDocumentV24_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV24_1,
     _Accessors_v8_9_to_v24_1,
     _Accessors_v8_9_to_v25_1,
@@ -24995,7 +24996,6 @@ class IDFDocumentV24_1(
     _Accessors_v24_1_to_v24_2,
     _Accessors_v24_1_to_v25_1,
     _Accessors_v24_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 24.1.0."""
 
@@ -25038,6 +25038,7 @@ class _ObjectTypeMapV24_2(
 ): ...
 
 class IDFDocumentV24_2(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV24_2,
     _Accessors_v8_9_to_v25_1,
     _Accessors_v8_9_to_v25_2,
@@ -25074,7 +25075,6 @@ class IDFDocumentV24_2(
     _Accessors_v24_2_to_v25_1,
     _Accessors_v24_2_to_v25_2,
     _Accessors_v24_2_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 24.2.0."""
 
@@ -25115,6 +25115,7 @@ class _ObjectTypeMapV25_1(
 ): ...
 
 class IDFDocumentV25_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV25_1,
     _Accessors_v8_9_to_v25_1,
     _Accessors_v8_9_to_v25_2,
@@ -25149,7 +25150,6 @@ class IDFDocumentV25_1(
     _Accessors_v24_2_to_v25_2,
     _Accessors_v24_2_to_v26_2,
     _Accessors_v25_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 25.1.0."""
 
@@ -25181,6 +25181,7 @@ class _ObjectTypeMapV25_2(
 ): ...
 
 class IDFDocumentV25_2(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV25_2,
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
@@ -25206,7 +25207,6 @@ class IDFDocumentV25_2(
     _Accessors_v24_2_to_v26_2,
     _Accessors_v25_1_to_v26_2,
     _Accessors_v25_2_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 25.2.0."""
 
@@ -25237,6 +25237,7 @@ class _ObjectTypeMapV26_1(
 ): ...
 
 class IDFDocumentV26_1(
+    _IDFDocumentMethods[Strict],
     _ObjectTypeMapV26_1,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
@@ -25261,7 +25262,6 @@ class IDFDocumentV26_1(
     _Accessors_v25_1_to_v26_2,
     _Accessors_v25_2_to_v26_2,
     _Accessors_v26_1_to_v26_2,
-    _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
     """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 26.1.0."""
 

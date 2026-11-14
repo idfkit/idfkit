@@ -89,6 +89,17 @@ def any_release_objects(
             detail.digits_after_decimal = 2  # an int: every release accepts it
 
 
+def dict_like_methods(latest: IDFDocument, legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
+    """keys(), values() and items() are the document's own, not the TypedDict's behind its lookups."""
+    assert_type(latest.keys(), list[str])
+    assert_type(latest.values(), list[IDFCollection[IDFObject]])
+    assert_type(latest.items(), list[tuple[str, IDFCollection[IDFObject]]])
+    assert_type(legacy.values(), list[IDFCollection[IDFObject]])
+    assert_type(any_doc.values(), list[IDFCollection[IDFObject]])
+    for collection in any_doc.values():
+        print(collection.obj_type)
+
+
 _Since9_6: TypeAlias = IDFDocumentV9_6 | IDFDocumentV26_1 | IDFDocument
 
 

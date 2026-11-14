@@ -93,7 +93,7 @@ The classes exist only in the stubs: import them from `idfkit.document` inside `
 --8<-- "agent_references/snippets/document-and-objects.py:typed-object-parameter"
 ```
 
-An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class from `idfkit.versioned` (`DistrictHeating_v8_9_to_v23_1`).
+An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either. A type the latest release no longer has, such as `DistrictHeating`, has no `Any<Class>`; annotate with its range class (`DistrictHeating_v8_9_to_v23_1`), imported from `idfkit.versioned` inside `if TYPE_CHECKING:`, since the range classes too exist only in the stubs.
 
 ### Reading and writing through `AnyIDFDocument`
 

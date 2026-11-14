@@ -168,10 +168,13 @@ def _map_entries(module: _Module, name: str, problems: list[str]) -> dict[str, s
 
 
 def _collection_class(annotation: str) -> str:
-    """``IDFCollection[Zone]`` -> ``Zone``."""
+    """``IDFCollection[Zone]`` -> ``Zone``.
+
+    ``""`` for an annotation that is not subscripted, which names no class, so a caller reports it
+    as an undefined class rather than this module stopping on an assertion.
+    """
     node = ast.parse(annotation, mode="eval").body
-    assert isinstance(node, ast.Subscript)  # noqa: S101 - generated maps hold IDFCollection[...]
-    return ast.unparse(node.slice)
+    return ast.unparse(node.slice) if isinstance(node, ast.Subscript) else ""
 
 
 @functools.cache
@@ -389,6 +392,9 @@ def _check_writable(
     """
     klass = module.classes[cls]
     for name, setter in klass.setters.items():
+        if not all(name in decl for decl in decls):
+            problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: writable, but not a field of every version")
+            continue
         members = _union_members(setter) - {"Never"}  # Never admits nothing: only clearing is safe
         for decl in decls:
             admitted = decl[name]
@@ -486,7 +492,9 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
     from idfkit.schema import get_schema
 
     schemas = [get_schema(ver) for ver in versions]
-    common = _intersection([set(s.object_types) for s in schemas])
+    # Built once: object_types makes a new list on every read, and every entry below asks each version.
+    type_sets = [set(s.object_types) for s in schemas]
+    common = _intersection(type_sets)
     entries = _map_entries(module, "_CommonTypeMap", problems)
     if set(entries) != common:
         # A type some version lacks is left out: as an optional entry it would need every version's
@@ -500,11 +508,19 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
             problems.append(f"AnyIDFDocument[{obj_type!r}]: not ReadOnly[IDFCollection[...]]: {annotation}")
             continue
         cls = _collection_class(_collection_class(annotation))
-        decls = [_schema_fields(s, obj_type) for s in schemas if obj_type in s.object_types]
+        cls = module.aliases.get(cls, cls)  # an alias of a class is that class to a type checker
+        if cls not in module.classes:
+            problems.append(f"AnyIDFDocument[{obj_type!r}]: class {cls or annotation} not defined")
+            continue
+        having = [s for s, types in zip(schemas, type_sets, strict=True) if obj_type in types]
+        if not having:
+            continue  # a type no version has, reported above as extra
+        decls = [_schema_fields(s, obj_type) for s in having]
         shared = _intersection([set(d) for d in decls])
         _check_writable(module, cls, obj_type, decls, problems)
-        _check_any_group(module, cls, obj_type, [s for s in schemas if obj_type in s.object_types], problems)
-        actual = {k: v for k, v in _fields(module, cls).items() if k not in _group_names(module, cls)}
+        _check_any_group(module, cls, obj_type, having, problems)
+        groups = set(_group_names(module, cls))
+        actual = {k: v for k, v in _fields(module, cls).items() if k not in groups}
         if set(actual) != shared:
             problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): fields are not those every version has")
             continue

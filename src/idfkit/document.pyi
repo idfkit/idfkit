@@ -522,7 +522,7 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
             True
         """
 
-class IDFDocument(_ObjectTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]
+class IDFDocument(_IDFDocumentMethods[Strict], _ObjectTypeMap):  # type: ignore[misc]
     """Main container for an EnergyPlus model.
 
     Attributes:
@@ -3637,7 +3637,7 @@ class IDFDocument(_ObjectTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[
     def zones(self) -> IDFCollection[Zone]:
         """All ``Zone`` objects in the document. Defines a thermal zone of the building. Every zone contains one or more Spaces. Space is an optional input. If a Zone has no Space(s) specified in input then a default Space named <Zone Name> will ..."""
 
-class IDFDocumentAllVersions(_CommonTypeMap, _IDFDocumentMethods[Strict]):  # type: ignore[misc]
+class IDFDocumentAllVersions(_IDFDocumentMethods[Strict], _CommonTypeMap):  # type: ignore[misc]
     """A document as every supported EnergyPlus version has it.
 
     Indexing it, or reaching an accessor, with an object type that some supported version lacks is a

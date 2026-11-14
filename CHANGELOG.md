@@ -289,6 +289,7 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   a geocoder that could not be reached, answered with an HTTP error, or returned
   an unreadable body
   ([idfkit/idfkit-js#88](https://github.com/idfkit/idfkit-js/issues/88), [#249](https://github.com/idfkit/idfkit/pull/249)).
+
 ### Deprecated
 
 - `footprint_courtyard` emits a `DeprecationWarning`. It returns a "slit" ring that repeats a vertex and runs out and back along a zero-width cut to the courtyard, which `create_block` turns into overlapping, opposite-facing exterior walls and a self-touching floor and roof that EnergyPlus rejects (the defect behind [#164](https://github.com/idfkit/idfkit/issues/164)). Its output is unchanged; use `create_courtyard_block` or `footprint_courtyard_parts` instead. ([#245](https://github.com/idfkit/idfkit/pull/245))

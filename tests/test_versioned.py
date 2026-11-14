@@ -217,6 +217,23 @@ class TestCommittedStubs:
             ),
             # A type every version has, dropped from AnyIDFDocument.
             (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n', "", "AnyIDFDocument"),
+            # AnyIDFDocument typing a collection with a class that is not defined: reported, not a KeyError.
+            (
+                0,
+                r'"Zone": ReadOnly\[IDFCollection\[AnyZone\]\]',
+                '"Zone": ReadOnly[IDFCollection[AnyZoneX]]',
+                "class AnyZoneX not defined",
+            ),
+            # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
+            (
+                0,
+                r'(?m)^(class AnyPeople\(_TypedIDFObject\):\n    """[^\n]*"""\n)',
+                r"\1    @property\n"
+                r"    def zone_or_zonelist_or_space_or_spacelist_name(self) -> str | None: ...\n"
+                r"    @zone_or_zonelist_or_space_or_spacelist_name.setter\n"
+                r"    def zone_or_zonelist_or_space_or_spacelist_name(self, value: str | None) -> None: ...\n",
+                "zone_or_zonelist_or_space_or_spacelist_name: writable, but not a field of every version",
+            ),
         ],
     )
     def test_a_misdescription_is_reported(self, source: int, pattern: str, replacement: str, expected: str) -> None:
@@ -275,6 +292,13 @@ class TestAdoption:
         gen.generate_stubs((24, 1, 0))
         sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
         assert verify(*sources, gen.SUPPORTED.versions) == []
+
+    def test_generating_for_an_older_release_keeps_the_run_time_module(self) -> None:
+        # versioned.py is what as_version checks against at run time, so it always names every
+        # bundled release: generating stubs for 24.1 must not make IDFDocumentV24_1 IDFDocument.
+        committed = (_PACKAGE / "versioned.py").read_text(encoding="utf-8")
+        with gen.supported_up_to((24, 1, 0)):
+            assert gen.generate_versioned_py() == committed
 
     def test_rejects_a_release_that_is_not_bundled(self) -> None:
         with pytest.raises(ValueError, match="not a bundled"), gen.supported_up_to((7, 2, 0)):
