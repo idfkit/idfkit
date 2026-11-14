@@ -16,7 +16,7 @@ not (9.0.1).
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, cast, get_origin
+from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
 
 from .versions import LATEST_VERSION, find_closest_version, version_string
 
@@ -83,16 +83,44 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     raise TypeError(msg)
 
 
-def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
-    """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
+def _candidates(document_type: object) -> tuple[object, ...]:
+    """The document types *document_type* names: itself, a tuple's members, or a union's.
+
+    A union is taken as ``isinstance`` takes one, because pyright accepts
+    ``as_version(doc, IDFDocumentV9_6 | IDFDocument)`` (it reads ``A | B`` as ``type[A] | type[B]``),
+    so that call has to work when it runs.
+    """
+    if isinstance(document_type, tuple):
+        return cast("tuple[object, ...]", document_type)
+    if isinstance(document_type, types.UnionType) or get_origin(document_type) is Union:
+        return get_args(document_type)
+    return (document_type,)
+
+
+@overload
+def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D: ...
+@overload
+def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: ...
+def as_version(doc: AnyIDFDocument, document_type: type[_D] | tuple[type[_D], ...]) -> _D:
+    """Type *doc* as a document of the EnergyPlus version *document_type* stands for, or one of several.
 
     The stub in ``versioned.pyi`` documents this function; this is its run-time check.
     """
-    origin, required = _resolve(document_type)
-    if required is not None and find_closest_version(doc.version) != required:
-        msg = (
-            f"The document is EnergyPlus {version_string(doc.version)}, not {version_string(required)}, "
-            f"so it cannot be typed as {origin.__name__}"
-        )
+    candidates = _candidates(document_type)
+    if not candidates:
+        msg = "as_version needs at least one document type"
         raise TypeError(msg)
-    return cast("_D", doc)
+    resolved = [_resolve(candidate) for candidate in candidates]
+    release = find_closest_version(doc.version)
+    if any(required is None or required == release for _, required in resolved):
+        return cast("_D", doc)
+    if len(resolved) == 1:
+        origin, required = resolved[0]
+        expected = f"not {version_string(cast('tuple[int, int, int]', required))}"
+        typed_as = origin.__name__
+    else:
+        releases = ", ".join(version_string(cast("tuple[int, int, int]", required)) for _, required in resolved)
+        expected = f"not one of {releases}"
+        typed_as = " | ".join(origin.__name__ for origin, _ in resolved)
+    msg = f"The document is EnergyPlus {version_string(doc.version)}, {expected}, so it cannot be typed as {typed_as}"
+    raise TypeError(msg)

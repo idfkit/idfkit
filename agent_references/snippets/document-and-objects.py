@@ -249,25 +249,54 @@ blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
 
 
 # --8<-- [start:versioned-renamed-field]
-from idfkit.versioned import IDFDocumentV9_5
+from idfkit.versioned import (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+)
+
+# A tuple of release types, as isinstance takes one: as_version accepts a document of any of them.
+BEFORE_9_6 = (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+)
+SINCE_9_6 = (
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
 
 
 def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
-    """Set a People object's zone in a 9.4 or later model.
+    """Set a People object's zone, whatever the model's release.
 
-    The field was renamed in 9.6, so AnyIDFDocument offers neither name. as_version takes one
-    release, so each supported release before the rename gets its own branch.
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
+    model to the releases that use one name, and update() is checked against all of them.
     """
-    if doc.version[:2] == (9, 4):
-        as_version(doc, IDFDocumentV9_4)["People"][people].update(zone_or_zonelist_name=zone)
-    elif doc.version[:2] == (9, 5):
-        as_version(doc, IDFDocumentV9_5)["People"][people].update(zone_or_zonelist_name=zone)
-    elif doc.version >= (9, 6, 0):
-        # One release type each would be checked; item access is the unchecked fallback.
-        doc["People"][people]["zone_or_zonelist_or_space_or_spacelist_name"] = zone
+    if doc.version < (9, 6, 0):
+        as_version(doc, BEFORE_9_6)["People"][people].update(zone_or_zonelist_name=zone)
     else:
-        msg = f"EnergyPlus {doc.version} is not handled"
-        raise NotImplementedError(msg)
+        as_version(doc, SINCE_9_6)["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
 
 
 # --8<-- [end:versioned-renamed-field]

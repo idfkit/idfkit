@@ -17,17 +17,25 @@ The examples are real differences between EnergyPlus 9.4 and the latest release:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument, load_idf, save_idf
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
-from idfkit.versioned import AnyIDFDocument, IDFDocumentV8_9, IDFDocumentV9_4, IDFDocumentV26_2, as_version
+from idfkit.versioned import (
+    AnyIDFDocument,
+    IDFDocumentV8_9,
+    IDFDocumentV9_4,
+    IDFDocumentV9_6,
+    IDFDocumentV26_1,
+    IDFDocumentV26_2,
+    as_version,
+)
 
 if TYPE_CHECKING:
-    from idfkit.document import AnyBuildingSurfaceDetailed, AnyOutputTableAnnual, AnyZone, AnyZoneList
+    from idfkit.document import AnyBuildingSurfaceDetailed, AnyOutputTableAnnual, AnySpace, AnyZone, AnyZoneList
 
 
 def raw_spelling(doc: IDFDocument[Any]) -> None:
@@ -79,6 +87,27 @@ def any_release_objects(
     for table in any_doc["Output:Table:Annual"]:
         for detail in table.variable_details:
             detail.digits_after_decimal = 2  # an int: every release accepts it
+
+
+_Since9_6: TypeAlias = IDFDocumentV9_6 | IDFDocumentV26_1 | IDFDocument
+
+
+def classify_space(space: AnySpace) -> None:
+    """A Space of any release that has one (9.6 on)."""
+    space.space_type = "Office"
+
+
+def classify_spaces(doc: AnyIDFDocument) -> int:
+    """Narrow a model of any release into the releases that have Space, with one as_version call."""
+    if doc.version < (9, 6, 0):
+        return 0
+    recent = as_version(doc, (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+    assert_type(recent, IDFDocumentV9_6[bool] | IDFDocumentV26_1[bool] | IDFDocument[bool])
+    inline = as_version(doc, IDFDocumentV9_6 | IDFDocument)  # pyright reads A | B as type[A] | type[B]
+    assert_type(inline, IDFDocumentV9_6[bool] | IDFDocument[bool])
+    for space in recent["Space"]:
+        classify_space(space)
+    return len(recent["Space"])
 
 
 def write_safe_fuel(doc: AnyIDFDocument) -> None:
@@ -136,4 +165,5 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     zone_height(legacy["Material"]["Brick"])  # pyright: ignore[reportArgumentType]  (not a zone)
     table: AnyOutputTableAnnual = any_doc["Output:Table:Annual"]["Annual"]
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
+    as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)

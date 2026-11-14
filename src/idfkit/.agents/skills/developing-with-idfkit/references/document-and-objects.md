@@ -148,7 +148,7 @@ def count_people(doc: AnyIDFDocument) -> int:
 
 ### Annotating a parameter with an object class
 
-Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed.
+Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed. "Any" is about the object, as in `AnyIDFDocument` it is about the document: `AnySpace` accepts a `Space` of any release that has one (9.6 on, as its docstring says). Such an object is reached only through a document of a release that has the type, so code for any release narrows the document first (a tuple passed to `as_version`, below) and decides what an older model gets; `AnyIDFDocument` itself offers no `Space`.
 
 The classes exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time.
 
@@ -225,7 +225,7 @@ older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1)) 
 # use_district_steam(legacy)  # error: a 9.4 document is not in the range
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release, call `as_version` with one release type; it does not take a union.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocument))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
 
 A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
 
@@ -296,28 +296,57 @@ blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
 
 ### A field renamed between releases
 
-`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and type each branch with `as_version`, one release at a time; item access is the unchecked fallback:
+`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and narrow each branch, with a tuple, to the releases that use one name; `update()` is then checked against all of them (under pyright: mypy rejects both names, so under mypy give `as_version` one release type per branch):
 
 ```python
-from idfkit.versioned import IDFDocumentV9_5
+from idfkit.versioned import (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+)
+
+# A tuple of release types, as isinstance takes one: as_version accepts a document of any of them.
+BEFORE_9_6 = (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+)
+SINCE_9_6 = (
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
 
 
 def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
-    """Set a People object's zone in a 9.4 or later model.
+    """Set a People object's zone, whatever the model's release.
 
-    The field was renamed in 9.6, so AnyIDFDocument offers neither name. as_version takes one
-    release, so each supported release before the rename gets its own branch.
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
+    model to the releases that use one name, and update() is checked against all of them.
     """
-    if doc.version[:2] == (9, 4):
-        as_version(doc, IDFDocumentV9_4)["People"][people].update(zone_or_zonelist_name=zone)
-    elif doc.version[:2] == (9, 5):
-        as_version(doc, IDFDocumentV9_5)["People"][people].update(zone_or_zonelist_name=zone)
-    elif doc.version >= (9, 6, 0):
-        # One release type each would be checked; item access is the unchecked fallback.
-        doc["People"][people]["zone_or_zonelist_or_space_or_spacelist_name"] = zone
+    if doc.version < (9, 6, 0):
+        as_version(doc, BEFORE_9_6)["People"][people].update(zone_or_zonelist_name=zone)
     else:
-        msg = f"EnergyPlus {doc.version} is not handled"
-        raise NotImplementedError(msg)
+        as_version(doc, SINCE_9_6)["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
 
 
 ```

@@ -85,7 +85,7 @@ The type stubs describe the latest supported release, and every document is type
 
 ### Annotating a parameter with an object class
 
-Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed.
+Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed. "Any" is about the object, as in `AnyIDFDocument` it is about the document: `AnySpace` accepts a `Space` of any release that has one (9.6 on, as its docstring says). Such an object is reached only through a document of a release that has the type, so code for any release narrows the document first (a tuple passed to `as_version`, below) and decides what an older model gets; `AnyIDFDocument` itself offers no `Space`.
 
 The classes exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time.
 
@@ -111,7 +111,7 @@ A union of release types accepts exactly those releases. Under pyright, a value 
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-range"
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release, call `as_version` with one release type; it does not take a union.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocument))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
 
 A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
 
@@ -129,7 +129,7 @@ A narrower range also gives a narrower read type. Through releases that all list
 
 ### A field renamed between releases
 
-`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and type each branch with `as_version`, one release at a time; item access is the unchecked fallback:
+`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and narrow each branch, with a tuple, to the releases that use one name; `update()` is then checked against all of them (under pyright: mypy rejects both names, so under mypy give `as_version` one release type per branch):
 
 ```python
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-renamed-field"

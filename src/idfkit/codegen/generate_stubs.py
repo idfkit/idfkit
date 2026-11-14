@@ -28,7 +28,7 @@ import re
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
 from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
@@ -720,36 +720,45 @@ def _version_tag(ver: Version) -> str:
     return f"{ver[0]}_{ver[1]}"
 
 
-def _class_signature(lines: list[str]) -> tuple[str, ...]:
-    """The declarations of a generated class, without docstrings, to compare across versions."""
-    return tuple(ln for ln in lines if ln.strip() and not ln.strip().startswith('"""'))
+_Signature: TypeAlias = tuple[tuple[tuple[str, str], ...], tuple[str, frozenset[tuple[str, str]]] | None]
+
+
+def _class_signature(schema: EpJSONSchema, obj_type: str) -> _Signature:
+    """What a version's class for *obj_type* declares, to compare across versions.
+
+    Its fields with their value types, in order, and its extensible group with the group's fields
+    as a set: some versions list a group's fields in another order (8.9's vertices), which changes
+    nothing a type checker sees, so it does not make a second class.
+    """
+    return tuple(_field_decls(schema, obj_type).items()), _group_key(_group_decl(schema, obj_type))
 
 
 @functools.cache
 def _build_type_runs() -> dict[str, list[list[Version]]]:
     """Group, for each object type, the versions that declare it identically.
 
-    Two versions declare a type identically when its generated class (field names, value types,
-    choice lists and extensible group) is the same apart from docstrings. Every such group is a
+    Two versions declare a type identically when its fields, value types, choice lists and
+    extensible group are the same (:func:`_class_signature`), docstrings and the order of a
+    group's fields aside. Every such group is a
     contiguous range of releases, so it is fully described by its two endpoints; the function
     asserts that rather than assuming it.
 
     Returns:
         Object type -> its ranges, oldest first, each the list of versions it covers.
     """
-    signatures: dict[str, list[tuple[Version, tuple[str, ...]]]] = {}
+    signatures: dict[str, list[tuple[Version, _Signature]]] = {}
     for ver in SUPPORTED.versions:
         schema = get_schema(ver)
         for obj_type in schema.object_types:
             signatures.setdefault(obj_type, []).append((
                 ver,
-                _class_signature(_generate_object_class(schema, obj_type)),
+                _class_signature(schema, obj_type),
             ))
 
     order = {ver: i for i, ver in enumerate(SUPPORTED.versions)}
     runs: dict[str, list[list[Version]]] = {}
     for obj_type, entries in signatures.items():
-        type_runs: list[tuple[list[Version], tuple[str, ...]]] = []
+        type_runs: list[tuple[list[Version], _Signature]] = []
         for ver, sig in entries:
             if type_runs and type_runs[-1][1] == sig and order[type_runs[-1][0][-1]] + 1 == order[ver]:
                 type_runs[-1][0].append(ver)
@@ -1038,6 +1047,21 @@ def _group_base_for(obj_type: str, prefix: str = "") -> str:
     return f"{prefix}{group.cls_name}" if group is not None else f"{prefix}{_TYPED_GROUP_BASE}"
 
 
+def _any_class_doc(obj_type: str) -> str:
+    """The docstring of ``Any<Class>``, which names the releases it covers when not all of them.
+
+    A type that arrived after the oldest supported release is reached only through a document of a
+    release that has it, so the hover says which releases those are.
+    """
+    first = _build_type_runs()[obj_type][0][0]
+    if first == SUPPORTED.versions[0]:
+        return f"``{obj_type}`` as every supported EnergyPlus version declares it."
+    return (
+        f"``{obj_type}`` as every supported EnergyPlus version that has it declares it: "
+        f"{version_string(first)} and later."
+    )
+
+
 def _generate_any_aliases(schema: EpJSONSchema) -> list[str]:
     """``Any<Class> = <Class>`` for each type every version that has it declares alike.
 
@@ -1091,7 +1115,7 @@ def _generate_base_class(
         type_since=type_since,
         field_since=field_since,
         cls_name=base,
-        class_doc=f"``{obj_type}`` as every supported EnergyPlus version declares it.",
+        class_doc=_any_class_doc(obj_type),
         skip_fields=frozenset(schema.get_field_names(obj_type)) - frozenset(layout.fields),
         omit_group=not layout.group,
         emit_update=False,
@@ -1284,7 +1308,7 @@ def generate_versioned_pyi() -> str:
         "from __future__ import annotations",
         "",
         "from collections.abc import Mapping",
-        "from typing import Any, Literal, TypeVar",
+        "from typing import Any, Literal, TypeVar, overload",
         "",
         "from typing_extensions import TypedDict, Unpack",
         "",
@@ -1381,9 +1405,12 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     parts.append('_D = TypeVar("_D", bound=AnyIDFDocument)')
     parts.append("")
-    parts.extend(
-        _format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC)
-    )
+    parts.extend([
+        "@overload",
+        *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
+        "@overload",
+        "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: ...",
+    ])
     parts.append("")
     return "\n".join(parts)
 
@@ -1431,26 +1458,31 @@ def generate_versioned_py() -> str:
 _AS_VERSION_DOC = """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
 
 Returns *doc* itself. A document's version is read from its file, so a type checker cannot
-know it; this states it, and checks it at run time.
+know it; this states it, and checks it at run time. Given a tuple of document types, as
+``isinstance`` takes one, it accepts a document of any of them and types it as their union:
+a range of releases, such as those that have ``Space``.
 
 Args:
     doc: A document of any supported version.
     document_type: ``IDFDocument`` for the latest release, or one of the
-        ``IDFDocumentV<major>_<minor>`` types of this module.
+        ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
 
 Returns:
-    *doc*, typed as *document_type*.
+    *doc*, typed as *document_type*, or as the union of the types in the tuple.
 
 Raises:
-    TypeError: If *doc* is not a document of that version.
+    TypeError: If *doc* is not a document of that version, or of any version in the tuple.
 
 Examples:
     ```python
-    from idfkit import load_idf
-    from idfkit.versioned import IDFDocumentV9_4, as_version
+    from idfkit import IDFDocument, load_idf
+    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
 
     model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
     model["Zone"].first()  # typed as Zone was declared in 9.4
+
+    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+    recent["Space"].first()  # typed in each of those releases
     ```
 """
 

@@ -197,7 +197,9 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   latest one.** `idfkit.versioned` gained one type per supported release,
   `IDFDocumentV<major>_<minor>` from `IDFDocumentV8_9` to `IDFDocumentV26_2` (which is
   `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)`, which returns the document under that
-  type after checking its release at run time. Such a document is indexed, completed and checked
+  type after checking its release at run time. Given a tuple of those types, as `isinstance`
+  takes one, `as_version` accepts a document of any of them and types it as their union, which
+  narrows a model of unknown release into a range such as the releases that have `Space`. Such a document is indexed, completed and checked
   with that release's object types, field value types and choices, accessors and `update()`
   keywords: on a 9.4 model `doc["Space"]` is a type error and `People` has
   `zone_or_zonelist_name`. Documents stay typed for the latest release unless their version is
@@ -225,7 +227,8 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   through `AnyIDFDocument`, where `Zone` accepts only the first. Through it, fields follow the
   `AnyIDFDocument` rules, extensible groups included, so `AnyBuildingSurfaceDetailed.vertices` is
   typed. For a type no release changed, `Any<Class>` is the latest class itself (`AnyZoneList` is
-  `ZoneList`). It covers the releases idfkit supports, so adopting a release that drops or renames
+  `ZoneList`). For a type that arrived after 8.9, it covers the releases that have it:
+  `AnySpace` accepts a `Space` of any release from 9.6, and its docstring says so. It covers the releases idfkit supports, so adopting a release that drops or renames
   a field removes that field from it
   ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 - **Every object type in a document's schema became reachable as a typed attribute

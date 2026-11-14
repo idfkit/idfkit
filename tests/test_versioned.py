@@ -112,7 +112,31 @@ class TestAsVersion:
 
     def test_refuses_a_type_that_is_not_a_document_type(self) -> None:
         with pytest.raises(TypeError, match="not a document type"):
-            versioned.as_version(new_document(), dict)  # pyright: ignore[reportArgumentType]
+            versioned.as_version(new_document(), dict)  # pyright: ignore[reportCallIssue]
+
+    def test_accepts_a_document_of_any_release_in_a_tuple(self) -> None:
+        since_9_6 = (versioned.IDFDocumentV9_6, versioned.IDFDocumentV26_1, IDFDocument)
+        for version in [(9, 6, 0), (26, 1, 0), LATEST_VERSION]:
+            doc = new_document(version=version)
+            assert versioned.as_version(doc, since_9_6) is doc
+
+    def test_refuses_a_document_outside_the_tuple_and_names_its_releases(self) -> None:
+        since_9_6 = (versioned.IDFDocumentV9_6, IDFDocument)
+        expected = rf"EnergyPlus 9\.4\.0, not one of 9\.6\.0, {re.escape(version_string(LATEST_VERSION))}"
+        with pytest.raises(TypeError, match=expected):
+            versioned.as_version(new_document(version=(9, 4, 0)), since_9_6)
+
+    def test_accepts_a_union_as_isinstance_does(self) -> None:
+        # pyright accepts the union spelled inline, so it has to work when it runs.
+        doc = new_document(version=(9, 6, 0))
+        assert versioned.as_version(doc, versioned.IDFDocumentV9_6 | IDFDocument) is doc
+        assert versioned.as_version(doc, versioned.IDFDocumentV9_6[bool] | IDFDocument[bool]) is doc  # pyright: ignore[reportArgumentType, reportCallIssue, reportUnknownMemberType]
+        with pytest.raises(TypeError, match="not one of"):
+            versioned.as_version(new_document(version=(9, 4, 0)), versioned.IDFDocumentV9_6 | IDFDocument)
+
+    def test_refuses_an_empty_tuple(self) -> None:
+        with pytest.raises(TypeError, match="at least one"):
+            versioned.as_version(new_document(), ())  # pyright: ignore[reportArgumentType, reportUnknownVariableType]
 
 
 # ---------------------------------------------------------------------------
@@ -123,6 +147,20 @@ class TestAsVersion:
 class TestCommittedStubs:
     def test_describe_every_supported_version_exactly(self) -> None:
         assert verify(*_committed(), ENERGYPLUS_VERSIONS) == []
+
+    def test_a_reordered_group_is_not_a_new_class(self) -> None:
+        # 8.9 lists BuildingSurface:Detailed's vertex fields in another order than 9.3; nothing a
+        # type checker sees differs, so the releases share one class rather than two.
+        versioned_source = _committed()[2]
+        assert re.search(r"(?m)^class BuildingSurfaceDetailed_v8_9_to_v9_5\(", versioned_source)
+        assert not re.search(r"(?m)^class BuildingSurfaceDetailed_v8_9_to_v9_2\(", versioned_source)
+
+    def test_any_class_docstrings_name_the_releases_they_cover(self) -> None:
+        types_source = _committed()[0]
+        assert '"""``Zone`` as every supported EnergyPlus version declares it."""' in types_source
+        # Space arrived in 9.6: AnySpace covers every Space there is, from 9.6 on, and says so.
+        expected = '"""``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""'
+        assert expected in types_source
 
     def test_no_map_is_closed(self) -> None:
         # pyright takes about a minute to build a closed TypedDict of ~800 entries, in every file

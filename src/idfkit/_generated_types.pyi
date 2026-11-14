@@ -89,7 +89,7 @@ class _PerformancePrecisionTradeoffsCommonFields(TypedDict, total=False):
     use_coil_direct_solutions: Literal["", "No", "Yes"] | None
 
 class AnyPerformancePrecisionTradeoffs(_TypedIDFObject):
-    """``PerformancePrecisionTradeoffs`` as every supported EnergyPlus version declares it."""
+    """``PerformancePrecisionTradeoffs`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     use_coil_direct_solutions: Literal["", "No", "Yes"] | None
     """If Yes, an analytical or empirical solution will be used to replace iterations in the coil performance calculations.; Default: No"""
@@ -2151,19 +2151,14 @@ class _ScheduleDayHourlyFields(TypedDict, total=False):
     hour_23: float | None
     hour_24: float | None
 
-class _ScheduleDayIntervalCommonFields(TypedDict, total=False):
-    schedule_type_limits_name: str | None
-    interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
-    data: list[Any]
-
 class ScheduleDayIntervalDataGroup(_TypedExtensibleGroup):
-    """One data group inside :class:`AnyScheduleDayInterval`."""
+    """One data group inside :class:`ScheduleDayInterval`."""
 
     time: str | None
     value_until_time: float | None
 
-class AnyScheduleDayInterval(_TypedIDFObject):
-    """``Schedule:Day:Interval`` as every supported EnergyPlus version declares it."""
+class ScheduleDayInterval(_TypedIDFObject):
+    """A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
 
     schedule_type_limits_name: str | None
     interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
@@ -2171,19 +2166,13 @@ class AnyScheduleDayInterval(_TypedIDFObject):
     data: ExtensibleList[ScheduleDayIntervalDataGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyScheduleDayIntervalFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyScheduleDayIntervalFields(_ScheduleDayIntervalCommonFields, total=False): ...
-
-class ScheduleDayInterval(AnyScheduleDayInterval):
-    """A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayIntervalFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ScheduleDayIntervalFields(_ScheduleDayIntervalCommonFields, total=False): ...
+class _ScheduleDayIntervalFields(TypedDict, total=False):
+    schedule_type_limits_name: str | None
+    interpolate_to_timestep: Literal["", "Average", "Linear", "No"] | None
+    data: list[Any]
 
 class _ScheduleDayListCommonFields(TypedDict, total=False):
     schedule_type_limits_name: str | None
@@ -3801,7 +3790,7 @@ class _MaterialPropertyVariableAbsorptanceCommonFields(TypedDict, total=False):
     solar_absorptance_schedule_name: str | None
 
 class AnyMaterialPropertyVariableAbsorptance(_TypedIDFObject):
-    """``MaterialProperty:VariableAbsorptance`` as every supported EnergyPlus version declares it."""
+    """``MaterialProperty:VariableAbsorptance`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     reference_material_name: str | None
     """Regular Material Name to which the additional properties will be added. this the material name for the basic material..."""
@@ -4845,35 +4834,16 @@ class _MaterialPropertyHeatAndMoistureTransferThermalConductivityFields(
 ):
     number_of_thermal_coordinates: int | None
 
-class _MaterialPropertyGlazingSpectralDataCommonFields(TypedDict, total=False):
-    wavelength_1: float | None
-    transmittance_1: float | None
-    front_reflectance_1: float | None
-    back_reflectance_1: float | None
-    wavelength_2: float | None
-    transmittance_2: float | None
-    front_reflectance_2: float | None
-    back_reflectance_2: float | None
-    wavelength_3: float | None
-    transmittance_3: float | None
-    front_reflectance_3: float | None
-    back_reflectance_3: float | None
-    wavelength_4: float | None
-    transmittance_4: float | None
-    front_reflectance_4: float | None
-    back_reflectance_4: float | None
-    extensions: list[Any]
-
 class MaterialPropertyGlazingSpectralDataExtensionsGroup(_TypedExtensibleGroup):
-    """One extensions group inside :class:`AnyMaterialPropertyGlazingSpectralData`."""
+    """One extensions group inside :class:`MaterialPropertyGlazingSpectralData`."""
 
     wavelength: float | None
     transmittance: float | None
     front_reflectance: float | None
     back_reflectance: float | None
 
-class AnyMaterialPropertyGlazingSpectralData(_TypedIDFObject):
-    """``MaterialProperty:GlazingSpectralData`` as every supported EnergyPlus version declares it."""
+class MaterialPropertyGlazingSpectralData(_TypedIDFObject):
+    """Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectan..."""
 
     wavelength_1: float | None
     """[micron]"""
@@ -4898,19 +4868,27 @@ class AnyMaterialPropertyGlazingSpectralData(_TypedIDFObject):
     extensions: ExtensibleList[MaterialPropertyGlazingSpectralDataExtensionsGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyMaterialPropertyGlazingSpectralDataFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyMaterialPropertyGlazingSpectralDataFields(_MaterialPropertyGlazingSpectralDataCommonFields, total=False): ...
-
-class MaterialPropertyGlazingSpectralData(AnyMaterialPropertyGlazingSpectralData):
-    """Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectan..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_MaterialPropertyGlazingSpectralDataFields]
     ) -> None: ...  # type: ignore[override]
 
-class _MaterialPropertyGlazingSpectralDataFields(_MaterialPropertyGlazingSpectralDataCommonFields, total=False): ...
+class _MaterialPropertyGlazingSpectralDataFields(TypedDict, total=False):
+    wavelength_1: float | None
+    transmittance_1: float | None
+    front_reflectance_1: float | None
+    back_reflectance_1: float | None
+    wavelength_2: float | None
+    transmittance_2: float | None
+    front_reflectance_2: float | None
+    back_reflectance_2: float | None
+    wavelength_3: float | None
+    transmittance_3: float | None
+    front_reflectance_3: float | None
+    back_reflectance_3: float | None
+    wavelength_4: float | None
+    transmittance_4: float | None
+    front_reflectance_4: float | None
+    back_reflectance_4: float | None
+    extensions: list[Any]
 
 class Construction(_TypedIDFObject):
     """Start with outside layer and work your way to the inside layer Up to 10 layers total, 8 for windows Enter the materia..."""
@@ -4981,7 +4959,7 @@ class _ConstructionPropertyInternalHeatSourceCommonFields(TypedDict, total=False
     two_dimensional_temperature_calculation_position: float | None
 
 class AnyConstructionPropertyInternalHeatSource(_TypedIDFObject):
-    """``ConstructionProperty:InternalHeatSource`` as every supported EnergyPlus version declares it."""
+    """``ConstructionProperty:InternalHeatSource`` as every supported EnergyPlus version that has it declares it: 9.5.0 and later."""
 
     construction_name: str | None
     @property
@@ -5040,7 +5018,7 @@ class _ConstructionAirBoundaryCommonFields(TypedDict, total=False):
     simple_mixing_schedule_name: str | None
 
 class AnyConstructionAirBoundary(_TypedIDFObject):
-    """``Construction:AirBoundary`` as every supported EnergyPlus version declares it."""
+    """``Construction:AirBoundary`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     air_exchange_method: Literal["", "None", "SimpleMixing"] | None
     """This field controls how air exchange is modeled across this boundary.; Default: None"""
@@ -5460,7 +5438,7 @@ class SpaceTagsGroup(_TypedExtensibleGroup):
     tag: str | None
 
 class AnySpace(_TypedIDFObject):
-    """``Space`` as every supported EnergyPlus version declares it."""
+    """``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""
 
     zone_name: str | None
     floor_area: float | Literal["", "Autocalculate"] | None
@@ -7162,7 +7140,7 @@ class WindowShadingControlFenestrationSurfacesGroup(_TypedExtensibleGroup):
     fenestration_surface_name: str | None
 
 class AnyWindowShadingControl(_TypedIDFObject):
-    """``WindowShadingControl`` as every supported EnergyPlus version declares it."""
+    """``WindowShadingControl`` as every supported EnergyPlus version that has it declares it: 9.0.1 and later."""
 
     zone_name: str | None
     @property
@@ -7713,20 +7691,15 @@ class _ShadingBuildingFields(TypedDict, total=False):
     length: float | None
     height: float | None
 
-class _ShadingSiteDetailedCommonFields(TypedDict, total=False):
-    transmittance_schedule_name: str | None
-    number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
-
 class ShadingSiteDetailedVerticesGroup(_TypedExtensibleGroup):
-    """One vertices group inside :class:`AnyShadingSiteDetailed`."""
+    """One vertices group inside :class:`ShadingSiteDetailed`."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
 
-class AnyShadingSiteDetailed(_TypedIDFObject):
-    """``Shading:Site:Detailed`` as every supported EnergyPlus version declares it."""
+class ShadingSiteDetailed(_TypedIDFObject):
+    """used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
 
     transmittance_schedule_name: str | None
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
@@ -7735,34 +7708,23 @@ class AnyShadingSiteDetailed(_TypedIDFObject):
     vertices: ExtensibleList[ShadingSiteDetailedVerticesGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyShadingSiteDetailedFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyShadingSiteDetailedFields(_ShadingSiteDetailedCommonFields, total=False): ...
-
-class ShadingSiteDetailed(AnyShadingSiteDetailed):
-    """used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ShadingSiteDetailedFields(_ShadingSiteDetailedCommonFields, total=False): ...
-
-class _ShadingBuildingDetailedCommonFields(TypedDict, total=False):
+class _ShadingSiteDetailedFields(TypedDict, total=False):
     transmittance_schedule_name: str | None
     number_of_vertices: float | Literal["", "Autocalculate"] | None
     vertices: list[Any]
 
 class ShadingBuildingDetailedVerticesGroup(_TypedExtensibleGroup):
-    """One vertices group inside :class:`AnyShadingBuildingDetailed`."""
+    """One vertices group inside :class:`ShadingBuildingDetailed`."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
 
-class AnyShadingBuildingDetailed(_TypedIDFObject):
-    """``Shading:Building:Detailed`` as every supported EnergyPlus version declares it."""
+class ShadingBuildingDetailed(_TypedIDFObject):
+    """used for shading elements such as trees, other buildings, parts of this building not being modeled these items are re..."""
 
     transmittance_schedule_name: str | None
     """Transmittance schedule for the shading device, defaults to zero (always opaque)"""
@@ -7771,19 +7733,13 @@ class AnyShadingBuildingDetailed(_TypedIDFObject):
     vertices: ExtensibleList[ShadingBuildingDetailedVerticesGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyShadingBuildingDetailedFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyShadingBuildingDetailedFields(_ShadingBuildingDetailedCommonFields, total=False): ...
-
-class ShadingBuildingDetailed(AnyShadingBuildingDetailed):
-    """used for shading elements such as trees, other buildings, parts of this building not being modeled these items are re..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ShadingBuildingDetailedFields(_ShadingBuildingDetailedCommonFields, total=False): ...
+class _ShadingBuildingDetailedFields(TypedDict, total=False):
+    transmittance_schedule_name: str | None
+    number_of_vertices: float | Literal["", "Autocalculate"] | None
+    vertices: list[Any]
 
 class ShadingOverhang(_TypedIDFObject):
     """Overhangs are usually flat shading surfaces that reference a window or door."""
@@ -7919,21 +7875,15 @@ class _ShadingFinProjectionFields(TypedDict, total=False):
     right_tilt_angle_from_window_door: float | None
     right_depth_as_fraction_of_window_door_width: float | None
 
-class _ShadingZoneDetailedCommonFields(TypedDict, total=False):
-    base_surface_name: str | None
-    transmittance_schedule_name: str | None
-    number_of_vertices: float | Literal["", "Autocalculate"] | None
-    vertices: list[Any]
-
 class ShadingZoneDetailedVerticesGroup(_TypedExtensibleGroup):
-    """One vertices group inside :class:`AnyShadingZoneDetailed`."""
+    """One vertices group inside :class:`ShadingZoneDetailed`."""
 
     vertex_x_coordinate: float | None
     vertex_y_coordinate: float | None
     vertex_z_coordinate: float | None
 
-class AnyShadingZoneDetailed(_TypedIDFObject):
-    """``Shading:Zone:Detailed`` as every supported EnergyPlus version declares it."""
+class ShadingZoneDetailed(_TypedIDFObject):
+    """used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
 
     base_surface_name: str | None
     transmittance_schedule_name: str | None
@@ -7943,19 +7893,14 @@ class AnyShadingZoneDetailed(_TypedIDFObject):
     vertices: ExtensibleList[ShadingZoneDetailedVerticesGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyShadingZoneDetailedFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyShadingZoneDetailedFields(_ShadingZoneDetailedCommonFields, total=False): ...
-
-class ShadingZoneDetailed(AnyShadingZoneDetailed):
-    """used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingZoneDetailedFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ShadingZoneDetailedFields(_ShadingZoneDetailedCommonFields, total=False): ...
+class _ShadingZoneDetailedFields(TypedDict, total=False):
+    base_surface_name: str | None
+    transmittance_schedule_name: str | None
+    number_of_vertices: float | Literal["", "Autocalculate"] | None
+    vertices: list[Any]
 
 class ShadingPropertyReflectance(_TypedIDFObject):
     """If this object is not defined for a shading surface the default values listed in following fields will be used in the..."""
@@ -11078,7 +11023,7 @@ class ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup(_TypedExtensibleG
     view_factor: float | None
 
 class AnyZonePropertyUserViewFactorsBySurfaceName(_TypedIDFObject):
-    """``ZoneProperty:UserViewFactors:BySurfaceName`` as every supported EnergyPlus version declares it."""
+    """``ZoneProperty:UserViewFactors:BySurfaceName`` as every supported EnergyPlus version that has it declares it: 9.4.0 and later."""
 
     view_factors: ExtensibleList[ZonePropertyUserViewFactorsBySurfaceNameViewFactorsGroup]
 
@@ -14017,7 +13962,7 @@ class _IndoorLivingWallCommonFields(TypedDict, total=False):
     radiant_fraction_of_led_lights: float | None
 
 class AnyIndoorLivingWall(_TypedIDFObject):
-    """``IndoorLivingWall`` as every supported EnergyPlus version declares it."""
+    """``IndoorLivingWall`` as every supported EnergyPlus version that has it declares it: 24.1.0 and later."""
 
     surface_name: str | None
     """Name of the wall partition where indoor green is located."""
@@ -17258,20 +17203,14 @@ class _AirflowNetworkDistributionLinkageFields(TypedDict, total=False):
     component_name: str | None
     thermal_zone_name: str | None
 
-class _AirflowNetworkDistributionDuctViewFactorsCommonFields(TypedDict, total=False):
-    linkage_name: str | None
-    duct_surface_exposure_fraction: float | None
-    duct_surface_emittance: float | None
-    surfaces: list[Any]
-
 class AirflowNetworkDistributionDuctViewFactorsSurfacesGroup(_TypedExtensibleGroup):
-    """One surfaces group inside :class:`AnyAirflowNetworkDistributionDuctViewFactors`."""
+    """One surfaces group inside :class:`AirflowNetworkDistributionDuctViewFactors`."""
 
     surface_name: str | None
     surface_view_factor: float | None
 
-class AnyAirflowNetworkDistributionDuctViewFactors(_TypedIDFObject):
-    """``AirflowNetwork:Distribution:DuctViewFactors`` as every supported EnergyPlus version declares it."""
+class AirflowNetworkDistributionDuctViewFactors(_TypedIDFObject):
+    """This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfac..."""
 
     linkage_name: str | None
     duct_surface_exposure_fraction: float | None
@@ -17284,26 +17223,14 @@ class AnyAirflowNetworkDistributionDuctViewFactors(_TypedIDFObject):
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_AnyAirflowNetworkDistributionDuctViewFactorsFields],
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyAirflowNetworkDistributionDuctViewFactorsFields(
-    _AirflowNetworkDistributionDuctViewFactorsCommonFields, total=False
-): ...
-
-class AirflowNetworkDistributionDuctViewFactors(AnyAirflowNetworkDistributionDuctViewFactors):
-    """This object is used to allow user-defined view factors to be used for duct-surface radiation calculations. All surfac..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
         **kwargs: Unpack[_AirflowNetworkDistributionDuctViewFactorsFields],
     ) -> None: ...  # type: ignore[override]
 
-class _AirflowNetworkDistributionDuctViewFactorsFields(
-    _AirflowNetworkDistributionDuctViewFactorsCommonFields, total=False
-): ...
+class _AirflowNetworkDistributionDuctViewFactorsFields(TypedDict, total=False):
+    linkage_name: str | None
+    duct_surface_exposure_fraction: float | None
+    duct_surface_emittance: float | None
+    surfaces: list[Any]
 
 class AirflowNetworkDistributionDuctSizing(_TypedIDFObject):
     """This object defines required parameters for duct sizing in an Airflow Network simulation. To activate duct sizing, se...; Since: 22.2.0"""
@@ -27577,11 +27504,8 @@ class _ZoneHVACVentilatedSlabFields(TypedDict, total=False):
     availability_manager_list_name: str | None
     design_specification_zonehvac_sizing_object_name: str | None
 
-class _ZoneHVACVentilatedSlabSlabGroupCommonFields(TypedDict, total=False):
-    data: list[Any]
-
 class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
-    """One data group inside :class:`AnyZoneHVACVentilatedSlabSlabGroup`."""
+    """One data group inside :class:`ZoneHVACVentilatedSlabSlabGroup`."""
 
     zone_name: str | None
     surface_name: str | None
@@ -27591,25 +27515,17 @@ class ZoneHVACVentilatedSlabSlabGroupDataGroup(_TypedExtensibleGroup):
     slab_inlet_node_name_for_surface: str | None
     slab_outlet_node_name_for_surface: str | None
 
-class AnyZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
-    """``ZoneHVAC:VentilatedSlab:SlabGroup`` as every supported EnergyPlus version declares it."""
+class ZoneHVACVentilatedSlabSlabGroup(_TypedIDFObject):
+    """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
 
     data: ExtensibleList[ZoneHVACVentilatedSlabSlabGroupDataGroup]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyZoneHVACVentilatedSlabSlabGroupFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyZoneHVACVentilatedSlabSlabGroupFields(_ZoneHVACVentilatedSlabSlabGroupCommonFields, total=False): ...
-
-class ZoneHVACVentilatedSlabSlabGroup(AnyZoneHVACVentilatedSlabSlabGroup):
-    """This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroupFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ZoneHVACVentilatedSlabSlabGroupFields(_ZoneHVACVentilatedSlabSlabGroupCommonFields, total=False): ...
+class _ZoneHVACVentilatedSlabSlabGroupFields(TypedDict, total=False):
+    data: list[Any]
 
 class AirTerminalSingleDuctConstantVolumeReheat(_TypedIDFObject):
     """Central air system terminal unit, single duct, constant volume, with reheat coil (hot water, electric, gas, or steam)."""
@@ -29751,7 +29667,7 @@ class _CoilCoolingDXCurveFitPerformanceCommonFields(TypedDict, total=False):
     alternative_operating_mode_2: str | None
 
 class AnyCoilCoolingDXCurveFitPerformance(_TypedIDFObject):
-    """``Coil:Cooling:DX:CurveFit:Performance`` as every supported EnergyPlus version declares it."""
+    """``Coil:Cooling:DX:CurveFit:Performance`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     crankcase_heater_capacity: float | None
     """[W] (W); Default: 0.0; Range: >= 0.0"""
@@ -29834,7 +29750,7 @@ class _CoilCoolingDXCurveFitOperatingModeCommonFields(TypedDict, total=False):
     speed_10_name: str | None
 
 class AnyCoilCoolingDXCurveFitOperatingMode(_TypedIDFObject):
-    """``Coil:Cooling:DX:CurveFit:OperatingMode`` as every supported EnergyPlus version declares it."""
+    """``Coil:Cooling:DX:CurveFit:OperatingMode`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     rated_gross_total_cooling_capacity: float | Literal["", "Autosize"] | None
     """Total (sensible+latent) cooling capacity not accounting for the effect of supply air fan heat. Rating point: air ente...; [W]; Default: Autosize"""
@@ -29914,7 +29830,7 @@ class _CoilCoolingDXCurveFitSpeedCommonFields(TypedDict, total=False):
     sensible_heat_ratio_modifier_function_of_flow_fraction_curve_name: str | None
 
 class AnyCoilCoolingDXCurveFitSpeed(_TypedIDFObject):
-    """``Coil:Cooling:DX:CurveFit:Speed`` as every supported EnergyPlus version declares it."""
+    """``Coil:Cooling:DX:CurveFit:Speed`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     gross_total_cooling_capacity_fraction: float | None
     """Ratio of capacity at this speed to the operating mode Rated Gross Total Cooling Capacity; Range: > 0.0"""
@@ -38840,7 +38756,7 @@ class AirLoopHVACDedicatedOutdoorAirSystemAirloophvacsGroup(_TypedExtensibleGrou
     airloophvac_name: str | None
 
 class AnyAirLoopHVACDedicatedOutdoorAirSystem(_TypedIDFObject):
-    """``AirLoopHVAC:DedicatedOutdoorAirSystem`` as every supported EnergyPlus version declares it."""
+    """``AirLoopHVAC:DedicatedOutdoorAirSystem`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     airloophvac_outdoorairsystem_name: str | None
     """Enter the name of an AirLoopHVAC:OutdoorAirSystem object."""
@@ -38923,35 +38839,26 @@ class _AirLoopHVACSplitterFields(TypedDict, total=False):
     inlet_node_name: str | None
     nodes: list[Any]
 
-class _BranchCommonFields(TypedDict, total=False):
-    pressure_drop_curve_name: str | None
-    components: list[Any]
-
 class BranchComponentsGroup(_TypedExtensibleGroup):
-    """One components group inside :class:`AnyBranch`."""
+    """One components group inside :class:`Branch`."""
 
     component_object_type: str | None
     component_name: str | None
     component_inlet_node_name: str | None
     component_outlet_node_name: str | None
 
-class AnyBranch(_TypedIDFObject):
-    """``Branch`` as every supported EnergyPlus version declares it."""
+class Branch(_TypedIDFObject):
+    """List components on the branch in simulation and connection order Note: this should NOT include splitters or mixers wh..."""
 
     pressure_drop_curve_name: str | None
     """Optional field to include this branch in plant pressure drop calculations This field is only relevant for branches in..."""
     components: ExtensibleList[BranchComponentsGroup]
 
-    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyBranchFields]) -> None: ...  # type: ignore[override]
-
-class _AnyBranchFields(_BranchCommonFields, total=False): ...
-
-class Branch(AnyBranch):
-    """List components on the branch in simulation and connection order Note: this should NOT include splitters or mixers wh..."""
-
     def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BranchFields]) -> None: ...  # type: ignore[override]
 
-class _BranchFields(_BranchCommonFields, total=False): ...
+class _BranchFields(TypedDict, total=False):
+    pressure_drop_curve_name: str | None
+    components: list[Any]
 
 class BranchListBranchesGroup(_TypedExtensibleGroup):
     """One branches group inside :class:`BranchList`."""
@@ -40311,20 +40218,16 @@ class _SolarCollectorUnglazedTranspiredFields(TypedDict, total=False):
     discharge_coefficient_for_openings_with_respect_to_buoyancy_driven_flow: float | None
     surfaces: list[Any]
 
-class _SolarCollectorUnglazedTranspiredMultisystemCommonFields(TypedDict, total=False):
-    solar_collector_name: str | None
-    systems: list[Any]
-
 class SolarCollectorUnglazedTranspiredMultisystemSystemsGroup(_TypedExtensibleGroup):
-    """One systems group inside :class:`AnySolarCollectorUnglazedTranspiredMultisystem`."""
+    """One systems group inside :class:`SolarCollectorUnglazedTranspiredMultisystem`."""
 
     outdoor_air_system_collector_inlet_node: str | None
     outdoor_air_system_collector_outlet_node: str | None
     outdoor_air_system_mixed_air_node: str | None
     outdoor_air_system_zone_node: str | None
 
-class AnySolarCollectorUnglazedTranspiredMultisystem(_TypedIDFObject):
-    """``SolarCollector:UnglazedTranspired:Multisystem`` as every supported EnergyPlus version declares it."""
+class SolarCollectorUnglazedTranspiredMultisystem(_TypedIDFObject):
+    """quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
 
     solar_collector_name: str | None
     """Enter the name of a SolarCollector:UnglazedTranspired object."""
@@ -40334,26 +40237,12 @@ class AnySolarCollectorUnglazedTranspiredMultisystem(_TypedIDFObject):
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_AnySolarCollectorUnglazedTranspiredMultisystemFields],
-    ) -> None: ...  # type: ignore[override]
-
-class _AnySolarCollectorUnglazedTranspiredMultisystemFields(
-    _SolarCollectorUnglazedTranspiredMultisystemCommonFields, total=False
-): ...
-
-class SolarCollectorUnglazedTranspiredMultisystem(AnySolarCollectorUnglazedTranspiredMultisystem):
-    """quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
         **kwargs: Unpack[_SolarCollectorUnglazedTranspiredMultisystemFields],
     ) -> None: ...  # type: ignore[override]
 
-class _SolarCollectorUnglazedTranspiredMultisystemFields(
-    _SolarCollectorUnglazedTranspiredMultisystemCommonFields, total=False
-): ...
+class _SolarCollectorUnglazedTranspiredMultisystemFields(TypedDict, total=False):
+    solar_collector_name: str | None
+    systems: list[Any]
 
 class _BoilerHotWaterCommonFields(TypedDict, total=False):
     nominal_capacity: float | Literal["Autosize"] | None
@@ -41964,7 +41853,7 @@ class _HeatPumpPlantLoopEIRCoolingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
 
 class AnyHeatPumpPlantLoopEIRCooling(_TypedIDFObject):
-    """``HeatPump:PlantLoop:EIR:Cooling`` as every supported EnergyPlus version declares it."""
+    """``HeatPump:PlantLoop:EIR:Cooling`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     load_side_inlet_node_name: str | None
     load_side_outlet_node_name: str | None
@@ -42069,7 +41958,7 @@ class _HeatPumpPlantLoopEIRHeatingCommonFields(TypedDict, total=False):
     electric_input_to_output_ratio_modifier_function_of_part_load_ratio_curve_name: str | None
 
 class AnyHeatPumpPlantLoopEIRHeating(_TypedIDFObject):
-    """``HeatPump:PlantLoop:EIR:Heating`` as every supported EnergyPlus version declares it."""
+    """``HeatPump:PlantLoop:EIR:Heating`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     load_side_inlet_node_name: str | None
     load_side_outlet_node_name: str | None
@@ -42228,7 +42117,7 @@ class _HeatPumpAirToWaterFuelFiredHeatingCommonFields(TypedDict, total=False):
     standby_electric_power: float | None
 
 class AnyHeatPumpAirToWaterFuelFiredHeating(_TypedIDFObject):
-    """``HeatPump:AirToWater:FuelFired:Heating`` as every supported EnergyPlus version declares it."""
+    """``HeatPump:AirToWater:FuelFired:Heating`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     water_inlet_node_name: str | None
     """Inlet node name of the water side connection"""
@@ -42366,7 +42255,7 @@ class _HeatPumpAirToWaterFuelFiredCoolingCommonFields(TypedDict, total=False):
     standby_electric_power: float | None
 
 class AnyHeatPumpAirToWaterFuelFiredCooling(_TypedIDFObject):
-    """``HeatPump:AirToWater:FuelFired:Cooling`` as every supported EnergyPlus version declares it."""
+    """``HeatPump:AirToWater:FuelFired:Cooling`` as every supported EnergyPlus version that has it declares it: 23.1.0 and later."""
 
     water_inlet_node_name: str | None
     """Inlet node name of the water side connection"""
@@ -51813,11 +51702,8 @@ class _AvailabilityManagerHybridVentilationFields(TypedDict, total=False):
     minimum_hvac_operation_time: float | None
     minimum_ventilation_time: float | None
 
-class _AvailabilityManagerAssignmentListCommonFields(TypedDict, total=False):
-    managers: list[Any]
-
 class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
-    """One managers group inside :class:`AnyAvailabilityManagerAssignmentList`."""
+    """One managers group inside :class:`AvailabilityManagerAssignmentList`."""
 
     availability_manager_object_type: (
         Literal[
@@ -51837,25 +51723,17 @@ class AvailabilityManagerAssignmentListManagersGroup(_TypedExtensibleGroup):
     )
     availability_manager_name: str | None
 
-class AnyAvailabilityManagerAssignmentList(_TypedIDFObject):
-    """``AvailabilityManagerAssignmentList`` as every supported EnergyPlus version declares it."""
+class AvailabilityManagerAssignmentList(_TypedIDFObject):
+    """Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
 
     managers: ExtensibleList[AvailabilityManagerAssignmentListManagersGroup]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyAvailabilityManagerAssignmentListFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyAvailabilityManagerAssignmentListFields(_AvailabilityManagerAssignmentListCommonFields, total=False): ...
-
-class AvailabilityManagerAssignmentList(AnyAvailabilityManagerAssignmentList):
-    """Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AvailabilityManagerAssignmentListFields]
     ) -> None: ...  # type: ignore[override]
 
-class _AvailabilityManagerAssignmentListFields(_AvailabilityManagerAssignmentListCommonFields, total=False): ...
+class _AvailabilityManagerAssignmentListFields(TypedDict, total=False):
+    managers: list[Any]
 
 class SetpointManagerScheduled(_TypedIDFObject):
     """The simplest Setpoint Manager simply uses a schedule to determine one or more setpoints. Values of the nodes are not ..."""
@@ -53547,31 +53425,8 @@ class RefrigerationSecondarySystem(AnyRefrigerationSecondarySystem):
 class _RefrigerationSecondarySystemFields(_RefrigerationSecondarySystemCommonFields, total=False):
     number_of_pumps_in_loop: int | None
 
-class _RefrigerationWalkInCommonFields(TypedDict, total=False):
-    availability_schedule_name: str | None
-    rated_coil_cooling_capacity: float | None
-    operating_temperature: float | None
-    rated_cooling_source_temperature: float | None
-    rated_total_heating_power: float | None
-    heating_power_schedule_name: str | None
-    rated_cooling_coil_fan_power: float | None
-    rated_circulation_fan_power: float | None
-    rated_total_lighting_power: float | None
-    lighting_schedule_name: str | None
-    defrost_type: Literal["", "Electric", "HotFluid", "None", "OffCycle"] | None
-    defrost_control_type: Literal["", "TemperatureTermination", "TimeSchedule"] | None
-    defrost_schedule_name: str | None
-    defrost_drip_down_schedule_name: str | None
-    defrost_power: float | None
-    temperature_termination_defrost_fraction_to_ice: float | None
-    restocking_schedule_name: str | None
-    average_refrigerant_charge_inventory: float | None
-    insulated_floor_surface_area: float | None
-    insulated_floor_u_value: float | None
-    zone_data: list[Any]
-
 class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
-    """One zone_data group inside :class:`AnyRefrigerationWalkIn`."""
+    """One zone_data group inside :class:`RefrigerationWalkIn`."""
 
     zone_name: str | None
     total_insulated_surface_area_facing_zone: float | None
@@ -53586,8 +53441,8 @@ class RefrigerationWalkInZoneDataGroup(_TypedExtensibleGroup):
     stocking_door_opening_schedule_name_facing_zone: str | None
     stocking_door_opening_protection_type_facing_zone: Literal["", "AirCurtain", "None", "StripCurtain"] | None
 
-class AnyRefrigerationWalkIn(_TypedIDFObject):
-    """``Refrigeration:WalkIn`` as every supported EnergyPlus version declares it."""
+class RefrigerationWalkIn(_TypedIDFObject):
+    """Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate ..."""
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
@@ -53632,19 +53487,31 @@ class AnyRefrigerationWalkIn(_TypedIDFObject):
     zone_data: ExtensibleList[RefrigerationWalkInZoneDataGroup]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyRefrigerationWalkInFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyRefrigerationWalkInFields(_RefrigerationWalkInCommonFields, total=False): ...
-
-class RefrigerationWalkIn(AnyRefrigerationWalkIn):
-    """Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate ..."""
-
-    def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationWalkInFields]
     ) -> None: ...  # type: ignore[override]
 
-class _RefrigerationWalkInFields(_RefrigerationWalkInCommonFields, total=False): ...
+class _RefrigerationWalkInFields(TypedDict, total=False):
+    availability_schedule_name: str | None
+    rated_coil_cooling_capacity: float | None
+    operating_temperature: float | None
+    rated_cooling_source_temperature: float | None
+    rated_total_heating_power: float | None
+    heating_power_schedule_name: str | None
+    rated_cooling_coil_fan_power: float | None
+    rated_circulation_fan_power: float | None
+    rated_total_lighting_power: float | None
+    lighting_schedule_name: str | None
+    defrost_type: Literal["", "Electric", "HotFluid", "None", "OffCycle"] | None
+    defrost_control_type: Literal["", "TemperatureTermination", "TimeSchedule"] | None
+    defrost_schedule_name: str | None
+    defrost_drip_down_schedule_name: str | None
+    defrost_power: float | None
+    temperature_termination_defrost_fraction_to_ice: float | None
+    restocking_schedule_name: str | None
+    average_refrigerant_charge_inventory: float | None
+    insulated_floor_surface_area: float | None
+    insulated_floor_u_value: float | None
+    zone_data: list[Any]
 
 class RefrigerationAirChiller(_TypedIDFObject):
     """Works in conjunction with a refrigeration chiller set, compressor rack, a refrigeration system, or a refrigeration se..."""
@@ -56129,11 +55996,8 @@ class _GeneratorWindTurbineFields(TypedDict, total=False):
     power_coefficient_c5: float | None
     power_coefficient_c6: float | None
 
-class _ElectricLoadCenterGeneratorsCommonFields(TypedDict, total=False):
-    generator_outputs: list[Any]
-
 class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
-    """One generator_outputs group inside :class:`AnyElectricLoadCenterGenerators`."""
+    """One generator_outputs group inside :class:`ElectricLoadCenterGenerators`."""
 
     generator_name: str | None
     generator_object_type: (
@@ -56153,25 +56017,17 @@ class ElectricLoadCenterGeneratorsGeneratorOutputsGroup(_TypedExtensibleGroup):
     generator_availability_schedule_name: str | None
     generator_rated_thermal_to_electrical_power_ratio: float | None
 
-class AnyElectricLoadCenterGenerators(_TypedIDFObject):
-    """``ElectricLoadCenter:Generators`` as every supported EnergyPlus version declares it."""
+class ElectricLoadCenterGenerators(_TypedIDFObject):
+    """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
 
     generator_outputs: ExtensibleList[ElectricLoadCenterGeneratorsGeneratorOutputsGroup]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyElectricLoadCenterGeneratorsFields]
-    ) -> None: ...  # type: ignore[override]
-
-class _AnyElectricLoadCenterGeneratorsFields(_ElectricLoadCenterGeneratorsCommonFields, total=False): ...
-
-class ElectricLoadCenterGenerators(AnyElectricLoadCenterGenerators):
-    """List of electric power generators to include in the simulation including the name and type of each generators along w..."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ElectricLoadCenterGeneratorsFields]
     ) -> None: ...  # type: ignore[override]
 
-class _ElectricLoadCenterGeneratorsFields(_ElectricLoadCenterGeneratorsCommonFields, total=False): ...
+class _ElectricLoadCenterGeneratorsFields(TypedDict, total=False):
+    generator_outputs: list[Any]
 
 class ElectricLoadCenterInverterSimple(_TypedIDFObject):
     """Electric power inverter to convert from direct current (DC) to alternating current (AC) in an electric load center th..."""
@@ -56439,7 +56295,7 @@ class _ElectricLoadCenterStorageLiIonNMCBatteryCommonFields(TypedDict, total=Fal
     battery_cell_internal_electrical_resistance: float | None
 
 class AnyElectricLoadCenterStorageLiIonNMCBattery(_TypedIDFObject):
-    """``ElectricLoadCenter:Storage:LiIonNMCBattery`` as every supported EnergyPlus version declares it."""
+    """``ElectricLoadCenter:Storage:LiIonNMCBattery`` as every supported EnergyPlus version that has it declares it: 9.5.0 and later."""
 
     availability_schedule_name: str | None
     """Availability schedule name for this system. Schedule value > 0 means the system is available. If this field is blank,..."""
@@ -58753,7 +58609,7 @@ class TableIndependentVariableValuesGroup(_TypedExtensibleGroup):
     value: float | None
 
 class AnyTableIndependentVariable(_TypedIDFObject):
-    """``Table:IndependentVariable`` as every supported EnergyPlus version declares it."""
+    """``Table:IndependentVariable`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     interpolation_method: Literal["", "Cubic", "Linear"] | None
     """Default: Linear"""
@@ -58834,7 +58690,7 @@ class TableLookupValuesGroup(_TypedExtensibleGroup):
     output_value: float | None
 
 class AnyTableLookup(_TypedIDFObject):
-    """``Table:Lookup`` as every supported EnergyPlus version declares it."""
+    """``Table:Lookup`` as every supported EnergyPlus version that has it declares it: 9.2.0 and later."""
 
     independent_variable_list_name: str | None
     normalization_method: Literal["", "AutomaticWithDivisor", "DivisorOnly", "None"] | None
@@ -64252,7 +64108,7 @@ class _OutputTableReportPeriodCommonFields(TypedDict, total=False):
     end_hour_of_day: int | None
 
 class AnyOutputTableReportPeriod(_TypedIDFObject):
-    """``Output:Table:ReportPeriod`` as every supported EnergyPlus version declares it."""
+    """``Output:Table:ReportPeriod`` as every supported EnergyPlus version that has it declares it: 22.2.0 and later."""
 
     report_name: (
         Literal["AllResilienceSummaries", "CO2ResilienceSummary", "ThermalResilienceSummary", "VisualResilienceSummary"]
@@ -64666,7 +64522,7 @@ class _OutputControlFilesCommonFields(TypedDict, total=False):
     output_tarcog: Literal["", "No", "Yes"] | None
 
 class AnyOutputControlFiles(_TypedIDFObject):
-    """``OutputControl:Files`` as every supported EnergyPlus version declares it."""
+    """``OutputControl:Files`` as every supported EnergyPlus version that has it declares it: 9.4.0 and later."""
 
     output_csv: Literal["", "No", "Yes"] | None
     """Default: No"""
@@ -64776,7 +64632,7 @@ class _OutputJSONCommonFields(TypedDict, total=False):
     output_messagepack: Literal["", "No", "Yes"] | None
 
 class AnyOutputJSON(_TypedIDFObject):
-    """``Output:JSON`` as every supported EnergyPlus version declares it."""
+    """``Output:JSON`` as every supported EnergyPlus version that has it declares it: 9.1.0 and later."""
 
     option_type: Literal["TimeSeries", "TimeSeriesAndTabular"] | None
     output_json: Literal["", "No", "Yes"] | None
@@ -65232,7 +65088,7 @@ class _PythonPluginSearchPathsCommonFields(TypedDict, total=False):
     add_input_file_directory_to_search_path: Literal["", "No", "Yes"] | None
 
 class AnyPythonPluginSearchPaths(_TypedIDFObject):
-    """``PythonPlugin:SearchPaths`` as every supported EnergyPlus version declares it."""
+    """``PythonPlugin:SearchPaths`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     add_current_working_directory_to_search_path: Literal["", "No", "Yes"] | None
     """Adding the current working directory allows Python to find plugin scripts in the current directory.; Default: Yes"""
@@ -65287,7 +65143,7 @@ class _PythonPluginInstanceFields(TypedDict, total=False):
 class _PythonPluginVariablesCommonFields(TypedDict, total=False): ...
 
 class AnyPythonPluginVariables(_TypedIDFObject):
-    """``PythonPlugin:Variables`` as every supported EnergyPlus version declares it."""
+    """``PythonPlugin:Variables`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     def update(
         self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_AnyPythonPluginVariablesFields]
@@ -65316,7 +65172,7 @@ class _PythonPluginTrendVariableCommonFields(TypedDict, total=False):
     name_of_a_python_plugin_variable: str | None
 
 class AnyPythonPluginTrendVariable(_TypedIDFObject):
-    """``PythonPlugin:TrendVariable`` as every supported EnergyPlus version declares it."""
+    """``PythonPlugin:TrendVariable`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     name_of_a_python_plugin_variable: str | None
     @property
@@ -65378,7 +65234,7 @@ class _PythonPluginOutputVariableCommonFields(TypedDict, total=False):
     end_use_subcategory: str | None
 
 class AnyPythonPluginOutputVariable(_TypedIDFObject):
-    """``PythonPlugin:OutputVariable`` as every supported EnergyPlus version declares it."""
+    """``PythonPlugin:OutputVariable`` as every supported EnergyPlus version that has it declares it: 9.3.0 and later."""
 
     python_plugin_variable_name: str | None
     """Must be listed in the PythonPlugin:Variables object"""
@@ -65608,6 +65464,7 @@ AnySiteSolarAndVisibleSpectrum: TypeAlias = SiteSolarAndVisibleSpectrum
 AnySiteSpectrumData: TypeAlias = SiteSpectrumData
 AnyScheduleTypeLimits: TypeAlias = ScheduleTypeLimits
 AnyScheduleDayHourly: TypeAlias = ScheduleDayHourly
+AnyScheduleDayInterval: TypeAlias = ScheduleDayInterval
 AnyScheduleWeekDaily: TypeAlias = ScheduleWeekDaily
 AnyScheduleWeekCompact: TypeAlias = ScheduleWeekCompact
 AnyScheduleCompact: TypeAlias = ScheduleCompact
@@ -65637,6 +65494,7 @@ AnyWindowMaterialGapEquivalentLayer: TypeAlias = WindowMaterialGapEquivalentLaye
 AnyMaterialPropertyMoisturePenetrationDepthSettings: TypeAlias = MaterialPropertyMoisturePenetrationDepthSettings
 AnyMaterialPropertyPhaseChangeHysteresis: TypeAlias = MaterialPropertyPhaseChangeHysteresis
 AnyMaterialPropertyHeatAndMoistureTransferSettings: TypeAlias = MaterialPropertyHeatAndMoistureTransferSettings
+AnyMaterialPropertyGlazingSpectralData: TypeAlias = MaterialPropertyGlazingSpectralData
 AnyConstruction: TypeAlias = Construction
 AnyConstructionCfactorUndergroundWall: TypeAlias = ConstructionCfactorUndergroundWall
 AnyConstructionFfactorGroundFloor: TypeAlias = ConstructionFfactorGroundFloor
@@ -65657,10 +65515,13 @@ AnyGlazedDoorInterzone: TypeAlias = GlazedDoorInterzone
 AnyWindowPropertyAirflowControl: TypeAlias = WindowPropertyAirflowControl
 AnyShadingSite: TypeAlias = ShadingSite
 AnyShadingBuilding: TypeAlias = ShadingBuilding
+AnyShadingSiteDetailed: TypeAlias = ShadingSiteDetailed
+AnyShadingBuildingDetailed: TypeAlias = ShadingBuildingDetailed
 AnyShadingOverhang: TypeAlias = ShadingOverhang
 AnyShadingOverhangProjection: TypeAlias = ShadingOverhangProjection
 AnyShadingFin: TypeAlias = ShadingFin
 AnyShadingFinProjection: TypeAlias = ShadingFinProjection
+AnyShadingZoneDetailed: TypeAlias = ShadingZoneDetailed
 AnyShadingPropertyReflectance: TypeAlias = ShadingPropertyReflectance
 AnySurfacePropertyHeatTransferAlgorithm: TypeAlias = SurfacePropertyHeatTransferAlgorithm
 AnySurfacePropertyHeatTransferAlgorithmMultipleSurface: TypeAlias = SurfacePropertyHeatTransferAlgorithmMultipleSurface
@@ -65790,6 +65651,7 @@ AnyAirflowNetworkDistributionComponentConstantPressureDrop: TypeAlias = (
     AirflowNetworkDistributionComponentConstantPressureDrop
 )
 AnyAirflowNetworkDistributionLinkage: TypeAlias = AirflowNetworkDistributionLinkage
+AnyAirflowNetworkDistributionDuctViewFactors: TypeAlias = AirflowNetworkDistributionDuctViewFactors
 AnyAirflowNetworkDistributionDuctSizing: TypeAlias = AirflowNetworkDistributionDuctSizing
 AnyAirflowNetworkOccupantVentilationControl: TypeAlias = AirflowNetworkOccupantVentilationControl
 AnyAirflowNetworkIntraZoneNode: TypeAlias = AirflowNetworkIntraZoneNode
@@ -65862,6 +65724,7 @@ AnyZoneHVACLowTemperatureRadiantConstantFlowDesign: TypeAlias = ZoneHVACLowTempe
 AnyZoneHVACLowTemperatureRadiantSurfaceGroup: TypeAlias = ZoneHVACLowTemperatureRadiantSurfaceGroup
 AnyZoneHVACHighTemperatureRadiant: TypeAlias = ZoneHVACHighTemperatureRadiant
 AnyZoneHVACVentilatedSlab: TypeAlias = ZoneHVACVentilatedSlab
+AnyZoneHVACVentilatedSlabSlabGroup: TypeAlias = ZoneHVACVentilatedSlabSlabGroup
 AnyAirTerminalSingleDuctConstantVolumeReheat: TypeAlias = AirTerminalSingleDuctConstantVolumeReheat
 AnyAirTerminalSingleDuctConstantVolumeNoReheat: TypeAlias = AirTerminalSingleDuctConstantVolumeNoReheat
 AnyAirTerminalSingleDuctConstantVolumeFourPipeInduction: TypeAlias = (
@@ -65934,6 +65797,7 @@ AnyAirLoopHVACReturnPath: TypeAlias = AirLoopHVACReturnPath
 AnyAirLoopHVACExhaustSystem: TypeAlias = AirLoopHVACExhaustSystem
 AnyAirLoopHVACMixer: TypeAlias = AirLoopHVACMixer
 AnyAirLoopHVACSplitter: TypeAlias = AirLoopHVACSplitter
+AnyBranch: TypeAlias = Branch
 AnyBranchList: TypeAlias = BranchList
 AnyConnectorSplitter: TypeAlias = ConnectorSplitter
 AnyConnectorMixer: TypeAlias = ConnectorMixer
@@ -65956,6 +65820,7 @@ AnySolarCollectorPerformancePhotovoltaicThermalSimple: TypeAlias = SolarCollecto
 AnySolarCollectorPerformancePhotovoltaicThermalBIPVT: TypeAlias = SolarCollectorPerformancePhotovoltaicThermalBIPVT
 AnySolarCollectorIntegralCollectorStorage: TypeAlias = SolarCollectorIntegralCollectorStorage
 AnySolarCollectorUnglazedTranspired: TypeAlias = SolarCollectorUnglazedTranspired
+AnySolarCollectorUnglazedTranspiredMultisystem: TypeAlias = SolarCollectorUnglazedTranspiredMultisystem
 AnyChillerElectricASHRAE205: TypeAlias = ChillerElectricASHRAE205
 AnyChillerAbsorptionIndirect: TypeAlias = ChillerAbsorptionIndirect
 AnyChillerAbsorption: TypeAlias = ChillerAbsorption
@@ -66044,6 +65909,7 @@ AnyAvailabilityManagerLowTemperatureTurnOff: TypeAlias = AvailabilityManagerLowT
 AnyAvailabilityManagerLowTemperatureTurnOn: TypeAlias = AvailabilityManagerLowTemperatureTurnOn
 AnyAvailabilityManagerNightVentilation: TypeAlias = AvailabilityManagerNightVentilation
 AnyAvailabilityManagerHybridVentilation: TypeAlias = AvailabilityManagerHybridVentilation
+AnyAvailabilityManagerAssignmentList: TypeAlias = AvailabilityManagerAssignmentList
 AnySetpointManagerScheduled: TypeAlias = SetpointManagerScheduled
 AnySetpointManagerScheduledDualSetpoint: TypeAlias = SetpointManagerScheduledDualSetpoint
 AnySetpointManagerOutdoorAirReset: TypeAlias = SetpointManagerOutdoorAirReset
@@ -66089,6 +65955,7 @@ AnyRefrigerationCompressor: TypeAlias = RefrigerationCompressor
 AnyRefrigerationCompressorList: TypeAlias = RefrigerationCompressorList
 AnyRefrigerationSystem: TypeAlias = RefrigerationSystem
 AnyRefrigerationTranscriticalSystem: TypeAlias = RefrigerationTranscriticalSystem
+AnyRefrigerationWalkIn: TypeAlias = RefrigerationWalkIn
 AnyRefrigerationAirChiller: TypeAlias = RefrigerationAirChiller
 AnyZoneHVACRefrigerationChillerSet: TypeAlias = ZoneHVACRefrigerationChillerSet
 AnyGeneratorPhotovoltaic: TypeAlias = GeneratorPhotovoltaic
@@ -66108,6 +65975,7 @@ AnyGeneratorMicroCHP: TypeAlias = GeneratorMicroCHP
 AnyGeneratorMicroCHPNonNormalizedParameters: TypeAlias = GeneratorMicroCHPNonNormalizedParameters
 AnyGeneratorFuelSupply: TypeAlias = GeneratorFuelSupply
 AnyGeneratorWindTurbine: TypeAlias = GeneratorWindTurbine
+AnyElectricLoadCenterGenerators: TypeAlias = ElectricLoadCenterGenerators
 AnyElectricLoadCenterInverterSimple: TypeAlias = ElectricLoadCenterInverterSimple
 AnyElectricLoadCenterInverterFunctionOfPower: TypeAlias = ElectricLoadCenterInverterFunctionOfPower
 AnyElectricLoadCenterInverterLookUpTable: TypeAlias = ElectricLoadCenterInverterLookUpTable
@@ -67316,7 +67184,7 @@ _CommonTypeMap = TypedDict(
         "Site:SpectrumData": ReadOnly[IDFCollection[SiteSpectrumData]],
         "ScheduleTypeLimits": ReadOnly[IDFCollection[ScheduleTypeLimits]],
         "Schedule:Day:Hourly": ReadOnly[IDFCollection[ScheduleDayHourly]],
-        "Schedule:Day:Interval": ReadOnly[IDFCollection[AnyScheduleDayInterval]],
+        "Schedule:Day:Interval": ReadOnly[IDFCollection[ScheduleDayInterval]],
         "Schedule:Day:List": ReadOnly[IDFCollection[AnyScheduleDayList]],
         "Schedule:Week:Daily": ReadOnly[IDFCollection[ScheduleWeekDaily]],
         "Schedule:Week:Compact": ReadOnly[IDFCollection[ScheduleWeekCompact]],
@@ -67377,7 +67245,7 @@ _CommonTypeMap = TypedDict(
         "MaterialProperty:HeatAndMoistureTransfer:ThermalConductivity": ReadOnly[
             IDFCollection[AnyMaterialPropertyHeatAndMoistureTransferThermalConductivity]
         ],
-        "MaterialProperty:GlazingSpectralData": ReadOnly[IDFCollection[AnyMaterialPropertyGlazingSpectralData]],
+        "MaterialProperty:GlazingSpectralData": ReadOnly[IDFCollection[MaterialPropertyGlazingSpectralData]],
         "Construction": ReadOnly[IDFCollection[Construction]],
         "Construction:CfactorUndergroundWall": ReadOnly[IDFCollection[ConstructionCfactorUndergroundWall]],
         "Construction:FfactorGroundFloor": ReadOnly[IDFCollection[ConstructionFfactorGroundFloor]],
@@ -67417,13 +67285,13 @@ _CommonTypeMap = TypedDict(
         "InternalMass": ReadOnly[IDFCollection[AnyInternalMass]],
         "Shading:Site": ReadOnly[IDFCollection[ShadingSite]],
         "Shading:Building": ReadOnly[IDFCollection[ShadingBuilding]],
-        "Shading:Site:Detailed": ReadOnly[IDFCollection[AnyShadingSiteDetailed]],
-        "Shading:Building:Detailed": ReadOnly[IDFCollection[AnyShadingBuildingDetailed]],
+        "Shading:Site:Detailed": ReadOnly[IDFCollection[ShadingSiteDetailed]],
+        "Shading:Building:Detailed": ReadOnly[IDFCollection[ShadingBuildingDetailed]],
         "Shading:Overhang": ReadOnly[IDFCollection[ShadingOverhang]],
         "Shading:Overhang:Projection": ReadOnly[IDFCollection[ShadingOverhangProjection]],
         "Shading:Fin": ReadOnly[IDFCollection[ShadingFin]],
         "Shading:Fin:Projection": ReadOnly[IDFCollection[ShadingFinProjection]],
-        "Shading:Zone:Detailed": ReadOnly[IDFCollection[AnyShadingZoneDetailed]],
+        "Shading:Zone:Detailed": ReadOnly[IDFCollection[ShadingZoneDetailed]],
         "ShadingProperty:Reflectance": ReadOnly[IDFCollection[ShadingPropertyReflectance]],
         "SurfaceProperty:HeatTransferAlgorithm": ReadOnly[IDFCollection[SurfacePropertyHeatTransferAlgorithm]],
         "SurfaceProperty:HeatTransferAlgorithm:MultipleSurface": ReadOnly[
@@ -67648,7 +67516,7 @@ _CommonTypeMap = TypedDict(
         ],
         "AirflowNetwork:Distribution:Linkage": ReadOnly[IDFCollection[AirflowNetworkDistributionLinkage]],
         "AirflowNetwork:Distribution:DuctViewFactors": ReadOnly[
-            IDFCollection[AnyAirflowNetworkDistributionDuctViewFactors]
+            IDFCollection[AirflowNetworkDistributionDuctViewFactors]
         ],
         "AirflowNetwork:OccupantVentilationControl": ReadOnly[IDFCollection[AirflowNetworkOccupantVentilationControl]],
         "AirflowNetwork:IntraZone:Node": ReadOnly[IDFCollection[AirflowNetworkIntraZoneNode]],
@@ -67774,7 +67642,7 @@ _CommonTypeMap = TypedDict(
         ],
         "ZoneHVAC:HighTemperatureRadiant": ReadOnly[IDFCollection[ZoneHVACHighTemperatureRadiant]],
         "ZoneHVAC:VentilatedSlab": ReadOnly[IDFCollection[ZoneHVACVentilatedSlab]],
-        "ZoneHVAC:VentilatedSlab:SlabGroup": ReadOnly[IDFCollection[AnyZoneHVACVentilatedSlabSlabGroup]],
+        "ZoneHVAC:VentilatedSlab:SlabGroup": ReadOnly[IDFCollection[ZoneHVACVentilatedSlabSlabGroup]],
         "AirTerminal:SingleDuct:ConstantVolume:Reheat": ReadOnly[
             IDFCollection[AirTerminalSingleDuctConstantVolumeReheat]
         ],
@@ -67934,7 +67802,7 @@ _CommonTypeMap = TypedDict(
         "AirLoopHVAC:ZoneMixer": ReadOnly[IDFCollection[AirLoopHVACZoneMixer]],
         "AirLoopHVAC:ReturnPlenum": ReadOnly[IDFCollection[AirLoopHVACReturnPlenum]],
         "AirLoopHVAC:ReturnPath": ReadOnly[IDFCollection[AirLoopHVACReturnPath]],
-        "Branch": ReadOnly[IDFCollection[AnyBranch]],
+        "Branch": ReadOnly[IDFCollection[Branch]],
         "BranchList": ReadOnly[IDFCollection[BranchList]],
         "Connector:Splitter": ReadOnly[IDFCollection[ConnectorSplitter]],
         "Connector:Mixer": ReadOnly[IDFCollection[ConnectorMixer]],
@@ -67972,7 +67840,7 @@ _CommonTypeMap = TypedDict(
         ],
         "SolarCollector:UnglazedTranspired": ReadOnly[IDFCollection[SolarCollectorUnglazedTranspired]],
         "SolarCollector:UnglazedTranspired:Multisystem": ReadOnly[
-            IDFCollection[AnySolarCollectorUnglazedTranspiredMultisystem]
+            IDFCollection[SolarCollectorUnglazedTranspiredMultisystem]
         ],
         "Boiler:HotWater": ReadOnly[IDFCollection[AnyBoilerHotWater]],
         "Boiler:Steam": ReadOnly[IDFCollection[AnyBoilerSteam]],
@@ -68127,7 +67995,7 @@ _CommonTypeMap = TypedDict(
         "AvailabilityManager:LowTemperatureTurnOn": ReadOnly[IDFCollection[AvailabilityManagerLowTemperatureTurnOn]],
         "AvailabilityManager:NightVentilation": ReadOnly[IDFCollection[AvailabilityManagerNightVentilation]],
         "AvailabilityManager:HybridVentilation": ReadOnly[IDFCollection[AvailabilityManagerHybridVentilation]],
-        "AvailabilityManagerAssignmentList": ReadOnly[IDFCollection[AnyAvailabilityManagerAssignmentList]],
+        "AvailabilityManagerAssignmentList": ReadOnly[IDFCollection[AvailabilityManagerAssignmentList]],
         "SetpointManager:Scheduled": ReadOnly[IDFCollection[SetpointManagerScheduled]],
         "SetpointManager:Scheduled:DualSetpoint": ReadOnly[IDFCollection[SetpointManagerScheduledDualSetpoint]],
         "SetpointManager:OutdoorAirReset": ReadOnly[IDFCollection[SetpointManagerOutdoorAirReset]],
@@ -68188,7 +68056,7 @@ _CommonTypeMap = TypedDict(
         "Refrigeration:System": ReadOnly[IDFCollection[RefrigerationSystem]],
         "Refrigeration:TranscriticalSystem": ReadOnly[IDFCollection[RefrigerationTranscriticalSystem]],
         "Refrigeration:SecondarySystem": ReadOnly[IDFCollection[AnyRefrigerationSecondarySystem]],
-        "Refrigeration:WalkIn": ReadOnly[IDFCollection[AnyRefrigerationWalkIn]],
+        "Refrigeration:WalkIn": ReadOnly[IDFCollection[RefrigerationWalkIn]],
         "Refrigeration:AirChiller": ReadOnly[IDFCollection[RefrigerationAirChiller]],
         "ZoneHVAC:RefrigerationChillerSet": ReadOnly[IDFCollection[ZoneHVACRefrigerationChillerSet]],
         "DemandManagerAssignmentList": ReadOnly[IDFCollection[AnyDemandManagerAssignmentList]],
@@ -68223,7 +68091,7 @@ _CommonTypeMap = TypedDict(
         "Generator:MicroCHP:NonNormalizedParameters": ReadOnly[IDFCollection[GeneratorMicroCHPNonNormalizedParameters]],
         "Generator:FuelSupply": ReadOnly[IDFCollection[GeneratorFuelSupply]],
         "Generator:WindTurbine": ReadOnly[IDFCollection[GeneratorWindTurbine]],
-        "ElectricLoadCenter:Generators": ReadOnly[IDFCollection[AnyElectricLoadCenterGenerators]],
+        "ElectricLoadCenter:Generators": ReadOnly[IDFCollection[ElectricLoadCenterGenerators]],
         "ElectricLoadCenter:Inverter:Simple": ReadOnly[IDFCollection[ElectricLoadCenterInverterSimple]],
         "ElectricLoadCenter:Inverter:FunctionOfPower": ReadOnly[
             IDFCollection[ElectricLoadCenterInverterFunctionOfPower]

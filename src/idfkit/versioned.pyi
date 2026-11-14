@@ -7,7 +7,7 @@ DO NOT EDIT — regenerate with:
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, TypeVar, overload
 
 from typing_extensions import TypedDict, Unpack
 
@@ -395,8 +395,8 @@ class _ChillerEngineDriven_v8_9_to_v9_2Fields(_g._ChillerEngineDrivenCommonField
         | None
     )
 
-class FanSystemModel_v8_9_to_v9_2(_g.AnyFanSystemModel):
-    """``Fan:SystemModel`` as declared in EnergyPlus 8.9.0 to 9.2.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
+class FanSystemModel_v8_9_to_v9_3(_g.AnyFanSystemModel):
+    """``Fan:SystemModel`` as declared in EnergyPlus 8.9.0 to 9.3.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
 
     design_electric_power_consumption: float | Literal["Autosize"] | None
     """Fan power consumption at maximum air flow rate. If autosized the method used to scale power is chosen in the followin...; [W]"""
@@ -404,26 +404,10 @@ class FanSystemModel_v8_9_to_v9_2(_g.AnyFanSystemModel):
     """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1.0"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v8_9_to_v9_3Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _FanSystemModel_v8_9_to_v9_2Fields(_g._FanSystemModelCommonFields, total=False):
-    design_electric_power_consumption: float | Literal["Autosize"] | None
-    number_of_speeds: float | None
-
-class FanSystemModel_v9_3(_g.AnyFanSystemModel):
-    """``Fan:SystemModel`` as declared in EnergyPlus 9.3.0. Versatile simple fan that can be used in variable air volume, constant volume, on-off cycling, two-speed or multi-spe..."""
-
-    design_electric_power_consumption: float | Literal["Autosize"] | None
-    """Fan power consumption at maximum air flow rate. If autosized the method used to scale power is chosen in the followin...; [W]"""
-    number_of_speeds: float | None
-    """number of different speed levels available when Speed Control Method is set to Discrete Speed need to be arranged in ...; Default: 1.0"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FanSystemModel_v9_3Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _FanSystemModel_v9_3Fields(_g._FanSystemModelCommonFields, total=False):
+class _FanSystemModel_v8_9_to_v9_3Fields(_g._FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["Autosize"] | None
     number_of_speeds: float | None
 
@@ -442,15 +426,6 @@ class FanSystemModel_v9_4_to_v22_1(_g.AnyFanSystemModel):
 class _FanSystemModel_v9_4_to_v22_1Fields(_g._FanSystemModelCommonFields, total=False):
     design_electric_power_consumption: float | Literal["", "Autosize"] | None
     number_of_speeds: float | None
-
-class RefrigerationWalkIn_v8_9_to_v9_2(_g.AnyRefrigerationWalkIn):
-    """``Refrigeration:WalkIn`` as declared in EnergyPlus 8.9.0 to 9.2.0. Works in conjunction with a compressor rack, a refrigeration system, or a refrigeration secondary system to simulate ..."""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RefrigerationWalkIn_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _RefrigerationWalkIn_v8_9_to_v9_2Fields(_g._RefrigerationWalkInCommonFields, total=False): ...
 
 class SiteLocation_v8_9_to_v24_1(_g.AnySiteLocation):
     """``Site:Location`` as declared in EnergyPlus 8.9.0 to 24.1.0. Specifies the building's location. Only one location is allowed. Weather data file location, if it exists, will overr..."""
@@ -497,19 +472,6 @@ class FoundationKiva_v8_9_to_v9_1(_g.AnyFoundationKiva):
     ) -> None: ...  # type: ignore[override]
 
 class _FoundationKiva_v8_9_to_v9_1Fields(_g._FoundationKivaCommonFields, total=False): ...
-
-class FoundationKiva_v9_2(_g.AnyFoundationKiva):
-    """``Foundation:Kiva`` as declared in EnergyPlus 9.2.0. Refined definition of the foundation surface construction used to inform two-dimensional heat transfer calculated usi..."""
-
-    initial_indoor_air_temperature: float | None
-    """Indoor air temperature used for Kiva initialization (prior to warmup period) If left blank, indoor air temperature wi...; [C]"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FoundationKiva_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _FoundationKiva_v9_2Fields(_g._FoundationKivaCommonFields, total=False):
-    initial_indoor_air_temperature: float | None
 
 class MaterialNoMass_v8_9_to_v26_1(_g.AnyMaterialNoMass):
     """``Material:NoMass`` as declared in EnergyPlus 8.9.0 to 26.1.0. Regular materials properties described whose principal description is R (Thermal Resistance)"""
@@ -666,15 +628,6 @@ class _AirTerminalSingleDuctUserDefined_v8_9_to_v22_1Fields(
 ):
     number_of_plant_loop_connections: float | None
 
-class ShadingZoneDetailed_v8_9_to_v9_2(_g.AnyShadingZoneDetailed):
-    """``Shading:Zone:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. used For fins, overhangs, elements that shade the building, are attached to the building but are not part of the heat..."""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingZoneDetailed_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _ShadingZoneDetailed_v8_9_to_v9_2Fields(_g._ShadingZoneDetailedCommonFields, total=False): ...
-
 class AirflowNetworkDistributionNode_v8_9_to_v25_1(_g.AnyAirflowNetworkDistributionNode):
     """``AirflowNetwork:Distribution:Node`` as declared in EnergyPlus 8.9.0 to 25.1.0. This object represents an air distribution node in the AirflowNetwork model."""
 
@@ -715,30 +668,17 @@ class _AirflowNetworkDistributionNode_v8_9_to_v25_1Fields(_g._AirflowNetworkDist
         | None
     )
 
-class OutputTableMonthly_v8_9_to_v9_2(_g.AnyOutputTableMonthly):
-    """``Output:Table:Monthly`` as declared in EnergyPlus 8.9.0 to 9.2.0. Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defi..."""
+class OutputTableMonthly_v8_9_to_v22_1(_g.AnyOutputTableMonthly):
+    """``Output:Table:Monthly`` as declared in EnergyPlus 8.9.0 to 22.1.0. Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defi..."""
 
     digits_after_decimal: float | None
     """Default: 2.0; Range: >= 0.0, <= 10.0"""
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthly_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthly_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _OutputTableMonthly_v8_9_to_v9_2Fields(_g._OutputTableMonthlyCommonFields, total=False):
-    digits_after_decimal: float | None
-
-class OutputTableMonthly_v9_3_to_v22_1(_g.AnyOutputTableMonthly):
-    """``Output:Table:Monthly`` as declared in EnergyPlus 9.3.0 to 22.1.0. Provides a generic method of setting up tables of monthly results. The report has multiple columns that are each defi..."""
-
-    digits_after_decimal: float | None
-    """Default: 2.0; Range: >= 0.0, <= 10.0"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableMonthly_v9_3_to_v22_1Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _OutputTableMonthly_v9_3_to_v22_1Fields(_g._OutputTableMonthlyCommonFields, total=False):
+class _OutputTableMonthly_v8_9_to_v22_1Fields(_g._OutputTableMonthlyCommonFields, total=False):
     digits_after_decimal: float | None
 
 class ExternalInterfaceFunctionalMockupUnitImport_v8_9_to_v22_1(_g.AnyExternalInterfaceFunctionalMockupUnitImport):
@@ -1028,8 +968,8 @@ class _DesignSpecificationOutdoorAir_v8_9_to_v9_4Fields(_g._DesignSpecificationO
         | None
     )
 
-class BuildingSurfaceDetailed_v8_9_to_v9_2(_g.AnyBuildingSurfaceDetailed):
-    """``BuildingSurface:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
+class BuildingSurfaceDetailed_v8_9_to_v9_5(_g.AnyBuildingSurfaceDetailed):
+    """``BuildingSurface:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
 
     outside_boundary_condition: (
         Literal[
@@ -1054,62 +994,10 @@ class BuildingSurfaceDetailed_v8_9_to_v9_2(_g.AnyBuildingSurfaceDetailed):
     )
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _BuildingSurfaceDetailed_v8_9_to_v9_2Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-class BuildingSurfaceDetailed_v9_3_to_v9_5(_g.AnyBuildingSurfaceDetailed):
-    """``BuildingSurface:Detailed`` as declared in EnergyPlus 9.3.0 to 9.5.0. Allows for detailed entry of building heat transfer surfaces. Does not include subsurfaces such as windows or doors."""
-
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_BuildingSurfaceDetailed_v9_3_to_v9_5Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _BuildingSurfaceDetailed_v9_3_to_v9_5Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
+class _BuildingSurfaceDetailed_v8_9_to_v9_5Fields(_g._BuildingSurfaceDetailedCommonFields, total=False):
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -2279,15 +2167,6 @@ class PumpVariableSpeedCondensate_v8_9_to_v9_0(_g.AnyPumpVariableSpeedCondensate
     ) -> None: ...  # type: ignore[override]
 
 class _PumpVariableSpeedCondensate_v8_9_to_v9_0Fields(_g._PumpVariableSpeedCondensateCommonFields, total=False): ...
-
-class ShadingSiteDetailed_v8_9_to_v9_2(_g.AnyShadingSiteDetailed):
-    """``Shading:Site:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. used for shading elements such as trees these items are fixed in space and would not move with relative geometry"""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingSiteDetailed_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _ShadingSiteDetailed_v8_9_to_v9_2Fields(_g._ShadingSiteDetailedCommonFields, total=False): ...
 
 class RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternConstantGradient):
     """``RoomAir:TemperaturePattern:ConstantGradient`` as declared in EnergyPlus 8.9.0 to 22.1.0. Used to model room air with a fixed temperature gradient in the vertical direction. Used in combination with RoomAir:..."""
@@ -3753,29 +3632,8 @@ class _ScheduleYear_v8_9Fields(_g._ScheduleYearCommonFields, total=False):
     end_month_26: float | None
     end_day_26: float | None
 
-class ScheduleYearScheduleWeeksGroup_v9_0_to_v9_2(_g._TypedExtensibleGroup):
-    """One schedule_weeks group inside :class:`ScheduleYear_v9_0_to_v9_2`."""
-
-    start_month: float | None
-    end_month: float | None
-    start_day: float | None
-    end_day: float | None
-    schedule_week_name: str | None
-
-class ScheduleYear_v9_0_to_v9_2(_g.AnyScheduleYear):
-    """``Schedule:Year`` as declared in EnergyPlus 9.0.1 to 9.2.0. A Schedule:Year contains from 1 to 52 week schedules"""
-
-    schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup_v9_0_to_v9_2]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYear_v9_0_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _ScheduleYear_v9_0_to_v9_2Fields(_g._ScheduleYearCommonFields, total=False):
-    schedule_weeks: list[Any]
-
-class ScheduleYearScheduleWeeksGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
-    """One schedule_weeks group inside :class:`ScheduleYear_v9_3_to_v22_1`."""
+class ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1(_g._TypedExtensibleGroup):
+    """One schedule_weeks group inside :class:`ScheduleYear_v9_0_to_v22_1`."""
 
     schedule_week_name: str | None
     start_month: float | None
@@ -3783,16 +3641,16 @@ class ScheduleYearScheduleWeeksGroup_v9_3_to_v22_1(_g._TypedExtensibleGroup):
     end_month: float | None
     end_day: float | None
 
-class ScheduleYear_v9_3_to_v22_1(_g.AnyScheduleYear):
-    """``Schedule:Year`` as declared in EnergyPlus 9.3.0 to 22.1.0. A Schedule:Year contains from 1 to 52 week schedules"""
+class ScheduleYear_v9_0_to_v22_1(_g.AnyScheduleYear):
+    """``Schedule:Year`` as declared in EnergyPlus 9.0.1 to 22.1.0. A Schedule:Year contains from 1 to 52 week schedules"""
 
-    schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup_v9_3_to_v22_1]
+    schedule_weeks: ExtensibleList[ScheduleYearScheduleWeeksGroup_v9_0_to_v22_1]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYear_v9_3_to_v22_1Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleYear_v9_0_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _ScheduleYear_v9_3_to_v22_1Fields(_g._ScheduleYearCommonFields, total=False):
+class _ScheduleYear_v9_0_to_v22_1Fields(_g._ScheduleYearCommonFields, total=False):
     schedule_weeks: list[Any]
 
 class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
@@ -3810,20 +3668,6 @@ class ZoneControlHumidistat_v8_9_to_v26_1(_g.AnyZoneControlHumidistat):
 class _ZoneControlHumidistat_v8_9_to_v26_1Fields(_g._ZoneControlHumidistatCommonFields, total=False):
     humidifying_relative_humidity_setpoint_schedule_name: str | None
     dehumidifying_relative_humidity_setpoint_schedule_name: str | None
-
-class ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2(_g.AnyZoneHVACVentilatedSlabSlabGroup):
-    """``ZoneHVAC:VentilatedSlab:SlabGroup`` as declared in EnergyPlus 8.9.0 to 9.2.0. This is used to allow the coordinate control of several ventilated slab system surfaces. Note that the flow fractions..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2Fields(
-    _g._ZoneHVACVentilatedSlabSlabGroupCommonFields, total=False
-): ...
 
 class WaterHeaterMixed_v8_9_to_v9_2(_g.AnyWaterHeaterMixed):
     """``WaterHeater:Mixed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Water heater with well-mixed, single-node water tank. May be used to model a tankless water heater (small tank volume..."""
@@ -4434,50 +4278,26 @@ class _ZoneHVACHybridUnitaryHVAC_v9_4_to_v23_1Fields(_g._ZoneHVACHybridUnitaryHV
         | None
     )
 
-class DaylightingControlsControlDataGroup_v8_9_to_v9_2(_g.AnyDaylightingControlsControlDataGroup):
-    """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_2`."""
-
-    fraction_of_zone_controlled_by_reference_point: float | None
-    illuminance_setpoint_at_reference_point: float | None
-    daylighting_reference_point_name: str | None
-
-class DaylightingControls_v8_9_to_v9_2(_g.AnyDaylightingControls):
-    """``Daylighting:Controls`` as declared in EnergyPlus 8.9.0 to 9.2.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
-
-    zone_name: str | None
-    number_of_stepped_control_steps: float | None
-    """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
-    control_data: ExtensibleList[DaylightingControlsControlDataGroup_v8_9_to_v9_2]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControls_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _DaylightingControls_v8_9_to_v9_2Fields(_g._DaylightingControlsCommonFields, total=False):
-    zone_name: str | None
-    number_of_stepped_control_steps: float | None
-    control_data: list[Any]
-
-class DaylightingControlsControlDataGroup_v9_3_to_v9_5(_g.AnyDaylightingControlsControlDataGroup):
-    """One control_data group inside :class:`DaylightingControls_v9_3_to_v9_5`."""
+class DaylightingControlsControlDataGroup_v8_9_to_v9_5(_g.AnyDaylightingControlsControlDataGroup):
+    """One control_data group inside :class:`DaylightingControls_v8_9_to_v9_5`."""
 
     daylighting_reference_point_name: str | None
     fraction_of_zone_controlled_by_reference_point: float | None
     illuminance_setpoint_at_reference_point: float | None
 
-class DaylightingControls_v9_3_to_v9_5(_g.AnyDaylightingControls):
-    """``Daylighting:Controls`` as declared in EnergyPlus 9.3.0 to 9.5.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
+class DaylightingControls_v8_9_to_v9_5(_g.AnyDaylightingControls):
+    """``Daylighting:Controls`` as declared in EnergyPlus 8.9.0 to 9.5.0. Dimming of overhead electric lighting is determined from each reference point. Glare from daylighting is also calcula..."""
 
     zone_name: str | None
     number_of_stepped_control_steps: float | None
     """The number of steps, excluding off, in a stepped lighting control system. If Lighting Control Type is Stepped, this f...; Default: 1.0; Range: >= 1.0"""
-    control_data: ExtensibleList[DaylightingControlsControlDataGroup_v9_3_to_v9_5]
+    control_data: ExtensibleList[DaylightingControlsControlDataGroup_v8_9_to_v9_5]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControls_v9_3_to_v9_5Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_DaylightingControls_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _DaylightingControls_v9_3_to_v9_5Fields(_g._DaylightingControlsCommonFields, total=False):
+class _DaylightingControls_v8_9_to_v9_5Fields(_g._DaylightingControlsCommonFields, total=False):
     zone_name: str | None
     number_of_stepped_control_steps: float | None
     control_data: list[Any]
@@ -4718,47 +4538,8 @@ class _ZoneHVACTerminalUnitVariableRefrigerantFlow_v23_2_to_v24_1Fields(
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class OutputTableAnnualVariableDetailsGroup_v8_9_to_v9_2(_g.AnyOutputTableAnnualVariableDetailsGroup):
-    """One variable_details group inside :class:`OutputTableAnnual_v8_9_to_v9_2`."""
-
-    digits_after_decimal: float | None
-    variable_or_meter_or_ems_variable_or_field_name: str | None
-    aggregation_type_for_variable_or_meter: (
-        Literal[
-            "HourInTenBinsMinToMax",
-            "HourInTenBinsMinToZero",
-            "HourInTenBinsZeroToMax",
-            "HoursNegative",
-            "HoursNonNegative",
-            "HoursNonPositive",
-            "HoursNonZero",
-            "HoursPositive",
-            "HoursZero",
-            "Maximum",
-            "MaximumDuringHoursShown",
-            "Minimum",
-            "MinimumDuringHoursShown",
-            "SumOrAverage",
-            "SumOrAverageDuringHoursShown",
-            "ValueWhenMaximumOrMinimum",
-        ]
-        | None
-    )
-
-class OutputTableAnnual_v8_9_to_v9_2(_g.AnyOutputTableAnnual):
-    """``Output:Table:Annual`` as declared in EnergyPlus 8.9.0 to 9.2.0. Provides a generic method of setting up tables of annual results with one row per object. The report has multiple col..."""
-
-    variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup_v8_9_to_v9_2]
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnual_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _OutputTableAnnual_v8_9_to_v9_2Fields(_g._OutputTableAnnualCommonFields, total=False):
-    variable_details: list[Any]
-
-class OutputTableAnnualVariableDetailsGroup_v9_3_to_v22_1(_g.AnyOutputTableAnnualVariableDetailsGroup):
-    """One variable_details group inside :class:`OutputTableAnnual_v9_3_to_v22_1`."""
+class OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1(_g.AnyOutputTableAnnualVariableDetailsGroup):
+    """One variable_details group inside :class:`OutputTableAnnual_v8_9_to_v22_1`."""
 
     variable_or_meter_or_ems_variable_or_field_name: str | None
     aggregation_type_for_variable_or_meter: (
@@ -4784,16 +4565,16 @@ class OutputTableAnnualVariableDetailsGroup_v9_3_to_v22_1(_g.AnyOutputTableAnnua
     )
     digits_after_decimal: float | None
 
-class OutputTableAnnual_v9_3_to_v22_1(_g.AnyOutputTableAnnual):
-    """``Output:Table:Annual`` as declared in EnergyPlus 9.3.0 to 22.1.0. Provides a generic method of setting up tables of annual results with one row per object. The report has multiple col..."""
+class OutputTableAnnual_v8_9_to_v22_1(_g.AnyOutputTableAnnual):
+    """``Output:Table:Annual`` as declared in EnergyPlus 8.9.0 to 22.1.0. Provides a generic method of setting up tables of annual results with one row per object. The report has multiple col..."""
 
-    variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup_v9_3_to_v22_1]
+    variable_details: ExtensibleList[OutputTableAnnualVariableDetailsGroup_v8_9_to_v22_1]
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnual_v9_3_to_v22_1Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_OutputTableAnnual_v8_9_to_v22_1Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _OutputTableAnnual_v9_3_to_v22_1Fields(_g._OutputTableAnnualCommonFields, total=False):
+class _OutputTableAnnual_v8_9_to_v22_1Fields(_g._OutputTableAnnualCommonFields, total=False):
     variable_details: list[Any]
 
 class WindowMaterialGasMixture_v8_9_to_v22_1(_g.AnyWindowMaterialGasMixture):
@@ -6737,15 +6518,6 @@ class _RunPeriodCustomRange_v8_9Fields(TypedDict, total=False):
     use_weather_file_rain_indicators: Literal["", "No", "Yes"] | None
     use_weather_file_snow_indicators: Literal["", "No", "Yes"] | None
 
-class ScheduleDayInterval_v8_9_to_v9_2(_g.AnyScheduleDayInterval):
-    """``Schedule:Day:Interval`` as declared in EnergyPlus 8.9.0 to 9.2.0. A Schedule:Day:Interval contains a full day of values with specified end times for each value Currently, is set up to..."""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ScheduleDayInterval_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _ScheduleDayInterval_v8_9_to_v9_2Fields(_g._ScheduleDayIntervalCommonFields, total=False): ...
-
 class CoilHeatingDXSingleSpeed_v8_9_to_v22_1(_g.AnyCoilHeatingDXSingleSpeed):
     """``Coil:Heating:DX:SingleSpeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. Direct expansion (DX) heating coil (air-to-air heat pump) and compressor unit (includes electric compressor and outdo..."""
 
@@ -6786,15 +6558,6 @@ class PumpConstantSpeed_v8_9_to_v9_0(_g.AnyPumpConstantSpeed):
     ) -> None: ...  # type: ignore[override]
 
 class _PumpConstantSpeed_v8_9_to_v9_0Fields(_g._PumpConstantSpeedCommonFields, total=False): ...
-
-class ShadingBuildingDetailed_v8_9_to_v9_2(_g.AnyShadingBuildingDetailed):
-    """``Shading:Building:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. used for shading elements such as trees, other buildings, parts of this building not being modeled these items are re..."""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_ShadingBuildingDetailed_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _ShadingBuildingDetailed_v8_9_to_v9_2Fields(_g._ShadingBuildingDetailedCommonFields, total=False): ...
 
 class HVACTemplateZonePTAC_v8_9(_g.AnyHVACTemplateZonePTAC):
     """``HVACTemplate:Zone:PTAC`` as declared in EnergyPlus 8.9.0. Packaged Terminal Air Conditioner"""
@@ -6927,20 +6690,6 @@ class _CoilHeatingDXVariableSpeed_v23_2_to_v25_1Fields(_g._CoilHeatingDXVariable
     speed_8_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
     speed_9_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
     speed_10_heating_capacity_function_of_air_flow_fraction_curve_name: str | None
-
-class AvailabilityManagerAssignmentList_v8_9_to_v9_2(_g.AnyAvailabilityManagerAssignmentList):
-    """``AvailabilityManagerAssignmentList`` as declared in EnergyPlus 8.9.0 to 9.2.0. Defines the applicable managers used for an AirLoopHVAC or PlantLoop. The priority of availability managers is based ..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_AvailabilityManagerAssignmentList_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _AvailabilityManagerAssignmentList_v8_9_to_v9_2Fields(
-    _g._AvailabilityManagerAssignmentListCommonFields, total=False
-): ...
 
 class ZoneVentilationWindandStackOpenArea_v8_9_to_v22_1(_g.AnyZoneVentilationWindandStackOpenArea):
     """``ZoneVentilation:WindandStackOpenArea`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object is specified as natural ventilation driven by wind and stack effect only: Ventilation Wind = Cw * Opening..."""
@@ -7086,8 +6835,8 @@ class _HVACTemplateZoneWaterToAirHeatPump_v8_9_to_v23_1Fields(
     heat_pump_time_constant: float | None
     fraction_of_on_cycle_power_use: float | None
 
-class SurfacePropertySurroundingSurfaces_v8_9_to_v9_2(_g.AnySurfacePropertySurroundingSurfaces):
-    """``SurfaceProperty:SurroundingSurfaces`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object defines a list of surrounding surfaces for an exterior surface."""
+class SurfacePropertySurroundingSurfaces_v8_9_to_v26_1(_g.AnySurfacePropertySurroundingSurfaces):
+    """``SurfaceProperty:SurroundingSurfaces`` as declared in EnergyPlus 8.9.0 to 26.1.0. This object defines a list of surrounding surfaces for an exterior surface."""
 
     sky_view_factor: float | None
     """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
@@ -7098,31 +6847,10 @@ class SurfacePropertySurroundingSurfaces_v8_9_to_v9_2(_g.AnySurfacePropertySurro
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_SurfacePropertySurroundingSurfaces_v8_9_to_v9_2Fields],
+        **kwargs: Unpack[_SurfacePropertySurroundingSurfaces_v8_9_to_v26_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _SurfacePropertySurroundingSurfaces_v8_9_to_v9_2Fields(
-    _g._SurfacePropertySurroundingSurfacesCommonFields, total=False
-):
-    sky_view_factor: float | None
-    ground_view_factor: float | None
-
-class SurfacePropertySurroundingSurfaces_v9_3_to_v26_1(_g.AnySurfacePropertySurroundingSurfaces):
-    """``SurfaceProperty:SurroundingSurfaces`` as declared in EnergyPlus 9.3.0 to 26.1.0. This object defines a list of surrounding surfaces for an exterior surface."""
-
-    sky_view_factor: float | None
-    """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
-    ground_view_factor: float | None
-    """optional; Default: 0.5; Range: >= 0.0, <= 1.0"""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_SurfacePropertySurroundingSurfaces_v9_3_to_v26_1Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _SurfacePropertySurroundingSurfaces_v9_3_to_v26_1Fields(
+class _SurfacePropertySurroundingSurfaces_v8_9_to_v26_1Fields(
     _g._SurfacePropertySurroundingSurfacesCommonFields, total=False
 ):
     sky_view_factor: float | None
@@ -7269,8 +6997,8 @@ class ChillerElectricEIR_v8_9_to_v24_1(_g.AnyChillerElectricEIR):
 
 class _ChillerElectricEIR_v8_9_to_v24_1Fields(_g._ChillerElectricEIRCommonFields, total=False): ...
 
-class WallDetailed_v8_9_to_v9_2(_g.AnyWallDetailed):
-    """``Wall:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Allows for detailed entry of wall heat transfer surfaces."""
+class WallDetailed_v8_9_to_v9_5(_g.AnyWallDetailed):
+    """``Wall:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of wall heat transfer surfaces."""
 
     outside_boundary_condition: (
         Literal[
@@ -7295,62 +7023,10 @@ class WallDetailed_v8_9_to_v9_2(_g.AnyWallDetailed):
     )
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _WallDetailed_v8_9_to_v9_2Fields(_g._WallDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-class WallDetailed_v9_3_to_v9_5(_g.AnyWallDetailed):
-    """``Wall:Detailed`` as declared in EnergyPlus 9.3.0 to 9.5.0. Allows for detailed entry of wall heat transfer surfaces."""
-
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_WallDetailed_v9_3_to_v9_5Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _WallDetailed_v9_3_to_v9_5Fields(_g._WallDetailedCommonFields, total=False):
+class _WallDetailed_v8_9_to_v9_5Fields(_g._WallDetailedCommonFields, total=False):
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -7823,20 +7499,6 @@ class OutputTableSummaryReports_v9_4(_g.AnyOutputTableSummaryReports):
 
 class _OutputTableSummaryReports_v9_4Fields(_g._OutputTableSummaryReportsCommonFields, total=False):
     reports: list[Any]
-
-class AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2(_g.AnyAirflowNetworkDistributionDuctViewFactors):
-    """``AirflowNetwork:Distribution:DuctViewFactors`` as declared in EnergyPlus 8.9.0 to 9.2.0. This object is used to allow user-defined view factors to be used for duct-surface radiation calculations."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2Fields(
-    _g._AirflowNetworkDistributionDuctViewFactorsCommonFields, total=False
-): ...
 
 class CoilSystemIntegratedHeatPumpAirSource_v8_9_to_v22_1(_g.AnyCoilSystemIntegratedHeatPumpAirSource):
     """``CoilSystem:IntegratedHeatPump:AirSource`` as declared in EnergyPlus 8.9.0 to 22.1.0. This object is used for air-source integrated heat pump, a collection of its working modes."""
@@ -8657,8 +8319,8 @@ class _PhotovoltaicPerformanceEquivalentOneDiode_v8_9_to_v22_1Fields(
 ):
     number_of_cells_in_series: float | None
 
-class GroundHeatExchangerResponseFactors_v8_9_to_v9_2(_g.AnyGroundHeatExchangerResponseFactors):
-    """``GroundHeatExchanger:ResponseFactors`` as declared in EnergyPlus 8.9.0 to 9.2.0. Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
+class GroundHeatExchangerResponseFactors_v8_9_to_v22_1(_g.AnyGroundHeatExchangerResponseFactors):
+    """``GroundHeatExchanger:ResponseFactors`` as declared in EnergyPlus 8.9.0 to 22.1.0. Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
 
     number_of_boreholes: float | None
 
@@ -8666,27 +8328,10 @@ class GroundHeatExchangerResponseFactors_v8_9_to_v9_2(_g.AnyGroundHeatExchangerR
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_GroundHeatExchangerResponseFactors_v8_9_to_v9_2Fields],
+        **kwargs: Unpack[_GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _GroundHeatExchangerResponseFactors_v8_9_to_v9_2Fields(
-    _g._GroundHeatExchangerResponseFactorsCommonFields, total=False
-):
-    number_of_boreholes: float | None
-
-class GroundHeatExchangerResponseFactors_v9_3_to_v22_1(_g.AnyGroundHeatExchangerResponseFactors):
-    """``GroundHeatExchanger:ResponseFactors`` as declared in EnergyPlus 9.3.0 to 22.1.0. Response factor definitions from third-party tool, commonly referred to a 'g-functions'"""
-
-    number_of_boreholes: float | None
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_GroundHeatExchangerResponseFactors_v9_3_to_v22_1Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _GroundHeatExchangerResponseFactors_v9_3_to_v22_1Fields(
+class _GroundHeatExchangerResponseFactors_v8_9_to_v22_1Fields(
     _g._GroundHeatExchangerResponseFactorsCommonFields, total=False
 ):
     number_of_boreholes: float | None
@@ -9343,18 +8988,6 @@ class _OutputSQLite_v24_1_to_v25_1Fields(_g._OutputSQLiteCommonFields, total=Fal
         ]
         | None
     )
-
-class ElectricLoadCenterGenerators_v8_9_to_v9_2(_g.AnyElectricLoadCenterGenerators):
-    """``ElectricLoadCenter:Generators`` as declared in EnergyPlus 8.9.0 to 9.2.0. List of electric power generators to include in the simulation including the name and type of each generators along w..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_ElectricLoadCenterGenerators_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _ElectricLoadCenterGenerators_v8_9_to_v9_2Fields(_g._ElectricLoadCenterGeneratorsCommonFields, total=False): ...
 
 class SurfacePropertyExposedFoundationPerimeterSurfacesGroup_v8_9_to_v9_2(
     _g.AnySurfacePropertyExposedFoundationPerimeterSurfacesGroup
@@ -12089,15 +11722,6 @@ class _WindowPropertyShadingControl_v8_9Fields(TypedDict, total=False):
     slat_angle_schedule_name: str | None
     setpoint_2: float | None
 
-class Branch_v8_9_to_v9_2(_g.AnyBranch):
-    """``Branch`` as declared in EnergyPlus 8.9.0 to 9.2.0. List components on the branch in simulation and connection order Note: this should NOT include splitters or mixers wh..."""
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_Branch_v8_9_to_v9_2Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _Branch_v8_9_to_v9_2Fields(_g._BranchCommonFields, total=False): ...
-
 class ScheduleDayList_v8_9_to_v22_1(_g.AnyScheduleDayList):
     """``Schedule:Day:List`` as declared in EnergyPlus 8.9.0 to 22.1.0. Schedule:Day:List will allow the user to list 24 hours worth of values, which can be sub-hourly in nature."""
 
@@ -13498,8 +13122,8 @@ class _ZoneHVACWaterToAirHeatPump_v24_1_to_v25_1Fields(_g._ZoneHVACWaterToAirHea
     design_specification_multispeed_object_type: Literal["UnitarySystemPerformance:Multispeed"] | None
     design_specification_multispeed_object_name: str | None
 
-class FloorDetailed_v8_9_to_v9_2(_g.AnyFloorDetailed):
-    """``Floor:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Allows for detailed entry of floor heat transfer surfaces."""
+class FloorDetailed_v8_9_to_v9_5(_g.AnyFloorDetailed):
+    """``Floor:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of floor heat transfer surfaces."""
 
     outside_boundary_condition: (
         Literal[
@@ -13524,62 +13148,10 @@ class FloorDetailed_v8_9_to_v9_2(_g.AnyFloorDetailed):
     )
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _FloorDetailed_v8_9_to_v9_2Fields(_g._FloorDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-class FloorDetailed_v9_3_to_v9_5(_g.AnyFloorDetailed):
-    """``Floor:Detailed`` as declared in EnergyPlus 9.3.0 to 9.5.0. Allows for detailed entry of floor heat transfer surfaces."""
-
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Foundation",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundFCfactorMethod",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_FloorDetailed_v9_3_to_v9_5Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _FloorDetailed_v9_3_to_v9_5Fields(_g._FloorDetailedCommonFields, total=False):
+class _FloorDetailed_v8_9_to_v9_5Fields(_g._FloorDetailedCommonFields, total=False):
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -14466,8 +14038,8 @@ class _AirflowNetworkDistributionComponentOutdoorAirFlow_v8_9Fields(
     _g._AirflowNetworkDistributionComponentOutdoorAirFlowCommonFields, total=False
 ): ...
 
-class RoofCeilingDetailed_v8_9_to_v9_2(_g.AnyRoofCeilingDetailed):
-    """``RoofCeiling:Detailed`` as declared in EnergyPlus 8.9.0 to 9.2.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
+class RoofCeilingDetailed_v8_9_to_v9_5(_g.AnyRoofCeilingDetailed):
+    """``RoofCeiling:Detailed`` as declared in EnergyPlus 8.9.0 to 9.5.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
 
     outside_boundary_condition: (
         Literal[
@@ -14490,58 +14062,10 @@ class RoofCeilingDetailed_v8_9_to_v9_2(_g.AnyRoofCeilingDetailed):
     )
 
     def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v8_9_to_v9_2Fields]
+        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v8_9_to_v9_5Fields]
     ) -> None: ...  # type: ignore[override]
 
-class _RoofCeilingDetailed_v8_9_to_v9_2Fields(_g._RoofCeilingDetailedCommonFields, total=False):
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-class RoofCeilingDetailed_v9_3_to_v9_5(_g.AnyRoofCeilingDetailed):
-    """``RoofCeiling:Detailed`` as declared in EnergyPlus 9.3.0 to 9.5.0. Allows for detailed entry of roof/ceiling heat transfer surfaces."""
-
-    outside_boundary_condition: (
-        Literal[
-            "Adiabatic",
-            "Ground",
-            "GroundBasementPreprocessorAverageFloor",
-            "GroundBasementPreprocessorAverageWall",
-            "GroundBasementPreprocessorLowerWall",
-            "GroundBasementPreprocessorUpperWall",
-            "GroundSlabPreprocessorAverage",
-            "GroundSlabPreprocessorCore",
-            "GroundSlabPreprocessorPerimeter",
-            "OtherSideCoefficients",
-            "OtherSideConditionsModel",
-            "Outdoors",
-            "Surface",
-            "Zone",
-        ]
-        | None
-    )
-
-    def update(
-        self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[_RoofCeilingDetailed_v9_3_to_v9_5Fields]
-    ) -> None: ...  # type: ignore[override]
-
-class _RoofCeilingDetailed_v9_3_to_v9_5Fields(_g._RoofCeilingDetailedCommonFields, total=False):
+class _RoofCeilingDetailed_v8_9_to_v9_5Fields(_g._RoofCeilingDetailedCommonFields, total=False):
     outside_boundary_condition: (
         Literal[
             "Adiabatic",
@@ -14612,20 +14136,6 @@ class _RoofCeilingDetailed_v9_6_to_v24_2Fields(_g._RoofCeilingDetailedCommonFiel
         ]
         | None
     )
-
-class MaterialPropertyGlazingSpectralData_v8_9_to_v9_2(_g.AnyMaterialPropertyGlazingSpectralData):
-    """``MaterialProperty:GlazingSpectralData`` as declared in EnergyPlus 8.9.0 to 9.2.0. Name is followed by up to 800 sets of normal-incidence measured values of [wavelength, transmittance, front reflectan..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_MaterialPropertyGlazingSpectralData_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _MaterialPropertyGlazingSpectralData_v8_9_to_v9_2Fields(
-    _g._MaterialPropertyGlazingSpectralDataCommonFields, total=False
-): ...
 
 class ZoneHVACEvaporativeCoolerUnit_v8_9_to_v23_1(_g.AnyZoneHVACEvaporativeCoolerUnit):
     """``ZoneHVAC:EvaporativeCoolerUnit`` as declared in EnergyPlus 8.9.0 to 23.1.0. Zone evaporative cooler. Forced-convection cooling-only unit with supply fan, 100% outdoor air supply. Optional relie..."""
@@ -15009,20 +14519,6 @@ class _HVACTemplateSystemVRF_v9_3_to_v22_1Fields(_g._HVACTemplateSystemVRFCommon
         ]
         | None
     )
-
-class SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2(_g.AnySolarCollectorUnglazedTranspiredMultisystem):
-    """``SolarCollector:UnglazedTranspired:Multisystem`` as declared in EnergyPlus 8.9.0 to 9.2.0. quad-tuples of inlet, outlet, control, and zone nodes for multiple different outdoor air systems attached to same col..."""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2Fields(
-    _g._SolarCollectorUnglazedTranspiredMultisystemCommonFields, total=False
-): ...
 
 class ElectricLoadCenterStorageBattery_v8_9_to_v22_1(_g.AnyElectricLoadCenterStorageBattery):
     """``ElectricLoadCenter:Storage:Battery`` as declared in EnergyPlus 8.9.0 to 22.1.0. Uses the kinetic battery model (KiBaM) to simulate rechargeable battery banks in an electrical load center. The batte..."""
@@ -17190,8 +16686,8 @@ class _MeterCustom_v9_4_to_v23_1Fields(_g._MeterCustomCommonFields, total=False)
         | None
     )
 
-class UnitarySystemPerformanceMultispeed_v8_9_to_v9_2(_g.AnyUnitarySystemPerformanceMultispeed):
-    """``UnitarySystemPerformance:Multispeed`` as declared in EnergyPlus 8.9.0 to 9.2.0. The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is pri..."""
+class UnitarySystemPerformanceMultispeed_v8_9_to_v22_1(_g.AnyUnitarySystemPerformanceMultispeed):
+    """``UnitarySystemPerformance:Multispeed`` as declared in EnergyPlus 8.9.0 to 22.1.0. The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is pri..."""
 
     number_of_speeds_for_heating: float | None
     """Used only for Multi speed coils Enter the number of the following sets of data for air flow rates.; Range: >= 0.0, <= 10.0"""
@@ -17202,38 +16698,17 @@ class UnitarySystemPerformanceMultispeed_v8_9_to_v9_2(_g.AnyUnitarySystemPerform
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_UnitarySystemPerformanceMultispeed_v8_9_to_v9_2Fields],
+        **kwargs: Unpack[_UnitarySystemPerformanceMultispeed_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _UnitarySystemPerformanceMultispeed_v8_9_to_v9_2Fields(
+class _UnitarySystemPerformanceMultispeed_v8_9_to_v22_1Fields(
     _g._UnitarySystemPerformanceMultispeedCommonFields, total=False
 ):
     number_of_speeds_for_heating: float | None
     number_of_speeds_for_cooling: float | None
 
-class UnitarySystemPerformanceMultispeed_v9_3_to_v22_1(_g.AnyUnitarySystemPerformanceMultispeed):
-    """``UnitarySystemPerformance:Multispeed`` as declared in EnergyPlus 9.3.0 to 22.1.0. The UnitarySystemPerformance object is used to specify the air flow ratio at each operating speed. This object is pri..."""
-
-    number_of_speeds_for_heating: float | None
-    """Used only for Multi speed coils Enter the number of the following sets of data for air flow rates.; Range: >= 0.0, <= 10.0"""
-    number_of_speeds_for_cooling: float | None
-    """Used only for Multi speed coils Enter the number of the following sets of data for air flow rates.; Range: >= 0.0, <= 10.0"""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_UnitarySystemPerformanceMultispeed_v9_3_to_v22_1Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _UnitarySystemPerformanceMultispeed_v9_3_to_v22_1Fields(
-    _g._UnitarySystemPerformanceMultispeedCommonFields, total=False
-):
-    number_of_speeds_for_heating: float | None
-    number_of_speeds_for_cooling: float | None
-
-class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2(_g.AnyRoomAirTemperaturePatternNondimensionalHeight):
-    """``RoomAir:TemperaturePattern:NondimensionalHeight`` as declared in EnergyPlus 8.9.0 to 9.2.0. Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of hei..."""
+class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1(_g.AnyRoomAirTemperaturePatternNondimensionalHeight):
+    """``RoomAir:TemperaturePattern:NondimensionalHeight`` as declared in EnergyPlus 8.9.0 to 22.1.0. Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of hei..."""
 
     control_integer_for_pattern_control_schedule_name: float | None
     """this value should appear in as a schedule value"""
@@ -17242,28 +16717,10 @@ class RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2(_g.AnyRoomAirTe
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2Fields],
+        **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2Fields(
-    _g._RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
-):
-    control_integer_for_pattern_control_schedule_name: float | None
-
-class RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1(_g.AnyRoomAirTemperaturePatternNondimensionalHeight):
-    """``RoomAir:TemperaturePattern:NondimensionalHeight`` as declared in EnergyPlus 9.3.0 to 22.1.0. Defines a distribution pattern for air temperatures relative to the current mean air temperature as a function of hei..."""
-
-    control_integer_for_pattern_control_schedule_name: float | None
-    """this value should appear in as a schedule value"""
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1Fields(
+class _RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1Fields(
     _g._RoomAirTemperaturePatternNondimensionalHeightCommonFields, total=False
 ):
     control_integer_for_pattern_control_schedule_name: float | None
@@ -17419,85 +16876,10 @@ class _AirflowNetworkMultiZoneComponentDetailedOpening_v8_9_to_v22_1Fields(
 ):
     number_of_sets_of_opening_factor_data: float | None
 
-class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_2(
+class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4(
     _g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup
 ):
-    """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2`."""
-
-    internal_gain_object_type: (
-        Literal[
-            "AirTerminal:SingleDuct:UserDefined",
-            "Coil:UserDefined",
-            "DaylightingDevice:Tubular",
-            "ElectricEquipment",
-            "ElectricLoadCenter:Inverter:FunctionOfPower",
-            "ElectricLoadCenter:Inverter:LookUpTable",
-            "ElectricLoadCenter:Inverter:Simple",
-            "ElectricLoadCenter:Storage:Battery",
-            "ElectricLoadCenter:Storage:Converter",
-            "ElectricLoadCenter:Storage:Simple",
-            "ElectricLoadCenter:Transformer",
-            "GasEquipment",
-            "Generator:FuelCell",
-            "Generator:MicroCHP",
-            "HeaderedPumps:ConstantSpeed",
-            "HeaderedPumps:VariableSpeed",
-            "HotWaterEquipment",
-            "Lights",
-            "OtherEquipment",
-            "People",
-            "Pipe:Indoor",
-            "PlantComponent:UserDefined",
-            "Pump:ConstantSpeed",
-            "Pump:VariableSpeed",
-            "Pump:VariableSpeed:Condensate",
-            "Refrigeration:Case",
-            "Refrigeration:CompressorRack",
-            "Refrigeration:SecondarySystem:Pipe",
-            "Refrigeration:SecondarySystem:Receiver",
-            "Refrigeration:System:Condenser:AirCooled",
-            "Refrigeration:System:SuctionPipe",
-            "Refrigeration:TranscriticalSystem:GasCooler:AirCooled",
-            "Refrigeration:TranscriticalSystem:SuctionPipeLT",
-            "Refrigeration:TranscriticalSystem:SuctionPipeMT",
-            "Refrigeration:WalkIn",
-            "SteamEquipment",
-            "ThermalStorage:ChilledWater:Mixed",
-            "ThermalStorage:ChilledWater:Stratified",
-            "WaterHeater:Mixed",
-            "WaterHeater:Stratified",
-            "WaterUse:Equipment",
-            "ZoneBaseboard:OutdoorTemperatureControlled",
-            "ZoneContaminantSourceAndSink:CarbonDioxide",
-            "ZoneContaminantSourceAndSink:GenericContaminant",
-            "ZoneHVAC:ForcedAir:UserDefined",
-        ]
-        | None
-    )
-    fraction_of_gains_to_node: float | None
-    internal_gain_object_name: str | None
-
-class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2(_g.AnyRoomAirNodeAirflowNetworkInternalGains):
-    """``RoomAir:Node:AirflowNetwork:InternalGains`` as declared in EnergyPlus 8.9.0 to 9.2.0. define the internal gains that are associated with one particular RoomAir:Node"""
-
-    gains: ExtensibleList[RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_2]
-
-    def update(
-        self,
-        values: Mapping[str, Any] | None = ...,
-        /,
-        **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2Fields],
-    ) -> None: ...  # type: ignore[override]
-
-class _RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2Fields(
-    _g._RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
-):
-    gains: list[Any]
-
-class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v9_3_to_v9_4(
-    _g.AnyRoomAirNodeAirflowNetworkInternalGainsGainsGroup
-):
-    """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4`."""
+    """One gains group inside :class:`RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4`."""
 
     internal_gain_object_type: (
         Literal[
@@ -17552,19 +16934,19 @@ class RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v9_3_to_v9_4(
     internal_gain_object_name: str | None
     fraction_of_gains_to_node: float | None
 
-class RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4(_g.AnyRoomAirNodeAirflowNetworkInternalGains):
-    """``RoomAir:Node:AirflowNetwork:InternalGains`` as declared in EnergyPlus 9.3.0 to 9.4.0. define the internal gains that are associated with one particular RoomAir:Node"""
+class RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4(_g.AnyRoomAirNodeAirflowNetworkInternalGains):
+    """``RoomAir:Node:AirflowNetwork:InternalGains`` as declared in EnergyPlus 8.9.0 to 9.4.0. define the internal gains that are associated with one particular RoomAir:Node"""
 
-    gains: ExtensibleList[RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v9_3_to_v9_4]
+    gains: ExtensibleList[RoomAirNodeAirflowNetworkInternalGainsGainsGroup_v8_9_to_v9_4]
 
     def update(
         self,
         values: Mapping[str, Any] | None = ...,
         /,
-        **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4Fields],
+        **kwargs: Unpack[_RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4Fields],
     ) -> None: ...  # type: ignore[override]
 
-class _RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4Fields(
+class _RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4Fields(
     _g._RoomAirNodeAirflowNetworkInternalGainsCommonFields, total=False
 ):
     gains: list[Any]
@@ -18660,13 +18042,7 @@ _Types_v8_9_to_v9_2 = TypedDict(
         "AirflowNetwork:Distribution:Component:Coil": IDFCollection[
             AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2
         ],
-        "AirflowNetwork:Distribution:DuctViewFactors": IDFCollection[
-            AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2
-        ],
-        "AvailabilityManagerAssignmentList": IDFCollection[AvailabilityManagerAssignmentList_v8_9_to_v9_2],
         "Boiler:Steam": IDFCollection[BoilerSteam_v8_9_to_v9_2],
-        "Branch": IDFCollection[Branch_v8_9_to_v9_2],
-        "BuildingSurface:Detailed": IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_2],
         "Chiller:CombustionTurbine": IDFCollection[ChillerCombustionTurbine_v8_9_to_v9_2],
         "Chiller:EngineDriven": IDFCollection[ChillerEngineDriven_v8_9_to_v9_2],
         "ChillerHeater:Absorption:DirectFired": IDFCollection[ChillerHeaterAbsorptionDirectFired_v8_9_to_v9_2],
@@ -18674,52 +18050,28 @@ _Types_v8_9_to_v9_2 = TypedDict(
         "Coil:Heating:DX:MultiSpeed": IDFCollection[CoilHeatingDXMultiSpeed_v8_9_to_v9_2],
         "Coil:Heating:Fuel": IDFCollection[CoilHeatingFuel_v8_9_to_v9_2],
         "Controller:MechanicalVentilation": IDFCollection[ControllerMechanicalVentilation_v8_9_to_v9_2],
-        "Daylighting:Controls": IDFCollection[DaylightingControls_v8_9_to_v9_2],
-        "ElectricLoadCenter:Generators": IDFCollection[ElectricLoadCenterGenerators_v8_9_to_v9_2],
         "EnergyManagementSystem:MeteredOutputVariable": IDFCollection[
             EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2
         ],
         "Exterior:FuelEquipment": IDFCollection[ExteriorFuelEquipment_v8_9_to_v9_2],
-        "Fan:SystemModel": IDFCollection[FanSystemModel_v8_9_to_v9_2],
-        "Floor:Detailed": IDFCollection[FloorDetailed_v8_9_to_v9_2],
         "FuelFactors": IDFCollection[FuelFactors_v8_9_to_v9_2],
         "Generator:CombustionTurbine": IDFCollection[GeneratorCombustionTurbine_v8_9_to_v9_2],
         "Generator:InternalCombustionEngine": IDFCollection[GeneratorInternalCombustionEngine_v8_9_to_v9_2],
         "Generator:MicroTurbine": IDFCollection[GeneratorMicroTurbine_v8_9_to_v9_2],
         "GlobalGeometryRules": IDFCollection[GlobalGeometryRules_v8_9_to_v9_2],
-        "GroundHeatExchanger:ResponseFactors": IDFCollection[GroundHeatExchangerResponseFactors_v8_9_to_v9_2],
         "HVACTemplate:Plant:Boiler": IDFCollection[HVACTemplatePlantBoiler_v8_9_to_v9_2],
         "HVACTemplate:System:VRF": IDFCollection[HVACTemplateSystemVRF_v8_9_to_v9_2],
         "LifeCycleCost:UseAdjustment": IDFCollection[LifeCycleCostUseAdjustment_v8_9_to_v9_2],
         "LifeCycleCost:UsePriceEscalation": IDFCollection[LifeCycleCostUsePriceEscalation_v8_9_to_v9_2],
-        "MaterialProperty:GlazingSpectralData": IDFCollection[MaterialPropertyGlazingSpectralData_v8_9_to_v9_2],
         "Meter:Custom": IDFCollection[MeterCustom_v8_9_to_v9_2],
         "Meter:CustomDecrement": IDFCollection[MeterCustomDecrement_v8_9_to_v9_2],
         "OtherEquipment": IDFCollection[OtherEquipment_v8_9_to_v9_2],
-        "Output:Table:Annual": IDFCollection[OutputTableAnnual_v8_9_to_v9_2],
-        "Output:Table:Monthly": IDFCollection[OutputTableMonthly_v8_9_to_v9_2],
         "Output:Table:SummaryReports": IDFCollection[OutputTableSummaryReports_v8_9_to_v9_2],
-        "Refrigeration:WalkIn": IDFCollection[RefrigerationWalkIn_v8_9_to_v9_2],
-        "RoofCeiling:Detailed": IDFCollection[RoofCeilingDetailed_v8_9_to_v9_2],
         "RoomAir:Node:AirflowNetwork:HVACEquipment": IDFCollection[RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2],
-        "RoomAir:Node:AirflowNetwork:InternalGains": IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2],
-        "RoomAir:TemperaturePattern:NondimensionalHeight": IDFCollection[
-            RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2
-        ],
-        "Schedule:Day:Interval": IDFCollection[ScheduleDayInterval_v8_9_to_v9_2],
-        "Shading:Building:Detailed": IDFCollection[ShadingBuildingDetailed_v8_9_to_v9_2],
-        "Shading:Site:Detailed": IDFCollection[ShadingSiteDetailed_v8_9_to_v9_2],
-        "Shading:Zone:Detailed": IDFCollection[ShadingZoneDetailed_v8_9_to_v9_2],
         "ShadowCalculation": IDFCollection[ShadowCalculation_v8_9_to_v9_2],
-        "SolarCollector:UnglazedTranspired:Multisystem": IDFCollection[
-            SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2
-        ],
         "SurfaceProperty:ExposedFoundationPerimeter": IDFCollection[
             SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2
         ],
-        "SurfaceProperty:SurroundingSurfaces": IDFCollection[SurfacePropertySurroundingSurfaces_v8_9_to_v9_2],
-        "UnitarySystemPerformance:Multispeed": IDFCollection[UnitarySystemPerformanceMultispeed_v8_9_to_v9_2],
-        "Wall:Detailed": IDFCollection[WallDetailed_v8_9_to_v9_2],
         "WaterHeater:Mixed": IDFCollection[WaterHeaterMixed_v8_9_to_v9_2],
         "WaterHeater:Stratified": IDFCollection[WaterHeaterStratified_v8_9_to_v9_2],
         "WeatherProperty:SkyTemperature": IDFCollection[WeatherPropertySkyTemperature_v8_9_to_v9_2],
@@ -18727,7 +18079,6 @@ _Types_v8_9_to_v9_2 = TypedDict(
             ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2
         ],
         "ZoneHVAC:HybridUnitaryHVAC": IDFCollection[ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2],
-        "ZoneHVAC:VentilatedSlab:SlabGroup": IDFCollection[ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2],
     },
     total=True,
 )
@@ -18738,6 +18089,7 @@ _Types_v8_9_to_v9_3 = TypedDict(
         "Construction:InternalSource": IDFCollection[ConstructionInternalSource_v8_9_to_v9_3],
         "Controller:WaterCoil": IDFCollection[ControllerWaterCoil_v8_9_to_v9_3],
         "Curve:DoubleExponentialDecay": IDFCollection[CurveDoubleExponentialDecay_v8_9_to_v9_3],
+        "Fan:SystemModel": IDFCollection[FanSystemModel_v8_9_to_v9_3],
         "Output:DebuggingData": IDFCollection[OutputDebuggingData_v8_9_to_v9_3],
         "Output:Diagnostics": IDFCollection[OutputDiagnostics_v8_9_to_v9_3],
         "ZoneHVAC:LowTemperatureRadiant:ConstantFlow": IDFCollection[
@@ -18766,6 +18118,7 @@ _Types_v8_9_to_v9_4 = TypedDict(
         "HeatPump:WaterToWater:EquationFit:Heating": IDFCollection[HeatPumpWaterToWaterEquationFitHeating_v8_9_to_v9_4],
         "Output:SQLite": IDFCollection[OutputSQLite_v8_9_to_v9_4],
         "People": IDFCollection[People_v8_9_to_v9_4],
+        "RoomAir:Node:AirflowNetwork:InternalGains": IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4],
         "SurfaceConvectionAlgorithm:Inside": IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4],
         "SurfaceProperty:ConvectionCoefficients": IDFCollection[SurfacePropertyConvectionCoefficients_v8_9_to_v9_4],
         "SurfaceProperty:ConvectionCoefficients:MultipleSurface": IDFCollection[
@@ -18788,16 +18141,19 @@ _Types_v8_9_to_v9_5 = TypedDict(
     "_Types_v8_9_to_v9_5",
     {
         "AirLoopHVAC:OutdoorAirSystem": IDFCollection[AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5],
+        "BuildingSurface:Detailed": IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_5],
         "Ceiling:Adiabatic": IDFCollection[CeilingAdiabatic_v8_9_to_v9_5],
         "Ceiling:Interzone": IDFCollection[CeilingInterzone_v8_9_to_v9_5],
         "Coil:Cooling:Water:DetailedGeometry": IDFCollection[CoilCoolingWaterDetailedGeometry_v8_9_to_v9_5],
         "ComfortViewFactorAngles": IDFCollection[ComfortViewFactorAngles_v8_9_to_v9_5],
         "ComponentCost:LineItem": IDFCollection[ComponentCostLineItem_v8_9_to_v9_5],
         "Construction:ComplexFenestrationState": IDFCollection[ConstructionComplexFenestrationState_v8_9_to_v9_5],
+        "Daylighting:Controls": IDFCollection[DaylightingControls_v8_9_to_v9_5],
         "Daylighting:ReferencePoint": IDFCollection[DaylightingReferencePoint_v8_9_to_v9_5],
         "ElectricEquipment": IDFCollection[ElectricEquipment_v8_9_to_v9_5],
         "ElectricEquipment:ITE:AirCooled": IDFCollection[ElectricEquipmentITEAirCooled_v8_9_to_v9_5],
         "Floor:Adiabatic": IDFCollection[FloorAdiabatic_v8_9_to_v9_5],
+        "Floor:Detailed": IDFCollection[FloorDetailed_v8_9_to_v9_5],
         "Floor:GroundContact": IDFCollection[FloorGroundContact_v8_9_to_v9_5],
         "Floor:Interzone": IDFCollection[FloorInterzone_v8_9_to_v9_5],
         "GasEquipment": IDFCollection[GasEquipment_v8_9_to_v9_5],
@@ -18805,9 +18161,11 @@ _Types_v8_9_to_v9_5 = TypedDict(
         "HotWaterEquipment": IDFCollection[HotWaterEquipment_v8_9_to_v9_5],
         "Lights": IDFCollection[Lights_v8_9_to_v9_5],
         "Roof": IDFCollection[Roof_v8_9_to_v9_5],
+        "RoofCeiling:Detailed": IDFCollection[RoofCeilingDetailed_v8_9_to_v9_5],
         "Sizing:System": IDFCollection[SizingSystem_v8_9_to_v9_5],
         "SteamEquipment": IDFCollection[SteamEquipment_v8_9_to_v9_5],
         "Wall:Adiabatic": IDFCollection[WallAdiabatic_v8_9_to_v9_5],
+        "Wall:Detailed": IDFCollection[WallDetailed_v8_9_to_v9_5],
         "Wall:Exterior": IDFCollection[WallExterior_v8_9_to_v9_5],
         "Wall:Interzone": IDFCollection[WallInterzone_v8_9_to_v9_5],
         "Wall:Underground": IDFCollection[WallUnderground_v8_9_to_v9_5],
@@ -18890,6 +18248,7 @@ _Types_v8_9_to_v22_1 = TypedDict(
         ],
         "GroundHeatExchanger:HorizontalTrench": IDFCollection[GroundHeatExchangerHorizontalTrench_v8_9_to_v22_1],
         "GroundHeatExchanger:Pond": IDFCollection[GroundHeatExchangerPond_v8_9_to_v22_1],
+        "GroundHeatExchanger:ResponseFactors": IDFCollection[GroundHeatExchangerResponseFactors_v8_9_to_v22_1],
         "GroundHeatExchanger:Slinky": IDFCollection[GroundHeatExchangerSlinky_v8_9_to_v22_1],
         "GroundHeatExchanger:Surface": IDFCollection[GroundHeatExchangerSurface_v8_9_to_v22_1],
         "GroundHeatExchanger:Vertical:Array": IDFCollection[GroundHeatExchangerVerticalArray_v8_9_to_v22_1],
@@ -18916,6 +18275,8 @@ _Types_v8_9_to_v22_1 = TypedDict(
         "Matrix:TwoDimension": IDFCollection[MatrixTwoDimension_v8_9_to_v22_1],
         "Output:IlluminanceMap": IDFCollection[OutputIlluminanceMap_v8_9_to_v22_1],
         "Output:Meter": IDFCollection[OutputMeter_v8_9_to_v22_1],
+        "Output:Table:Annual": IDFCollection[OutputTableAnnual_v8_9_to_v22_1],
+        "Output:Table:Monthly": IDFCollection[OutputTableMonthly_v8_9_to_v22_1],
         "Output:Table:TimeBins": IDFCollection[OutputTableTimeBins_v8_9_to_v22_1],
         "OutputControl:SurfaceColorScheme": IDFCollection[OutputControlSurfaceColorScheme_v8_9_to_v22_1],
         "PhotovoltaicPerformance:EquivalentOne-Diode": IDFCollection[
@@ -18931,6 +18292,9 @@ _Types_v8_9_to_v22_1 = TypedDict(
         "Refrigeration:SecondarySystem": IDFCollection[RefrigerationSecondarySystem_v8_9_to_v22_1],
         "RoomAir:TemperaturePattern:ConstantGradient": IDFCollection[
             RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1
+        ],
+        "RoomAir:TemperaturePattern:NondimensionalHeight": IDFCollection[
+            RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1
         ],
         "RoomAir:TemperaturePattern:SurfaceMapping": IDFCollection[
             RoomAirTemperaturePatternSurfaceMapping_v8_9_to_v22_1
@@ -18950,6 +18314,7 @@ _Types_v8_9_to_v22_1 = TypedDict(
         "SurfaceProperty:LocalEnvironment": IDFCollection[SurfacePropertyLocalEnvironment_v8_9_to_v22_1],
         "ThermalStorage:ChilledWater:Stratified": IDFCollection[ThermalStorageChilledWaterStratified_v8_9_to_v22_1],
         "Timestep": IDFCollection[Timestep_v8_9_to_v22_1],
+        "UnitarySystemPerformance:Multispeed": IDFCollection[UnitarySystemPerformanceMultispeed_v8_9_to_v22_1],
         "WaterHeater:Sizing": IDFCollection[WaterHeaterSizing_v8_9_to_v22_1],
         "WindowMaterial:GasMixture": IDFCollection[WindowMaterialGasMixture_v8_9_to_v22_1],
         "WindowProperty:StormWindow": IDFCollection[WindowPropertyStormWindow_v8_9_to_v22_1],
@@ -19062,6 +18427,7 @@ _Types_v8_9_to_v26_1 = TypedDict(
         "ChillerHeaterPerformance:Electric:EIR": IDFCollection[ChillerHeaterPerformanceElectricEIR_v8_9_to_v26_1],
         "Material": IDFCollection[Material_v8_9_to_v26_1],
         "Material:NoMass": IDFCollection[MaterialNoMass_v8_9_to_v26_1],
+        "SurfaceProperty:SurroundingSurfaces": IDFCollection[SurfacePropertySurroundingSurfaces_v8_9_to_v26_1],
         "ZoneControl:Humidistat": IDFCollection[ZoneControlHumidistat_v8_9_to_v26_1],
     },
     total=True,
@@ -19107,6 +18473,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "AirflowNetwork:Distribution:Component:TerminalUnit": IDFCollection[
             _g.AirflowNetworkDistributionComponentTerminalUnit
         ],
+        "AirflowNetwork:Distribution:DuctViewFactors": IDFCollection[_g.AirflowNetworkDistributionDuctViewFactors],
         "AirflowNetwork:Distribution:Linkage": IDFCollection[_g.AirflowNetworkDistributionLinkage],
         "AirflowNetwork:IntraZone:Linkage": IDFCollection[_g.AirflowNetworkIntraZoneLinkage],
         "AirflowNetwork:IntraZone:Node": IDFCollection[_g.AirflowNetworkIntraZoneNode],
@@ -19148,6 +18515,8 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "AvailabilityManager:Scheduled": IDFCollection[_g.AvailabilityManagerScheduled],
         "AvailabilityManager:ScheduledOff": IDFCollection[_g.AvailabilityManagerScheduledOff],
         "AvailabilityManager:ScheduledOn": IDFCollection[_g.AvailabilityManagerScheduledOn],
+        "AvailabilityManagerAssignmentList": IDFCollection[_g.AvailabilityManagerAssignmentList],
+        "Branch": IDFCollection[_g.Branch],
         "BranchList": IDFCollection[_g.BranchList],
         "Chiller:Absorption": IDFCollection[_g.ChillerAbsorption],
         "Chiller:Absorption:Indirect": IDFCollection[_g.ChillerAbsorptionIndirect],
@@ -19220,6 +18589,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "Door:Interzone": IDFCollection[_g.DoorInterzone],
         "Duct": IDFCollection[_g.Duct],
         "ElectricLoadCenter:Distribution": IDFCollection[_g.ElectricLoadCenterDistribution],
+        "ElectricLoadCenter:Generators": IDFCollection[_g.ElectricLoadCenterGenerators],
         "ElectricLoadCenter:Inverter:FunctionOfPower": IDFCollection[_g.ElectricLoadCenterInverterFunctionOfPower],
         "ElectricLoadCenter:Inverter:LookUpTable": IDFCollection[_g.ElectricLoadCenterInverterLookUpTable],
         "ElectricLoadCenter:Inverter:PVWatts": IDFCollection[_g.ElectricLoadCenterInverterPVWatts],
@@ -19404,6 +18774,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "Material:AirGap": IDFCollection[_g.MaterialAirGap],
         "Material:InfraredTransparent": IDFCollection[_g.MaterialInfraredTransparent],
         "Material:RoofVegetation": IDFCollection[_g.MaterialRoofVegetation],
+        "MaterialProperty:GlazingSpectralData": IDFCollection[_g.MaterialPropertyGlazingSpectralData],
         "MaterialProperty:HeatAndMoistureTransfer:Settings": IDFCollection[
             _g.MaterialPropertyHeatAndMoistureTransferSettings
         ],
@@ -19479,6 +18850,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "Refrigeration:System": IDFCollection[_g.RefrigerationSystem],
         "Refrigeration:TranscriticalSystem": IDFCollection[_g.RefrigerationTranscriticalSystem],
         "Refrigeration:TransferLoadList": IDFCollection[_g.RefrigerationTransferLoadList],
+        "Refrigeration:WalkIn": IDFCollection[_g.RefrigerationWalkIn],
         "RoofIrrigation": IDFCollection[_g.RoofIrrigation],
         "RoomAir:Node": IDFCollection[_g.RoomAirNode],
         "RoomAir:Node:AirflowNetwork": IDFCollection[_g.RoomAirNodeAirflowNetwork],
@@ -19506,6 +18878,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "Schedule:Compact": IDFCollection[_g.ScheduleCompact],
         "Schedule:Constant": IDFCollection[_g.ScheduleConstant],
         "Schedule:Day:Hourly": IDFCollection[_g.ScheduleDayHourly],
+        "Schedule:Day:Interval": IDFCollection[_g.ScheduleDayInterval],
         "Schedule:File:Shading": IDFCollection[_g.ScheduleFileShading],
         "Schedule:Week:Compact": IDFCollection[_g.ScheduleWeekCompact],
         "Schedule:Week:Daily": IDFCollection[_g.ScheduleWeekDaily],
@@ -19546,11 +18919,14 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "SetpointManager:Warmest": IDFCollection[_g.SetpointManagerWarmest],
         "SetpointManager:WarmestTemperatureFlow": IDFCollection[_g.SetpointManagerWarmestTemperatureFlow],
         "Shading:Building": IDFCollection[_g.ShadingBuilding],
+        "Shading:Building:Detailed": IDFCollection[_g.ShadingBuildingDetailed],
         "Shading:Fin": IDFCollection[_g.ShadingFin],
         "Shading:Fin:Projection": IDFCollection[_g.ShadingFinProjection],
         "Shading:Overhang": IDFCollection[_g.ShadingOverhang],
         "Shading:Overhang:Projection": IDFCollection[_g.ShadingOverhangProjection],
         "Shading:Site": IDFCollection[_g.ShadingSite],
+        "Shading:Site:Detailed": IDFCollection[_g.ShadingSiteDetailed],
+        "Shading:Zone:Detailed": IDFCollection[_g.ShadingZoneDetailed],
         "ShadingProperty:Reflectance": IDFCollection[_g.ShadingPropertyReflectance],
         "Site:GroundReflectance": IDFCollection[_g.SiteGroundReflectance],
         "Site:GroundReflectance:SnowModifier": IDFCollection[_g.SiteGroundReflectanceSnowModifier],
@@ -19575,6 +18951,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "SolarCollector:FlatPlate:Water": IDFCollection[_g.SolarCollectorFlatPlateWater],
         "SolarCollector:IntegralCollectorStorage": IDFCollection[_g.SolarCollectorIntegralCollectorStorage],
         "SolarCollector:UnglazedTranspired": IDFCollection[_g.SolarCollectorUnglazedTranspired],
+        "SolarCollector:UnglazedTranspired:Multisystem": IDFCollection[_g.SolarCollectorUnglazedTranspiredMultisystem],
         "SolarCollectorPerformance:FlatPlate": IDFCollection[_g.SolarCollectorPerformanceFlatPlate],
         "SolarCollectorPerformance:PhotovoltaicThermal:Simple": IDFCollection[
             _g.SolarCollectorPerformancePhotovoltaicThermalSimple
@@ -19704,6 +19081,7 @@ _Types_v8_9_to_v26_2 = TypedDict(
         "ZoneHVAC:UnitHeater": IDFCollection[_g.ZoneHVACUnitHeater],
         "ZoneHVAC:UnitVentilator": IDFCollection[_g.ZoneHVACUnitVentilator],
         "ZoneHVAC:VentilatedSlab": IDFCollection[_g.ZoneHVACVentilatedSlab],
+        "ZoneHVAC:VentilatedSlab:SlabGroup": IDFCollection[_g.ZoneHVACVentilatedSlabSlabGroup],
         "ZoneHVAC:WindowAirConditioner": IDFCollection[_g.ZoneHVACWindowAirConditioner],
         "ZoneList": IDFCollection[_g.ZoneList],
         "ZoneProperty:LocalEnvironment": IDFCollection[_g.ZonePropertyLocalEnvironment],
@@ -19734,7 +19112,6 @@ _Types_v9_0_to_v9_1 = TypedDict(
 _Types_v9_0_to_v9_2 = TypedDict(
     "_Types_v9_0_to_v9_2",
     {
-        "Schedule:Year": IDFCollection[ScheduleYear_v9_0_to_v9_2],
         "SizingPeriod:DesignDay": IDFCollection[SizingPeriodDesignDay_v9_0_to_v9_2],
     },
     total=True,
@@ -19742,6 +19119,14 @@ _Types_v9_0_to_v9_2 = TypedDict(
 
 class _Types_v9_0_to_v9_5(TypedDict, total=True):
     RunPeriod: IDFCollection[RunPeriod_v9_0_to_v9_5]
+
+_Types_v9_0_to_v22_1 = TypedDict(
+    "_Types_v9_0_to_v22_1",
+    {
+        "Schedule:Year": IDFCollection[ScheduleYear_v9_0_to_v22_1],
+    },
+    total=True,
+)
 
 class _Types_v9_0_to_v23_1(TypedDict, total=True):
     PlantEquipmentOperationSchemes: IDFCollection[PlantEquipmentOperationSchemes_v9_0_to_v23_1]
@@ -19844,7 +19229,6 @@ _Types_v9_1_to_v26_2 = TypedDict(
 _Types_v9_2 = TypedDict(
     "_Types_v9_2",
     {
-        "Foundation:Kiva": IDFCollection[FoundationKiva_v9_2],
         "PerformancePrecisionTradeoffs": IDFCollection[PerformancePrecisionTradeoffs_v9_2],
         "ZoneHVAC:EquipmentList": IDFCollection[ZoneHVACEquipmentList_v9_2],
         "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow": IDFCollection[
@@ -19921,6 +19305,7 @@ _Types_v9_2_to_v26_2 = TypedDict(
             _g.AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass
         ],
         "AirflowNetwork:Distribution:Component:Fan": IDFCollection[_g.AirflowNetworkDistributionComponentFan],
+        "Foundation:Kiva": IDFCollection[_g.FoundationKiva],
         "Table:IndependentVariableList": IDFCollection[_g.TableIndependentVariableList],
         "WindowMaterial:Glazing:EquivalentLayer": IDFCollection[_g.WindowMaterialGlazingEquivalentLayer],
     },
@@ -19931,7 +19316,6 @@ _Types_v9_3 = TypedDict(
     "_Types_v9_3",
     {
         "Coil:Heating:Fuel": IDFCollection[CoilHeatingFuel_v9_3],
-        "Fan:SystemModel": IDFCollection[FanSystemModel_v9_3],
         "Meter:Custom": IDFCollection[MeterCustom_v9_3],
         "Meter:CustomDecrement": IDFCollection[MeterCustomDecrement_v9_3],
         "Output:Table:SummaryReports": IDFCollection[OutputTableSummaryReports_v9_3],
@@ -19950,7 +19334,6 @@ _Types_v9_3_to_v9_4 = TypedDict(
         "Controller:MechanicalVentilation": IDFCollection[ControllerMechanicalVentilation_v9_3_to_v9_4],
         "Generator:CombustionTurbine": IDFCollection[GeneratorCombustionTurbine_v9_3_to_v9_4],
         "Generator:MicroTurbine": IDFCollection[GeneratorMicroTurbine_v9_3_to_v9_4],
-        "RoomAir:Node:AirflowNetwork:InternalGains": IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4],
     },
     total=True,
 )
@@ -19959,12 +19342,7 @@ _Types_v9_3_to_v9_5 = TypedDict(
     "_Types_v9_3_to_v9_5",
     {
         "AirConditioner:VariableRefrigerantFlow": IDFCollection[AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5],
-        "BuildingSurface:Detailed": IDFCollection[BuildingSurfaceDetailed_v9_3_to_v9_5],
-        "Daylighting:Controls": IDFCollection[DaylightingControls_v9_3_to_v9_5],
-        "Floor:Detailed": IDFCollection[FloorDetailed_v9_3_to_v9_5],
         "OtherEquipment": IDFCollection[OtherEquipment_v9_3_to_v9_5],
-        "RoofCeiling:Detailed": IDFCollection[RoofCeilingDetailed_v9_3_to_v9_5],
-        "Wall:Detailed": IDFCollection[WallDetailed_v9_3_to_v9_5],
     },
     total=True,
 )
@@ -19978,19 +19356,11 @@ _Types_v9_3_to_v22_1 = TypedDict(
         "Coil:Cooling:DX:MultiSpeed": IDFCollection[CoilCoolingDXMultiSpeed_v9_3_to_v22_1],
         "Coil:Heating:DX:MultiSpeed": IDFCollection[CoilHeatingDXMultiSpeed_v9_3_to_v22_1],
         "FuelFactors": IDFCollection[FuelFactors_v9_3_to_v22_1],
-        "GroundHeatExchanger:ResponseFactors": IDFCollection[GroundHeatExchangerResponseFactors_v9_3_to_v22_1],
         "HVACTemplate:System:VRF": IDFCollection[HVACTemplateSystemVRF_v9_3_to_v22_1],
         "LifeCycleCost:UsePriceEscalation": IDFCollection[LifeCycleCostUsePriceEscalation_v9_3_to_v22_1],
-        "Output:Table:Annual": IDFCollection[OutputTableAnnual_v9_3_to_v22_1],
-        "Output:Table:Monthly": IDFCollection[OutputTableMonthly_v9_3_to_v22_1],
         "PythonPlugin:TrendVariable": IDFCollection[PythonPluginTrendVariable_v9_3_to_v22_1],
-        "RoomAir:TemperaturePattern:NondimensionalHeight": IDFCollection[
-            RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1
-        ],
-        "Schedule:Year": IDFCollection[ScheduleYear_v9_3_to_v22_1],
         "ShadowCalculation": IDFCollection[ShadowCalculation_v9_3_to_v22_1],
         "SizingPeriod:DesignDay": IDFCollection[SizingPeriodDesignDay_v9_3_to_v22_1],
-        "UnitarySystemPerformance:Multispeed": IDFCollection[UnitarySystemPerformanceMultispeed_v9_3_to_v22_1],
         "WaterHeater:Stratified": IDFCollection[WaterHeaterStratified_v9_3_to_v22_1],
         "ZoneHVAC:EquipmentList": IDFCollection[ZoneHVACEquipmentList_v9_3_to_v22_1],
     },
@@ -20037,14 +19407,6 @@ _Types_v9_3_to_v24_1 = TypedDict(
     total=True,
 )
 
-_Types_v9_3_to_v26_1 = TypedDict(
-    "_Types_v9_3_to_v26_1",
-    {
-        "SurfaceProperty:SurroundingSurfaces": IDFCollection[SurfacePropertySurroundingSurfaces_v9_3_to_v26_1],
-    },
-    total=True,
-)
-
 _Types_v9_3_to_v26_2 = TypedDict(
     "_Types_v9_3_to_v26_2",
     {
@@ -20059,31 +19421,18 @@ _Types_v9_3_to_v26_2 = TypedDict(
         "AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan": IDFCollection[
             _g.AirTerminalSingleDuctVAVReheatVariableSpeedFan
         ],
-        "AirflowNetwork:Distribution:DuctViewFactors": IDFCollection[_g.AirflowNetworkDistributionDuctViewFactors],
-        "AvailabilityManagerAssignmentList": IDFCollection[_g.AvailabilityManagerAssignmentList],
         "Boiler:Steam": IDFCollection[_g.BoilerSteam],
-        "Branch": IDFCollection[_g.Branch],
         "Chiller:CombustionTurbine": IDFCollection[_g.ChillerCombustionTurbine],
         "Chiller:EngineDriven": IDFCollection[_g.ChillerEngineDriven],
         "ChillerHeater:Absorption:DirectFired": IDFCollection[_g.ChillerHeaterAbsorptionDirectFired],
         "Coil:Cooling:DX": IDFCollection[_g.CoilCoolingDX],
-        "ElectricLoadCenter:Generators": IDFCollection[_g.ElectricLoadCenterGenerators],
-        "Foundation:Kiva": IDFCollection[_g.FoundationKiva],
         "Generator:InternalCombustionEngine": IDFCollection[_g.GeneratorInternalCombustionEngine],
         "GlobalGeometryRules": IDFCollection[_g.GlobalGeometryRules],
         "HVACTemplate:Plant:Boiler": IDFCollection[_g.HVACTemplatePlantBoiler],
-        "MaterialProperty:GlazingSpectralData": IDFCollection[_g.MaterialPropertyGlazingSpectralData],
         "PythonPlugin:Instance": IDFCollection[_g.PythonPluginInstance],
-        "Refrigeration:WalkIn": IDFCollection[_g.RefrigerationWalkIn],
-        "Schedule:Day:Interval": IDFCollection[_g.ScheduleDayInterval],
-        "Shading:Building:Detailed": IDFCollection[_g.ShadingBuildingDetailed],
-        "Shading:Site:Detailed": IDFCollection[_g.ShadingSiteDetailed],
-        "Shading:Zone:Detailed": IDFCollection[_g.ShadingZoneDetailed],
-        "SolarCollector:UnglazedTranspired:Multisystem": IDFCollection[_g.SolarCollectorUnglazedTranspiredMultisystem],
         "SurfaceProperty:ExposedFoundationPerimeter": IDFCollection[_g.SurfacePropertyExposedFoundationPerimeter],
         "WeatherProperty:SkyTemperature": IDFCollection[_g.WeatherPropertySkyTemperature],
         "ZoneHVAC:CoolingPanel:RadiantConvective:Water": IDFCollection[_g.ZoneHVACCoolingPanelRadiantConvectiveWater],
-        "ZoneHVAC:VentilatedSlab:SlabGroup": IDFCollection[_g.ZoneHVACVentilatedSlabSlabGroup],
     },
     total=True,
 )
@@ -21063,21 +20412,7 @@ class _Accessors_v8_9_to_v9_2:
         self,
     ) -> IDFCollection[AirflowNetworkDistributionComponentCoil_v8_9_to_v9_2]: ...
     @property
-    def airflow_network_distribution_duct_view_factors(
-        self,
-    ) -> IDFCollection[AirflowNetworkDistributionDuctViewFactors_v8_9_to_v9_2]: ...
-    @property
-    def availability_manager_assignment_lists(
-        self,
-    ) -> IDFCollection[AvailabilityManagerAssignmentList_v8_9_to_v9_2]: ...
-    @property
     def boiler_steams(self) -> IDFCollection[BoilerSteam_v8_9_to_v9_2]: ...
-    @property
-    def branches(self) -> IDFCollection[Branch_v8_9_to_v9_2]: ...
-    @property
-    def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_2]: ...
-    @property
-    def building_surfaces(self) -> IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_2]: ...
     @property
     def chiller_combustion_turbines(self) -> IDFCollection[ChillerCombustionTurbine_v8_9_to_v9_2]: ...
     @property
@@ -21095,19 +20430,11 @@ class _Accessors_v8_9_to_v9_2:
     @property
     def controller_mechanical_ventilations(self) -> IDFCollection[ControllerMechanicalVentilation_v8_9_to_v9_2]: ...
     @property
-    def daylighting_controls(self) -> IDFCollection[DaylightingControls_v8_9_to_v9_2]: ...
-    @property
-    def electric_load_center_generators(self) -> IDFCollection[ElectricLoadCenterGenerators_v8_9_to_v9_2]: ...
-    @property
     def energy_management_system_metered_output_variables(
         self,
     ) -> IDFCollection[EnergyManagementSystemMeteredOutputVariable_v8_9_to_v9_2]: ...
     @property
     def exterior_fuel_equipments(self) -> IDFCollection[ExteriorFuelEquipment_v8_9_to_v9_2]: ...
-    @property
-    def fan_system_models(self) -> IDFCollection[FanSystemModel_v8_9_to_v9_2]: ...
-    @property
-    def floor_detaileds(self) -> IDFCollection[FloorDetailed_v8_9_to_v9_2]: ...
     @property
     def fuel_factors(self) -> IDFCollection[FuelFactors_v8_9_to_v9_2]: ...
     @property
@@ -21121,10 +20448,6 @@ class _Accessors_v8_9_to_v9_2:
     @property
     def global_geometry_rules(self) -> IDFCollection[GlobalGeometryRules_v8_9_to_v9_2]: ...
     @property
-    def ground_heat_exchanger_response_factors(
-        self,
-    ) -> IDFCollection[GroundHeatExchangerResponseFactors_v8_9_to_v9_2]: ...
-    @property
     def hvac_template_plant_boilers(self) -> IDFCollection[HVACTemplatePlantBoiler_v8_9_to_v9_2]: ...
     @property
     def hvac_template_system_vrfs(self) -> IDFCollection[HVACTemplateSystemVRF_v8_9_to_v9_2]: ...
@@ -21133,75 +20456,25 @@ class _Accessors_v8_9_to_v9_2:
     @property
     def life_cycle_cost_use_price_escalations(self) -> IDFCollection[LifeCycleCostUsePriceEscalation_v8_9_to_v9_2]: ...
     @property
-    def material_property_glazing_spectral_datas(
-        self,
-    ) -> IDFCollection[MaterialPropertyGlazingSpectralData_v8_9_to_v9_2]: ...
-    @property
     def meter_custom_decrements(self) -> IDFCollection[MeterCustomDecrement_v8_9_to_v9_2]: ...
     @property
     def meter_customs(self) -> IDFCollection[MeterCustom_v8_9_to_v9_2]: ...
     @property
     def other_equipments(self) -> IDFCollection[OtherEquipment_v8_9_to_v9_2]: ...
     @property
-    def output_table_annuals(self) -> IDFCollection[OutputTableAnnual_v8_9_to_v9_2]: ...
-    @property
-    def output_table_monthlies(self) -> IDFCollection[OutputTableMonthly_v8_9_to_v9_2]: ...
-    @property
     def output_table_summary(self) -> IDFCollection[OutputTableSummaryReports_v8_9_to_v9_2]: ...
     @property
     def output_table_summary_reports(self) -> IDFCollection[OutputTableSummaryReports_v8_9_to_v9_2]: ...
-    @property
-    def refrigeration_walk_ins(self) -> IDFCollection[RefrigerationWalkIn_v8_9_to_v9_2]: ...
-    @property
-    def roof_ceiling_detaileds(self) -> IDFCollection[RoofCeilingDetailed_v8_9_to_v9_2]: ...
     @property
     def room_air_node_airflow_network_hvac_equipments(
         self,
     ) -> IDFCollection[RoomAirNodeAirflowNetworkHVACEquipment_v8_9_to_v9_2]: ...
     @property
-    def room_air_node_airflow_network_internal_gains(
-        self,
-    ) -> IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_2]: ...
-    @property
-    def room_air_temperature_pattern_nondimensional_heights(
-        self,
-    ) -> IDFCollection[RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v9_2]: ...
-    @property
-    def schedule_day_intervals(self) -> IDFCollection[ScheduleDayInterval_v8_9_to_v9_2]: ...
-    @property
-    def schedules_day_interval(self) -> IDFCollection[ScheduleDayInterval_v8_9_to_v9_2]: ...
-    @property
-    def shading_building(self) -> IDFCollection[ShadingBuildingDetailed_v8_9_to_v9_2]: ...
-    @property
-    def shading_building_detaileds(self) -> IDFCollection[ShadingBuildingDetailed_v8_9_to_v9_2]: ...
-    @property
-    def shading_site_detaileds(self) -> IDFCollection[ShadingSiteDetailed_v8_9_to_v9_2]: ...
-    @property
-    def shading_surfaces(self) -> IDFCollection[ShadingSiteDetailed_v8_9_to_v9_2]: ...
-    @property
-    def shading_zone(self) -> IDFCollection[ShadingZoneDetailed_v8_9_to_v9_2]: ...
-    @property
-    def shading_zone_detaileds(self) -> IDFCollection[ShadingZoneDetailed_v8_9_to_v9_2]: ...
-    @property
     def shadow_calculations(self) -> IDFCollection[ShadowCalculation_v8_9_to_v9_2]: ...
-    @property
-    def solar_collector_unglazed_transpired_multisystems(
-        self,
-    ) -> IDFCollection[SolarCollectorUnglazedTranspiredMultisystem_v8_9_to_v9_2]: ...
     @property
     def surface_property_exposed_foundation_perimeters(
         self,
     ) -> IDFCollection[SurfacePropertyExposedFoundationPerimeter_v8_9_to_v9_2]: ...
-    @property
-    def surface_property_surrounding_surfaces(
-        self,
-    ) -> IDFCollection[SurfacePropertySurroundingSurfaces_v8_9_to_v9_2]: ...
-    @property
-    def unitary_system_performance_multispeeds(
-        self,
-    ) -> IDFCollection[UnitarySystemPerformanceMultispeed_v8_9_to_v9_2]: ...
-    @property
-    def wall_detaileds(self) -> IDFCollection[WallDetailed_v8_9_to_v9_2]: ...
     @property
     def water_heater_mixeds(self) -> IDFCollection[WaterHeaterMixed_v8_9_to_v9_2]: ...
     @property
@@ -21214,8 +20487,6 @@ class _Accessors_v8_9_to_v9_2:
     ) -> IDFCollection[ZoneHVACCoolingPanelRadiantConvectiveWater_v8_9_to_v9_2]: ...
     @property
     def zone_hvac_hybrid_unitary_hvacs(self) -> IDFCollection[ZoneHVACHybridUnitaryHVAC_v8_9_to_v9_2]: ...
-    @property
-    def zone_hvac_ventilated_slab_slab_groups(self) -> IDFCollection[ZoneHVACVentilatedSlabSlabGroup_v8_9_to_v9_2]: ...
 
 class _Accessors_v8_9_to_v9_3:
     @property
@@ -21224,6 +20495,8 @@ class _Accessors_v8_9_to_v9_3:
     def controller_water_coils(self) -> IDFCollection[ControllerWaterCoil_v8_9_to_v9_3]: ...
     @property
     def curve_double_exponential_decays(self) -> IDFCollection[CurveDoubleExponentialDecay_v8_9_to_v9_3]: ...
+    @property
+    def fan_system_models(self) -> IDFCollection[FanSystemModel_v8_9_to_v9_3]: ...
     @property
     def output_debugging_datas(self) -> IDFCollection[OutputDebuggingData_v8_9_to_v9_3]: ...
     @property
@@ -21267,6 +20540,10 @@ class _Accessors_v8_9_to_v9_4:
     @property
     def people(self) -> IDFCollection[People_v8_9_to_v9_4]: ...
     @property
+    def room_air_node_airflow_network_internal_gains(
+        self,
+    ) -> IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v8_9_to_v9_4]: ...
+    @property
     def surface_convection_algorithm_insides(self) -> IDFCollection[SurfaceConvectionAlgorithmInside_v8_9_to_v9_4]: ...
     @property
     def surface_property_convection_coefficients(
@@ -21295,6 +20572,10 @@ class _Accessors_v8_9_to_v9_5:
     @property
     def air_loop_hvac_outdoor_air_systems(self) -> IDFCollection[AirLoopHVACOutdoorAirSystem_v8_9_to_v9_5]: ...
     @property
+    def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_5]: ...
+    @property
+    def building_surfaces(self) -> IDFCollection[BuildingSurfaceDetailed_v8_9_to_v9_5]: ...
+    @property
     def ceiling_adiabatics(self) -> IDFCollection[CeilingAdiabatic_v8_9_to_v9_5]: ...
     @property
     def ceiling_interzones(self) -> IDFCollection[CeilingInterzone_v8_9_to_v9_5]: ...
@@ -21311,6 +20592,8 @@ class _Accessors_v8_9_to_v9_5:
         self,
     ) -> IDFCollection[ConstructionComplexFenestrationState_v8_9_to_v9_5]: ...
     @property
+    def daylighting_controls(self) -> IDFCollection[DaylightingControls_v8_9_to_v9_5]: ...
+    @property
     def daylighting_reference_points(self) -> IDFCollection[DaylightingReferencePoint_v8_9_to_v9_5]: ...
     @property
     def electric_equipment(self) -> IDFCollection[ElectricEquipment_v8_9_to_v9_5]: ...
@@ -21320,6 +20603,8 @@ class _Accessors_v8_9_to_v9_5:
     def electric_equipments(self) -> IDFCollection[ElectricEquipment_v8_9_to_v9_5]: ...
     @property
     def floor_adiabatics(self) -> IDFCollection[FloorAdiabatic_v8_9_to_v9_5]: ...
+    @property
+    def floor_detaileds(self) -> IDFCollection[FloorDetailed_v8_9_to_v9_5]: ...
     @property
     def floor_ground_contacts(self) -> IDFCollection[FloorGroundContact_v8_9_to_v9_5]: ...
     @property
@@ -21337,6 +20622,8 @@ class _Accessors_v8_9_to_v9_5:
     @property
     def lights(self) -> IDFCollection[Lights_v8_9_to_v9_5]: ...
     @property
+    def roof_ceiling_detaileds(self) -> IDFCollection[RoofCeilingDetailed_v8_9_to_v9_5]: ...
+    @property
     def roofs(self) -> IDFCollection[Roof_v8_9_to_v9_5]: ...
     @property
     def sizing_system(self) -> IDFCollection[SizingSystem_v8_9_to_v9_5]: ...
@@ -21346,6 +20633,8 @@ class _Accessors_v8_9_to_v9_5:
     def steam_equipments(self) -> IDFCollection[SteamEquipment_v8_9_to_v9_5]: ...
     @property
     def wall_adiabatics(self) -> IDFCollection[WallAdiabatic_v8_9_to_v9_5]: ...
+    @property
+    def wall_detaileds(self) -> IDFCollection[WallDetailed_v8_9_to_v9_5]: ...
     @property
     def wall_exteriors(self) -> IDFCollection[WallExterior_v8_9_to_v9_5]: ...
     @property
@@ -21475,6 +20764,10 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def ground_heat_exchanger_ponds(self) -> IDFCollection[GroundHeatExchangerPond_v8_9_to_v22_1]: ...
     @property
+    def ground_heat_exchanger_response_factors(
+        self,
+    ) -> IDFCollection[GroundHeatExchangerResponseFactors_v8_9_to_v22_1]: ...
+    @property
     def ground_heat_exchanger_slinkies(self) -> IDFCollection[GroundHeatExchangerSlinky_v8_9_to_v22_1]: ...
     @property
     def ground_heat_exchanger_surfaces(self) -> IDFCollection[GroundHeatExchangerSurface_v8_9_to_v22_1]: ...
@@ -21523,6 +20816,10 @@ class _Accessors_v8_9_to_v22_1:
     @property
     def output_meters(self) -> IDFCollection[OutputMeter_v8_9_to_v22_1]: ...
     @property
+    def output_table_annuals(self) -> IDFCollection[OutputTableAnnual_v8_9_to_v22_1]: ...
+    @property
+    def output_table_monthlies(self) -> IDFCollection[OutputTableMonthly_v8_9_to_v22_1]: ...
+    @property
     def output_table_time_bins(self) -> IDFCollection[OutputTableTimeBins_v8_9_to_v22_1]: ...
     @property
     def photovoltaic_performance_equivalent_one_diodes(
@@ -21548,6 +20845,10 @@ class _Accessors_v8_9_to_v22_1:
     def room_air_temperature_pattern_constant_gradients(
         self,
     ) -> IDFCollection[RoomAirTemperaturePatternConstantGradient_v8_9_to_v22_1]: ...
+    @property
+    def room_air_temperature_pattern_nondimensional_heights(
+        self,
+    ) -> IDFCollection[RoomAirTemperaturePatternNondimensionalHeight_v8_9_to_v22_1]: ...
     @property
     def room_air_temperature_pattern_surface_mappings(
         self,
@@ -21592,6 +20893,10 @@ class _Accessors_v8_9_to_v22_1:
     def timestep(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
     @property
     def timesteps(self) -> IDFCollection[Timestep_v8_9_to_v22_1]: ...
+    @property
+    def unitary_system_performance_multispeeds(
+        self,
+    ) -> IDFCollection[UnitarySystemPerformanceMultispeed_v8_9_to_v22_1]: ...
     @property
     def ventilation(self) -> IDFCollection[ZoneVentilationDesignFlowRate_v8_9_to_v22_1]: ...
     @property
@@ -21761,6 +21066,10 @@ class _Accessors_v8_9_to_v26_1:
     @property
     def materials(self) -> IDFCollection[Material_v8_9_to_v26_1]: ...
     @property
+    def surface_property_surrounding_surfaces(
+        self,
+    ) -> IDFCollection[SurfacePropertySurroundingSurfaces_v8_9_to_v26_1]: ...
+    @property
     def zone_control_humidistats(self) -> IDFCollection[ZoneControlHumidistat_v8_9_to_v26_1]: ...
 
 class _Accessors_v8_9_to_v26_2:
@@ -21837,6 +21146,10 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.AirflowNetworkDistributionComponentTerminalUnit]: ...
     @property
+    def airflow_network_distribution_duct_view_factors(
+        self,
+    ) -> IDFCollection[_g.AirflowNetworkDistributionDuctViewFactors]: ...
+    @property
     def airflow_network_distribution_linkages(self) -> IDFCollection[_g.AirflowNetworkDistributionLinkage]: ...
     @property
     def airflow_network_intra_zone_linkages(self) -> IDFCollection[_g.AirflowNetworkIntraZoneLinkage]: ...
@@ -21887,6 +21200,8 @@ class _Accessors_v8_9_to_v26_2:
         self,
     ) -> IDFCollection[_g.AirflowNetworkZoneControlPressureController]: ...
     @property
+    def availability_manager_assignment_lists(self) -> IDFCollection[_g.AvailabilityManagerAssignmentList]: ...
+    @property
     def availability_manager_differential_thermostats(
         self,
     ) -> IDFCollection[_g.AvailabilityManagerDifferentialThermostat]: ...
@@ -21920,6 +21235,8 @@ class _Accessors_v8_9_to_v26_2:
     def availability_manager_scheduleds(self) -> IDFCollection[_g.AvailabilityManagerScheduled]: ...
     @property
     def branch_lists(self) -> IDFCollection[_g.BranchList]: ...
+    @property
+    def branches(self) -> IDFCollection[_g.Branch]: ...
     @property
     def chiller_absorption_indirects(self) -> IDFCollection[_g.ChillerAbsorptionIndirect]: ...
     @property
@@ -22064,6 +21381,8 @@ class _Accessors_v8_9_to_v26_2:
     def ducts(self) -> IDFCollection[_g.Duct]: ...
     @property
     def electric_load_center_distributions(self) -> IDFCollection[_g.ElectricLoadCenterDistribution]: ...
+    @property
+    def electric_load_center_generators(self) -> IDFCollection[_g.ElectricLoadCenterGenerators]: ...
     @property
     def electric_load_center_inverter_function_of_powers(
         self,
@@ -22437,6 +21756,8 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def material_infrared_transparents(self) -> IDFCollection[_g.MaterialInfraredTransparent]: ...
     @property
+    def material_property_glazing_spectral_datas(self) -> IDFCollection[_g.MaterialPropertyGlazingSpectralData]: ...
+    @property
     def material_property_heat_and_moisture_transfer_settings(
         self,
     ) -> IDFCollection[_g.MaterialPropertyHeatAndMoistureTransferSettings]: ...
@@ -22587,6 +21908,8 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def refrigeration_transfer_load_lists(self) -> IDFCollection[_g.RefrigerationTransferLoadList]: ...
     @property
+    def refrigeration_walk_ins(self) -> IDFCollection[_g.RefrigerationWalkIn]: ...
+    @property
     def roof_irrigations(self) -> IDFCollection[_g.RoofIrrigation]: ...
     @property
     def room_air_model_types(self) -> IDFCollection[_g.RoomAirModelType]: ...
@@ -22631,6 +21954,8 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def schedule_day_hourlies(self) -> IDFCollection[_g.ScheduleDayHourly]: ...
     @property
+    def schedule_day_intervals(self) -> IDFCollection[_g.ScheduleDayInterval]: ...
+    @property
     def schedule_file_shadings(self) -> IDFCollection[_g.ScheduleFileShading]: ...
     @property
     def schedule_type_limits(self) -> IDFCollection[_g.ScheduleTypeLimits]: ...
@@ -22644,6 +21969,8 @@ class _Accessors_v8_9_to_v26_2:
     def schedules_constant(self) -> IDFCollection[_g.ScheduleConstant]: ...
     @property
     def schedules_day_hourly(self) -> IDFCollection[_g.ScheduleDayHourly]: ...
+    @property
+    def schedules_day_interval(self) -> IDFCollection[_g.ScheduleDayInterval]: ...
     @property
     def schedules_week_daily(self) -> IDFCollection[_g.ScheduleWeekDaily]: ...
     @property
@@ -22737,6 +22064,10 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def setpoint_manager_warmests(self) -> IDFCollection[_g.SetpointManagerWarmest]: ...
     @property
+    def shading_building(self) -> IDFCollection[_g.ShadingBuildingDetailed]: ...
+    @property
+    def shading_building_detaileds(self) -> IDFCollection[_g.ShadingBuildingDetailed]: ...
+    @property
     def shading_buildings(self) -> IDFCollection[_g.ShadingBuilding]: ...
     @property
     def shading_fin_projections(self) -> IDFCollection[_g.ShadingFinProjection]: ...
@@ -22749,7 +22080,15 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def shading_property_reflectances(self) -> IDFCollection[_g.ShadingPropertyReflectance]: ...
     @property
+    def shading_site_detaileds(self) -> IDFCollection[_g.ShadingSiteDetailed]: ...
+    @property
     def shading_sites(self) -> IDFCollection[_g.ShadingSite]: ...
+    @property
+    def shading_surfaces(self) -> IDFCollection[_g.ShadingSiteDetailed]: ...
+    @property
+    def shading_zone(self) -> IDFCollection[_g.ShadingZoneDetailed]: ...
+    @property
+    def shading_zone_detaileds(self) -> IDFCollection[_g.ShadingZoneDetailed]: ...
     @property
     def site_ground_reflectance_snow_modifiers(self) -> IDFCollection[_g.SiteGroundReflectanceSnowModifier]: ...
     @property
@@ -22800,6 +22139,10 @@ class _Accessors_v8_9_to_v26_2:
     def solar_collector_performance_photovoltaic_thermal_simples(
         self,
     ) -> IDFCollection[_g.SolarCollectorPerformancePhotovoltaicThermalSimple]: ...
+    @property
+    def solar_collector_unglazed_transpired_multisystems(
+        self,
+    ) -> IDFCollection[_g.SolarCollectorUnglazedTranspiredMultisystem]: ...
     @property
     def solar_collector_unglazed_transpireds(self) -> IDFCollection[_g.SolarCollectorUnglazedTranspired]: ...
     @property
@@ -23055,6 +22398,8 @@ class _Accessors_v8_9_to_v26_2:
     @property
     def zone_hvac_unit_ventilators(self) -> IDFCollection[_g.ZoneHVACUnitVentilator]: ...
     @property
+    def zone_hvac_ventilated_slab_slab_groups(self) -> IDFCollection[_g.ZoneHVACVentilatedSlabSlabGroup]: ...
+    @property
     def zone_hvac_ventilated_slabs(self) -> IDFCollection[_g.ZoneHVACVentilatedSlab]: ...
     @property
     def zone_hvac_window_air_conditioners(self) -> IDFCollection[_g.ZoneHVACWindowAirConditioner]: ...
@@ -23081,10 +22426,6 @@ class _Accessors_v9_0_to_v9_1:
 
 class _Accessors_v9_0_to_v9_2:
     @property
-    def schedule_years(self) -> IDFCollection[ScheduleYear_v9_0_to_v9_2]: ...
-    @property
-    def schedules_year(self) -> IDFCollection[ScheduleYear_v9_0_to_v9_2]: ...
-    @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v9_0_to_v9_2]: ...
 
 class _Accessors_v9_0_to_v9_5:
@@ -23092,6 +22433,12 @@ class _Accessors_v9_0_to_v9_5:
     def run_period(self) -> IDFCollection[RunPeriod_v9_0_to_v9_5]: ...
     @property
     def run_periods(self) -> IDFCollection[RunPeriod_v9_0_to_v9_5]: ...
+
+class _Accessors_v9_0_to_v22_1:
+    @property
+    def schedule_years(self) -> IDFCollection[ScheduleYear_v9_0_to_v22_1]: ...
+    @property
+    def schedules_year(self) -> IDFCollection[ScheduleYear_v9_0_to_v22_1]: ...
 
 class _Accessors_v9_0_to_v23_1:
     @property
@@ -23177,8 +22524,6 @@ class _Accessors_v9_1_to_v26_2:
 
 class _Accessors_v9_2:
     @property
-    def foundation_kivas(self) -> IDFCollection[FoundationKiva_v9_2]: ...
-    @property
     def performance_precision_tradeoffs(self) -> IDFCollection[PerformancePrecisionTradeoffs_v9_2]: ...
     @property
     def zone_hvac_equipment_lists(self) -> IDFCollection[ZoneHVACEquipmentList_v9_2]: ...
@@ -23247,6 +22592,8 @@ class _Accessors_v9_2_to_v26_2:
         self,
     ) -> IDFCollection[_g.AirflowNetworkDistributionComponentFan]: ...
     @property
+    def foundation_kivas(self) -> IDFCollection[_g.FoundationKiva]: ...
+    @property
     def table_independent_variable_lists(self) -> IDFCollection[_g.TableIndependentVariableList]: ...
     @property
     def window_material_glazing_equivalent_layers(self) -> IDFCollection[_g.WindowMaterialGlazingEquivalentLayer]: ...
@@ -23254,8 +22601,6 @@ class _Accessors_v9_2_to_v26_2:
 class _Accessors_v9_3:
     @property
     def coil_heating_fuels(self) -> IDFCollection[CoilHeatingFuel_v9_3]: ...
-    @property
-    def fan_system_models(self) -> IDFCollection[FanSystemModel_v9_3]: ...
     @property
     def meter_custom_decrements(self) -> IDFCollection[MeterCustomDecrement_v9_3]: ...
     @property
@@ -23282,10 +22627,6 @@ class _Accessors_v9_3_to_v9_4:
     def generator_combustion_turbines(self) -> IDFCollection[GeneratorCombustionTurbine_v9_3_to_v9_4]: ...
     @property
     def generator_micro_turbines(self) -> IDFCollection[GeneratorMicroTurbine_v9_3_to_v9_4]: ...
-    @property
-    def room_air_node_airflow_network_internal_gains(
-        self,
-    ) -> IDFCollection[RoomAirNodeAirflowNetworkInternalGains_v9_3_to_v9_4]: ...
 
 class _Accessors_v9_3_to_v9_5:
     @property
@@ -23293,19 +22634,7 @@ class _Accessors_v9_3_to_v9_5:
         self,
     ) -> IDFCollection[AirConditionerVariableRefrigerantFlow_v9_3_to_v9_5]: ...
     @property
-    def building_surface_detaileds(self) -> IDFCollection[BuildingSurfaceDetailed_v9_3_to_v9_5]: ...
-    @property
-    def building_surfaces(self) -> IDFCollection[BuildingSurfaceDetailed_v9_3_to_v9_5]: ...
-    @property
-    def daylighting_controls(self) -> IDFCollection[DaylightingControls_v9_3_to_v9_5]: ...
-    @property
-    def floor_detaileds(self) -> IDFCollection[FloorDetailed_v9_3_to_v9_5]: ...
-    @property
     def other_equipments(self) -> IDFCollection[OtherEquipment_v9_3_to_v9_5]: ...
-    @property
-    def roof_ceiling_detaileds(self) -> IDFCollection[RoofCeilingDetailed_v9_3_to_v9_5]: ...
-    @property
-    def wall_detaileds(self) -> IDFCollection[WallDetailed_v9_3_to_v9_5]: ...
 
 class _Accessors_v9_3_to_v22_1:
     @property
@@ -23323,35 +22652,15 @@ class _Accessors_v9_3_to_v22_1:
     @property
     def fuel_factors(self) -> IDFCollection[FuelFactors_v9_3_to_v22_1]: ...
     @property
-    def ground_heat_exchanger_response_factors(
-        self,
-    ) -> IDFCollection[GroundHeatExchangerResponseFactors_v9_3_to_v22_1]: ...
-    @property
     def hvac_template_system_vrfs(self) -> IDFCollection[HVACTemplateSystemVRF_v9_3_to_v22_1]: ...
     @property
     def life_cycle_cost_use_price_escalations(self) -> IDFCollection[LifeCycleCostUsePriceEscalation_v9_3_to_v22_1]: ...
     @property
-    def output_table_annuals(self) -> IDFCollection[OutputTableAnnual_v9_3_to_v22_1]: ...
-    @property
-    def output_table_monthlies(self) -> IDFCollection[OutputTableMonthly_v9_3_to_v22_1]: ...
-    @property
     def python_plugin_trend_variables(self) -> IDFCollection[PythonPluginTrendVariable_v9_3_to_v22_1]: ...
-    @property
-    def room_air_temperature_pattern_nondimensional_heights(
-        self,
-    ) -> IDFCollection[RoomAirTemperaturePatternNondimensionalHeight_v9_3_to_v22_1]: ...
-    @property
-    def schedule_years(self) -> IDFCollection[ScheduleYear_v9_3_to_v22_1]: ...
-    @property
-    def schedules_year(self) -> IDFCollection[ScheduleYear_v9_3_to_v22_1]: ...
     @property
     def shadow_calculations(self) -> IDFCollection[ShadowCalculation_v9_3_to_v22_1]: ...
     @property
     def sizing_period_design_days(self) -> IDFCollection[SizingPeriodDesignDay_v9_3_to_v22_1]: ...
-    @property
-    def unitary_system_performance_multispeeds(
-        self,
-    ) -> IDFCollection[UnitarySystemPerformanceMultispeed_v9_3_to_v22_1]: ...
     @property
     def water_heater_stratifieds(self) -> IDFCollection[WaterHeaterStratified_v9_3_to_v22_1]: ...
     @property
@@ -23395,12 +22704,6 @@ class _Accessors_v9_3_to_v24_1:
         self,
     ) -> IDFCollection[RoomAirNodeAirflowNetworkHVACEquipment_v9_3_to_v24_1]: ...
 
-class _Accessors_v9_3_to_v26_1:
-    @property
-    def surface_property_surrounding_surfaces(
-        self,
-    ) -> IDFCollection[SurfacePropertySurroundingSurfaces_v9_3_to_v26_1]: ...
-
 class _Accessors_v9_3_to_v26_2:
     @property
     def air_loop_hvac_unitary_furnace_heat_cools(self) -> IDFCollection[_g.AirLoopHVACUnitaryFurnaceHeatCool]: ...
@@ -23423,15 +22726,7 @@ class _Accessors_v9_3_to_v26_2:
     @property
     def air_terminal_single_duct_vav_reheats(self) -> IDFCollection[_g.AirTerminalSingleDuctVAVReheat]: ...
     @property
-    def airflow_network_distribution_duct_view_factors(
-        self,
-    ) -> IDFCollection[_g.AirflowNetworkDistributionDuctViewFactors]: ...
-    @property
-    def availability_manager_assignment_lists(self) -> IDFCollection[_g.AvailabilityManagerAssignmentList]: ...
-    @property
     def boiler_steams(self) -> IDFCollection[_g.BoilerSteam]: ...
-    @property
-    def branches(self) -> IDFCollection[_g.Branch]: ...
     @property
     def chiller_combustion_turbines(self) -> IDFCollection[_g.ChillerCombustionTurbine]: ...
     @property
@@ -23441,41 +22736,13 @@ class _Accessors_v9_3_to_v26_2:
     @property
     def coil_cooling_dxes(self) -> IDFCollection[_g.CoilCoolingDX]: ...
     @property
-    def electric_load_center_generators(self) -> IDFCollection[_g.ElectricLoadCenterGenerators]: ...
-    @property
-    def foundation_kivas(self) -> IDFCollection[_g.FoundationKiva]: ...
-    @property
     def generator_internal_combustion_engines(self) -> IDFCollection[_g.GeneratorInternalCombustionEngine]: ...
     @property
     def global_geometry_rules(self) -> IDFCollection[_g.GlobalGeometryRules]: ...
     @property
     def hvac_template_plant_boilers(self) -> IDFCollection[_g.HVACTemplatePlantBoiler]: ...
     @property
-    def material_property_glazing_spectral_datas(self) -> IDFCollection[_g.MaterialPropertyGlazingSpectralData]: ...
-    @property
     def python_plugin_instances(self) -> IDFCollection[_g.PythonPluginInstance]: ...
-    @property
-    def refrigeration_walk_ins(self) -> IDFCollection[_g.RefrigerationWalkIn]: ...
-    @property
-    def schedule_day_intervals(self) -> IDFCollection[_g.ScheduleDayInterval]: ...
-    @property
-    def schedules_day_interval(self) -> IDFCollection[_g.ScheduleDayInterval]: ...
-    @property
-    def shading_building(self) -> IDFCollection[_g.ShadingBuildingDetailed]: ...
-    @property
-    def shading_building_detaileds(self) -> IDFCollection[_g.ShadingBuildingDetailed]: ...
-    @property
-    def shading_site_detaileds(self) -> IDFCollection[_g.ShadingSiteDetailed]: ...
-    @property
-    def shading_surfaces(self) -> IDFCollection[_g.ShadingSiteDetailed]: ...
-    @property
-    def shading_zone(self) -> IDFCollection[_g.ShadingZoneDetailed]: ...
-    @property
-    def shading_zone_detaileds(self) -> IDFCollection[_g.ShadingZoneDetailed]: ...
-    @property
-    def solar_collector_unglazed_transpired_multisystems(
-        self,
-    ) -> IDFCollection[_g.SolarCollectorUnglazedTranspiredMultisystem]: ...
     @property
     def surface_property_exposed_foundation_perimeters(
         self,
@@ -23486,8 +22753,6 @@ class _Accessors_v9_3_to_v26_2:
     def zone_hvac_cooling_panel_radiant_convective_waters(
         self,
     ) -> IDFCollection[_g.ZoneHVACCoolingPanelRadiantConvectiveWater]: ...
-    @property
-    def zone_hvac_ventilated_slab_slab_groups(self) -> IDFCollection[_g.ZoneHVACVentilatedSlabSlabGroup]: ...
 
 class _Accessors_v9_4:
     @property
@@ -24723,6 +23988,7 @@ class _ObjectTypeMapV9_0(
     _Types_v9_0_to_v9_1,
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -24751,6 +24017,7 @@ class IDFDocumentV9_0(
     _Accessors_v9_0_to_v9_1,
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -24778,6 +24045,7 @@ class _ObjectTypeMapV9_1(
     _Types_v9_0_to_v9_1,
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -24810,6 +24078,7 @@ class IDFDocumentV9_1(
     _Accessors_v9_0_to_v9_1,
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -24841,6 +24110,7 @@ class _ObjectTypeMapV9_2(
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -24879,6 +24149,7 @@ class IDFDocumentV9_2(
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -24916,6 +24187,7 @@ class _ObjectTypeMapV9_3(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -24939,7 +24211,6 @@ class _ObjectTypeMapV9_3(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
 ): ...
 
@@ -24959,6 +24230,7 @@ class IDFDocumentV9_3(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -24982,7 +24254,6 @@ class IDFDocumentV9_3(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _IDFDocumentMethods[Strict],
 ):  # type: ignore[misc]
@@ -25002,6 +24273,7 @@ class _ObjectTypeMapV9_4(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -25022,7 +24294,6 @@ class _ObjectTypeMapV9_4(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4,
     _Types_v9_4_to_v9_5,
@@ -25048,6 +24319,7 @@ class IDFDocumentV9_4(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -25068,7 +24340,6 @@ class IDFDocumentV9_4(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4,
     _Accessors_v9_4_to_v9_5,
@@ -25094,6 +24365,7 @@ class _ObjectTypeMapV9_5(
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
     _Types_v9_0_to_v9_5,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -25112,7 +24384,6 @@ class _ObjectTypeMapV9_5(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v9_5,
     _Types_v9_4_to_v9_6,
@@ -25141,6 +24412,7 @@ class IDFDocumentV9_5(
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
     _Accessors_v9_0_to_v9_5,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -25159,7 +24431,6 @@ class IDFDocumentV9_5(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v9_5,
     _Accessors_v9_4_to_v9_6,
@@ -25187,6 +24458,7 @@ class _ObjectTypeMapV9_6(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -25203,7 +24475,6 @@ class _ObjectTypeMapV9_6(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v9_6,
     _Types_v9_4_to_v22_1,
@@ -25235,6 +24506,7 @@ class IDFDocumentV9_6(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -25251,7 +24523,6 @@ class IDFDocumentV9_6(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v9_6,
     _Accessors_v9_4_to_v22_1,
@@ -25283,6 +24554,7 @@ class _ObjectTypeMapV22_1(
     _Types_v8_9_to_v25_2,
     _Types_v8_9_to_v26_1,
     _Types_v8_9_to_v26_2,
+    _Types_v9_0_to_v22_1,
     _Types_v9_0_to_v23_1,
     _Types_v9_0_to_v25_1,
     _Types_v9_0_to_v26_1,
@@ -25298,7 +24570,6 @@ class _ObjectTypeMapV22_1(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v22_1,
     _Types_v9_4_to_v23_1,
@@ -25330,6 +24601,7 @@ class IDFDocumentV22_1(
     _Accessors_v8_9_to_v25_2,
     _Accessors_v8_9_to_v26_1,
     _Accessors_v8_9_to_v26_2,
+    _Accessors_v9_0_to_v22_1,
     _Accessors_v9_0_to_v23_1,
     _Accessors_v9_0_to_v25_1,
     _Accessors_v9_0_to_v26_1,
@@ -25345,7 +24617,6 @@ class IDFDocumentV22_1(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v22_1,
     _Accessors_v9_4_to_v23_1,
@@ -25389,7 +24660,6 @@ class _ObjectTypeMapV22_2(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v23_1,
     _Types_v9_4_to_v24_1,
@@ -25435,7 +24705,6 @@ class IDFDocumentV22_2(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v23_1,
     _Accessors_v9_4_to_v24_1,
@@ -25481,7 +24750,6 @@ class _ObjectTypeMapV23_1(
     _Types_v9_3_to_v23_1,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v23_1,
     _Types_v9_4_to_v24_1,
@@ -25529,7 +24797,6 @@ class IDFDocumentV23_1(
     _Accessors_v9_3_to_v23_1,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v23_1,
     _Accessors_v9_4_to_v24_1,
@@ -25574,7 +24841,6 @@ class _ObjectTypeMapV23_2(
     _Types_v9_2_to_v26_2,
     _Types_v9_3_to_v23_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v24_1,
     _Types_v9_4_to_v26_2,
@@ -25619,7 +24885,6 @@ class IDFDocumentV23_2(
     _Accessors_v9_2_to_v26_2,
     _Accessors_v9_3_to_v23_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v24_1,
     _Accessors_v9_4_to_v26_2,
@@ -25663,7 +24928,6 @@ class _ObjectTypeMapV24_1(
     _Types_v9_2_to_v25_1,
     _Types_v9_2_to_v26_2,
     _Types_v9_3_to_v24_1,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v24_1,
     _Types_v9_4_to_v26_2,
@@ -25706,7 +24970,6 @@ class IDFDocumentV24_1(
     _Accessors_v9_2_to_v25_1,
     _Accessors_v9_2_to_v26_2,
     _Accessors_v9_3_to_v24_1,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v24_1,
     _Accessors_v9_4_to_v26_2,
@@ -25748,7 +25011,6 @@ class _ObjectTypeMapV24_2(
     _Types_v9_1_to_v26_2,
     _Types_v9_2_to_v25_1,
     _Types_v9_2_to_v26_2,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v26_2,
     _Types_v9_5_to_v26_2,
@@ -25788,7 +25050,6 @@ class IDFDocumentV24_2(
     _Accessors_v9_1_to_v26_2,
     _Accessors_v9_2_to_v25_1,
     _Accessors_v9_2_to_v26_2,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v26_2,
     _Accessors_v9_5_to_v26_2,
@@ -25829,7 +25090,6 @@ class _ObjectTypeMapV25_1(
     _Types_v9_1_to_v26_2,
     _Types_v9_2_to_v25_1,
     _Types_v9_2_to_v26_2,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v26_2,
     _Types_v9_5_to_v26_2,
@@ -25867,7 +25127,6 @@ class IDFDocumentV25_1(
     _Accessors_v9_1_to_v26_2,
     _Accessors_v9_2_to_v25_1,
     _Accessors_v9_2_to_v26_2,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v26_2,
     _Accessors_v9_5_to_v26_2,
@@ -25902,7 +25161,6 @@ class _ObjectTypeMapV25_2(
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v26_2,
     _Types_v9_2_to_v26_2,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v26_2,
     _Types_v9_5_to_v26_2,
@@ -25931,7 +25189,6 @@ class IDFDocumentV25_2(
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v26_2,
     _Accessors_v9_2_to_v26_2,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v26_2,
     _Accessors_v9_5_to_v26_2,
@@ -25960,7 +25217,6 @@ class _ObjectTypeMapV26_1(
     _Types_v9_0_to_v26_2,
     _Types_v9_1_to_v26_2,
     _Types_v9_2_to_v26_2,
-    _Types_v9_3_to_v26_1,
     _Types_v9_3_to_v26_2,
     _Types_v9_4_to_v26_2,
     _Types_v9_5_to_v26_2,
@@ -25988,7 +25244,6 @@ class IDFDocumentV26_1(
     _Accessors_v9_0_to_v26_2,
     _Accessors_v9_1_to_v26_2,
     _Accessors_v9_2_to_v26_2,
-    _Accessors_v9_3_to_v26_1,
     _Accessors_v9_3_to_v26_2,
     _Accessors_v9_4_to_v26_2,
     _Accessors_v9_5_to_v26_2,
@@ -26014,29 +25269,38 @@ IDFDocumentV26_2 = IDFDocument
 
 _D = TypeVar("_D", bound=AnyIDFDocument)
 
+@overload
 def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
 
     Returns *doc* itself. A document's version is read from its file, so a type checker cannot
-    know it; this states it, and checks it at run time.
+    know it; this states it, and checks it at run time. Given a tuple of document types, as
+    ``isinstance`` takes one, it accepts a document of any of them and types it as their union:
+    a range of releases, such as those that have ``Space``.
 
     Args:
         doc: A document of any supported version.
         document_type: ``IDFDocument`` for the latest release, or one of the
-            ``IDFDocumentV<major>_<minor>`` types of this module.
+            ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
 
     Returns:
-        *doc*, typed as *document_type*.
+        *doc*, typed as *document_type*, or as the union of the types in the tuple.
 
     Raises:
-        TypeError: If *doc* is not a document of that version.
+        TypeError: If *doc* is not a document of that version, or of any version in the tuple.
 
     Examples:
         ```python
-        from idfkit import load_idf
-        from idfkit.versioned import IDFDocumentV9_4, as_version
+        from idfkit import IDFDocument, load_idf
+        from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
 
         model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
         model["Zone"].first()  # typed as Zone was declared in 9.4
+
+        recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+        recent["Space"].first()  # typed in each of those releases
         ```
     """
+
+@overload
+def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: ...
