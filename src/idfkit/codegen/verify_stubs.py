@@ -26,6 +26,10 @@ import ast
 import dataclasses
 import functools
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from idfkit.schema import EpJSONSchema
 
 Version = tuple[int, int, int]
 
@@ -48,6 +52,8 @@ class _Module:
 
     classes: dict[str, _Class] = dataclasses.field(default_factory=dict[str, _Class])
     typed_dicts: dict[str, dict[str, str]] = dataclasses.field(default_factory=dict[str, dict[str, str]])
+    # Module-level ``Name: TypeAlias = Target``: the alias and the class it names.
+    aliases: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 
 
 @functools.cache
@@ -56,30 +62,44 @@ def _norm(annotation: str) -> str:
     return ast.unparse(ast.parse(annotation.replace("_g.", ""), mode="eval"))
 
 
+def _read_class(node: ast.ClassDef) -> _Class:
+    """What one generated class declares: its bases, fields, properties, and setters."""
+    cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {})
+    for item in node.body:
+        if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+            cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
+        elif not isinstance(item, ast.FunctionDef):
+            continue
+        elif item.returns is not None and any(ast.unparse(d) == "property" for d in item.decorator_list):
+            cls.properties[item.name] = _norm(ast.unparse(item.returns))
+        elif (
+            any(ast.unparse(d) == f"{item.name}.setter" for d in item.decorator_list)
+            and len(item.args.args) == 2
+            and item.args.args[1].annotation is not None
+        ):
+            cls.setters[item.name] = _norm(ast.unparse(item.args.args[1].annotation))
+    for name in cls.setters:
+        cls.fields[name] = cls.properties.pop(name)
+    return cls
+
+
+def _read_typed_dict(node: ast.Assign) -> dict[str, str]:
+    """The entries of a functional ``TypedDict(...)`` assignment."""
+    assert isinstance(node.value, ast.Call)  # noqa: S101 - the caller checked the shape
+    entries: dict[str, str] = {}
+    mapping = node.value.args[1]
+    assert isinstance(mapping, ast.Dict)  # noqa: S101 - the caller checked the shape
+    for key, value in zip(mapping.keys, mapping.values, strict=True):
+        assert isinstance(key, ast.Constant)  # noqa: S101 - generated maps have string keys
+        entries[str(key.value)] = _norm(ast.unparse(value))
+    return entries
+
+
 def _read(source: str, module: _Module | None = None) -> _Module:
     module = module if module is not None else _Module()
     for node in ast.parse(source).body:
         if isinstance(node, ast.ClassDef):
-            cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {})
-            for item in node.body:
-                if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-                    cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
-                elif (
-                    isinstance(item, ast.FunctionDef)
-                    and item.returns is not None
-                    and any(ast.unparse(d) == "property" for d in item.decorator_list)
-                ):
-                    cls.properties[item.name] = _norm(ast.unparse(item.returns))
-                elif (
-                    isinstance(item, ast.FunctionDef)
-                    and any(ast.unparse(d) == f"{item.name}.setter" for d in item.decorator_list)
-                    and len(item.args.args) == 2
-                    and item.args.args[1].annotation is not None
-                ):
-                    cls.setters[item.name] = _norm(ast.unparse(item.args.args[1].annotation))
-            for name in cls.setters:
-                cls.fields[name] = cls.properties.pop(name)
-            module.classes[node.name] = cls
+            module.classes[node.name] = _read_class(node)
         elif (
             isinstance(node, ast.Assign)
             and isinstance(node.value, ast.Call)
@@ -87,12 +107,14 @@ def _read(source: str, module: _Module | None = None) -> _Module:
             and len(node.value.args) == 2
             and isinstance(node.value.args[1], ast.Dict)
         ):
-            name = ast.unparse(node.targets[0])
-            entries: dict[str, str] = {}
-            for key, value in zip(node.value.args[1].keys, node.value.args[1].values, strict=True):
-                assert isinstance(key, ast.Constant)  # noqa: S101 - generated maps have string keys
-                entries[str(key.value)] = _norm(ast.unparse(value))
-            module.typed_dicts[name] = entries
+            module.typed_dicts[ast.unparse(node.targets[0])] = _read_typed_dict(node)
+        elif (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.value is not None
+            and ast.unparse(node.annotation) == "TypeAlias"
+        ):
+            module.aliases[node.target.id] = ast.unparse(node.value)
     return module
 
 
@@ -242,7 +264,31 @@ def verify(types_source: str, document_source: str, versioned_source: str, versi
         _check_version(module, ver, ver == versions[-1], problems)
     _check_any_document(module, versions, problems)
     _check_private_imports(document_source, module, problems)
+    _check_any_names(module, versions[-1], problems)
     return problems
+
+
+def _check_any_names(module: _Module, latest: Version, problems: list[str]) -> None:
+    """Every object type of the latest release has a public ``Any<Class>`` to annotate code for any release.
+
+    It is the class ``AnyIDFDocument`` types the collection with when the type changed between
+    versions, and otherwise an alias of the latest class, which is then that collection's class.
+    """
+    from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
+    from idfkit.schema import get_schema
+
+    common = module.typed_dicts.get("_CommonTypeMap", {})
+    for obj_type in get_schema(latest).object_types:
+        cls = _to_class_name(obj_type)
+        name = f"Any{cls}"
+        if name in module.classes:
+            if cls in module.classes and name not in _linearise(module, cls):
+                problems.append(f"{name}: {cls} does not derive from it")
+        elif module.aliases.get(name) != cls:
+            problems.append(f"{obj_type}: no {name}, as a class or as an alias of {cls}")
+            continue
+        if obj_type in common and _collection_class(_collection_class(common[obj_type])) not in (name, cls):
+            problems.append(f"AnyIDFDocument[{obj_type!r}]: typed with neither {name} nor {cls}")
 
 
 def _admitted(member: str, members: frozenset[str]) -> bool:
@@ -289,6 +335,43 @@ def _check_writable(module: _Module, cls: str, obj_type: str, decls: list[dict[s
         problems.append(
             f"AnyIDFDocument[{obj_type!r}] ({cls}): update keywords ({fields_cls}) differ from its writable fields"
         )
+
+
+def _check_any_group(
+    module: _Module, cls: str, obj_type: str, schemas: list[EpJSONSchema], problems: list[str]
+) -> None:
+    """``Any<Class>`` declares the type's extensible group when every version has it under one key.
+
+    Its fields must be ones every version's group has; reading one admits every version's values,
+    and assigning one accepts only values every version accepts.
+    """
+    from idfkit.codegen.generate_stubs import _group_decl  # pyright: ignore[reportPrivateUsage]
+
+    decls = [_group_decl(s, obj_type) for s in schemas]
+    shared = [d for d in decls if d is not None]
+    if len(shared) != len(decls) or len({d[0] for d in shared}) != 1:
+        return
+    wrapper = shared[0][0]
+    annotation = _fields(module, cls).get(wrapper)
+    if annotation is None or not annotation.startswith("ExtensibleList["):
+        problems.append(f"{cls}: no {wrapper} group, though every version has one")
+        return
+    group_cls = _collection_class(annotation)
+    if group_cls not in module.classes:
+        problems.append(f"{cls}.{wrapper}: group class {group_cls} not defined")
+        return
+    inner = [{name: _norm(f"{t} | None") for name, t in d[1]} for d in shared]
+    setters = module.classes[group_cls].setters
+    for name, read in _fields(module, group_cls).items():
+        if not all(name in i for i in inner):
+            problems.append(f"{group_cls}.{name}: not a field of every version's {wrapper} group")
+            continue
+        admitted = _union_members(read)
+        if not all(_union_members(i[name]) <= admitted for i in inner):
+            problems.append(f"{group_cls}.{name}: does not admit every version's values")
+        writable = _union_members(setters.get(name, read)) - {"Never"}
+        if not all(all(_admitted(m, _union_members(i[name])) for m in writable) for i in inner):
+            problems.append(f"{group_cls}.{name}: writable values some version rejects")
 
 
 def _check_private_imports(document_source: str, module: _Module, problems: list[str]) -> None:
@@ -375,6 +458,7 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
         decls = [_field_decls(s, obj_type) for s in schemas if obj_type in s.object_types]
         shared = _intersection([set(d) for d in decls])
         _check_writable(module, cls, obj_type, decls, problems)
+        _check_any_group(module, cls, obj_type, [s for s in schemas if obj_type in s.object_types], problems)
         actual = {k: v for k, v in _fields(module, cls).items() if k not in _group_names(module, cls)}
         if set(actual) != shared:
             problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): fields are not those every version has")

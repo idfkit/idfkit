@@ -150,12 +150,27 @@ class TestCommittedStubs:
             # so its document would no longer be assignable to AnyIDFDocument.
             (
                 0,
-                r'(?m)^(\s+)"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n',
+                r'(?m)^(\s+)"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n',
                 r'\g<0>\1"Space": ReadOnly[IDFCollection[Space]],\n',
                 "extra ['Space']",
             ),
             # A private shared base left to the star import, which skips it: the accessor is Unknown.
-            (1, r"(?m)^    _ZoneBase,\n", "", "_ZoneBase is not imported"),
+            # A group every version has, dropped from the any-release class.
+            (
+                0,
+                r"(?m)^    vertices: ExtensibleList\[BuildingSurfaceDetailedVerticesGroup\]\n",
+                "",
+                "AnyBuildingSurfaceDetailed: no vertices group",
+            ),
+            # A merged group's field made writable with a value some version rejects (a float from 22.2 on).
+            (
+                0,
+                r"def digits_after_decimal\(self, value: int \| None\)",
+                "def digits_after_decimal(self, value: float | None)",
+                "digits_after_decimal: writable values some version rejects",
+            ),
+            # An object type without its public any-release name.
+            (0, r"(?m)^AnyZoneList: TypeAlias = ZoneList\n", "", "no AnyZoneList"),
             # A value only some versions accept, made writable through the shared base.
             (
                 0,
@@ -164,7 +179,7 @@ class TestCommittedStubs:
                 "heater_fuel_type: writable values some version rejects",
             ),
             # A type every version has, dropped from AnyIDFDocument.
-            (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[_ZoneBase\]\],\n', "", "AnyIDFDocument"),
+            (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n', "", "AnyIDFDocument"),
         ],
     )
     def test_a_misdescription_is_reported(self, source: int, pattern: str, replacement: str, expected: str) -> None:
@@ -196,6 +211,13 @@ class TestAdoption:
         assert ended
         for name in ended:
             assert re.search(rf"(?m)^class {name}\(", after), f"{name} disappeared on adoption"
+
+    def test_generating_for_an_older_release_does_not_leak_into_the_latest(self) -> None:
+        # Every version-dependent cache must be cleared when the supported releases change, or an
+        # earlier generation for 24.1 is reused for the full set (a merged group did, once).
+        gen.generate_stubs((24, 1, 0))
+        sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
+        assert verify(*sources, gen.SUPPORTED.versions) == []
 
     def test_rejects_a_release_that_is_not_bundled(self) -> None:
         with pytest.raises(ValueError, match="not a bundled"), gen.supported_up_to((7, 2, 0)):

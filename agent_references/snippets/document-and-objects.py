@@ -277,14 +277,27 @@ def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run time fails
-    from idfkit.document import Zone  # not "from idfkit import Zone": recent pyright reports that
+    # From idfkit.document, not idfkit: recent pyright reports "not exported" for the latter.
+    from idfkit.document import AnyBuildingSurfaceDetailed, AnyZone, Zone
 
 
-def ceiling(zone: Zone) -> float | None:
-    """A latest-release Zone; a 9.4 zone is Zone_v8_9_to_v9_4 and is rejected."""
+def latest_ceiling(zone: Zone) -> float | None:
+    """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
     return height if isinstance(height, float) else None
 
 
-ceiling(doc["Zone"]["Office"])
+def any_ceiling(zone: AnyZone) -> float | None:
+    """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
+    """Extensible groups are typed too: vertices exist in every release."""
+    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+
+
+any_ceiling(doc["Zone"]["Office"])
+any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
 # --8<-- [end:typed-object-parameter]

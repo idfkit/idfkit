@@ -219,6 +219,15 @@ This release moves to `conformance-2026.21`. Through `conformance-2026.19`, the 
   `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"`. Naming a release's type costs
   a type checker no more than naming `IDFDocument`
   ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
+- Every object type gained an `Any<Class>` type, importable from `idfkit.document` inside
+  `if TYPE_CHECKING:`, for annotating code that takes an object of any supported release:
+  `def floor_area(zone: AnyZone)` accepts a latest-release zone, a 9.4 zone and a zone reached
+  through `AnyIDFDocument`, where `Zone` accepts only the first. Through it, fields follow the
+  `AnyIDFDocument` rules, extensible groups included, so `AnyBuildingSurfaceDetailed.vertices` is
+  typed. For a type no release changed, `Any<Class>` is the latest class itself (`AnyZoneList` is
+  `ZoneList`). It covers the releases idfkit supports, so adopting a release that drops or renames
+  a field removes that field from it
+  ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 - **Every object type in a document's schema became reachable as a typed attribute
   on `IDFDocument`, not only the hand-written shorthands.** Each type has one
   `snake_case` plural, declared in `document.pyi`: `doc.air_loop_hvacs` is

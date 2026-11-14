@@ -123,8 +123,8 @@ class TestStubGeneration:
 
         content = generate_stubs((24, 1, 0))
         # Zone's declaration changed between releases, so it derives from its shared base.
-        assert "class Zone(_ZoneBase):" in content
-        assert "class _ZoneBase(_TypedIDFObject):" in content
+        assert "class Zone(AnyZone):" in content
+        assert "class AnyZone(_TypedIDFObject):" in content
         assert "\nclass Building(" in content
         assert "\nclass Material(" in content
 

@@ -74,7 +74,7 @@ def supported_up_to(latest: Version) -> Iterator[None]:
 
 
 def _clear_version_caches() -> None:
-    for cached in (_build_type_runs, _shared_layout, _class_assignment):
+    for cached in (_build_type_runs, _shared_layout, _merged_groups, _class_assignment):
         cached.cache_clear()
 
 
@@ -804,6 +804,13 @@ def _group_decl(schema: EpJSONSchema, obj_type: str) -> tuple[str, tuple[tuple[s
     return pc.ext_wrapper_key, inner
 
 
+def _group_key(
+    decl: tuple[str, tuple[tuple[str, str], ...]] | None,
+) -> tuple[str, frozenset[tuple[str, str]]] | None:
+    """A group declaration with its fields' order dropped, for comparing versions."""
+    return None if decl is None else (decl[0], frozenset(decl[1]))
+
+
 def _split_union(type_text: str) -> list[str]:
     """Split a generated value type at its top-level ``|``."""
     parts: list[str] = []
@@ -921,9 +928,10 @@ class _SharedLayout:
 def _shared_layout() -> dict[str, _SharedLayout]:
     """For each type of the latest release that some older version declares differently.
 
-    Such a type gets a private ``_<Class>Base``: the type as every supported version has it. The
-    latest class and each older range's class derive from it, so they only declare what is theirs,
-    and ``AnyIDFDocument`` types the type's collection with it.
+    Such a type gets ``Any<Class>``: the type as every supported version that has it declares it.
+    The latest class and each older range's class derive from it, so they only declare what is
+    theirs, ``AnyIDFDocument`` types the type's collection with it, and code for any release
+    annotates a parameter with it.
     """
     runs = _build_type_runs()
     latest_types = set(get_schema(SUPPORTED.latest).object_types)
@@ -937,16 +945,108 @@ def _shared_layout() -> dict[str, _SharedLayout]:
         fields = {name: _merge_types([d[name] for d in decls]) for name in latest if all(name in d for d in decls)}
         writable = {name: _intersect_types([d[name] for d in decls]) for name in fields}
         identical = frozenset(name for name in fields if all(d[name] == latest[name] for d in decls))
-        groups = {_group_decl(sc, obj_type) for sc in schemas}
+        # Compared as sets: some versions list a group's fields in another order (8.9's vertices).
+        groups = {_group_key(_group_decl(sc, obj_type)) for sc in schemas}
         layout[obj_type] = _SharedLayout(fields, writable, identical, len(groups) == 1 and None not in groups)
     return layout
 
 
 def _shared_class_name(obj_type: str) -> str:
-    """The class ``AnyIDFDocument`` types *obj_type*'s collection with."""
+    """The class ``AnyIDFDocument`` types *obj_type*'s collection with.
+
+    ``Any<Class>`` for a type some version declares differently; the latest class itself for one
+    every version declares alike, which ``Any<Class>`` then names as an alias (see
+    :func:`_generate_any_aliases`).
+    """
     if obj_type in _shared_layout():
-        return f"_{_to_class_name(obj_type)}Base"
+        return _any_class_name(obj_type)
     return _to_class_name(obj_type)
+
+
+def _any_class_name(obj_type: str) -> str:
+    """The public name of *obj_type* as every version that has it declares it: ``Any<Class>``."""
+    return f"Any{_to_class_name(obj_type)}"
+
+
+@dataclasses.dataclass(frozen=True)
+class _MergedGroup:
+    """An extensible group every version has under one wrapper key, though not declared alike.
+
+    Attributes:
+        wrapper: The wrapper key, such as ``vertices``.
+        cls_name: ``Any<Class><Wrapper>Group``, the group as every version declares it.
+        fields: Each inner field every version has, in the latest version's order, with what
+            reading it gives (the union of the versions' types) and what writing it accepts (their
+            intersection).
+    """
+
+    wrapper: str
+    cls_name: str
+    fields: tuple[tuple[str, str, str], ...]
+
+
+@functools.cache
+def _merged_groups() -> dict[str, _MergedGroup]:
+    """The groups ``Any<Class>`` declares for types whose group differs between versions.
+
+    A type whose group is declared alike everywhere has it on ``Any<Class>`` already, and one that
+    some version declares without a group, or under another wrapper key, gets none: a file of that
+    version has no such list.
+    """
+    runs = _build_type_runs()
+    merged: dict[str, _MergedGroup] = {}
+    for obj_type, layout in _shared_layout().items():
+        if layout.group:
+            continue
+        decls = [_group_decl(get_schema(run[0]), obj_type) for run in runs[obj_type]]
+        if any(d is None for d in decls) or len({d[0] for d in decls if d is not None}) != 1:
+            continue
+        inner = [dict(d[1]) for d in decls if d is not None]
+        names = [name for name in inner[-1] if all(name in i for i in inner)]
+        wrapper = decls[-1][0] if decls[-1] is not None else ""
+        cls_name = f"{_any_class_name(obj_type)}{_to_class_name(wrapper.title())}Group"
+        fields = tuple(
+            (name, _merge_types([i[name] for i in inner]), _intersect_types([i[name] for i in inner])) for name in names
+        )
+        merged[obj_type] = _MergedGroup(wrapper, cls_name, fields)
+    return merged
+
+
+def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
+    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection."""
+    lines = [
+        f"class {group.cls_name}({_TYPED_GROUP_BASE}):",
+        f'    """One {group.wrapper} group inside :class:`{owner}`, as every supported version declares it."""',
+    ]
+    for name, read, write in group.fields:
+        if read == write:
+            lines.append(f"    {name}: {read} | None")
+        else:
+            lines += [
+                "    @property",
+                f"    def {name}(self) -> {read} | None: ...",
+                f"    @{name}.setter",
+                f"    def {name}(self, value: {_or_none(write)}) -> None: ...",
+            ]
+    lines.append("")
+    return lines
+
+
+def _group_base_for(obj_type: str, prefix: str = "") -> str:
+    """The base of *obj_type*'s per-version group classes: its merged group, if it has one."""
+    group = _merged_groups().get(obj_type)
+    return f"{prefix}{group.cls_name}" if group is not None else f"{prefix}{_TYPED_GROUP_BASE}"
+
+
+def _generate_any_aliases(schema: EpJSONSchema) -> list[str]:
+    """``Any<Class> = <Class>`` for each type every version that has it declares alike.
+
+    So every object type has an ``Any<Class>`` to annotate code for any release with, and a caller
+    need not know which types changed between releases. A type that did change has a class of that
+    name instead (:func:`_generate_base_class`).
+    """
+    layout = _shared_layout()
+    return [f"{_any_class_name(t)}: TypeAlias = {_to_class_name(t)}" for t in schema.object_types if t not in layout]
 
 
 def _common_fields_name(obj_type: str) -> str:
@@ -961,7 +1061,7 @@ def _generate_base_class(
     type_since: dict[str, tuple[int, int, int]],
     field_since: dict[tuple[str, str], tuple[int, int, int]],
 ) -> list[str]:
-    r"""Generate ``_<Class>Base``: the fields of *obj_type* present in every supported version.
+    r"""Generate ``Any<Class>``: the fields of *obj_type* present in every supported version.
 
     A field whose value type differs between versions is a property here: reading it gives the
     union of the versions' value types, since a document of any of them can hold any of those
@@ -982,6 +1082,9 @@ def _generate_base_class(
     if not common:
         lines[-1] += " ..."
     lines.append("")
+    merged_group = _merged_groups().get(obj_type)
+    if merged_group is not None:
+        lines += _generate_merged_group(merged_group, base)
     lines += _generate_object_class(
         schema,
         obj_type,
@@ -1010,6 +1113,9 @@ def _generate_base_class(
     if out[-1].startswith("class ") and out[-1].endswith(": ..."):
         out[-1] = out[-1][: -len(" ...")]  # update is about to give the class a body
     varying = [(name, _or_none(layout.writable[name])) for name in layout.fields if name in layout.varying]
+    if merged_group is not None:
+        out.append(f"    {merged_group.wrapper}: ExtensibleList[{merged_group.cls_name}]")
+        varying.append((merged_group.wrapper, "list[Any]"))
     out.extend(_generate_update(base, varying, "", _common_fields_name(obj_type)))
     return out
 
@@ -1207,7 +1313,7 @@ def generate_versioned_pyi() -> str:
                 suffix=_run_suffix(list(run)),
                 class_doc=doc,
                 base=f"_g.{_shared_class_name(obj_type)}" if shared else f"_g.{_TYPED_OBJECT_BASE}",
-                group_base=f"_g.{_TYPED_GROUP_BASE}",
+                group_base=_group_base_for(obj_type, "_g."),
                 skip_fields=shared.identical if shared else frozenset(),
                 omit_group=shared.group if shared else False,
                 fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
@@ -1396,7 +1502,7 @@ def _generate_types_module() -> str:
     parts.append("from __future__ import annotations")
     parts.append("")
     parts.append("from collections.abc import Mapping")
-    parts.append("from typing import Any, Literal, TypedDict")
+    parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
     parts.append("from typing_extensions import Never, ReadOnly, Unpack")
     parts.append("")
@@ -1423,6 +1529,7 @@ def _generate_types_module() -> str:
                 type_since=type_since,
                 field_since=field_since,
                 base=_shared_class_name(obj_type),
+                group_base=_group_base_for(obj_type),
                 skip_fields=layout[obj_type].identical,
                 omit_group=layout[obj_type].group,
                 fields_base=_common_fields_name(obj_type),
@@ -1438,6 +1545,12 @@ def _generate_types_module() -> str:
         parts.append("")
 
     # Generate the TypedDict mapping for __getitem__ dispatch
+    parts.append("# =========================================================================")
+    parts.append("# Any<Class> for the types every version that has them declares alike")
+    parts.append("# =========================================================================")
+    parts.append("")
+    parts.extend(_generate_any_aliases(schema))
+    parts.append("")
     parts.append("# =========================================================================")
     parts.append("# TypedDict mapping for IDFDocument.__getitem__ dispatch")
     parts.append("# =========================================================================")

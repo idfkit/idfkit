@@ -142,29 +142,46 @@ def count_people(doc: AnyIDFDocument) -> int:
 | The code works on | Annotate with |
 |---|---|
 | Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
-| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument` |
+| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
 | Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
 
 ### Annotating a parameter with an object class
 
-The object classes (`Zone`, `Material`, ...) exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time. A class describes the latest release: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected, so in code for any release pass the document and let the function reach its objects, or take `IDFObject`.
+Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed.
+
+The classes exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time.
 
 ```python
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run time fails
-    from idfkit.document import Zone  # not "from idfkit import Zone": recent pyright reports that
+    # From idfkit.document, not idfkit: recent pyright reports "not exported" for the latter.
+    from idfkit.document import AnyBuildingSurfaceDetailed, AnyZone, Zone
 
 
-def ceiling(zone: Zone) -> float | None:
-    """A latest-release Zone; a 9.4 zone is Zone_v8_9_to_v9_4 and is rejected."""
+def latest_ceiling(zone: Zone) -> float | None:
+    """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
     height = zone.ceiling_height
     return height if isinstance(height, float) else None
 
 
-ceiling(doc["Zone"]["Office"])
+def any_ceiling(zone: AnyZone) -> float | None:
+    """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
+    """Extensible groups are typed too: vertices exist in every release."""
+    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+
+
+any_ceiling(doc["Zone"]["Office"])
+any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
 ```
+
+An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either.
 
 ### Reading and writing through `AnyIDFDocument`
 

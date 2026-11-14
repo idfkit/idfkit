@@ -17,14 +17,17 @@ The examples are real differences between EnergyPlus 9.4 and the latest release:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument, load_idf, save_idf
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
-from idfkit.versioned import AnyIDFDocument, IDFDocumentV9_4, IDFDocumentV26_2, as_version
+from idfkit.versioned import AnyIDFDocument, IDFDocumentV8_9, IDFDocumentV9_4, IDFDocumentV26_2, as_version
+
+if TYPE_CHECKING:
+    from idfkit.document import AnyBuildingSurfaceDetailed, AnyOutputTableAnnual, AnyZone, AnyZoneList
 
 
 def raw_spelling(doc: IDFDocument[Any]) -> None:
@@ -46,6 +49,36 @@ def people_count(doc: AnyIDFDocument) -> int:
 
 
 def latest_only(doc: IDFDocument[Any]) -> None: ...
+
+
+def zone_height(zone: AnyZone) -> float | None:
+    """A helper for a zone of any release: the latest one, an older one, or one from AnyIDFDocument."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
+    """The vertices group, though 8.9 lists its fields in another order."""
+    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+
+
+def zone_list_size(zone_list: AnyZoneList) -> int:
+    """A type every release declares alike: AnyZoneList is ZoneList."""
+    return len(zone_list.zones)
+
+
+def any_release_objects(
+    latest: IDFDocument, oldest: IDFDocumentV8_9, legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument
+) -> None:
+    for doc in (latest, oldest, legacy):
+        zone_height(doc["Zone"]["Office"])
+        vertex_count(doc["BuildingSurface:Detailed"]["Wall"])
+        zone_list_size(doc["ZoneList"]["All"])
+    for zone in any_doc.zones:
+        zone_height(zone)
+    for table in any_doc["Output:Table:Annual"]:
+        for detail in table.variable_details:
+            detail.digits_after_decimal = 2  # an int: every release accepts it
 
 
 def write_safe_fuel(doc: AnyIDFDocument) -> None:
@@ -100,4 +133,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     # Writing takes only what every version accepts: 9.3 to 23.1 reject DistrictHeatingWater, 23.2 on reject Steam.
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "DistrictHeatingWater"  # pyright: ignore[reportAttributeAccessIssue]  (not before 23.2)
     any_doc["WaterHeater:Mixed"]["Heater"].update(heater_fuel_type="Steam")  # pyright: ignore[reportArgumentType]  (not from 23.2)
+    zone_height(legacy["Material"]["Brick"])  # pyright: ignore[reportArgumentType]  (not a zone)
+    table: AnyOutputTableAnnual = any_doc["Output:Table:Annual"]["Annual"]
+    table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)

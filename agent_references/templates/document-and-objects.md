@@ -79,17 +79,21 @@ The type stubs describe the latest supported release, and every document is type
 | The code works on | Annotate with |
 |---|---|
 | Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
-| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument` |
+| Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
 | Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
 
 ### Annotating a parameter with an object class
 
-The object classes (`Zone`, `Material`, ...) exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time. A class describes the latest release: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected, so in code for any release pass the document and let the function reach its objects, or take `IDFObject`.
+Every object type has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed.
+
+The classes exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time.
 
 ```python
 --8<-- "agent_references/snippets/document-and-objects.py:typed-object-parameter"
 ```
+
+An `Any<Class>` covers the releases idfkit supports. When idfkit adopts a release that drops or renames a field, that field leaves `Any<Class>`, and code using it stops type-checking: it would not work on that release either.
 
 ### Reading and writing through `AnyIDFDocument`
 

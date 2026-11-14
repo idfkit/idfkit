@@ -533,8 +533,8 @@ class TestGenerateStubs:
         content = generate_stubs((24, 1, 0))
         assert "Auto-generated type stubs" in content
         # Zone's declaration changed between releases, so it derives from its shared base.
-        assert "class Zone(_ZoneBase):" in content
-        assert "class _ZoneBase(_TypedIDFObject):" in content
+        assert "class Zone(AnyZone):" in content
+        assert "class AnyZone(_TypedIDFObject):" in content
         # The stub-only bases switch off the catch-all attribute access with a Never name.
         assert "class _TypedIDFObject(IDFObject):" in content
         assert "def __getattr__(self, key: Never) -> object: ..." in content
