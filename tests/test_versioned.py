@@ -235,14 +235,16 @@ class TestCommittedStubs:
         def faulty(field_schema: dict[str, Any] | None, field_type: str | None, has_any_of: bool = False) -> str:
             return "float" if field_type == "integer" else real(field_schema, field_type, has_any_of)
 
+        # The fault stays in place while the check runs: a check that borrowed the generator's
+        # mapping would then expect the same wrong types and report nothing.
         monkeypatch.setattr(gen, "_schema_type_to_python", faulty)
         gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
         try:
             sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
+            problems = verify(*sources, gen.SUPPORTED.versions)
         finally:
             monkeypatch.undo()
             gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
-        problems = verify(*sources, gen.SUPPORTED.versions)
         assert any("mistyped" in problem for problem in problems), problems
 
 
