@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..schema import EpJSONSchema
 
 FILE_FIELD_NAME = re.compile(r"file|path|director", re.IGNORECASE)
@@ -81,7 +81,7 @@ def external_file_fields(schema: EpJSONSchema) -> dict[str, tuple[str, ...]]:
     return fields
 
 
-def _model_file_fields(model: IDFDocument) -> dict[str, tuple[str, ...]]:
+def _model_file_fields(model: AnyIDFDocument) -> dict[str, tuple[str, ...]]:
     schema = model.schema
     if schema is None:
         from ..schema import get_schema
@@ -109,7 +109,7 @@ class ExternalFileRef:
     value: str
 
 
-def external_file_refs(model: IDFDocument) -> list[ExternalFileRef]:
+def external_file_refs(model: AnyIDFDocument) -> list[ExternalFileRef]:
     """Return the distinct external file references in *model*, sorted.
 
     A blank field with a default file name (``Construction:WindowDataFile``)
@@ -159,7 +159,7 @@ def search_dirs_for_run(output_dir: str | Path | None, executable: Path) -> list
     return dirs
 
 
-def uncacheable_reason(model: IDFDocument) -> str | None:
+def uncacheable_reason(model: AnyIDFDocument) -> str | None:
     """Explain why a run of *model* must not use the cache, or return ``None`` if it may.
 
     The cache key covers every file the model names.  It cannot cover a
@@ -175,7 +175,7 @@ def uncacheable_reason(model: IDFDocument) -> str | None:
     return None
 
 
-def _external_interface_modes(model: IDFDocument) -> list[str]:
+def _external_interface_modes(model: AnyIDFDocument) -> list[str]:
     """Return the ``Name of External Interface`` of every ``ExternalInterface`` object in *model*."""
     obj_type = "ExternalInterface"
     if obj_type not in model:

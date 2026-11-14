@@ -532,13 +532,15 @@ class TestGenerateStubs:
         # Use a specific version to keep it fast
         content = generate_stubs((24, 1, 0))
         assert "Auto-generated type stubs" in content
-        assert "class Zone(_TypedIDFObject):" in content
+        # Zone's declaration changed between releases, so it derives from its shared base.
+        assert "class Zone(AnyZone):" in content
+        assert "class AnyZone(_TypedIDFObject):" in content
         # The stub-only bases switch off the catch-all attribute access with a Never name.
         assert "class _TypedIDFObject(IDFObject):" in content
         assert "def __getattr__(self, key: Never) -> object: ..." in content
         assert "class _TypedExtensibleGroup(ExtensibleGroup):" in content
         assert "def __setattr__(self, name: Never, value: Never) -> None: ..." in content
-        assert "from typing_extensions import Never, Unpack" in content
+        assert "from typing_extensions import Never, ReadOnly, Unpack" in content
         # A trailing-underscore field is declared under both spellings the runtime accepts.
         assert "    cond_flag_is_the_basement_conditioned_: " in content
         assert "    cond_flag_is_the_basement_conditioned: " in content
@@ -571,20 +573,16 @@ def _preserve_generated_stubs() -> Iterator[tuple[Path, Path]]:
     real_base = Path(stubs_mod.__file__).resolve().parent.parent
     types_file = real_base / "_generated_types.pyi"
     doc_file = real_base / "document.pyi"
-
-    types_backup = types_file.read_text() if types_file.exists() else None
-    doc_backup = doc_file.read_text() if doc_file.exists() else None
+    generated = [types_file, doc_file, real_base / "versioned.pyi", real_base / "versioned.py"]
+    backups = {path: path.read_text(encoding="utf-8") if path.exists() else None for path in generated}
 
     yield types_file, doc_file
 
-    if types_backup is not None:
-        types_file.write_text(types_backup)
-    elif types_file.exists():
-        types_file.unlink()
-    if doc_backup is not None:
-        doc_file.write_text(doc_backup)
-    elif doc_file.exists():
-        doc_file.unlink()
+    for path, backup in backups.items():
+        if backup is not None:
+            path.write_text(backup, encoding="utf-8")
+        elif path.exists():
+            path.unlink()
 
 
 class TestStubsMain:

@@ -73,7 +73,7 @@ from typing import TYPE_CHECKING, Final, Literal, cast
 from .geometry import Polygon3D, Vector3D, _get_vertices  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFCollection, IDFObject
     from .schema import EpJSONSchema
 
@@ -304,14 +304,14 @@ def _number(obj: IDFObject | None, name: str) -> float:
         return 0.0
 
 
-def _objects(doc: IDFDocument, object_type: str) -> list[IDFObject]:
+def _objects(doc: AnyIDFDocument, object_type: str) -> list[IDFObject]:
     """Every object of one type, or nothing when the document holds none of them."""
     if object_type not in doc:
         return []
     return list(cast("IDFCollection[IDFObject]", doc[object_type]))
 
 
-def _first(doc: IDFDocument, object_type: str) -> IDFObject | None:
+def _first(doc: AnyIDFDocument, object_type: str) -> IDFObject | None:
     """The first object of a type, or None. Singletons here, so first is the one."""
     found = _objects(doc, object_type)
     return found[0] if found else None
@@ -341,7 +341,7 @@ def _canonical(schema: EpJSONSchema | None, object_type: str, field_name: str, v
     return text
 
 
-def _read_rules(doc: IDFDocument) -> AppliedRules:
+def _read_rules(doc: AnyIDFDocument) -> AppliedRules:
     """Read ``GlobalGeometryRules`` and ``Building``, recording what had to be assumed."""
     rules = _first(doc, "GlobalGeometryRules")
     building = _first(doc, "Building")
@@ -427,7 +427,7 @@ def _wind(polygon: Polygon3D, rules: AppliedRules) -> Polygon3D:
 # ---------------------------------------------------------------------------
 
 
-def _type_rank(doc: IDFDocument) -> dict[str, int]:
+def _type_rank(doc: AnyIDFDocument) -> dict[str, int]:
     """Each object type's position in the document, by where the file first states it.
 
     A document's collections are keyed by type in the order the parse first met each type, so this
@@ -437,7 +437,7 @@ def _type_rank(doc: IDFDocument) -> dict[str, int]:
     return {object_type: at for at, object_type in enumerate(doc.collections)}
 
 
-def _in_document_order(doc: IDFDocument, object_types: tuple[str, ...], rank: dict[str, int]) -> list[IDFObject]:
+def _in_document_order(doc: AnyIDFDocument, object_types: tuple[str, ...], rank: dict[str, int]) -> list[IDFObject]:
     """Every object of the given types, as close to the order the document states them as is known.
 
     Two sources, and the difference between them is worth stating because the better one is not
@@ -571,7 +571,7 @@ def _bounds(surfaces: tuple[ResolvedSurface, ...]) -> SceneBounds | None:
     )
 
 
-def _unattempted(doc: IDFDocument, rank: dict[str, int]) -> tuple[UnattemptedType, ...]:
+def _unattempted(doc: AnyIDFDocument, rank: dict[str, int]) -> tuple[UnattemptedType, ...]:
     """Geometry types the model states that this slice does not read, in first-occurrence order.
 
     This is what makes a model of simplified surfaces distinguishable from a model with no geometry
@@ -594,7 +594,7 @@ def _unattempted(doc: IDFDocument, rank: dict[str, int]) -> tuple[UnattemptedTyp
     return tuple(UnattemptedType(object_type, count) for _, _, object_type, count in found)
 
 
-def get_scene(doc: IDFDocument) -> Scene:
+def get_scene(doc: AnyIDFDocument) -> Scene:
     """Resolve a model's geometry into one frame, leaving the model untouched.
 
     One argument, one return, no options. There is no ``include_shading``, no ``zones=`` filter and

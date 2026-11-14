@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .schema import ParsingCache
 
 # Field name conversion patterns
@@ -511,7 +511,7 @@ class IDFObject(EppyObjectMixin):
     _name: str
     _data: dict[str, Any]
     _schema: dict[str, Any] | None
-    _document: IDFDocument[bool] | None
+    _document: AnyIDFDocument[bool] | None
     _field_order: list[str] | None
     _ref_fields: frozenset[str] | None
     _source_text: str | None
@@ -527,7 +527,7 @@ class IDFObject(EppyObjectMixin):
         name: str,
         data: dict[str, Any] | None = None,
         schema: dict[str, Any] | None = None,
-        document: IDFDocument[bool] | None = None,
+        document: AnyIDFDocument[bool] | None = None,
         field_order: list[str] | None = None,
         ref_fields: frozenset[str] | None = None,
         source_text: str | None = None,
@@ -1194,7 +1194,16 @@ class IDFObject(EppyObjectMixin):
             return None
 
 
-_T = TypeVar("_T", bound=IDFObject)
+# Covariant: an IDFCollection[Zone] is an IDFCollection[IDFObject]. That is what lets a document of
+# any EnergyPlus version be passed where AnyIDFDocument is expected (see document.pyi), and what lets
+# a typed collection be passed to code that takes IDFCollection[IDFObject].
+#
+# The usual cost of covariance: through IDFCollection[IDFObject], add() takes any object, so a
+# function typed that way can add a Material to doc["Zone"] without a type error, and add() does not
+# check the type at run time either. Add through IDFDocument.add, which files an object by its type.
+_T_co = TypeVar("_T_co", bound=IDFObject, covariant=True)
+_ObjT = TypeVar("_ObjT", bound=IDFObject)
+_D = TypeVar("_D")
 
 
 def refuse_name_for_nameless_type(obj_type: str, name: object, obj_schema: Mapping[str, Any] | None) -> None:
@@ -1268,7 +1277,7 @@ def refuse_unknown_fields_for_add(obj: IDFObject, pc: ParsingCache, *, check_nam
         obj._refuse(refused, "add")  # pyright: ignore[reportPrivateUsage]
 
 
-class IDFCollection(Generic[_T]):
+class IDFCollection(Generic[_T_co]):
     """
     Indexed collection of IDFObjects with O(1) lookup by name.
 
@@ -1301,13 +1310,13 @@ class IDFCollection(Generic[_T]):
     __slots__ = ("_by_name", "_items", "_type")
 
     _type: str
-    _by_name: dict[str, _T]
-    _items: list[_T]
+    _by_name: dict[str, _T_co]
+    _items: list[_T_co]
 
     def __init__(self, obj_type: str) -> None:
         self._type = obj_type
-        self._by_name: dict[str, _T] = {}
-        self._items: list[_T] = []
+        self._by_name: dict[str, _T_co] = {}
+        self._items: list[_T_co] = []
 
     @property
     def obj_type(self) -> str:
@@ -1315,11 +1324,11 @@ class IDFCollection(Generic[_T]):
         return self._type
 
     @property
-    def by_name(self) -> dict[str, _T]:
+    def by_name(self) -> dict[str, _T_co]:
         """Dict mapping uppercase names to objects."""
         return self._by_name
 
-    def add(self, obj: _T) -> _T:
+    def add(self: IDFCollection[_ObjT], obj: _ObjT) -> _ObjT:
         """
         Add an object to the collection.
 
@@ -1343,7 +1352,7 @@ class IDFCollection(Generic[_T]):
         self._items.append(obj)
         return obj
 
-    def remove(self, obj: _T) -> None:
+    def remove(self, obj: IDFObject) -> None:
         """Remove an object from the collection."""
         # By identity, not equality: two objects of a type with no Name field
         # compare equal when their fields match, and list.remove would take
@@ -1356,7 +1365,7 @@ class IDFCollection(Generic[_T]):
                 del self._items[i]
                 break
 
-    def __getitem__(self, key: str | int) -> _T:
+    def __getitem__(self, key: str | int) -> _T_co:
         """Get object by name or index."""
         # String lookup is the overwhelmingly common case; route it first so
         # callers don't pay the negative isinstance check on every name lookup
@@ -1374,13 +1383,13 @@ class IDFCollection(Generic[_T]):
             raise KeyError(f"No {self._type} with name '{key}'")  # noqa: TRY003
         return result
 
-    def __iter__(self) -> Iterator[_T]:
+    def __iter__(self) -> Iterator[_T_co]:
         return iter(self._items)
 
     def __len__(self) -> int:
         return len(self._items)
 
-    def __contains__(self, key: str | _T) -> bool:
+    def __contains__(self, key: str | _T_co) -> bool:
         if isinstance(key, IDFObject):
             return key in self._items
         if not key:
@@ -1395,15 +1404,12 @@ class IDFCollection(Generic[_T]):
         return f"IDFCollection({self._type}, count={len(self._items)})"
 
     @overload
-    def get(self, name: str) -> _T | None: ...
+    def get(self, name: str) -> _T_co | None: ...
 
     @overload
-    def get(self, name: str, default: _T) -> _T: ...
+    def get(self, name: str, default: _D) -> _T_co | _D: ...
 
-    @overload
-    def get(self, name: str, default: None) -> _T | None: ...
-
-    def get(self, name: str, default: _T | None = None) -> _T | None:
+    def get(self, name: str, default: _D | None = None) -> _T_co | _D | None:
         """Get object by name with default.
 
         For unnamed/singleton object types (e.g. SimulationControl), pass an
@@ -1425,7 +1431,7 @@ class IDFCollection(Generic[_T]):
             return self._items[0] if self._items else default
         return self._by_name.get(name.upper(), default)
 
-    def first(self) -> _T | None:
+    def first(self) -> _T_co | None:
         """Get the first object or None.
 
         Examples:
@@ -1442,7 +1448,7 @@ class IDFCollection(Generic[_T]):
         """
         return self._items[0] if self._items else None
 
-    def to_list(self) -> list[_T]:
+    def to_list(self) -> list[_T_co]:
         """Convert to list.
 
         Examples:
@@ -1474,7 +1480,7 @@ class IDFCollection(Generic[_T]):
         """
         return [obj.to_dict() for obj in self._items]
 
-    def filter(self, predicate: Callable[[_T], bool]) -> list[_T]:
+    def filter(self, predicate: Callable[[_T_co], bool]) -> list[_T_co]:
         """Filter objects by predicate function.
 
         Examples:

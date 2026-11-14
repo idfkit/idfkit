@@ -20,15 +20,63 @@ Usage::
 from __future__ import annotations
 
 import ast
+import contextlib
+import dataclasses
+import functools
+import keyword
 import re
 import sys
+from collections.abc import Iterator, Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from idfkit.schema import EpJSONSchema, get_schema, trailing_underscore_aliases
-from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
+from idfkit.versions import ENERGYPLUS_VERSIONS, version_string
 
 # ---- helpers ---------------------------------------------------------------
+
+Version = tuple[int, int, int]
+
+
+@dataclasses.dataclass
+class _SupportedVersions:
+    """The releases the generated stubs describe: every bundled one, unless cut short."""
+
+    versions: tuple[Version, ...] = ENERGYPLUS_VERSIONS
+
+    @property
+    def latest(self) -> Version:
+        """The newest release described, which ``IDFDocument`` is typed for."""
+        return self.versions[-1]
+
+
+SUPPORTED = _SupportedVersions()
+
+
+@contextlib.contextmanager
+def supported_up_to(latest: Version) -> Iterator[None]:
+    """Generate as if *latest* were the newest supported release.
+
+    The stubs generated inside are those the package had before the releases after *latest*
+    were adopted, so this is also how a test reproduces adopting a release.
+    """
+    if latest not in ENERGYPLUS_VERSIONS:
+        msg = f"{latest} is not a bundled EnergyPlus release"
+        raise ValueError(msg)
+    saved = SUPPORTED.versions
+    SUPPORTED.versions = tuple(ver for ver in ENERGYPLUS_VERSIONS if ver <= latest)
+    _clear_version_caches()
+    try:
+        yield
+    finally:
+        SUPPORTED.versions = saved
+        _clear_version_caches()
+
+
+def _clear_version_caches() -> None:
+    for cached in (_build_type_runs, _shared_layout, _merged_groups, _class_assignment):
+        cached.cache_clear()
+
 
 _CLASS_NAME_RE = re.compile(r"[^A-Za-z0-9]")
 
@@ -244,6 +292,10 @@ def _field_docstring(
 _TYPED_OBJECT_BASE = "_TypedIDFObject"
 _TYPED_GROUP_BASE = "_TypedExtensibleGroup"
 
+# The document methods every document type shares; listed first among a document class's bases, ahead
+# of its TypedDict map, so its keys()/values()/items() win over the TypedDict's (_generate_document_module).
+_METHODS_BASE = "_IDFDocumentMethods[Strict]"
+
 
 def _generate_typed_bases() -> list[str]:
     """Emit the stub-only base classes that turn off the catch-all attribute access."""
@@ -376,6 +428,17 @@ def _generate_object_class(
     indent: str = "",
     type_since: dict[str, tuple[int, int, int]] | None = None,
     field_since: dict[tuple[str, str], tuple[int, int, int]] | None = None,
+    suffix: str = "",
+    class_doc: str | None = None,
+    cls_name: str | None = None,
+    base: str = _TYPED_OBJECT_BASE,
+    group_base: str = _TYPED_GROUP_BASE,
+    skip_fields: frozenset[str] = frozenset(),
+    omit_group: bool = False,
+    fields_base: str = "TypedDict",
+    emit_update: bool = True,
+    undocumented: frozenset[str] = frozenset(),
+    properties: Mapping[str, tuple[str, str]] | None = None,
 ) -> list[str]:
     """Generate a typed IDFObject subclass for *obj_type*.
 
@@ -389,64 +452,104 @@ def _generate_object_class(
         indent: Prefix for each line.
         type_since: Mapping of object type -> earliest version it appeared.
         field_since: Mapping of ``(obj_type, field)`` -> earliest version.
+        suffix: Appended to the class names, for the classes of an older version range.
+        class_doc: Replaces the class docstring built from the memo and *type_since*; ``""``
+            emits none.
+        cls_name: Replaces the class name derived from *obj_type* and *suffix*.
+        base: The class's base, ``_TypedIDFObject`` unless the fields it shares with other versions
+            live on a per-type base class.
+        group_base: The extensible group class's base, ``_TypedExtensibleGroup`` as reached from
+            the module the class is emitted in.
+        skip_fields: Fields left to *base*.
+        omit_group: Leave the extensible group and its wrapper attribute to *base* (or out).
+        fields_base: The ``TypedDict`` that ``update``'s keyword ``TypedDict`` extends.
+        emit_update: Whether to type ``update`` on this class.
+        undocumented: Fields declared without a docstring.
+        properties: Fields declared as a property instead of an attribute, each with the value type
+            reading it gives and the one assigning to it accepts (see :func:`_generate_base_class`).
     """
-    cls_name = _to_class_name(obj_type)
+    cls_name = cls_name or _to_class_name(obj_type) + suffix
     lines: list[str] = []
 
     # Pull per-object schema bits.
     pc = schema.get_parsing_cache(obj_type)
     wrapper_key = pc.ext_wrapper_key if pc is not None else None
     ext_inner_props = dict(pc.ext_inner_props) if pc is not None else {}
-    field_names = schema.get_field_names(obj_type)
+    field_names = [f for f in schema.get_field_names(obj_type) if f not in skip_fields]
+    if omit_group:
+        wrapper_key = None
 
     # If this type has a canonical wrapper, emit a typed ExtensibleGroup
     # subclass before the parent class so the parent can reference it.
     group_cls_name: str | None = None
     if wrapper_key and ext_inner_props:
-        group_cls_name = f"{cls_name}{_to_class_name(wrapper_key.title())}Group"
-        lines.append(f"{indent}class {group_cls_name}({_TYPED_GROUP_BASE}):")
-        lines.append(f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""')
-        for inner_name, inner_schema in ext_inner_props.items():
-            if not inner_name.isidentifier():
-                continue
-            has_any_of = "anyOf" in inner_schema
-            py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
-            lines.append(f"{indent}    {inner_name}: {py_type} | None")
-        lines.append("")
+        group_cls_name = f"{_to_class_name(obj_type)}{_to_class_name(wrapper_key.title())}Group{suffix}"
+        lines.extend(_generate_group_class(group_cls_name, cls_name, wrapper_key, ext_inner_props, indent, group_base))
 
-    lines.append(f"{indent}class {cls_name}({_TYPED_OBJECT_BASE}):")
+    lines.append(f"{indent}class {cls_name}({base}):")
 
     body_indent = indent + "    "
 
     # Add object-level docstring from schema memo + version info
     obj_since = type_since.get(obj_type) if type_since else None
-    cls_doc = _class_docstring(schema.get_object_memo(obj_type), obj_since)
+    cls_doc = class_doc if class_doc is not None else _class_docstring(schema.get_object_memo(obj_type), obj_since)
     has_body = False
     if cls_doc:
         lines.append(f'{body_indent}"""{cls_doc}"""')
         has_body = True
 
     if not field_names and not group_cls_name:
-        if not has_body:
-            lines[-1] = f"{indent}class {cls_name}({_TYPED_OBJECT_BASE}): ..."
-        else:
+        if emit_update and fields_base != "TypedDict":
+            # Every field is on the shared base, but update still takes them all as keywords.
+            lines.extend(_generate_update(cls_name, [], indent, fields_base))
+        elif has_body:
             lines.append("")
+        else:
+            lines[-1] = f"{indent}class {cls_name}({base}): ..."
         return lines
 
     update_fields: list[tuple[str, str]] = []
     if field_names:
-        update_fields = _generate_fields(lines, schema, obj_type, field_names, body_indent, obj_since, field_since)
+        update_fields = _generate_fields(
+            lines, schema, obj_type, field_names, body_indent, obj_since, field_since, undocumented, properties
+        )
 
     # Add the canonical wrapper attribute typed as ExtensibleList[<GroupCls>].
     if group_cls_name and wrapper_key:
         lines.append(f"{body_indent}{wrapper_key}: ExtensibleList[{group_cls_name}]")
         update_fields.append((wrapper_key, "list[Any]"))
 
-    lines.extend(_generate_update(cls_name, update_fields, indent))
+    if emit_update:
+        lines.extend(_generate_update(cls_name, update_fields, indent, fields_base))
     return lines
 
 
-def _generate_update(cls_name: str, fields: list[tuple[str, str]], indent: str) -> list[str]:
+def _generate_group_class(
+    group_cls_name: str,
+    cls_name: str,
+    wrapper_key: str,
+    inner_props: dict[str, Any],
+    indent: str,
+    group_base: str = _TYPED_GROUP_BASE,
+) -> list[str]:
+    """Generate the :class:`ExtensibleGroup` subclass of one extensible group, with its inner fields."""
+    lines = [
+        f"{indent}class {group_cls_name}({group_base}):",
+        f'{indent}    """One {wrapper_key} group inside :class:`{cls_name}`."""',
+    ]
+    for inner_name, inner_schema in inner_props.items():
+        if not inner_name.isidentifier():
+            continue
+        has_any_of = "anyOf" in inner_schema
+        py_type = _schema_type_to_python(inner_schema, _schema_field_type(inner_schema), has_any_of)
+        lines.append(f"{indent}    {inner_name}: {py_type} | None")
+    lines.append("")
+    return lines
+
+
+def _generate_update(
+    cls_name: str, fields: list[tuple[str, str]], indent: str, fields_base: str = "TypedDict"
+) -> list[str]:
     """Type ``update`` on *cls_name* with a private ``TypedDict`` of its fields.
 
     The ``TypedDict`` types the keywords (through ``Unpack``), so a type checker reports an unknown
@@ -462,7 +565,7 @@ def _generate_update(cls_name: str, fields: list[tuple[str, str]], indent: str) 
         f"{indent}    def update(self, values: Mapping[str, Any] | None = ..., /, **kwargs: Unpack[{fields_cls}]) "
         "-> None: ...  # type: ignore[override]",
         "",
-        f"{indent}class {fields_cls}(TypedDict, total=False):",
+        f"{indent}class {fields_cls}({fields_base}, total=False):",
     ]
     entries = [(name, py_type) for name, py_type in fields if name != "name"]
     if not entries:
@@ -487,10 +590,18 @@ def _generate_fields(
     indent: str,
     obj_since: tuple[int, int, int] | None,
     field_since: dict[tuple[str, str], tuple[int, int, int]] | None,
+    undocumented: frozenset[str] = frozenset(),
+    as_properties: Mapping[str, tuple[str, str]] | None = None,
 ) -> list[tuple[str, str]]:
-    """Append typed field declarations to *lines*; return each declared field with its value type."""
+    """Append typed field declarations to *lines*; return each declared field with its value type.
+
+    A field in *undocumented* gets no docstring, because the class that narrows it carries one. A
+    field in *as_properties* is declared as a property, read and written with the two value types
+    given for it, instead of as an attribute of its own value type.
+    """
     inner = schema.get_inner_schema(obj_type)
     properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    as_properties = as_properties or {}
     declared: list[tuple[str, str]] = []
 
     for field_name in field_names:
@@ -502,7 +613,10 @@ def _generate_fields(
         has_any_of = field_schema is not None and "anyOf" in field_schema
         py_type = _schema_type_to_python(field_schema, field_type, has_any_of)
 
-        lines.append(f"{indent}{field_name}: {py_type} | None")
+        if field_name in as_properties:
+            lines.extend(_property_lines(field_name, *as_properties[field_name], indent))
+        else:
+            lines.append(f"{indent}{field_name}: {py_type} | None")
         declared.append((field_name, f"{py_type} | None"))
 
         # Determine field "Since:" — only if the field appeared after the type itself
@@ -512,23 +626,39 @@ def _generate_fields(
             if fld_ver is not None and fld_ver > obj_since:
                 fld_since = fld_ver
 
-        docstring = _field_docstring(field_schema, since_version=fld_since)
+        docstring = None if field_name in undocumented else _field_docstring(field_schema, since_version=fld_since)
         if docstring:
             lines.append(f'{indent}"""{docstring}"""')
 
-    declared.extend(_generate_field_aliases(lines, field_names, dict(declared), indent))
+    declared.extend(_generate_field_aliases(lines, field_names, dict(declared), indent, as_properties))
     return declared
 
 
+def _property_lines(name: str, read: str, write: str, indent: str) -> list[str]:
+    """A field declared as a property: reading it gives *read* or ``None``, assigning to it accepts *write*."""
+    return [
+        f"{indent}@property",
+        f"{indent}def {name}(self) -> {read} | None: ...",
+        f"{indent}@{name}.setter",
+        f"{indent}def {name}(self, value: {_or_none(write)}) -> None: ...",
+    ]
+
+
 def _generate_field_aliases(
-    lines: list[str], field_names: list[str], typed: dict[str, str], indent: str
+    lines: list[str],
+    field_names: list[str],
+    typed: dict[str, str],
+    indent: str,
+    as_properties: Mapping[str, tuple[str, str]] | None = None,
 ) -> list[tuple[str, str]]:
     """Declare the spelling without the trailing underscore of each field whose key ends in ``_``.
 
     The runtime reaches such a field by both spellings (``IDFObject._field_key``), so the typed
     class declares both, or it would reject the one without the underscore. Emitted in field
-    order, because the alias map's own order is not stable between runs.
+    order, because the alias map's own order is not stable between runs. An alias in
+    *as_properties* is declared as a property, as :func:`_generate_fields` declares a field.
     """
+    as_properties = as_properties or {}
     alias_of = {
         key: alias
         for alias, key in trailing_underscore_aliases(field_names).items()
@@ -538,8 +668,11 @@ def _generate_field_aliases(
     for key in field_names:
         alias = alias_of.get(key)
         if alias is not None and key in typed:
-            lines.append(f"{indent}{alias}: {typed[key]}")
-            lines.append(f'{indent}"""Alias of :attr:`{key}`, the same field without the trailing underscore."""')
+            if alias in as_properties:
+                lines.extend(_property_lines(alias, *as_properties[alias], indent))
+            else:
+                lines.append(f"{indent}{alias}: {typed[key]}")
+                lines.append(f'{indent}"""Alias of :attr:`{key}`, the same field without the trailing underscore."""')
             declared.append((alias, typed[key]))
     return declared
 
@@ -612,19 +745,814 @@ def _generate_attr_properties(
     return lines
 
 
+# ---- per-version typing ----------------------------------------------------
+
+
+def _version_tag(ver: Version) -> str:
+    """``(9, 4, 0)`` -> ``'9_4'``. Major and minor identify every supported release."""
+    return f"{ver[0]}_{ver[1]}"
+
+
+_Signature: TypeAlias = tuple[tuple[tuple[str, str], ...], tuple[str, frozenset[tuple[str, str]]] | None]
+
+
+def _class_signature(schema: EpJSONSchema, obj_type: str) -> _Signature:
+    """What a version's class for *obj_type* declares, to compare across versions.
+
+    Its fields with their value types, in order, and its extensible group with the group's fields
+    as a set: some versions list a group's fields in another order (8.9's vertices), which changes
+    nothing a type checker sees, so it does not make a second class.
+    """
+    return tuple(_field_decls(schema, obj_type).items()), _group_key(_group_decl(schema, obj_type))
+
+
+@functools.cache
+def _build_type_runs() -> dict[str, list[list[Version]]]:
+    """Group, for each object type, the versions that declare it identically.
+
+    Two versions declare a type identically when its fields, value types, choice lists and
+    extensible group are the same (:func:`_class_signature`), docstrings and the order of a
+    group's fields aside. Every such group is a
+    contiguous range of releases, so it is fully described by its two endpoints; the function
+    asserts that rather than assuming it.
+
+    Returns:
+        Object type -> its ranges, oldest first, each the list of versions it covers.
+    """
+    signatures: dict[str, list[tuple[Version, _Signature]]] = {}
+    for ver in SUPPORTED.versions:
+        schema = get_schema(ver)
+        for obj_type in schema.object_types:
+            signatures.setdefault(obj_type, []).append((
+                ver,
+                _class_signature(schema, obj_type),
+            ))
+
+    order = {ver: i for i, ver in enumerate(SUPPORTED.versions)}
+    runs: dict[str, list[list[Version]]] = {}
+    for obj_type, entries in signatures.items():
+        type_runs: list[tuple[list[Version], _Signature]] = []
+        for ver, sig in entries:
+            if type_runs and type_runs[-1][1] == sig and order[type_runs[-1][0][-1]] + 1 == order[ver]:
+                type_runs[-1][0].append(ver)
+            else:
+                type_runs.append(([ver], sig))
+        seen = [sig for _, sig in type_runs]
+        if len(set(seen)) != len(seen):  # pragma: no cover - a property of the bundled schemas
+            msg = f"{obj_type} returns to an earlier declaration; its version ranges are not contiguous"
+            raise ValueError(msg)
+        runs[obj_type] = [vers for vers, _ in type_runs]
+    return runs
+
+
+def _field_decls(schema: EpJSONSchema, obj_type: str) -> dict[str, str]:
+    """Each identifier field of *obj_type* with its generated value type.
+
+    A field whose key ends in ``_`` is followed, after every key, by its spelling without the
+    underscore, with the same type, as :func:`_generate_field_aliases` declares it; the classes
+    that share fields between versions, and the check of them, then treat the alias as a field.
+    """
+    inner = schema.get_inner_schema(obj_type)
+    properties: dict[str, Any] = inner.get("properties", {}) if inner else {}
+    field_names = schema.get_field_names(obj_type)
+    decls: dict[str, str] = {}
+    for field_name in field_names:
+        if not field_name.isidentifier():
+            continue
+        field_schema = properties.get(field_name)
+        has_any_of = field_schema is not None and "anyOf" in field_schema
+        decls[field_name] = _schema_type_to_python(
+            field_schema, schema.get_field_type(obj_type, field_name), has_any_of
+        )
+    # In field order: the alias map's own order is not stable between runs.
+    alias_of = {key: alias for alias, key in trailing_underscore_aliases(field_names).items() if alias != key}
+    for key in field_names:
+        alias = alias_of.get(key)
+        if alias is not None and alias.isidentifier() and alias not in decls and key in decls:
+            decls[alias] = decls[key]
+    return decls
+
+
+def _group_decl(schema: EpJSONSchema, obj_type: str) -> tuple[str, tuple[tuple[str, str], ...]] | None:
+    """The extensible wrapper key of *obj_type* and its inner fields' types, or ``None``."""
+    pc = schema.get_parsing_cache(obj_type)
+    if pc is None or not pc.ext_wrapper_key or not pc.ext_inner_props:
+        return None
+    inner = tuple(
+        (name, _schema_type_to_python(sub, _schema_field_type(sub), "anyOf" in sub))
+        for name, sub in pc.ext_inner_props.items()
+        if name.isidentifier()
+    )
+    return pc.ext_wrapper_key, inner
+
+
+def _group_key(
+    decl: tuple[str, tuple[tuple[str, str], ...]] | None,
+) -> tuple[str, frozenset[tuple[str, str]]] | None:
+    """A group declaration with its fields' order dropped, for comparing versions."""
+    return None if decl is None else (decl[0], frozenset(decl[1]))
+
+
+def _split_union(type_text: str) -> list[str]:
+    """Split a generated value type at its top-level ``|``."""
+    parts: list[str] = []
+    depth = 0
+    start = 0
+    for i, ch in enumerate(type_text):
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+        elif ch == "|" and depth == 0:
+            parts.append(type_text[start:i].strip())
+            start = i + 1
+    parts.append(type_text[start:].strip())
+    return parts
+
+
+def _merge_types(type_texts: list[str]) -> str:
+    """The union of generated value types, with every ``Literal`` member merged into one ``Literal``."""
+    literals: list[str] = []
+    others: list[str] = []
+    for text in type_texts:
+        for part in _split_union(text):
+            if part.startswith("Literal[") and part.endswith("]"):
+                literals.extend(m for m in _split_literal(part[len("Literal[") : -1]) if m not in literals)
+            elif part not in others:
+                others.append(part)
+    if literals:
+        others.append(f"Literal[{', '.join(literals)}]")
+    return " | ".join(others)
+
+
+def _admits(parts: list[str], value: str) -> bool:
+    """Whether a value type, split at its ``|``, admits *value*: a member type or one ``Literal`` member."""
+    if value in parts:
+        return True
+    if value == "int" and "float" in parts:
+        return True
+    literals = [m for p in parts if p.startswith("Literal[") for m in _split_literal(p[len("Literal[") : -1])]
+    if value in literals:
+        return True
+    if value.startswith('"'):
+        return "str" in parts
+    if value.lstrip("-").replace(".", "", 1).isdigit():
+        return "float" in parts or ("int" in parts and "." not in value)
+    return False
+
+
+def _intersect_types(type_texts: list[str]) -> str:
+    """The values every one of the generated value types admits, as one value type.
+
+    What is safe to write into a document of any supported version: a ``Literal`` member that every
+    version lists or admits through a plain ``str``/``float``, and a plain type every version has.
+    ``Never`` when nothing is admitted everywhere (the caller adds ``| None``, which clears a field).
+    """
+    split = [_split_union(text) for text in type_texts]
+    candidates: list[str] = []
+    literals: list[str] = []
+    for parts in split:
+        for part in parts:
+            if part.startswith("Literal[") and part.endswith("]"):
+                literals.extend(m for m in _split_literal(part[len("Literal[") : -1]) if m not in literals)
+            elif part not in candidates:
+                candidates.append(part)
+    others = [part for part in candidates if all(_admits(parts, part) for parts in split)]
+    kept = [m for m in literals if all(_admits(parts, m) for parts in split) and not _admits(others, m)]
+    if kept:
+        others.append(f"Literal[{', '.join(kept)}]")
+    return " | ".join(others) if others else "Never"
+
+
+def _split_literal(members: str) -> list[str]:
+    """Split the members of a generated ``Literal[...]``; string members never contain a quote."""
+    out: list[str] = []
+    current = ""
+    in_str = False
+    for ch in members:
+        if ch == '"':
+            in_str = not in_str
+        if ch == "," and not in_str:
+            out.append(current.strip())
+            current = ""
+        else:
+            current += ch
+    if current.strip():
+        out.append(current.strip())
+    return out
+
+
+@dataclasses.dataclass(frozen=True)
+class _SharedLayout:
+    """What every supported version of one object type has in common.
+
+    Attributes:
+        fields: Every field present in all versions, with the union of its value types: what
+            reading it can give.
+        writable: Every field present in all versions, with the intersection of its value types:
+            what every version accepts, so what is safe to write.
+        identical: The fields declared identically in all versions; only the shared base declares them.
+        group: Whether the extensible group is identical in all versions.
+    """
+
+    fields: dict[str, str]
+    writable: dict[str, str]
+    identical: frozenset[str]
+    group: bool
+
+    @property
+    def varying(self) -> frozenset[str]:
+        """Fields present in all versions with different value types; every class narrows them."""
+        return frozenset(self.fields) - self.identical
+
+
+@functools.cache
+def _shared_layout() -> dict[str, _SharedLayout]:
+    """For each type of the latest release that some older version declares differently.
+
+    Such a type gets ``Any<Class>``: the type as every supported version that has it declares it.
+    The latest class and each older range's class derive from it, so they only declare what is
+    theirs, ``AnyIDFDocument`` types the type's collection with it, and code for any release
+    annotates a parameter with it.
+    """
+    runs = _build_type_runs()
+    latest_types = set(get_schema(SUPPORTED.latest).object_types)
+    layout: dict[str, _SharedLayout] = {}
+    for obj_type, type_runs in runs.items():
+        if obj_type not in latest_types or len(type_runs) == 1:
+            continue
+        schemas = [get_schema(run[0]) for run in type_runs]
+        decls = [_field_decls(sc, obj_type) for sc in schemas]
+        latest = decls[-1]
+        fields = {name: _merge_types([d[name] for d in decls]) for name in latest if all(name in d for d in decls)}
+        writable = {name: _intersect_types([d[name] for d in decls]) for name in fields}
+        identical = frozenset(name for name in fields if all(d[name] == latest[name] for d in decls))
+        # Compared as sets: some versions list a group's fields in another order (8.9's vertices).
+        groups = {_group_key(_group_decl(sc, obj_type)) for sc in schemas}
+        layout[obj_type] = _SharedLayout(fields, writable, identical, len(groups) == 1 and None not in groups)
+    return layout
+
+
+def _shared_class_name(obj_type: str) -> str:
+    """The class ``AnyIDFDocument`` types *obj_type*'s collection with.
+
+    ``Any<Class>`` for a type some version declares differently; the latest class itself for one
+    every version declares alike, which ``Any<Class>`` then names as an alias (see
+    :func:`_generate_any_aliases`).
+    """
+    if obj_type in _shared_layout():
+        return _any_class_name(obj_type)
+    return _to_class_name(obj_type)
+
+
+def _any_class_name(obj_type: str) -> str:
+    """The public name of *obj_type* as every version that has it declares it: ``Any<Class>``."""
+    return f"Any{_to_class_name(obj_type)}"
+
+
+@dataclasses.dataclass(frozen=True)
+class _MergedGroup:
+    """An extensible group every version has under one wrapper key, though not declared alike.
+
+    Attributes:
+        wrapper: The wrapper key, such as ``vertices``.
+        cls_name: ``Any<Class><Wrapper>Group``, the group as every version declares it.
+        fields: Each inner field every version has, in the latest version's order, with what
+            reading it gives (the union of the versions' types) and what writing it accepts (their
+            intersection).
+    """
+
+    wrapper: str
+    cls_name: str
+    fields: tuple[tuple[str, str, str], ...]
+
+
+@functools.cache
+def _merged_groups() -> dict[str, _MergedGroup]:
+    """The groups ``Any<Class>`` declares for types whose group differs between versions.
+
+    A type whose group is declared alike everywhere has it on ``Any<Class>`` already, and one that
+    some version declares without a group, or under another wrapper key, gets none: a file of that
+    version has no such list.
+    """
+    runs = _build_type_runs()
+    merged: dict[str, _MergedGroup] = {}
+    for obj_type, layout in _shared_layout().items():
+        if layout.group:
+            continue
+        decls = [_group_decl(get_schema(run[0]), obj_type) for run in runs[obj_type]]
+        if any(d is None for d in decls) or len({d[0] for d in decls if d is not None}) != 1:
+            continue
+        inner = [dict(d[1]) for d in decls if d is not None]
+        names = [name for name in inner[-1] if all(name in i for i in inner)]
+        wrapper = decls[-1][0] if decls[-1] is not None else ""
+        cls_name = f"{_any_class_name(obj_type)}{_to_class_name(wrapper.title())}Group"
+        fields = tuple(
+            (name, _merge_types([i[name] for i in inner]), _intersect_types([i[name] for i in inner])) for name in names
+        )
+        merged[obj_type] = _MergedGroup(wrapper, cls_name, fields)
+    return merged
+
+
+def _generate_merged_group(group: _MergedGroup, owner: str) -> list[str]:
+    """The group class of a :class:`_MergedGroup`: reads give the union, writes the intersection."""
+    lines = [
+        f"class {group.cls_name}({_TYPED_GROUP_BASE}):",
+        f'    """One {group.wrapper} group inside :class:`{owner}`, as every supported version declares it."""',
+    ]
+    for name, read, write in group.fields:
+        if read == write:
+            lines.append(f"    {name}: {read} | None")
+        else:
+            lines += _property_lines(name, read, write, "    ")
+    lines.append("")
+    return lines
+
+
+def _group_base_for(obj_type: str, prefix: str = "") -> str:
+    """The base of *obj_type*'s per-version group classes: its merged group, if it has one."""
+    group = _merged_groups().get(obj_type)
+    return f"{prefix}{group.cls_name}" if group is not None else f"{prefix}{_TYPED_GROUP_BASE}"
+
+
+def _any_class_doc(obj_type: str) -> str:
+    """The docstring of ``Any<Class>``, which names the releases it covers when not all of them.
+
+    A type that arrived after the oldest supported release is reached only through a document of a
+    release that has it, so the hover says which releases those are.
+    """
+    first = _build_type_runs()[obj_type][0][0]
+    if first == SUPPORTED.versions[0]:
+        return f"``{obj_type}`` as every supported EnergyPlus version declares it."
+    return (
+        f"``{obj_type}`` as every supported EnergyPlus version that has it declares it: "
+        f"{version_string(first)} and later."
+    )
+
+
+def _generate_any_aliases(schema: EpJSONSchema) -> list[str]:
+    """``Any<Class> = <Class>`` for each type every version that has it declares alike.
+
+    So every object type has an ``Any<Class>`` to annotate code for any release with, and a caller
+    need not know which types changed between releases. A type that did change has a class of that
+    name instead (:func:`_generate_base_class`).
+    """
+    layout = _shared_layout()
+    return [f"{_any_class_name(t)}: TypeAlias = {_to_class_name(t)}" for t in schema.object_types if t not in layout]
+
+
+def _common_fields_name(obj_type: str) -> str:
+    """The ``TypedDict`` of the ``update`` keywords every version of *obj_type* accepts alike."""
+    return f"_{_to_class_name(obj_type)}CommonFields"
+
+
+def _generate_base_class(
+    schema: EpJSONSchema,
+    obj_type: str,
+    layout: _SharedLayout,
+    type_since: dict[str, tuple[int, int, int]],
+    field_since: dict[tuple[str, str], tuple[int, int, int]],
+) -> list[str]:
+    r"""Generate ``Any<Class>``: the fields of *obj_type* present in every supported version.
+
+    A field whose value type differs between versions is a property here: reading it gives the
+    union of the versions' value types, since a document of any of them can hold any of those
+    values, and assigning to it accepts only their intersection, the values every version accepts.
+    Each version's class narrows it again, with its docstring, to that version's own type, which it
+    both reads and writes. ``update`` on the base takes the same intersection; each version's class
+    types its own. Their keyword ``TypedDict``\ s extend ``_<Class>CommonFields``, which holds the
+    fields declared identically everywhere, so those are written once.
+    """
+    base = _shared_class_name(obj_type)
+    latest = _field_decls(schema, obj_type)
+    common = [(name, f"{latest[name]} | None") for name in latest if name in layout.identical and name != "name"]
+    group = _group_decl(schema, obj_type)
+    if layout.group and group is not None:
+        common.append((group[0], "list[Any]"))
+    lines = [f"class {_common_fields_name(obj_type)}(TypedDict, total=False):"]
+    lines.extend(f"    {name}: {py_type}" for name, py_type in common)
+    if not common:
+        lines[-1] += " ..."
+    lines.append("")
+    merged_group = _merged_groups().get(obj_type)
+    if merged_group is not None:
+        lines += _generate_merged_group(merged_group, base)
+    lines += _generate_object_class(
+        schema,
+        obj_type,
+        type_since=type_since,
+        field_since=field_since,
+        cls_name=base,
+        class_doc=_any_class_doc(obj_type),
+        skip_fields=frozenset(schema.get_field_names(obj_type)) - frozenset(layout.fields),
+        omit_group=not layout.group,
+        emit_update=False,
+        undocumented=layout.varying,
+        properties={
+            name: (merged, layout.writable[name]) for name, merged in layout.fields.items() if name in layout.varying
+        },
+    )
+    if lines[-1].startswith("class ") and lines[-1].endswith(": ..."):
+        lines[-1] = lines[-1][: -len(" ...")]  # update is about to give the class a body
+    varying = [(name, _or_none(layout.writable[name])) for name in layout.fields if name in layout.varying]
+    if merged_group is not None:
+        lines.append(f"    {merged_group.wrapper}: ExtensibleList[{merged_group.cls_name}]")
+        varying.append((merged_group.wrapper, "list[Any]"))
+    lines.extend(_generate_update(base, varying, "", _common_fields_name(obj_type)))
+    return lines
+
+
+def _or_none(value_type: str) -> str:
+    """*value_type* or ``None``, the value that clears a field; just ``None`` when nothing else is safe."""
+    return "None" if value_type == "Never" else f"{value_type} | None"
+
+
+def _run_suffix(run: list[Version]) -> str:
+    """Class-name suffix for a version range that does not reach the latest release."""
+    if len(run) == 1:
+        return f"_v{_version_tag(run[0])}"
+    return f"_v{_version_tag(run[0])}_to_v{_version_tag(run[-1])}"
+
+
+def _common_object_types() -> list[str]:
+    """Object types present in every supported version, in latest-schema order."""
+    sets = [set(get_schema(ver).object_types) for ver in SUPPORTED.versions]
+    common: set[str] = sets[0].intersection(*sets[1:])
+    return [t for t in get_schema(SUPPORTED.latest).object_types if t in common]
+
+
+def _generate_common_type_map() -> list[str]:
+    """Generate the map behind ``IDFDocumentAllVersions``, the version-agnostic half of ``AnyIDFDocument``.
+
+    It holds the object types every version has, each ``ReadOnly[IDFCollection[<the type as every
+    version declares it>]]``. Read-only entries are covariant, and so is ``IDFCollection``, so every
+    version's map, which holds each of these keys and more, is assignable to this one by ordinary
+    structural subtyping.
+
+    A type some version lacks is left out rather than declared ``NotRequired``. Such an entry is
+    only assignable from a version's map that is closed (PEP 728), and neither form of closing works
+    for both checkers: pyright takes about a minute to build a ``closed=True`` map of ~800 entries,
+    in every file that names the version's type, and mypy ignores ``extra_items``.
+    """
+    lines = ['_CommonTypeMap = TypedDict("_CommonTypeMap", {']
+    for obj_type in _common_object_types():
+        lines.append(f'    "{obj_type}": ReadOnly[IDFCollection[{_shared_class_name(obj_type)}]],')
+    lines.append("}, total=True)")
+    return lines
+
+
+def _typed_dict(name: str, entries: list[tuple[str, str]]) -> list[str]:
+    """A ``TypedDict`` mapping each object type to a collection of its class.
+
+    Class syntax when every key is an identifier, as ruff (UP013) requires; the functional form
+    otherwise, since most object types contain a colon.
+    """
+    if all(key.isidentifier() and not keyword.iskeyword(key) for key, _ in entries):
+        lines = [f"class {name}(TypedDict, total=True):"]
+        lines.extend(f"    {key}: IDFCollection[{cls}]" for key, cls in entries)
+        if not entries:
+            lines[0] += " ..."
+        return lines
+    lines = [f'{name} = TypedDict("{name}", {{']
+    lines.extend(f'    "{key}": IDFCollection[{cls}],' for key, cls in entries)
+    lines.append("}, total=True)")
+    return lines
+
+
+Span = tuple[Version, Version]
+
+
+def _span_name(prefix: str, span: Span) -> str:
+    """``_Types_v8_9_to_v9_4``: a name for what holds from the first version of *span* to the last."""
+    first, last = span
+    if first == last:
+        return f"{prefix}_v{_version_tag(first)}"
+    return f"{prefix}_v{_version_tag(first)}_to_v{_version_tag(last)}"
+
+
+def _group_by_span(per_version: dict[Version, dict[str, str]]) -> dict[Span, dict[str, str]]:
+    """File every ``(key, value)`` pair under each maximal run of consecutive versions holding it.
+
+    This is the endpoint encoding: a pair that holds from 8.9 to 9.4 is written once, under
+    ``(8.9, 9.4)``, rather than once per version. A pair that stops and starts again is filed
+    under each run, so the result is right whether or not every range is contiguous.
+    """
+    spans: dict[Span, dict[str, str]] = {}
+    started: dict[tuple[str, str], Version] = {}
+    previous: Version | None = None
+    for ver in SUPPORTED.versions:
+        pairs = set(per_version.get(ver, {}).items())
+        for pair in [p for p in started if p not in pairs]:
+            assert previous is not None  # noqa: S101 - a started pair has a previous version
+            spans.setdefault((started.pop(pair), previous), {})[pair[0]] = pair[1]
+        for pair in pairs:
+            started.setdefault(pair, ver)
+        previous = ver
+    for pair, first in started.items():
+        assert previous is not None  # noqa: S101
+        spans.setdefault((first, previous), {})[pair[0]] = pair[1]
+    return {span: dict(sorted(spans[span].items())) for span in sorted(spans)}
+
+
+@functools.cache
+def _class_assignment() -> tuple[dict[tuple[str, Version], str], tuple[tuple[str, tuple[Version, ...]], ...]]:
+    """Which class types each object type in each version, and the older ranges that need one.
+
+    Returns:
+        ``(class_for, older_runs)``: *class_for* maps ``(obj_type, version)`` to a class name, the
+        latest class (qualified ``_g.``) when the version declares the type as the latest release does; *older_runs*
+        lists every ``(obj_type, versions)`` range that does not reach the latest release.
+    """
+    class_for: dict[tuple[str, Version], str] = {}
+    older_runs: list[tuple[str, tuple[Version, ...]]] = []
+    for obj_type, type_runs in _build_type_runs().items():
+        for run in type_runs:
+            if SUPPORTED.latest in run:
+                cls = f"_g.{_to_class_name(obj_type)}"
+            else:
+                cls = _to_class_name(obj_type) + _run_suffix(run)
+                older_runs.append((obj_type, tuple(run)))
+            for ver in run:
+                class_for[(obj_type, ver)] = cls
+    return class_for, tuple(older_runs)
+
+
+def _accessors(ver: Version) -> dict[str, str]:
+    """The typed attribute accessors of a document of *ver*: name -> object type."""
+    from idfkit.document import _build_resolver  # pyright: ignore[reportPrivateUsage]
+
+    return _build_resolver(get_schema(ver)).accessors()
+
+
+def _document_class_name(ver: Version) -> str:
+    """``IDFDocumentV9_4``. Major and minor identify every supported release; checked when generating."""
+    return f"IDFDocumentV{_version_tag(ver)}"
+
+
+def _check_version_tags(versions: tuple[Version, ...] | None = None) -> None:
+    """Refuse a version list in which two releases would share a document type name.
+
+    Args:
+        versions: The releases to check; the supported ones when ``None``.
+    """
+    tags = [_version_tag(ver) for ver in (SUPPORTED.versions if versions is None else versions)]
+    duplicates = sorted({tag for tag in tags if tags.count(tag) > 1})
+    if duplicates:
+        msg = f"Releases share a major.minor, so their document types would share a name: {duplicates}"
+        raise ValueError(msg)
+
+
+def generate_versioned_pyi() -> str:
+    """Generate ``versioned.pyi``: an ``IDFDocument`` type for every supported older version.
+
+    Everything below is derived from ``SUPPORTED.versions`` and the bundled schemas, so adopting
+    a release is a regeneration: the previous latest release gains its own document type here,
+    and a range of an older type that ends before the latest release keeps its name for good.
+
+    * A type declared in some version exactly as in the latest release reuses the latest class
+      from ``_generated_types``. Every other range of versions declaring a type alike gets one
+      class here, named by its endpoints, deriving from the type's shared base.
+    * A version's ``TypedDict`` map, and its typed attribute accessors, are assembled from pieces
+      each filed under the version range they hold over, so each entry is written once.
+    """
+    _check_version_tags()
+    layout = _shared_layout()
+    class_for, older_runs = _class_assignment()
+    older = [ver for ver in SUPPORTED.versions if ver != SUPPORTED.latest]
+
+    parts: list[str] = [
+        '"""Auto-generated ``IDFDocument`` types for each older EnergyPlus version.',
+        "",
+        "DO NOT EDIT — regenerate with:",
+        "    python -m idfkit.codegen.generate_stubs",
+        '"""',
+        "",
+        "from __future__ import annotations",
+        "",
+        "from collections.abc import Mapping",
+        "from typing import Any, Literal, TypeVar, overload",
+        "",
+        "from typing_extensions import TypedDict, Unpack",
+        "",
+        "from . import _generated_types as _g",
+        "from .document import AnyIDFDocument as AnyIDFDocument",
+        "from .document import IDFDocument, Strict, _IDFDocumentMethods",
+        "from .objects import ExtensibleList, IDFCollection",
+        "",
+        "# =========================================================================",
+        "# Object classes of the version ranges that end before the latest release",
+        "# =========================================================================",
+        "",
+    ]
+    for obj_type, run in older_runs:
+        schema = get_schema(run[-1])
+        span = version_string(run[0]) if len(run) == 1 else f"{version_string(run[0])} to {version_string(run[-1])}"
+        doc = f"``{obj_type}`` as declared in EnergyPlus {span}."
+        memo = schema.get_object_memo(obj_type)
+        if memo:
+            doc = f"{doc} {_truncate_text(memo)}"
+        shared = layout.get(obj_type)
+        parts.extend(
+            _generate_object_class(
+                schema,
+                obj_type,
+                suffix=_run_suffix(list(run)),
+                class_doc=doc,
+                base=f"_g.{_shared_class_name(obj_type)}" if shared else f"_g.{_TYPED_OBJECT_BASE}",
+                group_base=_group_base_for(obj_type, "_g."),
+                skip_fields=shared.identical if shared else frozenset(),
+                omit_group=shared.group if shared else False,
+                fields_base=f"_g.{_common_fields_name(obj_type)}" if shared else "TypedDict",
+            )
+        )
+        parts.append("")
+
+    # A piece that only the latest release holds is never used here: IDFDocument has its own map.
+    def used(span: Span) -> bool:
+        return span[0] != SUPPORTED.latest
+
+    type_spans = _group_by_span({
+        ver: {t: class_for[(t, ver)] for t in get_schema(ver).object_types} for ver in SUPPORTED.versions
+    })
+    accessor_types = {ver: _accessors(ver) for ver in SUPPORTED.versions}
+    accessor_spans = _group_by_span({
+        ver: {name: class_for[(t, ver)] for name, t in accessor_types[ver].items()} for ver in SUPPORTED.versions
+    })
+
+    parts.extend([
+        "# =========================================================================",
+        "# Object-type maps, one piece per version range",
+        "# =========================================================================",
+        "",
+    ])
+    for span, entries in type_spans.items():
+        if used(span):
+            parts.extend(_typed_dict(_span_name("_Types", span), list(entries.items())))
+            parts.append("")
+
+    parts.extend([
+        "# =========================================================================",
+        "# Attribute accessors, one piece per version range",
+        "# =========================================================================",
+        "",
+    ])
+    for span, entries in accessor_spans.items():
+        if not used(span):
+            continue
+        parts.append(f"class {_span_name('_Accessors', span)}:")
+        for name, cls in entries.items():
+            parts.append("    @property")
+            parts.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+        parts.append("")
+
+    parts.extend([
+        "# =========================================================================",
+        "# Document types",
+        "# =========================================================================",
+        "",
+    ])
+    for ver in older:
+        tag = _version_tag(ver)
+        maps = [_span_name("_Types", span) for span in type_spans if span[0] <= ver <= span[1]]
+        mixins = [_span_name("_Accessors", span) for span in accessor_spans if span[0] <= ver <= span[1]]
+        # Open, like every map here: AnyIDFDocument declares only the types every version has, so
+        # no version's map needs to be closed to be assignable to it (see _generate_common_type_map).
+        parts.append(f"class _ObjectTypeMapV{tag}({', '.join(maps)}): ...")
+        parts.append("")
+        bases = ", ".join([_METHODS_BASE, f"_ObjectTypeMapV{tag}", *mixins])
+        parts.append(f"class {_document_class_name(ver)}({bases}):  # type: ignore[misc]")
+        parts.append(f'    """An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus {version_string(ver)}."""')
+        parts.append("")
+    parts.append(f"{_document_class_name(SUPPORTED.latest)} = IDFDocument")
+    parts.append("")
+    parts.append('_D = TypeVar("_D", bound=AnyIDFDocument)')
+    parts.append("")
+    parts.extend([
+        "@overload",
+        *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
+        "@overload",
+        # Non-empty: an empty tuple raises at run time, so the checker reports it.
+        "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
+    ])
+    parts.append("")
+    return "\n".join(parts)
+
+
+def generate_versioned_py() -> str:
+    """Generate ``versioned.py``, the run-time half of ``versioned.pyi``.
+
+    At run time a per-version type is a stand-in: ``isinstance`` holds for a document of that
+    version, and :func:`idfkit.versioned.as_version` checks against it. The classes with fields
+    exist only for type checkers.
+
+    It describes every release idfkit bundles, whatever ``SUPPORTED`` says: the stand-ins are
+    checked against the run time's releases, and ``as_version`` takes ``IDFDocument`` to mean
+    ``LATEST_VERSION``. Generated for a list cut short at 24.1 (``generate_stubs 24.1.0``), it would
+    bind ``IDFDocumentV24_1`` to ``IDFDocument``, which rejects a 24.1 document and accepts a 26.2
+    one, and drop the later releases' types from the running package.
+    """
+    versions = ENERGYPLUS_VERSIONS
+    _check_version_tags(versions)
+    names = [_document_class_name(ver) for ver in versions]
+    lines = [
+        '"""Document types for each supported EnergyPlus version.',
+        "",
+        "Each ``IDFDocumentV<major>_<minor>`` types a document as that release declares its objects,",
+        "for type checkers; ``IDFDocument`` is the latest release's. See ``versioned.pyi``.",
+        "",
+        "DO NOT EDIT — regenerate with:",
+        "    python -m idfkit.codegen.generate_stubs",
+        '"""',
+        "",
+        "from __future__ import annotations",
+        "",
+        "from ._document_types import as_version, document_type",
+        "from .document import AnyIDFDocument, IDFDocument",
+        "",
+        "__all__ = [",
+        '    "AnyIDFDocument",',
+        *(f'    "{name}",' for name in names),
+        '    "as_version",',
+        "]",
+        "",
+    ]
+    for ver in versions:
+        if ver == versions[-1]:
+            lines.append(f"{_document_class_name(ver)} = IDFDocument")
+        else:
+            lines.append(f'{_document_class_name(ver)} = document_type("{_document_class_name(ver)}", {ver!r})')
+    lines.append("")
+    return "\n".join(lines)
+
+
+_AS_VERSION_DOC = """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
+
+Returns *doc* itself. A document's version is read from its file, so a type checker cannot
+know it; this states it, and checks it at run time. Given a tuple of document types, as
+``isinstance`` takes one, it accepts a document of any of them and types it as their union:
+a range of releases, such as those that have ``Space``.
+
+Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
+a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
+document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
+any release already is one.
+
+Args:
+    doc: A document of any supported version.
+    document_type: ``IDFDocument`` for the latest release, or one of the
+        ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
+
+Returns:
+    *doc*, typed as *document_type*, or as the union of the types in the tuple.
+
+Raises:
+    TypeError: If *doc* is not a document of that version, or of any version in the tuple.
+
+Examples:
+    ```python
+    from idfkit import IDFDocument, load_idf
+    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
+
+    model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
+    model["Zone"].first()  # typed as Zone was declared in 9.4
+
+    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+    recent["Space"].first()  # typed in each of those releases
+    ```
+"""
+
+
+def _format_def_with_doc(signature: str, doc: str) -> list[str]:
+    """A top-level ``def`` whose body is its docstring."""
+    return [f"{signature}:", *_format_docstring_for_stub(doc, "    ")]
+
+
 # ---- main generation -------------------------------------------------------
+
+
+def _as_latest(version: Version | None) -> contextlib.AbstractContextManager[None]:
+    """Describe the releases up to *version*, or all of them when it is ``None`` or the latest."""
+    if version is None or version == SUPPORTED.latest:
+        return contextlib.nullcontext()
+    return supported_up_to(version)
 
 
 def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     """Generate the full ``_generated_types.pyi`` content.
 
     Args:
-        version: EnergyPlus version tuple.  Defaults to *LATEST_VERSION*.
+        version: The release to type ``IDFDocument`` for, as if it were the newest supported;
+            defaults to the latest release.
 
     Returns:
         Complete Python source for the generated types module.
     """
-    ver = version or LATEST_VERSION
+    with _as_latest(version):
+        return _generate_types_module()
+
+
+def _generate_types_module() -> str:
+    ver = SUPPORTED.latest
     schema = get_schema(ver)
     version_str = f"{ver[0]}.{ver[1]}.{ver[2]}"
 
@@ -641,9 +1569,9 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("from __future__ import annotations")
     parts.append("")
     parts.append("from collections.abc import Mapping")
-    parts.append("from typing import Any, Literal, TypedDict")
+    parts.append("from typing import Any, Literal, TypeAlias, TypedDict")
     parts.append("")
-    parts.append("from typing_extensions import Never, Unpack")
+    parts.append("from typing_extensions import Never, ReadOnly, Unpack")
     parts.append("")
     parts.append("from .objects import ExtensibleGroup, ExtensibleList, IDFCollection, IDFObject")
     parts.append("")
@@ -655,25 +1583,91 @@ def generate_stubs(version: tuple[int, int, int] | None = None) -> str:
     parts.append("")
 
     # Generate all typed object classes at top-level
+    # A type some older version declares differently gets a private base holding what every
+    # version shares; the older versions' classes in versioned.pyi derive from it too.
+    layout = _shared_layout()
     for obj_type in schema.object_types:
-        class_lines = _generate_object_class(
-            schema,
-            obj_type,
-            type_since=type_since,
-            field_since=field_since,
-        )
+        if obj_type in layout:
+            parts.extend(_generate_base_class(schema, obj_type, layout[obj_type], type_since, field_since))
+            parts.append("")
+            class_lines = _generate_object_class(
+                schema,
+                obj_type,
+                type_since=type_since,
+                field_since=field_since,
+                base=_shared_class_name(obj_type),
+                group_base=_group_base_for(obj_type),
+                skip_fields=layout[obj_type].identical,
+                omit_group=layout[obj_type].group,
+                fields_base=_common_fields_name(obj_type),
+            )
+        else:
+            class_lines = _generate_object_class(
+                schema,
+                obj_type,
+                type_since=type_since,
+                field_since=field_since,
+            )
         parts.extend(class_lines)
         parts.append("")
 
     # Generate the TypedDict mapping for __getitem__ dispatch
+    parts.append("# =========================================================================")
+    parts.append("# Any<Class> for the types every version that has them declares alike")
+    parts.append("# =========================================================================")
+    parts.append("")
+    parts.extend(_generate_any_aliases(schema))
+    parts.append("")
     parts.append("# =========================================================================")
     parts.append("# TypedDict mapping for IDFDocument.__getitem__ dispatch")
     parts.append("# =========================================================================")
     parts.append("")
     parts.extend(_generate_object_type_map(schema))
     parts.append("")
+    parts.extend(_generate_common_type_map())
+    parts.append("")
 
     return "\n".join(parts)
+
+
+_ANY_DOCUMENT_DOC = """A document of any supported EnergyPlus version.
+
+:class:`IDFDocument`, typed for the latest release, and every older release's type in
+:mod:`idfkit.versioned` are assignable to it, so annotate with it to accept a document whatever
+its version. Through it, a document offers what every supported version has: the object types
+present in all of them, each typed as all of them declare it, so a field whose choices changed
+between releases reads as the union of them, accepts only their intersection, and a field some
+release lacks is not offered.
+"""
+
+_ANY_VERSION_DOCUMENT_DOC = """A document as every supported EnergyPlus version has it.
+
+Indexing it, or reaching an accessor, with an object type that some supported version lacks is a
+type error, as is a field some version lacks through ``update``. Annotate with ``AnyIDFDocument``,
+the union of this and ``IDFDocument``, rather than with this class: a latest-release document then
+matches ``IDFDocument`` directly. Narrow a document to its release with
+``idfkit.versioned.as_version`` to reach what only that release has.
+"""
+
+
+def _any_accessor_types() -> dict[str, str]:
+    """Each ``AnyIDFDocument`` accessor, a name that reaches the same type in every version, and its class."""
+    per_version = [_accessors(ver) for ver in SUPPORTED.versions]
+    common = set(_common_object_types())
+    return {
+        name: _shared_class_name(obj_type)
+        for name, obj_type in per_version[-1].items()
+        if obj_type in common and all(accessors.get(name) == obj_type for accessors in per_version)
+    }
+
+
+def _generate_any_accessors() -> list[str]:
+    """Typed accessors of ``AnyIDFDocument``: names that reach the same type in every version."""
+    lines: list[str] = []
+    for name, cls in _any_accessor_types().items():
+        lines.append("    @property")
+        lines.append(f"    def {name}(self) -> IDFCollection[{cls}]: ...")
+    return lines
 
 
 def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
@@ -687,7 +1681,12 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     so IDE hovers (which read from the ``.pyi`` when one exists) surface the
     same documentation as the source module.
     """
-    ver = version or LATEST_VERSION
+    with _as_latest(version):
+        return _generate_document_module()
+
+
+def _generate_document_module() -> str:
+    ver = SUPPORTED.latest
     version_str = f"{ver[0]}.{ver[1]}.{ver[2]}"
     schema = get_schema(ver)
 
@@ -713,12 +1712,15 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("")
     lines.append("from collections.abc import Iterator")
     lines.append("from pathlib import Path")
-    lines.append("from typing import Any, Generic, TypeVar")
+    lines.append("from typing import Any, Generic, TypeAlias, TypeVar")
+    lines.append("")
+    lines.append("from typing_extensions import Self")
     lines.append("")
     lines.append("from ._accessors import AccessorResolver")
     lines.append("from ._compat import EppyDocumentMixin")
     lines.append("from ._generated_types import *  # noqa: F403")
-    lines.append("from ._generated_types import _ObjectTypeMap")
+    # A star import skips names that start with an underscore, so the private maps are imported by name.
+    lines.append("from ._generated_types import _CommonTypeMap, _ObjectTypeMap")
     # Alphabetical, because the formatter that runs after this sorts them and the stub gate then
     # regenerates and diffs. An import emitted out of order is reordered on the way in and never
     # matches on the way back, which fails the gate everywhere except the machine that committed it.
@@ -739,29 +1741,16 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
     lines.append("def _build_resolver(schema: EpJSONSchema) -> AccessorResolver: ...")
     lines.append("")
 
-    # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
-    lines.append("class IDFDocument(_ObjectTypeMap, EppyDocumentMixin, Generic[Strict]):  # type: ignore[misc]")
-    cls_doc = docs.get("IDFDocument")
-    if cls_doc:
-        lines.extend(_format_docstring_for_stub(cls_doc, "    "))
-        lines.append("")
+    # The methods live on a plain mixin so that every document type -- the latest one, each older
+    # version's, and AnyIDFDocument -- shares them while carrying its own TypedDict map. Every document
+    # class lists the mixin BEFORE its map (_METHODS_BASE): the map's TypedDict base supplies keys(),
+    # values() and items() too, typed dict_keys[str, object] and so on, and whichever comes first in the
+    # MRO wins, so with the map first `for coll in doc.values(): coll.obj_type` is a type error.
+    lines.append("class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):")
     lines.append("    filepath: Path | None")
-    lines.append("")
-
-    # __init__ — emit multi-line for readability, then attach docstring if present
-    init_doc = docs.get("IDFDocument.__init__")
-    lines.append("    def __init__(")
-    lines.append("        self,")
-    lines.append("        version: tuple[int, int, int] | None = ...,")
-    lines.append("        schema: EpJSONSchema | None = ...,")
-    lines.append("        filepath: Path | str | None = ...,")
-    lines.append("        *,")
-    lines.append("        strict: Strict = ...,")
-    if init_doc:
-        lines.append("    ) -> None:")
-        lines.extend(_format_docstring_for_stub(init_doc, "        "))
-    else:
-        lines.append("    ) -> None: ...")
+    # Read by the writers and set by the epJSON parser; declared so it has its real type, since no
+    # __getattr__ on this base answers undeclared names.
+    lines.append("    _count_at_read: int | None")
     lines.append("")
 
     def emit(
@@ -802,7 +1791,6 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
 
     # Collection access
     emit("def get_collection(self, obj_type: str) -> IDFCollection[IDFObject]", "IDFDocument.get_collection")
-    emit("def __getattr__(self, name: str) -> IDFCollection[IDFObject]", "IDFDocument.__getattr__")
     emit(
         "def __contains__(self, obj_type: str) -> bool",
         "IDFDocument.__contains__",
@@ -866,14 +1854,65 @@ def generate_document_pyi(version: tuple[int, int, int] | None = None) -> str:
         "IDFDocument.objects_by_type",
     )
     emit(
-        "def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> IDFDocument[Strict]",
+        "def expand(self, *, energyplus: EnergyPlusConfig | None = ..., timeout: float = ...) -> Self",
         "IDFDocument.expand",
     )
-    emit("def copy(self) -> IDFDocument[Strict]", "IDFDocument.copy")
+    emit("def copy(self) -> Self", "IDFDocument.copy")
+    lines.append("")
+
+    # Class definition — inherit from _ObjectTypeMap (TypedDict) for __getitem__ dispatch
+    lines.append(f"class IDFDocument({_METHODS_BASE}, _ObjectTypeMap):  # type: ignore[misc]")
+    cls_doc = docs.get("IDFDocument")
+    if cls_doc:
+        lines.extend(_format_docstring_for_stub(cls_doc, "    "))
+        lines.append("")
+
+    # __init__ — emit multi-line for readability, then attach docstring if present
+    init_doc = docs.get("IDFDocument.__init__")
+    lines.append("    def __init__(")
+    lines.append("        self,")
+    lines.append("        version: tuple[int, int, int] | None = ...,")
+    lines.append("        schema: EpJSONSchema | None = ...,")
+    lines.append("        filepath: Path | str | None = ...,")
+    lines.append("        *,")
+    lines.append("        strict: Strict = ...,")
+    if init_doc:
+        lines.append("    ) -> None:")
+        lines.extend(_format_docstring_for_stub(init_doc, "        "))
+    else:
+        lines.append("    ) -> None: ...")
+    lines.append("")
+
+    # The untyped fallback for the raw spellings (doc.Site_Location) is IDFDocument's alone. On the
+    # shared methods base it would also answer, silently and untyped, every accessor that a
+    # version-specific document type or IDFDocumentAllVersions leaves out because that type is
+    # missing from the version, where at run time the access raises.
+    _emit_method(
+        lines,
+        "def __getattr__(self, name: str) -> IDFCollection[IDFObject]",
+        docs.get("IDFDocument.__getattr__"),
+        indent="    ",
+    )
     lines.append("")
 
     # Attribute accessor properties, one per object type plus the shorthands, with memo docstrings
     lines.extend(_generate_attr_properties(_build_resolver(schema).accessors(), schema, indent="    "))
+    lines.append("")
+
+    # AnyIDFDocument is a union whose first member is IDFDocument. Both checkers compare TypedDicts
+    # key by key and pyright does not remember the outcome, so an annotation of the version-agnostic
+    # class alone would cost every call that passes a latest-release document ~800 comparisons.
+    # Through the union, such a document matches IDFDocument directly.
+    # Its name is what a type checker prints when code reaches for an object type or an accessor some
+    # supported version lacks ("... is not a defined key in IDFDocumentAllVersions[bool]"), so it
+    # says what the type is rather than being private.
+    lines.append(f"class IDFDocumentAllVersions({_METHODS_BASE}, _CommonTypeMap):  # type: ignore[misc]")
+    lines.extend(_format_docstring_for_stub(_ANY_VERSION_DOCUMENT_DOC, "    "))
+    lines.append("")
+    lines.extend(_generate_any_accessors())
+    lines.append("")
+    lines.append("AnyIDFDocument: TypeAlias = IDFDocument[Strict] | IDFDocumentAllVersions[Strict]")
+    lines.extend(_format_docstring_for_stub(_ANY_DOCUMENT_DOC, ""))
     lines.append("")
 
     return "\n".join(lines)
@@ -886,11 +1925,14 @@ def main() -> None:
         version_parts = sys.argv[1].split(".")
         version = (int(version_parts[0]), int(version_parts[1]), int(version_parts[2]))
 
-    content = generate_stubs(version)
-    doc_pyi = generate_document_pyi(version)
+    with _as_latest(version):
+        _write_stubs(Path(__file__).resolve().parent.parent)
 
-    # Write to src/idfkit/
-    base_path = Path(__file__).resolve().parent.parent
+
+def _write_stubs(base_path: Path) -> None:
+    """Write, format and verify every generated stub under *base_path* (``src/idfkit``)."""
+    content = _generate_types_module()
+    doc_pyi = _generate_document_module()
 
     types_path = base_path / "_generated_types.pyi"
     types_path.write_text(content, encoding="utf-8")
@@ -898,15 +1940,44 @@ def main() -> None:
     pyi_path = base_path / "document.pyi"
     pyi_path.write_text(doc_pyi, encoding="utf-8")
 
+    versioned_path = base_path / "versioned.pyi"
+    versioned_path.write_text(generate_versioned_pyi(), encoding="utf-8")
+
+    versioned_runtime_path = base_path / "versioned.py"
+    versioned_runtime_path.write_text(generate_versioned_py(), encoding="utf-8")
+
     # Run ruff format so regenerated stubs match the committed (ruff-formatted) versions
     import subprocess
 
     subprocess.run(  # noqa: S603
-        [sys.executable, "-m", "ruff", "format", str(types_path), str(pyi_path)],
+        [
+            sys.executable,
+            "-m",
+            "ruff",
+            "format",
+            str(types_path),
+            str(pyi_path),
+            str(versioned_path),
+            str(versioned_runtime_path),
+        ],
         check=False,
     )
+    from idfkit.codegen.verify_stubs import verify
+
+    problems = verify(
+        types_path.read_text(encoding="utf-8"),
+        pyi_path.read_text(encoding="utf-8"),
+        versioned_path.read_text(encoding="utf-8"),
+        SUPPORTED.versions,
+    )
+    if problems:
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        print(f"The generated stubs misdescribe {len(problems)} version-specific declarations.", file=sys.stderr)
+        raise SystemExit(1)
     print(f"Generated {types_path} ({types_path.stat().st_size:,} bytes)")
     print(f"Generated {pyi_path} ({pyi_path.stat().st_size:,} bytes)")
+    print(f"Generated {versioned_path} ({versioned_path.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

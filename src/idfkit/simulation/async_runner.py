@@ -53,7 +53,7 @@ from .progress_bars import resolve_on_progress
 from .result import SimulationResult
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from .cache import SimulationCache
     from .config import EnergyPlusConfig
     from .fs import AsyncFileSystem, FileSystem
@@ -68,7 +68,7 @@ def _is_async_fs(fs: object) -> bool:
 
 @overload
 async def async_simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: str | Path | None,
     *,
     output_dir: str | Path | None = None,
@@ -91,7 +91,7 @@ async def async_simulate(
 
 @overload
 async def async_simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: None = None,
     *,
     output_dir: str | Path | None = None,
@@ -113,7 +113,7 @@ async def async_simulate(
 
 
 async def async_simulate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: str | Path | None = None,
     *,
     output_dir: str | Path | None = None,

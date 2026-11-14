@@ -122,9 +122,11 @@ class TestStubGeneration:
         from idfkit.codegen.generate_stubs import generate_stubs
 
         content = generate_stubs((24, 1, 0))
-        assert "class Zone(_TypedIDFObject):" in content
-        assert "class Building(_TypedIDFObject):" in content
-        assert "class Material(_TypedIDFObject):" in content
+        # Zone's declaration changed between releases, so it derives from its shared base.
+        assert "class Zone(AnyZone):" in content
+        assert "class AnyZone(_TypedIDFObject):" in content
+        assert "\nclass Building(" in content
+        assert "\nclass Material(" in content
 
     def test_generate_stubs_has_typed_fields(self) -> None:
         from idfkit.codegen.generate_stubs import generate_stubs

@@ -17,12 +17,12 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..objects import IDFObject
 
 
 def create_schedule_type_limits(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     lower: float = 0.0,
     upper: float = 1.0,
@@ -53,7 +53,7 @@ def create_schedule_type_limits(
 
 
 def create_constant_schedule(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     value: float,
     type_limits: str = "",
@@ -77,7 +77,7 @@ def create_constant_schedule(
 
 
 def create_compact_schedule_from_values(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     values: Sequence[float],
     year: int = 2024,

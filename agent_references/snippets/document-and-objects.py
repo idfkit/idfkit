@@ -129,3 +129,204 @@ surface.vertices.append(vertex_x_coordinate=1.0, vertex_y_coordinate=0.0, vertex
 # --8<-- [start:mistake-rename-good]
 doc.rename("Zone", "Office", "OpenPlanArea")  # or zone.name = "OpenPlanArea"
 # --8<-- [end:mistake-rename-good]
+
+
+# --8<-- [start:versioned]
+from idfkit import load_idf
+from idfkit.document import AnyIDFDocument
+from idfkit.versioned import IDFDocumentV9_4, as_version
+
+legacy = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)  # TypeError unless the file is 9.4
+people = legacy["People"]["Office"]
+people.update(zone_or_zonelist_name="Office")  # the 9.4 name; 9.6 renamed it, and the new name is an error here
+
+
+def count_people(doc: AnyIDFDocument) -> int:
+    """Accept a document of any supported release."""
+    return len(doc["People"])
+
+
+# --8<-- [end:versioned]
+
+
+# --8<-- [start:versioned-read-write]
+def use_natural_gas(doc: AnyIDFDocument) -> None:
+    for heater in doc["WaterHeater:Mixed"]:
+        fuel = heater.heater_fuel_type  # reads as str | None: any release's value can be in the file
+        print(fuel)
+        heater.heater_fuel_type = "NaturalGas"  # accepted: every release accepts it
+        heater.update(heater_fuel_type="Electricity")  # update() is typed the same way
+        # heater.heater_fuel_type = "DistrictHeatingWater"  # error: 9.3 to 23.1 reject it
+        # heater.heater_fuel_type = "Steam"                 # error: 23.2 on rejects it
+
+
+# --8<-- [end:versioned-read-write]
+
+
+# --8<-- [start:versioned-range]
+from typing import TypeVar
+
+from idfkit.versioned import IDFDocumentV26_1, IDFDocumentV26_2
+
+# A function for 26.1 and later. The TypeVar hands the caller's own type back: a plain
+# load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
+Since26_1 = TypeVar("Since26_1", bound="IDFDocumentV26_1 | IDFDocumentV26_2")
+
+
+def use_district_steam(doc: Since26_1) -> Since26_1:
+    for heater in doc["WaterHeater:Mixed"]:
+        heater.heater_fuel_type = "DistrictHeatingSteam"  # both releases accept it
+    return doc
+
+
+latest = use_district_steam(load_idf("model.idf"))  # IDFDocument
+older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1))  # IDFDocumentV26_1
+# use_district_steam(legacy)  # error: a 9.4 document is not in the range
+# --8<-- [end:versioned-range]
+
+
+# --8<-- [start:versioned-exhaustive]
+from typing import TypeAlias
+
+from typing_extensions import assert_never
+
+from idfkit import IDFDocument
+from idfkit.versioned import (
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+)
+
+# Through this range heater_fuel_type reads as 12 known choices (or None), so the checker can
+# prove every one is handled. Through AnyIDFDocument it reads as str | None (8.9 to 9.2 accept any
+# string), and no match over it can be exhaustive.
+Since23_2: TypeAlias = (
+    IDFDocumentV23_2
+    | IDFDocumentV24_1
+    | IDFDocumentV24_2
+    | IDFDocumentV25_1
+    | IDFDocumentV25_2
+    | IDFDocumentV26_1
+    | IDFDocument
+)
+
+
+def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
+    fuel = doc["WaterHeater:Mixed"][heater_name].heater_fuel_type
+    match fuel:
+        case "DistrictHeatingWater" | "DistrictHeatingSteam":
+            return True
+        case (
+            "Coal"
+            | "Diesel"
+            | "Electricity"
+            | "FuelOilNo1"
+            | "FuelOilNo2"
+            | "Gasoline"
+            | "NaturalGas"
+            | "OtherFuel1"
+            | "OtherFuel2"
+            | "Propane"
+            | None
+        ):
+            return False
+        case _:
+            assert_never(fuel)  # reported if a choice is left unhandled
+
+
+# --8<-- [end:versioned-exhaustive]
+
+
+# --8<-- [start:versioned-new-document]
+from idfkit import new_document
+
+blank = new_document(version=(9, 4, 0))  # still typed IDFDocument, the latest release
+blank_94 = as_version(new_document(version=(9, 4, 0)), IDFDocumentV9_4)  # typed for 9.4
+blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
+# --8<-- [end:versioned-new-document]
+
+
+# --8<-- [start:versioned-renamed-field]
+from idfkit.versioned import (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+)
+
+# A tuple of release types, as isinstance takes one: as_version accepts a document of any of them.
+BEFORE_9_6 = (
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+)
+SINCE_9_6 = (
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
+
+
+def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
+    """Set a People object's zone, whatever the model's release.
+
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
+    model to the releases that use one name, and update() is checked against all of them.
+    """
+    if doc.version < (9, 6, 0):
+        as_version(doc, BEFORE_9_6)["People"][people].update(zone_or_zonelist_name=zone)
+    else:
+        as_version(doc, SINCE_9_6)["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
+
+
+# --8<-- [end:versioned-renamed-field]
+
+
+# --8<-- [start:typed-object-parameter]
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # the classes exist only in the stubs; importing them at run time fails
+    # From idfkit.document, not idfkit: recent pyright reports "not exported" for the latter.
+    from idfkit.document import AnyBuildingSurfaceDetailed, AnyZone, Zone
+
+
+def latest_ceiling(zone: Zone) -> float | None:
+    """A latest-release Zone only: a 9.4 zone (Zone_v8_9_to_v9_4) is rejected."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+def any_ceiling(zone: AnyZone) -> float | None:
+    """A Zone of any release: the latest one, a 9.4 one, or one reached through AnyIDFDocument."""
+    height = zone.ceiling_height
+    return height if isinstance(height, float) else None
+
+
+def vertex_count(surface: AnyBuildingSurfaceDetailed) -> int:
+    """Extensible groups are typed too: vertices exist in every release."""
+    return sum(1 for vertex in surface.vertices if vertex.vertex_x_coordinate is not None)
+
+
+any_ceiling(doc["Zone"]["Office"])
+any_ceiling(as_version(load_idf("legacy.idf"), IDFDocumentV9_4)["Zone"]["Office"])
+# --8<-- [end:typed-object-parameter]

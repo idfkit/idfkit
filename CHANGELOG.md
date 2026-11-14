@@ -25,6 +25,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python 3.14 became a supported version: CI runs the test suite and type check on it, and the package declares the 3.14 classifier ([#253](https://github.com/idfkit/idfkit/pull/253)).
 - Free-threaded CPython 3.14 (`python3.14t`, GIL disabled) became a tested build: a CI job runs the test suite on it with the GIL off and fails if importing any idfkit module re-enables the GIL, and the package declares the `Free Threading :: 2 - Beta` classifier. The threading contract is now stated in the bundled agent references (`threading.md`): the schema manager and module-level caches are safe from any number of threads, separate documents are independent, and one document may be read from many threads but must not be mutated by several at once. Of the optional extras, only `pandas` before 3.0 re-enables the GIL on import. `benchmarks/bench_free_threading.py` measures thread scaling: on 4 CPUs, four threads parse IDF files 2.6 times faster than one thread on the regular build, and other workloads gain 1.0 to 1.6 times ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `idfkit.weather.designday.sanitize_ddy_bytes()`, the in-memory form of `sanitize_ddy_file()`, which blanks placeholder values in DDY content before it is written anywhere ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- **A document became typeable for the EnergyPlus release it was written for, not only the
+  latest one.** `idfkit.versioned` gained one type per supported release,
+  `IDFDocumentV<major>_<minor>` from `IDFDocumentV8_9` to `IDFDocumentV26_2` (which is
+  `IDFDocument`), and `as_version(doc, IDFDocumentV9_4)`, which returns the document under that
+  type after checking its release at run time. Given a tuple of those types, as `isinstance`
+  takes one, `as_version` accepts a document of any of them and types it as their union (mypy reduces
+  the union to what those releases share), which
+  narrows a model of unknown release into a range such as the releases that have `Space`. Such a document is indexed, completed and checked
+  with that release's object types, field value types and choices, accessors and `update()`
+  keywords: on a 9.4 model `doc["Space"]` is a type error and `People` has
+  `zone_or_zonelist_name`. Documents stay typed for the latest release unless their version is
+  stated this way. The stubs encode each object type's declaration once per contiguous range of
+  releases that share it, and `python -m idfkit.codegen.generate_stubs` now checks what it wrote
+  against every bundled schema before finishing, so adopting a release needs no hand edit of
+  the stubs, and a regeneration that would misdescribe a release fails ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
+- `AnyIDFDocument` (in `idfkit.versioned` and `idfkit.document`) was added. It accepts a
+  document of any supported release and, through it, offers what every release has: the object
+  types present in all of them. A field whose value type changed between releases reads as any
+  release's value and, through assignment and `update()`, accepts only a value every release
+  accepts: `heater_fuel_type` can be set to `"NaturalGas"` but not to `"DistrictHeatingWater"`,
+  which 9.3 to 23.1 reject. idfkit's own
+  functions were retyped to take it, so `save_idf`, `simulate`, the geometry and zoning helpers
+  and the rest accept a document typed for any release; `expand_objects` and the ground
+  heat-transfer preprocessors return the type they were given. An object type or accessor that
+  some release lacks is reported against the type that lacks it, for example
+  `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`, and through `AnyIDFDocument` as
+  `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"`. Naming one release's type costs
+  pyright about what naming `IDFDocument` does, 2 to 3 seconds for a file; a file naming every
+  release's type takes about 7 seconds
+  ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
+- Every object type of the latest release gained an `Any<Class>` type, importable from `idfkit.document` inside
+  `if TYPE_CHECKING:`, for annotating code that takes an object of any supported release:
+  `def floor_area(zone: AnyZone)` accepts a latest-release zone, a 9.4 zone and a zone reached
+  through `AnyIDFDocument`, where `Zone` accepts only the first. Through it, fields follow the
+  `AnyIDFDocument` rules, extensible groups included, so `AnyBuildingSurfaceDetailed.vertices` is
+  typed. For a type no release changed, `Any<Class>` is the latest class itself (`AnyZoneList` is
+  `ZoneList`). For a type that arrived after 8.9, it covers the releases that have it:
+  `AnySpace` accepts a `Space` of any release from 9.6, and its docstring says so. A type that
+  a release before the latest removed, such as `DistrictHeating`, has none: its classes are
+  named for the releases that have it (`DistrictHeating_v8_9_to_v23_1`). `Any<Class>` covers the
+  releases idfkit supports, so adopting a release that drops or renames a field removes that
+  field from it
+  ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 
 ### Changed
 
@@ -70,6 +113,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   groups (a string, a list of strings or tuples, or another object's live `vertices` view).
   Validation never looked inside the groups, so these were stored, and `write_idf()` dropped the
   values or crashed. ([b415635](https://github.com/idfkit/idfkit/commit/b415635))
+- `IDFCollection` became covariant in its object type, so `IDFCollection[Zone]` is accepted
+  where `IDFCollection[IDFObject]` is expected. `IDFCollection.remove` now takes any `IDFObject`,
+  and `get(name, default)` returns the object type or the default's type. The usual cost of
+  covariance came with it: a function that takes `IDFCollection[IDFObject]` can `add()` an object of
+  another type to the collection it is given, such as a `Material` to `doc["Zone"]`, without a type
+  error, and `add()` does not check it at run time
+  ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 
 ### Removed
 
@@ -186,6 +236,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The weather cache is now safe to share between threads and processes. `WeatherDownloader.download` wrote the archive, the extracted files and the cleaned DDY in place, so callers downloading the same station at once could read a truncated file or raise "Downloaded file is not a valid ZIP archive", and a truncated file could stay in the cache for good; `StationIndex.refresh()` likewise rewrote `stations.json.gz` and its KML sources in place, so a concurrent `StationIndex.load()` raised `EOFError` or moved the half-written index aside. Every weather cache file, the IP-location cache and downloaded schemas are now written under a temporary name and renamed into place, with the permissions an in-place write would have given them. Extracted files carry their archive's modification time and size, so a file left truncated by an older version, or extracted from an archive that has since been replaced, is extracted again, and a corrupt archive is downloaded again on the next call. Threads of one process download a station once. Files inside folders of an archive, such as macOS `__MACOSX` resource forks, are no longer extracted beside the weather files ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - A child process forked while another thread was waiting out the geocoding rate limit hung on its first `geocode()` or `detect_location()` call ([#254](https://github.com/idfkit/idfkit/pull/254)).
 - `simulate` computed the cache key from the caller's model before copying it, so an edit made on another thread in between could store one model's results under another model's key. `async_simulate` read the caller's model on a worker thread after copying it, which raised on a free-threaded build when another coroutine edited the model meanwhile. Both now work only from their copy ([#254](https://github.com/idfkit/idfkit/pull/254)).
+- `expand_objects`, `IDFDocument.expand` and the ground heat-transfer preprocessors returned a
+  strict document for a model opened with `strict=False` whenever a preprocessor ran; only a model
+  with nothing to expand came back as it was. The result now keeps the model's strictness, as
+  `IDFDocument.copy` does ([#194](https://github.com/idfkit/idfkit/issues/194), [#251](https://github.com/idfkit/idfkit/pull/251)).
 
 ## [1.2.0] - 2026-10-28
 

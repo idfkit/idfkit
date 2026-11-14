@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 from idfkit.schedules.types import SpecialDay
 
 if TYPE_CHECKING:
-    from idfkit.document import IDFDocument
+    from idfkit.document import AnyIDFDocument
 
 # Month name to number mapping (case-insensitive)
 _MONTH_NAMES = {
@@ -194,7 +194,7 @@ def _last_weekday_of_month(year: int, month: int, weekday: int) -> date:
     return last_day - timedelta(days=days_back)
 
 
-def extract_special_days(doc: IDFDocument, year: int) -> list[SpecialDay]:
+def extract_special_days(doc: AnyIDFDocument, year: int) -> list[SpecialDay]:
     """Parse all RunPeriodControl:SpecialDays objects from a document.
 
     Args:
@@ -249,7 +249,7 @@ def extract_special_days(doc: IDFDocument, year: int) -> list[SpecialDay]:
     return special_days
 
 
-def get_holidays(doc: IDFDocument, year: int) -> set[date]:
+def get_holidays(doc: AnyIDFDocument, year: int) -> set[date]:
     """Get all dates marked as Holiday for a given year.
 
     Args:
@@ -270,7 +270,7 @@ def get_holidays(doc: IDFDocument, year: int) -> set[date]:
     return holidays
 
 
-def get_special_days_by_type(doc: IDFDocument, year: int, day_type: str) -> set[date]:
+def get_special_days_by_type(doc: AnyIDFDocument, year: int, day_type: str) -> set[date]:
     """Get all dates of a specific day type.
 
     Args:

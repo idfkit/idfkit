@@ -28,7 +28,7 @@ from .geometry import (
 )
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFObject
 
     _SurfacesByZ = dict[float, list[tuple[IDFObject, list[tuple[float, float]]]]]
@@ -56,7 +56,7 @@ WALL_ORDER: dict[tuple[str, bool], tuple[int, int, int, int]] = {
 }
 
 
-def get_geometry_convention(doc: IDFDocument) -> tuple[str, bool]:
+def get_geometry_convention(doc: AnyIDFDocument) -> tuple[str, bool]:
     """Read the vertex ordering convention from ``GlobalGeometryRules``.
 
     Returns:
@@ -81,7 +81,7 @@ def get_geometry_convention(doc: IDFDocument) -> tuple[str, bool]:
 
 
 def add_shading_block(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     name: str,
     footprint: Sequence[tuple[float, float]],
     height: float,
@@ -152,7 +152,7 @@ def add_shading_block(
 # ---------------------------------------------------------------------------
 
 
-def set_default_constructions(doc: IDFDocument, construction_name: str = "Default Construction") -> int:
+def set_default_constructions(doc: AnyIDFDocument, construction_name: str = "Default Construction") -> int:
     """Assign a placeholder construction to surfaces that lack one.
 
     Iterates all ``BuildingSurface:Detailed`` and
@@ -178,7 +178,7 @@ def set_default_constructions(doc: IDFDocument, construction_name: str = "Defaul
     return count
 
 
-def bounding_box(doc: IDFDocument) -> tuple[tuple[float, float], tuple[float, float]] | None:
+def bounding_box(doc: AnyIDFDocument) -> tuple[tuple[float, float], tuple[float, float]] | None:
     """Return the 2D axis-aligned bounding box of all building surfaces.
 
     Scans all ``BuildingSurface:Detailed`` vertices and returns the
@@ -217,7 +217,7 @@ def bounding_box(doc: IDFDocument) -> tuple[tuple[float, float], tuple[float, fl
 
 
 def scale_building(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     factor: float | tuple[float, float, float],
     anchor: Vector3D | None = None,
 ) -> None:
@@ -322,7 +322,7 @@ def _extract_horizontal_footprint(
 
 
 def _collect_outdoor_horizontal_surfaces(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
 ) -> tuple[_SurfacesByZ, _SurfacesByZ]:
     """Partition ``Outdoors``-BC horizontal surfaces into roofs and floors by z."""
     roofs: _SurfacesByZ = {}
@@ -345,7 +345,7 @@ def _collect_outdoor_horizontal_surfaces(
 
 
 def detect_horizontal_adjacencies(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
 ) -> list[HorizontalAdjacency]:
     """Find roof/floor surface pairs at matching elevations.
 
@@ -390,7 +390,7 @@ def detect_horizontal_adjacencies(
 
 
 def _add_horizontal_like(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     template: IDFObject,
     base_name: str,
     footprint: list[tuple[float, float]],
@@ -421,7 +421,7 @@ def _add_horizontal_like(
 
 
 def split_horizontal_surface_by_regions(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     surface: IDFObject,
     regions: Sequence[Sequence[tuple[float, float]]],
 ) -> tuple[list[IDFObject], list[IDFObject]]:
@@ -499,7 +499,7 @@ def split_horizontal_surface_by_regions(
 
 
 def split_horizontal_surface(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     surface: IDFObject,
     region: Sequence[tuple[float, float]],
 ) -> tuple[IDFObject, IDFObject | None]:

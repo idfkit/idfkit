@@ -26,7 +26,7 @@ from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..simulation.config import EnergyPlusConfig
     from .protocol import AsyncMigrator
 
@@ -36,7 +36,7 @@ OnMigrationProgress = Callable[[MigrationProgress], Any] | Callable[[MigrationPr
 
 
 async def async_migrate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     target_version: tuple[int, int, int] | str,
     *,
     energyplus: EnergyPlusConfig | None = None,
@@ -134,7 +134,7 @@ async def async_migrate(
 
 async def _run_chain_async(
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     chain: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],
     migrator: AsyncMigrator,
     work_root: Path,
