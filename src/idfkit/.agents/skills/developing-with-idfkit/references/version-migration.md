@@ -80,11 +80,13 @@ if model_v24 is not None:
 
 latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument | None: the latest release
 
-# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument:
+# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument, as strict as doc:
 any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument | None
 ```
 
-The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. `AnyIDFDocument` or a union or tuple of document types is refused with `TypeError`, since a migration reaches one release. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is `None` only on a no-op migration, so check it before use. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
+The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. A migration reaches one release, so `AnyIDFDocument` and a union or tuple of document types raise `TypeError`; pyright and mypy reject `AnyIDFDocument`, and mypy rejects a union too, but pyright accepts a union (it tries each member against the overloads), so the run-time error is the one that catches it there. The migrated document keeps the source's `strict` setting, and a tuple or string target carries it into the type: `AnyIDFDocument[Literal[True]]` for a document from `load_idf`. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is `None` only on a no-op migration, so check it before use. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
+
+To write your own function generic over one release, as `migrate` is, use `ReleaseDocumentT` from `idfkit.versioned`: a type variable constrained to the release types, so `type[ReleaseDocumentT]` takes one release's type and refuses `AnyIDFDocument`.
 
 ## The migration chain
 

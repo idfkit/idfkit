@@ -66,6 +66,14 @@ def test_migrates_through_chain() -> None:
     assert report.migrated_model.version == (25, 1, 0)
 
 
+@pytest.mark.parametrize("strict", [True, False])
+def test_migrated_model_keeps_the_source_strictness(strict: bool) -> None:
+    doc = new_document(version=(24, 1, 0), strict=strict)
+    report = migrate(doc, target_version=(24, 2, 0), migrator=_StubMigrator([(24, 2, 0)]))
+    assert report.migrated_model is not None
+    assert report.migrated_model.strict is strict
+
+
 def test_target_accepts_string() -> None:
     doc = new_document(version=(24, 1, 0))
     report = migrate(doc, target_version="24.2.0", migrator=_StubMigrator([(24, 2, 0)]))

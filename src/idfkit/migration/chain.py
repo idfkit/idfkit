@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+import types
+from typing import TYPE_CHECKING, Any, cast, get_origin
 
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
@@ -44,14 +45,21 @@ def normalize_target(
 
 
 def _is_version(value: object) -> bool:
-    """Whether *value* spells a version (a string or a tuple of ints) rather than a document type.
+    """Whether *value* spells a version rather than a document type.
 
-    A tuple of document types, as ``as_version`` takes, is not a version: it goes to the
-    document-type path, which refuses it for naming several releases.
+    A string, or a tuple none of whose items is a type, is a version, and goes to
+    ``normalize_version`` as it always has, whatever its items are (numpy integers included). A
+    tuple of document types, as ``as_version`` takes, is not: it goes to the document-type path,
+    which refuses it for naming several releases.
     """
     if isinstance(value, str):
         return True
-    return isinstance(value, tuple) and all(isinstance(part, int) for part in cast("tuple[object, ...]", value))
+    return isinstance(value, tuple) and not any(_is_type(part) for part in cast("tuple[object, ...]", value))
+
+
+def _is_type(value: object) -> bool:
+    """Whether *value* is a class, a subscripted generic such as ``IDFDocumentV9_4[bool]``, or a union."""
+    return isinstance(value, (type, types.UnionType)) or get_origin(value) is not None
 
 
 def plan_migration_chain(

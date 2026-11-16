@@ -105,7 +105,7 @@ if model_v24 is not None:
 
 latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument | None: the latest release
 
-# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument:
+# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument, as strict as doc:
 any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument | None
 # --8<-- [end:typed-result]
 

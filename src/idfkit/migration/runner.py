@@ -13,9 +13,10 @@ import tempfile
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from ._typing import StrictT
 from .chain import normalize_target, plan_migration_chain
 from .diff import document_diff, verify_migration_output
 from .progress import MigrationProgress
@@ -23,8 +24,13 @@ from .report import MigrationDiff, MigrationReport, MigrationStep
 from .subprocess_backend import SubprocessMigrator
 
 if TYPE_CHECKING:
+    from typing import TypedDict
+
+    from typing_extensions import Unpack
+
     from ..document import AnyIDFDocument
     from ..simulation.config import EnergyPlusConfig
+    from ..versioned import ReleaseDocumentT
     from .protocol import Migrator
 
 logger = logging.getLogger(__name__)
@@ -32,31 +38,30 @@ logger = logging.getLogger(__name__)
 OnMigrationProgress = Callable[[MigrationProgress], Any]
 
 
-_D = TypeVar("_D", bound="AnyIDFDocument[Any]")
+if TYPE_CHECKING:
+
+    class _MigrateOptions(TypedDict, total=False):
+        """The keyword options of [migrate()][idfkit.migration.migrate], declared once for its overloads."""
+
+        energyplus: EnergyPlusConfig | None
+        migrator: Migrator | None
+        on_progress: OnMigrationProgress | None
+        work_dir: str | Path | None
+        keep_work_dir: bool
 
 
 @overload
 def migrate(
     model: AnyIDFDocument,
-    target_version: type[_D],
-    *,
-    energyplus: EnergyPlusConfig | None = None,
-    migrator: Migrator | None = None,
-    on_progress: OnMigrationProgress | None = None,
-    work_dir: str | Path | None = None,
-    keep_work_dir: bool = False,
-) -> MigrationReport[_D]: ...
+    target_version: type[ReleaseDocumentT],
+    **options: Unpack[_MigrateOptions],
+) -> MigrationReport[ReleaseDocumentT]: ...
 @overload
 def migrate(
-    model: AnyIDFDocument,
+    model: AnyIDFDocument[StrictT],
     target_version: tuple[int, int, int] | str,
-    *,
-    energyplus: EnergyPlusConfig | None = None,
-    migrator: Migrator | None = None,
-    on_progress: OnMigrationProgress | None = None,
-    work_dir: str | Path | None = None,
-    keep_work_dir: bool = False,
-) -> MigrationReport[AnyIDFDocument[Literal[True]]]: ...
+    **options: Unpack[_MigrateOptions],
+) -> MigrationReport[AnyIDFDocument[StrictT]]: ...
 def migrate(
     model: AnyIDFDocument,
     target_version: tuple[int, int, int] | str | type[AnyIDFDocument[Any]],
@@ -186,7 +191,7 @@ def _run_chain(
     on_progress: OnMigrationProgress | None,
     source: tuple[int, int, int],
     target: tuple[int, int, int],
-) -> MigrationReport[AnyIDFDocument[Literal[True]]]:
+) -> MigrationReport[AnyIDFDocument[bool]]:
     """Run every step in *chain*, returning a complete report.
 
     On failure, raises :class:`~idfkit.exceptions.MigrationError` carrying the
@@ -269,7 +274,7 @@ def _run_chain(
     )
     final_idf = work_root / "migrated.idf"
     final_idf.write_text(current_text, encoding="latin-1")
-    migrated = parse_idf(final_idf, version=target)
+    migrated = parse_idf(final_idf, version=target, strict=model.strict)
     verify_migration_output(
         model,
         migrated,

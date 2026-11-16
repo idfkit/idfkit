@@ -25269,6 +25269,34 @@ IDFDocumentV26_2 = IDFDocument
 
 _D = TypeVar("_D", bound=AnyIDFDocument)
 
+ReleaseDocumentT = TypeVar(
+    "ReleaseDocumentT",
+    IDFDocumentV8_9,
+    IDFDocumentV9_0,
+    IDFDocumentV9_1,
+    IDFDocumentV9_2,
+    IDFDocumentV9_3,
+    IDFDocumentV9_4,
+    IDFDocumentV9_5,
+    IDFDocumentV9_6,
+    IDFDocumentV22_1,
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
+"""A type variable that is exactly one release's document type.
+
+Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one
+release's type and refuses ``AnyIDFDocument`` and unions of release types, which name no single
+release. :func:`idfkit.migration.migrate` takes its target this way.
+"""
+
 @overload
 def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for.

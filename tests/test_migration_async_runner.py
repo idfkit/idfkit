@@ -98,6 +98,15 @@ async def test_target_accepts_document_type() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("strict", [True, False])
+async def test_migrated_model_keeps_the_source_strictness(strict: bool) -> None:
+    doc = new_document(version=(24, 1, 0), strict=strict)
+    report = await async_migrate(doc, target_version=(24, 2, 0), migrator=_AsyncStubMigrator([(24, 2, 0)]))
+    assert report.migrated_model is not None
+    assert report.migrated_model.strict is strict
+
+
+@pytest.mark.asyncio
 async def test_unsupported_target_raises() -> None:
     doc = new_document(version=(24, 1, 0))
     with pytest.raises(UnsupportedVersionError):

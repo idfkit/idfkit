@@ -106,7 +106,10 @@ class MigrationDiff:
         )
 
 
-@dataclass(frozen=True, slots=True)
+# No slots=True, unlike the records above: on Python 3.10 a frozen dataclass rebuilt with slots
+# cannot be constructed through a subscripted alias (MigrationReport[X](...)), because the alias
+# sets __orig_class__ and the generated __setattr__'s super() refers to the class before rebuild.
+@dataclass(frozen=True)
 class MigrationReport(Generic[DocumentT_co]):
     """Result of a full migration run.
 

@@ -16,9 +16,10 @@ import tempfile
 import time
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
+from ._typing import StrictT
 from .async_subprocess_backend import AsyncSubprocessMigrator
 from .chain import normalize_target, plan_migration_chain
 from .diff import document_diff, verify_migration_output
@@ -26,8 +27,13 @@ from .progress import MigrationProgress
 from .report import MigrationDiff, MigrationReport, MigrationStep
 
 if TYPE_CHECKING:
+    from typing import TypedDict
+
+    from typing_extensions import Unpack
+
     from ..document import AnyIDFDocument
     from ..simulation.config import EnergyPlusConfig
+    from ..versioned import ReleaseDocumentT
     from .protocol import AsyncMigrator
 
 logger = logging.getLogger(__name__)
@@ -35,31 +41,30 @@ logger = logging.getLogger(__name__)
 OnMigrationProgress = Callable[[MigrationProgress], Any] | Callable[[MigrationProgress], Awaitable[Any]]
 
 
-_D = TypeVar("_D", bound="AnyIDFDocument[Any]")
+if TYPE_CHECKING:
+
+    class _MigrateOptions(TypedDict, total=False):
+        """The keyword options of [async_migrate()][idfkit.migration.async_migrate], declared once for its overloads."""
+
+        energyplus: EnergyPlusConfig | None
+        migrator: AsyncMigrator | None
+        on_progress: OnMigrationProgress | None
+        work_dir: str | Path | None
+        keep_work_dir: bool
 
 
 @overload
 async def async_migrate(
     model: AnyIDFDocument,
-    target_version: type[_D],
-    *,
-    energyplus: EnergyPlusConfig | None = None,
-    migrator: AsyncMigrator | None = None,
-    on_progress: OnMigrationProgress | None = None,
-    work_dir: str | Path | None = None,
-    keep_work_dir: bool = False,
-) -> MigrationReport[_D]: ...
+    target_version: type[ReleaseDocumentT],
+    **options: Unpack[_MigrateOptions],
+) -> MigrationReport[ReleaseDocumentT]: ...
 @overload
 async def async_migrate(
-    model: AnyIDFDocument,
+    model: AnyIDFDocument[StrictT],
     target_version: tuple[int, int, int] | str,
-    *,
-    energyplus: EnergyPlusConfig | None = None,
-    migrator: AsyncMigrator | None = None,
-    on_progress: OnMigrationProgress | None = None,
-    work_dir: str | Path | None = None,
-    keep_work_dir: bool = False,
-) -> MigrationReport[AnyIDFDocument[Literal[True]]]: ...
+    **options: Unpack[_MigrateOptions],
+) -> MigrationReport[AnyIDFDocument[StrictT]]: ...
 async def async_migrate(
     model: AnyIDFDocument,
     target_version: tuple[int, int, int] | str | type[AnyIDFDocument[Any]],
@@ -169,7 +174,7 @@ async def _run_chain_async(
     on_progress: OnMigrationProgress | None,
     source: tuple[int, int, int],
     target: tuple[int, int, int],
-) -> MigrationReport[AnyIDFDocument[Literal[True]]]:
+) -> MigrationReport[AnyIDFDocument[bool]]:
     """Drive every step in *chain* through an async migrator."""
     from ..idf_parser import parse_idf
     from ..writers import save_idf
@@ -248,7 +253,7 @@ async def _run_chain_async(
     )
     final_idf = work_root / "migrated.idf"
     await asyncio.to_thread(final_idf.write_text, current_text, "latin-1")
-    migrated = await asyncio.to_thread(parse_idf, final_idf, version=target)
+    migrated = await asyncio.to_thread(parse_idf, final_idf, version=target, strict=model.strict)
     verify_migration_output(
         model,
         migrated,

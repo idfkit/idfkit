@@ -73,6 +73,16 @@ def document_type(name: str, version: tuple[int, int, int]) -> type:
     return types.new_class(name, (generic[Strict],), {"metaclass": DocumentTypeMeta}, fill)
 
 
+def release_type_var(name: str, *releases: type) -> Any:
+    """Create the run-time ``ReleaseDocumentT``: a type variable constrained to the release types.
+
+    Spelled through ``Any`` for the reason ``document_type`` is: the stand-ins are values here, not
+    classes a type checker can see, and the type variable only has to exist at run time.
+    """
+    factory: Any = TypeVar
+    return factory(name, *releases)
+
+
 def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     """The class *document_type* names, with or without type arguments, and the release it requires."""
     from .document import IDFDocument

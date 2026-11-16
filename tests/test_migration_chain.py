@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pytest
 
 from idfkit import IDFDocument
@@ -17,6 +19,19 @@ class TestNormalizeTarget:
         # 9.0's release is 9.0.1, the version its schema and as_version use.
         assert normalize_target(IDFDocumentV9_0) == (9, 0, 1)
         assert normalize_target(IDFDocument) == LATEST_VERSION
+
+    def test_a_tuple_of_document_types_names_several_releases(self) -> None:
+        with pytest.raises(TypeError, match="several releases"):
+            normalize_target(cast("Any", (IDFDocumentV9_0, IDFDocumentV24_1)))
+
+    def test_a_tuple_of_int_likes_is_still_a_version(self) -> None:
+        """A version tuple of numpy integers goes where it always went, not to the document-type path."""
+        np = pytest.importorskip("numpy")
+        assert normalize_target(cast("Any", (np.int64(24), np.int64(1), np.int64(0)))) == (24, 1, 0)
+
+    def test_a_tuple_of_strings_is_still_an_unsupported_version(self) -> None:
+        with pytest.raises(UnsupportedVersionError):
+            normalize_target(cast("Any", ("24", "1", "0")))
 
 
 class TestPlanMigrationChain:

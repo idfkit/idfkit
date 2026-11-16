@@ -1427,6 +1427,10 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     parts.append('_D = TypeVar("_D", bound=AnyIDFDocument)')
     parts.append("")
+    releases = ", ".join([*(_document_class_name(ver) for ver in older), "IDFDocument"])
+    parts.append(f'ReleaseDocumentT = TypeVar("ReleaseDocumentT", {releases})')
+    parts.extend(f"{line}" if line else "" for line in _RELEASE_DOCUMENT_T_DOC)
+    parts.append("")
     parts.extend([
         "@overload",
         *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
@@ -1466,12 +1470,13 @@ def generate_versioned_py() -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from ._document_types import as_version, document_type",
+        "from ._document_types import as_version, document_type, release_type_var",
         "from .document import AnyIDFDocument, IDFDocument",
         "",
         "__all__ = [",
         '    "AnyIDFDocument",',
         *(f'    "{name}",' for name in names),
+        '    "ReleaseDocumentT",',
         '    "as_version",',
         "]",
         "",
@@ -1482,7 +1487,26 @@ def generate_versioned_py() -> str:
         else:
             lines.append(f'{_document_class_name(ver)} = document_type("{_document_class_name(ver)}", {ver!r})')
     lines.append("")
+    lines.extend([
+        "ReleaseDocumentT = release_type_var(",
+        '    "ReleaseDocumentT",',
+        *(f"    {name}," for name in names),
+        ")",
+    ])
+    lines.extend(_RELEASE_DOCUMENT_T_DOC)
+    lines.append("")
     return "\n".join(lines)
+
+
+# The docstring of ReleaseDocumentT, written into both halves of the module.
+_RELEASE_DOCUMENT_T_DOC = (
+    '"""A type variable that is exactly one release\'s document type.',
+    "",
+    "Constrained to ``IDFDocumentV8_9`` ... ``IDFDocument``, so ``type[ReleaseDocumentT]`` accepts one",
+    "release's type and refuses ``AnyIDFDocument`` and unions of release types, which name no single",
+    "release. :func:`idfkit.migration.migrate` takes its target this way.",
+    '"""',
+)
 
 
 _AS_VERSION_DOC = """Type *doc* as a document of the EnergyPlus version *document_type* stands for.
