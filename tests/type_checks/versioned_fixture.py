@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument, load_idf, save_idf
+from idfkit.migration import MigrationReport, async_migrate, migrate
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
 from idfkit.versioned import (
@@ -156,6 +157,23 @@ def correct_calls() -> None:
     print(objects)
 
 
+async def migrated_documents(old: IDFDocumentV8_9) -> None:
+    """A migration names its target's document type to get a report typed for that release."""
+    report = migrate(old, IDFDocumentV9_4)
+    assert_type(report, MigrationReport[IDFDocumentV9_4])
+    assert_type(report.migrated_model, IDFDocumentV9_4 | None)
+    assert_type((await async_migrate(old, target_version=IDFDocumentV9_4)).migrated_model, IDFDocumentV9_4 | None)
+    if report.migrated_model is not None:
+        report.migrated_model["People"]["Office"].zone_or_zonelist_name = "Office"
+    assert_type(migrate(old, IDFDocument).migrated_model, IDFDocument | None)
+    # A version a type checker cannot know gives a document of any release, strict as parsed.
+    assert_type(migrate(old, (24, 1, 0)).migrated_model, AnyIDFDocument[Literal[True]] | None)
+    assert_type((await async_migrate(old, "24.1.0")).migrated_model, AnyIDFDocument[Literal[True]] | None)
+    # A bare MigrationReport accepts a report of any release.
+    reports: list[MigrationReport] = [report, migrate(old, "24.1.0")]
+    print(reports)
+
+
 def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     legacy["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (Space is new in 9.6)
     people = legacy["People"]["Office"]
@@ -178,3 +196,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
     as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)
+    migrated = migrate(legacy, (24, 1, 0)).migrated_model
+    assert migrated is not None
+    latest_only(migrated)  # pyright: ignore[reportArgumentType]  (a version tuple names no release a checker knows)
+    migrate(legacy, IDFDocumentV9_6).migrated_model["Space"]  # pyright: ignore[reportOptionalSubscript]  (None on a no-op)

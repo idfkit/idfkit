@@ -87,6 +87,24 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     raise TypeError(msg)
 
 
+def release_of(document_type: object) -> tuple[int, int, int]:
+    """The one release *document_type* stands for, as :func:`as_version` resolves it.
+
+    Raises:
+        TypeError: If *document_type* is not a document type, or names no single release:
+            ``AnyIDFDocument``, or a tuple or union of several types.
+    """
+    candidates = _candidates(document_type)
+    if len(candidates) != 1:
+        msg = f"{document_type!r} names several releases; name one, such as IDFDocumentV24_1"
+        raise TypeError(msg)
+    _, release = _resolve(candidates[0])
+    if release is None:
+        msg = f"{document_type!r} stands for every release, not one; name one, such as IDFDocumentV24_1"
+        raise TypeError(msg)
+    return release
+
+
 def _candidates(document_type: object) -> tuple[object, ...]:
     """The document types *document_type* names: itself, a tuple's members, or a union's.
 

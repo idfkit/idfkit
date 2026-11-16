@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
-from idfkit import new_document
+from idfkit import IDFDocument, new_document
 from idfkit.exceptions import MigrationError, UnsupportedVersionError
 from idfkit.migration.progress import MigrationProgress
 from idfkit.migration.protocol import MigrationStepResult
 from idfkit.migration.report import MigrationReport
 from idfkit.migration.runner import migrate
+from idfkit.versioned import AnyIDFDocument, IDFDocumentV24_2, IDFDocumentV25_1, as_version
+from idfkit.versions import LATEST_VERSION
 
 
 class _StubMigrator:
@@ -67,6 +70,38 @@ def test_target_accepts_string() -> None:
     doc = new_document(version=(24, 1, 0))
     report = migrate(doc, target_version="24.2.0", migrator=_StubMigrator([(24, 2, 0)]))
     assert report.target_version == (24, 2, 0)
+
+
+def test_target_accepts_document_type() -> None:
+    doc = new_document(version=(24, 1, 0))
+    migrator = _StubMigrator([(24, 2, 0), (25, 1, 0)])
+    report = migrate(doc, IDFDocumentV25_1, migrator=migrator)
+
+    assert report.target_version == report.requested_target == (25, 1, 0)
+    assert report.migrated_model is not None
+    assert report.migrated_model.version == (25, 1, 0)
+    # The release the report is typed for is the one the document is at.
+    assert as_version(report.migrated_model, IDFDocumentV25_1) is report.migrated_model
+
+
+def test_target_accepts_latest_document_type() -> None:
+    doc = new_document(version=LATEST_VERSION)
+    report = migrate(doc, IDFDocument, migrator=_StubMigrator([]))
+    assert report.target_version == LATEST_VERSION
+    assert report.migrated_model is None
+
+
+@pytest.mark.parametrize(
+    "target",
+    [AnyIDFDocument, (IDFDocumentV24_2, IDFDocumentV25_1), IDFDocumentV24_2 | IDFDocumentV25_1, int],
+    ids=["any-release", "tuple", "union", "not-a-document-type"],
+)
+def test_target_document_type_must_name_one_release(target: object) -> None:
+    doc = new_document(version=(24, 1, 0))
+    migrator = _StubMigrator([])
+    with pytest.raises(TypeError):
+        migrate(doc, cast("Any", target), migrator=migrator)
+    assert migrator.calls == []
 
 
 def test_invalid_target_string_raises() -> None:

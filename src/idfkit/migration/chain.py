@@ -2,30 +2,56 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, cast
+
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
 from ..versions import ENERGYPLUS_VERSIONS, is_supported_version
+
+if TYPE_CHECKING:
+    from ..document import AnyIDFDocument
 
 #: A transition step: ``(from_version, to_version)``.
 TransitionStep = tuple[tuple[int, int, int], tuple[int, int, int]]
 
 
-def normalize_target(target_version: tuple[int, int, int] | str) -> tuple[int, int, int]:
-    """Coerce a tuple or dotted-string version into a normalized, supported tuple.
+def normalize_target(
+    target_version: tuple[int, int, int] | str | type[AnyIDFDocument[Any]],
+) -> tuple[int, int, int]:
+    """Coerce a tuple, dotted-string version or document type into a normalized, supported tuple.
 
-    Accepts either a ``(major, minor, patch)`` tuple or a dotted string
-    such as ``"25.2.0"`` / ``"25.2"``. Raises on malformed input or
-    unsupported versions.
+    Accepts a ``(major, minor, patch)`` tuple, a dotted string such as
+    ``"25.2.0"`` / ``"25.2"``, or the document type of one release, such as
+    ``IDFDocumentV24_1`` from [idfkit.versioned][] or ``IDFDocument`` for the
+    latest. Raises on malformed input or unsupported versions.
 
     Raises:
         ValueError: If the string cannot be parsed.
+        TypeError: If *target_version* is a type that is not the document
+            type of a single release (``AnyIDFDocument``, a union, a class
+            of its own).
         UnsupportedVersionError: If the parsed version is not in
             `ENERGYPLUS_VERSIONS`.
     """
-    normalized = normalize_version(target_version)
+    if not _is_version(target_version):
+        from .._document_types import release_of
+
+        return release_of(target_version)
+    normalized = normalize_version(cast("tuple[int, int, int] | str", target_version))
     if not is_supported_version(normalized):
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return normalized
+
+
+def _is_version(value: object) -> bool:
+    """Whether *value* spells a version (a string or a tuple of ints) rather than a document type.
+
+    A tuple of document types, as ``as_version`` takes, is not a version: it goes to the
+    document-type path, which refuses it for naming several releases.
+    """
+    if isinstance(value, str):
+        return True
+    return isinstance(value, tuple) and all(isinstance(part, int) for part in cast("tuple[object, ...]", value))
 
 
 def plan_migration_chain(

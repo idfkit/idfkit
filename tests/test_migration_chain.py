@@ -4,8 +4,19 @@ from __future__ import annotations
 
 import pytest
 
+from idfkit import IDFDocument
 from idfkit.exceptions import UnsupportedVersionError
-from idfkit.migration.chain import plan_migration_chain
+from idfkit.migration.chain import normalize_target, plan_migration_chain
+from idfkit.versioned import IDFDocumentV9_0, IDFDocumentV24_1
+from idfkit.versions import LATEST_VERSION
+
+
+class TestNormalizeTarget:
+    def test_document_type_is_its_release(self) -> None:
+        assert normalize_target(IDFDocumentV24_1) == (24, 1, 0)
+        # 9.0's release is 9.0.1, the version its schema and as_version use.
+        assert normalize_target(IDFDocumentV9_0) == (9, 0, 1)
+        assert normalize_target(IDFDocument) == LATEST_VERSION
 
 
 class TestPlanMigrationChain:

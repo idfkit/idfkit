@@ -16,7 +16,7 @@ import tempfile
 import time
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError
 from .async_subprocess_backend import AsyncSubprocessMigrator
@@ -35,6 +35,21 @@ logger = logging.getLogger(__name__)
 OnMigrationProgress = Callable[[MigrationProgress], Any] | Callable[[MigrationProgress], Awaitable[Any]]
 
 
+_D = TypeVar("_D", bound="AnyIDFDocument[Any]")
+
+
+@overload
+async def async_migrate(
+    model: AnyIDFDocument,
+    target_version: type[_D],
+    *,
+    energyplus: EnergyPlusConfig | None = None,
+    migrator: AsyncMigrator | None = None,
+    on_progress: OnMigrationProgress | None = None,
+    work_dir: str | Path | None = None,
+    keep_work_dir: bool = False,
+) -> MigrationReport[_D]: ...
+@overload
 async def async_migrate(
     model: AnyIDFDocument,
     target_version: tuple[int, int, int] | str,
@@ -44,7 +59,17 @@ async def async_migrate(
     on_progress: OnMigrationProgress | None = None,
     work_dir: str | Path | None = None,
     keep_work_dir: bool = False,
-) -> MigrationReport:
+) -> MigrationReport[AnyIDFDocument[Literal[True]]]: ...
+async def async_migrate(
+    model: AnyIDFDocument,
+    target_version: tuple[int, int, int] | str | type[AnyIDFDocument[Any]],
+    *,
+    energyplus: EnergyPlusConfig | None = None,
+    migrator: AsyncMigrator | None = None,
+    on_progress: OnMigrationProgress | None = None,
+    work_dir: str | Path | None = None,
+    keep_work_dir: bool = False,
+) -> MigrationReport[AnyIDFDocument[Any]]:
     """Async counterpart to [migrate()][idfkit.migration.runner.migrate].
 
     Same semantics as the sync version; the only difference is that each
@@ -54,7 +79,9 @@ async def async_migrate(
 
     Args:
         model: The document to migrate.
-        target_version: Target version (tuple or dotted string).
+        target_version: Target version: a tuple, a dotted string, or the
+            target release's document type, which also types the report, as
+            for [migrate()][idfkit.migration.runner.migrate].
         energyplus: EnergyPlus installation. Ignored when *migrator* is set.
         migrator: Optional [AsyncMigrator][idfkit.migration.protocol.AsyncMigrator].
             When ``None``, defaults to an
@@ -73,6 +100,7 @@ async def async_migrate(
 
     Raises:
         idfkit.exceptions.UnsupportedVersionError: For an unsupported version.
+        TypeError: If *target_version* is a type that names no single release.
         ValueError: If the target is older than ``model.version``.
         idfkit.exceptions.MigrationError: On any transition-step failure; the
             exception's ``completed_steps`` records the prefix that succeeded.
@@ -141,7 +169,7 @@ async def _run_chain_async(
     on_progress: OnMigrationProgress | None,
     source: tuple[int, int, int],
     target: tuple[int, int, int],
-) -> MigrationReport:
+) -> MigrationReport[AnyIDFDocument[Literal[True]]]:
     """Drive every step in *chain* through an async migrator."""
     from ..idf_parser import parse_idf
     from ..writers import save_idf

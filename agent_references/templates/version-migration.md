@@ -8,7 +8,7 @@
 - You're maintaining a fleet of models and want them all on the same version.
 - You need to surface what transition steps changed during migration.
 
-To keep editing an old model in its own release instead, type it for that release with `as_version` (see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md)). After migrating, `report.migrated_model` is `IDFDocument | None`, typed for the latest release.
+To keep editing an old model in its own release instead, type it for that release with `as_version` (see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md)). After migrating, `report.migrated_model` is typed for the release you name as the target (see [Typing the migrated document](#typing-the-migrated-document)).
 
 ## Quick start
 
@@ -31,17 +31,27 @@ The same path is wired into `simulate(..., auto_migrate=True)` — see [simulati
 ```text
 migrate(
     model: IDFDocument,
-    target_version: tuple[int, int, int] | str,
+    target_version: tuple[int, int, int] | str | type[IDFDocumentV...],
     *,
     energyplus: EnergyPlusConfig | None = None,   # default: auto-discover
     migrator: Migrator | None = None,             # plug a custom backend
     on_progress: Callable[[MigrationProgress], None] | None = None,
     work_dir: str | Path | None = None,           # default: a fresh tempdir
     keep_work_dir: bool = False,
-) -> MigrationReport
+) -> MigrationReport[...]
 ```
 
 `async_migrate` mirrors this signature.
+
+## Typing the migrated document
+
+`MigrationReport` is generic in the type of `migrated_model`. Name the target as a document type from `idfkit.versioned` (`IDFDocumentV24_1`, or `IDFDocument` for the latest) and the report is typed for that release; a tuple or string target gives `AnyIDFDocument`, because a type checker cannot know which release a value names:
+
+```python
+--8<-- "agent_references/snippets/version-migration.py:typed-result"
+```
+
+The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. `AnyIDFDocument` or a union or tuple of document types is refused with `TypeError`, since a migration reaches one release. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is `None` only on a no-op migration, so check it before use. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
 
 ## The migration chain
 

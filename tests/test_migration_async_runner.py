@@ -18,6 +18,7 @@ from idfkit.migration.async_runner import async_migrate
 from idfkit.migration.progress import MigrationProgress
 from idfkit.migration.protocol import MigrationStepResult
 from idfkit.migration.report import MigrationReport
+from idfkit.versioned import IDFDocumentV24_2, as_version
 
 
 class _AsyncStubMigrator:
@@ -85,6 +86,15 @@ async def test_target_accepts_string() -> None:
         migrator=_AsyncStubMigrator([(24, 2, 0)]),
     )
     assert report.target_version == (24, 2, 0)
+
+
+@pytest.mark.asyncio
+async def test_target_accepts_document_type() -> None:
+    doc = new_document(version=(24, 1, 0))
+    report = await async_migrate(doc, target_version=IDFDocumentV24_2, migrator=_AsyncStubMigrator([(24, 2, 0)]))
+    assert report.target_version == (24, 2, 0)
+    assert report.migrated_model is not None
+    assert as_version(report.migrated_model, IDFDocumentV24_2) is report.migrated_model
 
 
 @pytest.mark.asyncio
