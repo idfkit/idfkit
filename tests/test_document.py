@@ -15,6 +15,7 @@ from idfkit.cst import DocumentCST
 from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.validation import ValidationError
+from idfkit.versions import LATEST_VERSION
 
 
 class TestIDFDocumentInit:
@@ -939,6 +940,37 @@ class TestGetReferencesAndSurfaces:
         doc.add("Zone", "Z")
         doc.add(obj_type, "S", zone_name="Z", validate=False)
         assert [(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")] == [(obj_type, "S")]
+
+    @pytest.mark.parametrize("version", [(8, 9, 0), (24, 1, 0), LATEST_VERSION])
+    def test_get_zone_surfaces_schema_sweep(self, version: tuple[int, int, int]) -> None:
+        """Every object type that can name a zone is tried; only the surfaces come back.
+
+        Guards against any regression that lets a non-surface referencer through, for every
+        type the schema knows, not only the handful named in the other tests.
+        """
+        doc = new_document(version=version)
+        schema = doc.schema
+        assert schema is not None
+        doc.add("Zone", "Z")
+        surface_types = set(schema.get_types_providing_reference("SurfaceNames"))
+        expected: set[tuple[str, str]] = set()
+        added = 0
+        for obj_type in schema.object_types:
+            if obj_type == "Zone":
+                continue
+            for field_name in schema.get_field_names(obj_type):
+                object_list = schema.get_field_object_list(obj_type, field_name)
+                if not object_list or "ZoneNames" not in object_list:
+                    continue
+                name = f"Obj{added}"
+                doc.add(obj_type, name if schema.has_name(obj_type) else "", {field_name: "Z"}, validate=False)
+                added += 1
+                if obj_type in surface_types and field_name == "zone_name":
+                    expected.add((obj_type, name))
+        # The sweep must actually exercise non-surface referencers, not just surfaces.
+        assert added > len(expected) + 10
+        assert expected, "no surface types found in schema"
+        assert {(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")} == expected
 
     def test_get_zone_surfaces_follows_rename(self) -> None:
         doc = new_document()
