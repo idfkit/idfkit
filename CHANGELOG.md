@@ -16,12 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `doc.get_collection("Zoen")` returns an empty collection at run time instead of raising; `C004`
   (warning) reports any other literal name and suggests `doc["Zone"]`, which is typed and which
   pyright checks. Names held in variables are not reported. Neither rule adds anything to
-  type-checking time.
+  type-checking time ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb)).
 
 ### Changed
 
 - **Breaking:** `idfkit check` exits with status 1 on a file that passes a literal object type
-  to `get_collection`, because of the new `C004` warning. Pass `--ignore C004` to keep such calls.
+  to `get_collection`, because of the new `C004` warning. Pass `--ignore C004` to keep such calls ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 
