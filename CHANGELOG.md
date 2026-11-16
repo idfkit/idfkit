@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `new_document()` accepted a document type of `idfkit.versioned` in place of a version tuple:
+  `new_document(IDFDocumentV9_4)` created an EnergyPlus 9.4.0 model typed as `IDFDocumentV9_4`,
+  naming the release once, where `new_document(version=(9, 4, 0))` stayed typed for the latest
+  release and needed `as_version()` to be typed for its own. `new_document(IDFDocument)` created a
+  latest-release model, and `AnyIDFDocument`, which stands for no single release, raised
+  `TypeError`. A parametrized type, such as `IDFDocumentV9_4[Literal[False]]`, also set the
+  document's strictness. The tuple form, and the time a type checker takes over it, were unchanged.
+  (SHA_PLACEHOLDER)
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added

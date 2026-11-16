@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, get_origin
+from typing import Any, Literal, get_origin
 
 import pytest
 
@@ -78,10 +78,51 @@ class TestRuntimeTypes:
         assert get_origin(AnyIDFDocument[bool]) is AnyIDFDocument
 
     def test_document_types_are_not_instantiated(self) -> None:
-        with pytest.raises(TypeError, match="new_document"):
+        with pytest.raises(TypeError, match=r"new_document\(IDFDocumentV9_4\)"):
             versioned.IDFDocumentV9_4()
-        with pytest.raises(TypeError, match="new_document"):
+        with pytest.raises(TypeError, match="is not instantiated"):
             AnyIDFDocument()
+
+
+class TestNewDocument:
+    @pytest.mark.parametrize("version", ENERGYPLUS_VERSIONS, ids=version_string)
+    def test_creates_a_document_of_the_types_release(self, version: tuple[int, int, int]) -> None:
+        document_type: Any = getattr(versioned, f"IDFDocumentV{version[0]}_{version[1]}")
+        doc = new_document(document_type)
+        assert type(doc) is IDFDocument
+        assert doc.version == version
+        assert doc["Version"].first().version_identifier == f"{version[0]}.{version[1]}"
+        assert versioned.as_version(doc, document_type) is doc
+
+    def test_seeds_what_a_version_tuple_seeds(self) -> None:
+        typed = new_document(versioned.IDFDocumentV9_4)
+        plain = new_document(version=(9, 4, 0))
+        assert {t: len(c) for t, c in typed.items()} == {t: len(c) for t, c in plain.items()}
+
+    def test_idfdocument_is_the_latest_release(self) -> None:
+        assert new_document(IDFDocument).version == LATEST_VERSION
+
+    def test_a_type_with_type_arguments(self) -> None:
+        assert new_document(versioned.IDFDocumentV9_4[bool]).version == (9, 4, 0)
+
+    def test_strict(self) -> None:
+        assert new_document(versioned.IDFDocumentV9_4).strict is True
+        assert new_document(versioned.IDFDocumentV9_4, strict=False).strict is False
+
+    def test_a_parametrized_type_states_the_strictness(self) -> None:
+        assert new_document(versioned.IDFDocumentV9_4[Literal[False]]).strict is False
+        assert new_document(versioned.IDFDocumentV9_4[Literal[True]]).strict is True
+        assert new_document(versioned.IDFDocumentV9_4[Literal[False]], strict=False).strict is False
+        with pytest.raises(TypeError, match="contradicts"):
+            new_document(versioned.IDFDocumentV9_4[Literal[False]], strict=True)
+
+    def test_any_document_has_no_release(self) -> None:
+        with pytest.raises(TypeError, match="no single EnergyPlus release"):
+            new_document(AnyIDFDocument)
+
+    def test_refuses_a_type_that_is_not_a_document_type(self) -> None:
+        with pytest.raises(TypeError, match="not a document type"):
+            new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]
 
 
 class TestAsVersion:

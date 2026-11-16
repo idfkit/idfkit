@@ -80,7 +80,7 @@ The type stubs describe the latest supported release, and every document is type
 |---|---|
 | Models of the latest release (you create them with `new_document()`, or migrated them to it) | `IDFDocument` |
 | Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
-| Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
+| Models of one release | `IDFDocumentV9_4` and so on, created with `new_document(IDFDocumentV9_4)` or reached with `as_version` |
 | Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
 
 ### Annotating a parameter with an object class
@@ -121,7 +121,7 @@ A narrower range also gives a narrower read type. Through releases that all list
 
 ### A model created for an older release
 
-`new_document(version=...)` is typed for the latest release, whatever version it is given. Type it for its release with `as_version`, as for a loaded model; a test fixture that skips this is checked against the wrong release:
+Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. `new_document(IDFDocument)` is the latest release's; `AnyIDFDocument` raises `TypeError` (it is no single release). As with `as_version`, the bare type carries no strictness (`IDFDocumentV9_4[bool]`); to state it, pass the type parametrized: `new_document(IDFDocumentV9_4[Literal[False]])` creates a non-strict document typed `IDFDocumentV9_4[Literal[False]]`, with no `strict=` needed. Keep `as_version` for models whose version comes from a file:
 
 ```python
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-new-document"

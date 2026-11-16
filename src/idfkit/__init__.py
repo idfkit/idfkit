@@ -30,7 +30,12 @@ from importlib.metadata import version as _pkg_version
 from typing import TYPE_CHECKING, Literal, overload
 
 if TYPE_CHECKING:
+    from typing import TypeVar
+
     from ._generated_types import *
+    from .document import AnyIDFDocument
+
+    _D = TypeVar("_D", bound=AnyIDFDocument)
 
 try:
     __version__ = _pkg_version("idfkit")
@@ -406,6 +411,12 @@ def load_epjson(
     return parse_epjson(Path(path), version=version, strict=strict, preserve_formatting=preserve_formatting)
 
 
+# The document-type overload comes first: it needs a positional argument, so the default call skips it
+# without matching anything, and a type passed to it is matched before any tuple overload is tried.
+@overload
+def new_document(version: type[_D], *, strict: bool = ...) -> _D: ...
+
+
 @overload
 def new_document(
     version: tuple[int, int, int] = ...,
@@ -423,18 +434,25 @@ def new_document(
 
 
 def new_document(
-    version: tuple[int, int, int] = LATEST_VERSION,
+    version: tuple[int, int, int] | type[AnyIDFDocument] = LATEST_VERSION,
     *,
-    strict: bool = True,
-) -> IDFDocument[bool]:
+    strict: bool | None = None,
+) -> AnyIDFDocument:
     """
     Create a new IDFDocument with baseline singleton objects populated.
 
     Args:
-        version: EnergyPlus version (default: latest supported version)
-        strict: When ``True``, accessing or setting an unknown field name on any
-            IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError` instead
-            of returning ``None``.
+        version: The EnergyPlus release, as a version tuple (default: the latest
+            supported release) or as a document type of :mod:`idfkit.versioned`.
+            Given a type, such as ``IDFDocumentV9_4``, the document is created for
+            the release the type stands for and typed as that type; given a tuple,
+            it is typed for the latest release whatever the version, since a type
+            checker does not read the tuple.
+        strict: When ``True`` (the default), accessing or setting an unknown field
+            name on any IDFObject raises :class:`~idfkit.exceptions.InvalidFieldError`
+            instead of returning ``None``. A document type parametrized with a
+            literal, such as ``IDFDocumentV9_4[Literal[False]]``, states it too, so
+            it need not be passed; passing a contradicting value raises ``TypeError``.
 
     Returns:
         IDFDocument with schema loaded and baseline objects seeded
@@ -462,7 +480,25 @@ def new_document(
         >>> model_v24 = new_document(version=(24, 1, 0))
         >>> model_v24.version
         (24, 1, 0)
+
+        Create a model typed for an older release, naming the release once:
+
+        >>> from idfkit.versioned import IDFDocumentV9_4
+        >>> legacy = new_document(IDFDocumentV9_4)
+        >>> legacy.version
+        (9, 4, 0)
     """
+    if not isinstance(version, tuple):
+        from ._document_types import release_of, strictness_of
+
+        stated = strictness_of(version)
+        if strict is not None and stated is not None and strict != stated:
+            msg = f"strict={strict} contradicts the document type {version!r}"
+            raise TypeError(msg)
+        strict = stated if strict is None else strict
+        version = release_of(version)
+    if strict is None:
+        strict = True
     _check_version(version)
     schema = get_schema(version)
     doc = IDFDocument(version=version, schema=schema, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict

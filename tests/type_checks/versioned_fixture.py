@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 from typing_extensions import assert_type
 
-from idfkit import IDFDocument, load_idf, save_idf
+from idfkit import IDFDocument, load_idf, new_document, save_idf
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
 from idfkit.versioned import (
@@ -156,6 +156,27 @@ def correct_calls() -> None:
     print(objects)
 
 
+def new_documents() -> None:
+    """A document created for a release, typed for it: the release is named once, by the type."""
+    legacy = new_document(IDFDocumentV9_4)
+    assert_type(legacy, IDFDocumentV9_4)
+    assert_type(new_document(IDFDocumentV9_4, strict=False), IDFDocumentV9_4)
+    legacy["People"]["Office"].zone_or_zonelist_name = "Office"
+    assert_type(legacy.copy(), IDFDocumentV9_4)
+    assert_type(as_version(legacy, IDFDocumentV9_4), IDFDocumentV9_4)
+    assert_type(new_document(IDFDocument), IDFDocument)
+    # The tuple form is unchanged: typed for the latest release, whatever version it names.
+    assert_type(new_document(), IDFDocument[Literal[True]])
+    assert_type(new_document(version=(9, 4, 0)), IDFDocument[Literal[True]])
+    assert_type(new_document((9, 4, 0), strict=False), IDFDocument[Literal[False]])
+    # A type carries no strictness, as with as_version; parametrize it to state one, which the
+    # document then has: strict state takes it without a cast.
+    strict_state: AnyIDFDocument[Literal[True]] = new_document(IDFDocumentV9_4[Literal[True]])
+    lax = new_document(IDFDocumentV9_4[Literal[False]])
+    assert_type(lax, IDFDocumentV9_4[Literal[False]])
+    print(strict_state, lax)
+
+
 def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     legacy["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (Space is new in 9.6)
     people = legacy["People"]["Office"]
@@ -178,3 +199,5 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
     as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)
+    new_document(IDFDocumentV9_4)["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (a new 9.4 document has no Space)
+    new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]  (not a document type)

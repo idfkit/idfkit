@@ -20,7 +20,7 @@ not (9.0.1).
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
+from typing import TYPE_CHECKING, Any, Literal, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
 
 from .versions import LATEST_VERSION, find_closest_version, version_string
 
@@ -47,7 +47,7 @@ class DocumentTypeMeta(type):
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:
         msg = (
             f"{cls.__name__} is a type for type checkers and is not instantiated; "
-            "create a document with idfkit.new_document(version=...) or load one"
+            f"create a document with idfkit.new_document({cls.__name__}) or load one"
         )
         raise TypeError(msg)
 
@@ -85,6 +85,30 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
         return origin, origin.energyplus_version
     msg = f"{document_type!r} is not a document type of idfkit.versioned or idfkit.document"
     raise TypeError(msg)
+
+
+def release_of(document_type: object) -> tuple[int, int, int]:
+    """The release *document_type* stands for, for creating a document of it.
+
+    Raises:
+        TypeError: If *document_type* is not a document type, or stands for no single release
+            (``AnyIDFDocument``).
+    """
+    origin, release = _resolve(document_type)
+    if release is None:
+        msg = f"{origin.__name__} stands for no single EnergyPlus release; pass a release's document type"
+        raise TypeError(msg)
+    return release
+
+
+def strictness_of(document_type: object) -> bool | None:
+    """The strictness a parametrized document type states (``IDFDocumentV9_4[Literal[False]]``), if any."""
+    args = get_args(document_type)
+    if len(args) == 1 and get_origin(args[0]) is Literal:
+        (value,) = get_args(args[0])
+        if isinstance(value, bool):
+            return value
+    return None
 
 
 def _candidates(document_type: object) -> tuple[object, ...]:
