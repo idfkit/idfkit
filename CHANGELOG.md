@@ -7,26 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **Breaking (type checking only):** a migration's result was typed for the latest release
-  whatever release it was migrated to: `MigrationReport.migrated_model` was `IDFDocument | None`,
-  so a model migrated to 24.1 was checked against 26.2's object types and fields.
-  `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and
-  `async_migrate()` given a version tuple or string, whose release a type checker cannot know,
-  now return a report typed `AnyIDFDocument[Literal[True]] | None`. Code that passed the result
-  where an `IDFDocument` is expected stops type-checking; name the target as a document type
-  (below), or narrow with `as_version`. Nothing changed at run time. A bare `MigrationReport`
-  annotation accepts a report of any release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8))
-
 ### Added
 
-- `migrate()` and `async_migrate()` accept the target release's document type as
-  `target_version`, as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrates to
-  24.1.0 and returns a `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)`
-  migrates to the latest release with the result typed for it. `AnyIDFDocument`, or a union or
-  tuple of document types, is refused with `TypeError`, since a migration reaches one
-  release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8))
+- `migrate()` and `async_migrate()` took the target release's document type as `target_version`,
+  as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrated to 24.1.0 and returned a
+  `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest
+  release with the result typed for it. A type that named no single release, such as
+  `AnyIDFDocument` or a union or tuple of document types, raised `TypeError`; pyright and mypy
+  reported `AnyIDFDocument`, and mypy a union. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8), [6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+- `idfkit.versioned.ReleaseDocumentT`, a type variable constrained to the release document types,
+  for code generic over exactly one release, as `migrate()` is. ([6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+
+### Changed
+
+- **Breaking (type checking only):** a migration's result was no longer typed for the latest
+  release whatever release it was migrated to. `MigrationReport.migrated_model` had been
+  `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and
+  fields. `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and
+  `async_migrate()` given a version tuple or string, whose release a type checker cannot know,
+  returned a report typed `AnyIDFDocument | None`, as strict as the source. Code that passed the
+  result where an `IDFDocument` was expected stopped type-checking; it can name the target as a
+  document type (above) or narrow with `as_version`. A bare `MigrationReport` annotation accepted a
+  report of any release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8), [6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
+
+### Fixed
+
+- A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
+  before, it was always strict, so a model loaded with `strict=False` came back strict. ([6a86d3c](https://github.com/idfkit/idfkit/commit/6a86d3c))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
