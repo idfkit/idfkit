@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when the code runs, so once idfkit supports a newer release a tuple ending in it no longer covers
   the previous latest, and `as_version` raises `TypeError` on a model of that release. The
   reference's examples (`SINCE_9_6`, `Since23_2`) and the docstring's example now name
-  `IDFDocumentV26_2`.
+  `IDFDocumentV26_2` ([#282](https://github.com/idfkit/idfkit/pull/282)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 
