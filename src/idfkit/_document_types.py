@@ -25,7 +25,12 @@ from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, Union, cast, get_args,
 from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version, version_string
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from .document import AnyIDFDocument
+
+    # What since= and before= take: a release's document type, its number, or its version tuple.
+    _Bound: TypeAlias = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
 
 _D = TypeVar("_D", bound="AnyIDFDocument")
 
@@ -104,29 +109,52 @@ def _candidates(document_type: object) -> tuple[object, ...]:
 def _release(bound: object, keyword: str) -> tuple[int, int, int]:
     """The supported release *bound* names, for ``since=`` or ``before=``.
 
-    A document type names the release it stands for (``IDFDocument`` the latest); a string names a
-    release by ``"major.minor"`` or ``"major.minor.patch"``, as a file's ``Version`` line does.
+    A document type names the release it stands for (``IDFDocument`` the latest). A string
+    (``"9.6"``, ``"9.6.0"``) or a version tuple (``(9, 6, 0)``, as ``doc.version`` is) names one by
+    number, and is matched to a release as a file's ``Version`` line is, by
+    :func:`~idfkit.versions.find_closest_version`; but a number newer than every supported release,
+    which a file may degrade to the latest, names no release here.
     """
     if isinstance(bound, str):
         parts = bound.split(".")
-        if not 2 <= len(parts) <= 3 or not all(part.isdigit() for part in parts):
-            msg = f'{keyword}={bound!r} is not a release: give "major.minor", such as "9.6", or a document type'
+        if not 2 <= len(parts) <= 3 or not all(part.isdecimal() for part in parts):
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
             raise ValueError(msg)
         numbers = tuple(int(part) for part in parts)
-        release = next((v for v in ENERGYPLUS_VERSIONS if v[: len(numbers)] == numbers), None)
-        if release is None and len(numbers) == 3:
-            # 9.0 is bundled as 9.0.1; a file's "9.0" carries patch 0, and so may this.
-            release = next((v for v in ENERGYPLUS_VERSIONS if v[:2] == numbers[:2]), None)
-        if release is None:
-            supported = ", ".join(version_string(v) for v in ENERGYPLUS_VERSIONS)
-            msg = f"{keyword}={bound!r}: idfkit supports no such EnergyPlus release (it supports {supported})"
+    elif isinstance(bound, tuple):
+        numbers = cast("tuple[object, ...]", bound)
+        if not 2 <= len(numbers) <= 3 or not all(type(n) is int for n in numbers):
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
             raise ValueError(msg)
-        return release
-    _, required = _resolve(bound)
-    if required is None:
-        msg = f"{keyword}= needs a release, and AnyIDFDocument names none"
-        raise TypeError(msg)
-    return required
+    else:
+        try:
+            _, required = _resolve(bound)
+        except TypeError:
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
+            raise TypeError(msg) from None
+        if required is None:
+            msg = f"{keyword}= needs a release, and AnyIDFDocument names none"
+            raise TypeError(msg)
+        return required
+    version = cast("tuple[int, int, int]", (*numbers, 0)[:3])
+    release = find_closest_version(version)
+    if release is None or release[:2] != version[:2]:
+        supported = ", ".join(version_string(v) for v in ENERGYPLUS_VERSIONS)
+        msg = f"{keyword}={bound!r}: idfkit supports no such EnergyPlus release (it supports {supported})"
+        raise ValueError(msg)
+    return release
+
+
+_BOUND_FORMS = '"major.minor" ("9.6"), a version tuple ((9, 6, 0)) or a document type (IDFDocumentV9_6)'
+
+
+def _describe_range(low: tuple[int, int, int] | None, high: tuple[int, int, int] | None) -> str:
+    """``9.6.0 or later``, ``a release before 9.6.0`` or ``from 9.6.0 to before 23.2.0``."""
+    if high is None:
+        return f"{version_string(cast('tuple[int, int, int]', low))} or later"
+    if low is None:
+        return f"a release before {version_string(high)}"
+    return f"from {version_string(low)} to before {version_string(high)}"
 
 
 def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
@@ -134,17 +162,13 @@ def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
     low = None if since is None else _release(since, "since")
     high = None if before is None else _release(before, "before")
     members = [v for v in ENERGYPLUS_VERSIONS if (low is None or v >= low) and (high is None or v < high)]
-    if low is not None and high is None:
-        described = f"{version_string(low)} or later"
-    elif low is None and high is not None:
-        described = f"a release before {version_string(high)}"
-    else:
-        described = f"from {version_string(cast('tuple[int, int, int]', low))} to before {version_string(cast('tuple[int, int, int]', high))}"
+    if members and find_closest_version(doc.version) in members:
+        return
+    # Only a refusal pays for the description.
+    described = _describe_range(low, high)
     if not members:
         msg = f"No supported EnergyPlus release is {described}"
         raise ValueError(msg)
-    if find_closest_version(doc.version) in members:
-        return
     releases = ", ".join(version_string(v) for v in members)
     msg = f"The document is EnergyPlus {version_string(doc.version)}, not {described} ({releases})"
     raise TypeError(msg)
@@ -158,15 +182,15 @@ def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: 
 def as_version(
     doc: AnyIDFDocument,
     *,
-    since: type[AnyIDFDocument] | str | None = None,
-    before: type[AnyIDFDocument] | str | None = None,
+    since: _Bound | None = None,
+    before: _Bound | None = None,
 ) -> AnyIDFDocument: ...
 def as_version(
     doc: AnyIDFDocument,
     document_type: type[_D] | tuple[type[_D], ...] | None = None,
     *,
-    since: type[AnyIDFDocument] | str | None = None,
-    before: type[AnyIDFDocument] | str | None = None,
+    since: _Bound | None = None,
+    before: _Bound | None = None,
 ) -> _D | AnyIDFDocument:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for, or one of several.
 

@@ -1435,7 +1435,9 @@ def generate_versioned_pyi() -> str:
         *_format_def_with_doc(
             "def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D",
             # The latest release's type by name, so the advice moves on when a release is adopted.
-            _AS_VERSION_DOC.replace("{latest}", _document_class_name(SUPPORTED.latest)),
+            _AS_VERSION_DOC.replace("{latest}", _document_class_name(SUPPORTED.latest)).replace(
+                "{latest_number}", f"{SUPPORTED.latest[0]}.{SUPPORTED.latest[1]}"
+            ),
         ),
         "@overload",
         # Non-empty: an empty tuple raises at run time, so the checker reports it.
@@ -1456,8 +1458,9 @@ def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     Every range is written out as the union of its releases, because a type checker cannot compute
     one from a version number. Each bound is a release's document type or its number as a string
     literal; the overloads are tried in order, and a release's own type selects its own overload.
-    A ``since``/``before`` pair is typed only when it holds a release: an empty range has no
-    overload, so the checker reports it, as the run time raises for it.
+    A bound the checker cannot read as one release (a ``str`` variable, an optional, a version
+    tuple, or a literal no supported release has) falls through to the last two overloads, typed
+    ``AnyIDFDocument``, and is checked only at run time. ``as_version(doc)`` matches none.
     """
     latest = versions[-1]
 
@@ -1470,38 +1473,48 @@ def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
     def bound(ver: Version) -> str:
         return f'type[{cls(ver)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
 
-    lines: list[str] = [
+    aliases: list[str] = [
         "# Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.",
         "# Each lists the releases this idfkit supports, so a range from a release on grows when one is added.",
         "",
+        *(f"{_range_alias('Since', ver)}: TypeAlias = {union(versions[i:])}" for i, ver in enumerate(versions)),
+        *(
+            f"{_range_alias('Before', ver)}: TypeAlias = {union(versions[:i])}"
+            for i, ver in enumerate(versions[1:], start=1)
+        ),
+        "",
     ]
-    for i, ver in enumerate(versions):
-        lines.append(f"{_range_alias('Since', ver)}: TypeAlias = {union(versions[i:])}")
-    for i, ver in enumerate(versions[1:], start=1):
-        lines.append(f"{_range_alias('Before', ver)}: TypeAlias = {union(versions[:i])}")
-    lines.append("")
-    aliases = lines
-    lines = []
+    overloads: list[str] = []
     for ver in versions:
-        lines.append("@overload")
-        lines.append(
+        overloads.append("@overload")
+        overloads.append(
             f"def as_version(doc: AnyIDFDocument, *, since: {bound(ver)}) -> {_range_alias('Since', ver)}: ..."
         )
     for ver in versions[1:]:
-        lines.append("@overload")
-        lines.append(
+        overloads.append("@overload")
+        overloads.append(
             f"def as_version(doc: AnyIDFDocument, *, before: {bound(ver)}) -> {_range_alias('Before', ver)}: ..."
         )
     for i, low in enumerate(versions):
         for j in range(i + 1, len(versions)):
-            high = versions[j]
-            lines.append("@overload")
-            lines.append(
-                f"def as_version(doc: AnyIDFDocument, *, since: {bound(low)}, before: {bound(high)})"
+            overloads.append("@overload")
+            overloads.append(
+                f"def as_version(doc: AnyIDFDocument, *, since: {bound(low)}, before: {bound(versions[j])})"
                 f" -> {union(versions[i:j])}: ..."
             )
-    lines.append("")
-    return aliases, lines
+    # The fallbacks: since= required in one and before= in the other, so a call with neither stays an error.
+    overloads.extend([
+        "@overload",
+        f"def as_version(doc: AnyIDFDocument, *, since: {_ANY_BOUND} | None, before: {_ANY_BOUND} | None = None)"
+        " -> AnyIDFDocument: ...",
+        "@overload",
+        f"def as_version(doc: AnyIDFDocument, *, before: {_ANY_BOUND} | None) -> AnyIDFDocument: ...",
+        "",
+    ])
+    return aliases, overloads
+
+
+_ANY_BOUND = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
 
 
 def generate_versioned_py() -> str:
@@ -1569,11 +1582,20 @@ know it; this states it, and checks it at run time. Given a tuple of document ty
 
 For a range of releases, such as those that have ``Space``, give ``since=`` and/or ``before=``
 instead of *document_type*: it accepts a document of any release idfkit supports from *since* on
-and before *before*, and types it as their union. Each bound is a release's document type or its
-number: ``since=IDFDocumentV9_6`` or ``since="9.6"``. The range is computed from the releases
-idfkit supports, so it grows when idfkit adds one, and no list of releases needs maintaining.
-``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the same ranges as types, to annotate
-with; pass ``since=``, not the alias, to this function.
+and before *before*, and types it as their union. Each bound is a release's document type, its
+number or its version tuple: ``since=IDFDocumentV9_6``, ``since="9.6"`` or ``since=(9, 6, 0)``.
+The range is computed from the releases idfkit supports, so it grows when idfkit adds one, and no
+list of releases needs maintaining. ``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the
+same ranges as types, to annotate with; pass ``since=``, not the alias, to this function.
+
+A type checker reads a range only from a release's type or a string literal. A bound held in a
+variable, an optional bound or a version tuple types the document as ``AnyIDFDocument``, and so
+does a literal no supported release has (``since="27.1"``) or a range with no release in it;
+those raise ``ValueError`` when the call runs.
+
+Name a bound by its release, ``"{latest_number}"`` or ``{latest}``, not ``IDFDocument``: as a bound,
+``IDFDocument`` stands for the latest release when the code runs, so ``since=IDFDocument`` stops
+accepting a model of today's latest release once idfkit adopts the next one.
 
 Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
 a document type, and at run time ``{latest}`` is ``IDFDocument`` itself, which every
@@ -1590,7 +1612,7 @@ Args:
     doc: A document of any supported version.
     document_type: ``IDFDocument`` for the latest release, or one of the
         ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
-    since: The first release of a range, as its document type or as ``"major.minor"``.
+    since: The first release of a range: its document type, ``"major.minor"`` or a version tuple.
     before: The release a range stops before, the same way.
 
 Returns:

@@ -189,6 +189,29 @@ class TestAsVersionRange:
         assert versioned.as_version(doc, since="9.0.1", before="9.1.0") is doc
         assert versioned.as_version(doc, since="9.0.0") is doc  # a file's 9.0 is the 9.0.1 release
 
+    def test_a_bound_can_be_a_version_tuple(self) -> None:
+        doc = new_document(version=(9, 6, 0))
+        assert versioned.as_version(doc, since=(9, 6, 0)) is doc
+        assert versioned.as_version(doc, since=(9, 6), before=(22, 1, 0)) is doc
+        assert versioned.as_version(doc, since=doc.version) is doc
+        legacy = new_document(version=(9, 0, 1))
+        assert versioned.as_version(legacy, since=(9, 0, 0), before=(9, 1, 0)) is legacy  # a file's 9.0 is 9.0.1
+
+    def test_refuses_a_tuple_that_is_not_a_version(self) -> None:
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since=(9,))  # pyright: ignore[reportCallIssue, reportArgumentType]
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since=(9, "6"))  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_a_bound_that_is_not_a_release_names_the_forms_accepted(self) -> None:
+        with pytest.raises(TypeError, match=r"since=1\.5 is not a release: give .*version tuple"):
+            versioned.as_version(new_document(), since=1.5)  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_a_version_newer_than_every_release_is_no_bound(self) -> None:
+        # A file of 27.1 is read as the latest release; as a bound it names nothing.
+        with pytest.raises(ValueError, match="supports no such EnergyPlus release"):
+            versioned.as_version(new_document(), since=(27, 1, 0))
+
     def test_refuses_a_release_idfkit_does_not_support(self) -> None:
         with pytest.raises(ValueError, match="supports no such EnergyPlus release"):
             versioned.as_version(new_document(), since="27.1")
@@ -197,15 +220,17 @@ class TestAsVersionRange:
 
     def test_refuses_an_empty_range(self) -> None:
         with pytest.raises(ValueError, match=r"No supported EnergyPlus release is from 26\.1\.0 to before 9\.4\.0"):
-            versioned.as_version(new_document(), since="26.1", before="9.4")  # pyright: ignore[reportCallIssue, reportArgumentType]
+            versioned.as_version(new_document(), since="26.1", before="9.4")
 
     def test_refuses_any_document_as_a_bound(self) -> None:
         with pytest.raises(TypeError, match="names none"):
-            versioned.as_version(new_document(), since=AnyIDFDocument)  # pyright: ignore[reportCallIssue, reportArgumentType]
+            any_release: Any = AnyIDFDocument  # names no release: a type error, so passed untyped
+            versioned.as_version(new_document(), since=any_release)
 
     def test_refuses_a_document_type_and_a_range_together(self) -> None:
         with pytest.raises(TypeError, match="not both"):
-            versioned.as_version(new_document(), IDFDocument, since="9.6")  # pyright: ignore[reportCallIssue, reportArgumentType]
+            both: Any = {"since": "9.6"}  # both a type and a range: a type error, so passed untyped
+            versioned.as_version(new_document(), IDFDocument, **both)
 
     def test_refuses_neither(self) -> None:
         with pytest.raises(TypeError, match="needs a document type"):
@@ -214,20 +239,21 @@ class TestAsVersionRange:
 
 class TestRangeAliases:
     def test_every_release_has_a_since_alias_and_every_later_one_a_before_alias(self) -> None:
+        types = [getattr(versioned, f"IDFDocumentV{v[0]}_{v[1]}") for v in ENERGYPLUS_VERSIONS]
         for i, version in enumerate(ENERGYPLUS_VERSIONS):
             tag = f"{version[0]}_{version[1]}"
-            members = get_args(getattr(versioned, f"IDFDocumentSince{tag}")) or (
-                getattr(versioned, f"IDFDocumentSince{tag}"),
-            )
-            assert len(members) == len(ENERGYPLUS_VERSIONS) - i
+            since = getattr(versioned, f"IDFDocumentSince{tag}")
+            assert (get_args(since) or (since,)) == tuple(types[i:])
             assert f"IDFDocumentSince{tag}" in versioned.__all__
             if i:
-                assert len(get_args(getattr(versioned, f"IDFDocumentBefore{tag}")) or (0,)) == i
+                before = getattr(versioned, f"IDFDocumentBefore{tag}")
+                assert (get_args(before) or (before,)) == tuple(types[:i])
                 assert f"IDFDocumentBefore{tag}" in versioned.__all__
 
     def test_an_alias_accepts_its_releases_at_run_time(self) -> None:
         doc = new_document(version=(23, 2, 0))
-        assert versioned.as_version(doc, versioned.IDFDocumentSince23_2) is doc  # pyright: ignore[reportCallIssue, reportArgumentType]
+        alias: Any = versioned.IDFDocumentSince23_2  # to a type checker an alias is no class; it runs
+        assert versioned.as_version(doc, alias) is doc
 
 
 # ---------------------------------------------------------------------------
@@ -324,6 +350,35 @@ class TestCommittedStubs:
                 r"    @zone_or_zonelist_or_space_or_spacelist_name.setter\n"
                 r"    def zone_or_zonelist_or_space_or_spacelist_name(self, value: str | None) -> None: ...\n",
                 "zone_or_zonelist_or_space_or_spacelist_name: writable, but not a field of every version",
+            ),
+            # A range alias one release short.
+            (
+                2,
+                r"(IDFDocumentBefore9_6: TypeAlias = \(\n(?:    .*\n)*?)    \| IDFDocumentV9_5\n",
+                r"\1",
+                "IDFDocumentBefore9_6: names",
+            ),
+            # A since= overload typed with the wrong range.
+            (
+                2,
+                r'(since: type\[IDFDocumentV9_6\] \| Literal\["9\.6", "9\.6\.0"\]\n\) -> )IDFDocumentSince9_6',
+                r"\1IDFDocumentSince9_5",
+                "as_version(since=(9, 6, 0), before=None): returns",
+            ),
+            # A bound's literal naming another release than its type.
+            (
+                2,
+                r'(since: type\[IDFDocumentV9_6\] \| Literal\[)"9\.6"',
+                r'\1"9.5"',
+                "as_version(since=IDFDocumentV9_6): typed",
+            ),
+            # A range left without an overload.
+            (
+                2,
+                r"@overload\ndef as_version\(\n    doc: AnyIDFDocument, \*, since: type\[IDFDocumentV9_6\] "
+                r'\| Literal\["9\.6", "9\.6\.0"\]\n\) -> IDFDocumentSince9_6: \.\.\.\n',
+                "",
+                "as_version(since=(9, 6, 0), before=None): no overload",
             ),
         ],
     )

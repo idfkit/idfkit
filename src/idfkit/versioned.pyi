@@ -25631,11 +25631,20 @@ def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
 
     For a range of releases, such as those that have ``Space``, give ``since=`` and/or ``before=``
     instead of *document_type*: it accepts a document of any release idfkit supports from *since* on
-    and before *before*, and types it as their union. Each bound is a release's document type or its
-    number: ``since=IDFDocumentV9_6`` or ``since="9.6"``. The range is computed from the releases
-    idfkit supports, so it grows when idfkit adds one, and no list of releases needs maintaining.
-    ``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the same ranges as types, to annotate
-    with; pass ``since=``, not the alias, to this function.
+    and before *before*, and types it as their union. Each bound is a release's document type, its
+    number or its version tuple: ``since=IDFDocumentV9_6``, ``since="9.6"`` or ``since=(9, 6, 0)``.
+    The range is computed from the releases idfkit supports, so it grows when idfkit adds one, and no
+    list of releases needs maintaining. ``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the
+    same ranges as types, to annotate with; pass ``since=``, not the alias, to this function.
+
+    A type checker reads a range only from a release's type or a string literal. A bound held in a
+    variable, an optional bound or a version tuple types the document as ``AnyIDFDocument``, and so
+    does a literal no supported release has (``since="27.1"``) or a range with no release in it;
+    those raise ``ValueError`` when the call runs.
+
+    Name a bound by its release, ``"26.2"`` or ``IDFDocumentV26_2``, not ``IDFDocument``: as a bound,
+    ``IDFDocument`` stands for the latest release when the code runs, so ``since=IDFDocument`` stops
+    accepting a model of today's latest release once idfkit adopts the next one.
 
     Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
     a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
@@ -25652,7 +25661,7 @@ def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D:
         doc: A document of any supported version.
         document_type: ``IDFDocument`` for the latest release, or one of the
             ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
-        since: The first release of a range, as its document type or as ``"major.minor"``.
+        since: The first release of a range: its document type, ``"major.minor"`` or a version tuple.
         before: The release a range stops before, the same way.
 
     Returns:
@@ -27645,3 +27654,14 @@ def as_version(
     since: type[IDFDocumentV26_1] | Literal["26.1", "26.1.0"],
     before: type[IDFDocument] | Literal["26.2", "26.2.0"],
 ) -> IDFDocumentV26_1: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None,
+    before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None = None,
+) -> AnyIDFDocument: ...
+@overload
+def as_version(
+    doc: AnyIDFDocument, *, before: type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int] | None
+) -> AnyIDFDocument: ...
