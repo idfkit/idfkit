@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `idfkit check` reads string literals passed to `get_collection`, which pyright types as
+  `IDFCollection[IDFObject]` whatever the name. A name some target release lacks is reported
+  under `C001`, as for `add()` and `doc[...]`. Two rules are new: `C003` (error) reports a name
+  that no target release has, with the closest real name as the fix, because
+  `doc.get_collection("Zoen")` returns an empty collection at run time instead of raising; `C004`
+  (warning) reports any other literal name and suggests `doc["Zone"]`, which is typed and which
+  pyright checks. Names held in variables are not reported. Neither rule adds anything to
+  type-checking time.
+
+### Changed
+
+- **Breaking:** `idfkit check` exits with status 1 on a file that passes a literal object type
+  to `get_collection`, because of the new `C004` warning. Pass `--ignore C004` to keep such calls.
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added

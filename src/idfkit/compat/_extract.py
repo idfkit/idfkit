@@ -17,6 +17,8 @@ def extract_literals(source: str, filename: str = "<unknown>") -> list[Extracted
       potential choice values for that object type.
     * ``something.add("ObjectType", "Name", {"field": "value"})`` -- string values
       in a dict literal third argument are potential choice values.
+    * ``something.get_collection("ObjectType")`` -- the argument (positional or
+      ``obj_type=``) is an object type.
     * ``something["ObjectType"]`` -- subscript access (only when the file imports
       from ``idfkit``).
 
@@ -75,7 +77,32 @@ class _LiteralVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node.func, ast.Attribute) and node.func.attr == "add":
             self._handle_add_call(node)
+        elif isinstance(node.func, ast.Attribute) and node.func.attr == "get_collection":
+            self._handle_get_collection_call(node, node.func)
         self.generic_visit(node)
+
+    # ------------------------------------------------------------------
+    # Pattern: something.get_collection("ObjectType")
+    # ------------------------------------------------------------------
+    def _handle_get_collection_call(self, node: ast.Call, func: ast.Attribute) -> None:
+        # ``get_collection`` is idfkit's own name, so no import is required, unlike a subscript:
+        # a module handed a document by its caller often never imports idfkit.
+        arg: ast.expr | None = node.args[0] if node.args else None
+        if arg is None:
+            arg = next((kw.value for kw in node.keywords if kw.arg == "obj_type"), None)
+        if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+            return
+        self.literals.append(
+            ExtractedLiteral(
+                value=arg.value,
+                kind=LiteralKind.OBJECT_TYPE,
+                line=arg.lineno,
+                col=arg.col_offset,
+                end_col=_end_col(arg),
+                call="get_collection",
+                receiver=ast.unparse(func.value),
+            )
+        )
 
     def _handle_add_call(self, node: ast.Call) -> None:
         if not node.args:
@@ -93,6 +120,7 @@ class _LiteralVisitor(ast.NodeVisitor):
                 line=first_arg.lineno,
                 col=first_arg.col_offset,
                 end_col=_end_col(first_arg),
+                call="add",
             )
         )
 

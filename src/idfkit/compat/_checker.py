@@ -6,6 +6,8 @@ for cross-version EnergyPlus compatibility issues.
 
 from __future__ import annotations
 
+import difflib
+
 from ..schema import EpJSONSchema, get_schema
 from ..versions import find_closest_version, version_string
 from ._diff import SchemaIndex, build_schema_index
@@ -122,7 +124,7 @@ def check_compatibility(
         elif literal.kind == LiteralKind.CHOICE_VALUE:
             _check_choice_value(literal, indices, filename, diagnostics)
 
-    diagnostics.sort(key=lambda d: (d.line, d.col))
+    diagnostics.sort(key=lambda d: (d.line, d.col, d.code))
     return diagnostics
 
 
@@ -142,8 +144,11 @@ def _check_object_type(
         else:
             absent_in.append(version)
 
+    if literal.call == "get_collection":
+        _check_get_collection(literal, indices, present_in, filename, out)
+
     if not absent_in or not present_in:
-        # Exists everywhere or nowhere -- nothing to report.
+        # Exists everywhere or nowhere -- nothing more to report.
         return
 
     # Use the first present version as the reference.
@@ -167,6 +172,88 @@ def _check_object_type(
                 to_version=version_string(missing_version),
             )
         )
+
+
+def _canonical_object_type(object_type: str, available_types: frozenset[str] | set[str]) -> str | None:
+    """Return the schema's spelling of *object_type* in *available_types*, matched case-insensitively."""
+    if object_type in available_types:
+        return object_type
+    needle = object_type.casefold()
+    return next((candidate for candidate in available_types if candidate.casefold() == needle), None)
+
+
+def _check_get_collection(
+    literal: ExtractedLiteral,
+    indices: dict[tuple[int, int, int], SchemaIndex],
+    present_in: list[tuple[int, int, int]],
+    filename: str,
+    out: list[Diagnostic],
+) -> None:
+    """Emit ``C003`` or ``C004`` for a literal passed to ``get_collection``.
+
+    ``get_collection`` is typed for dynamic names, so neither a type checker nor ``C001`` alone
+    notices what goes wrong with a literal one: a name no target has returns an empty collection at
+    run time rather than raising (``C003``), and a correct one gives an untyped collection where the
+    document's own item access would have given a typed one (``C004``).
+    """
+    lowest = version_string(min(indices))
+    highest = version_string(max(indices))
+    receiver = literal.receiver or "model"
+
+    if not present_in:
+        all_types: set[str] = set()
+        for index in indices.values():
+            all_types.update(index.object_types)
+        by_folded = {t.casefold(): t for t in all_types}
+        close = difflib.get_close_matches(literal.value.casefold(), list(by_folded), n=1, cutoff=0.6)
+        suggestion = by_folded[close[0]] if close else None
+        hint = f"; did you mean '{suggestion}'?" if suggestion else ""
+        out.append(
+            Diagnostic(
+                code="C003",
+                message=(
+                    f"Object type '{literal.value}' is not in any target version "
+                    f"({', '.join(version_string(v) for v in sorted(indices))}); "
+                    f"get_collection returns an empty collection for it{hint}"
+                ),
+                severity=CompatSeverity.ERROR,
+                filename=filename,
+                line=literal.line,
+                col=literal.col,
+                end_col=literal.end_col,
+                from_version=lowest,
+                to_version=highest,
+                suggested_fix=f'{receiver}.get_collection("{suggestion}")' if suggestion else None,
+            )
+        )
+        return
+
+    canonical = _canonical_object_type(literal.value, indices[max(present_in)].object_types) or literal.value
+    # A type some target lacks is not a key of a document typed for every release, so the typed
+    # lookup needs the document narrowed to one that has it first.
+    narrow = (
+        " on a document narrowed with as_version() to a release that has it (C001 lists those without)"
+        if len(present_in) < len(indices)
+        else ""
+    )
+    out.append(
+        Diagnostic(
+            code="C004",
+            message=(
+                f'{receiver}.get_collection("{literal.value}") is untyped (IDFCollection[IDFObject]); '
+                f'{receiver}["{canonical}"] gives the typed collection, and the type checker checks '
+                f"the name{narrow}"
+            ),
+            severity=CompatSeverity.WARNING,
+            filename=filename,
+            line=literal.line,
+            col=literal.col,
+            end_col=literal.end_col,
+            from_version=lowest,
+            to_version=highest,
+            suggested_fix=f'{receiver}["{canonical}"]',
+        )
+    )
 
 
 def _check_choice_value(

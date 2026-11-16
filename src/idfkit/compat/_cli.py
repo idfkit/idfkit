@@ -4,7 +4,8 @@ Subcommands:
 
 - ``idfkit check`` — statically lint Python source files that use idfkit and
   report object types or enumerated choice values that differ between
-  EnergyPlus schema versions.
+  EnergyPlus schema versions, and literal object types passed to
+  ``get_collection``.
 - ``idfkit migrate`` — forward-migrate an IDF model to a newer EnergyPlus
   version via the installed ``IDFVersionUpdater`` transition binaries.
 - ``idfkit tmy`` — search and download TMYx typical meteorological year
@@ -92,7 +93,9 @@ def _build_parser() -> argparse.ArgumentParser:
         description=(
             "Statically lint Python source files that use idfkit and report "
             "object types or enumerated choice values that differ between "
-            "EnergyPlus schema versions."
+            "EnergyPlus schema versions, and literal object types passed to "
+            "get_collection, which a type checker does not check (C003 for a name "
+            "no target has, C004 suggesting the typed model[...] lookup)."
         ),
     )
     check.add_argument(

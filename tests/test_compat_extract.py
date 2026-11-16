@@ -249,3 +249,38 @@ class TestExtractAddEdgeCases:
         source = "doc.add()\n"
         literals = extract_literals(source)
         assert len(literals) == 0
+
+
+class TestExtractGetCollection:
+    """Tests for extracting ``get_collection("ObjectType")`` literals."""
+
+    def test_positional_literal(self) -> None:
+        literals = extract_literals('zones = doc.get_collection("Zone")\n')
+        assert len(literals) == 1
+        lit = literals[0]
+        assert lit.kind == LiteralKind.OBJECT_TYPE
+        assert lit.value == "Zone"
+        assert lit.call == "get_collection"
+        assert lit.receiver == "doc"
+        assert (lit.line, lit.col, lit.end_col) == (1, 27, 33)
+
+    def test_keyword_literal(self) -> None:
+        literals = extract_literals('zones = state.model.get_collection(obj_type="Zone")\n')
+        assert [(lit.value, lit.receiver) for lit in literals] == [("Zone", "state.model")]
+
+    def test_no_idfkit_import_needed(self) -> None:
+        """Unlike a subscript, the method name is idfkit's own, so no import is required."""
+        literals = extract_literals('def f(doc):\n    return doc.get_collection("Zone")\n')
+        assert [lit.value for lit in literals] == ["Zone"]
+
+    def test_dynamic_argument_ignored(self) -> None:
+        source = 'for t in ("Zone", "Space"):\n    doc.get_collection(t)\ndoc.get_collection(f"{t}")\n'
+        assert extract_literals(source) == []
+
+    def test_no_argument_ignored(self) -> None:
+        assert extract_literals("doc.get_collection()\n") == []
+
+    def test_add_literal_records_call(self) -> None:
+        literals = extract_literals('doc.add("Zone", "Z")\n')
+        assert literals[0].call == "add"
+        assert literals[0].receiver is None
