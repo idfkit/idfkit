@@ -105,3 +105,11 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "C003": "Object type passed to get_collection exists in none of the target versions",
     "C004": "Literal object type passed to get_collection, whose result is untyped; index the document instead",
 }
+
+RULE_SEVERITIES: dict[str, CompatSeverity] = {
+    "C001": CompatSeverity.WARNING,
+    "C002": CompatSeverity.WARNING,
+    "C003": CompatSeverity.ERROR,
+    "C004": CompatSeverity.WARNING,
+}
+"""The severity each rule reports at, keyed like :data:`DIAGNOSTIC_CODES`."""

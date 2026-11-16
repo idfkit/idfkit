@@ -18,7 +18,8 @@ def extract_literals(source: str, filename: str = "<unknown>") -> list[Extracted
     * ``something.add("ObjectType", "Name", {"field": "value"})`` -- string values
       in a dict literal third argument are potential choice values.
     * ``something.get_collection("ObjectType")`` -- the argument (positional or
-      ``obj_type=``) is an object type.
+      ``obj_type=``) is an object type (only when the file imports from ``idfkit``:
+      other libraries, pymongo among them, have a ``get_collection`` too).
     * ``something["ObjectType"]`` -- subscript access (only when the file imports
       from ``idfkit``).
 
@@ -33,7 +34,7 @@ def extract_literals(source: str, filename: str = "<unknown>") -> list[Extracted
     """
     tree = ast.parse(source, filename)
     has_import = _has_idfkit_import(tree)
-    visitor = _LiteralVisitor(has_idfkit_import=has_import)
+    visitor = _LiteralVisitor(source, has_idfkit_import=has_import)
     visitor.visit(tree)
     return visitor.literals
 
@@ -67,8 +68,9 @@ def _end_col(node: ast.expr) -> int:
 class _LiteralVisitor(ast.NodeVisitor):
     """AST visitor that collects idfkit-relevant string literals."""
 
-    def __init__(self, *, has_idfkit_import: bool) -> None:
+    def __init__(self, source: str, *, has_idfkit_import: bool) -> None:
         self.literals: list[ExtractedLiteral] = []
+        self._source = source
         self._has_idfkit_import = has_idfkit_import
 
     # ------------------------------------------------------------------
@@ -77,7 +79,7 @@ class _LiteralVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node.func, ast.Attribute) and node.func.attr == "add":
             self._handle_add_call(node)
-        elif isinstance(node.func, ast.Attribute) and node.func.attr == "get_collection":
+        elif self._has_idfkit_import and isinstance(node.func, ast.Attribute) and node.func.attr == "get_collection":
             self._handle_get_collection_call(node, node.func)
         self.generic_visit(node)
 
@@ -85,8 +87,6 @@ class _LiteralVisitor(ast.NodeVisitor):
     # Pattern: something.get_collection("ObjectType")
     # ------------------------------------------------------------------
     def _handle_get_collection_call(self, node: ast.Call, func: ast.Attribute) -> None:
-        # ``get_collection`` is idfkit's own name, so no import is required, unlike a subscript:
-        # a module handed a document by its caller often never imports idfkit.
         arg: ast.expr | None = node.args[0] if node.args else None
         if arg is None:
             arg = next((kw.value for kw in node.keywords if kw.arg == "obj_type"), None)
@@ -100,7 +100,8 @@ class _LiteralVisitor(ast.NodeVisitor):
                 col=arg.col_offset,
                 end_col=_end_col(arg),
                 call="get_collection",
-                receiver=ast.unparse(func.value),
+                # The receiver as the author wrote it, so a suggested fix reads like their code.
+                receiver=ast.get_source_segment(self._source, func.value) or ast.unparse(func.value),
             )
         )
 
