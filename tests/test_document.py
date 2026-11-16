@@ -891,6 +891,69 @@ class TestGetReferencesAndSurfaces:
         assert "TestWall" in names
         assert "TestFloor" in names
 
+    def test_get_zone_surfaces_excludes_non_surfaces(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z")
+        doc.add("Lights", "L", zone_or_zonelist_or_space_or_spacelist_name="Z", validate=False)
+        doc.add("ZoneHVAC:EquipmentConnections", "", zone_name="Z", validate=False)
+        assert doc.get_zone_surfaces("Z") == []
+
+    def test_get_zone_surfaces_excludes_boundary_object_of_other_zone(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+        doc.add(
+            "BuildingSurface:Detailed",
+            "A_Wall",
+            surface_type="Wall",
+            construction_name="",
+            zone_name="A",
+            outside_boundary_condition="Zone",
+            outside_boundary_condition_object="B",
+            validate=False,
+        )
+        assert doc.get_zone_surfaces("B") == []
+        assert [s.name for s in doc.get_zone_surfaces("A")] == ["A_Wall"]
+
+    @pytest.mark.parametrize(
+        "obj_type",
+        [
+            "BuildingSurface:Detailed",
+            "Wall:Detailed",
+            "Floor:Detailed",
+            "RoofCeiling:Detailed",
+            "Wall:Exterior",
+            "Wall:Adiabatic",
+            "Wall:Underground",
+            "Wall:Interzone",
+            "Roof",
+            "Ceiling:Adiabatic",
+            "Ceiling:Interzone",
+            "Floor:GroundContact",
+            "Floor:Adiabatic",
+            "Floor:Interzone",
+        ],
+    )
+    def test_get_zone_surfaces_includes_surface_type(self, obj_type: str) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z")
+        doc.add(obj_type, "S", zone_name="Z", validate=False)
+        assert [(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")] == [(obj_type, "S")]
+
+    def test_get_zone_surfaces_follows_rename(self) -> None:
+        doc = new_document()
+        zone = doc.add("Zone", "Old")
+        doc.add("Wall:Exterior", "W", zone_name="Old", validate=False)
+        zone.name = "New"
+        assert [s.name for s in doc.get_zone_surfaces("New")] == ["W"]
+        assert doc.get_zone_surfaces("Old") == []
+
+    def test_get_zone_surfaces_is_case_insensitive(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Office")
+        doc.add("Wall:Exterior", "W", zone_name="Office", validate=False)
+        assert [s.name for s in doc.get_zone_surfaces("OFFICE")] == ["W"]
+
 
 class TestDocumentDescribeUnknownType:
     """Test describe() with unknown type (raises UnknownObjectTypeError)."""

@@ -1207,8 +1207,56 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
     # -------------------------------------------------------------------------
 
     def get_zone_surfaces(self, zone_name: str) -> list[IDFObject]:
-        """Get all surfaces belonging to a zone."""
-        return list(self._references.get_referencing(zone_name))
+        """Get the heat-transfer surfaces that belong to a zone.
+
+        A surface belongs to a zone when its own ``zone_name`` field names it. The surface types
+        come from the schema: every type whose name provides the ``SurfaceNames`` reference list,
+        which is ``BuildingSurface:Detailed``, ``Wall:Detailed``, ``Floor:Detailed``,
+        ``RoofCeiling:Detailed`` and the simple surfaces (``Wall:Exterior``, ``Roof``,
+        ``Floor:GroundContact``, ...).
+
+        Other objects that name the zone are not returned: loads such as ``Lights`` or
+        ``People``, equipment connections, and a surface in another zone whose
+        ``outside_boundary_condition_object`` is this zone. Neither are fenestration and
+        ``InternalMass``, which do not carry a ``zone_name`` field of their own in current
+        versions. Use [get_referencing][idfkit.document.IDFDocument.get_referencing] for every
+        object that names the zone.
+
+        The lookup goes through the reference graph, so its cost does not grow with the
+        size of the model. The order of the returned list is not specified.
+
+        Examples:
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> model.add("Zone", "Office")  # doctest: +ELLIPSIS
+            Zone('Office')
+            >>> model.add("BuildingSurface:Detailed", "Office_Floor",
+            ...     surface_type="Floor", construction_name="", zone_name="Office",
+            ...     outside_boundary_condition="Ground", validate=False)  # doctest: +ELLIPSIS
+            BuildingSurface:Detailed('Office_Floor')
+            >>> model.add("Lights", "Office_Lights",
+            ...     zone_or_zonelist_or_space_or_spacelist_name="Office",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            Lights('Office_Lights')
+            >>> model.get_zone_surfaces("Office")
+            [BuildingSurface:Detailed('Office_Floor')]
+        """
+        surface_types = self._zone_surface_types()
+        return [
+            obj
+            for obj, field_name in self._references.get_referencing_with_fields(zone_name)
+            if field_name == "zone_name" and (surface_types is None or obj.obj_type in surface_types)
+        ]
+
+    def _zone_surface_types(self) -> frozenset[str] | None:
+        """Surface object types for [get_zone_surfaces][idfkit.document.IDFDocument.get_zone_surfaces].
+
+        ``None`` when the document has no schema, in which case only the ``zone_name`` field
+        filter applies.
+        """
+        if self._schema is None:
+            return None
+        return frozenset(self._schema.get_types_providing_reference("SurfaceNames"))
 
     # -------------------------------------------------------------------------
     # Iteration
