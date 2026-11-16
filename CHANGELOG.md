@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its own stub module under `idfkit/_versioned/`, still imported from `idfkit.versioned`, so a file
   reads only the releases it names. pyright takes about as long as before on a file using
   `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less on one naming `IDFDocumentV9_4`
-  (2.5 s, from 2.8 to 3.0 s).
+  (2.5 s, from 2.8 to 3.0 s) ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 
 ### Fixed
 
@@ -43,22 +43,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
   type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
   `"OutputControl:Files"`, the `if "Space" not in doc: return` form, a `TypeVar` bound to
-  `AnyIDFDocument`, and a condition stored in a variable first.
+  `AnyIDFDocument`, and a condition stored in a variable first ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 - The body of `if "Zone" not in doc:`, and of any `in` test on a type every release has, is
   type-checked again. pyright treated it as unreachable, on `IDFDocument` and every
   `IDFDocumentV*` as well as `AnyIDFDocument`, though an empty model of any release takes it; so
-  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach.
+  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 - After `d = as_version(doc, (IDFDocumentV9_4, IDFDocumentV9_6, IDFDocument))`, the `else` of
   `if "Space" in d:` is no longer typed as `IDFDocumentV9_4` alone, so 9.4-only field names are
-  reported there; 9.6 and 26.2 models without a `Space` take that branch too.
+  reported there; 9.6 and 26.2 models without a `Space` take that branch too ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 - `doc.get("Space")` and the other `dict` methods pyright gave a document (`setdefault`, `pop`,
   `|`, `del`, mapping `match` patterns) are reported, rather than type-checking and raising
   `AccessorAttributeError` or `TypeError`. The eppy batch update,
   `doc.update({"Zone.Office.x_origin": 1.0})`, type-checks; the `TypedDict`'s own `update` used to
-  shadow it, under pyright and mypy alike.
+  shadow it, under pyright and mypy alike ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 - mypy sees a document's methods, properties and accessors: it reported `doc.add`, `doc.version`
   and `doc.zones` as missing, because it does not accept a class that derives from both a
-  `TypedDict` and an ordinary class.
+  `TypedDict` and an ordinary class ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 
