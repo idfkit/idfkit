@@ -1432,7 +1432,11 @@ def generate_versioned_pyi() -> str:
     parts.extend(aliases)
     parts.extend([
         "@overload",
-        *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
+        *_format_def_with_doc(
+            "def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D",
+            # The latest release's type by name, so the advice moves on when a release is adopted.
+            _AS_VERSION_DOC.replace("{latest}", _document_class_name(SUPPORTED.latest)),
+        ),
         "@overload",
         # Non-empty: an empty tuple raises at run time, so the checker reports it.
         "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
@@ -1572,11 +1576,11 @@ idfkit supports, so it grows when idfkit adds one, and no list of releases needs
 with; pass ``since=``, not the alias, to this function.
 
 Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
-a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
+a document type, and at run time ``{latest}`` is ``IDFDocument`` itself, which every
 document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
 any release already is one.
 
-In a tuple, name every release by its own type, the latest included: ``IDFDocumentV26_2``, not
+In a tuple, name every release by its own type, the latest included: ``{latest}``, not
 ``IDFDocument``. ``IDFDocument`` stands for whichever release is latest when the code runs, so
 once idfkit supports a newer release, a model of the release that was latest when the tuple was
 written matches nothing in it, and this raises ``TypeError``. A range given by ``since=`` has

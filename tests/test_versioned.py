@@ -384,6 +384,13 @@ class TestAdoption:
         sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
         assert verify(*sources, gen.SUPPORTED.versions) == []
 
+    def test_the_as_version_docstring_names_the_latest_release_it_was_generated_for(self) -> None:
+        # The advice "name the latest release by its own type" must move on with the latest release.
+        with gen.supported_up_to((24, 1, 0)):
+            stub = gen.generate_versioned_pyi()
+        assert "``IDFDocumentV24_1``, not\n    ``IDFDocument``" in stub
+        assert "IDFDocumentV26_2``, not" not in stub
+
     def test_generating_for_an_older_release_keeps_the_run_time_module(self) -> None:
         # versioned.py is what as_version checks against at run time, so it always names every
         # bundled release: generating stubs for 24.1 must not make IDFDocumentV24_1 IDFDocument.
