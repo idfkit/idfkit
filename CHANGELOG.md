@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   created a latest-release model whatever `doc`'s release), `AnyIDFDocument` and unions of release
   types raised `TypeError`. The tuple form was unchanged, in its types (an argument typed `Any`
   included) and in the time pyright takes over it.
-  ([a016470](https://github.com/idfkit/idfkit/commit/a016470))
+  ([a016470](https://github.com/idfkit/idfkit/commit/a016470), [4dc8cf1](https://github.com/idfkit/idfkit/commit/4dc8cf1))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
