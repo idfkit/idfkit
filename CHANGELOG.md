@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--extend-select C004`) reported any other literal name and suggested `doc["Zone"]`, which is
   typed and which pyright checks. Names held in variables were not reported. Neither rule added
   anything to type-checking time ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb),
-  SHA_PLACEHOLDER).
+  [f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 - `idfkit check` could be run as a blocking CI gate:
   - A `# idfkit: ignore[C001]` comment silenced the listed rules on its line (a bare
     `# idfkit: ignore` silenced all of them), and a new rule `C005` (warning) reported a
@@ -42,23 +42,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     directory was linted. `--extend-select` added rules, and `--fail-on error` let warnings be
     reported without failing the run. The text output ended with a summary line.
   - In idfkit's own source, relative imports counted as idfkit imports, so `make check` now runs
-    `idfkit check` over `src/` against every release (SHA_PLACEHOLDER).
+    `idfkit check` over `src/` against every release ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 
 ### Changed
 
 - **Breaking:** `idfkit check` refused a target release idfkit does not support with exit status
   2, where it used to check the closest one instead: `--to 27.1` checked 26.2. `9.0` and `9.0.0`
-  still named 9.0.1 (SHA_PLACEHOLDER).
+  still named 9.0.1 ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 - `idfkit check` went on to the other files after one failed to parse, and still exited with
-  status 2 (SHA_PLACEHOLDER).
+  status 2 ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 - `check_compatibility` gained `select`, `ignore`, `suppressions` and `package` arguments, and by
   default checked `DEFAULT_RULES` (every rule but `C004`) and honoured suppression comments
-  (SHA_PLACEHOLDER).
+  ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 
 ### Fixed
 
 - `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
-  `idfkit-check` pre-commit hook's description said how to pass targets (SHA_PLACEHOLDER).
+  `idfkit-check` pre-commit hook's description said how to pass targets ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 
