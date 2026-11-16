@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   latest-release model, and `AnyIDFDocument`, which stands for no single release, raised
   `TypeError`. A parametrized type, such as `IDFDocumentV9_4[Literal[False]]`, also set the
   document's strictness. The tuple form, and the time a type checker takes over it, were unchanged.
-  (SHA_PLACEHOLDER)
+  ([a016470](https://github.com/idfkit/idfkit/commit/a016470))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
