@@ -362,7 +362,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 if existing_type.upper() == obj_type_upper:
                     return existing
 
-        return IDFCollection(canonical, self._references)
+        return IDFCollection(canonical)
 
     def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]:
         """Get the collection objects of *obj_type* are filed under, creating and storing it if absent.
@@ -382,7 +382,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if collection is not None:
             return collection
 
-        created: IDFCollection[IDFObject] = IDFCollection(canonical, self._references)
+        created: IDFCollection[IDFObject] = IDFCollection(canonical)
         self._collections[canonical] = created
         return created
 

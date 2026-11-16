@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from idfkit import IDFDocument, new_document
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.references import ReferenceGraph
@@ -340,7 +338,7 @@ class TestCollectionReferencing:
 
     def test_the_type_name_is_matched_case_insensitively(self) -> None:
         doc = self._model()
-        lower = doc["buildingsurface:detailed"].referencing("Office")
+        lower = doc.get_collection("buildingsurface:detailed").referencing("Office")
         assert set(lower) == set(doc["BuildingSurface:Detailed"].referencing("Office"))
         assert len(doc.building_surface_detaileds.referencing("Office")) == 2
 
@@ -385,7 +383,7 @@ class TestCollectionReferencing:
             data={"surface_type": "Wall", "zone_name": "Office", "outside_boundary_condition": "Outdoors"},
         )
         doc.addidfobject(odd)
-        assert odd in doc["BuildingSurface:Detailed"]
+        assert odd in doc.get_collection("BuildingSurface:Detailed")
         assert odd in doc["BuildingSurface:Detailed"].referencing("Office")
 
     def test_unnamed_objects_are_matched_by_type(self) -> None:
@@ -417,9 +415,27 @@ class TestCollectionReferencing:
             assert len(clone["BuildingSurface:Detailed"].referencing("Renamed")) == 2
         assert len(doc["BuildingSurface:Detailed"].referencing("Office")) == 2
 
-    def test_a_collection_outside_a_document_has_no_graph(self) -> None:
+    def test_objects_outside_a_document_reference_nothing(self) -> None:
         collection: IDFCollection[IDFObject] = IDFCollection("Zone")
         assert collection.referencing("Office") == []
-        collection.add(IDFObject(obj_type="Zone", name="Office"))
-        with pytest.raises(ValueError, match="does not belong to a document"):
-            collection.referencing("Office")
+        collection.add(
+            IDFObject(obj_type="Lights", name="L", data={"zone_or_zonelist_or_space_or_spacelist_name": "Z"})
+        )
+        assert collection.referencing("Z") == []
+
+    def test_a_collection_built_by_hand_answers_only_for_its_own_objects(self) -> None:
+        doc = self._model()
+        subset: IDFCollection[IDFObject] = IDFCollection("BuildingSurface:Detailed")
+        subset.add(doc["BuildingSurface:Detailed"]["Office_Wall"])
+        assert [s.name for s in subset.referencing("Office")] == ["Office_Wall"]
+
+    def test_a_document_pickled_before_referencing_existed_answers(self) -> None:
+        import pickle
+
+        doc = self._model()
+        # A pickled collection carries only its own slots, so its state is the same as in idfkit
+        # releases before this method existed; check that stays so.
+        state = doc["BuildingSurface:Detailed"].__reduce_ex__(2)[2]
+        assert set(state[1]) == {"_by_name", "_items", "_type"}
+        clone = pickle.loads(pickle.dumps(doc))  # noqa: S301
+        assert len(clone["BuildingSurface:Detailed"].referencing("Office")) == 2
