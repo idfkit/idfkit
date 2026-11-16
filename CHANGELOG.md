@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `as_version(doc, since=..., before=...)` narrows a document to a range of releases without listing
+  them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports, `before="9.6"` one
+  of any earlier release, and the two together bound a range (`since` inclusive, `before`
+  exclusive). Each bound is a release's number (`"9.6"` or `"9.6.0"`) or its document type
+  (`since=IDFDocumentV9_6`). The range is computed from the supported releases, so it grows when
+  idfkit adopts one, where a hand-listed tuple had to be edited and failed with `TypeError` on the
+  previous latest release if it relied on `IDFDocument`. The document is typed as the exact union
+  of the releases in the range under pyright and mypy alike, which a tuple is not under mypy; a
+  release idfkit does not support, or an empty range, is a type error and raises `ValueError`.
+  `idfkit.versioned` gains the same ranges as types to annotate with, `IDFDocumentSince<release>`
+  and `IDFDocumentBefore<release>` (`IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ...), generated
+  for every supported release. The bundled agent reference uses them for the renamed-field,
+  range and exhaustive-`match` examples ([#283](https://github.com/idfkit/idfkit/pull/283)).
+
 ### Changed
 
 - The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) warn that

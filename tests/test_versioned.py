@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, get_origin
+from typing import Any, get_args, get_origin
 
 import pytest
 
@@ -137,6 +137,97 @@ class TestAsVersion:
     def test_refuses_an_empty_tuple(self) -> None:
         with pytest.raises(TypeError, match="at least one"):
             versioned.as_version(new_document(), ())  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+
+class TestAsVersionRange:
+    """``since=`` and ``before=``: a range of the releases idfkit supports, with no list to maintain."""
+
+    def test_since_accepts_every_supported_release_from_it_on(self) -> None:
+        for version in ENERGYPLUS_VERSIONS:
+            doc = new_document(version=version)
+            if version >= (9, 6, 0):
+                assert versioned.as_version(doc, since="9.6") is doc
+            else:
+                with pytest.raises(TypeError, match=r"not 9\.6\.0 or later"):
+                    versioned.as_version(doc, since="9.6")
+
+    def test_before_accepts_every_supported_release_before_it(self) -> None:
+        for version in ENERGYPLUS_VERSIONS:
+            doc = new_document(version=version)
+            if version < (9, 6, 0):
+                assert versioned.as_version(doc, before="9.6") is doc
+            else:
+                with pytest.raises(TypeError, match=r"not a release before 9\.6\.0"):
+                    versioned.as_version(doc, before="9.6")
+
+    def test_since_and_before_bound_a_range(self) -> None:
+        inside = new_document(version=(22, 1, 0))
+        assert versioned.as_version(inside, since="9.6", before="22.2") is inside
+        expected = r"EnergyPlus 22\.2\.0, not from 9\.6\.0 to before 22\.2\.0 \(9\.6\.0, 22\.1\.0\)"
+        with pytest.raises(TypeError, match=expected):
+            versioned.as_version(new_document(version=(22, 2, 0)), since="9.6", before="22.2")
+
+    def test_the_latest_release_is_in_a_range_from_any_earlier_release(self) -> None:
+        # The failure a hand-listed tuple ending in IDFDocument meets on release adoption cannot
+        # happen: the range is computed from ENERGYPLUS_VERSIONS when the call runs.
+        current = new_document()
+        for version in ENERGYPLUS_VERSIONS:
+            assert versioned.as_version(current, since=version_string(version)) is current
+
+    def test_a_bound_can_be_a_document_type(self) -> None:
+        doc = new_document(version=(9, 6, 0))
+        assert versioned.as_version(doc, since=versioned.IDFDocumentV9_6) is doc
+        assert versioned.as_version(doc, since=versioned.IDFDocumentV9_6[bool]) is doc
+        assert versioned.as_version(doc, before=versioned.IDFDocumentV22_1) is doc
+        current = new_document()
+        assert versioned.as_version(current, since=IDFDocument) is current
+        with pytest.raises(TypeError, match="not a release before"):
+            versioned.as_version(current, before=IDFDocument)
+
+    def test_a_bound_can_be_a_full_version_string(self) -> None:
+        doc = new_document(version=(9, 0, 1))
+        assert versioned.as_version(doc, since="9.0.1", before="9.1.0") is doc
+        assert versioned.as_version(doc, since="9.0.0") is doc  # a file's 9.0 is the 9.0.1 release
+
+    def test_refuses_a_release_idfkit_does_not_support(self) -> None:
+        with pytest.raises(ValueError, match="supports no such EnergyPlus release"):
+            versioned.as_version(new_document(), since="27.1")
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since="latest")
+
+    def test_refuses_an_empty_range(self) -> None:
+        with pytest.raises(ValueError, match=r"No supported EnergyPlus release is from 26\.1\.0 to before 9\.4\.0"):
+            versioned.as_version(new_document(), since="26.1", before="9.4")  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_refuses_any_document_as_a_bound(self) -> None:
+        with pytest.raises(TypeError, match="names none"):
+            versioned.as_version(new_document(), since=AnyIDFDocument)  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_refuses_a_document_type_and_a_range_together(self) -> None:
+        with pytest.raises(TypeError, match="not both"):
+            versioned.as_version(new_document(), IDFDocument, since="9.6")  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_refuses_neither(self) -> None:
+        with pytest.raises(TypeError, match="needs a document type"):
+            versioned.as_version(new_document())  # pyright: ignore[reportCallIssue]
+
+
+class TestRangeAliases:
+    def test_every_release_has_a_since_alias_and_every_later_one_a_before_alias(self) -> None:
+        for i, version in enumerate(ENERGYPLUS_VERSIONS):
+            tag = f"{version[0]}_{version[1]}"
+            members = get_args(getattr(versioned, f"IDFDocumentSince{tag}")) or (
+                getattr(versioned, f"IDFDocumentSince{tag}"),
+            )
+            assert len(members) == len(ENERGYPLUS_VERSIONS) - i
+            assert f"IDFDocumentSince{tag}" in versioned.__all__
+            if i:
+                assert len(get_args(getattr(versioned, f"IDFDocumentBefore{tag}")) or (0,)) == i
+                assert f"IDFDocumentBefore{tag}" in versioned.__all__
+
+    def test_an_alias_accepts_its_releases_at_run_time(self) -> None:
+        doc = new_document(version=(23, 2, 0))
+        assert versioned.as_version(doc, versioned.IDFDocumentSince23_2) is doc  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
 # ---------------------------------------------------------------------------

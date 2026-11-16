@@ -1330,7 +1330,7 @@ def generate_versioned_pyi() -> str:
         "from __future__ import annotations",
         "",
         "from collections.abc import Mapping",
-        "from typing import Any, Literal, TypeVar, overload",
+        "from typing import Any, Literal, TypeAlias, TypeVar, overload",
         "",
         "from typing_extensions import TypedDict, Unpack",
         "",
@@ -1427,6 +1427,9 @@ def generate_versioned_pyi() -> str:
     parts.append("")
     parts.append('_D = TypeVar("_D", bound=AnyIDFDocument)')
     parts.append("")
+    # The aliases come first: mypy reads only the first run of overloads, so they must be contiguous.
+    aliases, overloads = _range_typing([*older, SUPPORTED.latest])
+    parts.extend(aliases)
     parts.extend([
         "@overload",
         *_format_def_with_doc("def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D", _AS_VERSION_DOC),
@@ -1434,8 +1437,67 @@ def generate_versioned_pyi() -> str:
         # Non-empty: an empty tuple raises at run time, so the checker reports it.
         "def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], Unpack[tuple[type[_D], ...]]]) -> _D: ...",
     ])
-    parts.append("")
+    parts.extend(overloads)
     return "\n".join(parts)
+
+
+def _range_alias(kind: str, ver: Version) -> str:
+    """``IDFDocumentSince9_6`` or ``IDFDocumentBefore9_6``."""
+    return f"IDFDocument{kind}{_version_tag(ver)}"
+
+
+def _range_typing(versions: list[Version]) -> tuple[list[str], list[str]]:
+    """The stub's range aliases, and the ``as_version`` overloads for ``since=`` and ``before=``.
+
+    Every range is written out as the union of its releases, because a type checker cannot compute
+    one from a version number. Each bound is a release's document type or its number as a string
+    literal; the overloads are tried in order, and a release's own type selects its own overload.
+    A ``since``/``before`` pair is typed only when it holds a release: an empty range has no
+    overload, so the checker reports it, as the run time raises for it.
+    """
+    latest = versions[-1]
+
+    def cls(ver: Version) -> str:
+        return "IDFDocument" if ver == latest else _document_class_name(ver)
+
+    def union(members: list[Version]) -> str:
+        return " | ".join(cls(ver) for ver in members)
+
+    def bound(ver: Version) -> str:
+        return f'type[{cls(ver)}] | Literal["{ver[0]}.{ver[1]}", "{version_string(ver)}"]'
+
+    lines: list[str] = [
+        "# Ranges of releases: a type to annotate with, and the as_version overloads that narrow to one.",
+        "# Each lists the releases this idfkit supports, so a range from a release on grows when one is added.",
+        "",
+    ]
+    for i, ver in enumerate(versions):
+        lines.append(f"{_range_alias('Since', ver)}: TypeAlias = {union(versions[i:])}")
+    for i, ver in enumerate(versions[1:], start=1):
+        lines.append(f"{_range_alias('Before', ver)}: TypeAlias = {union(versions[:i])}")
+    lines.append("")
+    aliases = lines
+    lines = []
+    for ver in versions:
+        lines.append("@overload")
+        lines.append(
+            f"def as_version(doc: AnyIDFDocument, *, since: {bound(ver)}) -> {_range_alias('Since', ver)}: ..."
+        )
+    for ver in versions[1:]:
+        lines.append("@overload")
+        lines.append(
+            f"def as_version(doc: AnyIDFDocument, *, before: {bound(ver)}) -> {_range_alias('Before', ver)}: ..."
+        )
+    for i, low in enumerate(versions):
+        for j in range(i + 1, len(versions)):
+            high = versions[j]
+            lines.append("@overload")
+            lines.append(
+                f"def as_version(doc: AnyIDFDocument, *, since: {bound(low)}, before: {bound(high)})"
+                f" -> {union(versions[i:j])}: ..."
+            )
+    lines.append("")
+    return aliases, lines
 
 
 def generate_versioned_py() -> str:
@@ -1466,11 +1528,14 @@ def generate_versioned_py() -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from ._document_types import as_version, document_type",
+        "from ._document_types import as_version, document_type, release_union",
         "from .document import AnyIDFDocument, IDFDocument",
         "",
         "__all__ = [",
         '    "AnyIDFDocument",',
+        # In the order ruff's RUF022 sorts them: Before, Since, then the release types.
+        *(f'    "{_range_alias("Before", ver)}",' for ver in versions[1:]),
+        *(f'    "{_range_alias("Since", ver)}",' for ver in versions),
         *(f'    "{name}",' for name in names),
         '    "as_version",',
         "]",
@@ -1482,6 +1547,13 @@ def generate_versioned_py() -> str:
         else:
             lines.append(f'{_document_class_name(ver)} = document_type("{_document_class_name(ver)}", {ver!r})')
     lines.append("")
+    lines.append("# Ranges of releases, typed in versioned.pyi. At run time each is the union of its releases.")
+    # One member per line, with a trailing comma, so the output is already as ruff formats it.
+    for i, ver in enumerate(versions):
+        lines.extend([f"{_range_alias('Since', ver)} = release_union(", *(f"    {n}," for n in names[i:]), ")"])
+    for i, ver in enumerate(versions[1:], start=1):
+        lines.extend([f"{_range_alias('Before', ver)} = release_union(", *(f"    {n}," for n in names[:i]), ")"])
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -1489,8 +1561,15 @@ _AS_VERSION_DOC = """Type *doc* as a document of the EnergyPlus version *documen
 
 Returns *doc* itself. A document's version is read from its file, so a type checker cannot
 know it; this states it, and checks it at run time. Given a tuple of document types, as
-``isinstance`` takes one, it accepts a document of any of them and types it as their union:
-a range of releases, such as those that have ``Space``.
+``isinstance`` takes one, it accepts a document of any of them and types it as their union.
+
+For a range of releases, such as those that have ``Space``, give ``since=`` and/or ``before=``
+instead of *document_type*: it accepts a document of any release idfkit supports from *since* on
+and before *before*, and types it as their union. Each bound is a release's document type or its
+number: ``since=IDFDocumentV9_6`` or ``since="9.6"``. The range is computed from the releases
+idfkit supports, so it grows when idfkit adds one, and no list of releases needs maintaining.
+``IDFDocumentSince9_6`` and ``IDFDocumentBefore9_6`` are the same ranges as types, to annotate
+with; pass ``since=``, not the alias, to this function.
 
 Check a release with this function, not ``isinstance``: pyright rejects ``isinstance`` against
 a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself, which every
@@ -1500,28 +1579,33 @@ any release already is one.
 In a tuple, name every release by its own type, the latest included: ``IDFDocumentV26_2``, not
 ``IDFDocument``. ``IDFDocument`` stands for whichever release is latest when the code runs, so
 once idfkit supports a newer release, a model of the release that was latest when the tuple was
-written matches nothing in it, and this raises ``TypeError``.
+written matches nothing in it, and this raises ``TypeError``. A range given by ``since=`` has
+neither problem.
 
 Args:
     doc: A document of any supported version.
     document_type: ``IDFDocument`` for the latest release, or one of the
         ``IDFDocumentV<major>_<minor>`` types of this module, or a tuple of them.
+    since: The first release of a range, as its document type or as ``"major.minor"``.
+    before: The release a range stops before, the same way.
 
 Returns:
-    *doc*, typed as *document_type*, or as the union of the types in the tuple.
+    *doc*, typed as *document_type*, or as the union of the releases in the tuple or range.
 
 Raises:
-    TypeError: If *doc* is not a document of that version, or of any version in the tuple.
+    TypeError: If *doc* is not a document of that version, or of any version in the tuple or
+        range; or if both *document_type* and a range are given, or neither.
+    ValueError: If *since* or *before* names no supported release, or the range holds none.
 
 Examples:
     ```python
     from idfkit import load_idf
-    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, IDFDocumentV26_2, as_version
+    from idfkit.versioned import IDFDocumentV9_4, as_version
 
     model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
     model["Zone"].first()  # typed as Zone was declared in 9.4
 
-    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocumentV26_2))
+    recent = as_version(load_idf("model.idf"), since="9.6")  # 9.6, 22.1, ... and the latest
     recent["Space"].first()  # typed in each of those releases
     ```
 """
