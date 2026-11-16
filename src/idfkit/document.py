@@ -1217,10 +1217,11 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
 
         Other objects that name the zone are not returned: loads such as ``Lights`` or
         ``People``, equipment connections, and a surface in another zone whose
-        ``outside_boundary_condition_object`` is this zone. Neither are fenestration and
-        ``InternalMass``, which do not carry a ``zone_name`` field of their own in current
-        versions. Use [get_referencing][idfkit.document.IDFDocument.get_referencing] for every
-        object that names the zone.
+        ``outside_boundary_condition_object`` is this zone. Neither are fenestration, which
+        names its host surface rather than the zone, and ``InternalMass``, which the schema
+        does not list as a ``SurfaceNames`` provider. Use
+        [get_referencing][idfkit.document.IDFDocument.get_referencing] for every object that
+        names the zone.
 
         The lookup goes through the reference graph, so its cost does not grow with the
         size of the model. The order of the returned list is not specified.
@@ -1241,22 +1242,14 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
             >>> model.get_zone_surfaces("Office")
             [BuildingSurface:Detailed('Office_Floor')]
         """
-        surface_types = self._zone_surface_types()
+        if self._schema is None:
+            return []
+        surface_types = self._schema.get_types_providing_reference("SurfaceNames")
         return [
             obj
             for obj, field_name in self._references.get_referencing_with_fields(zone_name)
-            if field_name == "zone_name" and (surface_types is None or obj.obj_type in surface_types)
+            if field_name == "zone_name" and obj.obj_type in surface_types
         ]
-
-    def _zone_surface_types(self) -> frozenset[str] | None:
-        """Surface object types for [get_zone_surfaces][idfkit.document.IDFDocument.get_zone_surfaces].
-
-        ``None`` when the document has no schema, in which case only the ``zone_name`` field
-        filter applies.
-        """
-        if self._schema is None:
-            return None
-        return frozenset(self._schema.get_types_providing_reference("SurfaceNames"))
 
     # -------------------------------------------------------------------------
     # Iteration

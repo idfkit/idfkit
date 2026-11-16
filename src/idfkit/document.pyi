@@ -451,10 +451,11 @@ class _IDFDocumentMethods(EppyDocumentMixin, Generic[Strict]):
 
         Other objects that name the zone are not returned: loads such as ``Lights`` or
         ``People``, equipment connections, and a surface in another zone whose
-        ``outside_boundary_condition_object`` is this zone. Neither are fenestration and
-        ``InternalMass``, which do not carry a ``zone_name`` field of their own in current
-        versions. Use [get_referencing][idfkit.document.IDFDocument.get_referencing] for every
-        object that names the zone.
+        ``outside_boundary_condition_object`` is this zone. Neither are fenestration, which
+        names its host surface rather than the zone, and ``InternalMass``, which the schema
+        does not list as a ``SurfaceNames`` provider. Use
+        [get_referencing][idfkit.document.IDFDocument.get_referencing] for every object that
+        names the zone.
 
         The lookup goes through the reference graph, so its cost does not grow with the
         size of the model. The order of the returned list is not specified.

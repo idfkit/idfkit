@@ -972,6 +972,22 @@ class TestGetReferencesAndSurfaces:
         assert expected, "no surface types found in schema"
         assert {(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")} == expected
 
+    def test_get_zone_surfaces_from_parsed_idf(self, tmp_path: Path) -> None:
+        """References registered by the parser, not by add(), go through the same filter."""
+        idf = tmp_path / "zone.idf"
+        idf.write_text(
+            "Version, 24.1;\n"
+            "Zone, Z;\n"
+            "Zone, Other;\n"
+            "Wall:Exterior, W, , Z, 0, 90, 0, 0, 0, 3, 3;\n"
+            "BuildingSurface:Detailed, Partition, Wall, , Other, , Zone, Z, NoSun, NoWind, , 4,"
+            " 0,0,3, 0,0,0, 3,0,0, 3,0,3;\n"
+            "Lights, L, Z, , EquipmentLevel, 100;\n"
+        )
+        doc = load_idf(idf)
+        assert [(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")] == [("Wall:Exterior", "W")]
+        assert [s.name for s in doc.get_zone_surfaces("Other")] == ["Partition"]
+
     def test_get_zone_surfaces_follows_rename(self) -> None:
         doc = new_document()
         zone = doc.add("Zone", "Old")

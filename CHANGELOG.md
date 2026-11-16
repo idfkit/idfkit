@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
   surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
   another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
-  It now returns only the heat-transfer surfaces whose own `zone_name` is the zone, of the types
-  the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
+  It was changed to return only the heat-transfer surfaces whose own `zone_name` is the zone, of
+  the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
   `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
-  and `Floor:GroundContact`. `get_referencing()` still returns every object that names the zone.
+  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
   ([f09d196](https://github.com/idfkit/idfkit/commit/f09d196))
 
 ## [1.3.0-rc.1] - 2026-11-14
