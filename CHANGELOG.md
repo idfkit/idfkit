@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   filtering `get_referencing` on `obj_type` and looking each object up again. It was the same
   reference-graph lookup as `get_referencing`, which was unchanged, with no scan of the collection
   or model; it added nothing to the type stubs, so type-checking time was unchanged
-  ([1e9b737](https://github.com/idfkit/idfkit/commit/1e9b737)).
+  ([#284](https://github.com/idfkit/idfkit/pull/284)).
 
 ## [1.3.0-rc.1] - 2026-11-14
 
