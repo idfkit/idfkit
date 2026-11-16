@@ -30,7 +30,7 @@ from ._versioned.v25_1 import IDFDocumentV25_1 as IDFDocumentV25_1
 from ._versioned.v25_2 import IDFDocumentV25_2 as IDFDocumentV25_2
 from ._versioned.v26_1 import IDFDocumentV26_1 as IDFDocumentV26_1
 from .document import AnyIDFDocument as AnyIDFDocument
-from .document import IDFDocument, Strict
+from .document import IDFDocument
 from .objects import ExtensibleList, IDFCollection
 
 # =========================================================================

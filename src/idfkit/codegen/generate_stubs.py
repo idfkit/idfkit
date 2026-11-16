@@ -1333,7 +1333,7 @@ def generate_versioned_pyi() -> str:
             for ver in older
         ),
         "from .document import AnyIDFDocument as AnyIDFDocument",
-        "from .document import IDFDocument, Strict",
+        "from .document import IDFDocument",
         "from .objects import ExtensibleList, IDFCollection",
         "",
         "# =========================================================================",
