@@ -14,16 +14,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release lacks was reported under `C001`, as for `add()` and `doc[...]`. Two rules were added.
   `C003` (error) reported a name that no target release has, with the closest real name as the
   fix, because `doc.get_collection("Zoen")` returns an empty collection at run time instead of
-  raising; a `--group` filter does not hide it. `C004` (warning) reported any other literal name
-  and suggested `doc["Zone"]`, which is typed and which pyright checks. Names held in variables
-  were not reported. Neither rule added anything to type-checking time
-  ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb)).
+  raising; a `--group` filter does not hide it. `C004` (warning, opt-in with
+  `--extend-select C004`) reported any other literal name and suggested `doc["Zone"]`, which is
+  typed and which pyright checks. Names held in variables were not reported. Neither rule added
+  anything to type-checking time ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb),
+  SHA_PLACEHOLDER).
+- `idfkit check` could be run as a blocking CI gate:
+  - A `# idfkit: ignore[C001]` comment silenced the listed rules on its line (a bare
+    `# idfkit: ignore` silenced all of them), and a new rule `C005` (warning) reported a
+    suppression that silenced nothing for the run's targets and rules, or named an unknown rule.
+    The comment is namespaced rather than `# noqa`, which ruff reads as its own codes.
+  - A lookup was checked only against the targets it can run on: one made on
+    `as_version(doc, ...)` (a release type, a tuple or union of them, or `since=`/`before=`), on a
+    name bound once to such a call, or inside `if doc.version >= (9, 4, 0):` and the `else` of a
+    test read completely (`and`, `or`, `not` and chained comparisons against tuples are read).
+    Early returns, `assert`, `isinstance` and annotations were not followed.
+  - `--targets all` checked every supported release, and `--since`/`--before` a range of them,
+    read as `as_version(since=, before=)` reads them (since inclusive, before exclusive).
+    `--from`/`--to` still compared the two releases of one migration only.
+  - Settings were read from a `[tool.idfkit.check]` table in the nearest `pyproject.toml`
+    (`targets`, `since`, `before`, `paths`, `exclude`, `select`, `extend-select`, `ignore`,
+    `per-file-ignores`, `group`, `exclude-group`, `fail-on`), or from the file given with
+    `--config`; `--isolated` ignored them. An unknown key was an error. On Python 3.10 the table
+    needs `tomli` installed.
+  - Paths could be directories, searched for `*.py` without hidden directories, virtual
+    environments, caches and build output; with no path, `paths` from the table or the current
+    directory was linted. `--extend-select` added rules, and `--fail-on error` let warnings be
+    reported without failing the run. The text output ended with a summary line.
+  - In idfkit's own source, relative imports counted as idfkit imports, so `make check` now runs
+    `idfkit check` over `src/` against every release (SHA_PLACEHOLDER).
 
 ### Changed
 
-- **Breaking:** `idfkit check` started exiting with status 1 on a file that passes a literal
-  object type to `get_collection`, because of the new `C004` warning. `--ignore C004` keeps such
-  calls ([a93afcb](https://github.com/idfkit/idfkit/commit/a93afcb)).
+- **Breaking:** `idfkit check` refused a target release idfkit does not support with exit status
+  2, where it used to check the closest one instead: `--to 27.1` checked 26.2. `9.0` and `9.0.0`
+  still named 9.0.1 (SHA_PLACEHOLDER).
+- `idfkit check` went on to the other files after one failed to parse, and still exited with
+  status 2 (SHA_PLACEHOLDER).
+- `check_compatibility` gained `select`, `ignore`, `suppressions` and `package` arguments, and by
+  default checked `DEFAULT_RULES` (every rule but `C004`) and honoured suppression comments
+  (SHA_PLACEHOLDER).
+
+### Fixed
+
+- `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
+  `idfkit-check` pre-commit hook's description said how to pass targets (SHA_PLACEHOLDER).
 
 ## [1.3.0-rc.1] - 2026-11-14
 

@@ -1003,6 +1003,7 @@ class TestMainDispatch:
 _V94 = (9, 4, 0)
 _V262 = (26, 2, 0)
 _IMP = "import idfkit\n"
+_WITH_C004 = ["C001", "C002", "C003", "C004", "C005"]
 
 
 class TestGetCollectionLiterals:
@@ -1034,7 +1035,9 @@ class TestGetCollectionLiterals:
         assert diagnostics == []
 
     def test_known_type_reports_c004_with_typed_spelling(self) -> None:
-        diagnostics = check_compatibility(_IMP + 'm.get_collection("zone")\n', "t.py", targets=[_V94, _V262])
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("zone")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
         assert [d.code for d in diagnostics] == ["C004"]
         d = diagnostics[0]
         assert d.severity == CompatSeverity.WARNING
@@ -1043,7 +1046,9 @@ class TestGetCollectionLiterals:
         assert "AnyIDFDocument" in d.message
 
     def test_c004_for_release_specific_type_mentions_narrowing(self) -> None:
-        diagnostics = check_compatibility(_IMP + 'm.get_collection("Space")\n', "t.py", targets=[_V94, _V262])
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("Space")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
         assert [d.code for d in diagnostics] == ["C001", "C004"]
         assert "as_version" in diagnostics[1].message
 
@@ -1055,7 +1060,7 @@ class TestGetCollectionLiterals:
         p = tmp_path / "s.py"
         p.write_text(_IMP + 'doc.get_collection("Zone")\ndoc.get_collection("Zoen")\n')
         with pytest.raises(SystemExit) as exc_info:
-            main(["check", str(p), "--targets", "9.4,26.2", "--ignore", "C004"])
+            main(["check", str(p), "--targets", "9.4,26.2", "--extend-select", "C004", "--ignore", "C004"])
         assert exc_info.value.code == 1
         out = capsys.readouterr().out
         assert "C003" in out
