@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) warn that
+  a tuple or union of release types must name the latest release by its own type
+  (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
+  when the code runs, so once idfkit supports a newer release a tuple ending in it no longer covers
+  the previous latest, and `as_version` raises `TypeError` on a model of that release. The
+  reference's examples (`SINCE_9_6`, `Since23_2`) and the docstring's example now name
+  `IDFDocumentV26_2`.
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added

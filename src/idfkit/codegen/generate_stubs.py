@@ -1497,6 +1497,11 @@ a document type, and at run time ``IDFDocumentV26_2`` is ``IDFDocument`` itself,
 document is an instance of. Nothing needs passing to reach ``AnyIDFDocument``: a document of
 any release already is one.
 
+In a tuple, name every release by its own type, the latest included: ``IDFDocumentV26_2``, not
+``IDFDocument``. ``IDFDocument`` stands for whichever release is latest when the code runs, so
+once idfkit supports a newer release, a model of the release that was latest when the tuple was
+written matches nothing in it, and this raises ``TypeError``.
+
 Args:
     doc: A document of any supported version.
     document_type: ``IDFDocument`` for the latest release, or one of the
@@ -1510,13 +1515,13 @@ Raises:
 
 Examples:
     ```python
-    from idfkit import IDFDocument, load_idf
-    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, as_version
+    from idfkit import load_idf
+    from idfkit.versioned import IDFDocumentV9_4, IDFDocumentV9_6, IDFDocumentV26_1, IDFDocumentV26_2, as_version
 
     model = as_version(load_idf("legacy.idf"), IDFDocumentV9_4)
     model["Zone"].first()  # typed as Zone was declared in 9.4
 
-    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocument))
+    recent = as_version(load_idf("model.idf"), (IDFDocumentV9_6, IDFDocumentV26_1, IDFDocumentV26_2))
     recent["Space"].first()  # typed in each of those releases
     ```
 """

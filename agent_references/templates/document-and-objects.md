@@ -111,7 +111,9 @@ A union of release types accepts exactly those releases. Under pyright, a value 
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-range"
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocument))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocumentV26_2))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
+
+Name every release of a range by its own type, the latest included: `IDFDocumentV26_2`, not `IDFDocument`. `IDFDocument` stands for whichever release is latest when the code runs. Once idfkit supports a newer release, a tuple that ends in `IDFDocument` no longer covers the release that was latest when it was written, and `as_version` raises `TypeError` on a model of that release; in an annotation, pyright and mypy reject such a model instead. A test that loops over `idfkit.versions.ENERGYPLUS_VERSIONS` and passes each release from the first one in the range to `as_version` catches this when idfkit is upgraded.
 
 A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
 

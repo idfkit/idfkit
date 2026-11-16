@@ -225,7 +225,9 @@ older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1)) 
 # use_district_steam(legacy)  # error: a 9.4 document is not in the range
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocument))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocumentV26_2))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
+
+Name every release of a range by its own type, the latest included: `IDFDocumentV26_2`, not `IDFDocument`. `IDFDocument` stands for whichever release is latest when the code runs. Once idfkit supports a newer release, a tuple that ends in `IDFDocument` no longer covers the release that was latest when it was written, and `as_version` raises `TypeError` on a model of that release; in an annotation, pyright and mypy reject such a model instead. A test that loops over `idfkit.versions.ENERGYPLUS_VERSIONS` and passes each release from the first one in the range to `as_version` catches this when idfkit is upgraded.
 
 A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
 
@@ -234,7 +236,6 @@ from typing import TypeAlias
 
 from typing_extensions import assert_never
 
-from idfkit import IDFDocument
 from idfkit.versioned import (
     IDFDocumentV23_2,
     IDFDocumentV24_1,
@@ -253,7 +254,7 @@ Since23_2: TypeAlias = (
     | IDFDocumentV25_1
     | IDFDocumentV25_2
     | IDFDocumentV26_1
-    | IDFDocument
+    | IDFDocumentV26_2
 )
 
 
@@ -333,7 +334,7 @@ SINCE_9_6 = (
     IDFDocumentV25_1,
     IDFDocumentV25_2,
     IDFDocumentV26_1,
-    IDFDocument,
+    IDFDocumentV26_2,  # its own type: IDFDocument moves on when a newer release is added
 )
 
 

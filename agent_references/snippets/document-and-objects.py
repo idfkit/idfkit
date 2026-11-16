@@ -190,7 +190,6 @@ from typing import TypeAlias
 
 from typing_extensions import assert_never
 
-from idfkit import IDFDocument
 from idfkit.versioned import (
     IDFDocumentV23_2,
     IDFDocumentV24_1,
@@ -209,7 +208,7 @@ Since23_2: TypeAlias = (
     | IDFDocumentV25_1
     | IDFDocumentV25_2
     | IDFDocumentV26_1
-    | IDFDocument
+    | IDFDocumentV26_2
 )
 
 
@@ -283,7 +282,7 @@ SINCE_9_6 = (
     IDFDocumentV25_1,
     IDFDocumentV25_2,
     IDFDocumentV26_1,
-    IDFDocument,
+    IDFDocumentV26_2,  # its own type: IDFDocument moves on when a newer release is added
 )
 
 
