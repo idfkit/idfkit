@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   zone's surfaces or a surface's windows are read with checked fields and without filtering
   `get_referencing` on `obj_type` and looking each object up again. It is the same reference-graph
   lookup as `get_referencing`, which is unchanged, and costs no more; it adds nothing to the type
-  stubs, so type-checking time is unchanged.
+  stubs, so type-checking time is unchanged. ([1e9b737](https://github.com/idfkit/idfkit/commit/1e9b737))
 
 ## [1.3.0-rc.1] - 2026-11-14
 
