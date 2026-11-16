@@ -284,14 +284,16 @@ def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
 
 ### A model created for an older release
 
-Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. `new_document(IDFDocument)` is the latest release's; `AnyIDFDocument` raises `TypeError` (it is no single release). As with `as_version`, the bare type carries no strictness (`IDFDocumentV9_4[bool]`); to state it, pass the type parametrized: `new_document(IDFDocumentV9_4[Literal[False]])` creates a non-strict document typed `IDFDocumentV9_4[Literal[False]]`, with no `strict=` needed. Keep `as_version` for models whose version comes from a file:
+Pass `new_document` the release's document type: `new_document(IDFDocumentV9_4)` creates a 9.4.0 model typed as `IDFDocumentV9_4`, so the release is named once and the type and the version cannot disagree. For a non-strict model, parametrize the type, `new_document(IDFDocumentV9_4[Literal[False]])`, typed `IDFDocumentV9_4[Literal[False]]`; this form takes no `strict=`. Given a version tuple instead, `new_document` is typed for the latest release whatever the version, so a test fixture built with `new_document(version=(9, 4, 0))` is checked against the wrong release. For the latest release keep `new_document()`: `IDFDocument` is refused (`TypeError`), because it is the run-time class of every document and `new_document(type(doc))` would otherwise create a latest-release model whatever `doc`'s release; `AnyIDFDocument` and unions of release types are refused too. A model whose version comes from a file is typed with `as_version`, as above.
 
 ```python
+from typing import Literal
+
 from idfkit import new_document
 
 blank_94 = new_document(IDFDocumentV9_4)  # version (9, 4, 0), typed IDFDocumentV9_4
 blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
-blank = new_document(version=(9, 4, 0))  # a 9.4 model too, but typed IDFDocument: the latest release
+lax_94 = new_document(IDFDocumentV9_4[Literal[False]])  # non-strict, typed IDFDocumentV9_4[Literal[False]]
 ```
 
 ### A field renamed between releases

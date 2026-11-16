@@ -9,15 +9,16 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Literal, get_origin
+from typing import Annotated, Any, Literal, get_origin, get_type_hints
 
 import pytest
 
 import idfkit.versioned as versioned
-from idfkit import load_idf, new_document
+from idfkit import load_idf, new_document, write_idf
 from idfkit.codegen import generate_stubs as gen
 from idfkit.codegen.verify_stubs import verify
 from idfkit.document import AnyIDFDocument, IDFDocument
+from idfkit.exceptions import UnsupportedVersionError
 from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 
 _PACKAGE = Path(versioned.__file__).resolve().parent
@@ -80,49 +81,75 @@ class TestRuntimeTypes:
     def test_document_types_are_not_instantiated(self) -> None:
         with pytest.raises(TypeError, match=r"new_document\(IDFDocumentV9_4\)"):
             versioned.IDFDocumentV9_4()
-        with pytest.raises(TypeError, match="is not instantiated"):
+        # AnyIDFDocument stands for no release, so the advice is the tuple form, which works.
+        with pytest.raises(TypeError, match=r"new_document\(version=\.\.\.\)"):
             AnyIDFDocument()
 
 
 class TestNewDocument:
-    @pytest.mark.parametrize("version", ENERGYPLUS_VERSIONS, ids=version_string)
+    @pytest.mark.parametrize("version", ENERGYPLUS_VERSIONS[:-1], ids=version_string)
     def test_creates_a_document_of_the_types_release(self, version: tuple[int, int, int]) -> None:
         document_type: Any = getattr(versioned, f"IDFDocumentV{version[0]}_{version[1]}")
         doc = new_document(document_type)
         assert type(doc) is IDFDocument
         assert doc.version == version
-        assert doc["Version"].first().version_identifier == f"{version[0]}.{version[1]}"
         assert versioned.as_version(doc, document_type) is doc
 
-    def test_seeds_what_a_version_tuple_seeds(self) -> None:
-        typed = new_document(versioned.IDFDocumentV9_4)
-        plain = new_document(version=(9, 4, 0))
-        assert {t: len(c) for t, c in typed.items()} == {t: len(c) for t, c in plain.items()}
+    def test_creates_what_a_version_tuple_creates(self) -> None:
+        assert write_idf(new_document(versioned.IDFDocumentV9_4)) == write_idf(new_document(version=(9, 4, 0)))
 
-    def test_idfdocument_is_the_latest_release(self) -> None:
-        assert new_document(IDFDocument).version == LATEST_VERSION
-
-    def test_a_type_with_type_arguments(self) -> None:
-        assert new_document(versioned.IDFDocumentV9_4[bool]).version == (9, 4, 0)
-
-    def test_strict(self) -> None:
+    def test_a_type_argument_states_the_strictness(self) -> None:
         assert new_document(versioned.IDFDocumentV9_4).strict is True
-        assert new_document(versioned.IDFDocumentV9_4, strict=False).strict is False
-
-    def test_a_parametrized_type_states_the_strictness(self) -> None:
         assert new_document(versioned.IDFDocumentV9_4[Literal[False]]).strict is False
         assert new_document(versioned.IDFDocumentV9_4[Literal[True]]).strict is True
-        assert new_document(versioned.IDFDocumentV9_4[Literal[False]], strict=False).strict is False
+        assert new_document(versioned.IDFDocumentV9_4[Annotated[Literal[False], "lax"]]).strict is False
+        # No single literal bool states none, as for a bare type.
+        for argument in (bool, Any, Literal[True, False], Literal[1]):
+            assert new_document(versioned.IDFDocumentV9_4[argument]).strict is True
+
+    def test_strict_from_an_untyped_caller(self) -> None:
+        # The type overload takes no strict; at run time it applies, unless the type contradicts it.
+        untyped: Any = new_document
+        assert untyped(versioned.IDFDocumentV9_4, strict=False).strict is False
         with pytest.raises(TypeError, match="contradicts"):
-            new_document(versioned.IDFDocumentV9_4[Literal[False]], strict=True)
+            untyped(versioned.IDFDocumentV9_4[Literal[True]], strict=False)
 
-    def test_any_document_has_no_release(self) -> None:
-        with pytest.raises(TypeError, match="no single EnergyPlus release"):
-            new_document(AnyIDFDocument)
+    def test_refuses_a_string_type_argument(self) -> None:
+        with pytest.raises(TypeError, match="unquoted"):
+            new_document(versioned.IDFDocumentV9_4["Literal[False]"])  # pyright: ignore[reportInvalidTypeArguments]
 
-    def test_refuses_a_type_that_is_not_a_document_type(self) -> None:
+    def test_refuses_idfdocument_so_type_of_a_document_fails_loudly(self) -> None:
+        # Every document's run-time class is IDFDocument, whatever its release: new_document(type(doc))
+        # must not create a latest-release document typed as doc's release.
+        legacy = new_document(versioned.IDFDocumentV9_4)
+        for document_type in (type(legacy), IDFDocument, IDFDocument[Literal[False]]):
+            with pytest.raises(TypeError, match=r"Call new_document\(\) for the latest release"):
+                new_document(document_type)
+
+    def test_refuses_what_names_no_single_release(self) -> None:
+        with pytest.raises(TypeError, match="names 2"):
+            new_document(versioned.IDFDocumentV9_4 | versioned.IDFDocumentV9_6)
+        for no_release in (AnyIDFDocument, AnyIDFDocument[Literal[False]]):
+            with pytest.raises(TypeError, match="no single EnergyPlus release"):
+                new_document(no_release)  # pyright: ignore[reportArgumentType, reportCallIssue]
+
+    def test_refuses_a_class_that_is_not_a_release_type(self) -> None:
+        class Lax(versioned.IDFDocumentV9_4[Literal[False]]): ...
+
+        with pytest.raises(TypeError, match="subclass of a release type"):
+            new_document(Lax)
         with pytest.raises(TypeError, match="not a document type"):
             new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]
+        with pytest.raises(TypeError, match="not a document type"):
+            new_document(list[Literal[False]])  # pyright: ignore[reportArgumentType, reportCallIssue]
+
+    def test_a_version_that_is_not_a_tuple_is_still_an_unsupported_version(self) -> None:
+        with pytest.raises(UnsupportedVersionError):
+            new_document("24.1.0")  # pyright: ignore[reportArgumentType, reportCallIssue]
+
+    def test_annotations_resolve_at_run_time(self) -> None:
+        hints = get_type_hints(new_document)
+        assert hints["strict"] is bool
 
 
 class TestAsVersion:

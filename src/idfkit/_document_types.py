@@ -20,7 +20,20 @@ not (9.0.1).
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Any, Literal, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    ForwardRef,
+    Literal,
+    NoReturn,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    overload,
+)
 
 from .versions import LATEST_VERSION, find_closest_version, version_string
 
@@ -45,10 +58,13 @@ class DocumentTypeMeta(type):
         return cls._energyplus_version is None or find_closest_version(version) == cls._energyplus_version
 
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:
-        msg = (
-            f"{cls.__name__} is a type for type checkers and is not instantiated; "
-            f"create a document with idfkit.new_document({cls.__name__}) or load one"
+        # AnyIDFDocument stands for no single release, so new_document refuses it: point to the tuple form.
+        create = (
+            "idfkit.new_document(version=...)"
+            if cls._energyplus_version is None
+            else f"idfkit.new_document({cls.__name__})"
         )
+        msg = f"{cls.__name__} is a type for type checkers and is not instantiated; create a document with {create} or load one"
         raise TypeError(msg)
 
     @property
@@ -87,28 +103,70 @@ def _resolve(document_type: Any) -> tuple[type, tuple[int, int, int] | None]:
     raise TypeError(msg)
 
 
-def release_of(document_type: object) -> tuple[int, int, int]:
-    """The release *document_type* stands for, for creating a document of it.
+def release_for_new_document(version: object, strict: bool) -> tuple[tuple[int, int, int], bool]:
+    """The release and strictness of the document :func:`idfkit.new_document` creates for *version*.
+
+    *version* is a release's document type, such as ``IDFDocumentV9_4`` or ``IDFDocumentV9_4[Literal[False]]``:
+    the release is the one the type stands for, and the strictness the one its type argument states, else
+    *strict*. Anything that is not a class or a parametrized one is handed back as it is, for
+    ``new_document`` to report as an unsupported version the way it always has.
 
     Raises:
-        TypeError: If *document_type* is not a document type, or stands for no single release
-            (``AnyIDFDocument``).
+        TypeError: If *version* names several releases (a union), no single release (``AnyIDFDocument``),
+            ``IDFDocument``, a class that is not one of the release types, or a strictness that contradicts
+            *strict*.
     """
-    origin, release = _resolve(document_type)
-    if release is None:
-        msg = f"{origin.__name__} stands for no single EnergyPlus release; pass a release's document type"
+    from .document import IDFDocument
+
+    if not isinstance(version, type) and get_origin(version) is None:
+        return cast("tuple[int, int, int]", version), strict
+    candidates = _candidates(version)
+    if len(candidates) != 1:
+        msg = f"new_document creates a document of one release, and {version!r} names {len(candidates)}"
         raise TypeError(msg)
-    return release
+    origin, release = _resolve(version)
+    if origin is IDFDocument:
+        # IDFDocument is also the run-time class of every document, so new_document(type(doc)) would pass
+        # it and create a latest-release document typed as doc's release, whatever that release is.
+        msg = (
+            "new_document does not take IDFDocument: it is the run-time class of every document, so it names "
+            "no release here (new_document(type(doc)) would create a latest-release document whatever doc's "
+            "release). Call new_document() for the latest release, or pass a release's type from idfkit.versioned"
+        )
+        raise TypeError(msg)
+    if release is None or "_energyplus_version" not in vars(origin):
+        what = "stands for no single EnergyPlus release" if release is None else "is a subclass of a release type"
+        msg = f"{origin.__name__} {what}; pass a release's type from idfkit.versioned, such as IDFDocumentV9_4"
+        raise TypeError(msg)
+    stated = _stated_strictness(version)
+    if stated is None:
+        return release, strict
+    if stated and not strict:
+        msg = f"strict=False contradicts the document type {version!r}; pass the type alone"
+        raise TypeError(msg)
+    return release, stated
 
 
-def strictness_of(document_type: object) -> bool | None:
-    """The strictness a parametrized document type states (``IDFDocumentV9_4[Literal[False]]``), if any."""
+def _stated_strictness(document_type: object) -> bool | None:
+    """The strictness a parametrized document type states, as in ``IDFDocumentV9_4[Literal[False]]``, if any.
+
+    ``Annotated`` is looked through. A type argument that is not one literal ``bool`` (``bool``, ``Any``,
+    ``Literal[True, False]``) states none.
+
+    Raises:
+        TypeError: If the type argument is a string, which is not evaluated at run time.
+    """
     args = get_args(document_type)
-    if len(args) == 1 and get_origin(args[0]) is Literal:
-        (value,) = get_args(args[0])
-        if isinstance(value, bool):
-            return value
-    return None
+    if len(args) != 1:
+        return None
+    argument = args[0]
+    if get_origin(argument) is Annotated:
+        argument = get_args(argument)[0]
+    if isinstance(argument, (str, ForwardRef)):
+        msg = f"{document_type!r}: write the strictness unquoted, as Literal[False]; a string is not read at run time"
+        raise TypeError(msg)
+    values = get_args(argument) if get_origin(argument) is Literal else ()
+    return values[0] if len(values) == 1 and isinstance(values[0], bool) else None
 
 
 def _candidates(document_type: object) -> tuple[object, ...]:

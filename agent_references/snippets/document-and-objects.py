@@ -240,11 +240,13 @@ def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
 
 
 # --8<-- [start:versioned-new-document]
+from typing import Literal
+
 from idfkit import new_document
 
 blank_94 = new_document(IDFDocumentV9_4)  # version (9, 4, 0), typed IDFDocumentV9_4
 blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
-blank = new_document(version=(9, 4, 0))  # a 9.4 model too, but typed IDFDocument: the latest release
+lax_94 = new_document(IDFDocumentV9_4[Literal[False]])  # non-strict, typed IDFDocumentV9_4[Literal[False]]
 # --8<-- [end:versioned-new-document]
 
 

@@ -156,25 +156,20 @@ def correct_calls() -> None:
     print(objects)
 
 
-def new_documents() -> None:
+def new_documents(any_version: Any, versions: list[tuple[int, int, int]]) -> None:
     """A document created for a release, typed for it: the release is named once, by the type."""
-    legacy = new_document(IDFDocumentV9_4)
-    assert_type(legacy, IDFDocumentV9_4)
-    assert_type(new_document(IDFDocumentV9_4, strict=False), IDFDocumentV9_4)
-    legacy["People"]["Office"].zone_or_zonelist_name = "Office"
-    assert_type(legacy.copy(), IDFDocumentV9_4)
-    assert_type(as_version(legacy, IDFDocumentV9_4), IDFDocumentV9_4)
-    assert_type(new_document(IDFDocument), IDFDocument)
-    # The tuple form is unchanged: typed for the latest release, whatever version it names.
+    assert_type(new_document(IDFDocumentV9_4), IDFDocumentV9_4)
+    # The strictness is stated by the type, and kept: a per-release annotation checks it.
+    strict_94: IDFDocumentV9_4[Literal[True]] = new_document(IDFDocumentV9_4[Literal[True]])
+    lax_94: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4[Literal[False]])
+    print(strict_94, lax_94)
+    # The tuple form is unchanged, an untyped version included, and so is new_document as a callable.
     assert_type(new_document(), IDFDocument[Literal[True]])
     assert_type(new_document(version=(9, 4, 0)), IDFDocument[Literal[True]])
     assert_type(new_document((9, 4, 0), strict=False), IDFDocument[Literal[False]])
-    # A type carries no strictness, as with as_version; parametrize it to state one, which the
-    # document then has: strict state takes it without a cast.
-    strict_state: AnyIDFDocument[Literal[True]] = new_document(IDFDocumentV9_4[Literal[True]])
-    lax = new_document(IDFDocumentV9_4[Literal[False]])
-    assert_type(lax, IDFDocumentV9_4[Literal[False]])
-    print(strict_state, lax)
+    assert_type(new_document(any_version), IDFDocument[Literal[True]])
+    assert_type(new_document(any_version, strict=False), IDFDocument[Literal[False]])
+    assert_type(list(map(new_document, versions)), list[IDFDocument[Literal[True]]])
 
 
 def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
@@ -199,5 +194,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
     as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)
-    new_document(IDFDocumentV9_4)["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (a new 9.4 document has no Space)
     new_document(dict)  # pyright: ignore[reportArgumentType, reportCallIssue]  (not a document type)
+    new_document(IDFDocumentV9_4, strict=False)  # pyright: ignore[reportArgumentType, reportCallIssue]  (the type states it: [Literal[False]])
+    lax: IDFDocumentV9_4[Literal[False]] = new_document(IDFDocumentV9_4)  # pyright: ignore[reportAssignmentType]  (strict)
+    print(lax)
