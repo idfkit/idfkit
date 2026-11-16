@@ -90,7 +90,7 @@ def any_release_objects(
 
 
 def dict_like_methods(latest: IDFDocument, legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
-    """keys(), values() and items() are the document's own, not the TypedDict's behind its lookups."""
+    """keys(), values() and items() are the document's own."""
     assert_type(latest.keys(), list[str])
     assert_type(latest.values(), list[IDFCollection[IDFObject]])
     assert_type(latest.items(), list[tuple[str, IDFCollection[IDFObject]]])
@@ -157,7 +157,7 @@ def correct_calls() -> None:
 
 
 def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
-    legacy["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (Space is new in 9.6)
+    legacy["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     people = legacy["People"]["Office"]
     people.update(zone_or_zonelist_or_space_or_spacelist_name="Office")  # pyright: ignore[reportCallIssue]  (the 9.6 name)
     heater = legacy["WaterHeater:Mixed"]["Heater"]
@@ -166,7 +166,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     latest_only(legacy)  # pyright: ignore[reportArgumentType]  (a 9.4 document is not a latest one)
     print(legacy.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (no Space before 9.6)
     # Through AnyIDFDocument, only what every version has: a type some version lacks is not a key.
-    print(any_doc["Space"])  # pyright: ignore[reportGeneralTypeIssues, reportUnknownArgumentType]  (not in every version)
+    print(any_doc["Space"])  # pyright: ignore[reportCallIssue, reportArgumentType, reportUnknownArgumentType]  (not in every version)
     print(any_doc.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (not in every version)
     any_doc["People"]["Office"].update(zone_or_zonelist_name="Office")  # pyright: ignore[reportCallIssue]  (renamed in 9.6)
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "Plutonium"  # pyright: ignore[reportAttributeAccessIssue]  (no version)

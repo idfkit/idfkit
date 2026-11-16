@@ -1,14 +1,16 @@
 """Check the generated stubs against the bundled schemas, version by version.
 
-The per-version typing in ``versioned.pyi`` is assembled from pieces: classes shared between
-versions, classes of one version range, and maps and accessors filed under the range of versions
-they hold over. This module does not trust that assembly. It reads the generated sources back,
+The per-version typing in ``versioned.pyi`` and ``_versioned/`` is assembled from pieces: classes
+shared between versions, classes of one version range, and accessors filed under the range of
+versions they hold over. This module does not trust that assembly. It reads the generated sources back,
 resolves what a type checker would see for each object type in each supported version, and
 compares it with that version's schema. What a field may hold is read from the schema here, not
 taken from the generator, so a fault in how the generator maps a schema type is reported rather
 than repeated:
 
-* the object types a version's document can be indexed with are exactly the version's types;
+* the object types a version's document can be indexed with are exactly the version's types,
+  each overloaded once on the document class itself, the last overload matching no name, and every
+  document type derives from ``IDFDocumentAllVersions``;
 * every type's class has exactly the version's fields, each with the version's value type, and
   its extensible group exactly the version's inner fields;
 * every class's ``update`` keywords are exactly its fields;
@@ -46,11 +48,14 @@ class _Class:
     # A property with a setter is a field: its getter's type is what reading it gives, and is in
     # ``fields``; its setter's value type, what assigning to it accepts, is here.
     setters: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+    # ``__getitem__`` overloads in order: the literal object type each takes (``None`` for one that
+    # takes anything else), the type it returns, and its parameter's annotation.
+    getitem: list[tuple[str | None, str, str]] = dataclasses.field(default_factory=list[tuple[str | None, str, str]])
 
 
 @dataclasses.dataclass
 class _Module:
-    """The classes and functional ``TypedDict`` assignments of one generated source."""
+    """The classes and functional ``TypedDict`` assignments of the generated sources."""
 
     classes: dict[str, _Class] = dataclasses.field(default_factory=dict[str, _Class])
     typed_dicts: dict[str, dict[str, str]] = dataclasses.field(default_factory=dict[str, dict[str, str]])
@@ -60,18 +65,45 @@ class _Module:
 
 @functools.cache
 def _norm(annotation: str) -> str:
-    """Normalise an annotation's spelling, so line wrapping and the ``_g.`` prefix do not count."""
-    return ast.unparse(ast.parse(annotation.replace("_g.", ""), mode="eval"))
+    """Normalise an annotation's spelling, so line wrapping and the ``_g.`` and ``_v.`` prefixes do not count."""
+    return ast.unparse(ast.parse(annotation.replace("_g.", "").replace("_v.", ""), mode="eval"))
+
+
+def _base_name(node: ast.expr) -> str:
+    """A base class's name, without its module prefix or type arguments: ``IDFDocumentAllVersions``."""
+    if isinstance(node, ast.Subscript):
+        node = node.value
+    return ast.unparse(node).replace("_g.", "").replace("_v.", "")
+
+
+def _getitem_overload(item: ast.FunctionDef) -> tuple[str | None, str, str] | None:
+    """``("Zone", "IDFCollection[Zone]", ...)`` for a ``__getitem__`` overload on ``Literal["Zone"]``."""
+    if item.name != "__getitem__" or item.returns is None or len(item.args.posonlyargs) != 2:
+        return None
+    annotation = item.args.posonlyargs[1].annotation
+    if annotation is None:
+        return None
+    key: str | None = None
+    if (
+        isinstance(annotation, ast.Subscript)
+        and ast.unparse(annotation.value) == "Literal"
+        and isinstance(annotation.slice, ast.Constant)
+        and isinstance(annotation.slice.value, str)
+    ):
+        key = annotation.slice.value
+    return key, _norm(ast.unparse(item.returns)), ast.unparse(annotation)
 
 
 def _read_class(node: ast.ClassDef) -> _Class:
     """What one generated class declares: its bases, fields, properties, and setters."""
-    cls = _Class([ast.unparse(b).replace("_g.", "") for b in node.bases], {}, {})
+    cls = _Class([_base_name(b) for b in node.bases], {}, {})
     for item in node.body:
         if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
             cls.fields[item.target.id] = _norm(ast.unparse(item.annotation))
         elif not isinstance(item, ast.FunctionDef):
             continue
+        elif (overload := _getitem_overload(item)) is not None:
+            cls.getitem.append(overload)
         elif item.returns is not None and any(ast.unparse(d) == "property" for d in item.decorator_list):
             cls.properties[item.name] = _norm(ast.unparse(item.returns))
         elif (
@@ -152,18 +184,30 @@ def _properties(module: _Module, name: str) -> dict[str, str]:
     return out
 
 
-def _map_entries(module: _Module, name: str, problems: list[str]) -> dict[str, str]:
-    """The entries of a ``TypedDict`` map, assembled from its pieces; a key filed twice is reported."""
-    if name in module.typed_dicts:
-        return dict(module.typed_dicts[name])
+def _getitem_entries(module: _Module, name: str, problems: list[str]) -> dict[str, str]:
+    """What *name* is indexed with: object type -> collection type, from its own ``__getitem__`` overloads.
+
+    Overloads do not merge across base classes, so only the class's own count. A type overloaded
+    twice, and a class whose last overload takes an object type name (so that a name it lacks would
+    match it, rather than be an error), are reported.
+    """
+    overloads = module.classes[name].getitem
     out: dict[str, str] = {}
-    for item in _linearise(module, name):
-        # A piece is a functional TypedDict, or a class one when all its keys are identifiers.
-        piece = module.typed_dicts.get(item) or (module.classes[item].fields if item in module.classes else {})
-        for key, value in piece.items():
-            if key in out and out[key] != value:
-                problems.append(f"{name}: {key!r} is filed as both {out[key]} and {value}")
-            out[key] = value
+    for key, value, _ in overloads:
+        if key is None:
+            continue
+        if key in out:
+            problems.append(f"{name}: {key!r} is overloaded twice")
+        out[key] = value
+    # The last takes a class no string is: one taking str, or none at all, would let a name the
+    # release lacks type-check.
+    last = overloads[-1][2] if overloads else ""
+    if (
+        not last.startswith("_NotAnObjectTypeOf")
+        or last not in module.classes
+        or any(key is None for key, _, _ in overloads[:-1])
+    ):
+        problems.append(f"{name}: __getitem__ does not end with the one overload that matches no object type")
     return out
 
 
@@ -324,18 +368,23 @@ def _check_update(
     problems.append(f"{where}: update is not typed")
 
 
-def verify(types_source: str, document_source: str, versioned_source: str, versions: tuple[Version, ...]) -> list[str]:
+def verify(
+    types_source: str, document_source: str, versioned_sources: Iterable[str], versions: tuple[Version, ...]
+) -> list[str]:
     """Report every way the generated stubs misdescribe a supported version; empty when none.
 
     Args:
         types_source: The generated ``_generated_types.pyi``.
         document_source: The generated ``document.pyi``.
-        versioned_source: The generated ``versioned.pyi``.
+        versioned_sources: The generated ``versioned.pyi`` and the modules of ``_versioned/``, which
+            define the older releases' document types.
         versions: The releases the stubs were generated to describe, oldest first; the last is the
             one ``IDFDocument`` is typed for. Passed rather than read from the generator, which may
             be running as ``__main__``, a second copy of its module.
     """
-    module = _read(versioned_source, _read(document_source, _read(types_source)))
+    module = _read(document_source, _read(types_source))
+    for source in versioned_sources:
+        module = _read(source, module)
     problems: list[str] = []
     for ver in versions:
         _check_version(module, ver, ver == versions[-1], problems)
@@ -353,7 +402,9 @@ def _check_any_names(module: _Module, latest: Version, problems: list[str]) -> N
     from idfkit.codegen.generate_stubs import _to_class_name  # pyright: ignore[reportPrivateUsage]
     from idfkit.schema import get_schema
 
-    common = module.typed_dicts.get("_CommonTypeMap", {})
+    common = (
+        _getitem_entries(module, "IDFDocumentAllVersions", []) if "IDFDocumentAllVersions" in module.classes else {}
+    )
     for obj_type in get_schema(latest).object_types:
         cls = _to_class_name(obj_type)
         name = f"Any{cls}"
@@ -363,7 +414,7 @@ def _check_any_names(module: _Module, latest: Version, problems: list[str]) -> N
         elif module.aliases.get(name) != cls:
             problems.append(f"{obj_type}: no {name}, as a class or as an alias of {cls}")
             continue
-        if obj_type in common and _collection_class(_collection_class(common[obj_type])) not in (name, cls):
+        if obj_type in common and _collection_class(common[obj_type]) not in (name, cls):
             problems.append(f"AnyIDFDocument[{obj_type!r}]: typed with neither {name} nor {cls}")
 
 
@@ -460,31 +511,31 @@ def _check_version(module: _Module, ver: Version, is_latest: bool, problems: lis
 
     tag = f"{ver[0]}_{ver[1]}"
     schema = get_schema(ver)
-    if is_latest:
-        map_name, doc_name = "_ObjectTypeMap", "IDFDocument"
-    else:
-        map_name, doc_name = f"_ObjectTypeMapV{tag}", f"IDFDocumentV{tag}"
-    if map_name not in module.classes and map_name not in module.typed_dicts:
-        problems.append(f"{'.'.join(map(str, ver))}: no {map_name}")
+    doc_name = "IDFDocument" if is_latest else f"IDFDocumentV{tag}"
+    if doc_name not in module.classes:
+        problems.append(f"{'.'.join(map(str, ver))}: no {doc_name}")
         return
-    entries = _map_entries(module, map_name, problems)
+    if "IDFDocumentAllVersions" not in _linearise(module, doc_name):
+        problems.append(f"{doc_name}: does not derive from IDFDocumentAllVersions, so is not an AnyIDFDocument")
+    entries = _getitem_entries(module, doc_name, problems)
     if set(entries) != set(schema.object_types):
         missing = sorted(set(schema.object_types) - set(entries))
         extra = sorted(set(entries) - set(schema.object_types))
-        problems.append(f"{map_name}: missing types {missing}, extra types {extra}")
+        problems.append(f"{doc_name}: missing types {missing}, extra types {extra}")
     classes = {obj_type: _collection_class(annotation) for obj_type, annotation in entries.items()}
     for obj_type in schema.object_types:
         if obj_type in classes:
             _check_class(module, classes[obj_type], ver, obj_type, problems)
-    if doc_name not in module.classes:
-        problems.append(f"{'.'.join(map(str, ver))}: no {doc_name}")
-        return
     if not is_latest:
+        # A type missing from the overloads is reported above; its accessor is then expected untyped.
         expected_accessors = {
-            name: f"IDFCollection[{classes[obj_type]}]"
+            name: f"IDFCollection[{classes.get(obj_type, '?')}]"
             for name, obj_type in _build_resolver(schema).accessors().items()
         }
-        if _properties(module, doc_name) != expected_accessors:
+        # Through IDFDocumentAllVersions it also has the shared document methods' properties (version, ...).
+        shared = _properties(module, "_IDFDocumentMethods") if "_IDFDocumentMethods" in module.classes else {}
+        accessors = {k: v for k, v in _properties(module, doc_name).items() if k not in shared}
+        if accessors != expected_accessors:
             problems.append(f"{doc_name}: attribute accessors differ from the version's")
 
 
@@ -495,41 +546,55 @@ def _check_any_document(module: _Module, versions: tuple[Version, ...], problems
     # Built once: object_types makes a new list on every read, and every entry below asks each version.
     type_sets = [set(s.object_types) for s in schemas]
     common = _intersection(type_sets)
-    entries = _map_entries(module, "_CommonTypeMap", problems)
+    if "IDFDocumentAllVersions" not in module.classes:
+        problems.append("AnyIDFDocument: no IDFDocumentAllVersions")
+        return
+    entries = _getitem_entries(module, "IDFDocumentAllVersions", problems)
     if set(entries) != common:
-        # A type some version lacks is left out: as an optional entry it would need every version's
-        # map closed to stay assignable, which no form of closing allows for both pyright and mypy.
+        # A type some version lacks is left out, so that indexing with it is a type error through
+        # AnyIDFDocument; as_version reaches it.
         missing = sorted(common - set(entries))
         extra = sorted(set(entries) - common)
         problems.append(f"AnyIDFDocument: types are not those every version has: missing {missing}, extra {extra}")
     for obj_type, annotation in entries.items():
-        # ReadOnly[IDFCollection[X]]
-        if not annotation.startswith("ReadOnly[IDFCollection["):
-            problems.append(f"AnyIDFDocument[{obj_type!r}]: not ReadOnly[IDFCollection[...]]: {annotation}")
-            continue
-        cls = _collection_class(_collection_class(annotation))
-        cls = module.aliases.get(cls, cls)  # an alias of a class is that class to a type checker
-        if cls not in module.classes:
-            problems.append(f"AnyIDFDocument[{obj_type!r}]: class {cls or annotation} not defined")
-            continue
-        having = [s for s, types in zip(schemas, type_sets, strict=True) if obj_type in types]
-        if not having:
-            continue  # a type no version has, reported above as extra
-        decls = [_schema_fields(s, obj_type) for s in having]
-        shared = _intersection([set(d) for d in decls])
-        _check_writable(module, cls, obj_type, decls, problems)
-        _check_any_group(module, cls, obj_type, having, problems)
-        groups = set(_group_names(module, cls))
-        actual = {k: v for k, v in _fields(module, cls).items() if k not in groups}
-        if set(actual) != shared:
-            problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): fields are not those every version has")
-            continue
-        for name in shared:
-            admitted = _union_members(actual[name])
-            for decl in decls:
-                if not decl[name] <= admitted:
-                    problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
-                    break
+        _check_any_entry(module, obj_type, annotation, schemas, type_sets, problems)
+
+
+def _check_any_entry(
+    module: _Module,
+    obj_type: str,
+    annotation: str,
+    schemas: list[EpJSONSchema],
+    type_sets: list[set[str]],
+    problems: list[str],
+) -> None:
+    """Check what ``AnyIDFDocument[obj_type]`` is typed with against every version that has the type."""
+    if not annotation.startswith("IDFCollection["):
+        problems.append(f"AnyIDFDocument[{obj_type!r}]: not IDFCollection[...]: {annotation}")
+        return
+    cls = _collection_class(annotation)
+    cls = module.aliases.get(cls, cls)  # an alias of a class is that class to a type checker
+    if cls not in module.classes:
+        problems.append(f"AnyIDFDocument[{obj_type!r}]: class {cls or annotation} not defined")
+        return
+    having = [s for s, types in zip(schemas, type_sets, strict=True) if obj_type in types]
+    if not having:
+        return  # a type no version has, reported above as extra
+    decls = [_schema_fields(s, obj_type) for s in having]
+    shared = _intersection([set(d) for d in decls])
+    _check_writable(module, cls, obj_type, decls, problems)
+    _check_any_group(module, cls, obj_type, having, problems)
+    groups = set(_group_names(module, cls))
+    actual = {k: v for k, v in _fields(module, cls).items() if k not in groups}
+    if set(actual) != shared:
+        problems.append(f"AnyIDFDocument[{obj_type!r}] ({cls}): fields are not those every version has")
+        return
+    for name in shared:
+        admitted = _union_members(actual[name])
+        for decl in decls:
+            if not decl[name] <= admitted:
+                problems.append(f"AnyIDFDocument[{obj_type!r}].{name}: does not admit every version's values")
+                break
 
 
 def _intersection(sets: list[set[str]]) -> set[str]:

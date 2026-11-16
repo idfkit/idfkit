@@ -485,6 +485,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         ``"zone" in model`` and ``len(model["zone"]) > 0`` can never disagree.
         An unrecognised type name answers False rather than raising.
 
+        A type checker does not narrow the document's type on this test.
+        False does not mean the release lacks the type, only that the document
+        holds none of it, and True does not say which release the document is
+        of. To reach an object type only some releases have, narrow with
+        [as_version][idfkit.versioned.as_version] instead.
+
         Examples:
             Check whether the model contains any zones or materials:
 

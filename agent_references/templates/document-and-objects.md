@@ -22,8 +22,8 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 | `load_idf(path)` / `load_epjson(path)` | Parse from disk. See [parsing-idf-epjson.md](parsing-idf-epjson.md). |
 | `doc.version` | `tuple[int, int, int]` — e.g. `(25, 2, 0)`. |
 | `doc.schema` | `EpJSONSchema` for the document's version. |
-| `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. |
-| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys. It delegates to `doc[obj_type]`; there is no behavioural difference. |
+| `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. Typed for a literal type name of the document's release, in the schema's spelling (`doc["Zone"]` is `IDFCollection[Zone]`); any other key, a plain `str` variable included, is a type error. |
+| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: use it for a type name known only at run time. It delegates to `doc[obj_type]`; there is no behavioural difference. |
 | `doc.<attr>` | Typed attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs` is `IDFCollection[AirLoopHVAC]`). Hand-written shorthands also resolve and keep their meaning (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name="", **fields)` | Create and insert an object. Returns the new `IDFObject`. Leave `name` empty for a type without a Name field. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
@@ -32,7 +32,8 @@ The `IDFDocument` is the in-memory representation of an EnergyPlus model. Every 
 | `copy.deepcopy(doc)`, `pickle.dumps(doc)` | Also supported, same result as `doc.copy()` but slower. The schema travels by version, not by content, so a pickled document is small and the unpickled one shares the process-wide schema; this is what hands a document to worker processes (`ProcessPoolExecutor`, joblib). `simulate_batch` uses threads and needs none of this. |
 | `doc.all_objects` | Iterator over every object in the model (a property, not a method). |
 | `len(doc)` | Total object count. |
-| `obj_type in doc` | Is this type present (and non-empty)? |
+| `obj_type in doc` | Does the model hold at least one object of this type? Not whether its release has the type, so a type checker does not narrow the document on it (see [What `"Space" in doc` tells a type checker](#what-space-in-doc-tells-a-type-checker)). |
+| `doc.get(...)`, `doc.pop(...)`, `doc.setdefault(...)` | Do not exist: a document is not a `dict`. `doc.update({...})` is the eppy batch update (`"Zone.Office.x_origin"` keys). |
 
 ## Adding objects
 
@@ -72,7 +73,7 @@ The type stubs describe the latest supported release, and every document is type
 --8<-- "agent_references/snippets/document-and-objects.py:versioned"
 ```
 
-`idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected by 9.3 to 23.1) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`. Through `AnyIDFDocument`, `doc["Space"]` is reported as `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"` and `doc.spaces` as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it. The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
+`idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected by 9.3 to 23.1) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: on a 9.4 document, pyright reports `doc["Space"]` as `No overloads for "__getitem__"` with `Argument of type "Literal['Space']" cannot be assigned to parameter "obj_type" of type "_NotAnObjectTypeOfEnergyPlus9_4"`. Through `AnyIDFDocument` the type named is `_NotAnObjectTypeOfEveryRelease`, and `doc.spaces` is reported as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it (mypy lists every type name the document does accept under such an error). The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
 
 ### Which document type to annotate with
 
@@ -135,6 +136,20 @@ A narrower range also gives a narrower read type. Through releases that all list
 --8<-- "agent_references/snippets/document-and-objects.py:versioned-renamed-field"
 ```
 
+### What `"Space" in doc` tells a type checker
+
+At run time `"Space" in doc` is true when the model holds at least one `Space`. It is false for a release without the type, and equally for a release that has it when the model holds none, so it says nothing about the release, and `doc["Space"]` never raises either way. A type checker therefore leaves the document's type as it was on both sides of the test:
+
+- `if "Space" in doc:` does not make a `Space` lookup legal through `AnyIDFDocument`; `doc["Space"]` stays an error inside it. Branch on `doc.version` and narrow with `as_version` instead.
+- `if "Output:SQLite" not in doc:` on a type every release has is an ordinary branch, type-checked like any other: an empty model of any release takes it.
+- On a union from `as_version(doc, (A, B, C))`, neither branch of `"Space" in d` drops a member.
+
+```python
+--8<-- "agent_references/snippets/document-and-objects.py:versioned-containment"
+```
+
+Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
+
 ### Checking: pyright versus `idfkit check`
 
 They catch different mistakes, so code meant for several releases should run both:
@@ -148,7 +163,7 @@ uv run pyright src/
 uv run idfkit check --targets 9.4,23.2,26.2 src/my_module.py
 ```
 
-mypy does not see the document's own methods and properties (it reports `add` and `version` as missing on a document), so prefer pyright for idfkit code.
+mypy sees the document's methods, properties and accessors, but collapses a union of release types into what they share (see Code for a range of releases), and under a lookup error it lists every object type name the document accepts, so prefer pyright for idfkit code.
 
 ## Modifying objects
 
@@ -185,6 +200,20 @@ Some object types have repeated field groups — vertices on a surface, branches
 ```
 
 ## Common mistakes
+
+!!! failure "guarding a release-specific lookup with `in`"
+
+    ```python
+    if "Space" in doc:  # true only when the model holds a Space; says nothing about the release
+        for space in doc["Space"]:  # a type error through AnyIDFDocument
+            space.ceiling_height = 3.0  # 9.6 to 22.1 have Space but not ceiling_height
+    ```
+
+!!! success "branch on the release, then narrow"
+
+    ```python
+    --8<-- "agent_references/snippets/document-and-objects.py:versioned-containment"
+    ```
 
 !!! failure "mutating a list of extensibles in place"
 

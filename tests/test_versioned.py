@@ -23,12 +23,30 @@ from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 _PACKAGE = Path(versioned.__file__).resolve().parent
 
 
-def _committed() -> tuple[str, str, str]:
+def _committed() -> tuple[str, str, str, str]:
+    """The committed stubs: types, document, versioned, and the per-release document modules joined."""
+    documents = sorted((_PACKAGE / "_versioned").glob("v*.pyi"))
     return (
         (_PACKAGE / "_generated_types.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "document.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8"),
+        "\n".join(path.read_text(encoding="utf-8") for path in documents),
     )
+
+
+def _generated() -> tuple[str, str, str, str]:
+    """What the generator writes now, in the shape of :func:`_committed`."""
+    documents = gen.generate_versioned_documents()
+    return (
+        gen.generate_stubs(),
+        gen.generate_document_pyi(),
+        gen.generate_versioned_pyi(),
+        "\n".join(source for name, source in sorted(documents.items()) if name != "__init__.pyi"),
+    )
+
+
+def _verify(sources: tuple[str, ...] | list[str], versions: tuple[tuple[int, int, int], ...]) -> list[str]:
+    return verify(sources[0], sources[1], [sources[2], sources[3]], versions)
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +164,7 @@ class TestAsVersion:
 
 class TestCommittedStubs:
     def test_describe_every_supported_version_exactly(self) -> None:
-        assert verify(*_committed(), ENERGYPLUS_VERSIONS) == []
+        assert _verify(_committed(), ENERGYPLUS_VERSIONS) == []
 
     def test_a_reordered_group_is_not_a_new_class(self) -> None:
         # 8.9 lists BuildingSurface:Detailed's vertex fields in another order than 9.3; nothing a
@@ -162,13 +180,30 @@ class TestCommittedStubs:
         expected = '"""``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""'
         assert expected in types_source
 
-    def test_no_map_is_closed(self) -> None:
-        # pyright takes about a minute to build a closed TypedDict of ~800 entries, in every file
-        # that names the document type, and mypy reads no other spelling of it (extra_items). So
-        # AnyIDFDocument holds only the types every version has, and no map needs closing (#251).
+    def test_no_document_type_is_a_typed_dict(self) -> None:
+        # pyright narrows a TypedDict on `"Space" in doc` by its own rules: a positive test retyped an
+        # AnyIDFDocument as the latest release, a negative one on a type every release has made its
+        # branch unreachable, and it offered get(), setdefault() and pop(), which a document does not
+        # have. So documents index through __getitem__ overloads, and no object-type map is generated.
         for source in _committed():
+            assert "_ObjectTypeMap" not in source
+            assert "_CommonTypeMap" not in source
             assert "closed=True" not in source
             assert "extra_items=" not in source
+            for header in re.findall(r"(?ms)^class (?:IDFDocument\w*)\((.*?)\):", source):
+                assert "TypedDict" not in header
+                assert "TypeMap" not in header
+
+    def test_every_older_release_is_re_exported_from_its_own_module(self) -> None:
+        versioned_source = _committed()[2]
+        modules = {path.name for path in (_PACKAGE / "_versioned").glob("*.pyi")}
+        assert "__init__.pyi" in modules
+        for ver in ENERGYPLUS_VERSIONS[:-1]:
+            tag = f"{ver[0]}_{ver[1]}"
+            assert f"v{tag}.pyi" in modules
+            assert f"from ._versioned.v{tag} import IDFDocumentV{tag} as IDFDocumentV{tag}" in versioned_source
+            assert f"class IDFDocumentV{tag}(" not in versioned_source
+        assert len(modules) == len(ENERGYPLUS_VERSIONS)  # one per older release, and __init__.pyi
 
     @pytest.mark.parametrize(
         ("source", "pattern", "replacement", "expected"),
@@ -176,7 +211,28 @@ class TestCommittedStubs:
             # A 9.4 field dropped from the class of its range.
             (2, r"(?m)^    rated_evaporator_fan_power_per_volume_flow_rate: float \| None\n", "", "missing"),
             # A type filed under the wrong class for a range of versions.
-            (2, r"IDFCollection\[Space_v9_6_to_v22_1\]", "IDFCollection[Space_v22_2_to_v26_1]", "Space"),
+            (3, r"IDFCollection\[_v\.Space_v9_6_to_v22_1\]", "IDFCollection[_v.Space_v22_2_to_v26_1]", "Space"),
+            # A type overloaded on no release's document: indexing with it would match nothing.
+            (
+                3,
+                r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Space"\].*\n',
+                "",
+                "missing types ['Space']",
+            ),
+            # A release's last overload taking a name, which every name the release lacks would match.
+            (
+                3,
+                r"obj_type: _NotAnObjectTypeOfEnergyPlus9_4, /\) -> Never",
+                "obj_type: str, /) -> Never",
+                "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
+            ),
+            # A release's document that no longer derives from IDFDocumentAllVersions.
+            (
+                3,
+                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9\.4)",
+                r"):\n\1",
+                "IDFDocumentV9_4: does not derive from IDFDocumentAllVersions",
+            ),
             # An accessor typed with the wrong class.
             (
                 2,
@@ -184,12 +240,12 @@ class TestCommittedStubs:
                 "def spaces(self) -> IDFCollection[_g.Zone]",
                 "accessors",
             ),
-            # A type some version lacks, added to AnyIDFDocument: an older version's map lacks the key,
-            # so its document would no longer be assignable to AnyIDFDocument.
+            # A type some version lacks, added to AnyIDFDocument: indexing a document of any release
+            # with it would type-check.
             (
-                0,
-                r'(?m)^(\s+)"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n',
-                r'\g<0>\1"Space": ReadOnly[IDFCollection[Space]],\n',
+                1,
+                r'(?m)^    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
+                r'\g<0>    @overload\n    def __getitem__(self, obj_type: Literal["Space"], /) -> IDFCollection[Space]: ...\n',
                 "extra ['Space']",
             ),
             # A group every version has, dropped from the any-release class.
@@ -216,12 +272,17 @@ class TestCommittedStubs:
                 "heater_fuel_type: writable values some version rejects",
             ),
             # A type every version has, dropped from AnyIDFDocument.
-            (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n', "", "AnyIDFDocument"),
+            (
+                1,
+                r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
+                "",
+                "AnyIDFDocument",
+            ),
             # AnyIDFDocument typing a collection with a class that is not defined: reported, not a KeyError.
             (
-                0,
-                r'"Zone": ReadOnly\[IDFCollection\[AnyZone\]\]',
-                '"Zone": ReadOnly[IDFCollection[AnyZoneX]]',
+                1,
+                r'Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]',
+                'Literal["Zone"], /) -> IDFCollection[AnyZoneX]',
                 "class AnyZoneX not defined",
             ),
             # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
@@ -241,7 +302,7 @@ class TestCommittedStubs:
         mutated = re.sub(pattern, replacement, sources[source], count=1)
         assert mutated != sources[source], "the mutation did not apply"
         sources[source] = mutated
-        problems = verify(sources[0], sources[1], sources[2], ENERGYPLUS_VERSIONS)
+        problems = _verify(sources, ENERGYPLUS_VERSIONS)
         assert any(expected in problem for problem in problems), problems
 
     def test_a_fault_in_the_generators_type_mapping_is_reported(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -257,8 +318,7 @@ class TestCommittedStubs:
         monkeypatch.setattr(gen, "_schema_type_to_python", faulty)
         gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
         try:
-            sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
-            problems = verify(*sources, gen.SUPPORTED.versions)
+            problems = _verify(_generated(), gen.SUPPORTED.versions)
         finally:
             monkeypatch.undo()
             gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
@@ -271,14 +331,14 @@ class TestAdoption:
     def test_adopting_the_latest_release_regenerates_correctly(self) -> None:
         previous = ENERGYPLUS_VERSIONS[-2]
         with gen.supported_up_to(previous):
-            before = gen.generate_versioned_pyi()
-            sources = (gen.generate_stubs(), gen.generate_document_pyi(), before)
-            assert verify(*sources, gen.SUPPORTED.versions) == []
-            assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" not in before
+            sources = _generated()
+            before = sources[2]
+            assert _verify(sources, gen.SUPPORTED.versions) == []
+            assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" not in sources[3]
 
         # After the adoption, the release that was the latest has a document type of its own ...
         after = (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8")
-        assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" in after
+        assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" in _committed()[3]
         # ... and a class of a version range that had already ended keeps its name, so an annotation
         # written against it before the adoption still resolves.
         ended = re.findall(r"(?ms)^class (\w+_v\d+_\d+(?:_to_v\d+_\d+)?)\(.*?(?=^\S)", before)
@@ -289,9 +349,10 @@ class TestAdoption:
     def test_generating_for_an_older_release_does_not_leak_into_the_latest(self) -> None:
         # Every version-dependent cache must be cleared when the supported releases change, or an
         # earlier generation for 24.1 is reused for the full set (a merged group did, once).
+        with gen.supported_up_to((24, 1, 0)):
+            gen.generate_versioned_documents()
         gen.generate_stubs((24, 1, 0))
-        sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
-        assert verify(*sources, gen.SUPPORTED.versions) == []
+        assert _verify(_generated(), gen.SUPPORTED.versions) == []
 
     def test_generating_for_an_older_release_keeps_the_run_time_module(self) -> None:
         # versioned.py is what as_version checks against at run time, so it always names every

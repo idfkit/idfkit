@@ -302,6 +302,54 @@ def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
 # --8<-- [end:versioned-renamed-field]
 
 
+# --8<-- [start:versioned-containment]
+from idfkit.versioned import (
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+)
+
+
+def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
+    """Add Output:SQLite unless the model already holds one.
+
+    "Output:SQLite" in doc asks whether the model holds such an object, so it is False for an
+    empty model of any release, and the body below is type-checked.
+    """
+    if "Output:SQLite" not in doc:
+        doc.add("Output:SQLite", option_type="SimpleAndTabular")
+
+
+# Space arrived in 9.6 and its ceiling_height field in 22.2.
+SINCE_22_2 = (
+    IDFDocumentV22_2,
+    IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
+    IDFDocument,
+)
+
+
+def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
+    """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+    if doc.version < (22, 2, 0):
+        return
+    for space in as_version(doc, SINCE_22_2)["Space"]:
+        space.ceiling_height = height
+
+
+# --8<-- [end:versioned-containment]
+
+
 # --8<-- [start:typed-object-parameter]
 from typing import TYPE_CHECKING
 

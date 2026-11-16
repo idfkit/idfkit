@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** for type checking only, the document types are no longer `TypedDict`s to a type
+  checker. `IDFDocument`, `IDFDocumentAllVersions` and every `IDFDocumentV<major>_<minor>` type
+  `doc["Zone"]` with one `__getitem__` overload per object type, and every one of them derives from
+  `IDFDocumentAllVersions`, which `AnyIDFDocument` now names alone rather than as a union with
+  `IDFDocument`. pyright narrowed a `TypedDict` on `"Space" in doc` by its own rules, which are not
+  what the test means at run time (whether the model holds a `Space`), so it could give a document
+  the wrong type or skip a branch unchecked (see Fixed). Code that type-checked before and now
+  fails:
+  - a lookup with a non-literal `str`, `doc[obj_type]`, which was typed `Unknown` and is now an
+    error, including inside `cast(...)`; use `doc.get_collection(obj_type)`, which is typed
+    `IDFCollection[IDFObject]`;
+  - a release-specific lookup guarded by `in`, such as `if "Space" in doc: doc["Space"]` through
+    `AnyIDFDocument`; branch on `doc.version` and narrow with `as_version`;
+  - the body of `if "Zone" not in doc:`, which pyright skipped as unreachable and now checks;
+  - `doc.get(...)`, `doc.setdefault(...)`, `doc.pop(...)`, `doc | {...}`, `del doc[...]` and
+    `match doc: case {...}`, which raise or never match at run time.
+
+  An unknown object type is now reported as `No overloads for "__getitem__"`, naming the parameter
+  type `_NotAnObjectTypeOfEnergyPlus9_4` (or `_NotAnObjectTypeOfEveryRelease` through
+  `AnyIDFDocument`), instead of `"Space" is not a defined key in ...`; mypy lists every accepted
+  type name under the error. `reveal_type` of an `AnyIDFDocument` shows `IDFDocumentAllVersions`,
+  and `doc["Zone"]` through it is `IDFCollection[AnyZone]` rather than
+  `IDFCollection[Zone] | IDFCollection[AnyZone]`. Each older release's document type is defined in
+  its own stub module under `idfkit/_versioned/`, still imported from `idfkit.versioned`, so a file
+  reads only the releases it names. pyright takes about as long as before on a file using
+  `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less on one naming `IDFDocumentV9_4`
+  (2.5 s, from 2.8 to 3.0 s).
+
+### Fixed
+
+- `if "Space" in doc:` no longer retypes an `AnyIDFDocument` as the latest release under pyright.
+  The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
+  type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
+  `"OutputControl:Files"`, the `if "Space" not in doc: return` form, a `TypeVar` bound to
+  `AnyIDFDocument`, and a condition stored in a variable first.
+- The body of `if "Zone" not in doc:`, and of any `in` test on a type every release has, is
+  type-checked again. pyright treated it as unreachable, on `IDFDocument` and every
+  `IDFDocumentV*` as well as `AnyIDFDocument`, though an empty model of any release takes it; so
+  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach.
+- After `d = as_version(doc, (IDFDocumentV9_4, IDFDocumentV9_6, IDFDocument))`, the `else` of
+  `if "Space" in d:` is no longer typed as `IDFDocumentV9_4` alone, so 9.4-only field names are
+  reported there; 9.6 and 26.2 models without a `Space` take that branch too.
+- `doc.get("Space")` and the other `dict` methods pyright gave a document (`setdefault`, `pop`,
+  `|`, `del`, mapping `match` patterns) are reported, rather than type-checking and raising
+  `AccessorAttributeError` or `TypeError`. The eppy batch update,
+  `doc.update({"Zone.Office.x_origin": 1.0})`, type-checks; the `TypedDict`'s own `update` used to
+  shadow it, under pyright and mypy alike.
+- mypy sees a document's methods, properties and accessors: it reported `doc.add`, `doc.version`
+  and `doc.zones` as missing, because it does not accept a class that derives from both a
+  `TypedDict` and an ordinary class.
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added
