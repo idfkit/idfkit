@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking (type checking only):** a migration's result was typed for the latest release
+  whatever release it was migrated to: `MigrationReport.migrated_model` was `IDFDocument | None`,
+  so a model migrated to 24.1 was checked against 26.2's object types and fields.
+  `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and
+  `async_migrate()` given a version tuple or string, whose release a type checker cannot know,
+  now return a report typed `AnyIDFDocument[Literal[True]] | None`. Code that passed the result
+  where an `IDFDocument` is expected stops type-checking; name the target as a document type
+  (below), or narrow with `as_version`. Nothing changed at run time. A bare `MigrationReport`
+  annotation accepts a report of any release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8))
+
+### Added
+
+- `migrate()` and `async_migrate()` accept the target release's document type as
+  `target_version`, as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrates to
+  24.1.0 and returns a `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)`
+  migrates to the latest release with the result typed for it. `AnyIDFDocument`, or a union or
+  tuple of document types, is refused with `TypeError`, since a migration reaches one
+  release. ([1dee6f8](https://github.com/idfkit/idfkit/commit/1dee6f8))
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added
