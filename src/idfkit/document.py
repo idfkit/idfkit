@@ -362,7 +362,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
                 if existing_type.upper() == obj_type_upper:
                     return existing
 
-        return IDFCollection(canonical)
+        return IDFCollection(canonical, self._references)
 
     def _collection_for_write(self, obj_type: str) -> IDFCollection[IDFObject]:
         """Get the collection objects of *obj_type* are filed under, creating and storing it if absent.
@@ -382,7 +382,7 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         if collection is not None:
             return collection
 
-        created: IDFCollection[IDFObject] = IDFCollection(canonical)
+        created: IDFCollection[IDFObject] = IDFCollection(canonical, self._references)
         self._collections[canonical] = created
         return created
 
@@ -1102,6 +1102,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         Uses the reference graph for O(1) lookup.  This is the primary
         way to find all surfaces in a zone, all objects using a schedule,
         or all surfaces assigned to a construction.
+
+        The objects come back as plain ``IDFObject``, of whatever types refer
+        to *name*.  When you want one type, ask its collection instead:
+        ``model["BuildingSurface:Detailed"].referencing(name)`` does the same
+        lookup, keeps that type, and is typed as its objects (see
+        [IDFCollection.referencing][idfkit.objects.IDFCollection.referencing]).
 
         Examples:
             Find every surface that belongs to a zone:

@@ -29,6 +29,7 @@ __all__ = [
 
 if TYPE_CHECKING:
     from .document import AnyIDFDocument
+    from .references import ReferenceGraph
     from .schema import ParsingCache
 
 # Field name conversion patterns
@@ -1305,18 +1306,22 @@ class IDFCollection(Generic[_T_co]):
         _type: The object type this collection holds
         _by_name: Dict mapping uppercase names to objects
         _items: Ordered list of objects
+        _graph: The owning document's reference graph, or ``None`` for a
+            collection built outside a document
     """
 
-    __slots__ = ("_by_name", "_items", "_type")
+    __slots__ = ("_by_name", "_graph", "_items", "_type")
 
     _type: str
     _by_name: dict[str, _T_co]
     _items: list[_T_co]
+    _graph: ReferenceGraph | None
 
-    def __init__(self, obj_type: str) -> None:
+    def __init__(self, obj_type: str, references: ReferenceGraph | None = None) -> None:
         self._type = obj_type
         self._by_name: dict[str, _T_co] = {}
         self._items: list[_T_co] = []
+        self._graph = references
 
     @property
     def obj_type(self) -> str:
@@ -1430,6 +1435,78 @@ class IDFCollection(Generic[_T_co]):
         if not name:
             return self._items[0] if self._items else default
         return self._by_name.get(name.upper(), default)
+
+    def referencing(self, target: str | IDFObject) -> list[_T_co]:
+        """The objects of this collection's type that reference *target*.
+
+        The typed form of [IDFDocument.get_referencing][idfkit.document.IDFDocument.get_referencing]:
+        the same reference-graph lookup, kept to this collection's type, and typed as its objects.
+        Read through ``model["BuildingSurface:Detailed"]`` the result is a list of
+        ``BuildingSurfaceDetailed`` for the latest release, of that release's class through a
+        versioned document such as ``IDFDocumentV9_4``, and of ``AnyBuildingSurfaceDetailed``
+        through ``AnyIDFDocument``, so ``surface.zone_name`` is checked without a second lookup.
+
+        It costs what ``get_referencing`` costs: the objects referencing the name are found in the
+        graph and each is kept or dropped on its type, so neither this collection nor the model is
+        scanned.
+
+        Args:
+            target: The referenced name (matched case-insensitively, as EnergyPlus does) or the
+                referenced object, whose name is used. References are by name only, so two
+                objects sharing a name in different object lists are not told apart.
+
+        Returns:
+            The referencing objects of this type, each once however many of its fields name
+            *target*, in no particular order (as ``get_referencing``'s set has none).
+
+        Raises:
+            ValueError: The collection was not obtained from a document, so has no reference
+                graph to ask.
+
+        Examples:
+            Find a zone's surfaces, then each surface's windows:
+
+            >>> from idfkit import new_document
+            >>> model = new_document()
+            >>> zone = model.add("Zone", "Perimeter_ZN_1")
+            >>> wall = model.add("BuildingSurface:Detailed", "South_Wall",
+            ...     surface_type="Wall", construction_name="",
+            ...     zone_name="Perimeter_ZN_1",
+            ...     outside_boundary_condition="Outdoors",
+            ...     sun_exposure="SunExposed", wind_exposure="WindExposed",
+            ...     validate=False)
+            >>> model.add("Lights", "Perimeter_ZN_1_Lights",
+            ...     zone_or_zonelist_or_space_or_spacelist_name="Perimeter_ZN_1",
+            ...     validate=False)  # doctest: +ELLIPSIS
+            Lights('Perimeter_ZN_1_Lights')
+            >>> [s.name for s in model["BuildingSurface:Detailed"].referencing(zone)]
+            ['South_Wall']
+            >>> model["FenestrationSurface:Detailed"].referencing(wall)
+            []
+        """
+        name = target if isinstance(target, str) else target.name
+        if not name or not self._items:
+            return []
+        graph = self._graph
+        if graph is None:
+            msg = f"IDFCollection({self._type}) does not belong to a document, so has no reference graph"
+            raise ValueError(msg)
+        obj_type = self._type
+        type_upper = obj_type.upper()
+        found: list[IDFObject] = []
+        for obj in graph.get_referencing(name):
+            other_type = obj.obj_type
+            if other_type == obj_type:
+                # The graph holds only its document's objects, and the document files each object
+                # under its own type, so a match on type is a member of this collection.
+                found.append(obj)
+            elif other_type.upper() == type_upper:
+                # Added under another spelling (addidfobject keeps it as given): ask by identity.
+                obj_name = obj.name
+                mine = self._by_name.get(obj_name.upper()) if obj_name else None
+                if mine is obj or (not obj_name and any(item is obj for item in self._items)):
+                    found.append(obj)
+        return cast("list[_T_co]", found)
 
     def first(self) -> _T_co | None:
         """Get the first object or None.
