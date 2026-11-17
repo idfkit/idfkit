@@ -902,12 +902,12 @@ class TestCheckerEdgeCases:
 class TestFilterDiagnosticsAndFormatText:
     """Tests for _filter_diagnostics and _format_text edge cases."""
 
-    def test_filter_diagnostics_select_skips_non_matching(self) -> None:
-        """_filter_diagnostics skips diagnostics whose code is not in select set."""
+    def test_filter_diagnostics_keeps_only_errors_for_severity_error(self) -> None:
+        """_filter_diagnostics applies --severity; rule codes are selected in check_compatibility."""
         from idfkit.compat._cli import _filter_diagnostics  # pyright: ignore[reportPrivateUsage]
         from idfkit.compat._models import CompatSeverity, Diagnostic
 
-        d_c001 = Diagnostic(
+        warning = Diagnostic(
             code="C001",
             message="Missing type",
             severity=CompatSeverity.WARNING,
@@ -918,10 +918,10 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        d_c002 = Diagnostic(
-            code="C002",
-            message="Missing choice",
-            severity=CompatSeverity.WARNING,
+        error = Diagnostic(
+            code="C003",
+            message="No such type",
+            severity=CompatSeverity.ERROR,
             filename="t.py",
             line=2,
             col=0,
@@ -929,9 +929,8 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        result = _filter_diagnostics([d_c001, d_c002], select={"C001"}, ignore=None, severity=None)
-        assert len(result) == 1
-        assert result[0].code == "C001"
+        assert _filter_diagnostics([warning, error], severity="error") == [error]
+        assert _filter_diagnostics([warning, error], severity=None) == [warning, error]
 
     def test_format_text_with_diagnostics(self) -> None:
         """_format_text produces diagnostic lines when diagnostics are non-empty."""

@@ -97,6 +97,13 @@ class TestSuppressionParsing:
     def test_text_in_a_string_is_not_a_comment(self) -> None:
         assert parse_suppressions('x = "# idfkit: ignore[C001]"\n') == {}
 
+    @pytest.mark.parametrize("comment", ["# idfkit: ignore-file", "# idfkit: ignore[C001", "# idfkit: ignorex"])
+    def test_unknown_directive_is_not_a_bare_ignore(self, comment: str) -> None:
+        assert parse_suppressions(f"x = 1  {comment}\n") == {}
+
+    def test_space_before_codes(self) -> None:
+        assert parse_suppressions("x = 1  # idfkit: ignore [C001]\n")[1].codes == frozenset({"C001"})
+
     def test_other_tools_comments_are_not_read(self) -> None:
         assert parse_suppressions("x = 1  # noqa: C001\ny = 2  # type: ignore[C001]\n") == {}
 
@@ -398,6 +405,60 @@ class TestVersionGuards:
         )
         assert _releases(source, "Space") is None
 
+    @pytest.mark.parametrize(
+        "rebinding",
+        [
+            "[doc['Space'] for doc in others]",
+            "try:\n            pass\n        except Exception as doc:\n            doc['Space']",
+            "import doc\n        doc['Space']",
+            "def doc():\n            pass\n        doc['Space']",
+        ],
+    )
+    def test_every_binding_form_drops_the_guard(self, rebinding: str) -> None:
+        source = _src(f"def f(doc, others):\n    if doc.version >= (9, 6, 0):\n        {rebinding}\n")
+        assert _releases(source, "Space") is None
+
+    def test_subscripted_receiver_is_not_a_guard(self) -> None:
+        source = _src('def f(docs, i):\n    if docs[i].version >= (9, 6, 0):\n        docs[i]["Space"]\n')
+        assert _releases(source, "Space") is None
+
+    def test_dotted_receiver_is_a_guard(self) -> None:
+        source = _src('def f(self):\n    if self.doc.version >= (9, 6, 0):\n        self.doc["Space"]\n')
+        assert _releases(source, "Space") == _since(_V96)
+
+    def test_guard_on_a_local_does_not_narrow_a_module_alias(self) -> None:
+        source = _src(
+            """\
+            legacy = as_version(doc, since="9.4")
+
+            def f(doc):
+                if doc.version >= (9, 6, 0):
+                    legacy["Space"]
+            """
+        )
+        assert _releases(source, "Space") == _since(_V94)
+
+    def test_alias_of_a_rebound_document_is_not_guarded(self) -> None:
+        source = _src(
+            """\
+            def f(doc, other):
+                legacy = as_version(doc, since="9.4")
+                doc = other
+                if doc.version >= (9, 6, 0):
+                    legacy["Space"]
+            """
+        )
+        assert _releases(source, "Space") == _since(_V94)
+
+    def test_declared_version_within_a_release_line(self) -> None:
+        """A ``Version, 9.0;`` model is ``(9, 0, 0)`` on the 9.0.1 schema."""
+        source = _src('def f(doc):\n    if doc.version == (9, 0, 0):\n        doc["Space"]\n')
+        assert _releases(source, "Space") == frozenset({(9, 0, 1)})
+
+    def test_version_newer_than_every_release_keeps_the_latest(self) -> None:
+        source = _src('def f(doc):\n    if doc.version >= (27, 0, 0):\n        doc["Space"]\n')
+        assert _releases(source, "Space") == frozenset({LATEST_VERSION})
+
     def test_nested_function_is_outside_the_guard(self) -> None:
         source = _src(
             """\
@@ -547,6 +608,9 @@ class TestCliTargets:
             ["--from", "9.4", "--since", "9.6"],
             ["--targets", "9.4,26.2", "--before", "9.6"],
             ["--to", "26.2"],
+            ["--from", "8.9", "--to", "26.2", "--before", "9.6"],
+            ["--since", "24.1", "--to", "9.4"],
+            ["--targets", "9.4,26.2", "--to", "24.1"],
             ["--since", "26.2"],
             ["--targets", "24.1,27.1"],
             [],
@@ -613,12 +677,37 @@ class TestCliConfig:
         (project / "a.py").write_text("import idfkit\ndoc.get_collection('Space')\n")
         _code, out, _ = _run(["check", "a.py", "--json"], capsys)
         assert {d["code"] for d in json.loads(out)["diagnostics"]} == {"C004"}
-        # A command-line --select replaces the configured selection, extend-select still adds.
-        _code, out, _ = _run(["check", "a.py", "--json", "--select", "C001"], capsys)
+        # A command-line --select replaces the configured selection, extend-select included.
+        code, out, _ = _run(["check", "a.py", "--select", "C003"], capsys)
+        assert (code, out.strip()) == (0, "No compatibility issues found.")
+        # --extend-select on the command line adds to a command-line --select.
+        _code, out, _ = _run(["check", "a.py", "--json", "--select", "C003", "--extend-select", "C004"], capsys)
         assert {d["code"] for d in json.loads(out)["diagnostics"]} == {"C004"}
         # --ignore on the command line adds to the configured ignore.
         code, out, _ = _run(["check", "a.py", "--ignore", "C004"], capsys)
         assert (code, out.strip()) == (0, "No compatibility issues found.")
+
+    @pytest.mark.parametrize("argv", [["--select", ""], ["--select", "C001", "--ignore", "C001"]])
+    def test_empty_rule_selection_exits_2(
+        self, project: Path, capsys: pytest.CaptureFixture[str], argv: list[str]
+    ) -> None:
+        (project / "a.py").write_text(_GUARDED)
+        code, _, err = _run(["check", "a.py", "--targets", "all", *argv], capsys)
+        assert code == 2
+        assert "rule selection is empty" in err
+
+    def test_config_paths_are_reported_relative(
+        self, project: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _write_config(project, 'targets = "all"\npaths = ["src"]\n')
+        (project / "src").mkdir()
+        (project / "src" / "a.py").write_text(_GUARDED)
+        _code, out, _ = _run(["check", "--json"], capsys)
+        assert {d["filename"] for d in json.loads(out)["diagnostics"]} == {"src/a.py"}
+        (project / "sub").mkdir()
+        monkeypatch.chdir(project / "sub")
+        _code, out, _ = _run(["check", "--json"], capsys)
+        assert {d["filename"] for d in json.loads(out)["diagnostics"]} == {"../src/a.py"}
 
     def test_per_file_ignores(self, project: Path, capsys: pytest.CaptureFixture[str]) -> None:
         _write_config(project, 'targets = "all"\n[tool.idfkit.check.per-file-ignores]\n"tests/**" = ["C001"]\n')
@@ -687,6 +776,8 @@ class TestPatterns:
             ("src/a.py", "./src/a.py", True),
             ("src/a.py", "tests/**", False),
             ("src/a/conftest.py", "src/conftest.py", False),
+            ("src/app/migrations/m.py", "migrations", True),
+            ("src/app/migrations_old/m.py", "migrations", False),
         ],
     )
     def test_matches(self, path: str, pattern: str, expected: bool) -> None:
@@ -708,6 +799,16 @@ class TestCliDiscoveryAndOutput:
         code, _, err = _run(["check", "nope.py", "--targets", "all"], capsys)
         assert code == 2
         assert "file not found" in err
+
+    def test_undecodable_file_exits_2_and_the_others_are_checked(
+        self, project: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        (project / "a.py").write_bytes(b'x = "\xff"\n')
+        (project / "b.py").write_text(_GUARDED)
+        code, out, err = _run(["check", "a.py", "b.py", "--targets", "9.4,26.2"], capsys)
+        assert code == 2
+        assert "failed to read a.py" in err
+        assert "b.py" in out
 
     def test_syntax_error_does_not_stop_the_other_files(
         self, project: Path, capsys: pytest.CaptureFixture[str]

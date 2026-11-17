@@ -18,7 +18,9 @@ import re
 import tokenize
 from dataclasses import dataclass, field
 
-_COMMENT_RE = re.compile(r"(?:^|#)\s*idfkit:\s*ignore\b(?:\[(?P<codes>[^\]]*)\])?")
+# ``ignore`` must end the directive or be followed by its code list: ``ignore-file`` or an unclosed
+# ``ignore[C001`` is not a bare ``ignore`` that silences every rule.
+_COMMENT_RE = re.compile(r"(?:^|#)\s*idfkit:\s*ignore(?:\s*\[(?P<codes>[^\]]*)\])?(?![\w\-\[])")
 
 
 @dataclass

@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -350,17 +351,19 @@ def _resolve_targets(args: argparse.Namespace, config: CheckConfig | None = None
 
     Raises SystemExit(2) for a malformed or unsupported release, or fewer than two targets.
     """
+    if args.before is not None and (args.targets is not None or args.from_version is not None):
+        _usage_error("--before combines with --since, not --targets or --from")
+    if args.to_version is not None and args.from_version is None:
+        _usage_error("--to is the second release of --from; it does not combine with --targets, --since or --before")
     try:
         if args.targets is not None:
-            if args.before is not None:
-                _usage_error("--before combines with --since, not --targets")
             return finish_targets(parse_targets(args.targets))
         if args.since is not None or args.before is not None:
             since = parse_release(args.since) if args.since is not None else None
             before = parse_release(args.before) if args.before is not None else None
             return finish_targets(releases_between(since, before))
-        if args.from_version is not None or args.to_version is not None:
-            if args.from_version is None or args.to_version is None:
+        if args.from_version is not None:
+            if args.to_version is None:
                 _usage_error("--from and --to must both be specified")
             return finish_targets([parse_release(args.from_version), parse_release(args.to_version)])
     except ConfigError as exc:
@@ -383,24 +386,11 @@ def _parse_group_list(spec: str) -> set[str]:
     return {g.strip() for g in spec.split(",") if g.strip()}
 
 
-def _filter_diagnostics(
-    diagnostics: list[Diagnostic],
-    *,
-    select: set[str] | None,
-    ignore: set[str] | None,
-    severity: str | None,
-) -> list[Diagnostic]:
-    """Apply post-check filters (rule codes, severity) to diagnostics."""
-    result: list[Diagnostic] = []
-    for d in diagnostics:
-        if select is not None and d.code not in select:
-            continue
-        if ignore is not None and d.code in ignore:
-            continue
-        if severity == "error" and d.severity != CompatSeverity.ERROR:
-            continue
-        result.append(d)
-    return result
+def _filter_diagnostics(diagnostics: list[Diagnostic], *, severity: str | None) -> list[Diagnostic]:
+    """Apply the ``--severity`` filter. Rule codes are selected inside ``check_compatibility``."""
+    if severity != "error":
+        return diagnostics
+    return [d for d in diagnostics if d.severity == CompatSeverity.ERROR]
 
 
 def _plural(count: int, noun: str) -> str:
@@ -495,12 +485,11 @@ def _settings(args: argparse.Namespace, config: CheckConfig | None) -> _Settings
     """Merge *config* and the command line: a command-line --select replaces, --ignore and --extend-select add."""
     config = config or CheckConfig()
     if args.select is not None:
+        # The command line replaces the configured selection, extend-select included, as in ruff.
         select = _parse_code_list(args.select)
-    elif config.select is not None:
-        select = {c.upper() for c in config.select}
     else:
-        select = set(DEFAULT_RULES)
-    select |= {c.upper() for c in config.extend_select}
+        select = {c.upper() for c in config.select} if config.select is not None else set(DEFAULT_RULES)
+        select |= {c.upper() for c in config.extend_select}
     if args.extend_select:
         select |= _parse_code_list(args.extend_select)
     ignore = {c.upper() for c in config.ignore}
@@ -515,6 +504,9 @@ def _settings(args: argparse.Namespace, config: CheckConfig | None) -> _Settings
             _usage_error(
                 f"unknown rule code(s) for {label}: {', '.join(sorted(unknown))}. Valid codes: {', '.join(sorted(all_codes))}"
             )
+
+    if not select - ignore:
+        _usage_error("the rule selection is empty, so nothing would be checked; select at least one rule")
 
     include_groups = _parse_group_list(args.group) if args.group else None
     if include_groups is None and config.group is not None:
@@ -571,6 +563,14 @@ def _discover(paths: list[str], settings: _Settings) -> list[Path]:
     return list(unique)
 
 
+def _display_path(path: Path) -> str:
+    """*path* relative to the working directory when it can be, so output does not depend on the checkout."""
+    try:
+        return os.path.relpath(path)
+    except ValueError:  # another drive on Windows
+        return str(path)
+
+
 def _package_of(path: Path) -> str | None:
     """The dotted package *path* belongs to, read from the ``__init__.py`` files around it."""
     parts: list[str] = []
@@ -594,13 +594,18 @@ def _run_check(args: argparse.Namespace) -> None:
     settings = _settings(args, config)
     raw_paths: list[str] = list(args.files)
     if not raw_paths and config is not None and config.paths:
-        raw_paths = [str(config.root / p) if not Path(p).is_absolute() else p for p in config.paths]
+        raw_paths = [_display_path(config.root / p) for p in config.paths]
     files = _discover(raw_paths or ["."], settings)
 
     all_diagnostics: list[Diagnostic] = []
     failed_to_parse = False
     for filepath in files:
-        source = filepath.read_text(encoding="utf-8")
+        try:
+            source = filepath.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"error: failed to read {filepath}: {exc}", file=sys.stderr)
+            failed_to_parse = True
+            continue
         try:
             diagnostics = check_compatibility(
                 source,
@@ -612,14 +617,14 @@ def _run_check(args: argparse.Namespace) -> None:
                 ignore=settings.ignore | _file_ignores(filepath, settings),
                 package=_package_of(filepath),
             )
-        except SyntaxError as exc:
+        except (SyntaxError, ValueError) as exc:  # ValueError: a null byte, on Python 3.10 and 3.11
             print(f"error: failed to parse {filepath}: {exc}", file=sys.stderr)
             failed_to_parse = True
             continue
         all_diagnostics.extend(diagnostics)
 
     # Post-check filtering (severity). Rule selection was applied per file, before suppression.
-    all_diagnostics = _filter_diagnostics(all_diagnostics, select=None, ignore=None, severity=args.severity)
+    all_diagnostics = _filter_diagnostics(all_diagnostics, severity=args.severity)
     # Files stay in discovery order (sorted within each directory); each is sorted by line,
     # column and rule, so the output is stable from run to run and diffs cleanly.
 

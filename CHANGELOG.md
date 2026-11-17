@@ -35,22 +35,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Settings were read from a `[tool.idfkit.check]` table in the nearest `pyproject.toml`
     (`targets`, `since`, `before`, `paths`, `exclude`, `select`, `extend-select`, `ignore`,
     `per-file-ignores`, `group`, `exclude-group`, `fail-on`), or from the file given with
-    `--config`; `--isolated` ignored them. An unknown key was an error. On Python 3.10 the table
-    needs `tomli` installed.
+    `--config`; `--isolated` ignored them. An unknown key was an error. On Python 3.10 reading the
+    table needed `tomli` installed.
   - Paths could be directories, searched for `*.py` without hidden directories, virtual
     environments, caches and build output; with no path, `paths` from the table or the current
     directory was linted. `--extend-select` added rules, and `--fail-on error` let warnings be
     reported without failing the run. The text output ended with a summary line.
-  - In idfkit's own source, relative imports counted as idfkit imports, so `make check` now runs
-    `idfkit check` over `src/` against every release ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
+  - In idfkit's own source, relative imports counted as idfkit imports, and `make check` started
+    running `idfkit check` over `src/` against every release ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 
 ### Changed
 
 - **Breaking:** `idfkit check` refused a target release idfkit does not support with exit status
   2, where it used to check the closest one instead: `--to 27.1` checked 26.2. `9.0` and `9.0.0`
   still named 9.0.1 ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
-- `idfkit check` went on to the other files after one failed to parse, and still exited with
-  status 2 ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
+- `idfkit check` went on to the other files after one failed to parse or to decode, and still
+  exited with status 2, where an undecodable file used to stop the run with a traceback ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).
 - `check_compatibility` gained `select`, `ignore`, `suppressions` and `package` arguments, and by
   default checked `DEFAULT_RULES` (every rule but `C004`) and honoured suppression comments
   ([f9d2885](https://github.com/idfkit/idfkit/commit/f9d2885)).

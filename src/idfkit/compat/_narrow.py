@@ -12,12 +12,16 @@ the ways code does that, and nothing cleverer:
   ``since=``/``before=`` keywords (``since`` inclusive, ``before`` exclusive) given a release
   string (``"9.4"``), a version tuple or a document type. A name bound exactly once to one of
   those (``_SINCE_9_4 = (IDFDocumentV9_4, ...)``) is followed.
-* **version guards.** Inside ``if X.version <op> (9, 4, 0):`` the lookups on ``X`` (or on an
-  ``as_version`` of ``X``) run only against the releases that satisfy the comparison, and inside
-  its ``else`` against the others. ``<``, ``<=``, ``>``, ``>=``, ``==``, ``!=`` and chained
-  comparisons against tuples of integers are read, combined with ``and``, ``or`` and ``not``. A
-  conjunct that is not a version comparison (``and "Space" in doc``) is skipped, which is sound
-  for ``and``; an ``else`` is narrowed only when its whole test was read.
+* **version guards.** Inside ``if X.version <op> (9, 4, 0):``, where ``X`` is a name or a dotted
+  attribute of one, the lookups on ``X`` (or on an ``as_version`` of ``X``) run only against the
+  releases that satisfy the comparison, and inside its ``else`` against the others. ``<``,
+  ``<=``, ``>``, ``>=``, ``==``, ``!=`` and chained comparisons against tuples of integers are
+  read, combined with ``and``, ``or`` and ``not``. A conjunct that is not a version comparison
+  (``and "Space" in doc``) is skipped, which is sound for ``and``; an ``else`` is narrowed only
+  when its whole test was read. A release is kept when the comparison can hold for any version
+  number a document of that release carries: ``doc.version`` is the number the model declared, so
+  a ``Version, 9.0;`` model is ``(9, 0, 0)`` on the 9.0.1 schema, and a model newer than every
+  release keeps its own number on the latest schema.
 
 Anything else gives no narrowing, which can only produce a warning that suppression handles,
 never hide one: early returns (``if doc.version < (9, 4, 0): return``), ``assert``, conditional
@@ -54,7 +58,6 @@ _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
     ast.Eq: operator.eq,
     ast.NotEq: operator.ne,
 }
-_SCOPE_NODES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
 
 
 def release_for_line(major: int, minor: int) -> Release | None:
@@ -90,23 +93,39 @@ class ScopeTable:
         """The scope a function, lambda or class *node* opens (``current`` for any other node)."""
         return self.children.get(id(node), current)
 
-    def value_of(self, name: str, scope: Scope) -> ast.expr | None:
-        """The expression *name* is bound to, if it is bound exactly once by a plain assignment."""
+    def lookup(self, name: str, scope: Scope) -> Scope | None:
+        """The scope whose binding *name* refers to from *scope*, or ``None`` when it cannot be known.
+
+        Follows Python's lexical rule: a class body is visible only from itself, not from the
+        functions nested in it. A ``global``/``nonlocal`` name or a ``from x import *`` on the way
+        makes the answer unknown.
+        """
         if name in self.escaped:
             return None
         current: Scope | None = scope
         first = True
         while current is not None:
-            if (first or not current.is_class) and name in current.bindings:
-                if current.star_import:
-                    return None
-                values = current.bindings[name]
-                return values[0] if len(values) == 1 else None
             if current.star_import:
                 return None
+            if (first or not current.is_class) and name in current.bindings:
+                return current
             first = False
             current = current.parent
         return None
+
+    def value_of(self, name: str, scope: Scope) -> tuple[ast.expr, Scope] | None:
+        """The expression *name* is bound to, and the scope it is bound in, if it is bound exactly once."""
+        owner = self.lookup(name, scope)
+        if owner is None:
+            return None
+        values = owner.bindings[name]
+        value = values[0] if len(values) == 1 else None
+        return (value, owner) if value is not None else None
+
+    def is_stable(self, name: str, scope: Scope, other: Scope) -> bool:
+        """Whether *name* means the same single binding from *scope* and from *other*."""
+        owner = self.lookup(name, scope)
+        return owner is not None and owner is self.lookup(name, other) and len(owner.bindings[name]) == 1
 
     # -- collection ---------------------------------------------------------
 
@@ -251,11 +270,25 @@ class Narrower:
             narrowed = self.as_version_releases(expr, scope)
             return DocumentRef(inner.bases | {text}, _intersect(inner.releases, narrowed))
         if isinstance(expr, ast.Name):
-            value = self.table.value_of(expr.id, scope)
-            if value is not None and (isinstance(value, ast.Name) or is_as_version_call(value)):
-                inner = self.document(value, scope, depth + 1)
-                return DocumentRef(inner.bases | {text}, inner.releases)
+            bound = self.table.value_of(expr.id, scope)
+            if bound is not None and (isinstance(bound[0], ast.Name) or is_as_version_call(bound[0])):
+                value, owner = bound
+                inner = self.document(value, owner, depth + 1)
+                # The value's names were read where it was bound. They name the same document here
+                # only if they resolve to the same single binding from both places: a parameter
+                # of the same name, or a later rebinding, would make a guard on one apply to the
+                # other.
+                kept = {b for b in inner.bases if self._stable_text(b, owner, scope)}
+                return DocumentRef(frozenset(kept | {text}), inner.releases)
         return DocumentRef(frozenset({text}), None)
+
+    def _stable_text(self, text: str, owner: Scope, scope: Scope) -> bool:
+        """Whether every name in the expression *text* means one fixed binding from both scopes."""
+        try:
+            names = [n.id for n in ast.walk(ast.parse(text, mode="eval")) if isinstance(n, ast.Name)]
+        except SyntaxError:
+            return False
+        return all(self.table.is_stable(name, owner, scope) for name in names)
 
     def as_version_releases(self, call: ast.Call, scope: Scope) -> Releases | None:
         """The releases an ``as_version(doc, ...)`` call accepts, or ``None`` when not read."""
@@ -301,9 +334,9 @@ class Narrower:
             release = release_for_line(int(match.group(1)), int(match.group(2)))
             return frozenset({release}) if release is not None else None
         if isinstance(expr, ast.Name):
-            value = self.table.value_of(expr.id, scope)
-            if value is not None:
-                return self.document_types(value, scope, depth + 1)
+            bound = self.table.value_of(expr.id, scope)
+            if bound is not None:
+                return self.document_types(bound[0], bound[1], depth + 1)
         return None
 
     def _bound(self, expr: ast.expr, scope: Scope, depth: int = 0) -> Release | None:
@@ -322,9 +355,9 @@ class Narrower:
         if types is not None and len(types) == 1:
             return next(iter(types))
         if isinstance(expr, ast.Name):
-            value = self.table.value_of(expr.id, scope)
-            if value is not None:
-                return self._bound(value, scope, depth + 1)
+            bound = self.table.value_of(expr.id, scope)
+            if bound is not None:
+                return self._bound(bound[0], bound[1], depth + 1)
         return None
 
     # -- guards ---------------------------------------------------------------
@@ -342,8 +375,7 @@ class Narrower:
             inner = self.guard(test.operand, scope)
             if inner is None:
                 return None
-            pred = inner.predicate
-            return Guard(inner.document, lambda v: not pred(v))
+            return inner.negated()
         if isinstance(test, ast.BoolOp):
             parts = [self.guard(v, scope) for v in test.values]
             if any(p is None for p in parts):
@@ -353,7 +385,8 @@ class Narrower:
                 return None
             preds = [g.predicate for g in guards]
             combine = all if isinstance(test.op, ast.And) else any
-            return Guard(guards[0].document, lambda v: combine(p(v) for p in preds))
+            points = frozenset(point for g in guards for point in g.points)
+            return Guard(guards[0].document, lambda v: combine(p(v) for p in preds), points)
         if not isinstance(test, ast.Compare):
             return None
         operands = [test.left, *test.comparators]
@@ -361,6 +394,9 @@ class Narrower:
         terms: list[tuple[int, ...] | None] = []
         for operand in operands:
             if isinstance(operand, ast.Attribute) and operand.attr == "version":
+                if not _is_dotted(operand.value):
+                    # ``docs[i].version``: the index can change between the test and the lookup.
+                    return None
                 if receiver is not None and ast.unparse(receiver) != ast.unparse(operand.value):
                     return None
                 receiver = operand.value
@@ -384,19 +420,56 @@ class Narrower:
             values = [version if t is None else t for t in frozen_terms]
             return all(fn(values[i], values[i + 1]) for i, fn in enumerate(ops))
 
-        return Guard(self.document(receiver, scope), predicate)
+        points = frozenset(t for t in frozen_terms if t is not None)
+        return Guard(self.document(receiver, scope), predicate, points)
+
+
+_HUGE = 10**6
 
 
 @dataclass(frozen=True)
 class Guard:
-    """A version predicate that holds for one document inside a guarded block."""
+    """A version predicate that holds for one document inside a guarded block.
+
+    Attributes:
+        document: The document the predicate tests.
+        predicate: The test, applied to a ``doc.version`` value.
+        points: The version tuples the test compares against, which decide the values
+            :meth:`narrow` tries for each release.
+    """
 
     document: DocumentRef
     predicate: Predicate
+    points: frozenset[tuple[int, ...]] = frozenset()
+
+    def negated(self) -> Guard:
+        """The guard of the opposite branch."""
+        predicate = self.predicate
+        return Guard(self.document, lambda v: not predicate(v), self.points)
 
     def narrow(self, releases: Releases) -> Releases:
-        """The members of *releases* that satisfy the guard."""
-        return frozenset(v for v in releases if self.predicate(v))
+        """The members of *releases* a document could satisfy the guard on.
+
+        ``doc.version`` is the number the model declared, not the release whose schema reads it:
+        any patch of the release's line, and for the latest release any newer number. A release
+        is kept when the predicate holds for at least one such value, so narrowing never drops a
+        release the guarded code can run on.
+        """
+        return frozenset(r for r in releases if any(self.predicate(v) for v in self._candidates(r)))
+
+    def _candidates(self, release: Release) -> set[Release]:
+        major, minor = release[0], release[1]
+        values: set[Release] = {release, (major, minor, 0), (major, minor, _HUGE)}
+        for point in self.points:
+            filled = (*point, 0, 0, 0)
+            padded: Release = (filled[0], filled[1], filled[2])
+            if padded[:2] == (major, minor):
+                values.update((major, minor, max(padded[2] + d, 0)) for d in (-1, 0, 1))
+            elif release == LATEST_VERSION and padded > release:
+                values.update({padded, (padded[0], padded[1], padded[2] + 1)})
+        if release == LATEST_VERSION:
+            values.add((_HUGE, 0, 0))
+        return values
 
 
 def rebinds(body: list[ast.stmt], document: DocumentRef) -> bool:
@@ -411,16 +484,37 @@ def rebinds(body: list[ast.stmt], document: DocumentRef) -> bool:
 
 
 def _assigned_targets(body: list[ast.stmt]) -> Iterator[ast.expr]:
+    """Every target *body* binds, in any form, including comprehension and ``except`` names."""
     for stmt in body:
         for node in ast.walk(stmt):
             if isinstance(node, ast.Assign):
                 yield from _flatten(node.targets)
-            elif isinstance(node, (ast.AnnAssign, ast.AugAssign, ast.NamedExpr, ast.For, ast.AsyncFor)):
+            elif isinstance(
+                node, (ast.AnnAssign, ast.AugAssign, ast.NamedExpr, ast.For, ast.AsyncFor, ast.comprehension)
+            ):
                 yield from _flatten([node.target])
             elif isinstance(node, ast.withitem) and node.optional_vars is not None:
                 yield from _flatten([node.optional_vars])
             elif isinstance(node, ast.Delete):
                 yield from _flatten(node.targets)
+            else:
+                yield from (ast.Name(id=name) for name in _bound_names(node))
+
+
+def _bound_names(node: ast.AST) -> list[str]:
+    """The names a statement or pattern binds other than by assignment (``except as``, ``import``, ``def``)."""
+    names: list[str | None] = []
+    if isinstance(node, ast.ExceptHandler):
+        names = [node.name]
+    elif isinstance(node, (ast.Import, ast.ImportFrom)):
+        names = [a.asname or a.name.split(".")[0] for a in node.names]
+    elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.MatchAs, ast.MatchStar)):
+        names = [node.name]
+    elif isinstance(node, ast.MatchMapping):
+        names = [node.rest]
+    elif isinstance(node, (ast.Global, ast.Nonlocal)):
+        names = list(node.names)
+    return [n for n in names if n]
 
 
 def _flatten(targets: list[ast.expr]) -> Iterator[ast.expr]:
@@ -462,6 +556,8 @@ def _int_tuple(expr: ast.expr) -> tuple[int, ...] | None:
     return tuple(numbers)
 
 
-def is_scope_node(node: ast.AST) -> bool:
-    """Whether *node* opens a new Python scope (a guard does not reach inside it)."""
-    return isinstance(node, _SCOPE_NODES)
+def _is_dotted(expr: ast.expr) -> bool:
+    """Whether *expr* is a name or a chain of attributes on one (``doc``, ``self.model``)."""
+    while isinstance(expr, ast.Attribute):
+        expr = expr.value
+    return isinstance(expr, ast.Name)

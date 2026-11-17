@@ -191,7 +191,9 @@ def load_config(path: Path) -> CheckConfig:
         msg = f"cannot read {path}: {exc}"
         raise ConfigError(msg) from exc
     data = _toml_loads(text, path)
-    table: object = data.get("tool", {}).get("idfkit", {}).get("check")
+    table: object = data
+    for key in ("tool", "idfkit", "check"):
+        table = cast("dict[str, object]", table).get(key) if isinstance(table, dict) else None
     if table is None:
         msg = f"{path} has no [tool.idfkit.check] table"
         raise ConfigError(msg)
@@ -293,13 +295,14 @@ def relative_posix(path: Path, root: Path) -> str:
 
 
 def matches(relative: str, pattern: str) -> bool:
-    """Whether a POSIX path matches a glob *pattern*, as ruff's ``per-file-ignores`` do.
+    """Whether a POSIX path matches a glob *pattern*, as ruff's ``exclude`` and ``per-file-ignores`` do.
 
     ``*`` crosses directories (``tests/*`` and ``tests/**`` both cover ``tests/a/b.py``), a
-    pattern without a slash also matches the file name alone (``conftest.py``), and a pattern
-    naming a directory covers everything under it (``src/legacy``).
+    pattern naming a directory covers everything under it (``src/legacy``), and a pattern without
+    a slash matches any single component, the file name or a directory at any depth
+    (``conftest.py``, ``migrations``).
     """
     pattern = pattern.strip().removeprefix("./").rstrip("/")
     if fnmatch.fnmatchcase(relative, pattern) or fnmatch.fnmatchcase(relative, pattern + "/*"):
         return True
-    return "/" not in pattern and fnmatch.fnmatchcase(PurePath(relative).name, pattern)
+    return "/" not in pattern and any(fnmatch.fnmatchcase(part, pattern) for part in PurePath(relative).parts)

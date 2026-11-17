@@ -93,7 +93,8 @@ class _LiteralVisitor(ast.NodeVisitor):
         self.literals: list[ExtractedLiteral] = []
         self._source = source
         self._has_idfkit_import = has_idfkit_import
-        self._table = ScopeTable(tree)
+        # Narrowing only applies to a file that imports idfkit; skip the scope walk otherwise.
+        self._table = ScopeTable(tree if has_idfkit_import else ast.Module(body=[], type_ignores=[]))
         self._narrower = Narrower(self._table)
         self._scope: Scope = self._table.module
         self._guards: list[Guard] = []
@@ -128,8 +129,7 @@ class _LiteralVisitor(ast.NodeVisitor):
         whole = self._narrower.guard(node.test, self._scope)
         negated: list[Guard] = []
         if whole is not None and not rebinds(node.orelse, whole.document):
-            predicate = whole.predicate
-            negated = [Guard(whole.document, lambda v: not predicate(v))]
+            negated = [whole.negated()]
         self._visit_block(node.orelse, negated)
 
     def _visit_block(self, body: list[ast.stmt], guards: list[Guard]) -> None:
