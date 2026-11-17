@@ -57,7 +57,7 @@ from .geometry import (
 )
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFObject
 
 logger = logging.getLogger(__name__)
@@ -391,7 +391,7 @@ class _Frag:
 # ---------------------------------------------------------------------------
 
 
-def intersect_and_match(doc: IDFDocument, options: MatchOptions | None = None) -> MatchReport:
+def intersect_and_match(doc: AnyIDFDocument, options: MatchOptions | None = None) -> MatchReport:
     """Intersect and match coplanar interzone surfaces, splitting as needed.
 
     Coplanar, oppositely-facing surfaces that overlap are split into congruent
@@ -433,7 +433,7 @@ def intersect_and_match(doc: IDFDocument, options: MatchOptions | None = None) -
     return report
 
 
-def _collect_surfaces(doc: IDFDocument, opts: MatchOptions) -> list[_Surf]:
+def _collect_surfaces(doc: AnyIDFDocument, opts: MatchOptions) -> list[_Surf]:
     result: list[_Surf] = []
     for obj in doc["BuildingSurface:Detailed"]:
         st = (getattr(obj, "surface_type", None) or "").upper()
@@ -475,7 +475,7 @@ def _cluster_by_plane(surfs: list[_Surf], opts: MatchOptions) -> list[list[_Surf
     return [c for c in clusters if len(c) >= 2]
 
 
-def _process_cluster(doc: IDFDocument, cluster: list[_Surf], opts: MatchOptions, report: MatchReport) -> None:
+def _process_cluster(doc: AnyIDFDocument, cluster: list[_Surf], opts: MatchOptions, report: MatchReport) -> None:
     normal = _canonical_normal(cluster[0].normal)
     all_verts = [v for s in cluster for v in s.verts]
     frame = _build_frame(normal, all_verts)
@@ -574,7 +574,7 @@ def _fragments_for(p: _ProjSurf, regions: list[_Region], opts: MatchOptions) -> 
 
 
 def _detect_conflicts(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     projected: list[_ProjSurf],
     frags_by_surf: dict[int, list[_Frag]],
     frame: _PlaneFrame,
@@ -605,7 +605,7 @@ def _detect_conflicts(
     return new_conflicts
 
 
-def _collect_children(doc: IDFDocument, name: str) -> tuple[list[IDFObject], list[IDFObject]]:
+def _collect_children(doc: AnyIDFDocument, name: str) -> tuple[list[IDFObject], list[IDFObject]]:
     """Split objects referencing *name* into re-homable windows and blockers.
 
     ``detailed`` holds ``FenestrationSurface:Detailed`` objects attached via
@@ -626,7 +626,7 @@ def _collect_children(doc: IDFDocument, name: str) -> tuple[list[IDFObject], lis
 
 
 def _emit(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     projected: list[_ProjSurf],
     regions: list[_Region],
     frags_by_surf: dict[int, list[_Frag]],
@@ -681,7 +681,7 @@ def _unique_name(base: str, i: int, used: set[str]) -> str:
 
 
 def _emit_surface(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     p: _ProjSurf,
     frags: list[_Frag],
     frag_names: list[str],
@@ -750,7 +750,7 @@ def _apply_bc(
         target.wind_exposure = orig_bc.wind
 
 
-def _add_surface(doc: IDFDocument, name: str, template: _Surf, construction: str) -> IDFObject:
+def _add_surface(doc: AnyIDFDocument, name: str, template: _Surf, construction: str) -> IDFObject:
     return doc.add(
         "BuildingSurface:Detailed",
         name,

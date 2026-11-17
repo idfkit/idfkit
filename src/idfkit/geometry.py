@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, cast
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .document import IDFDocument
+    from .document import AnyIDFDocument
     from .objects import IDFCollection, IDFObject
 
 # Surface types that carry vertex geometry.  Used by translate_building,
@@ -625,7 +625,7 @@ def get_zone_rotation(zone: IDFObject) -> float:
     return float(angle) if angle else 0.0
 
 
-def translate_to_world(doc: IDFDocument) -> None:
+def translate_to_world(doc: AnyIDFDocument) -> None:
     """Rewrite every detailed surface's vertices into the frame the engine computes, in place.
 
     This is the mutating counterpart of [get_scene][idfkit.scene.get_scene], and it is that function
@@ -747,7 +747,7 @@ def translate_to_world(doc: IDFDocument) -> None:
     )
 
 
-def _restate_resolved_declarations(doc: IDFDocument, *, was_relative: bool, was_clockwise: bool) -> None:
+def _restate_resolved_declarations(doc: AnyIDFDocument, *, was_relative: bool, was_clockwise: bool) -> None:
     """Rewrite what the vertices were resolved against, so that a reread applies nothing again.
 
     The zone fields are cleared only when they were applied. Under the world system they were not,
@@ -859,7 +859,7 @@ def calculate_surface_azimuth(surface: IDFObject) -> float:
     return coords.azimuth if coords else 0.0
 
 
-def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
+def calculate_zone_floor_area(doc: AnyIDFDocument, zone_name: str) -> float:
     """Calculate the total floor area of a zone.
 
     Sums the area of all ``BuildingSurface:Detailed`` objects whose
@@ -900,7 +900,7 @@ def calculate_zone_floor_area(doc: IDFDocument, zone_name: str) -> float:
     return total_area
 
 
-def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
+def calculate_zone_ceiling_area(doc: AnyIDFDocument, zone_name: str) -> float:
     """Calculate the total ceiling/roof area of a zone (eppy compatibility).
 
     Sums the area of all surfaces whose ``surface_type`` is ``"Ceiling"``
@@ -941,7 +941,7 @@ def calculate_zone_ceiling_area(doc: IDFDocument, zone_name: str) -> float:
     return total_area
 
 
-def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
+def calculate_zone_height(doc: AnyIDFDocument, zone_name: str) -> float:
     """Calculate the height of a zone from its surfaces.
 
     Returns the difference between the maximum and minimum Z coordinates
@@ -990,7 +990,7 @@ def calculate_zone_height(doc: IDFDocument, zone_name: str) -> float:
     return z_max - z_min
 
 
-def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
+def translate_building(doc: AnyIDFDocument, offset: Vector3D) -> None:
     """Translate all building surfaces by the given offset vector.
 
     Modifies the document in-place, shifting every surface's vertices
@@ -1031,7 +1031,7 @@ def translate_building(doc: IDFDocument, offset: Vector3D) -> None:
                 set_surface_coords(surface, coords.translate(offset))
 
 
-def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None = None) -> None:
+def rotate_building(doc: AnyIDFDocument, angle_deg: float, anchor: Vector3D | None = None) -> None:
     """Rotate all building surfaces around the Z axis.
 
     Only vertex coordinates are modified; ``Building.north_axis`` and
@@ -1054,7 +1054,7 @@ def rotate_building(doc: IDFDocument, angle_deg: float, anchor: Vector3D | None 
                 set_surface_coords(surface, coords.rotate_z(angle_deg, anchor=anchor))
 
 
-def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
+def calculate_zone_volume(doc: AnyIDFDocument, zone_name: str) -> float:
     """
     Calculate the volume of a zone from its surfaces.
 
@@ -1089,7 +1089,7 @@ def calculate_zone_volume(doc: IDFDocument, zone_name: str) -> float:
 
 
 def set_wwr(  # noqa: C901
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     wwr: float,
     *,
     construction: str | None = None,
@@ -2065,7 +2065,7 @@ def polygon_contains_2d(
 # ---------------------------------------------------------------------------
 
 
-def intersect_match(doc: IDFDocument) -> None:
+def intersect_match(doc: AnyIDFDocument) -> None:
     """Intersect and match adjacent interzone surfaces, splitting as needed.
 
     Coplanar, oppositely-facing surfaces that overlap are split into

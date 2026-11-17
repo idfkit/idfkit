@@ -416,12 +416,26 @@ def _module_file(package_root: Path, dotted: str) -> str:
 
 
 def _document_stub_members(stub_path: Path) -> list[tuple[str, int]]:
-    """Read the public members of IDFDocument out of the generated stub."""
+    """Read the public members of IDFDocument out of the generated stub.
+
+    The stub declares IDFDocument's methods on a private base it shares with the per-version
+    document types (``_IDFDocumentMethods``), so the members of every class IDFDocument derives
+    from within the stub are IDFDocument's too.
+    """
     tree = ast.parse(stub_path.read_text(encoding="utf-8"))
+    classes = {node.name: node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)}
     members: list[tuple[str, int]] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ClassDef) or node.name != "IDFDocument":
-            continue
+    seen: set[str] = set()
+
+    def collect(name: str) -> None:
+        node = classes.get(name)
+        if node is None or name in seen:
+            return
+        seen.add(name)
+        for base in node.bases:
+            base_name = base.value if isinstance(base, ast.Subscript) else base
+            if isinstance(base_name, ast.Name):
+                collect(base_name.id)
         for item in node.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and not item.name.startswith("_"):
                 members.append((item.name, item.lineno))
@@ -431,6 +445,8 @@ def _document_stub_members(stub_path: Path) -> list[tuple[str, int]]:
                 and not item.target.id.startswith("_")
             ):
                 members.append((item.target.id, item.lineno))
+
+    collect("IDFDocument")
     return members
 
 

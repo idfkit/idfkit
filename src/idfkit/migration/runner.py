@@ -23,7 +23,7 @@ from .report import MigrationDiff, MigrationReport, MigrationStep
 from .subprocess_backend import SubprocessMigrator
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..simulation.config import EnergyPlusConfig
     from .protocol import Migrator
 
@@ -33,7 +33,7 @@ OnMigrationProgress = Callable[[MigrationProgress], Any]
 
 
 def migrate(
-    model: IDFDocument,
+    model: AnyIDFDocument,
     target_version: tuple[int, int, int] | str,
     *,
     energyplus: EnergyPlusConfig | None = None,
@@ -147,7 +147,7 @@ def migrate(
 
 def _run_chain(
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     chain: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],
     migrator: Migrator,
     work_root: Path,

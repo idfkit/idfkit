@@ -25,7 +25,7 @@ from ..scene import _FENESTRATION, ResolvedSurface, get_scene  # pyright: ignore
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
 
 
 class ColorBy(Enum):
@@ -144,7 +144,7 @@ def _is_fenestration(surface: ResolvedSurface) -> bool:
     return surface.object_type == _FENESTRATION
 
 
-def _surfaces(doc: IDFDocument, zones: list[str] | None = None) -> list[ResolvedSurface]:
+def _surfaces(doc: AnyIDFDocument, zones: list[str] | None = None) -> list[ResolvedSurface]:
     """Every surface the public extraction resolved, optionally narrowed to some zones.
 
     THE RENDERER NO LONGER RESOLVES ANYTHING.
@@ -475,7 +475,7 @@ def _make_3d_layout(go: Any, config: ModelViewConfig, title: str | None) -> Any:
 
 
 def view_model(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     *,
     config: ModelViewConfig | None = None,
     title: str | None = "3D Building Model",
@@ -511,7 +511,7 @@ def view_model(
 
 
 def view_floor_plan(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     *,
     config: ModelViewConfig | None = None,
     title: str | None = "Floor Plan",
@@ -655,7 +655,7 @@ def _apply_zone_offsets(
 
 
 def view_exploded(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     *,
     config: ModelViewConfig | None = None,
     title: str | None = "Exploded View",
@@ -699,7 +699,7 @@ def view_exploded(
 
 
 def view_normals(
-    doc: IDFDocument,
+    doc: AnyIDFDocument,
     *,
     config: ModelViewConfig | None = None,
     title: str | None = "Surface Normals",

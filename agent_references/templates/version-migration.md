@@ -8,6 +8,8 @@
 - You're maintaining a fleet of models and want them all on the same version.
 - You need to surface what transition steps changed during migration.
 
+To keep editing an old model in its own release instead, type it for that release with `as_version` (see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md)). After migrating, `report.migrated_model` is `IDFDocument | None`, typed for the latest release.
+
 ## Quick start
 
 ```python

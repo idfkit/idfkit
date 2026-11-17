@@ -42,7 +42,7 @@ from ._models import DIAGNOSTIC_CODES, CompatSeverity, Diagnostic
 from ._sarif import format_sarif
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument, IDFDocument
     from ..simulation.config import EnergyPlusConfig
 
 
@@ -496,7 +496,7 @@ def _resolve_migrate_target(spec: tuple[int, int, int] | None) -> tuple[int, int
 
 def _invoke_migrate(
     *,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     target: tuple[int, int, int],
     energyplus: EnergyPlusConfig | None,
     on_progress: Callable[[MigrationProgress], None] | None,
@@ -528,7 +528,7 @@ def _write_migrate_output(
     report: MigrationReport,
     *,
     input_path: Path,
-    fallback_model: IDFDocument,
+    fallback_model: AnyIDFDocument,
     resolved_target: tuple[int, int, int],
     explicit_output: str | None,
 ) -> Path | None:

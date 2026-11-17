@@ -8,11 +8,11 @@ from ..exceptions import MigrationError
 from .report import FieldDelta, MigrationDiff
 
 if TYPE_CHECKING:
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from ..schema import EpJSONSchema
 
 
-def document_diff(before: IDFDocument, after: IDFDocument) -> MigrationDiff:
+def document_diff(before: AnyIDFDocument, after: AnyIDFDocument) -> MigrationDiff:
     """Compute a structural diff between *before* and *after*.
 
     The diff compares the two documents at three levels:
@@ -56,8 +56,8 @@ def document_diff(before: IDFDocument, after: IDFDocument) -> MigrationDiff:
 
 
 def _compute_field_changes(
-    before: IDFDocument,
-    after: IDFDocument,
+    before: AnyIDFDocument,
+    after: AnyIDFDocument,
     *,
     shared_types: set[str],
 ) -> dict[str, FieldDelta]:
@@ -81,8 +81,8 @@ def _compute_field_changes(
 
 
 def verify_migration_output(
-    source: IDFDocument,
-    migrated: IDFDocument,
+    source: AnyIDFDocument,
+    migrated: AnyIDFDocument,
     *,
     target_version: tuple[int, int, int],
     completed_steps: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...],

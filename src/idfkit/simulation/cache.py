@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from ..document import IDFDocument
+    from ..document import AnyIDFDocument
     from .config import EnergyPlusConfig
     from .result import SimulationResult
 
@@ -47,7 +47,7 @@ def default_simulation_cache_dir() -> Path:
     return base / "idfkit" / "simulation"
 
 
-def _external_files_bytes(model: IDFDocument, search_dirs: list[Path]) -> bytes:
+def _external_files_bytes(model: AnyIDFDocument, search_dirs: list[Path]) -> bytes:
     """Return the bytes that bring every external file *model* names into the key.
 
     Empty when the model names no external file, so such a model keeps the
@@ -84,7 +84,7 @@ def _file_digest(path: Path) -> bytes:
 
 def runner_cache_key(
     cache: SimulationCache | None,
-    model: IDFDocument,
+    model: AnyIDFDocument,
     weather: Path | None,
     *,
     output_dir: str | Path | None,
@@ -162,7 +162,7 @@ class SimulationCache:
 
     def compute_key(
         self,
-        model: IDFDocument,
+        model: AnyIDFDocument,
         weather: str | Path | None,
         *,
         expand_objects: bool = True,
