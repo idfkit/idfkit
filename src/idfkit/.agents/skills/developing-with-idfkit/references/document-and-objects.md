@@ -39,8 +39,8 @@ save_idf(doc, "out.idf")
 | `load_idf(path)` / `load_epjson(path)` | Parse from disk. See [parsing-idf-epjson.md](parsing-idf-epjson.md). |
 | `doc.version` | `tuple[int, int, int]` — e.g. `(25, 2, 0)`. |
 | `doc.schema` | `EpJSONSchema` for the document's version. |
-| `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. |
-| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys. It delegates to `doc[obj_type]`; there is no behavioural difference. |
+| `doc[obj_type]` | The `IDFCollection` for the type. Type names are case-insensitive, as they are in EnergyPlus, so `doc["zone"]` and `doc["Zone"]` are the same collection. Never raises: an absent or misspelled type gives an empty collection that is detached from the document, so reading a type never inserts it. Typed for a literal type name of the document's release, in the schema's spelling (`doc["Zone"]` is `IDFCollection[Zone]`); any other key, a plain `str` variable included, is a type error. |
+| `doc.get_collection(obj_type)` | The same operation, typed for dynamic `str` keys: use it for a type name known only at run time. It delegates to `doc[obj_type]`; there is no behavioural difference. |
 | `doc.<attr>` | Typed attribute accessor for any schema type: the `snake_case` plural (`doc.air_loop_hvacs` is `IDFCollection[AirLoopHVAC]`). Hand-written shorthands also resolve and keep their meaning (`doc.building_surfaces` → `BuildingSurface:Detailed`, `doc.ideal_loads` → `ZoneHVAC:IdealLoadsAirSystem`). A typo raises `AttributeError` naming the closest matches. |
 | `doc.add(obj_type, name="", **fields)` | Create and insert an object. Returns the new `IDFObject`. Leave `name` empty for a type without a Name field. |
 | `doc.rename(obj_type, old, new)` | Rename + cascade updates through every reference. |
@@ -49,7 +49,8 @@ save_idf(doc, "out.idf")
 | `copy.deepcopy(doc)`, `pickle.dumps(doc)` | Also supported, same result as `doc.copy()` but slower. The schema travels by version, not by content, so a pickled document is small and the unpickled one shares the process-wide schema; this is what hands a document to worker processes (`ProcessPoolExecutor`, joblib). `simulate_batch` uses threads and needs none of this. |
 | `doc.all_objects` | Iterator over every object in the model (a property, not a method). |
 | `len(doc)` | Total object count. |
-| `obj_type in doc` | Is this type present (and non-empty)? |
+| `obj_type in doc` | Does the model hold at least one object of this type? Not whether its release has the type, so a type checker does not narrow the document on it (see [What `"Space" in doc` tells a type checker](#what-space-in-doc-tells-a-type-checker)). |
+| `doc.get(...)`, `doc.pop(...)`, `doc.setdefault(...)` | Do not exist: a document is not a `dict`. `doc.update({...})` is the eppy batch update (`"Zone.Office.x_origin"` keys). |
 
 ## Adding objects
 
@@ -135,7 +136,7 @@ def count_people(doc: AnyIDFDocument) -> int:
 
 ```
 
-`idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected by 9.3 to 23.1) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: `"Space" is not a defined key in "IDFDocumentV9_4[bool]"`. Through `AnyIDFDocument`, `doc["Space"]` is reported as `"Space" is not a defined key in "IDFDocumentAllVersions[bool]"` and `doc.spaces` as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it. The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
+`idfkit.versioned` has one type per supported release, `IDFDocumentV<major>_<minor>` (`IDFDocumentV9_4`, ..., `IDFDocumentV26_2`, which is `IDFDocument`). Annotate a function with `AnyIDFDocument` (from `idfkit.document` or `idfkit.versioned`) to accept a document of any release; through it, a document offers the object types every release has and no object type or field that some release lacks. A field whose value type changed between releases reads as any release's value, since the document can be of any of them, and accepts only a value every release accepts, through assignment and `update()` alike: `heater_fuel_type` reads as `str | None`, `"NaturalGas"` can be written, and `"DistrictHeatingWater"` (rejected by 9.3 to 23.1) and `"Steam"` (rejected from 23.2) cannot. Reaching for something a release lacks is reported against the type that lacks it: on a 9.4 document, pyright reports `doc["Space"]` as `No overloads for "__getitem__"` with `Argument of type "Literal['Space']" cannot be assigned to parameter "obj_type" of type "_NotAnObjectTypeOfEnergyPlus9_4"`. Through `AnyIDFDocument` the type named is `_NotAnObjectTypeOfEveryRelease`, and `doc.spaces` is reported as `Cannot access attribute "spaces" for class "IDFDocumentAllVersions[bool]"`; narrow with `as_version` to use it (mypy lists every type name the document does accept under such an error). The raw spellings (`doc.Site_Location`) stay an untyped fallback of `IDFDocument` only. idfkit's own functions (`save_idf`, `simulate`, the geometry helpers) take `AnyIDFDocument`, and those that return the document they were given (`expand_objects`, `doc.copy()`) return it with the same type. Field names, value types and `update()` keywords are checked against the release's declaration, as on any typed object (see Modifying objects).
 
 ### Which document type to annotate with
 
@@ -144,11 +145,11 @@ def count_people(doc: AnyIDFDocument) -> int:
 | Models of the latest release (you create them with `new_document()`, or migrated them to it with `migrate(doc, IDFDocument)`) | `IDFDocument` |
 | Models of any supported release (a reusable function, a library module) | `AnyIDFDocument`; an object from it as `AnyZone`, `AnyMaterial`, ... |
 | Models of one release | `IDFDocumentV9_4` and so on, reached with `as_version` |
-| Models of a range of releases (9.6 and later, before 23.2, ...) | a union of release types, with a `TypeVar` to return the caller's type |
+| Models of a range of releases (9.6 and later, before 23.2, ...) | `IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ..., reached with `as_version(doc, since=...)`; a `TypeVar` bound to one returns the caller's type |
 
 ### Annotating a parameter with an object class
 
-Every object type of the latest release has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed. "Any" is about the object, as in `AnyIDFDocument` it is about the document: `AnySpace` accepts a `Space` of any release that has one (9.6 on, as its docstring says). Such an object is reached only through a document of a release that has the type, so code for any release narrows the document first (a tuple passed to `as_version`, below) and decides what an older model gets; `AnyIDFDocument` itself offers no `Space`.
+Every object type of the latest release has two classes to annotate with. `Zone` is the latest release's: a 9.4 zone (`Zone_v8_9_to_v9_4`) and a zone reached through `AnyIDFDocument` are rejected. `AnyZone` is the type as every release that has it declares it, and accepts a zone of any release; through it, fields follow the same rules as through `AnyIDFDocument` (only fields every release has, reads as the union, writes as the intersection), extensible groups included. Every object type has an `Any<Class>`: for a type no release changed it is the latest class itself (`AnyZoneList` is `ZoneList`), so you never need to know which types changed. "Any" is about the object, as in `AnyIDFDocument` it is about the document: `AnySpace` accepts a `Space` of any release that has one (9.6 on, as its docstring says). Such an object is reached only through a document of a release that has the type, so code for any release narrows the document first (`as_version(doc, since="9.6")`, below) and decides what an older model gets; `AnyIDFDocument` itself offers no `Space`.
 
 The classes exist only in the stubs: import them from `idfkit.document` inside `if TYPE_CHECKING:`, with `from __future__ import annotations`. Importing one from `idfkit` instead is reported by recent pyright (`"Zone" is not exported from module "idfkit"`), and importing one outside `TYPE_CHECKING` raises `ImportError` at run time.
 
@@ -202,16 +203,17 @@ def use_natural_gas(doc: AnyIDFDocument) -> None:
 
 ### Code for a range of releases
 
-A union of release types accepts exactly those releases. Under pyright, a value is accepted only if every release in the union accepts it, by assignment or `update()`; mypy checks `update()` this way but not attribute assignment through a union. Bind a `TypeVar` to the union, so the function returns the caller's own type (unannotated, pyright infers the whole union and mypy infers `Any`):
+A union of release types accepts exactly those releases. `idfkit.versioned` has one for each range that starts or ends at a release: `IDFDocumentSince9_6` is 9.6 and every later release idfkit supports, `IDFDocumentBefore9_6` every earlier one. Under pyright, a value is accepted only if every release in the union accepts it, by assignment or `update()`; mypy checks `update()` this way but not attribute assignment through a union. Bind a `TypeVar` to the union, so the function returns the caller's own type (unannotated, pyright infers the whole union and mypy infers `Any`):
 
 ```python
 from typing import TypeVar
 
-from idfkit.versioned import IDFDocumentV26_1, IDFDocumentV26_2
+from idfkit.versioned import IDFDocumentSince26_1, IDFDocumentV26_1
 
-# A function for 26.1 and later. The TypeVar hands the caller's own type back: a plain
+# A function for 26.1 and later. IDFDocumentSince26_1 is IDFDocumentV26_1 | IDFDocumentV26_2, and
+# grows when idfkit adds a release. The TypeVar hands the caller's own type back: a plain
 # load_idf() result (IDFDocument, which is IDFDocumentV26_2) comes back as IDFDocument.
-Since26_1 = TypeVar("Since26_1", bound="IDFDocumentV26_1 | IDFDocumentV26_2")
+Since26_1 = TypeVar("Since26_1", bound=IDFDocumentSince26_1)
 
 
 def use_district_steam(doc: Since26_1) -> Since26_1:
@@ -225,39 +227,24 @@ older = use_district_steam(as_version(load_idf("older.idf"), IDFDocumentV26_1)) 
 # use_district_steam(legacy)  # error: a 9.4 document is not in the range
 ```
 
-The annotation is not checked at run time. To narrow a document of unknown release into a range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, ..., IDFDocument))` returns the document typed as their union, or raises `TypeError` naming the releases. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered.
+The annotation is not checked at run time. To narrow a document of unknown release into a range, give `as_version` the range: `since=` the first release (inclusive), `before=` the release it stops before (exclusive), or both. Each bound is a release's number, its document type or its version tuple: `since="9.6"`, `since=IDFDocumentV9_6` and `since=(9, 6, 0)` are the same range. `as_version` returns the document typed as the union of the releases in the range (`IDFDocumentSince9_6` for `since="9.6"`), or raises `TypeError` naming them. pyright and mypy both keep the union exactly. The range is the releases idfkit supports, so it grows when idfkit adds one, and there is no list to keep current. Pass `since=`, not an `IDFDocumentSince9_6` alias: to a type checker an alias is not a class.
+
+A type checker reads a range only from a release's type or a string literal. A bound in a variable (`since=first`), an optional one (`before: str | None`), or a version tuple (`since=doc.version`) is accepted, and types the document as `AnyIDFDocument`; so does a literal no supported release has (`since="27.1"`) or a range with no release in it, both of which raise `ValueError` when the call runs. Name a bound by its release (`"26.2"`, `IDFDocumentV26_2`), not `IDFDocument`: as a bound, `IDFDocument` means the latest release when the code runs, so `since=IDFDocument` stops accepting a 26.2 model once idfkit adopts the next release.
+
+For releases that are not one range, pass `as_version` a tuple of release types, as `isinstance` takes one: `as_version(doc, (IDFDocumentV9_6, IDFDocumentV26_2))` returns the document typed as their union. Under pyright the union is kept exactly; mypy collapses it into what all of the releases share, so lookups still work but a field only those releases have is not offered. Name every release in a tuple by its own type, the latest included: `IDFDocumentV26_2`, not `IDFDocument`. `IDFDocument` stands for whichever release is latest when the code runs. Once idfkit supports a newer release, a tuple that ends in `IDFDocument` no longer covers the release that was latest when it was written, and `as_version` raises `TypeError` on a model of that release. A union written by hand to annotate with has the same flaw (pyright and mypy then reject a model of that release), a flaw the generated `IDFDocumentSince…` aliases do not have.
 
 A narrower range also gives a narrower read type. Through releases that all list a field's choices, the checker can prove a `match` handles every one:
 
 ```python
-from typing import TypeAlias
-
 from typing_extensions import assert_never
 
-from idfkit import IDFDocument
-from idfkit.versioned import (
-    IDFDocumentV23_2,
-    IDFDocumentV24_1,
-    IDFDocumentV24_2,
-    IDFDocumentV25_1,
-    IDFDocumentV25_2,
-)
+from idfkit.versioned import IDFDocumentSince23_2
+
 
 # Through this range heater_fuel_type reads as 12 known choices (or None), so the checker can
 # prove every one is handled. Through AnyIDFDocument it reads as str | None (8.9 to 9.2 accept any
 # string), and no match over it can be exhaustive.
-Since23_2: TypeAlias = (
-    IDFDocumentV23_2
-    | IDFDocumentV24_1
-    | IDFDocumentV24_2
-    | IDFDocumentV25_1
-    | IDFDocumentV25_2
-    | IDFDocumentV26_1
-    | IDFDocument
-)
-
-
-def is_district_heated(doc: Since23_2, heater_name: str) -> bool:
+def is_district_heated(doc: IDFDocumentSince23_2, heater_name: str) -> bool:
     fuel = doc["WaterHeater:Mixed"][heater_name].heater_fuel_type
     match fuel:
         case "DistrictHeatingWater" | "DistrictHeatingSteam":
@@ -296,35 +283,57 @@ blank_94["People"]  # 9.4's People, with zone_or_zonelist_name
 
 ### A field renamed between releases
 
-`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and narrow each branch, with a tuple, to the releases that use one name; `update()` is then checked against all of them (under pyright: mypy rejects both names, so under mypy give `as_version` one release type per branch):
+`AnyIDFDocument` offers neither name of a renamed field. Branch on `doc.version` and narrow each branch to the releases that use one name, `before=` and `since=` the release that renamed it; each `update()` call is then checked against all of them, under pyright and under mypy (which still rejects the `doc.version` test itself, as below):
+
+```python
+def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
+    """Set a People object's zone, whatever the model's release.
+
+    The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
+    model to the releases that use one name, and update() is checked against all of them. The
+    ranges are the releases idfkit supports, so since="9.6" takes every later release as it is added.
+    """
+    if doc.version < (9, 6, 0):
+        as_version(doc, before="9.6")["People"][people].update(zone_or_zonelist_name=zone)
+    else:
+        as_version(doc, since="9.6")["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
+
+
+```
+
+### What `"Space" in doc` tells a type checker
+
+At run time `"Space" in doc` is true when the model holds at least one `Space`. It is false for a release without the type, and equally for a release that has it when the model holds none, so it says nothing about the release, and `doc["Space"]` never raises either way. A type checker therefore leaves the document's type as it was on both sides of the test:
+
+- `if "Space" in doc:` does not make a `Space` lookup legal through `AnyIDFDocument`; `doc["Space"]` stays an error inside it. Branch on `doc.version` and narrow with `as_version` instead.
+- `if "Output:SQLite" not in doc:` on a type every release has is an ordinary branch, type-checked like any other: an empty model of any release takes it.
+- On a union from `as_version(doc, (A, B, C))`, neither branch of `"Space" in d` drops a member.
 
 ```python
 from idfkit.versioned import (
-    IDFDocumentV8_9,
-    IDFDocumentV9_0,
-    IDFDocumentV9_1,
-    IDFDocumentV9_2,
-    IDFDocumentV9_3,
-    IDFDocumentV9_5,
-    IDFDocumentV9_6,
-    IDFDocumentV22_1,
     IDFDocumentV22_2,
     IDFDocumentV23_1,
+    IDFDocumentV23_2,
+    IDFDocumentV24_1,
+    IDFDocumentV24_2,
+    IDFDocumentV25_1,
+    IDFDocumentV25_2,
+    IDFDocumentV26_1,
 )
 
-# A tuple of release types, as isinstance takes one: as_version accepts a document of any of them.
-BEFORE_9_6 = (
-    IDFDocumentV8_9,
-    IDFDocumentV9_0,
-    IDFDocumentV9_1,
-    IDFDocumentV9_2,
-    IDFDocumentV9_3,
-    IDFDocumentV9_4,
-    IDFDocumentV9_5,
-)
-SINCE_9_6 = (
-    IDFDocumentV9_6,
-    IDFDocumentV22_1,
+
+def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
+    """Add Output:SQLite unless the model already holds one.
+
+    "Output:SQLite" in doc asks whether the model holds such an object, so it is False for an
+    empty model of any release, and the body below is type-checked.
+    """
+    if "Output:SQLite" not in doc:
+        doc.add("Output:SQLite", option_type="SimpleAndTabular")
+
+
+# Space arrived in 9.6 and its ceiling_height field in 22.2.
+SINCE_22_2 = (
     IDFDocumentV22_2,
     IDFDocumentV23_1,
     IDFDocumentV23_2,
@@ -337,19 +346,17 @@ SINCE_9_6 = (
 )
 
 
-def set_people_zone(doc: AnyIDFDocument, people: str, zone: str) -> None:
-    """Set a People object's zone, whatever the model's release.
-
-    The field was renamed in 9.6, so AnyIDFDocument offers neither name. Each branch narrows the
-    model to the releases that use one name, and update() is checked against all of them.
-    """
-    if doc.version < (9, 6, 0):
-        as_version(doc, BEFORE_9_6)["People"][people].update(zone_or_zonelist_name=zone)
-    else:
-        as_version(doc, SINCE_9_6)["People"][people].update(zone_or_zonelist_or_space_or_spacelist_name=zone)
+def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
+    """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+    if doc.version < (22, 2, 0):
+        return
+    for space in as_version(doc, SINCE_22_2)["Space"]:
+        space.ceiling_height = height
 
 
 ```
+
+Up to idfkit 1.3.0rc1, the document types were `TypedDict` subclasses to pyright, which narrows those on `in` by its own rules: `"Space" in doc` retyped an `AnyIDFDocument` as the latest release (so a 9.6 or 22.1 model then raised `InvalidFieldError` on `ceiling_height`), and the body of `"Zone" not in doc` was skipped as unreachable.
 
 ### Checking: pyright versus `idfkit check`
 
@@ -364,7 +371,7 @@ uv run pyright src/
 uv run idfkit check --targets 9.4,23.2,26.2 src/my_module.py
 ```
 
-mypy does not see the document's own methods and properties (it reports `add` and `version` as missing on a document), so prefer pyright for idfkit code.
+mypy sees the document's methods, properties and accessors, but collapses a union of release types into what they share (see Code for a range of releases), and under a lookup error it lists every object type name the document accepts, so prefer pyright for idfkit code.
 
 ## Modifying objects
 
@@ -422,6 +429,73 @@ for obj in doc.all_objects:
 ```
 
 ## Common mistakes
+
+!!! failure "guarding a release-specific lookup with `in`"
+
+    ```python
+    if "Space" in doc:  # true only when the model holds a Space; says nothing about the release
+        for space in doc["Space"]:  # a type error through AnyIDFDocument
+            space.ceiling_height = 3.0  # 9.6 to 22.1 have Space but not ceiling_height
+    ```
+
+!!! success "branch on the release, then narrow"
+
+    ```python
+    from idfkit.versioned import (
+        IDFDocumentV22_2,
+        IDFDocumentV23_1,
+        IDFDocumentV23_2,
+        IDFDocumentV24_1,
+        IDFDocumentV24_2,
+        IDFDocumentV25_1,
+        IDFDocumentV25_2,
+        IDFDocumentV26_1,
+    )
+
+
+    def ensure_sqlite_output(doc: AnyIDFDocument) -> None:
+        """Add Output:SQLite unless the model already holds one.
+
+        "Output:SQLite" in doc asks whether the model holds such an object, so it is False for an
+        empty model of any release, and the body below is type-checked.
+        """
+        if "Output:SQLite" not in doc:
+            doc.add("Output:SQLite", option_type="SimpleAndTabular")
+
+
+    # Space arrived in 9.6 and its ceiling_height field in 22.2.
+    SINCE_22_2 = (
+        IDFDocumentV22_2,
+        IDFDocumentV23_1,
+        IDFDocumentV23_2,
+        IDFDocumentV24_1,
+        IDFDocumentV24_2,
+        IDFDocumentV25_1,
+        IDFDocumentV25_2,
+        IDFDocumentV26_1,
+        IDFDocument,
+    )
+
+
+    def set_ceiling_heights(doc: AnyIDFDocument, height: float) -> None:
+        """Branch on the release, not on "Space" in doc, then narrow with as_version."""
+        if doc.version < (22, 2, 0):
+            return
+        for space in as_version(doc, SINCE_22_2)["Space"]:
+            space.ceiling_height = height
+
+
+    ```
+
+!!! failure "narrowing with `isinstance(doc, IDFDocument)`"
+
+    ```python
+    if isinstance(doc, IDFDocument):  # true for a document of every release at run time
+        for space in doc["Space"]:  # pyright now types doc as the latest release here
+            space.ceiling_height = 3.0  # raises InvalidFieldError on a 9.6 or 22.1 model
+    ```
+
+    `IDFDocument` is the only document class at run time, so every document passes the test, while a type checker narrows to the latest release on it. Use `as_version`, as above.
 
 !!! failure "mutating a list of extensibles in place"
 

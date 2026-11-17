@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .document import AnyIDFDocument
-    from .objects import IDFCollection, IDFObject
+    from .objects import IDFObject
 
 # Surface types that carry vertex geometry.  Used by translate_building,
 # rotate_building, scale_building, and related functions.
@@ -721,7 +721,7 @@ def translate_to_world(doc: AnyIDFDocument) -> None:
     for object_type in VERTEX_SURFACE_TYPES:
         if object_type not in doc:
             continue
-        for obj in cast("IDFCollection[IDFObject]", doc[object_type]):
+        for obj in doc.get_collection(object_type):
             objects[(object_type, obj.name.upper())] = obj
 
     for resolved in scene.surfaces:

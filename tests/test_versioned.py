@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, get_origin
+from typing import Any, get_args, get_origin
 
 import pytest
 
@@ -23,12 +23,30 @@ from idfkit.versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
 _PACKAGE = Path(versioned.__file__).resolve().parent
 
 
-def _committed() -> tuple[str, str, str]:
+def _committed() -> tuple[str, str, str, str]:
+    """The committed stubs: types, document, versioned, and the per-release document modules joined."""
+    documents = sorted((_PACKAGE / "_versioned").glob("v*.pyi"))
     return (
         (_PACKAGE / "_generated_types.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "document.pyi").read_text(encoding="utf-8"),
         (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8"),
+        "\n".join(path.read_text(encoding="utf-8") for path in documents),
     )
+
+
+def _generated() -> tuple[str, str, str, str]:
+    """What the generator writes now, in the shape of :func:`_committed`."""
+    documents = gen.generate_versioned_documents()
+    return (
+        gen.generate_stubs(),
+        gen.generate_document_pyi(),
+        gen.generate_versioned_pyi(),
+        "\n".join(source for name, source in sorted(documents.items()) if name != "__init__.pyi"),
+    )
+
+
+def _verify(sources: tuple[str, ...] | list[str], versions: tuple[tuple[int, int, int], ...]) -> list[str]:
+    return verify(sources[0], sources[1], [sources[2], sources[3]], versions)
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +157,123 @@ class TestAsVersion:
             versioned.as_version(new_document(), ())  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
+class TestAsVersionRange:
+    """``since=`` and ``before=``: a range of the releases idfkit supports, with no list to maintain."""
+
+    def test_since_accepts_every_supported_release_from_it_on(self) -> None:
+        for version in ENERGYPLUS_VERSIONS:
+            doc = new_document(version=version)
+            if version >= (9, 6, 0):
+                assert versioned.as_version(doc, since="9.6") is doc
+            else:
+                with pytest.raises(TypeError, match=r"not 9\.6\.0 or later"):
+                    versioned.as_version(doc, since="9.6")
+
+    def test_before_accepts_every_supported_release_before_it(self) -> None:
+        for version in ENERGYPLUS_VERSIONS:
+            doc = new_document(version=version)
+            if version < (9, 6, 0):
+                assert versioned.as_version(doc, before="9.6") is doc
+            else:
+                with pytest.raises(TypeError, match=r"not a release before 9\.6\.0"):
+                    versioned.as_version(doc, before="9.6")
+
+    def test_since_and_before_bound_a_range(self) -> None:
+        inside = new_document(version=(22, 1, 0))
+        assert versioned.as_version(inside, since="9.6", before="22.2") is inside
+        expected = r"EnergyPlus 22\.2\.0, not from 9\.6\.0 to before 22\.2\.0 \(9\.6\.0, 22\.1\.0\)"
+        with pytest.raises(TypeError, match=expected):
+            versioned.as_version(new_document(version=(22, 2, 0)), since="9.6", before="22.2")
+
+    def test_the_latest_release_is_in_a_range_from_any_earlier_release(self) -> None:
+        # The failure a hand-listed tuple ending in IDFDocument meets on release adoption cannot
+        # happen: the range is computed from ENERGYPLUS_VERSIONS when the call runs.
+        current = new_document()
+        for version in ENERGYPLUS_VERSIONS:
+            assert versioned.as_version(current, since=version_string(version)) is current
+
+    def test_a_bound_can_be_a_document_type(self) -> None:
+        doc = new_document(version=(9, 6, 0))
+        assert versioned.as_version(doc, since=versioned.IDFDocumentV9_6) is doc
+        assert versioned.as_version(doc, since=versioned.IDFDocumentV9_6[bool]) is doc
+        assert versioned.as_version(doc, before=versioned.IDFDocumentV22_1) is doc
+        current = new_document()
+        assert versioned.as_version(current, since=IDFDocument) is current
+        with pytest.raises(TypeError, match="not a release before"):
+            versioned.as_version(current, before=IDFDocument)
+
+    def test_a_bound_can_be_a_full_version_string(self) -> None:
+        doc = new_document(version=(9, 0, 1))
+        assert versioned.as_version(doc, since="9.0.1", before="9.1.0") is doc
+        assert versioned.as_version(doc, since="9.0.0") is doc  # a file's 9.0 is the 9.0.1 release
+
+    def test_a_bound_can_be_a_version_tuple(self) -> None:
+        doc = new_document(version=(9, 6, 0))
+        assert versioned.as_version(doc, since=(9, 6, 0)) is doc
+        assert versioned.as_version(doc, since=(9, 6), before=(22, 1, 0)) is doc
+        assert versioned.as_version(doc, since=doc.version) is doc
+        legacy = new_document(version=(9, 0, 1))
+        assert versioned.as_version(legacy, since=(9, 0, 0), before=(9, 1, 0)) is legacy  # a file's 9.0 is 9.0.1
+
+    def test_refuses_a_tuple_that_is_not_a_version(self) -> None:
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since=(9,))  # pyright: ignore[reportCallIssue, reportArgumentType]
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since=(9, "6"))  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_a_bound_that_is_not_a_release_names_the_forms_accepted(self) -> None:
+        with pytest.raises(TypeError, match=r"since=1\.5 is not a release: give .*version tuple"):
+            versioned.as_version(new_document(), since=1.5)  # pyright: ignore[reportCallIssue, reportArgumentType]
+
+    def test_a_version_newer_than_every_release_is_no_bound(self) -> None:
+        # A file of 27.1 is read as the latest release; as a bound it names nothing.
+        with pytest.raises(ValueError, match="supports no such EnergyPlus release"):
+            versioned.as_version(new_document(), since=(27, 1, 0))
+
+    def test_refuses_a_release_idfkit_does_not_support(self) -> None:
+        with pytest.raises(ValueError, match="supports no such EnergyPlus release"):
+            versioned.as_version(new_document(), since="27.1")
+        with pytest.raises(ValueError, match="is not a release"):
+            versioned.as_version(new_document(), since="latest")
+
+    def test_refuses_an_empty_range(self) -> None:
+        with pytest.raises(ValueError, match=r"No supported EnergyPlus release is from 26\.1\.0 to before 9\.4\.0"):
+            versioned.as_version(new_document(), since="26.1", before="9.4")
+
+    def test_refuses_any_document_as_a_bound(self) -> None:
+        with pytest.raises(TypeError, match="names none"):
+            any_release: Any = AnyIDFDocument  # names no release: a type error, so passed untyped
+            versioned.as_version(new_document(), since=any_release)
+
+    def test_refuses_a_document_type_and_a_range_together(self) -> None:
+        with pytest.raises(TypeError, match="not both"):
+            both: Any = {"since": "9.6"}  # both a type and a range: a type error, so passed untyped
+            versioned.as_version(new_document(), IDFDocument, **both)
+
+    def test_refuses_neither(self) -> None:
+        with pytest.raises(TypeError, match="needs a document type"):
+            versioned.as_version(new_document())  # pyright: ignore[reportCallIssue]
+
+
+class TestRangeAliases:
+    def test_every_release_has_a_since_alias_and_every_later_one_a_before_alias(self) -> None:
+        types = [getattr(versioned, f"IDFDocumentV{v[0]}_{v[1]}") for v in ENERGYPLUS_VERSIONS]
+        for i, version in enumerate(ENERGYPLUS_VERSIONS):
+            tag = f"{version[0]}_{version[1]}"
+            since = getattr(versioned, f"IDFDocumentSince{tag}")
+            assert (get_args(since) or (since,)) == tuple(types[i:])
+            assert f"IDFDocumentSince{tag}" in versioned.__all__
+            if i:
+                before = getattr(versioned, f"IDFDocumentBefore{tag}")
+                assert (get_args(before) or (before,)) == tuple(types[:i])
+                assert f"IDFDocumentBefore{tag}" in versioned.__all__
+
+    def test_an_alias_accepts_its_releases_at_run_time(self) -> None:
+        doc = new_document(version=(23, 2, 0))
+        alias: Any = versioned.IDFDocumentSince23_2  # to a type checker an alias is no class; it runs
+        assert versioned.as_version(doc, alias) is doc
+
+
 # ---------------------------------------------------------------------------
 # Generated stubs
 # ---------------------------------------------------------------------------
@@ -146,7 +281,7 @@ class TestAsVersion:
 
 class TestCommittedStubs:
     def test_describe_every_supported_version_exactly(self) -> None:
-        assert verify(*_committed(), ENERGYPLUS_VERSIONS) == []
+        assert _verify(_committed(), ENERGYPLUS_VERSIONS) == []
 
     def test_a_reordered_group_is_not_a_new_class(self) -> None:
         # 8.9 lists BuildingSurface:Detailed's vertex fields in another order than 9.3; nothing a
@@ -162,13 +297,30 @@ class TestCommittedStubs:
         expected = '"""``Space`` as every supported EnergyPlus version that has it declares it: 9.6.0 and later."""'
         assert expected in types_source
 
-    def test_no_map_is_closed(self) -> None:
-        # pyright takes about a minute to build a closed TypedDict of ~800 entries, in every file
-        # that names the document type, and mypy reads no other spelling of it (extra_items). So
-        # AnyIDFDocument holds only the types every version has, and no map needs closing (#251).
+    def test_no_document_type_is_a_typed_dict(self) -> None:
+        # pyright narrows a TypedDict on `"Space" in doc` by its own rules: a positive test retyped an
+        # AnyIDFDocument as the latest release, a negative one on a type every release has made its
+        # branch unreachable, and it offered get(), setdefault() and pop(), which a document does not
+        # have. So documents index through __getitem__ overloads, and no object-type map is generated.
         for source in _committed():
+            assert "_ObjectTypeMap" not in source
+            assert "_CommonTypeMap" not in source
             assert "closed=True" not in source
             assert "extra_items=" not in source
+            for header in re.findall(r"(?ms)^class (?:IDFDocument\w*)\((.*?)\):", source):
+                assert "TypedDict" not in header
+                assert "TypeMap" not in header
+
+    def test_every_older_release_is_re_exported_from_its_own_module(self) -> None:
+        versioned_source = _committed()[2]
+        modules = {path.name for path in (_PACKAGE / "_versioned").glob("*.pyi")}
+        assert "__init__.pyi" in modules
+        for ver in ENERGYPLUS_VERSIONS[:-1]:
+            tag = f"{ver[0]}_{ver[1]}"
+            assert f"v{tag}.pyi" in modules
+            assert f"from ._versioned.v{tag} import IDFDocumentV{tag} as IDFDocumentV{tag}" in versioned_source
+            assert f"class IDFDocumentV{tag}(" not in versioned_source
+        assert len(modules) == len(ENERGYPLUS_VERSIONS)  # one per older release, and __init__.pyi
 
     @pytest.mark.parametrize(
         ("source", "pattern", "replacement", "expected"),
@@ -176,7 +328,28 @@ class TestCommittedStubs:
             # A 9.4 field dropped from the class of its range.
             (2, r"(?m)^    rated_evaporator_fan_power_per_volume_flow_rate: float \| None\n", "", "missing"),
             # A type filed under the wrong class for a range of versions.
-            (2, r"IDFCollection\[Space_v9_6_to_v22_1\]", "IDFCollection[Space_v22_2_to_v26_1]", "Space"),
+            (3, r"IDFCollection\[_v\.Space_v9_6_to_v22_1\]", "IDFCollection[_v.Space_v22_2_to_v26_1]", "Space"),
+            # A type overloaded on no release's document: indexing with it would match nothing.
+            (
+                3,
+                r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Space"\].*\n',
+                "",
+                "missing types ['Space']",
+            ),
+            # A release's last overload taking a name, which every name the release lacks would match.
+            (
+                3,
+                r"obj_type: _NotAnObjectTypeOfEnergyPlus9_4, /\) -> Never",
+                "obj_type: str, /) -> Never",
+                "IDFDocumentV9_4: __getitem__ does not end with the one overload that matches no object type",
+            ),
+            # A release's document that no longer derives from IDFDocumentAllVersions.
+            (
+                3,
+                r"(?m)^    IDFDocumentAllVersions\[Strict\],\n\):\n(    \"\"\"An :class:`~idfkit.document.IDFDocument` typed for EnergyPlus 9\.4)",
+                r"):\n\1",
+                "IDFDocumentV9_4: does not derive from IDFDocumentAllVersions",
+            ),
             # An accessor typed with the wrong class.
             (
                 2,
@@ -184,12 +357,12 @@ class TestCommittedStubs:
                 "def spaces(self) -> IDFCollection[_g.Zone]",
                 "accessors",
             ),
-            # A type some version lacks, added to AnyIDFDocument: an older version's map lacks the key,
-            # so its document would no longer be assignable to AnyIDFDocument.
+            # A type some version lacks, added to AnyIDFDocument: indexing a document of any release
+            # with it would type-check.
             (
-                0,
-                r'(?m)^(\s+)"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n',
-                r'\g<0>\1"Space": ReadOnly[IDFCollection[Space]],\n',
+                1,
+                r'(?m)^    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
+                r'\g<0>    @overload\n    def __getitem__(self, obj_type: Literal["Space"], /) -> IDFCollection[Space]: ...\n',
                 "extra ['Space']",
             ),
             # A group every version has, dropped from the any-release class.
@@ -216,12 +389,17 @@ class TestCommittedStubs:
                 "heater_fuel_type: writable values some version rejects",
             ),
             # A type every version has, dropped from AnyIDFDocument.
-            (0, r'(?m)^\s+"Zone": ReadOnly\[IDFCollection\[AnyZone\]\],\n', "", "AnyIDFDocument"),
+            (
+                1,
+                r'(?m)^    @overload\n    def __getitem__\(self, obj_type: Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]: \.\.\.\n',
+                "",
+                "AnyIDFDocument",
+            ),
             # AnyIDFDocument typing a collection with a class that is not defined: reported, not a KeyError.
             (
-                0,
-                r'"Zone": ReadOnly\[IDFCollection\[AnyZone\]\]',
-                '"Zone": ReadOnly[IDFCollection[AnyZoneX]]',
+                1,
+                r'Literal\["Zone"\], /\) -> IDFCollection\[AnyZone\]',
+                'Literal["Zone"], /) -> IDFCollection[AnyZoneX]',
                 "class AnyZoneX not defined",
             ),
             # A writable field that some version lacks (People before 9.6): reported, not a KeyError.
@@ -234,6 +412,35 @@ class TestCommittedStubs:
                 r"    def zone_or_zonelist_or_space_or_spacelist_name(self, value: str | None) -> None: ...\n",
                 "zone_or_zonelist_or_space_or_spacelist_name: writable, but not a field of every version",
             ),
+            # A range alias one release short.
+            (
+                2,
+                r"(IDFDocumentBefore9_6: TypeAlias = \(\n(?:    .*\n)*?)    \| IDFDocumentV9_5\n",
+                r"\1",
+                "IDFDocumentBefore9_6: names",
+            ),
+            # A since= overload typed with the wrong range.
+            (
+                2,
+                r'(since: type\[IDFDocumentV9_6\] \| Literal\["9\.6", "9\.6\.0"\]\n\) -> )IDFDocumentSince9_6',
+                r"\1IDFDocumentSince9_5",
+                "as_version(since=(9, 6, 0), before=None): returns",
+            ),
+            # A bound's literal naming another release than its type.
+            (
+                2,
+                r'(since: type\[IDFDocumentV9_6\] \| Literal\[)"9\.6"',
+                r'\1"9.5"',
+                "as_version(since=IDFDocumentV9_6): typed",
+            ),
+            # A range left without an overload.
+            (
+                2,
+                r"@overload\ndef as_version\(\n    doc: AnyIDFDocument, \*, since: type\[IDFDocumentV9_6\] "
+                r'\| Literal\["9\.6", "9\.6\.0"\]\n\) -> IDFDocumentSince9_6: \.\.\.\n',
+                "",
+                "as_version(since=(9, 6, 0), before=None): no overload",
+            ),
         ],
     )
     def test_a_misdescription_is_reported(self, source: int, pattern: str, replacement: str, expected: str) -> None:
@@ -241,7 +448,7 @@ class TestCommittedStubs:
         mutated = re.sub(pattern, replacement, sources[source], count=1)
         assert mutated != sources[source], "the mutation did not apply"
         sources[source] = mutated
-        problems = verify(sources[0], sources[1], sources[2], ENERGYPLUS_VERSIONS)
+        problems = _verify(sources, ENERGYPLUS_VERSIONS)
         assert any(expected in problem for problem in problems), problems
 
     def test_a_fault_in_the_generators_type_mapping_is_reported(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -257,8 +464,7 @@ class TestCommittedStubs:
         monkeypatch.setattr(gen, "_schema_type_to_python", faulty)
         gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
         try:
-            sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
-            problems = verify(*sources, gen.SUPPORTED.versions)
+            problems = _verify(_generated(), gen.SUPPORTED.versions)
         finally:
             monkeypatch.undo()
             gen._clear_version_caches()  # pyright: ignore[reportPrivateUsage]
@@ -271,14 +477,14 @@ class TestAdoption:
     def test_adopting_the_latest_release_regenerates_correctly(self) -> None:
         previous = ENERGYPLUS_VERSIONS[-2]
         with gen.supported_up_to(previous):
-            before = gen.generate_versioned_pyi()
-            sources = (gen.generate_stubs(), gen.generate_document_pyi(), before)
-            assert verify(*sources, gen.SUPPORTED.versions) == []
-            assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" not in before
+            sources = _generated()
+            before = sources[2]
+            assert _verify(sources, gen.SUPPORTED.versions) == []
+            assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" not in sources[3]
 
         # After the adoption, the release that was the latest has a document type of its own ...
         after = (_PACKAGE / "versioned.pyi").read_text(encoding="utf-8")
-        assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" in after
+        assert f"class IDFDocumentV{previous[0]}_{previous[1]}(" in _committed()[3]
         # ... and a class of a version range that had already ended keeps its name, so an annotation
         # written against it before the adoption still resolves.
         ended = re.findall(r"(?ms)^class (\w+_v\d+_\d+(?:_to_v\d+_\d+)?)\(.*?(?=^\S)", before)
@@ -289,9 +495,17 @@ class TestAdoption:
     def test_generating_for_an_older_release_does_not_leak_into_the_latest(self) -> None:
         # Every version-dependent cache must be cleared when the supported releases change, or an
         # earlier generation for 24.1 is reused for the full set (a merged group did, once).
+        with gen.supported_up_to((24, 1, 0)):
+            gen.generate_versioned_documents()
         gen.generate_stubs((24, 1, 0))
-        sources = (gen.generate_stubs(), gen.generate_document_pyi(), gen.generate_versioned_pyi())
-        assert verify(*sources, gen.SUPPORTED.versions) == []
+        assert _verify(_generated(), gen.SUPPORTED.versions) == []
+
+    def test_the_as_version_docstring_names_the_latest_release_it_was_generated_for(self) -> None:
+        # The advice "name the latest release by its own type" must move on with the latest release.
+        with gen.supported_up_to((24, 1, 0)):
+            stub = gen.generate_versioned_pyi()
+        assert "``IDFDocumentV24_1``, not\n    ``IDFDocument``" in stub
+        assert "IDFDocumentV26_2``, not" not in stub
 
     def test_generating_for_an_older_release_keeps_the_run_time_module(self) -> None:
         # versioned.py is what as_version checks against at run time, so it always names every

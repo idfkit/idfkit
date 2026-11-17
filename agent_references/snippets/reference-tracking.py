@@ -42,6 +42,16 @@ for obj, field in doc.references.get_referencing_with_fields("Office"):
 # --8<-- [end:find-referencing]
 
 
+# --8<-- [start:typed-referencing]
+# Ask the collection of the type you want: the same graph lookup, typed as that
+# type's objects (for the document's release, or Any<Class> via AnyIDFDocument).
+for surface in doc["BuildingSurface:Detailed"].referencing("Office"):
+    print(surface.name, surface.zone_name, surface.construction_name)  # checked fields
+    for window in doc["FenestrationSurface:Detailed"].referencing(surface):  # name or object
+        print(" ", window.name, window.building_surface_name)
+# --8<-- [end:typed-referencing]
+
+
 # --8<-- [start:rename]
 doc["Zone"]["Office"].name = "Open_Office"
 # All fields across the document that pointed to "Office" now say "Open_Office":

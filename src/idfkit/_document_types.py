@@ -7,9 +7,10 @@ and its version is a value read from the file. The stand-ins here connect the tw
 against one holds exactly for a document of its version, which is what
 :func:`as_version` checks before it hands a document back under that type.
 
-That ``isinstance`` is this module's mechanism, not the public way to check a release. Pyright
-rejects ``isinstance`` against a document type, and the latest release's type has no stand-in:
-it is ``IDFDocument``, which every document is an instance of. :func:`as_version` is the check.
+That ``isinstance`` is this module's mechanism, not the public way to check a release. The
+latest release's type has no stand-in: it is ``IDFDocument``, which every document is an
+instance of, so ``isinstance(doc, IDFDocument)`` holds for a document of any release while a type
+checker then types it as the latest one. :func:`as_version` is the check.
 
 A document's version is matched to a release the way its schema is chosen,
 by :func:`~idfkit.versions.find_closest_version`: a file states its version with two components
@@ -22,10 +23,15 @@ from __future__ import annotations
 import types
 from typing import TYPE_CHECKING, Any, NoReturn, TypeVar, Union, cast, get_args, get_origin, overload
 
-from .versions import LATEST_VERSION, find_closest_version, version_string
+from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version, version_string
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from .document import AnyIDFDocument
+
+    # What since= and before= take: a release's document type, its number, or its version tuple.
+    _Bound: TypeAlias = "type[AnyIDFDocument] | str | tuple[int, int] | tuple[int, int, int]"
 
 _D = TypeVar("_D", bound="AnyIDFDocument")
 
@@ -38,10 +44,9 @@ class DocumentTypeMeta(type):
     def __instancecheck__(cls, instance: object) -> bool:
         from .document import IDFDocument
 
-        # IDFDocument is a TypedDict-backed class to a type checker, which isinstance refuses.
-        if not isinstance(instance, cast("type", IDFDocument)):
+        if not isinstance(instance, IDFDocument):
             return False
-        version = cast("IDFDocument", instance).version
+        version = instance.version
         return cls._energyplus_version is None or find_closest_version(version) == cls._energyplus_version
 
     def __call__(cls, *args: Any, **kwargs: Any) -> NoReturn:
@@ -129,15 +134,109 @@ def _candidates(document_type: object) -> tuple[object, ...]:
     return (document_type,)
 
 
+def _release(bound: object, keyword: str) -> tuple[int, int, int]:
+    """The supported release *bound* names, for ``since=`` or ``before=``.
+
+    A document type names the release it stands for (``IDFDocument`` the latest). A string
+    (``"9.6"``, ``"9.6.0"``) or a version tuple (``(9, 6, 0)``, as ``doc.version`` is) names one by
+    number, and is matched to a release as a file's ``Version`` line is, by
+    :func:`~idfkit.versions.find_closest_version`; but a number newer than every supported release,
+    which a file may degrade to the latest, names no release here.
+    """
+    if isinstance(bound, str):
+        parts = bound.split(".")
+        if not 2 <= len(parts) <= 3 or not all(part.isdecimal() for part in parts):
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
+            raise ValueError(msg)
+        numbers = tuple(int(part) for part in parts)
+    elif isinstance(bound, tuple):
+        numbers = cast("tuple[object, ...]", bound)
+        if not 2 <= len(numbers) <= 3 or not all(type(n) is int for n in numbers):
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
+            raise ValueError(msg)
+    else:
+        try:
+            _, required = _resolve(bound)
+        except TypeError:
+            msg = f"{keyword}={bound!r} is not a release: give {_BOUND_FORMS}"
+            raise TypeError(msg) from None
+        if required is None:
+            msg = f"{keyword}= needs a release, and AnyIDFDocument names none"
+            raise TypeError(msg)
+        return required
+    version = cast("tuple[int, int, int]", (*numbers, 0)[:3])
+    release = find_closest_version(version)
+    if release is None or release[:2] != version[:2]:
+        supported = ", ".join(version_string(v) for v in ENERGYPLUS_VERSIONS)
+        msg = f"{keyword}={bound!r}: idfkit supports no such EnergyPlus release (it supports {supported})"
+        raise ValueError(msg)
+    return release
+
+
+_BOUND_FORMS = '"major.minor" ("9.6"), a version tuple ((9, 6, 0)) or a document type (IDFDocumentV9_6)'
+
+
+def _describe_range(low: tuple[int, int, int] | None, high: tuple[int, int, int] | None) -> str:
+    """``9.6.0 or later``, ``a release before 9.6.0`` or ``from 9.6.0 to before 23.2.0``."""
+    if high is None:
+        return f"{version_string(cast('tuple[int, int, int]', low))} or later"
+    if low is None:
+        return f"a release before {version_string(high)}"
+    return f"from {version_string(low)} to before {version_string(high)}"
+
+
+def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
+    """Raise unless *doc* is of a supported release from *since* (inclusive) to *before* (exclusive)."""
+    low = None if since is None else _release(since, "since")
+    high = None if before is None else _release(before, "before")
+    members = [v for v in ENERGYPLUS_VERSIONS if (low is None or v >= low) and (high is None or v < high)]
+    if members and find_closest_version(doc.version) in members:
+        return
+    # Only a refusal pays for the description.
+    described = _describe_range(low, high)
+    if not members:
+        msg = f"No supported EnergyPlus release is {described}"
+        raise ValueError(msg)
+    releases = ", ".join(version_string(v) for v in members)
+    msg = f"The document is EnergyPlus {version_string(doc.version)}, not {described} ({releases})"
+    raise TypeError(msg)
+
+
 @overload
 def as_version(doc: AnyIDFDocument, document_type: type[_D]) -> _D: ...
 @overload
 def as_version(doc: AnyIDFDocument, document_type: tuple[type[_D], ...]) -> _D: ...
-def as_version(doc: AnyIDFDocument, document_type: type[_D] | tuple[type[_D], ...]) -> _D:
+@overload
+def as_version(
+    doc: AnyIDFDocument,
+    *,
+    since: _Bound | None = None,
+    before: _Bound | None = None,
+) -> AnyIDFDocument: ...
+def as_version(
+    doc: AnyIDFDocument,
+    document_type: type[_D] | tuple[type[_D], ...] | None = None,
+    *,
+    since: _Bound | None = None,
+    before: _Bound | None = None,
+) -> _D | AnyIDFDocument:
     """Type *doc* as a document of the EnergyPlus version *document_type* stands for, or one of several.
+
+    Or, given *since* and/or *before* instead, as a document of any supported release from *since*
+    on and before *before*.
 
     The stub in ``versioned.pyi`` documents this function; this is its run-time check.
     """
+    ranged = since is not None or before is not None
+    if document_type is not None and ranged:
+        msg = "as_version takes a document type or since=/before=, not both"
+        raise TypeError(msg)
+    if ranged:
+        _check_range(doc, since, before)
+        return doc
+    if document_type is None:
+        msg = "as_version needs a document type, or since= or before="
+        raise TypeError(msg)
     candidates = _candidates(document_type)
     if not candidates:
         msg = "as_version needs at least one document type"
@@ -156,3 +255,13 @@ def as_version(doc: AnyIDFDocument, document_type: type[_D] | tuple[type[_D], ..
         typed_as = " | ".join(origin.__name__ for origin, _ in resolved)
     msg = f"The document is EnergyPlus {version_string(doc.version)}, {expected}, so it cannot be typed as {typed_as}"
     raise TypeError(msg)
+
+
+def release_union(*members: type) -> Any:
+    """The run-time value of a generated range alias, such as ``IDFDocumentSince9_6``: the union of *members*.
+
+    A type checker reads the alias from ``versioned.pyi``; this only has to exist when imported.
+    One member is that member, as ``Union`` makes it.
+    """
+    union: Any = Union
+    return union[members]
