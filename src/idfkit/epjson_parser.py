@@ -174,7 +174,7 @@ class EpJSONParser:
             schema = get_schema(version)
 
         # Create document
-        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)  # type: ignore[reportCallIssue]  # .pyi uses covariant Strict
+        doc = IDFDocument(version=version, schema=schema, filepath=self._filepath, strict=strict)
 
         # Parse objects
         self._parse_objects(data, doc, schema)

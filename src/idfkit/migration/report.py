@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Generic
 
-if TYPE_CHECKING:
-    from ..document import IDFDocument
+from ._typing import DocumentT_co
 
 
 def _empty_count_delta() -> dict[str, int]:
@@ -87,15 +86,24 @@ class MigrationDiff:
         )
 
 
-@dataclass(frozen=True, slots=True)
-class MigrationReport:
+# No slots=True, unlike the records above: on Python 3.10 a frozen dataclass rebuilt with slots
+# cannot be constructed through a subscripted alias (MigrationReport[X](...)), because the alias
+# sets __orig_class__ and the generated __setattr__'s super() refers to the class before rebuild.
+@dataclass(frozen=True)
+class MigrationReport(Generic[DocumentT_co]):
     """Result of a full migration run.
 
+    Generic in the type of ``migrated_model``. [migrate][idfkit.migration.migrate]
+    given a document type as its target, such as ``IDFDocumentV24_1`` from
+    ``idfkit.versioned``, returns a report typed for that release;
+    given a version tuple or string, whose release a type checker cannot know,
+    it returns one typed with ``AnyIDFDocument``, as a bare ``MigrationReport``
+    annotation also is.
+
     Attributes:
-        migrated_model: The [IDFDocument][idfkit.document.IDFDocument] at
-            ``target_version`` (``None`` only on a no-op migration where
-            source equals target — in that case the caller's original model is
-            the result).
+        migrated_model: The new document, at ``target_version`` (``None``
+            only on a no-op migration where source equals target — in that
+            case the caller's original model is the result).
         source_version: The version the model started at.
         target_version: The version the model was migrated to. On a partial
             failure this is the last successfully reached version, which may
@@ -106,7 +114,7 @@ class MigrationReport:
             steps ran (source == target).
     """
 
-    migrated_model: IDFDocument | None
+    migrated_model: DocumentT_co | None
     source_version: tuple[int, int, int]
     target_version: tuple[int, int, int]
     requested_target: tuple[int, int, int]
