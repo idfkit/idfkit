@@ -59,11 +59,9 @@ def _diagnostic_to_result(diag: Diagnostic) -> dict[str, Any]:
         },
     }
     if diag.suggested_fix is not None:
-        result["fixes"] = [
-            {
-                "description": {"text": diag.suggested_fix},
-            },
-        ]
+        # Not a SARIF ``fix``: the schema requires every fix to carry ``artifactChanges`` (the
+        # exact text edits), and a suggestion is prose or a replacement expression, not an edit.
+        result["properties"]["suggested_fix"] = diag.suggested_fix
     return result
 
 

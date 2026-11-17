@@ -86,3 +86,14 @@ class TestPlanMigrationChain:
 @pytest.mark.parametrize("target", ["9.0", "9.0.0", (9, 0, 0)])
 def test_target_is_matched_to_its_release_line(target: Any) -> None:
     assert normalize_target(target) == (9, 0, 1)
+
+
+def test_plan_resolves_the_target_to_its_release() -> None:
+    """A 9.0 file's (9, 0, 0) names the 9.0.1 release as a target, as it does as a source."""
+    assert plan_migration_chain((8, 9, 0), (9, 0, 0)) == (((8, 9, 0), (9, 0, 1)),)
+
+
+@pytest.mark.parametrize("target", [(24, 1, 0, 7), (9, 6, 0, 1)])
+def test_normalize_target_refuses_a_tuple_of_another_length(target: tuple[int, ...]) -> None:
+    with pytest.raises(UnsupportedVersionError):
+        normalize_target(cast("Any", target))

@@ -26,7 +26,14 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePath
 from typing import Any, cast
 
-from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, MINIMUM_VERSION, find_release, version_string
+from ..versions import (
+    ENERGYPLUS_VERSIONS,
+    LATEST_VERSION,
+    MINIMUM_VERSION,
+    find_release,
+    releases_between,
+    version_string,
+)
 
 Release = tuple[int, int, int]
 
@@ -82,11 +89,6 @@ def parse_release(spec: str) -> Release:
         msg = f"EnergyPlus {text} is not a release idfkit supports ({_supported()})"
         raise ConfigError(msg)
     return release
-
-
-def releases_between(since: Release | None, before: Release | None) -> list[Release]:
-    """Every supported release from *since* (inclusive) to *before* (exclusive), as ``as_version`` reads them."""
-    return [v for v in ENERGYPLUS_VERSIONS if (since is None or v >= since) and (before is None or v < before)]
 
 
 def parse_targets(spec: str | list[str]) -> list[Release]:
@@ -150,22 +152,48 @@ def find_config(start: Path) -> Path | None:
     """
     for directory in [start, *start.parents]:
         candidate = directory / "pyproject.toml"
-        if candidate.is_file() and _TABLE_RE.search(candidate.read_text(encoding="utf-8", errors="replace")):
+        if candidate.is_file() and _has_check_table(candidate.read_text(encoding="utf-8", errors="replace")):
             return candidate
         if (directory / ".git").exists():
             return None
     return None
 
 
-def _toml_loads(text: str, path: Path) -> dict[str, Any]:
-    """Parse TOML with ``tomllib`` (3.11+) or ``tomli`` (3.10), idfkit depending on neither."""
-    module: Any = None
+def _has_check_table(text: str) -> bool:
+    """Whether a ``pyproject.toml`` defines ``tool.idfkit.check``, in any TOML spelling.
+
+    The table may be written as a header or through dotted keys (``[tool.idfkit]`` then
+    ``check.targets = ...``), so the file is parsed when a TOML parser is available. Without one,
+    or when the file does not parse, only the ``[tool.idfkit.check]`` header is recognised.
+    """
+    if "idfkit" not in text:
+        return False
+    module = _toml_module()
+    if module is not None:
+        try:
+            data = cast("dict[str, Any]", module.loads(text))
+        except ValueError:  # TOMLDecodeError subclasses ValueError
+            pass
+        else:
+            tool: object = data.get("tool")
+            idfkit: object = cast("dict[str, object]", tool).get("idfkit") if isinstance(tool, dict) else None
+            return isinstance(idfkit, dict) and "check" in idfkit
+    return _TABLE_RE.search(text) is not None
+
+
+def _toml_module() -> Any:
+    """``tomllib`` (3.11+) or ``tomli`` (3.10), or ``None`` when neither is importable."""
     for name in ("tomllib", "tomli"):
         try:
-            module = importlib.import_module(name)
-            break
+            return importlib.import_module(name)
         except ModuleNotFoundError:
             continue
+    return None
+
+
+def _toml_loads(text: str, path: Path) -> dict[str, Any]:
+    """Parse TOML with ``tomllib`` (3.11+) or ``tomli`` (3.10), idfkit depending on neither."""
+    module = _toml_module()
     if module is None:
         msg = f"{path}: reading [tool.idfkit.check] needs Python 3.11+ or the 'tomli' package"
         raise ConfigError(msg)

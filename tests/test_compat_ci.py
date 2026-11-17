@@ -890,3 +890,143 @@ class TestNarrowingKeepsDefiniteMisses:
         )
         (literal,) = extract_literals(source, "t.py")
         assert literal.releases is None
+
+
+# ---------------------------------------------------------------------------
+# Review fixes
+# ---------------------------------------------------------------------------
+
+
+class TestReviewFixes:
+    def test_bare_comment_for_a_deselected_rule_is_not_unused(self) -> None:
+        source = _src('def f(doc):\n    doc.add("Space", "S")  # idfkit: ignore\n')
+        assert _codes(source) == []
+        assert _codes(source, ignore=["C001"]) == []
+        assert _codes(source, select=["C002"]) == []
+
+    @pytest.mark.parametrize("comment", ["# idfkit: ignore: C003", "# idfkit: ignore C003"])
+    def test_codes_without_brackets_silence_nothing(self, comment: str) -> None:
+        assert [s.codes for s in parse_suppressions(f"x = 1  {comment}\n").values()] == [frozenset()]
+        source = _src(f'def f(doc):\n    doc.add("Space", "S")  {comment}\n')
+        assert sorted(_codes(source)) == ["C001", "C005"]
+
+    def test_bare_comment_followed_by_prose_or_comment_stays_bare(self) -> None:
+        for comment in ("# idfkit: ignore  # legacy", "# idfkit: ignore because legacy"):
+            assert [s.codes for s in parse_suppressions(f"x = 1  {comment}\n").values()] == [None]
+
+    def test_targets_are_matched_to_their_release(self) -> None:
+        source = _src('def f(doc):\n    if doc.version < (9, 4, 0):\n        doc.add("Space", "S")\n')
+        assert _codes(source, [(9, 0, 0), _V262]) == _codes(source, [(9, 0, 1), _V262]) == ["C001"]
+
+    def test_long_elif_chain_is_walked_without_recursion(self) -> None:
+        branches = "".join(
+            f"    elif doc.version >= ({25 - i % 10}, 1, 0):\n        doc['Space']\n" for i in range(600)
+        )
+        source = _src(f"def f(doc):\n    if doc.version >= (26, 0, 0):\n        doc['Space']\n{branches}")
+        literals = extract_literals(source)
+        assert len(literals) == 601
+        assert literals[0].releases == _since((26, 1, 0))
+
+    def test_elif_and_else_keep_their_guards(self) -> None:
+        source = _src("""
+            def f(doc):
+                if doc.version >= (22, 1, 0):
+                    doc["A"]
+                elif doc.version >= (9, 6, 0):
+                    doc["B"]
+                else:
+                    doc["C"]
+            """)
+        assert _releases(source, "A") == _since(_V221)
+        assert _releases(source, "B") == _since(_V96) - _since(_V221)
+        assert _releases(source, "C") == _before(_V96)
+
+    def test_rebinding_in_a_later_elif_drops_the_negated_guard(self) -> None:
+        source = _src("""
+            def f(doc, other):
+                if doc.version >= (22, 1, 0):
+                    pass
+                elif doc.version >= (9, 6, 0):
+                    doc = other
+                else:
+                    doc["C"]
+            """)
+        assert _releases(source, "C") == _before(_V96)
+        source = _src("""
+            def f(doc, other):
+                if doc.version >= (22, 1, 0):
+                    pass
+                elif (doc := other).version >= (9, 6, 0):
+                    pass
+                else:
+                    doc["C"]
+            """)
+        assert _releases(source, "C") is None
+
+    def test_guard_on_a_global_name_is_not_trusted(self) -> None:
+        source = _src("""
+            doc = load()
+            def reset():
+                global doc
+                doc = load()
+            if doc.version >= (24, 1, 0):
+                reset()
+                doc["Space"]
+            """)
+        assert _releases(source, "Space") is None
+
+    def test_generator_body_runs_outside_the_guard(self) -> None:
+        source = _src("""
+            def f(doc):
+                if doc.version >= (24, 1, 0):
+                    return (doc["Space"] for _ in range(1))
+            """)
+        assert _releases(source, "Space") is None
+
+    def test_class_comprehension_does_not_see_class_names(self) -> None:
+        source = _src("""
+            doc = load()
+            class Holder:
+                doc = as_version(doc, IDFDocumentV9_6)
+                rows = [doc["Space"] for _ in range(2)]
+            """)
+        assert _releases(source, "Space") is None
+
+    @pytest.mark.parametrize("bound", ['" 9.6"', "(9, 6, 0, 0)"])
+    def test_bound_as_version_refuses_is_not_read(self, bound: str) -> None:
+        assert _releases(_src(f'as_version(doc, since={bound})["Space"]\n'), "Space") is None
+
+    def test_receiver_text_keeps_its_meaning(self) -> None:
+        source = _src("""
+            (a or b).get_collection("Zone")
+            load(
+                "model.idf",
+            ).get_collection("Zone")
+            """)
+        assert [lit.receiver for lit in extract_literals(source)] == ["(a or b)", "load('model.idf')"]
+
+    def test_config_written_with_dotted_keys_is_found(self, tmp_path: Path) -> None:
+        (tmp_path / ".git").mkdir()
+        (tmp_path / "pyproject.toml").write_text('[tool.idfkit]\ncheck.targets = ["9.6", "24.1"]\n')
+        assert find_config(tmp_path) == tmp_path / "pyproject.toml"
+
+    def test_same_file_named_twice_is_checked_once(self, project: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        (project / "a.py").write_text(_GUARDED)
+        _, out, _ = _run(
+            ["check", "--isolated", "--targets", "8.9,26.2", "a.py", "./a.py", str(project / "a.py")], capsys
+        )
+        assert "in 1 file" in out
+
+    def test_discovery_skips_hidden_and_vendored_directories(
+        self, project: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        for directory in (".venv/lib", "node_modules/x", "pkg"):
+            (project / directory).mkdir(parents=True)
+            (project / directory / "a.py").write_text(_GUARDED)
+        _, out, _ = _run(["check", "--isolated", "--targets", "8.9,26.2", "--json", "."], capsys)
+        assert {d["filename"] for d in json.loads(out)["diagnostics"]} == {str(Path("pkg") / "a.py")}
+
+    def test_releases_between_lives_in_versions(self) -> None:
+        from idfkit.versions import releases_between as shared
+
+        assert shared is releases_between

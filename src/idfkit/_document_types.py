@@ -39,7 +39,14 @@ from typing import (
     overload,
 )
 
-from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version, version_string
+from .versions import (
+    ENERGYPLUS_VERSIONS,
+    LATEST_VERSION,
+    find_closest_version,
+    find_release,
+    releases_between,
+    version_string,
+)
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -240,9 +247,8 @@ def _release(bound: object, keyword: str) -> tuple[int, int, int]:
 
     A document type names the release it stands for (``IDFDocument`` the latest). A string
     (``"9.6"``, ``"9.6.0"``) or a version tuple (``(9, 6, 0)``, as ``doc.version`` is) names one by
-    number, and is matched to a release as a file's ``Version`` line is, by
-    :func:`~idfkit.versions.find_closest_version`; but a number newer than every supported release,
-    which a file may degrade to the latest, names no release here.
+    number, and is matched to its release line by :func:`~idfkit.versions.find_release`; a number
+    newer than every supported release, which a file may degrade to the latest, names no release.
     """
     if isinstance(bound, str):
         parts = bound.split(".")
@@ -266,8 +272,8 @@ def _release(bound: object, keyword: str) -> tuple[int, int, int]:
             raise TypeError(msg)
         return required
     version = cast("tuple[int, int, int]", (*numbers, 0)[:3])
-    release = find_closest_version(version)
-    if release is None or release[:2] != version[:2]:
+    release = find_release(version)
+    if release is None:
         supported = ", ".join(version_string(v) for v in ENERGYPLUS_VERSIONS)
         msg = f"{keyword}={bound!r}: idfkit supports no such EnergyPlus release (it supports {supported})"
         raise ValueError(msg)
@@ -290,7 +296,7 @@ def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
     """Raise unless *doc* is of a supported release from *since* (inclusive) to *before* (exclusive)."""
     low = None if since is None else _release(since, "since")
     high = None if before is None else _release(before, "before")
-    members = [v for v in ENERGYPLUS_VERSIONS if (low is None or v >= low) and (high is None or v < high)]
+    members = releases_between(low, high)
     if members and find_closest_version(doc.version) in members:
         return
     # Only a refusal pays for the description.

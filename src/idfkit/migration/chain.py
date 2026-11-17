@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 from .._document_types import is_type_form, release_of
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
-from ..versions import ENERGYPLUS_VERSIONS, find_release, is_supported_version
+from ..versions import ENERGYPLUS_VERSIONS, find_release
 
 if TYPE_CHECKING:
     from ..document import AnyIDFDocument
@@ -56,7 +56,8 @@ def normalize_target(
         raise TypeError(msg)
     normalized = normalize_version(target_version)
     # Matched to its release line as the source is, so "9.0" and a 9.0 file's (9, 0, 0) name 9.0.1.
-    release = find_release(normalized)
+    # A tuple of another length is no version, not the release its first two numbers name.
+    release = find_release(normalized) if len(normalized) in {2, 3} else None
     if release is None:
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return release
@@ -103,15 +104,15 @@ def plan_migration_chain(
             resolved to its release with
             [resolve_source_version][idfkit.migration.chain.resolve_source_version],
             so ``(9, 0, 0)`` from a file headed ``Version, 9.0;`` plans from 9.0.1.
-        target: The desired version. Must be in ``ENERGYPLUS_VERSIONS`` and
-            ``>= source``.
+        target: The desired version, resolved to its release as *source* is
+            (``(9, 0, 0)`` is 9.0.1). It must be ``>= source``.
 
     Returns:
         A tuple of ``(from, to)`` pairs. Empty when *source* resolves to *target*.
 
     Raises:
-        UnsupportedVersionError: If no supported release shares *source*'s major
-            and minor, or *target* is not a supported version.
+        UnsupportedVersionError: If no supported release shares *source*'s or
+            *target*'s major and minor.
         ValueError: If ``target < source`` (backward migration is not supported).
 
     Examples:
@@ -119,8 +120,7 @@ def plan_migration_chain(
         (((9, 0, 1), (9, 1, 0)), ((9, 1, 0), (9, 2, 0)))
     """
     source = resolve_source_version(source)
-    if not is_supported_version(target):
-        raise UnsupportedVersionError(target, ENERGYPLUS_VERSIONS)
+    target = resolve_source_version(target)
 
     if source == target:
         return ()

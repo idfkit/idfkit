@@ -11,7 +11,7 @@ from collections.abc import Collection
 from functools import lru_cache
 
 from ..schema import EpJSONSchema, get_schema
-from ..versions import find_closest_version, version_string
+from ..versions import find_closest_version, find_release, version_string
 from ._diff import SchemaIndex, build_schema_index
 from ._extract import extract_literals
 from ._models import (
@@ -161,6 +161,9 @@ def check_compatibility(
     Raises:
         ValueError: If fewer than two targets are given, or a rule code is unknown.
     """
+    # Narrowing compares a literal's releases with the targets, so a target is matched to its
+    # release first: (9, 0, 0), as a 9.0 file spells it, is the 9.0.1 release.
+    targets = list(dict.fromkeys(find_release(v) or v for v in targets))
     if len(targets) < 2:
         msg = "at least two target versions are required"
         raise ValueError(msg)
@@ -190,6 +193,9 @@ def check_compatibility(
         elif literal.kind == LiteralKind.CHOICE_VALUE:
             _check_choice_value(literal, indices, filename, diagnostics, scope=scope)
 
+    # A bare comment on a line whose only diagnostics are of rules this run does not check still
+    # earns its place: those rules run in other configurations (per-file ignores, --select).
+    deselected_lines = frozenset(d.line for d in diagnostics if d.code not in enabled)
     diagnostics = [d for d in diagnostics if d.code in enabled]
     if suppressions:
         diagnostics = _apply_suppressions(
@@ -197,6 +203,7 @@ def check_compatibility(
             filename,
             diagnostics,
             enabled,
+            deselected_lines=deselected_lines,
             # A group filter hides diagnostics a comment is there for, so it cannot tell unused.
             report_unused="C005" in enabled and allowed_types is None,
             span=(version_string(min(indices)), version_string(max(indices))),
@@ -227,6 +234,7 @@ def _apply_suppressions(
     diagnostics: list[Diagnostic],
     enabled: frozenset[str],
     *,
+    deselected_lines: frozenset[int] = frozenset(),
     report_unused: bool,
     span: tuple[str, str],
 ) -> list[Diagnostic]:
@@ -244,6 +252,8 @@ def _apply_suppressions(
     if not report_unused:
         return kept
     for comment in comments.values():
+        if comment.codes is None and comment.line in deselected_lines:
+            continue
         problem = _unused_problem(comment, enabled)
         if problem is None:
             continue
@@ -289,11 +299,9 @@ def _check_object_type(
     filename: str,
     out: list[Diagnostic],
     *,
-    scope: frozenset[tuple[int, int, int]] | None = None,
+    scope: frozenset[tuple[int, int, int]],
 ) -> None:
-    """Emit diagnostics for an object-type literal missing in some target versions of *scope* (default: all)."""
-    if scope is None:
-        scope = frozenset(indices)
+    """Emit diagnostics for an object-type literal missing in some target versions of *scope*."""
     present_in = [
         v for v, index in indices.items() if _contains_object_type_case_insensitive(literal.value, index.object_types)
     ]

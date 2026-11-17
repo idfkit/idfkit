@@ -26,9 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest
   release with the result typed for it. A type that named no single release, such as
   `AnyIDFDocument` or a union or tuple of document types, raised `TypeError`; pyright and mypy
-  reported `AnyIDFDocument`, and mypy a union. ([#285](https://github.com/idfkit/idfkit/pull/285))
+  reported `AnyIDFDocument`, and mypy a union ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - `idfkit.versioned.ReleaseDocumentT`, a type variable constrained to the release document types,
-  for code generic over exactly one release, as `migrate()` is. ([#285](https://github.com/idfkit/idfkit/pull/285))
+  for code generic over exactly one release, as `migrate()` is ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - `as_version(doc, since=..., before=...)` was added, to narrow a document to a range of releases
   without listing them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports,
   `before="9.6"` one of any earlier release, and the two together bound a range (`since`
@@ -62,8 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `IDFDocument` (the run-time class of every document, so `new_document(type(doc))` would have
   created a latest-release model whatever `doc`'s release), `AnyIDFDocument` and unions of release
   types raised `TypeError`. The tuple form was unchanged, in its types (an argument typed `Any`
-  included) and in the time pyright takes over it.
-  ([#290](https://github.com/idfkit/idfkit/pull/290))
+  included) and in the time pyright takes over it
+  ([#290](https://github.com/idfkit/idfkit/pull/290)).
 - `idfkit check` started reading string literals passed to `get_collection` in files that import
   idfkit, a call pyright types as `IDFCollection[IDFObject]` whatever the name. A name some target
   release lacks was reported under `C001`, as for `add()` and `doc[...]`. Two rules were added.
@@ -116,7 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returned a report typed `AnyIDFDocument | None`, as strict as the source. Code that passed the
   result where an `IDFDocument` was expected stopped type-checking; it can name the target as a
   document type (above) or narrow with `as_version`. A bare `MigrationReport` annotation accepted a
-  report of any release. ([#285](https://github.com/idfkit/idfkit/pull/285))
+  report of any release ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) gained a
   warning that a tuple or union of release types must name the latest release by its own type
   (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
@@ -164,28 +164,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
   `UnsupportedVersionError: EnergyPlus version 9.0.0 is not supported` whatever the target, and
-  `simulate()` reported it as mismatching an installed 9.0.1; it now migrates from 9.0.1, and a
-  version with no supported release line still raises. A target is matched the same way, so
+  `simulate()` reported it as mismatching an installed 9.0.1; it migrated from 9.0.1 instead, and a
+  version with no supported release line still raised. A target is matched the same way, so
   `migrate(model, "9.0")` and `migrate(model, other.version)` for a 9.0 file reach 9.0.1 ([#292](https://github.com/idfkit/idfkit/pull/292)).
 - `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
   `idfkit-check` pre-commit hook's description said how to pass targets ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
-  before, it was always strict, so a model loaded with `strict=False` came back strict. ([#285](https://github.com/idfkit/idfkit/pull/285))
+  before, it was always strict, so a model loaded with `strict=False` came back strict ([#285](https://github.com/idfkit/idfkit/pull/285)).
 - The document `migrate()` and `async_migrate()` return in `report.migrated_model`, and the one
   `expand_objects()`, `run_slab_preprocessor()`, `run_basement_preprocessor()` and
   `run_preprocessing()` return, came to have no `filepath`. It used to point at a scratch file in
   the run's work directory, which is deleted when the run ends, so a bare `doc.save()` failed with
   `FileNotFoundError`, or, with `work_dir=`, overwrote the scratch file. A preprocessor with nothing
   to do used to return a copy that kept the source's `filepath`; it now has none too. A bare `save()`
-  now raises `ValueError`; save the result to a path you name ([#293](https://github.com/idfkit/idfkit/pull/293)).
+  raised `ValueError` instead, so the result had to be saved to a named path ([#293](https://github.com/idfkit/idfkit/pull/293)).
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
   surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
   another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
   It was changed to return only the heat-transfer surfaces whose own `zone_name` is the zone, of
   the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
   `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
-  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
-  ([#289](https://github.com/idfkit/idfkit/pull/289))
+  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone
+  ([#289](https://github.com/idfkit/idfkit/pull/289)).
 - `if "Space" in doc:` stopped retyping an `AnyIDFDocument` as the latest release under pyright.
   The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
   type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
