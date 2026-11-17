@@ -15,6 +15,7 @@ from idfkit.cst import DocumentCST
 from idfkit.exceptions import DuplicateObjectError, InvalidFieldError, ValidationFailedError
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.validation import ValidationError
+from idfkit.versions import LATEST_VERSION
 
 
 class TestIDFDocumentInit:
@@ -890,6 +891,116 @@ class TestGetReferencesAndSurfaces:
         names = [s.name for s in surfaces]
         assert "TestWall" in names
         assert "TestFloor" in names
+
+    def test_get_zone_surfaces_excludes_non_surfaces(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z")
+        doc.add("Lights", "L", zone_or_zonelist_or_space_or_spacelist_name="Z", validate=False)
+        doc.add("ZoneHVAC:EquipmentConnections", "", zone_name="Z", validate=False)
+        assert doc.get_zone_surfaces("Z") == []
+
+    def test_get_zone_surfaces_excludes_boundary_object_of_other_zone(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "A")
+        doc.add("Zone", "B")
+        doc.add(
+            "BuildingSurface:Detailed",
+            "A_Wall",
+            surface_type="Wall",
+            construction_name="",
+            zone_name="A",
+            outside_boundary_condition="Zone",
+            outside_boundary_condition_object="B",
+            validate=False,
+        )
+        assert doc.get_zone_surfaces("B") == []
+        assert [s.name for s in doc.get_zone_surfaces("A")] == ["A_Wall"]
+
+    @pytest.mark.parametrize(
+        "obj_type",
+        [
+            "BuildingSurface:Detailed",
+            "Wall:Detailed",
+            "Floor:Detailed",
+            "RoofCeiling:Detailed",
+            "Wall:Exterior",
+            "Wall:Adiabatic",
+            "Wall:Underground",
+            "Wall:Interzone",
+            "Roof",
+            "Ceiling:Adiabatic",
+            "Ceiling:Interzone",
+            "Floor:GroundContact",
+            "Floor:Adiabatic",
+            "Floor:Interzone",
+        ],
+    )
+    def test_get_zone_surfaces_includes_surface_type(self, obj_type: str) -> None:
+        doc = new_document()
+        doc.add("Zone", "Z")
+        doc.add(obj_type, "S", zone_name="Z", validate=False)
+        assert [(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")] == [(obj_type, "S")]
+
+    @pytest.mark.parametrize("version", [(8, 9, 0), (24, 1, 0), LATEST_VERSION])
+    def test_get_zone_surfaces_schema_sweep(self, version: tuple[int, int, int]) -> None:
+        """Every object type that can name a zone is tried; only the surfaces come back.
+
+        Guards against any regression that lets a non-surface referencer through, for every
+        type the schema knows, not only the handful named in the other tests.
+        """
+        doc = new_document(version=version)
+        schema = doc.schema
+        assert schema is not None
+        doc.add("Zone", "Z")
+        surface_types = set(schema.get_types_providing_reference("SurfaceNames"))
+        expected: set[tuple[str, str]] = set()
+        added = 0
+        for obj_type in schema.object_types:
+            if obj_type == "Zone":
+                continue
+            for field_name in schema.get_field_names(obj_type):
+                object_list = schema.get_field_object_list(obj_type, field_name)
+                if not object_list or "ZoneNames" not in object_list:
+                    continue
+                name = f"Obj{added}"
+                doc.add(obj_type, name if schema.has_name(obj_type) else "", {field_name: "Z"}, validate=False)
+                added += 1
+                if obj_type in surface_types and field_name == "zone_name":
+                    expected.add((obj_type, name))
+        # The sweep must actually exercise non-surface referencers, not just surfaces.
+        assert added > len(expected) + 10
+        assert expected, "no surface types found in schema"
+        assert {(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")} == expected
+
+    def test_get_zone_surfaces_from_parsed_idf(self, tmp_path: Path) -> None:
+        """References registered by the parser, not by add(), go through the same filter."""
+        idf = tmp_path / "zone.idf"
+        idf.write_text(
+            "Version, 24.1;\n"
+            "Zone, Z;\n"
+            "Zone, Other;\n"
+            "Wall:Exterior, W, , Z, 0, 90, 0, 0, 0, 3, 3;\n"
+            "BuildingSurface:Detailed, Partition, Wall, , Other, , Zone, Z, NoSun, NoWind, , 4,"
+            " 0,0,3, 0,0,0, 3,0,0, 3,0,3;\n"
+            "Lights, L, Z, , EquipmentLevel, 100;\n"
+        )
+        doc = load_idf(idf)
+        assert [(s.obj_type, s.name) for s in doc.get_zone_surfaces("Z")] == [("Wall:Exterior", "W")]
+        assert [s.name for s in doc.get_zone_surfaces("Other")] == ["Partition"]
+
+    def test_get_zone_surfaces_follows_rename(self) -> None:
+        doc = new_document()
+        zone = doc.add("Zone", "Old")
+        doc.add("Wall:Exterior", "W", zone_name="Old", validate=False)
+        zone.name = "New"
+        assert [s.name for s in doc.get_zone_surfaces("New")] == ["W"]
+        assert doc.get_zone_surfaces("Old") == []
+
+    def test_get_zone_surfaces_is_case_insensitive(self) -> None:
+        doc = new_document()
+        doc.add("Zone", "Office")
+        doc.add("Wall:Exterior", "W", zone_name="Office", validate=False)
+        assert [s.name for s in doc.get_zone_surfaces("OFFICE")] == ["W"]
 
 
 class TestDocumentDescribeUnknownType:

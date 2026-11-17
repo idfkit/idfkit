@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from idfkit import IDFDocument, new_document
-from idfkit.objects import IDFObject
+from idfkit.objects import IDFCollection, IDFObject
 from idfkit.references import ReferenceGraph
 
 
@@ -283,3 +283,159 @@ class TestExtensibleReferences:
 
         assert manager.equipment[0].electric_equipment_name == "Renamed Equipment"
         assert doc.references.get_referencing("Renamed Equipment") == {manager}
+
+
+class TestCollectionReferencing:
+    """``IDFCollection.referencing``: the reference graph narrowed to one type."""
+
+    @staticmethod
+    def _model() -> IDFDocument:
+        doc = new_document()
+        doc.add("Zone", "Office")
+        doc.add("Zone", "Core")
+        for name, zone in (("Office_Wall", "Office"), ("Office_Floor", "Office"), ("Core_Wall", "Core")):
+            doc.add(
+                "BuildingSurface:Detailed",
+                name,
+                surface_type="Wall",
+                construction_name="",
+                zone_name=zone,
+                outside_boundary_condition="Outdoors",
+                validate=False,
+            )
+        doc.add("Lights", "Office_Lights", zone_or_zonelist_or_space_or_spacelist_name="Office", validate=False)
+        doc.add(
+            "FenestrationSurface:Detailed",
+            "Office_Window",
+            surface_type="Window",
+            construction_name="",
+            building_surface_name="Office_Wall",
+            validate=False,
+        )
+        return doc
+
+    def test_keeps_only_the_collections_type(self) -> None:
+        doc = self._model()
+        assert {o.obj_type for o in doc.get_referencing("Office")} == {"BuildingSurface:Detailed", "Lights"}
+        surfaces = doc["BuildingSurface:Detailed"].referencing("Office")
+        assert {s.name for s in surfaces} == {"Office_Wall", "Office_Floor"}
+        assert {o.name for o in doc["Lights"].referencing("Office")} == {"Office_Lights"}
+
+    def test_returns_the_documents_own_objects(self) -> None:
+        doc = self._model()
+        (window,) = doc["FenestrationSurface:Detailed"].referencing(doc["BuildingSurface:Detailed"]["Office_Wall"])
+        assert window is doc["FenestrationSurface:Detailed"]["Office_Window"]
+
+    def test_takes_a_name_or_an_object_and_matches_names_case_insensitively(self) -> None:
+        doc = self._model()
+        zone = doc["Zone"]["Office"]
+        surfaces = doc["BuildingSurface:Detailed"]
+        assert (
+            set(surfaces.referencing(zone))
+            == set(surfaces.referencing("Office"))
+            == set(surfaces.referencing("oFFICE"))
+        )
+
+    def test_the_type_name_is_matched_case_insensitively(self) -> None:
+        doc = self._model()
+        lower = doc.get_collection("buildingsurface:detailed").referencing("Office")
+        assert set(lower) == set(doc["BuildingSurface:Detailed"].referencing("Office"))
+        assert len(doc.building_surface_detaileds.referencing("Office")) == 2
+
+    def test_nothing_references_an_unknown_or_empty_name(self) -> None:
+        doc = self._model()
+        assert doc["BuildingSurface:Detailed"].referencing("Nowhere") == []
+        assert doc["BuildingSurface:Detailed"].referencing("") == []
+
+    def test_a_type_with_no_objects_answers_empty(self) -> None:
+        doc = self._model()
+        assert doc["People"].referencing("Office") == []
+
+    def test_follows_renames_edits_and_removals(self) -> None:
+        doc = self._model()
+        surfaces = doc["BuildingSurface:Detailed"]
+        doc.rename("Zone", "Office", "Open_Office")
+        assert {s.name for s in surfaces.referencing("Open_Office")} == {"Office_Wall", "Office_Floor"}
+        assert surfaces.referencing("Office") == []
+        surfaces["Office_Floor"].zone_name = "Core"
+        assert {s.name for s in surfaces.referencing("Core")} == {"Core_Wall", "Office_Floor"}
+        doc.removeidfobject(surfaces["Core_Wall"])
+        assert {s.name for s in surfaces.referencing("Core")} == {"Office_Floor"}
+
+    def test_a_surface_renamed_after_it_was_filed_is_still_found(self) -> None:
+        doc = self._model()
+        wall = doc["BuildingSurface:Detailed"]["Office_Wall"]
+        wall.name = "Office_South_Wall"
+        assert wall in doc["BuildingSurface:Detailed"].referencing("Office")
+
+    def test_each_object_comes_once_however_many_fields_name_the_target(self) -> None:
+        doc = self._model()
+        wall = doc["BuildingSurface:Detailed"]["Office_Wall"]
+        wall.outside_boundary_condition = "Zone"
+        wall.outside_boundary_condition_object = "Office"
+        assert [s.name for s in doc["BuildingSurface:Detailed"].referencing("Office")].count("Office_Wall") == 1
+
+    def test_an_object_added_under_another_spelling_of_its_type_is_found(self) -> None:
+        doc = self._model()
+        odd = IDFObject(
+            obj_type="BUILDINGSURFACE:DETAILED",
+            name="Odd_Wall",
+            data={"surface_type": "Wall", "zone_name": "Office", "outside_boundary_condition": "Outdoors"},
+        )
+        doc.addidfobject(odd)
+        assert odd in doc.get_collection("BuildingSurface:Detailed")
+        assert odd in doc["BuildingSurface:Detailed"].referencing("Office")
+
+    def test_unnamed_objects_are_matched_by_type(self) -> None:
+        doc = new_document()
+        doc.add("Schedule:Constant", "Always", hourly_value=1, validate=False)
+        doc.add("Output:Variable", key_value="*", variable_name="Zone Mean Air Temperature", schedule_name="Always")
+        doc.add("Output:Meter", key_name="Electricity:Facility", reporting_frequency="Hourly")
+        found = doc["Output:Variable"].referencing("Always")
+        assert [o.variable_name for o in found] == ["Zone Mean Air Temperature"]
+        assert doc["Output:Meter"].referencing("Always") == []
+
+    def test_a_copy_answers_from_its_own_graph(self) -> None:
+        doc = self._model()
+        copy = doc.copy()
+        copy.rename("Zone", "Office", "Renamed")
+        assert len(copy["BuildingSurface:Detailed"].referencing("Renamed")) == 2
+        assert len(doc["BuildingSurface:Detailed"].referencing("Office")) == 2
+        found = copy["BuildingSurface:Detailed"].referencing("Renamed")
+        assert all(s in copy["BuildingSurface:Detailed"] for s in found)
+        assert not any(s is doc["BuildingSurface:Detailed"][s.name] for s in found)
+
+    def test_a_deep_copy_answers_from_its_own_graph(self) -> None:
+        import copy
+        import pickle
+
+        doc = self._model()
+        for clone in (copy.deepcopy(doc), pickle.loads(pickle.dumps(doc))):  # noqa: S301
+            clone.rename("Zone", "Office", "Renamed")
+            assert len(clone["BuildingSurface:Detailed"].referencing("Renamed")) == 2
+        assert len(doc["BuildingSurface:Detailed"].referencing("Office")) == 2
+
+    def test_objects_outside_a_document_reference_nothing(self) -> None:
+        collection: IDFCollection[IDFObject] = IDFCollection("Zone")
+        assert collection.referencing("Office") == []
+        collection.add(
+            IDFObject(obj_type="Lights", name="L", data={"zone_or_zonelist_or_space_or_spacelist_name": "Z"})
+        )
+        assert collection.referencing("Z") == []
+
+    def test_a_collection_built_by_hand_answers_only_for_its_own_objects(self) -> None:
+        doc = self._model()
+        subset: IDFCollection[IDFObject] = IDFCollection("BuildingSurface:Detailed")
+        subset.add(doc["BuildingSurface:Detailed"]["Office_Wall"])
+        assert [s.name for s in subset.referencing("Office")] == ["Office_Wall"]
+
+    def test_a_document_pickled_before_referencing_existed_answers(self) -> None:
+        import pickle
+
+        doc = self._model()
+        # A pickled collection carries only its own slots, so its state is the same as in idfkit
+        # releases before this method existed; check that stays so.
+        state = doc["BuildingSurface:Detailed"].__reduce_ex__(2)[2]
+        assert set(state[1]) == {"_by_name", "_items", "_type"}
+        clone = pickle.loads(pickle.dumps(doc))  # noqa: S301
+        assert len(clone["BuildingSurface:Detailed"].referencing("Office")) == 2
