@@ -944,9 +944,10 @@ def _apply_air_boundaries(doc: AnyIDFDocument, created: list[IDFObject]) -> None
     """
     air_name = "Air Boundary"
     # Construction:AirBoundary exists from EnergyPlus 9.2 on, so through AnyIDFDocument it is a key
-    # that may be missing. ZonedBlock.build refuses an older model before anything reaches here.
-    if not list(doc.get_collection("Construction:AirBoundary")):
-        doc.add("Construction:AirBoundary", air_name, validate=False)
+    # that may be missing. ZonedBlock.build refuses an older model before anything reaches here,
+    # which idfkit check cannot see from this function, hence the suppressions.
+    if not list(doc.get_collection("Construction:AirBoundary")):  # idfkit: ignore[C001, C004]
+        doc.add("Construction:AirBoundary", air_name, validate=False)  # idfkit: ignore[C001]
 
     for obj in created:
         if obj.obj_type != "BuildingSurface:Detailed":

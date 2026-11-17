@@ -91,6 +91,8 @@ check: check-stubs check-conformance-level check-epw-sentinels check-doc-locatio
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running pyright"
 	@uv run pyright src/ agent_references/snippets tests/type_checks
+	@echo "🚀 Linting object types across EnergyPlus releases: Running idfkit check"
+	@uv run idfkit check
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@uv run deptry src
 

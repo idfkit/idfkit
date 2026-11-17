@@ -902,12 +902,12 @@ class TestCheckerEdgeCases:
 class TestFilterDiagnosticsAndFormatText:
     """Tests for _filter_diagnostics and _format_text edge cases."""
 
-    def test_filter_diagnostics_select_skips_non_matching(self) -> None:
-        """_filter_diagnostics skips diagnostics whose code is not in select set."""
+    def test_filter_diagnostics_keeps_only_errors_for_severity_error(self) -> None:
+        """_filter_diagnostics applies --severity; rule codes are selected in check_compatibility."""
         from idfkit.compat._cli import _filter_diagnostics  # pyright: ignore[reportPrivateUsage]
         from idfkit.compat._models import CompatSeverity, Diagnostic
 
-        d_c001 = Diagnostic(
+        warning = Diagnostic(
             code="C001",
             message="Missing type",
             severity=CompatSeverity.WARNING,
@@ -918,10 +918,10 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        d_c002 = Diagnostic(
-            code="C002",
-            message="Missing choice",
-            severity=CompatSeverity.WARNING,
+        error = Diagnostic(
+            code="C003",
+            message="No such type",
+            severity=CompatSeverity.ERROR,
             filename="t.py",
             line=2,
             col=0,
@@ -929,9 +929,8 @@ class TestFilterDiagnosticsAndFormatText:
             from_version="24.1.0",
             to_version="25.1.0",
         )
-        result = _filter_diagnostics([d_c001, d_c002], select={"C001"}, ignore=None, severity=None)
-        assert len(result) == 1
-        assert result[0].code == "C001"
+        assert _filter_diagnostics([warning, error], severity="error") == [error]
+        assert _filter_diagnostics([warning, error], severity=None) == [warning, error]
 
     def test_format_text_with_diagnostics(self) -> None:
         """_format_text produces diagnostic lines when diagnostics are non-empty."""
@@ -1003,6 +1002,7 @@ class TestMainDispatch:
 _V94 = (9, 4, 0)
 _V262 = (26, 2, 0)
 _IMP = "import idfkit\n"
+_WITH_C004 = ["C001", "C002", "C003", "C004", "C005"]
 
 
 class TestGetCollectionLiterals:
@@ -1034,7 +1034,9 @@ class TestGetCollectionLiterals:
         assert diagnostics == []
 
     def test_known_type_reports_c004_with_typed_spelling(self) -> None:
-        diagnostics = check_compatibility(_IMP + 'm.get_collection("zone")\n', "t.py", targets=[_V94, _V262])
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("zone")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
         assert [d.code for d in diagnostics] == ["C004"]
         d = diagnostics[0]
         assert d.severity == CompatSeverity.WARNING
@@ -1043,7 +1045,9 @@ class TestGetCollectionLiterals:
         assert "AnyIDFDocument" in d.message
 
     def test_c004_for_release_specific_type_mentions_narrowing(self) -> None:
-        diagnostics = check_compatibility(_IMP + 'm.get_collection("Space")\n', "t.py", targets=[_V94, _V262])
+        diagnostics = check_compatibility(
+            _IMP + 'm.get_collection("Space")\n', "t.py", targets=[_V94, _V262], select=_WITH_C004
+        )
         assert [d.code for d in diagnostics] == ["C001", "C004"]
         assert "as_version" in diagnostics[1].message
 
@@ -1055,7 +1059,7 @@ class TestGetCollectionLiterals:
         p = tmp_path / "s.py"
         p.write_text(_IMP + 'doc.get_collection("Zone")\ndoc.get_collection("Zoen")\n')
         with pytest.raises(SystemExit) as exc_info:
-            main(["check", str(p), "--targets", "9.4,26.2", "--ignore", "C004"])
+            main(["check", str(p), "--targets", "9.4,26.2", "--extend-select", "C004", "--ignore", "C004"])
         assert exc_info.value.code == 1
         out = capsys.readouterr().out
         assert "C003" in out

@@ -160,12 +160,33 @@ They catch different mistakes, so code meant for several releases should run bot
 
 - **pyright** (or Pylance, mypy) checks *types*: release-typed lookups (`legacy["Space"]`), attribute reads and assignments (`heater.heater_fuel_type = "Steam"`), `update()` keywords. It cannot see into string-keyed calls: `doc.add("Space", ...)` and its keyword values are untyped.
 - **`idfkit check`** lints *string literals* in Python source against the releases you name, with no annotations needed: object type names (rule `C001`, e.g. `doc.add("Space", ...)`, `legacy["Space"]`, `doc.get_collection("Space")`) and choice values in calls (rule `C002`, e.g. `add(..., heater_fuel_type="DistrictHeating")`). It does not check attribute assignments.
-- **`get_collection` with a literal name is for `idfkit check`, not pyright.** pyright types it as `IDFCollection[IDFObject]` whatever the name, and checks nothing. `idfkit check`, in a file that imports idfkit, reports a name no target release has (rule `C003`, an error, with the closest real name: at run time a misspelled `get_collection("Zoen")` silently returns an empty collection) and every other literal name (rule `C004`, a warning suggesting `doc["Zone"]`, which is typed and which pyright checks). Pass `--ignore C004` to keep literal `get_collection` calls deliberately. Variable names (`doc.get_collection(t)`) are not reported.
+- **`get_collection` with a literal name is for `idfkit check`, not pyright.** pyright types it as `IDFCollection[IDFObject]` whatever the name, and checks nothing. `idfkit check`, in a file that imports idfkit, reports a name no target release has (rule `C003`, an error, with the closest real name: at run time a misspelled `get_collection("Zoen")` silently returns an empty collection). The opt-in rule `C004` (`--extend-select C004`) also reports every other literal name, suggesting `doc["Zone"]`, which is typed and which pyright checks. Variable names (`doc.get_collection(t)`) are not reported.
 - Neither checks item access on an object (`obj["field"]`).
+
+`idfkit check` checks a lookup only against the targets it can run on. It recognises a lookup on `as_version(doc, ...)` (one release type, a tuple or `|` union of them, or `since=`/`before=`), on a name bound once to such a call, and a lookup inside `if doc.version >= (9, 4, 0):` (and the `else` of a test it read completely; `and`, `or`, `not` and chained comparisons against tuples are read). It does not follow early returns, `assert`, `isinstance` or annotations. For a guard it cannot see, silence the line with a comment, which it reports as `C005` once it stops being needed:
+
+```python
+if not list(doc.get_collection("Construction:AirBoundary")):  # idfkit: ignore[C001]
+    ...
+```
+
+Use `# idfkit: ignore[...]`, not `# noqa`: ruff reads `noqa` codes as its own and removes ones it does not know.
+
+To gate CI, put the settings in `pyproject.toml` and run `idfkit check` with no arguments (it exits 1 when it reports anything at or above `fail-on`, 2 on a usage, configuration or syntax error). A pre-commit hook `idfkit-check` reads the same table:
+
+```toml
+[tool.idfkit.check]
+targets = "all"            # or ["9.4", "26.2"], or since = "9.4" / before = "24.1"
+paths = ["src"]
+extend-select = ["C004"]
+per-file-ignores = { "tests/**" = ["C004"] }
+```
 
 ```bash
 uv run pyright src/
-uv run idfkit check --targets 9.4,23.2,26.2 src/my_module.py
+uv run idfkit check                         # settings from [tool.idfkit.check]
+uv run idfkit check src/ --since 9.4        # every supported release from 9.4 on
+uv run idfkit check src/ --targets all      # --from/--to compares one migration's two releases only
 ```
 
 mypy sees the document's methods, properties and accessors, but collapses a union of release types into what they share (see Code for a range of releases), and under a lookup error it lists every object type name the document accepts, so prefer pyright for idfkit code.

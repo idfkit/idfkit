@@ -7,13 +7,23 @@ for cross-version EnergyPlus compatibility issues.
 from __future__ import annotations
 
 import difflib
+from collections.abc import Collection
 from functools import lru_cache
 
 from ..schema import EpJSONSchema, get_schema
 from ..versions import find_closest_version, version_string
 from ._diff import SchemaIndex, build_schema_index
 from ._extract import extract_literals
-from ._models import CompatSeverity, Diagnostic, ExtractedLiteral, LiteralKind
+from ._models import (
+    DEFAULT_RULES,
+    DIAGNOSTIC_CODES,
+    RULE_SEVERITIES,
+    CompatSeverity,
+    Diagnostic,
+    ExtractedLiteral,
+    LiteralKind,
+)
+from ._suppress import Suppression, parse_suppressions
 
 # Cache of schema indices, keyed by version tuple.
 _index_cache: dict[tuple[int, int, int], SchemaIndex] = {}
@@ -107,6 +117,10 @@ def check_compatibility(
     *,
     include_groups: set[str] | None = None,
     exclude_groups: set[str] | None = None,
+    select: Collection[str] | None = None,
+    ignore: Collection[str] | None = None,
+    suppressions: bool = True,
+    package: str | None = None,
 ) -> list[Diagnostic]:
     """Lint a Python source file for cross-version EnergyPlus compatibility issues.
 
@@ -114,6 +128,12 @@ def check_compatibility(
     string literals against the bundled epJSON schemas for the given
     *targets*, emitting a :class:`Diagnostic` for every object type or
     choice value that does not exist in all target versions.
+
+    A literal is checked only against the targets its code can run on: a lookup on
+    ``as_version(doc, ...)`` or inside ``if doc.version >= (9, 4, 0):`` is checked against the
+    targets that call or test admits (see :mod:`idfkit.compat._narrow` for exactly what is
+    recognised). A ``# idfkit: ignore[C001]`` comment on the literal's line silences the listed
+    rules there, and a comment that silences nothing is reported as ``C005``.
 
     Args:
         source: Python source code to lint.
@@ -123,17 +143,26 @@ def check_compatibility(
         include_groups: If set, only lint object types belonging to these
             IDD groups (e.g. ``{"Thermal Zones and Surfaces"}``).
         exclude_groups: If set, skip object types belonging to these IDD groups.
+        select: Rule codes to check. ``None`` checks :data:`DEFAULT_RULES`, which leaves out
+            the opt-in ``C004``.
+        ignore: Rule codes not to check, removed from *select*.
+        suppressions: Whether ``# idfkit: ignore`` comments are honoured (and unused ones
+            reported as ``C005``).
+        package: The dotted package *filename* belongs to, so that its relative imports can be
+            recognised as idfkit's (see :func:`~idfkit.compat.extract_literals`).
 
     Returns:
         List of :class:`Diagnostic` instances, sorted by line then column.
+
+    Raises:
+        ValueError: If fewer than two targets are given, or a rule code is unknown.
     """
     if len(targets) < 2:
         msg = "at least two target versions are required"
         raise ValueError(msg)
+    enabled = enabled_rules(select, ignore)
 
-    literals = extract_literals(source, filename)
-    if not literals:
-        return []
+    literals = extract_literals(source, filename, package=package)
 
     indices: dict[tuple[int, int, int], SchemaIndex] = {v: _get_index(v) for v in targets}
     allowed_types = _build_allowed_types(indices, include_groups, exclude_groups)
@@ -144,14 +173,107 @@ def check_compatibility(
     for literal in literals:
         if allowed_types is not None and not _passes_group_filter(literal, allowed_types, all_types):
             continue
+        scoped = {v: i for v, i in indices.items() if literal.releases is None or v in literal.releases}
+        if not scoped:
+            # The code is guarded off for every target (``if doc.version < (9, 4, 0):`` with 22.1+).
+            continue
 
         if literal.kind == LiteralKind.OBJECT_TYPE:
-            _check_object_type(literal, indices, filename, diagnostics)
+            _check_object_type(literal, scoped, filename, diagnostics)
         elif literal.kind == LiteralKind.CHOICE_VALUE:
-            _check_choice_value(literal, indices, filename, diagnostics)
+            _check_choice_value(literal, scoped, filename, diagnostics)
+
+    diagnostics = [d for d in diagnostics if d.code in enabled]
+    if suppressions:
+        diagnostics = _apply_suppressions(
+            source,
+            filename,
+            diagnostics,
+            enabled,
+            # A group filter hides diagnostics a comment is there for, so it cannot tell unused.
+            report_unused="C005" in enabled and allowed_types is None,
+            span=(version_string(min(indices)), version_string(max(indices))),
+        )
 
     diagnostics.sort(key=lambda d: (d.line, d.col, d.code))
     return diagnostics
+
+
+def enabled_rules(select: Collection[str] | None, ignore: Collection[str] | None) -> frozenset[str]:
+    """The rules a run checks: *select* (or :data:`DEFAULT_RULES`) less *ignore*.
+
+    Raises:
+        ValueError: If a code is not a rule of :data:`DIAGNOSTIC_CODES`.
+    """
+    chosen: set[str] = {c.upper() for c in select} if select is not None else set(DEFAULT_RULES)
+    dropped: set[str] = {c.upper() for c in ignore} if ignore is not None else set()
+    unknown = (chosen | dropped) - DIAGNOSTIC_CODES.keys()
+    if unknown:
+        msg = f"unknown rule code(s): {', '.join(sorted(unknown))}; valid codes: {', '.join(sorted(DIAGNOSTIC_CODES))}"
+        raise ValueError(msg)
+    return frozenset(chosen - dropped)
+
+
+def _apply_suppressions(
+    source: str,
+    filename: str,
+    diagnostics: list[Diagnostic],
+    enabled: frozenset[str],
+    *,
+    report_unused: bool,
+    span: tuple[str, str],
+) -> list[Diagnostic]:
+    """Drop the diagnostics a ``# idfkit: ignore`` comment covers, and report unused comments."""
+    comments = parse_suppressions(source)
+    if not comments:
+        return diagnostics
+    kept: list[Diagnostic] = []
+    for d in diagnostics:
+        comment = comments.get(d.line)
+        if comment is not None and comment.covers(d.code):
+            comment.used.add(d.code)
+        else:
+            kept.append(d)
+    if not report_unused:
+        return kept
+    for comment in comments.values():
+        problem = _unused_problem(comment, enabled)
+        if problem is None:
+            continue
+        kept.append(
+            Diagnostic(
+                code="C005",
+                message=problem,
+                severity=RULE_SEVERITIES["C005"],
+                filename=filename,
+                line=comment.line,
+                col=comment.col,
+                end_col=comment.end_col,
+                from_version=span[0],
+                to_version=span[1],
+                suggested_fix="remove the comment" if not comment.used else None,
+            )
+        )
+    return kept
+
+
+def _unused_problem(comment: Suppression, enabled: frozenset[str]) -> str | None:
+    """Why *comment* is reported as ``C005``, or ``None`` when it earns its place.
+
+    A code is reported unused only when its rule ran: a ``C004`` comment is not stale in a run
+    that does not check ``C004``.
+    """
+    if comment.codes is None:
+        return None if comment.used else "Unused suppression: '# idfkit: ignore' silences nothing on this line"
+    if not comment.codes:
+        return "Suppression comment lists no rule codes: write '# idfkit: ignore[C001]'"
+    unknown = sorted(comment.codes - DIAGNOSTIC_CODES.keys())
+    if unknown:
+        return f"Suppression names unknown rule code(s) {', '.join(unknown)}; valid codes: {', '.join(sorted(DIAGNOSTIC_CODES))}"
+    unused = sorted(c for c in comment.codes if c in enabled and c not in comment.used and c != "C005")
+    if not unused:
+        return None
+    return f"Unused suppression of {', '.join(unused)}: nothing on this line reports it for these targets"
 
 
 def _check_object_type(

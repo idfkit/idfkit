@@ -35,8 +35,11 @@ class ExtractedLiteral:
         field_name: For CHOICE_VALUE, the field name context (e.g. ``"roughness"``).
         call: The method the literal is an argument of (``"add"`` or ``"get_collection"``), or
             ``None`` for a subscript.
-        receiver: Source text of the object the method was called on (``"doc"`` for
-            ``doc.get_collection("Zone")``), or ``None``.
+        receiver: Source text of the object the method was called on or subscripted
+            (``"doc"`` for ``doc.get_collection("Zone")`` and ``doc["Zone"]``), or ``None``.
+        releases: The supported releases the literal's code can run against, when the code
+            around it narrows the document (``as_version(doc, IDFDocumentV9_4)[...]``, or a lookup
+            inside ``if doc.version >= (9, 4, 0):``); ``None`` when nothing narrows it.
     """
 
     value: str
@@ -48,6 +51,7 @@ class ExtractedLiteral:
     field_name: str | None = None
     call: str | None = None
     receiver: str | None = None
+    releases: frozenset[tuple[int, int, int]] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,6 +108,7 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "C002": "Enumerated choice value for a field exists in one version but not another",
     "C003": "Object type passed to get_collection exists in none of the target versions",
     "C004": "Literal object type passed to get_collection, whose result is untyped; index the document instead",
+    "C005": "Suppression comment that silences nothing, or names an unknown rule",
 }
 
 RULE_SEVERITIES: dict[str, CompatSeverity] = {
@@ -111,5 +116,13 @@ RULE_SEVERITIES: dict[str, CompatSeverity] = {
     "C002": CompatSeverity.WARNING,
     "C003": CompatSeverity.ERROR,
     "C004": CompatSeverity.WARNING,
+    "C005": CompatSeverity.WARNING,
 }
 """The severity each rule reports at, keyed like :data:`DIAGNOSTIC_CODES`."""
+
+DEFAULT_RULES: frozenset[str] = frozenset({"C001", "C002", "C003", "C005"})
+"""The rules checked unless a selection says otherwise.
+
+``C004`` is opt-in (``--extend-select C004``): it reports correct code that has a better-typed
+spelling, not a release incompatibility.
+"""

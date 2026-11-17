@@ -57,16 +57,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release lacks was reported under `C001`, as for `add()` and `doc[...]`. Two rules were added.
   `C003` (error) reported a name that no target release has, with the closest real name as the
   fix, because `doc.get_collection("Zoen")` returns an empty collection at run time instead of
-  raising; a `--group` filter does not hide it. `C004` (warning) reported any other literal name
-  and suggested `doc["Zone"]`, which is typed and which pyright checks. Names held in variables
-  were not reported. Neither rule added anything to type-checking time
-  ([#288](https://github.com/idfkit/idfkit/pull/288)).
+  raising; a `--group` filter does not hide it. `C004` (warning, opt-in with
+  `--extend-select C004`) reported any other literal name and suggested `doc["Zone"]`, which is
+  typed and which pyright checks. Names held in variables were not reported. Neither rule added
+  anything to type-checking time ([#288](https://github.com/idfkit/idfkit/pull/288), [#287](https://github.com/idfkit/idfkit/pull/287)).
+- `idfkit check` could be run as a blocking CI gate:
+  - A `# idfkit: ignore[C001]` comment silenced the listed rules on its line (a bare
+    `# idfkit: ignore` silenced all of them), and a new rule `C005` (warning) reported a
+    suppression that silenced nothing for the run's targets and rules, or named an unknown rule.
+    The comment is namespaced rather than `# noqa`, which ruff reads as its own codes.
+  - A lookup was checked only against the targets it can run on: one made on
+    `as_version(doc, ...)` (a release type, a tuple or union of them, or `since=`/`before=`), on a
+    name bound once to such a call, or inside `if doc.version >= (9, 4, 0):` and the `else` of a
+    test read completely (`and`, `or`, `not` and chained comparisons against tuples are read).
+    Early returns, `assert`, `isinstance` and annotations were not followed.
+  - `--targets all` checked every supported release, and `--since`/`--before` a range of them,
+    read as `as_version(since=, before=)` reads them (since inclusive, before exclusive).
+    `--from`/`--to` still compared the two releases of one migration only.
+  - Settings were read from a `[tool.idfkit.check]` table in the nearest `pyproject.toml`
+    (`targets`, `since`, `before`, `paths`, `exclude`, `select`, `extend-select`, `ignore`,
+    `per-file-ignores`, `group`, `exclude-group`, `fail-on`), or from the file given with
+    `--config`; `--isolated` ignored them. An unknown key was an error. On Python 3.10 reading the
+    table needed `tomli` installed.
+  - Paths could be directories, searched for `*.py` without hidden directories, virtual
+    environments, caches and build output; with no path, `paths` from the table or the current
+    directory was linted. `--extend-select` added rules, and `--fail-on error` let warnings be
+    reported without failing the run. The text output ended with a summary line.
+  - In idfkit's own source, relative imports counted as idfkit imports, and `make check` started
+    running `idfkit check` over `src/` against every release ([#287](https://github.com/idfkit/idfkit/pull/287)).
 
 ### Changed
 
-- **Breaking:** `idfkit check` started exiting with status 1 on a file that passes a literal
-  object type to `get_collection`, because of the new `C004` warning. `--ignore C004` keeps such
-  calls ([#288](https://github.com/idfkit/idfkit/pull/288)).
+- **Breaking:** `idfkit check` refused a target release idfkit does not support with exit status
+  2, where it used to check the closest one instead: `--to 27.1` checked 26.2. `9.0` and `9.0.0`
+  still named 9.0.1 ([#287](https://github.com/idfkit/idfkit/pull/287)).
+- `idfkit check` went on to the other files after one failed to parse or to decode, and still
+  exited with status 2, where an undecodable file used to stop the run with a traceback ([#287](https://github.com/idfkit/idfkit/pull/287)).
+- `check_compatibility` gained `select`, `ignore`, `suppressions` and `package` arguments, and by
+  default checked `DEFAULT_RULES` (every rule but `C004`) and honoured suppression comments
+  ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - **Breaking:** for type checking only, a migration's result was no longer typed for the latest
   release whatever release it was migrated to. `MigrationReport.migrated_model` had been
   `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and
@@ -119,6 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `idfkit check --sarif` reported idfkit's version as the tool version instead of `0.1.0`, and the
+  `idfkit-check` pre-commit hook's description said how to pass targets ([#287](https://github.com/idfkit/idfkit/pull/287)).
 - A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
   before, it was always strict, so a model loaded with `strict=False` came back strict. ([#285](https://github.com/idfkit/idfkit/pull/285))
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its

@@ -295,4 +295,4 @@ class TestExtractGetCollection:
     def test_add_literal_records_call(self) -> None:
         literals = extract_literals('doc.add("Zone", "Z")\n')
         assert literals[0].call == "add"
-        assert literals[0].receiver is None
+        assert literals[0].receiver == "doc"
