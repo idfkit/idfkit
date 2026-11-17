@@ -97,19 +97,26 @@ def plan_migration_chain(
     consecutive version boundary.
 
     Args:
-        source: The model's current version. Must be in ``ENERGYPLUS_VERSIONS``.
+        source: The model's current version, ``doc.version`` as it is. It is
+            resolved to its release with
+            [resolve_source_version][idfkit.migration.chain.resolve_source_version],
+            so ``(9, 0, 0)`` from a file headed ``Version, 9.0;`` plans from 9.0.1.
         target: The desired version. Must be in ``ENERGYPLUS_VERSIONS`` and
             ``>= source``.
 
     Returns:
-        A tuple of ``(from, to)`` pairs. Empty when ``source == target``.
+        A tuple of ``(from, to)`` pairs. Empty when *source* resolves to *target*.
 
     Raises:
-        UnsupportedVersionError: If *source* or *target* is not a supported version.
+        UnsupportedVersionError: If no supported release shares *source*'s major
+            and minor, or *target* is not a supported version.
         ValueError: If ``target < source`` (backward migration is not supported).
+
+    Examples:
+        >>> plan_migration_chain((9, 0, 0), (9, 2, 0))
+        (((9, 0, 1), (9, 1, 0)), ((9, 1, 0), (9, 2, 0)))
     """
-    if not is_supported_version(source):
-        raise UnsupportedVersionError(source, ENERGYPLUS_VERSIONS)
+    source = resolve_source_version(source)
     if not is_supported_version(target):
         raise UnsupportedVersionError(target, ENERGYPLUS_VERSIONS)
 

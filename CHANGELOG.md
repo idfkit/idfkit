@@ -160,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `migrate()`, `async_migrate()` and `simulate(..., auto_migrate=True)` matched a model's version to
+- `migrate()`, `async_migrate()`, `plan_migration_chain()` and `simulate(..., auto_migrate=True)` matched a model's version to
   its release the way schema selection and `as_version` do. A model loaded from a file headed
   `Version, 9.0;` reads as 9.0.0 while the release is 9.0.1, so migrating it raised
   `UnsupportedVersionError: EnergyPlus version 9.0.0 is not supported` whatever the target, and

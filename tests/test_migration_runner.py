@@ -156,6 +156,14 @@ def test_two_component_source_migrates_from_its_release(tmp_path: Path) -> None:
     assert report.migrated_model.version == (9, 2, 0)
 
 
+def test_chain_plans_a_two_component_source_from_its_release(tmp_path: Path) -> None:
+    from idfkit.migration import plan_migration_chain
+
+    doc = _load_two_component_9_0(tmp_path)
+    assert plan_migration_chain(doc.version, (9, 2, 0)) == (((9, 0, 1), (9, 1, 0)), ((9, 1, 0), (9, 2, 0)))
+    assert plan_migration_chain(doc.version, (9, 0, 1)) == ()
+
+
 @pytest.mark.parametrize("version", [(8, 8, 0), (27, 1, 0)], ids=["older-than-all", "newer-than-all"])
 def test_unsupported_source_raises(version: tuple[int, int, int]) -> None:
     # Neither is snapped to a neighbouring release: 8.8 is not 8.9, and 27.1 is not 26.2.
