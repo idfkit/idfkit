@@ -11,14 +11,13 @@ from collections.abc import Collection
 from functools import lru_cache
 
 from ..schema import EpJSONSchema, get_schema
-from ..versions import find_closest_version, version_string
+from ..versions import find_closest_version, find_release, version_string
 from ._diff import SchemaIndex, build_schema_index
 from ._extract import extract_literals
 from ._models import (
     DEFAULT_RULES,
     DIAGNOSTIC_CODES,
     RULE_SEVERITIES,
-    CompatSeverity,
     Diagnostic,
     ExtractedLiteral,
     LiteralKind,
@@ -55,7 +54,7 @@ def _build_allowed_types(
     indices: dict[tuple[int, int, int], SchemaIndex],
     include_groups: set[str] | None,
     exclude_groups: set[str] | None,
-) -> set[str] | None:
+) -> frozenset[str] | None:
     """Build the set of object types that pass group filters, or ``None`` if no filter is active."""
     if include_groups is None and exclude_groups is None:
         return None
@@ -69,7 +68,7 @@ def _build_allowed_types(
         if exclude_groups is not None and group in exclude_groups:
             continue
         allowed.add(obj_type)
-    return allowed
+    return frozenset(allowed)
 
 
 def _literal_obj_type(literal: ExtractedLiteral) -> str | None:
@@ -79,15 +78,20 @@ def _literal_obj_type(literal: ExtractedLiteral) -> str | None:
     return literal.obj_type
 
 
-def _canonical_object_type(object_type: str, available_types: set[str] | frozenset[str]) -> str | None:
+def _canonical_object_type(object_type: str, available_types: frozenset[str]) -> str | None:
     """Return the schema's spelling of *object_type* in *available_types*, matched case-insensitively."""
     if object_type in available_types:
         return object_type
-    needle = object_type.casefold()
-    return next((candidate for candidate in available_types if candidate.casefold() == needle), None)
+    return _by_folded_name(available_types).get(object_type.casefold())
 
 
-def _contains_object_type_case_insensitive(object_type: str, available_types: set[str] | frozenset[str]) -> bool:
+@lru_cache(maxsize=64)
+def _by_folded_name(available_types: frozenset[str]) -> dict[str, str]:
+    """*available_types* keyed by case-folded name, built once per set (a frozenset caches its hash)."""
+    return {t.casefold(): t for t in available_types}
+
+
+def _contains_object_type_case_insensitive(object_type: str, available_types: frozenset[str]) -> bool:
     """Return whether *object_type* exists in *available_types* using case-insensitive matching."""
     return _canonical_object_type(object_type, available_types) is not None
 
@@ -98,7 +102,7 @@ def _types_by_folded_name(versions: tuple[tuple[int, int, int], ...]) -> dict[st
     return {t.casefold(): t for v in versions for t in _get_index(v).object_types}
 
 
-def _passes_group_filter(literal: ExtractedLiteral, allowed_types: set[str], all_types: dict[str, str]) -> bool:
+def _passes_group_filter(literal: ExtractedLiteral, allowed_types: frozenset[str], all_types: dict[str, str]) -> bool:
     """Whether *literal* survives an active ``--group``/``--exclude-group`` filter.
 
     A ``get_collection`` name that no target has belongs to no group, so a group filter cannot
@@ -157,6 +161,9 @@ def check_compatibility(
     Raises:
         ValueError: If fewer than two targets are given, or a rule code is unknown.
     """
+    # Narrowing compares a literal's releases with the targets, so a target is matched to its
+    # release first: (9, 0, 0), as a 9.0 file spells it, is the 9.0.1 release.
+    targets = list(dict.fromkeys(find_release(v) or v for v in targets))
     if len(targets) < 2:
         msg = "at least two target versions are required"
         raise ValueError(msg)
@@ -173,16 +180,22 @@ def check_compatibility(
     for literal in literals:
         if allowed_types is not None and not _passes_group_filter(literal, allowed_types, all_types):
             continue
-        scoped = {v: i for v, i in indices.items() if literal.releases is None or v in literal.releases}
-        if not scoped:
+        scope = frozenset(v for v in indices if literal.releases is None or v in literal.releases)
+        if not scope:
             # The code is guarded off for every target (``if doc.version < (9, 4, 0):`` with 22.1+).
             continue
 
+        # Presence is judged over every target and misses are reported only within *scope*: a
+        # literal no release in scope has, but some other target has, is a definite bug in the
+        # guarded code, not a name that exists nowhere.
         if literal.kind == LiteralKind.OBJECT_TYPE:
-            _check_object_type(literal, scoped, filename, diagnostics)
+            _check_object_type(literal, indices, filename, diagnostics, scope=scope)
         elif literal.kind == LiteralKind.CHOICE_VALUE:
-            _check_choice_value(literal, scoped, filename, diagnostics)
+            _check_choice_value(literal, indices, filename, diagnostics, scope=scope)
 
+    # A bare comment on a line whose only diagnostics are of rules this run does not check still
+    # earns its place: those rules run in other configurations (per-file ignores, --select).
+    deselected_lines = frozenset(d.line for d in diagnostics if d.code not in enabled)
     diagnostics = [d for d in diagnostics if d.code in enabled]
     if suppressions:
         diagnostics = _apply_suppressions(
@@ -190,6 +203,7 @@ def check_compatibility(
             filename,
             diagnostics,
             enabled,
+            deselected_lines=deselected_lines,
             # A group filter hides diagnostics a comment is there for, so it cannot tell unused.
             report_unused="C005" in enabled and allowed_types is None,
             span=(version_string(min(indices)), version_string(max(indices))),
@@ -220,6 +234,7 @@ def _apply_suppressions(
     diagnostics: list[Diagnostic],
     enabled: frozenset[str],
     *,
+    deselected_lines: frozenset[int] = frozenset(),
     report_unused: bool,
     span: tuple[str, str],
 ) -> list[Diagnostic]:
@@ -237,6 +252,8 @@ def _apply_suppressions(
     if not report_unused:
         return kept
     for comment in comments.values():
+        if comment.codes is None and comment.line in deselected_lines:
+            continue
         problem = _unused_problem(comment, enabled)
         if problem is None:
             continue
@@ -281,26 +298,23 @@ def _check_object_type(
     indices: dict[tuple[int, int, int], SchemaIndex],
     filename: str,
     out: list[Diagnostic],
+    *,
+    scope: frozenset[tuple[int, int, int]],
 ) -> None:
-    """Emit diagnostics for an object-type literal missing in some target versions."""
-    present_in: list[tuple[int, int, int]] = []
-    absent_in: list[tuple[int, int, int]] = []
-
-    for version, index in indices.items():
-        if _contains_object_type_case_insensitive(literal.value, index.object_types):
-            present_in.append(version)
-        else:
-            absent_in.append(version)
+    """Emit diagnostics for an object-type literal missing in some target versions of *scope*."""
+    present_in = [
+        v for v, index in indices.items() if _contains_object_type_case_insensitive(literal.value, index.object_types)
+    ]
+    absent_in = [v for v in indices if v in scope and v not in present_in]
 
     if literal.call == "get_collection":
-        _check_get_collection(literal, indices, present_in, filename, out)
+        _check_get_collection(literal, indices, present_in, filename, out, scope=scope)
 
     if not absent_in or not present_in:
-        # Exists everywhere or nowhere -- nothing more to report.
+        # Exists everywhere in scope, or in no target at all -- nothing more to report.
         return
 
-    # Use the first present version as the reference.
-    ref_version = sorted(present_in)[0]
+    ref_version = _reference_version(present_in, scope)
 
     for missing_version in sorted(absent_in):
         out.append(
@@ -311,7 +325,7 @@ def _check_object_type(
                     f"{version_string(missing_version)} "
                     f"(exists in {version_string(ref_version)})"
                 ),
-                severity=CompatSeverity.WARNING,
+                severity=RULE_SEVERITIES["C001"],
                 filename=filename,
                 line=literal.line,
                 col=literal.col,
@@ -322,12 +336,22 @@ def _check_object_type(
         )
 
 
+def _reference_version(
+    present_in: list[tuple[int, int, int]], scope: frozenset[tuple[int, int, int]]
+) -> tuple[int, int, int]:
+    """The release a missing literal is reported as existing in: the earliest in *scope* that has it, else any."""
+    in_scope = [v for v in present_in if v in scope]
+    return min(in_scope or present_in)
+
+
 def _check_get_collection(
     literal: ExtractedLiteral,
     indices: dict[tuple[int, int, int], SchemaIndex],
     present_in: list[tuple[int, int, int]],
     filename: str,
     out: list[Diagnostic],
+    *,
+    scope: frozenset[tuple[int, int, int]],
 ) -> None:
     """Emit ``C003`` or ``C004`` for a literal passed to ``get_collection``.
 
@@ -336,12 +360,14 @@ def _check_get_collection(
     run time rather than raising (``C003``), and a correct one gives an untyped collection where the
     document's own item access would have given a typed one (``C004``).
     """
-    lowest = version_string(min(indices))
-    highest = version_string(max(indices))
+    # Listed and searched over the releases the code can run on; whether the name exists at all
+    # is judged over every target (*present_in*), so a type some other target has is C001's.
+    lowest = version_string(min(scope))
+    highest = version_string(max(scope))
     receiver = literal.receiver or "model"
 
     if not present_in:
-        by_folded = _types_by_folded_name(tuple(sorted(indices)))
+        by_folded = _types_by_folded_name(tuple(sorted(scope)))
         close = difflib.get_close_matches(literal.value.casefold(), list(by_folded), n=1, cutoff=0.6)
         suggestion = by_folded[close[0]] if close else None
         hint = f"; did you mean '{suggestion}'?" if suggestion else ""
@@ -350,10 +376,10 @@ def _check_get_collection(
                 code="C003",
                 message=(
                     f"Object type '{literal.value}' is not in any target version "
-                    f"({', '.join(version_string(v) for v in sorted(indices))}); "
+                    f"({', '.join(version_string(v) for v in sorted(scope))}); "
                     f"get_collection returns an empty collection for it{hint}"
                 ),
-                severity=CompatSeverity.ERROR,
+                severity=RULE_SEVERITIES["C003"],
                 filename=filename,
                 line=literal.line,
                 col=literal.col,
@@ -373,7 +399,7 @@ def _check_get_collection(
     # targets share, so the narrowing note is always given, worded for the case at hand.
     narrow = (
         " on a document narrowed with as_version() to a release that has it (C001 lists those without)"
-        if len(present_in) < len(indices)
+        if not scope <= set(present_in)
         else " (on an AnyIDFDocument, narrow with as_version() first if some supported release lacks the type)"
     )
     out.append(
@@ -384,7 +410,7 @@ def _check_get_collection(
                 f'{receiver}["{canonical}"] gives the typed collection, and the type checker checks '
                 f"the name{narrow}"
             ),
-            severity=CompatSeverity.WARNING,
+            severity=RULE_SEVERITIES["C004"],
             filename=filename,
             line=literal.line,
             col=literal.col,
@@ -396,13 +422,27 @@ def _check_get_collection(
     )
 
 
+def _choices_of(index: SchemaIndex, obj_type: str, field_name: str) -> frozenset[str] | None:
+    """The choices of *obj_type*'s *field_name* in *index*, the type matched case-insensitively."""
+    choices = index.choices.get((obj_type, field_name))
+    if choices is None:
+        canonical_obj_type = _canonical_object_type(obj_type, index.object_types)
+        if canonical_obj_type is not None:
+            choices = index.choices.get((canonical_obj_type, field_name))
+    return choices
+
+
 def _check_choice_value(
     literal: ExtractedLiteral,
     indices: dict[tuple[int, int, int], SchemaIndex],
     filename: str,
     out: list[Diagnostic],
+    *,
+    scope: frozenset[tuple[int, int, int]] | None = None,
 ) -> None:
-    """Emit diagnostics for a choice value that is absent in some target versions."""
+    """Emit diagnostics for a choice value that is absent in some target versions of *scope* (default: all)."""
+    if scope is None:
+        scope = frozenset(indices)
     obj_type = literal.obj_type
     field_name = literal.field_name
     if obj_type is None or field_name is None:
@@ -413,11 +453,7 @@ def _check_choice_value(
     absent_in: list[tuple[int, int, int]] = []
 
     for version, index in indices.items():
-        choices = index.choices.get((obj_type, field_name))
-        if choices is None:
-            canonical_obj_type = _canonical_object_type(obj_type, index.object_types)
-            if canonical_obj_type is not None:
-                choices = index.choices.get((canonical_obj_type, field_name))
+        choices = _choices_of(index, obj_type, field_name)
         if choices is None:
             # Field has no enum in this version -- not applicable; skip.
             continue
@@ -428,13 +464,13 @@ def _check_choice_value(
             choices_lower = {c.lower() for c in choices}
             if literal.value.lower() in choices_lower:
                 present_in.append(version)
-            else:
+            elif version in scope:
                 absent_in.append(version)
 
     if not absent_in or not present_in:
         return
 
-    ref_version = sorted(present_in)[0]
+    ref_version = _reference_version(present_in, scope)
 
     for missing_version in sorted(absent_in):
         out.append(
@@ -446,7 +482,7 @@ def _check_choice_value(
                     f"{version_string(missing_version)} "
                     f"(exists in {version_string(ref_version)})"
                 ),
-                severity=CompatSeverity.WARNING,
+                severity=RULE_SEVERITIES["C002"],
                 filename=filename,
                 line=literal.line,
                 col=literal.col,

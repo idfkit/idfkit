@@ -65,7 +65,10 @@ release's class, the release's own class through `IDFDocumentV9_4` and the like,
 ```
 
 It takes a name or an object, matches names case-insensitively, and returns a `list` in no
-particular order, each object once.
+particular order, each object once. It matches a name in any reference field, so
+`referencing("Office")` also returns another zone's interzone wall whose
+`outside_boundary_condition_object` is `"Office"`. For the surfaces that belong to a zone, use
+`doc.get_zone_surfaces("Office")`, which keeps only those whose `zone_name` names it.
 
 ## Cascading renames
 

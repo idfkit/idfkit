@@ -410,8 +410,9 @@ class TestSARIFOutput:
         output = format_sarif([diag])
         data = json.loads(output)
         result = data["runs"][0]["results"][0]
-        assert "fixes" in result
-        assert result["fixes"][0]["description"]["text"] == "Use 'NewType' instead"
+        # A SARIF fix must carry artifactChanges, so the suggestion travels as a property.
+        assert "fixes" not in result
+        assert result["properties"]["suggested_fix"] == "Use 'NewType' instead"
 
     def test_cli_sarif_output(self, removed_type_script: tuple[Path, str], capsys: pytest.CaptureFixture[str]) -> None:
         """CLI --sarif produces valid SARIF output."""
@@ -717,13 +718,15 @@ class TestParseVersionSpec:
 
         assert _parse_version_spec("24.1.0") == (24, 1, 0)
 
-    def test_two_part_no_matching_minor_fallback(self) -> None:
-        """A two-part version with no matching bundled minor falls back to MAJOR.MINOR.0."""
+    def test_unsupported_line_is_refused(self) -> None:
+        """A line idfkit does not support is an error, not silently the latest release."""
+        import argparse
+
         from idfkit.compat._cli import _parse_version_spec  # pyright: ignore[reportPrivateUsage]
 
-        # Version 99.0 does not exist in any bundled schema.
-        result = _parse_version_spec("99.0")
-        assert result == (99, 0, 0)
+        for spec in ("99.0", "27.1"):
+            with pytest.raises(argparse.ArgumentTypeError, match="not a release idfkit supports"):
+                _parse_version_spec(spec)
 
 
 # ---------------------------------------------------------------------------

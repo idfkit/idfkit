@@ -39,7 +39,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION
+from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_release, releases_between
 
 Release = tuple[int, int, int]
 Releases = frozenset[Release]
@@ -49,6 +49,7 @@ ALL_RELEASES: Releases = frozenset(ENERGYPLUS_VERSIONS)
 
 _MAX_DEPTH = 8
 _DOC_TYPE_RE = re.compile(r"^IDFDocumentV(\d+)_(\d+)$")
+_RANGE_TYPE_RE = re.compile(r"^IDFDocument(Since|Before)(\d+)_(\d+)$")
 _ROOT_RE = re.compile(r"^[A-Za-z_]\w*")
 _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
     ast.Lt: operator.lt,
@@ -62,7 +63,7 @@ _COMPARE_OPS: dict[type[ast.cmpop], Callable[[Any, Any], bool]] = {
 
 def release_for_line(major: int, minor: int) -> Release | None:
     """The supported release of the ``major.minor`` line (``9.0`` is 9.0.1), or ``None``."""
-    return next((v for v in ENERGYPLUS_VERSIONS if v[:2] == (major, minor)), None)
+    return find_release((major, minor, 0))
 
 
 # ---------------------------------------------------------------------------
@@ -303,9 +304,7 @@ class Narrower:
         upper = self._bound(before, scope) if before is not None else None
         if lower is None and upper is None:
             return None
-        return frozenset(
-            v for v in ENERGYPLUS_VERSIONS if (lower is None or v >= lower) and (upper is None or v < upper)
-        )
+        return frozenset(releases_between(lower, upper))
 
     def document_types(self, expr: ast.expr, scope: Scope, depth: int = 0) -> Releases | None:  # noqa: C901
         """The releases a document-type expression names (a type, tuple or union), or ``None``."""
@@ -333,6 +332,15 @@ class Narrower:
         if match:
             release = release_for_line(int(match.group(1)), int(match.group(2)))
             return frozenset({release}) if release is not None else None
+        match = _RANGE_TYPE_RE.match(name)
+        if match:
+            # The generated range aliases of idfkit.versioned: since inclusive, before exclusive.
+            bound = release_for_line(int(match.group(2)), int(match.group(3)))
+            if bound is None:
+                return None
+            if match.group(1) == "Since":
+                return frozenset(releases_between(bound, None))
+            return frozenset(releases_between(None, bound))
         if isinstance(expr, ast.Name):
             bound = self.table.value_of(expr.id, scope)
             if bound is not None:
@@ -344,13 +352,15 @@ class Narrower:
         if depth > _MAX_DEPTH:
             return None
         if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
-            parts = expr.value.strip().split(".")
-            if len(parts) in {2, 3} and all(p.isdigit() for p in parts):
+            # Read exactly as the run-time as_version reads it (no stripping), so a bound that
+            # raises there narrows nothing here.
+            parts = expr.value.split(".")
+            if len(parts) in {2, 3} and all(p.isdecimal() for p in parts):
                 return release_for_line(int(parts[0]), int(parts[1]))
             return None
         numbers = _int_tuple(expr)
         if numbers is not None:
-            return release_for_line(numbers[0], numbers[1]) if len(numbers) >= 2 else None
+            return release_for_line(numbers[0], numbers[1]) if len(numbers) in {2, 3} else None
         types = self.document_types(expr, scope, depth + 1)
         if types is not None and len(types) == 1:
             return next(iter(types))
@@ -472,9 +482,22 @@ class Guard:
         return values
 
 
+def escapes(document: DocumentRef, table: ScopeTable) -> bool:
+    """Whether the name *document* is reached through is ``global``/``nonlocal`` somewhere.
+
+    Such a name can be rebound by any call, from outside the guarded block, so a guard on it is
+    not sound.
+    """
+    return bool(_roots(document) & table.escaped)
+
+
+def _roots(document: DocumentRef) -> set[str]:
+    return {m.group(0) for m in (_ROOT_RE.match(b) for b in document.bases) if m}
+
+
 def rebinds(body: list[ast.stmt], document: DocumentRef) -> bool:
     """Whether *body* assigns to the guarded document, or to the name it is reached through."""
-    roots = {m.group(0) for m in (_ROOT_RE.match(b) for b in document.bases) if m}
+    roots = _roots(document)
     for target in _assigned_targets(body):
         if isinstance(target, ast.Name) and target.id in roots:
             return True

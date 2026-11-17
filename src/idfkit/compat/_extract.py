@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import ast
+import re
 
 from ._models import ExtractedLiteral, LiteralKind
-from ._narrow import ALL_RELEASES, Guard, Narrower, Releases, Scope, ScopeTable, rebinds
+from ._narrow import ALL_RELEASES, DocumentRef, Guard, Narrower, Releases, Scope, ScopeTable, escapes, rebinds
 
 
 def extract_literals(source: str, filename: str = "<unknown>", *, package: str | None = None) -> list[ExtractedLiteral]:
@@ -76,6 +77,14 @@ def _has_idfkit_import(tree: ast.Module, package: str | None = None) -> bool:
     return False
 
 
+_LINE_RE = re.compile(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+\Z")
+
+
+def _splitlines_no_ff(source: str) -> list[str]:
+    """Split *source* into lines as the tokenizer does (form feeds do not end a line), keeping ends."""
+    return _LINE_RE.findall(source)
+
+
 def _end_col(node: ast.expr) -> int:
     """Best-effort end column offset for a node."""
     if node.end_col_offset is not None:
@@ -98,16 +107,44 @@ class _LiteralVisitor(ast.NodeVisitor):
         self._narrower = Narrower(self._table)
         self._scope: Scope = self._table.module
         self._guards: list[Guard] = []
+        self._lines: list[str] | None = None
+        # Whether a statement rebinds a document, keyed by (statement, document bases): an elif
+        # chain asks this of every tail of the chain, which would otherwise be quadratic.
+        self._rebinds_memo: dict[tuple[int, frozenset[str]], bool] = {}
 
     # ------------------------------------------------------------------
     # Scopes and version guards
     # ------------------------------------------------------------------
-    def _visit_scope(self, node: ast.AST) -> None:
-        """Visit a function, lambda or class body in its own scope, outside every enclosing guard."""
+    def _visit_scope(self, node: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef) -> None:
+        """Visit a function, lambda or class body in its own scope, outside every enclosing guard.
+
+        Decorators, argument defaults, annotations, class bases and keywords are evaluated where
+        the definition runs, so they are visited first, in the enclosing scope and under its guards.
+        """
+        outer: list[ast.AST]
+        inner: list[ast.AST]
+        if isinstance(node, ast.ClassDef):
+            outer = [*node.decorator_list, *node.bases, *node.keywords]
+            inner = list(node.body)
+        else:
+            args = node.args
+            all_args = [*args.posonlyargs, *args.args, *args.kwonlyargs, args.vararg, args.kwarg]
+            outer = [*args.defaults, *(d for d in args.kw_defaults if d is not None)]
+            if isinstance(node, ast.Lambda):
+                inner = [node.body]
+            else:
+                outer[:0] = node.decorator_list
+                outer += [a.annotation for a in all_args if a is not None and a.annotation is not None]
+                if node.returns is not None:
+                    outer.append(node.returns)
+                inner = list(node.body)
+        for child in outer:
+            self.visit(child)
         saved_scope, saved_guards = self._scope, self._guards
         self._scope, self._guards = self._table.scope_for(node, saved_scope), []
         try:
-            self.generic_visit(node)
+            for child in inner:
+                self.visit(child)
         finally:
             self._scope, self._guards = saved_scope, saved_guards
 
@@ -117,20 +154,94 @@ class _LiteralVisitor(ast.NodeVisitor):
     visit_ClassDef = _visit_scope
 
     def visit_If(self, node: ast.If) -> None:
-        self.visit(node.test)
-        if not self._has_idfkit_import:
-            self._visit_block(node.body, [])
-            self._visit_block(node.orelse, [])
-            return
-        conjuncts = [
-            g for g in self._narrower.guard_conjuncts(node.test, self._scope) if not rebinds(node.body, g.document)
-        ]
-        self._visit_block(node.body, conjuncts)
-        whole = self._narrower.guard(node.test, self._scope)
-        negated: list[Guard] = []
-        if whole is not None and not rebinds(node.orelse, whole.document):
-            negated = [whole.negated()]
-        self._visit_block(node.orelse, negated)
+        # An elif chain is an If nested in the orelse of the one before. It is walked in a loop,
+        # not by recursion, so a long chain neither overflows the stack nor costs quadratic time.
+        saved = self._guards
+        current: ast.If | None = node
+        try:
+            while current is not None:
+                self.visit(current.test)
+                if not self._has_idfkit_import:
+                    conjuncts: list[Guard] = []
+                    negated: list[Guard] = []
+                else:
+                    conjuncts = [
+                        g
+                        for g in self._narrower.guard_conjuncts(current.test, self._scope)
+                        if not self._unsound(g.document, current.body)
+                    ]
+                    whole = self._narrower.guard(current.test, self._scope)
+                    negated = []
+                    if whole is not None and not self._unsound(whole.document, current.orelse):
+                        negated = [whole.negated()]
+                self._visit_block(current.body, conjuncts)
+                orelse = current.orelse
+                if len(orelse) == 1 and isinstance(orelse[0], ast.If):
+                    self._guards = [*self._guards, *negated]
+                    current = orelse[0]
+                else:
+                    self._visit_block(orelse, negated)
+                    current = None
+        finally:
+            self._guards = saved
+
+    def _unsound(self, document: DocumentRef, body: list[ast.stmt]) -> bool:
+        """Whether a guard on *document* cannot be trusted inside *body*."""
+        return escapes(document, self._table) or any(self._stmt_rebinds(stmt, document) for stmt in body)
+
+    def _stmt_rebinds(self, stmt: ast.stmt, document: DocumentRef) -> bool:
+        """``rebinds([stmt], document)``, computed once per elif-chain link, bottom-up."""
+        chain: list[ast.stmt] = [stmt]
+        while True:
+            last = chain[-1]
+            if not (isinstance(last, ast.If) and len(last.orelse) == 1 and isinstance(last.orelse[0], ast.If)):
+                break
+            if (id(last.orelse[0]), document.bases) in self._rebinds_memo:
+                break
+            chain.append(last.orelse[0])
+        for link in reversed(chain):
+            key = (id(link), document.bases)
+            if key in self._rebinds_memo:
+                continue
+            if isinstance(link, ast.If):
+                tail = link.orelse
+                if len(tail) == 1 and isinstance(tail[0], ast.If):
+                    tail_rebinds = self._rebinds_memo[(id(tail[0]), document.bases)]
+                else:
+                    tail_rebinds = rebinds(tail, document)
+                result = rebinds([ast.Expr(value=link.test)], document) or rebinds(link.body, document) or tail_rebinds
+            else:
+                result = rebinds([link], document)
+            self._rebinds_memo[key] = result
+        return self._rebinds_memo[(id(stmt), document.bases)]
+
+    def _visit_comprehension(self, node: ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp) -> None:
+        """Visit a comprehension in the scope it runs in.
+
+        Only its first iterable is evaluated in the enclosing scope. The rest runs in the
+        comprehension's own scope, which, like a function's, does not see the names of an
+        enclosing class body. A generator also runs when it is consumed, perhaps after the guard
+        around it stopped holding, so its body is visited outside every guard.
+        """
+        first = node.generators[0]
+        self.visit(first.iter)
+        saved_scope, saved_guards = self._scope, self._guards
+        if self._scope.is_class and self._scope.parent is not None:
+            self._scope = self._scope.parent
+        if isinstance(node, ast.GeneratorExp):
+            self._guards = []
+        body: list[ast.AST] = [first.target, *first.ifs, *node.generators[1:]]
+        body += [node.key, node.value] if isinstance(node, ast.DictComp) else [node.elt]
+        try:
+            for child in body:
+                self.visit(child)
+        finally:
+            self._scope, self._guards = saved_scope, saved_guards
+
+    visit_ListComp = _visit_comprehension
+    visit_SetComp = _visit_comprehension
+    visit_DictComp = _visit_comprehension
+    visit_GeneratorExp = _visit_comprehension
 
     def _visit_block(self, body: list[ast.stmt], guards: list[Guard]) -> None:
         saved = self._guards
@@ -153,8 +264,33 @@ class _LiteralVisitor(ast.NodeVisitor):
         return None if releases == ALL_RELEASES else releases
 
     def _receiver_text(self, receiver: ast.expr) -> str:
-        """The receiver as the author wrote it, so a suggested fix reads like their code."""
-        return ast.get_source_segment(self._source, receiver) or ast.unparse(receiver)
+        """The receiver as the author wrote it, so a suggested fix reads like their code.
+
+        A receiver spread over several lines is normalised, so a diagnostic stays on one line, and
+        one that is not a primary (``a or b``, ``await load()``) is parenthesised, so appending
+        ``["Zone"]`` or ``.get_collection(...)`` to it keeps its meaning.
+        """
+        segment = self._segment(receiver) if receiver.lineno == receiver.end_lineno else None
+        text = segment or ast.unparse(receiver)
+        if not isinstance(receiver, (ast.Name, ast.Attribute, ast.Call, ast.Subscript)):
+            text = f"({text})"
+        return text
+
+    def _segment(self, node: ast.expr) -> str | None:
+        """``ast.get_source_segment`` over lines split once per file, not once per call."""
+        if node.end_lineno is None or node.end_col_offset is None:
+            return None
+        if self._lines is None:
+            self._lines = _splitlines_no_ff(self._source)
+        lines = self._lines
+        first, last = node.lineno - 1, node.end_lineno - 1
+        if last >= len(lines):
+            return None
+        if first == last:
+            return lines[first].encode()[node.col_offset : node.end_col_offset].decode()
+        head = lines[first].encode()[node.col_offset :].decode()
+        tail = lines[last].encode()[: node.end_col_offset].decode()
+        return "".join([head, *lines[first + 1 : last], tail])
 
     # ------------------------------------------------------------------
     # Pattern: something.add("ObjectType", ...)

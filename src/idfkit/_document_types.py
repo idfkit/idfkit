@@ -20,7 +20,10 @@ not (9.0.1).
 
 from __future__ import annotations
 
+import functools
+import operator
 import types
+from functools import lru_cache
 from typing import (
     TYPE_CHECKING,
     Annotated,
@@ -36,7 +39,14 @@ from typing import (
     overload,
 )
 
-from .versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, find_closest_version, version_string
+from .versions import (
+    ENERGYPLUS_VERSIONS,
+    LATEST_VERSION,
+    find_closest_version,
+    find_release,
+    releases_between,
+    version_string,
+)
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -237,9 +247,8 @@ def _release(bound: object, keyword: str) -> tuple[int, int, int]:
 
     A document type names the release it stands for (``IDFDocument`` the latest). A string
     (``"9.6"``, ``"9.6.0"``) or a version tuple (``(9, 6, 0)``, as ``doc.version`` is) names one by
-    number, and is matched to a release as a file's ``Version`` line is, by
-    :func:`~idfkit.versions.find_closest_version`; but a number newer than every supported release,
-    which a file may degrade to the latest, names no release here.
+    number, and is matched to its release line by :func:`~idfkit.versions.find_release`; a number
+    newer than every supported release, which a file may degrade to the latest, names no release.
     """
     if isinstance(bound, str):
         parts = bound.split(".")
@@ -263,8 +272,8 @@ def _release(bound: object, keyword: str) -> tuple[int, int, int]:
             raise TypeError(msg)
         return required
     version = cast("tuple[int, int, int]", (*numbers, 0)[:3])
-    release = find_closest_version(version)
-    if release is None or release[:2] != version[:2]:
+    release = find_release(version)
+    if release is None:
         supported = ", ".join(version_string(v) for v in ENERGYPLUS_VERSIONS)
         msg = f"{keyword}={bound!r}: idfkit supports no such EnergyPlus release (it supports {supported})"
         raise ValueError(msg)
@@ -287,7 +296,7 @@ def _check_range(doc: AnyIDFDocument, since: object, before: object) -> None:
     """Raise unless *doc* is of a supported release from *since* (inclusive) to *before* (exclusive)."""
     low = None if since is None else _release(since, "since")
     high = None if before is None else _release(before, "before")
-    members = [v for v in ENERGYPLUS_VERSIONS if (low is None or v >= low) and (high is None or v < high)]
+    members = releases_between(low, high)
     if members and find_closest_version(doc.version) in members:
         return
     # Only a refusal pays for the description.
@@ -359,7 +368,22 @@ def release_union(*members: type) -> Any:
     """The run-time value of a generated range alias, such as ``IDFDocumentSince9_6``: the union of *members*.
 
     A type checker reads the alias from ``versioned.pyi``; this only has to exist when imported.
-    One member is that member, as ``Union`` makes it.
+    One member is that member.
+
+    ``IDFDocument`` stands for the latest release, but every document is an instance of it, so it
+    is replaced by a stand-in for the latest release: ``isinstance(doc, IDFDocumentSince9_4)``
+    then holds only for a document of 9.4 or later, as ``as_version`` reads the alias.
     """
-    union: Any = Union
-    return union[members]
+    from .document import IDFDocument
+
+    # Joined with ``|`` rather than ``Union[...]``: a ``typing.Union`` checks ``isinstance`` by the
+    # instance's class, which skips the stand-ins' version check, while ``types.UnionType`` asks each
+    # member, so ``isinstance(doc, IDFDocumentBefore9_4)`` holds for a 9.1 document.
+    return functools.reduce(operator.or_, (_latest_release_type() if m is IDFDocument else m for m in members))
+
+
+@lru_cache(maxsize=1)
+def _latest_release_type() -> type:
+    """A stand-in for the latest release that, unlike ``IDFDocument``, an older document is not an instance of."""
+    major, minor, _ = LATEST_VERSION
+    return document_type(f"IDFDocumentV{major}_{minor}", LATEST_VERSION)

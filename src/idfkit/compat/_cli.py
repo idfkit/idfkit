@@ -32,14 +32,14 @@ import argparse
 import json
 import os
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn
 
 from ..exceptions import EnergyPlusNotFoundError, MigrationError, UnsupportedVersionError
 from ..migration import MigrationProgress, MigrationReport, migrate
-from ..versions import ENERGYPLUS_VERSIONS, LATEST_VERSION, version_string
+from ..versions import LATEST_VERSION, version_string
 from ..weather._cli import add_subparser as _add_tmy_subparser
 from ..weather._cli import run_tmy as _run_tmy
 from ._checker import check_compatibility, resolve_version
@@ -64,35 +64,15 @@ if TYPE_CHECKING:
 
 
 def _parse_version_spec(spec: str) -> tuple[int, int, int]:
-    """Parse a version string like ``"24.2"`` or ``"25.1.0"`` into a tuple."""
-    parts = spec.strip().split(".")
-    if len(parts) not in {2, 3}:
-        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
-        raise argparse.ArgumentTypeError(msg)
+    """Parse a ``migrate --to`` value like ``"24.2"`` or ``"25.1.0"`` into the release it names.
 
-    if any(part == "" for part in parts):
-        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
-        raise argparse.ArgumentTypeError(msg)
-
+    Read as ``idfkit check`` reads its releases (:func:`~idfkit.compat._config.parse_release`): a
+    line idfkit does not support, newer ones included, is an error rather than the latest release.
+    """
     try:
-        values = tuple(int(part) for part in parts)
-    except ValueError as exc:
-        msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
-        raise argparse.ArgumentTypeError(msg) from exc
-
-    if len(values) == 2:
-        major, minor = values
-        matching_minor = [v for v in ENERGYPLUS_VERSIONS if v[0] == major and v[1] == minor]
-        if matching_minor:
-            return max(matching_minor, key=lambda v: v[2])
-        return (major, minor, 0)
-
-    if len(values) == 3:
-        major, minor, patch = values
-        return (major, minor, patch)
-
-    msg = f"Invalid version specifier: '{spec}'. Expected MAJOR.MINOR or MAJOR.MINOR.PATCH."
-    raise argparse.ArgumentTypeError(msg)
+        return parse_release(spec)
+    except ConfigError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from None
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -346,7 +326,7 @@ def _usage_error(message: str) -> NoReturn:
     sys.exit(2)
 
 
-def _resolve_targets(args: argparse.Namespace, config: CheckConfig | None = None) -> list[tuple[int, int, int]]:
+def _resolve_targets(args: argparse.Namespace, config: CheckConfig | None) -> list[tuple[int, int, int]]:
     """The target releases: from the command line if it names any, else from the configuration.
 
     Raises SystemExit(2) for a malformed or unsupported release, or fewer than two targets.
@@ -546,21 +526,24 @@ def _discover(paths: list[str], settings: _Settings) -> list[Path]:
         if path.is_file():
             candidates = [path]
         elif path.is_dir():
-            candidates = sorted(
-                (
-                    p
-                    for p in path.rglob("*.py")
-                    if not any(part.startswith(".") or part in _SKIPPED_DIRS for part in p.relative_to(path).parts[:-1])
-                ),
-                key=lambda p: p.as_posix(),
-            )
+            candidates = sorted(_python_files(path), key=lambda p: p.as_posix())
         else:
             _usage_error(f"file not found: {path}")
         found.extend(p for p in candidates if not _excluded(p, settings))
-    unique: dict[Path, None] = {}
+    # The same file named twice (``a.py`` and ``./a.py``, or a relative and an absolute path) is
+    # checked once, under the first spelling.
+    unique: dict[Path, Path] = {}
     for p in found:
-        unique.setdefault(p, None)
-    return list(unique)
+        unique.setdefault(p.resolve(), p)
+    return list(unique.values())
+
+
+def _python_files(root: Path) -> Iterator[Path]:
+    """Every ``.py`` file under *root*, never entering a hidden or skipped directory."""
+    for directory, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in _SKIPPED_DIRS]
+        base = Path(directory)
+        yield from (base / name for name in filenames if name.endswith(".py"))
 
 
 def _display_path(path: Path) -> str:

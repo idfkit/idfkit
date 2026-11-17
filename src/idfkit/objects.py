@@ -1458,8 +1458,14 @@ class IDFCollection(Generic[_T_co]):
             when the collection's objects belong to no document, as nothing tracks their
             references.
 
+        A name is matched in any reference field, so ``referencing("Office")`` on surfaces also
+        returns another zone's interzone wall whose ``outside_boundary_condition_object`` is
+        ``"Office"``. For the surfaces that belong to a zone use
+        [get_zone_surfaces][idfkit.document.IDFDocument.get_zone_surfaces], which keeps only those
+        whose ``zone_name`` names it.
+
         Examples:
-            Find a zone's surfaces, then each surface's windows:
+            Find the surfaces that name a zone, then each surface's windows:
 
             >>> from idfkit import new_document
             >>> model = new_document()

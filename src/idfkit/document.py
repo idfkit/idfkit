@@ -1262,11 +1262,12 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         """
         if self._schema is None:
             return []
-        surface_types = self._schema.get_types_providing_reference("SurfaceNames")
+        # Upper-cased, because addidfobject keeps an object's type as the caller spelled it.
+        surface_types = {t.upper() for t in self._schema.get_types_providing_reference("SurfaceNames")}
         return [
             obj
             for obj, field_name in self._references.get_referencing_with_fields(zone_name)
-            if field_name == "zone_name" and obj.obj_type in surface_types
+            if field_name == "zone_name" and obj.obj_type.upper() in surface_types
         ]
 
     # -------------------------------------------------------------------------

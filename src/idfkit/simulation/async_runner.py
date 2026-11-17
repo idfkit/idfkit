@@ -218,8 +218,9 @@ async def async_simulate(
             ``None`` and the run directory already contains ``in.epw``.
         ExpandObjectsError: If a preprocessing step fails.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
-        VersionMismatchError: If ``model.version`` differs from the installed
-            EnergyPlus and *auto_migrate* is ``False``, or if the model is
+        VersionMismatchError: If ``model.version`` names another release line
+            than the installed EnergyPlus (a ``9.0`` model on 9.0.1 matches) and
+            *auto_migrate* is ``False``, or if the model is
             newer than the installed EnergyPlus.
     """
     if fs is not None and output_dir is None:

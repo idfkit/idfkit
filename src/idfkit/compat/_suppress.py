@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 # ``ignore`` must end the directive or be followed by its code list: ``ignore-file`` or an unclosed
 # ``ignore[C001`` is not a bare ``ignore`` that silences every rule.
 _COMMENT_RE = re.compile(r"(?:^|#)\s*idfkit:\s*ignore(?:\s*\[(?P<codes>[^\]]*)\])?(?![\w\-\[])")
+# What follows a bare ``ignore`` when the codes were written without brackets.
+_MISWRITTEN_CODES_RE = re.compile(r"\s*:|\s+[A-Za-z]\d")
 
 
 @dataclass
@@ -54,6 +56,9 @@ def parse_suppressions(source: str) -> dict[int, Suppression]:
     reported by the caller.
     """
     found: dict[int, Suppression] = {}
+    if "idfkit:" not in source:
+        # Every comment the pattern matches contains this text, so most files skip tokenizing.
+        return found
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(source).readline))
     except (tokenize.TokenError, SyntaxError):
@@ -65,7 +70,13 @@ def parse_suppressions(source: str) -> dict[int, Suppression]:
         if match is None:
             continue
         raw = match.group("codes")
-        codes = None if raw is None else frozenset(c.strip().upper() for c in raw.split(",") if c.strip())
+        codes: frozenset[str] | None = (
+            None if raw is None else frozenset(c.strip().upper() for c in raw.split(",") if c.strip())
+        )
+        if raw is None and _MISWRITTEN_CODES_RE.match(token.string, match.end()):
+            # ``ignore: C001`` or ``ignore C001`` meant a code list. Read as a bare ``ignore`` it
+            # would silence every rule on the line; an empty list silences none and is reported.
+            codes = frozenset[str]()
         line, col = token.start
         found[line] = Suppression(line=line, col=col, end_col=token.end[1], codes=codes)
     return found

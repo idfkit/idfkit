@@ -117,6 +117,22 @@ def find_release(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
     return max(same_line) if same_line else None
 
 
+def releases_between(
+    since: tuple[int, int, int] | None, before: tuple[int, int, int] | None
+) -> list[tuple[int, int, int]]:
+    """
+    Every supported release from *since* (inclusive) to *before* (exclusive).
+
+    This is the range ``as_version(doc, since=..., before=...)`` accepts, and the one
+    ``idfkit check`` reads statically; either bound may be ``None`` for an open end.
+
+    Examples:
+        >>> releases_between((22, 1, 0), (23, 2, 0))
+        [(22, 1, 0), (22, 2, 0), (23, 1, 0)]
+    """
+    return [v for v in ENERGYPLUS_VERSIONS if (since is None or v >= since) and (before is None or v < before)]
+
+
 def find_closest_version(version: tuple[int, int, int]) -> tuple[int, int, int] | None:
     """
     Find the supported version to use for a version read from a file.

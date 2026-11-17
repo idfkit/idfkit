@@ -202,8 +202,9 @@ def simulate(
         ExpandObjectsError: If a preprocessing step (ExpandObjects, Slab,
             or Basement) fails during automatic preprocessing.
         EnergyPlusNotFoundError: If EnergyPlus cannot be found.
-        VersionMismatchError: If ``model.version`` differs from the installed
-            EnergyPlus version and *auto_migrate* is ``False`` — or if the
+        VersionMismatchError: If ``model.version`` names another release line
+            than the installed EnergyPlus (a ``9.0`` model on 9.0.1 matches) and
+            *auto_migrate* is ``False`` — or if the
             model is newer than the installed EnergyPlus (backward migration
             is not supported).
     """
