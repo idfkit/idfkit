@@ -174,8 +174,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `expand_objects()`, `run_slab_preprocessor()`, `run_basement_preprocessor()` and
   `run_preprocessing()` return, came to have no `filepath`. It used to point at a scratch file in
   the run's work directory, which is deleted when the run ends, so a bare `doc.save()` failed with
-  `FileNotFoundError`, or, with `work_dir=`, overwrote the scratch file. A bare `save()` now raises
-  `ValueError`; save the result to a path you name ([#293](https://github.com/idfkit/idfkit/pull/293)).
+  `FileNotFoundError`, or, with `work_dir=`, overwrote the scratch file. A preprocessor with nothing
+  to do used to return a copy that kept the source's `filepath`; it now has none too. A bare `save()`
+  now raises `ValueError`; save the result to a path you name ([#293](https://github.com/idfkit/idfkit/pull/293)).
 - `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
   surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
   another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.

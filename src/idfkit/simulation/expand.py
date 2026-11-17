@@ -562,8 +562,9 @@ def expand_objects(
     mutated.
 
     If the document contains no ``HVACTemplate:*`` objects a
-    [copy][idfkit.document.IDFDocument.copy] is returned immediately without
-    invoking the preprocessor (no EnergyPlus installation required).
+    [copy][idfkit.document.IDFDocument.copy] with no ``filepath`` is returned
+    immediately without invoking the preprocessor (no EnergyPlus installation
+    required).
 
     Args:
         model: The EnergyPlus model to expand.
@@ -616,7 +617,8 @@ def run_slab_preprocessor(
     The original *model* is **not** mutated.
 
     If the document contains no ``GroundHeatTransfer:Slab:*`` objects a
-    [copy][idfkit.document.IDFDocument.copy] is returned immediately.
+    [copy][idfkit.document.IDFDocument.copy] with no ``filepath`` is returned
+    immediately.
 
     Args:
         model: The EnergyPlus model containing ``GroundHeatTransfer:Slab:*``
@@ -680,7 +682,8 @@ def run_basement_preprocessor(
     The original *model* is **not** mutated.
 
     If the document contains no ``GroundHeatTransfer:Basement:*`` objects a
-    [copy][idfkit.document.IDFDocument.copy] is returned immediately.
+    [copy][idfkit.document.IDFDocument.copy] with no ``filepath`` is returned
+    immediately.
 
     Args:
         model: The EnergyPlus model containing

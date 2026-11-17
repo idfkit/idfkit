@@ -1431,8 +1431,8 @@ class IDFDocument(EppyDocumentMixin, Generic[Strict]):
         low-level HVAC equivalents and returns a **new** document.  The
         current document is not mutated.
 
-        If the document contains no expandable objects, a copy is returned
-        immediately without invoking the preprocessor.
+        If the document contains no expandable objects, a copy with no
+        ``filepath`` is returned immediately without invoking the preprocessor.
 
         Args:
             energyplus: Pre-configured EnergyPlus installation.  If ``None``,

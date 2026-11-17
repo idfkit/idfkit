@@ -869,6 +869,7 @@ class TestRunBasementPreprocessor:
 
         assert calls == ["ExpandObjects", "Basement"]
         assert "Site:GroundTemperature:BuildingSurface" in expanded
+        assert expanded.filepath is None
 
     def test_raises_when_basement_input_missing(self, mock_config: EnergyPlusConfig) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -916,6 +917,7 @@ class TestRunBasementPreprocessor:
         assert len(epw_checks) == 1
         assert epw_checks[0] is True
         assert "Site:GroundTemperature:BuildingSurface" in expanded
+        assert expanded.filepath is None
 
     def test_raises_when_weather_file_missing(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -1052,6 +1054,7 @@ class TestRunPreprocessing:
 
         assert calls == ["ExpandObjects", "Slab"]
         assert "Site:GroundTemperature:BuildingSurface" in expanded
+        assert expanded.filepath is None
 
     def test_runs_basement_when_ght_input_produced(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
@@ -1086,6 +1089,7 @@ class TestRunPreprocessing:
 
         assert calls == ["ExpandObjects", "Basement"]
         assert "Site:GroundTemperature:BuildingSurface" in expanded
+        assert expanded.filepath is None
 
     def test_runs_both_slab_and_basement(self, mock_config: EnergyPlusConfig, tmp_path: Path) -> None:
         doc = new_document(version=(24, 1, 0))
