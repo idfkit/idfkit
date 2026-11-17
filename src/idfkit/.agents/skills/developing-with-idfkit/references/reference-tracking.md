@@ -31,7 +31,8 @@ doc.rename("Zone", "Office", "Open_Office")
 
 | Symbol | Purpose |
 |---|---|
-| `doc.get_referencing(name)` | All `IDFObject`s whose fields point at `name`. |
+| `doc.get_referencing(name)` | All `IDFObject`s whose fields point at `name`, of every type, untyped. |
+| `doc["Type"].referencing(name_or_obj)` | The objects of one type that point at a name (or object's name), typed as that type. |
 | `doc.get_zone_surfaces(zone_name)` | Only the heat-transfer surfaces whose own `zone_name` is that zone (`BuildingSurface:Detailed`, `Wall:Exterior`, `Floor:Detailed`, ...). Not loads, equipment, fenestration, `InternalMass`, or another zone's surface that uses this zone as its outside boundary. |
 | `doc.get_references(obj)` | All names referenced by `obj`'s fields. |
 | `doc.rename(obj_type, old, new)` | Rename an object and cascade through every reference. |
@@ -68,6 +69,26 @@ for obj, field in doc.references.get_referencing_with_fields("Office"):
 ```
 
 This is the single most useful idfkit affordance when authoring loops or zone lists. If a surface's `zone_name` typo doesn't show up here, you know the wiring is broken before you simulate.
+
+## Finding what points at a name, typed
+
+`get_referencing` returns plain `IDFObject`s of every type, so their fields are unchecked. When you
+want one type — a zone's surfaces, a surface's windows — ask that type's collection. It does the
+same O(1) graph lookup, keeps only that type, and is typed as the collection's objects: the latest
+release's class, the release's own class through `IDFDocumentV9_4` and the like, or
+`AnyBuildingSurfaceDetailed` through `AnyIDFDocument`.
+
+```python
+# Ask the collection of the type you want: the same graph lookup, typed as that
+# type's objects (for the document's release, or Any<Class> via AnyIDFDocument).
+for surface in doc["BuildingSurface:Detailed"].referencing("Office"):
+    print(surface.name, surface.zone_name, surface.construction_name)  # checked fields
+    for window in doc["FenestrationSurface:Detailed"].referencing(surface):  # name or object
+        print(" ", window.name, window.building_surface_name)
+```
+
+It takes a name or an object, matches names case-insensitively, and returns a `list` in no
+particular order, each object once.
 
 ## Cascading renames
 
@@ -112,6 +133,27 @@ for obj, field, target in doc.references.get_dangling_references(all_names):
 For a richer pre-flight check, run `validate_document(doc, check_references=True)` — it reports the same broken edges as `E009` errors. See [schema-and-validation.md](schema-and-validation.md).
 
 ## Common mistakes
+
+!!! failure "filtering `get_referencing` by type string, then looking the object up again"
+
+    ```python
+    collection = doc["BuildingSurface:Detailed"]
+    for obj in doc.get_referencing("Office"):
+        if obj.obj_type != "BuildingSurface:Detailed":
+            continue
+        surface = collection.get(obj.name)  # second lookup, only to get the typed object
+    ```
+
+!!! success "ask the collection"
+
+    ```python
+    # Ask the collection of the type you want: the same graph lookup, typed as that
+    # type's objects (for the document's release, or Any<Class> via AnyIDFDocument).
+    for surface in doc["BuildingSurface:Detailed"].referencing("Office"):
+        print(surface.name, surface.zone_name, surface.construction_name)  # checked fields
+        for window in doc["FenestrationSurface:Detailed"].referencing(surface):  # name or object
+            print(" ", window.name, window.building_surface_name)
+    ```
 
 !!! failure "editing a name through `_data`"
 
