@@ -7,6 +7,127 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `migrate()` and `async_migrate()` took the target release's document type as `target_version`,
+  as `as_version` takes one: `migrate(doc, IDFDocumentV24_1)` migrated to 24.1.0 and returned a
+  `MigrationReport[IDFDocumentV24_1]`, and `migrate(doc, IDFDocument)` migrated to the latest
+  release with the result typed for it. A type that named no single release, such as
+  `AnyIDFDocument` or a union or tuple of document types, raised `TypeError`; pyright and mypy
+  reported `AnyIDFDocument`, and mypy a union. ([#285](https://github.com/idfkit/idfkit/pull/285))
+- `idfkit.versioned.ReleaseDocumentT`, a type variable constrained to the release document types,
+  for code generic over exactly one release, as `migrate()` is. ([#285](https://github.com/idfkit/idfkit/pull/285))
+- `as_version(doc, since=..., before=...)` was added, to narrow a document to a range of releases
+  without listing them: `since="9.6"` accepts a model of 9.6 or any later release idfkit supports,
+  `before="9.6"` one of any earlier release, and the two together bound a range (`since`
+  inclusive, `before` exclusive). A bound is a release's number (`"9.6"` or `"9.6.0"`), its
+  document type (`IDFDocumentV9_6`) or its version tuple (`(9, 6, 0)`, as `doc.version` is). The
+  range is computed from the supported releases, so it grows when idfkit adopts one, where a
+  hand-listed tuple had to be edited, and failed with `TypeError` on the previous latest release
+  if it relied on `IDFDocument`. Given a release type or a string literal, pyright and mypy type the
+  document as the exact union of the releases in the range, which mypy does not for a tuple; given
+  a variable, an optional or a tuple, they type it as `AnyIDFDocument`. A bound idfkit does not
+  support, or a range with no release in it, raises `ValueError`. `idfkit.versioned` gained the
+  same ranges as types to annotate with, `IDFDocumentSince<release>` and
+  `IDFDocumentBefore<release>` (`IDFDocumentSince9_6`, `IDFDocumentBefore23_2`, ...), generated
+  for every supported release, and `verify_stubs` checks each against the releases it names. The
+  bundled agent reference was changed to use them for the renamed-field, range and
+  exhaustive-`match` examples ([#283](https://github.com/idfkit/idfkit/pull/283)).
+- `IDFCollection.referencing(name_or_object)` was added. It returned the objects of the collection's
+  type that reference a name, typed as the collection's objects: `doc["BuildingSurface:Detailed"].referencing(zone)`
+  was a `list[BuildingSurfaceDetailed]`, a list of the release's own class through a versioned
+  document such as `IDFDocumentV9_4`, and read as `AnyBuildingSurfaceDetailed` through
+  `AnyIDFDocument`. A zone's surfaces or a surface's windows were read with checked fields, without
+  filtering `get_referencing` on `obj_type` and looking each object up again. It was the same
+  reference-graph lookup as `get_referencing`, which was unchanged, with no scan of the collection
+  or model; it added nothing to the type stubs, so type-checking time was unchanged
+  ([#284](https://github.com/idfkit/idfkit/pull/284)).
+
+### Changed
+
+- **Breaking:** for type checking only, a migration's result was no longer typed for the latest
+  release whatever release it was migrated to. `MigrationReport.migrated_model` had been
+  `IDFDocument | None`, so a model migrated to 24.1 was checked against 26.2's object types and
+  fields. `MigrationReport` became generic in the type of `migrated_model`, and `migrate()` and
+  `async_migrate()` given a version tuple or string, whose release a type checker cannot know,
+  returned a report typed `AnyIDFDocument | None`, as strict as the source. Code that passed the
+  result where an `IDFDocument` was expected stopped type-checking; it can name the target as a
+  document type (above) or narrow with `as_version`. A bare `MigrationReport` annotation accepted a
+  report of any release. ([#285](https://github.com/idfkit/idfkit/pull/285))
+- The `as_version` docstring and the bundled agent reference (`document-and-objects.md`) gained a
+  warning that a tuple or union of release types must name the latest release by its own type
+  (`IDFDocumentV26_2`), not `IDFDocument`. `IDFDocument` stands for whichever release is latest
+  when the code runs, so once idfkit supported a newer release, a tuple ending in it no longer
+  covered the previous latest, and `as_version` raised `TypeError` on a model of that release
+  ([#282](https://github.com/idfkit/idfkit/pull/282)).
+- **Breaking:** for type checking only, the document types stopped being `TypedDict`s to a type
+  checker. `IDFDocument`, `IDFDocumentAllVersions` and every `IDFDocumentV<major>_<minor>` came to
+  type `doc["Zone"]` with one `__getitem__` overload per object type, and every one of them came to
+  derive from `IDFDocumentAllVersions`, which `AnyIDFDocument` now names alone rather than as a
+  union with `IDFDocument`. pyright narrowed a `TypedDict` on `"Space" in doc` by its own rules,
+  which are not what the test means at run time (whether the model holds a `Space`), so it could
+  give a document the wrong type or skip a branch unchecked (see Fixed). Code that type-checked
+  before and fails since:
+  - a lookup with a non-literal `str`, `doc[obj_type]`, which was typed `Unknown` and became an
+    error, including inside `cast(...)`; use `doc.get_collection(obj_type)`, which is typed
+    `IDFCollection[IDFObject]`;
+  - a release-specific lookup guarded by `in`, such as `if "Space" in doc: doc["Space"]` through
+    `AnyIDFDocument`; branch on `doc.version` and narrow with `as_version`;
+  - the body of `if "Zone" not in doc:`, which pyright skipped as unreachable and came to check;
+  - `doc.get(...)`, `doc.setdefault(...)`, `doc.pop(...)`, `doc | {...}`, `del doc[...]` and
+    `match doc: case {...}`, which raise or never match at run time;
+  - `dict(doc)`, `{**doc}`, and passing a document where a `Mapping` is expected, which work at
+    run time but were typed only because a `TypedDict` is a `Mapping`; use `doc.collections`.
+
+  An unknown object type came to be reported as `No overloads for "__getitem__"` under
+  `reportCallIssue` and `reportArgumentType`, naming the parameter type
+  `_NotAnObjectTypeOfEnergyPlus9_4` (or `_NotAnObjectTypeOfEveryRelease` through
+  `AnyIDFDocument`), instead of `"Space" is not a defined key in ...` under
+  `reportGeneralTypeIssues`, so a `# pyright: ignore[reportGeneralTypeIssues]` on such a lookup
+  no longer silences it; mypy lists every accepted type name under the error. pyright came to
+  accept `isinstance(doc, IDFDocument)` and `case IDFDocument():`, which it rejected for a
+  `TypedDict`, and to narrow an `AnyIDFDocument` to the latest release on them, though every
+  document passes them at run time; narrow with `as_version` instead. `reveal_type` of an
+  `AnyIDFDocument` shows `IDFDocumentAllVersions`, and `doc["Zone"]` through it became
+  `IDFCollection[AnyZone]` rather than `IDFCollection[Zone] | IDFCollection[AnyZone]`. Each older
+  release's document type was moved to its own stub module under `idfkit/_versioned/`, still
+  imported from `idfkit.versioned`, so a file reads only the releases it names. pyright took about
+  as long as before on a file using `new_document()` or `AnyIDFDocument` (2.1 to 2.4 s), and less
+  on one naming `IDFDocumentV9_4` (2.5 s, from 2.8 to 3.0 s). Each lookup costs time in proportion to its type's place among the overloads, which follow the schema's order, so a file with hundreds of lookups of a type listed late took longer: 300 lookups of `Output:Variable` took 3.8 s, from 1.9 s ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+
+### Fixed
+
+- A migrated document kept the source's `strict` setting, as `copy()` and `expand_objects()` do;
+  before, it was always strict, so a model loaded with `strict=False` came back strict. ([#285](https://github.com/idfkit/idfkit/pull/285))
+- `IDFDocument.get_zone_surfaces()` returned every object that named the zone, not only its
+  surfaces: a `Lights` or `People` object, a `ZoneHVAC:EquipmentConnections`, and a surface of
+  another zone whose `outside_boundary_condition_object` was this zone all came back as surfaces.
+  It was changed to return only the heat-transfer surfaces whose own `zone_name` is the zone, of
+  the types the schema lists as providing `SurfaceNames`: `BuildingSurface:Detailed`, `Wall:Detailed`,
+  `Floor:Detailed`, `RoofCeiling:Detailed` and the simple surfaces such as `Wall:Exterior`, `Roof`
+  and `Floor:GroundContact`. `get_referencing()` was left returning every object that names the zone.
+  ([#289](https://github.com/idfkit/idfkit/pull/289))
+- `if "Space" in doc:` stopped retyping an `AnyIDFDocument` as the latest release under pyright.
+  The test is true for a 9.6 or 22.1 model that holds a `Space`, where `space.ceiling_height = 3.0`
+  type-checked and raised `InvalidFieldError`, since the field arrived in 22.2. The same held for
+  `"OutputControl:Files"`, the `if "Space" not in doc: return` form, a `TypeVar` bound to
+  `AnyIDFDocument`, and a condition stored in a variable first ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- The body of `if "Zone" not in doc:`, and of any `in` test on a type every release has, became
+  type-checked again. pyright treated it as unreachable, on `IDFDocument` and every
+  `IDFDocumentV*` as well as `AnyIDFDocument`, though an empty model of any release takes it; so
+  did `"DistrictHeating" in doc`, which 8.9 to 23.1 models reach ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- After `d = as_version(doc, (IDFDocumentV9_4, IDFDocumentV9_6, IDFDocument))`, the `else` of
+  `if "Space" in d:` stopped being typed as `IDFDocumentV9_4` alone, so 9.4-only field names became
+  reported there; 9.6 and 26.2 models without a `Space` take that branch too ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- `doc.get("Space")` and the other `dict` methods pyright gave a document (`setdefault`, `pop`,
+  `|`, `del`, mapping `match` patterns) became reported, rather than type-checking and raising
+  `AccessorAttributeError` or `TypeError`. The eppy batch update,
+  `doc.update({"Zone.Office.x_origin": 1.0})`, came to type-check; the `TypedDict`'s own `update`
+  used to shadow it, under pyright and mypy alike ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+- mypy came to see a document's methods, properties and accessors: it reported `doc.add`,
+  `doc.version` and `doc.zones` as missing, because it does not accept a class that derives from
+  both a `TypedDict` and an ordinary class ([37f3cf7](https://github.com/idfkit/idfkit/commit/37f3cf7)).
+
 ## [1.3.0-rc.1] - 2026-11-14
 
 ### Added

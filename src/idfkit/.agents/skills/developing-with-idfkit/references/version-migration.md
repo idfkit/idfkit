@@ -8,7 +8,7 @@
 - You're maintaining a fleet of models and want them all on the same version.
 - You need to surface what transition steps changed during migration.
 
-To keep editing an old model in its own release instead, type it for that release with `as_version` (see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md)). After migrating, `report.migrated_model` is `IDFDocument | None`, typed for the latest release.
+To keep editing an old model in its own release instead, type it for that release with `as_version` (see "Typing a document for its EnergyPlus version" in [document-and-objects.md](document-and-objects.md)). After migrating, `report.migrated_model` is typed for the release you name as the target (see [Typing the migrated document](#typing-the-migrated-document)).
 
 ## Quick start
 
@@ -21,7 +21,7 @@ doc = load_idf("legacy_v22.idf")  # version (22, 1, 0)
 config = find_energyplus()  # e.g. (25, 2, 0)
 
 report = migrate(doc, target_version=config.version, energyplus=config)
-new_doc = report.migrated_model  # fresh IDFDocument at (25, 2, 0)
+new_doc = report.migrated_model  # fresh document at (25, 2, 0), typed AnyIDFDocument | None
 ```
 
 The same path is wired into `simulate(..., auto_migrate=True)` — see [simulation-execution.md](simulation-execution.md). Use the explicit `migrate(...)` form when you want to inspect or persist the migrated model independently of running a simulation.
@@ -52,17 +52,41 @@ from idfkit.migration import (
 ```text
 migrate(
     model: IDFDocument,
-    target_version: tuple[int, int, int] | str,
+    target_version: tuple[int, int, int] | str | type[IDFDocumentV...],
     *,
     energyplus: EnergyPlusConfig | None = None,   # default: auto-discover
     migrator: Migrator | None = None,             # plug a custom backend
     on_progress: Callable[[MigrationProgress], None] | None = None,
     work_dir: str | Path | None = None,           # default: a fresh tempdir
     keep_work_dir: bool = False,
-) -> MigrationReport
+) -> MigrationReport[...]
 ```
 
 `async_migrate` mirrors this signature.
+
+## Typing the migrated document
+
+`MigrationReport` is generic in the type of `migrated_model`. Name the target as a document type from `idfkit.versioned` (`IDFDocumentV24_1`, or `IDFDocument` for the latest) and the report is typed for that release; a tuple or string target gives `AnyIDFDocument`, because a type checker cannot know which release a value names:
+
+```python
+from idfkit import IDFDocument
+from idfkit.versioned import IDFDocumentV24_1
+
+report_v24 = migrate(doc, IDFDocumentV24_1)  # MigrationReport[IDFDocumentV24_1]
+model_v24 = report_v24.migrated_model  # IDFDocumentV24_1 | None
+if model_v24 is not None:
+    for zone in model_v24.zones:  # 24.1's object types and fields
+        print(zone.name)
+
+latest = migrate(doc, IDFDocument).migrated_model  # IDFDocument | None: the latest release
+
+# A version known only at run time (an installed EnergyPlus) gives AnyIDFDocument, as strict as doc:
+any_release = migrate(doc, target_version=config.version).migrated_model  # AnyIDFDocument | None
+```
+
+The document type is also the target at run time: `migrate(doc, IDFDocumentV24_1)` migrates to 24.1.0. A migration reaches one release, so `AnyIDFDocument` and a union or tuple of document types raise `TypeError`; pyright and mypy reject `AnyIDFDocument`, and mypy rejects a union too, but pyright accepts a union (it tries each member against the overloads), so the run-time error is the one that catches it there. The migrated document keeps the source's `strict` setting, and a tuple or string target carries it into the type: `AnyIDFDocument[Literal[True]]` for a document from `load_idf`. A bare `MigrationReport` annotation accepts a report of any release. `migrated_model` is `None` only on a no-op migration, so check it before use. Under mypy the overloads resolve the same way, but mypy does not see a document's own properties, so prefer pyright (see [document-and-objects.md](document-and-objects.md)).
+
+To write your own function generic over one release, as `migrate` is, use `ReleaseDocumentT` from `idfkit.versioned`: a type variable constrained to the release types, so `type[ReleaseDocumentT]` takes one release's type and refuses `AnyIDFDocument`.
 
 ## The migration chain
 
@@ -74,22 +98,22 @@ from idfkit.migration import plan_migration_chain
 chain = plan_migration_chain(
     source=(22, 1, 0),
     target=(25, 2, 0),
-)
-for step in chain:
-    print(step.from_version, "->", step.to_version, step.binary)
+)  # tuple of (from_version, to_version) pairs
+for from_version, to_version in chain:
+    print(from_version, "->", to_version)  # one Transition-V<from>-to-V<to> binary each
 ```
 
-A four-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
+A seven-step chain (22.1 → 22.2 → 23.1 → 23.2 → 24.1 → 24.2 → 25.1 → 25.2) is normal — each step is a separate binary invocation.
 
 ## What `MigrationReport` contains
 
 ```python
 report = migrate(doc, target_version=(25, 2, 0))
 
-report.migrated_model  # IDFDocument
+report.migrated_model  # AnyIDFDocument | None (None only when source == target)
 report.source_version  # (22, 1, 0)
 report.target_version  # (25, 2, 0)
-report.steps  # list[MigrationStep]
+report.steps  # tuple[MigrationStep, ...]
 report.diff  # MigrationDiff (structural changes)
 report.summary()  # human-readable rollup
 
@@ -173,7 +197,7 @@ The default `SubprocessMigrator` shells out to the binaries shipped with the ins
 ```python
 from idfkit.migration import document_diff
 
-diff = document_diff(old_doc, new_doc)
+diff = document_diff(old_doc, edited_doc)  # any two documents, of any releases
 if diff.is_empty:
     print("No structural changes")
 else:
@@ -222,7 +246,8 @@ else:
 
     ```python
     report = migrate(doc, target_version=config.version)
-    new_doc = report.migrated_model  # IDFDocument at the target version
+    new_doc = report.migrated_model  # AnyIDFDocument at the target version
+    assert new_doc is not None  # None only when the model was already at config.version
     save_idf(new_doc, "migrated.idf")
     result = simulate(new_doc, "weather.epw")
     ```

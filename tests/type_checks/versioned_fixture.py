@@ -22,10 +22,14 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 from typing_extensions import assert_type
 
 from idfkit import IDFDocument, load_idf, save_idf
+from idfkit.migration import MigrationReport, async_migrate, migrate
 from idfkit.objects import IDFCollection, IDFObject
 from idfkit.simulation import expand_objects
 from idfkit.versioned import (
     AnyIDFDocument,
+    IDFDocumentBefore9_6,
+    IDFDocumentSince9_6,
+    IDFDocumentSince26_1,
     IDFDocumentV8_9,
     IDFDocumentV9_4,
     IDFDocumentV9_6,
@@ -90,7 +94,7 @@ def any_release_objects(
 
 
 def dict_like_methods(latest: IDFDocument, legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
-    """keys(), values() and items() are the document's own, not the TypedDict's behind its lookups."""
+    """keys(), values() and items() are the document's own."""
     assert_type(latest.keys(), list[str])
     assert_type(latest.values(), list[IDFCollection[IDFObject]])
     assert_type(latest.items(), list[tuple[str, IDFCollection[IDFObject]]])
@@ -119,6 +123,31 @@ def classify_spaces(doc: AnyIDFDocument) -> int:
     for space in recent["Space"]:
         classify_space(space)
     return len(recent["Space"])
+
+
+def narrow_by_range(doc: AnyIDFDocument, first: str, until: str | None) -> None:
+    """since= and before= type a document as the union of the supported releases in the range."""
+    assert_type(as_version(doc, since="26.1"), IDFDocumentSince26_1)
+    assert_type(as_version(doc, since=IDFDocumentV26_1), IDFDocumentV26_1[bool] | IDFDocument[bool])
+    assert_type(as_version(doc, since="26.1.0"), IDFDocumentSince26_1)
+    assert_type(as_version(doc, since=IDFDocumentV26_2), IDFDocument[bool])
+    assert_type(as_version(doc, before="9.0"), IDFDocumentV8_9[bool])
+    assert_type(as_version(doc, since=IDFDocumentV9_6, before="22.1"), IDFDocumentV9_6[bool])
+    # A bound the checker cannot read as one release types the document as any release's.
+    assert_type(as_version(doc, since=first), AnyIDFDocument)
+    assert_type(as_version(doc, since="9.6", before=until), AnyIDFDocument)
+    assert_type(as_version(doc, before=until), AnyIDFDocument)
+    assert_type(as_version(doc, since=(9, 6, 0)), AnyIDFDocument)
+    assert_type(as_version(doc, since=doc.version), AnyIDFDocument)
+    assert_type(as_version(doc, since="27.1"), AnyIDFDocument)  # no such release: ValueError when run
+    assert_type(as_version(doc, since="26.1", before="9.6"), AnyIDFDocument)  # empty: ValueError when run
+    # A renamed field: each branch narrowed to the releases that use one name.
+    if doc.version < (9, 6, 0):
+        before: IDFDocumentBefore9_6 = as_version(doc, before="9.6")
+        before["People"]["Office"].update(zone_or_zonelist_name="Office")
+    else:
+        since: IDFDocumentSince9_6 = as_version(doc, since="9.6")
+        since["People"]["Office"].update(zone_or_zonelist_or_space_or_spacelist_name="Office")
 
 
 def write_safe_fuel(doc: AnyIDFDocument) -> None:
@@ -156,8 +185,27 @@ def correct_calls() -> None:
     print(objects)
 
 
+async def migrated_documents(old: IDFDocumentV8_9) -> None:
+    """A migration names its target's document type to get a report typed for that release."""
+    report = migrate(old, IDFDocumentV9_4)
+    assert_type(report, MigrationReport[IDFDocumentV9_4])
+    assert_type(report.migrated_model, IDFDocumentV9_4 | None)
+    assert_type((await async_migrate(old, target_version=IDFDocumentV9_4)).migrated_model, IDFDocumentV9_4 | None)
+    if report.migrated_model is not None:
+        report.migrated_model["People"]["Office"].zone_or_zonelist_name = "Office"
+    assert_type(migrate(old, IDFDocument).migrated_model, IDFDocument | None)
+    # A version a type checker cannot know gives a document of any release, as strict as the source.
+    assert_type(migrate(old, (24, 1, 0)).migrated_model, AnyIDFDocument[bool] | None)
+    assert_type((await async_migrate(old, "24.1.0")).migrated_model, AnyIDFDocument[bool] | None)
+    loaded = load_idf("old.idf")
+    assert_type(migrate(loaded, "24.1.0").migrated_model, AnyIDFDocument[Literal[True]] | None)
+    # A bare MigrationReport accepts a report of any release.
+    reports: list[MigrationReport] = [report, migrate(old, "24.1.0")]
+    print(reports)
+
+
 def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
-    legacy["Space"]  # pyright: ignore[reportGeneralTypeIssues]  (Space is new in 9.6)
+    legacy["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     people = legacy["People"]["Office"]
     people.update(zone_or_zonelist_or_space_or_spacelist_name="Office")  # pyright: ignore[reportCallIssue]  (the 9.6 name)
     heater = legacy["WaterHeater:Mixed"]["Heater"]
@@ -166,7 +214,7 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     latest_only(legacy)  # pyright: ignore[reportArgumentType]  (a 9.4 document is not a latest one)
     print(legacy.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (no Space before 9.6)
     # Through AnyIDFDocument, only what every version has: a type some version lacks is not a key.
-    print(any_doc["Space"])  # pyright: ignore[reportGeneralTypeIssues, reportUnknownArgumentType]  (not in every version)
+    print(any_doc["Space"])  # pyright: ignore[reportCallIssue, reportArgumentType, reportUnknownArgumentType]  (not in every version)
     print(any_doc.spaces)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]  (not in every version)
     any_doc["People"]["Office"].update(zone_or_zonelist_name="Office")  # pyright: ignore[reportCallIssue]  (renamed in 9.6)
     any_doc["WaterHeater:Mixed"]["Heater"].heater_fuel_type = "Plutonium"  # pyright: ignore[reportAttributeAccessIssue]  (no version)
@@ -176,5 +224,21 @@ def seeded_errors(legacy: IDFDocumentV9_4, any_doc: AnyIDFDocument) -> None:
     zone_height(legacy["Material"]["Brick"])  # pyright: ignore[reportArgumentType]  (not a zone)
     table: AnyOutputTableAnnual = any_doc["Output:Table:Annual"]["Annual"]
     table.variable_details[0].digits_after_decimal = 2.5  # pyright: ignore[reportAttributeAccessIssue]  (an int from 22.2 on)
-    as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is not a class; pass a tuple)
+    as_version(any_doc, _Since9_6)  # pyright: ignore[reportCallIssue, reportArgumentType]  (an alias is no class)
+    as_version(any_doc)  # pyright: ignore[reportCallIssue]  (a type or a range is needed)
+    as_version(any_doc, since=1.5)  # pyright: ignore[reportCallIssue, reportArgumentType]  (not a release)
+    as_version(any_doc, IDFDocument, since="9.6")  # pyright: ignore[reportCallIssue]  (a type or a range, not both)
+    as_version(any_doc, before="9.6")["Space"]  # pyright: ignore[reportCallIssue, reportArgumentType]  (Space is new in 9.6)
     any_doc["Zone"]["Office"].update(x_orign=1.0)  # pyright: ignore[reportCallIssue]  (a typo, also through AnyIDFDocument)
+    migrated = migrate(legacy, (24, 1, 0)).migrated_model
+    assert migrated is not None
+    latest_only(migrated)  # pyright: ignore[reportArgumentType]  (a version tuple names no release a checker knows)
+    migrate(legacy, IDFDocumentV9_6).migrated_model["Space"]  # pyright: ignore[reportOptionalSubscript]  (None on a no-op)
+    # A migration reaches one release: AnyIDFDocument and a union of release types name none.
+    migrate(legacy, AnyIDFDocument)  # pyright: ignore[reportCallIssue, reportArgumentType]  (no single release)
+    # A union of release types also names no single release, and raises TypeError at run time. mypy
+    # rejects it; pyright tries each member against the overloads and types it as either report.
+    assert_type(
+        migrate(legacy, IDFDocumentV9_6 | IDFDocument),
+        MigrationReport[IDFDocumentV9_6] | MigrationReport[IDFDocument],
+    )

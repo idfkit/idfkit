@@ -2,30 +2,67 @@
 
 from __future__ import annotations
 
+import types
+from typing import TYPE_CHECKING, Any, get_origin
+
+from .._document_types import release_of
 from ..exceptions import UnsupportedVersionError
 from ..simulation.config import normalize_version
 from ..versions import ENERGYPLUS_VERSIONS, is_supported_version
+
+if TYPE_CHECKING:
+    from ..document import AnyIDFDocument
 
 #: A transition step: ``(from_version, to_version)``.
 TransitionStep = tuple[tuple[int, int, int], tuple[int, int, int]]
 
 
-def normalize_target(target_version: tuple[int, int, int] | str) -> tuple[int, int, int]:
-    """Coerce a tuple or dotted-string version into a normalized, supported tuple.
+def normalize_target(
+    target_version: tuple[int, int, int] | str | type[AnyIDFDocument[Any]],
+) -> tuple[int, int, int]:
+    """Coerce a tuple, dotted-string version or document type into a normalized, supported tuple.
 
-    Accepts either a ``(major, minor, patch)`` tuple or a dotted string
-    such as ``"25.2.0"`` / ``"25.2"``. Raises on malformed input or
-    unsupported versions.
+    Accepts a ``(major, minor, patch)`` tuple, a dotted string such as
+    ``"25.2.0"`` / ``"25.2"``, or the document type of one release, such as
+    ``IDFDocumentV24_1`` from ``idfkit.versioned`` or ``IDFDocument`` for the
+    latest. Raises on malformed input or unsupported versions.
 
     Raises:
         ValueError: If the string cannot be parsed.
+        TypeError: If *target_version* is a type that is not the document
+            type of a single release (``AnyIDFDocument``, a union, a class
+            of its own), a tuple of document types (even of one), or neither
+            a version nor a type.
         UnsupportedVersionError: If the parsed version is not in
             `ENERGYPLUS_VERSIONS`.
     """
+    if _is_type(target_version):
+        return release_of(target_version)
+    # A tuple of document types is what as_version takes for several releases. A migration reaches
+    # one, so it is refused whatever its length, a one-member tuple included. A tuple none of whose
+    # items is a type is a version and goes to normalize_version as it always has, whatever its
+    # items are (numpy integers included).
+    if isinstance(target_version, tuple) and any(_is_type(part) for part in target_version):
+        msg = (
+            f"{target_version!r} is a tuple of document types, which as_version takes for several releases;"
+            " a migration reaches one, so name one, such as IDFDocumentV24_1"
+        )
+        raise TypeError(msg)
+    if not isinstance(target_version, (str, tuple)):
+        msg = (
+            "target_version must be a (major, minor, patch) tuple, a dotted string or a document type such as"
+            f" IDFDocumentV24_1, not {target_version!r}"
+        )
+        raise TypeError(msg)
     normalized = normalize_version(target_version)
     if not is_supported_version(normalized):
         raise UnsupportedVersionError(normalized, ENERGYPLUS_VERSIONS)
     return normalized
+
+
+def _is_type(value: object) -> bool:
+    """Whether *value* is a class, a subscripted generic such as ``IDFDocumentV9_4[bool]``, or a union."""
+    return isinstance(value, (type, types.UnionType)) or get_origin(value) is not None
 
 
 def plan_migration_chain(
